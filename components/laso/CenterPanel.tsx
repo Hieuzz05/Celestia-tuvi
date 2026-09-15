@@ -6,11 +6,11 @@ import { CHI } from '@/lib/tuvi/constants';
 function Dong({ nhan, giaTri }: { nhan: string; giaTri: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="shrink-0 text-[12px] font-normal" style={{ color: 'var(--fg-muted)' }}>
+      <span className="shrink-0 text-[11px] font-normal" style={{ color: 'var(--fg-muted)' }}>
         {nhan}
       </span>
       <span
-        className="text-right text-[13px] font-medium"
+        className="text-right text-[12px] font-medium"
         style={{ color: 'var(--fg)' }}
       >
         {giaTri}
@@ -20,7 +20,7 @@ function Dong({ nhan, giaTri }: { nhan: string; giaTri: string }) {
 }
 
 function Nhom({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col gap-[3px]">{children}</div>;
+  return <div className="flex flex-col gap-[1px]">{children}</div>;
 }
 
 export function CenterPanel({
@@ -35,17 +35,20 @@ export function CenterPanel({
   const t = laSo.thongTin;
   return (
     <div
-      className="flex flex-col gap-[14px] overflow-auto p-[22px]"
+      className="o-cung-cuon flex flex-col gap-[7px] overflow-auto p-[14px]"
       style={{
         gridRow: '2 / 4',
         gridColumn: '2 / 4',
+        // Không có dòng này thì grid item vẫn lấy min-content làm chiều cao tối
+        // thiểu, kéo cả hàng 2-3 cao lên dù đã cho phép cuộn.
+        minHeight: 0,
         border: '1px solid var(--line)',
         background: 'var(--chart-cell)',
       }}
     >
       <div className="text-center">
         <div
-          className="text-[20px] font-normal tracking-tight"
+          className="text-[17px] font-normal tracking-tight"
           style={{ color: 'var(--fg)', letterSpacing: '-0.04em' }}
         >
           {t.hoTen?.trim() || 'Lá số Tử Vi'}

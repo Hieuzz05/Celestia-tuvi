@@ -106,11 +106,14 @@ export function PalaceCell({
       onMouseEnter={() => onHover(cung.chiIndex)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(cung.chiIndex)}
-      className="relative flex cursor-pointer flex-col p-[10px] transition-opacity duration-150"
+      className="o-cung-cuon relative flex cursor-pointer flex-col p-[9px] transition-opacity duration-150"
       style={{
         gridRow: pos.row,
         gridColumn: pos.col,
-        minHeight: 178,
+        minWidth: 0,
+        minHeight: 0,
+        // Ô có chiều cao cố định theo lưới; bật thêm lớp dữ liệu thì cuộn trong ô
+        overflowY: 'auto',
         border: `1px solid ${vienMau}`,
         background: laTieuHan ? 'var(--chart-han)' : 'var(--chart-cell)',
         opacity: trangThai === 'mo' ? 0.28 : 1,

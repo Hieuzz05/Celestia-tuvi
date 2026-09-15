@@ -18,9 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Tử Vi AI — Lập lá số & luận giải",
+  title: "Celestia — Lập lá số & luận giải Tử Vi",
   description:
-    "Lập lá số Tử Vi theo Nam phái, luận giải hiện đại bằng AI kết hợp kho tri thức tử vi.",
+    "Celestia — lập lá số Tử Vi theo Nam phái, luận giải hiện đại bằng AI.",
 };
 
 // Đặt theme trước khi trang vẽ lần đầu để không bị chớp nền sai màu

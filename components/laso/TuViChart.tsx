@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import {
   cungDaiVan,
@@ -17,6 +17,13 @@ import { MAC_DINH_SETTINGS, NHAN_SETTINGS, type DisplaySettings } from './types'
 
 const ZOOM_LEVELS = [0.6, 0.8, 1, 1.25, 1.5];
 const CHART_WIDTH = 920;
+/** Chiều cao cố định của mệnh bàn — 4 hàng bằng nhau, để phép tính tỉ lệ là xác định */
+const CHART_ROW = 162;
+const CHART_HEIGHT = CHART_ROW * 4;
+/** Dưới mức này chữ trong ô cung không còn đọc được, thà để cuộn dọc còn hơn */
+const ZOOM_TOI_THIEU = 0.62;
+/** Giá trị zoom đặc biệt: tự co mệnh bàn cho vừa bề ngang khung chứa */
+const VUA_KHUNG = 0;
 
 export function TuViChart({
   laSo,
@@ -33,9 +40,40 @@ export function TuViChart({
   const [hoverCung, setHoverCung] = useState<number | null>(null);
   const [chonCung, setChonCung] = useState<number | null>(null);
   const [moDrawer, setMoDrawer] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState<number>(VUA_KHUNG);
+  const [zoomVuaKhung, setZoomVuaKhung] = useState(1);
+  const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+
+  // Mệnh bàn có kích thước cố định (CHART_WIDTH × CHART_HEIGHT) nên tỉ lệ thu
+  // nhỏ tính thẳng từ hai con số đó — không đo lại phần tử đang bị biến đổi,
+  // tránh vòng phản hồi layout từng làm treo trình duyệt.
+  useEffect(() => {
+    const khung = khungRef.current;
+    if (!khung) return;
+
+    const doLai = () => {
+      const conLai = window.innerHeight - khung.getBoundingClientRect().top - 24;
+      setZoomVuaKhung(
+        Math.max(
+          ZOOM_TOI_THIEU,
+          Math.min(1, khung.clientWidth / CHART_WIDTH, conLai / CHART_HEIGHT)
+        )
+      );
+    };
+
+    doLai();
+    const ro = new ResizeObserver(doLai);
+    ro.observe(khung);
+    window.addEventListener('resize', doLai);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', doLai);
+    };
+  }, []);
+
+  const zoomThucTe = zoom === VUA_KHUNG ? zoomVuaKhung : zoom;
 
   const tuoiAm = namXem - laSo.thongTin.amLich.nam + 1;
   const cungTieuHanIndex = cungTieuHan(laSo, tuoiAm);
@@ -71,12 +109,15 @@ export function TuViChart({
   const xuatPng = useCallback(async () => {
     if (!chartRef.current) return;
     const nen = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-    const dataUrl = await toPng(chartRef.current, { backgroundColor: nen || '#08080a', pixelRatio: 2 });
+    const dataUrl = await toPng(chartRef.current, {
+      backgroundColor: nen || '#08080a',
+      pixelRatio: 2 / Math.max(zoomThucTe, 0.1),
+    });
     const a = document.createElement('a');
     a.download = `la-so-${laSo.thongTin.hoTen?.trim() || 'tu-vi'}.png`;
     a.href = dataUrl;
     a.click();
-  }, [laSo]);
+  }, [laSo, zoomThucTe]);
 
   const chepJson = useCallback(() => {
     navigator.clipboard.writeText(JSON.stringify(laSo, null, 2));
@@ -103,6 +144,13 @@ export function TuViChart({
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             Thu phóng
           </span>
+          <button
+            className="pill-tag text-[13px]"
+            data-active={zoom === VUA_KHUNG}
+            onClick={() => setZoom(VUA_KHUNG)}
+          >
+            Vừa khung
+          </button>
           {ZOOM_LEVELS.map((z) => (
             <button
               key={z}
@@ -150,19 +198,26 @@ export function TuViChart({
       )}
 
       {/* Mệnh bàn */}
-      <div className="overflow-auto">
+      <div className="overflow-auto" ref={khungRef}>
         <div
-          ref={chartRef}
-          className="relative grid grid-cols-4 grid-rows-4"
           style={{
-            minWidth: CHART_WIDTH,
-            background: 'var(--bg)',
-            // `zoom` thay cho `transform: scale()` — scale + width theo % trong
-            // khung cuộn tạo vòng phản hồi layout làm treo trình duyệt.
-            zoom,
+            width: CHART_WIDTH * zoomThucTe,
+            height: CHART_HEIGHT * zoomThucTe,
           }}
-          onMouseLeave={() => setHoverCung(null)}
         >
+          <div
+            ref={chartRef}
+            className="relative grid grid-cols-4"
+            style={{
+              width: CHART_WIDTH,
+              height: CHART_HEIGHT,
+              gridTemplateRows: `repeat(4, ${CHART_ROW}px)`,
+              background: 'var(--bg)',
+              transform: `scale(${zoomThucTe})`,
+              transformOrigin: 'top left',
+            }}
+            onMouseLeave={() => setHoverCung(null)}
+          >
             {laSo.cungs.map((cung) => (
               <PalaceCell
                 key={cung.chiIndex}
@@ -179,8 +234,9 @@ export function TuViChart({
                 }}
               />
             ))}
-          <CenterPanel laSo={laSo} namXem={namXem} tuoiAm={tuoiAm} />
-          {settings.tuanTriet && <VoidMarkers markers={markers} />}
+            <CenterPanel laSo={laSo} namXem={namXem} tuoiAm={tuoiAm} />
+            {settings.tuanTriet && <VoidMarkers markers={markers} />}
+          </div>
         </div>
       </div>
 

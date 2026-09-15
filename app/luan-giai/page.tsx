@@ -2,7 +2,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
+import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { Field, FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
+import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
@@ -14,57 +16,6 @@ interface ModelTrangThai {
   daCauHinh: boolean;
 }
 
-/** Markdown tối giản: đủ cho ## đề mục, **đậm** và đoạn văn */
-function RenderMarkdown({ noiDung }: { noiDung: string }) {
-  const khoi = noiDung.split('\n').filter((d) => d.trim());
-  return (
-    <div className="flex flex-col gap-[14px]">
-      {khoi.map((dong, i) => {
-        const dam = (s: string) =>
-          s.split(/\*\*(.+?)\*\*/g).map((phan, j) =>
-            j % 2 === 1 ? (
-              <strong key={j} style={{ color: 'var(--fg)' }}>
-                {phan}
-              </strong>
-            ) : (
-              <span key={j}>{phan}</span>
-            )
-          );
-        if (dong.startsWith('## ')) {
-          return (
-            <h3
-              key={i}
-              className="heading-sm mt-[24px]"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              {dong.slice(3)}
-            </h3>
-          );
-        }
-        if (dong.startsWith('# ')) {
-          return (
-            <h2 key={i} className="heading mt-[18px]">
-              {dong.slice(2)}
-            </h2>
-          );
-        }
-        if (/^[-*]\s/.test(dong)) {
-          return (
-            <p key={i} className="body-text pl-[18px]" style={{ color: 'var(--fg-body)' }}>
-              • {dam(dong.replace(/^[-*]\s/, ''))}
-            </p>
-          );
-        }
-        return (
-          <p key={i} className="body-text" style={{ color: 'var(--fg-body)' }}>
-            {dam(dong)}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
-
 function TrangLuanGiai() {
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinForm>({
@@ -73,7 +24,7 @@ function TrangLuanGiai() {
     gio: 9,
     gioiTinh: 'nam',
   });
-  const [chuDe, setChuDe] = useState<ChuDeId>('tong-quan');
+  const [chuDe, setChuDe] = useState<ChuDeId>('su-nghiep');
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
   const [cauHoi, setCauHoi] = useState('');
@@ -82,7 +33,7 @@ function TrangLuanGiai() {
   const [hoSos, setHoSos] = useState<HoSo[]>([]);
 
   const [dangChay, setDangChay] = useState(false);
-  const [ketQua, setKetQua] = useState<{ noiDung: string; model: string } | null>(null);
+  const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
   useEffect(() => {
@@ -95,7 +46,7 @@ function TrangLuanGiai() {
       .catch(() => setModels([]));
   }, []);
 
-  // Nhận thông tin sinh khi bấm "Luận giải lá số này" từ trang lá số
+  // Nhận thông tin sinh khi bấm sang từ tab Lá số
   useEffect(() => {
     const ngay = Number(params.get('ngay'));
     const thang = Number(params.get('thang'));
@@ -113,7 +64,14 @@ function TrangLuanGiai() {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return null;
     try {
-      return lapLaSo({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, hoTen: form.hoTen });
+      return lapLaSo({
+        ngay,
+        thang,
+        nam,
+        gio: form.gio,
+        gioiTinh: form.gioiTinh,
+        hoTen: form.hoTen,
+      });
     } catch {
       return null;
     }
@@ -121,32 +79,29 @@ function TrangLuanGiai() {
 
   const modelSanSang = models.filter((m) => m.daCauHinh);
 
-  const chay = async () => {
+  const chay = async (chuDeChay: ChuDeId) => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
+    if (!ngay || !thang || !nam) return;
+    setChuDe(chuDeChay);
     setDangChay(true);
     setLoi(null);
     setKetQua(null);
     try {
-      const res = await fetch('/api/luan-giai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      setKetQua(
+        await goiLuanGiai({
           ngay,
           thang,
           nam,
           gio: form.gio,
           gioiTinh: form.gioiTinh,
           hoTen: form.hoTen,
-          chuDe,
+          chuDe: chuDeChay,
           namXem,
           thangXem,
-          cauHoi,
+          cauHoi: cauHoi || undefined,
           model: modelChon || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.loi ?? 'Luận giải thất bại');
-      setKetQua({ noiDung: data.noiDung, model: data.model });
+        })
+      );
     } catch (e) {
       setLoi(e instanceof Error ? e.message : 'Lỗi không xác định');
     } finally {
@@ -155,24 +110,19 @@ function TrangLuanGiai() {
   };
 
   return (
-    <main className="flex flex-col gap-[36px] py-[36px]">
+    <main className="flex flex-col gap-[24px] py-[20px]">
       <div>
-        <p className="eyebrow" style={{ color: 'var(--accent)' }}>
-          Luận giải bằng AI
-        </p>
-        <h1 className="display mt-[18px]">Lá số nói gì về bạn?</h1>
-        <p className="body-text mt-[24px] max-w-[560px]" style={{ color: 'var(--fg-body)' }}>
-          AI đọc trực tiếp dữ liệu an sao — tên sao, độ sáng, Tuần Triệt, tứ hóa — rồi diễn giải
-          theo Nam phái, đối chiếu Bắc phái ở phần vận hạn.
-        </p>
+        <p className="eyebrow">Luận giải chi tiết</p>
+        <h1 className="heading mt-[10px]">Đi sâu vào từng vấn đề.</h1>
       </div>
 
-      <section className="grid gap-[36px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-[24px]">
+      <section className="grid gap-[28px] lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="flex flex-col gap-[18px]">
           {hoSos.length > 0 && (
             <Field label="Chọn từ hồ sơ đã lưu">
               <select
                 className="field-input"
+                defaultValue=""
                 onChange={(e) => {
                   const h = hoSos.find((x) => x.id === e.target.value);
                   if (!h) return;
@@ -183,7 +133,6 @@ function TrangLuanGiai() {
                     gioiTinh: h.gioiTinh,
                   });
                 }}
-                defaultValue=""
               >
                 <option value="">— Nhập thủ công —</option>
                 {hoSos.map((h) => (
@@ -197,21 +146,7 @@ function TrangLuanGiai() {
 
           <FormSinh giaTri={form} onChange={setForm} />
 
-          <Field label="Chủ đề luận giải">
-            <select
-              value={chuDe}
-              onChange={(e) => setChuDe(e.target.value as ChuDeId)}
-              className="field-input"
-            >
-              {Object.entries(CHU_DE).map(([id, cd]) => (
-                <option key={id} value={id}>
-                  {cd.nhan}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <div className="grid grid-cols-2 gap-[18px]">
+          <div className="grid grid-cols-2 gap-[14px]">
             <Field label="Năm xem hạn">
               <input
                 type="number"
@@ -259,85 +194,99 @@ function TrangLuanGiai() {
             </select>
           </Field>
 
-          <button onClick={chay} disabled={dangChay || !laSo} className="btn-primary self-start">
-            {dangChay ? 'Đang luận giải…' : 'Luận giải'}
-          </button>
-
-          {modelSanSang.length === 0 && (
-            <p className="text-[13px]" style={{ color: 'var(--accent)' }}>
-              Chưa có model AI nào được cấu hình. Thêm API key trong biến môi trường (xem trang
-              Quản trị) để bật luận giải.
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-[18px]">
           {laSo && (
             <div
-              className="flex flex-wrap gap-x-[24px] gap-y-[6px] pb-[18px] text-[13px]"
-              style={{ color: 'var(--fg-muted)', borderBottom: '1px solid var(--line)' }}
+              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pt-[14px] text-[13px]"
+              style={{ color: 'var(--fg-muted)', borderTop: '1px solid var(--line)' }}
             >
               <span>
-                Mệnh tại <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
+                Mệnh <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
               </span>
-              <span>
-                Cục <b style={{ color: 'var(--fg)' }}>{laSo.cuc.ten}</b>
-              </span>
-              <span>
-                Bản mệnh <b style={{ color: 'var(--fg)' }}>{laSo.banMenh.ten}</b>
-              </span>
+              <span style={{ color: 'var(--fg)' }}>{laSo.cuc.ten}</span>
               <span>
                 Thân cư <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
               </span>
             </div>
           )}
 
-          {dangChay && (
-            <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-              Đang đọc lá số và soạn luận giải… Quá trình này mất khoảng 15–45 giây.
+          {modelSanSang.length === 0 && (
+            <p className="text-[13px]" style={{ color: 'var(--accent)' }}>
+              Chưa có model AI nào được cấu hình — xem trang Quản trị.
             </p>
           )}
+        </div>
 
-          {loi && (
-            <div className="flex flex-col gap-[6px]">
-              <p className="text-[14px]" style={{ color: 'var(--chart-hung)' }}>
+        <div className="flex flex-col gap-[18px]">
+          <div className="grid gap-[12px] sm:grid-cols-2">
+            {(Object.entries(CHU_DE) as [ChuDeId, (typeof CHU_DE)[ChuDeId]][]).map(([id, cd]) => (
+              <button
+                key={id}
+                onClick={() => chay(id)}
+                disabled={dangChay || !laSo}
+                className="flex flex-col gap-[4px] rounded-[var(--radius-cards)] border p-[14px] text-left transition-colors disabled:opacity-50"
+                style={{
+                  borderColor: chuDe === id ? 'var(--accent)' : 'var(--line)',
+                  background: 'var(--surface-card)',
+                }}
+              >
+                <span className="text-[15px] font-medium" style={{ color: 'var(--fg)' }}>
+                  {cd.nhan}
+                </span>
+                <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+                  {cd.moTa}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div
+            className="min-h-[200px] rounded-[var(--radius-cards)] border p-[22px]"
+            style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
+          >
+            {dangChay && (
+              <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
+                Đang luận giải chủ đề <b style={{ color: 'var(--fg)' }}>{CHU_DE[chuDe].nhan}</b>… mất
+                khoảng 15–45 giây.
+              </p>
+            )}
+
+            {loi && (
+              <p className="body-text" style={{ color: 'var(--chart-hung)' }}>
                 {loi}
               </p>
-              <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                Nếu tất cả model đều lỗi, hệ thống đã tự thử lần lượt từng model trong danh sách
-                fallback trước khi báo lỗi này.
-              </p>
-            </div>
-          )}
+            )}
 
-          {ketQua && (
-            <article className="flex flex-col gap-[12px]">
-              <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
-              </p>
-              <RenderMarkdown noiDung={ketQua.noiDung} />
-              <p className="mt-[18px] text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                Nội dung do AI tạo ra, mang tính tham khảo — không thay thế tư vấn chuyên môn về y
-                tế, tài chính hay pháp lý.
-              </p>
-            </article>
-          )}
+            {ketQua && !dangChay && (
+              <article className="flex flex-col gap-[10px]">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="subheading">{CHU_DE[chuDe].nhan}</h2>
+                  <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+                    Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
+                  </span>
+                </div>
+                <MarkdownLuanGiai noiDung={ketQua.noiDung} />
+                <p className="mt-[14px] text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+                  Nội dung do AI tạo ra, mang tính tham khảo — không thay thế tư vấn chuyên môn về y
+                  tế, tài chính hay pháp lý.
+                </p>
+              </article>
+            )}
 
-          {!ketQua && !dangChay && !loi && (
-            <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-              Chọn chủ đề rồi bấm Luận giải để bắt đầu.
-            </p>
-          )}
+            {!ketQua && !dangChay && !loi && (
+              <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
+                Chọn một chủ đề ở trên để bắt đầu luận giải chi tiết.
+              </p>
+            )}
+          </div>
         </div>
       </section>
     </main>
   );
 }
 
-
 export default function LuanGiaiPage() {
   return (
-    <Suspense fallback={<main className="py-[60px]">Đang tải…</main>}>
+    <Suspense fallback={<main className="py-[40px]">Đang tải…</main>}>
       <TrangLuanGiai />
     </Suspense>
   );

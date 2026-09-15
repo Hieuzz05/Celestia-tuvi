@@ -105,7 +105,37 @@ Mở https://github.com/Hieuzz05/Celestia-tuvi — phải thấy đủ các thư
 2. Chọn **Import Git Repository** → tìm `Celestia-tuvi` → **Import**. (Nếu Vercel chưa thấy repo, bấm **Adjust GitHub App Permissions** và cấp quyền truy cập repo này.)
 3. Vercel tự nhận diện Next.js — giữ nguyên mọi thiết lập mặc định → **Deploy**.
 4. Đợi khoảng 1–2 phút, Vercel cho một đường link dạng `celestia-tuvi.vercel.app` — mở thử để xem trang đã chạy trên mạng (lúc này chưa có API key nên luận giải AI và đăng nhập chưa hoạt động, đó là bình thường).
-5. Vào **Settings → Environment Variables**, khai báo các biến ở mục 2 & 3 bên dưới, rồi vào tab **Deployments** → bấm **⋯** ở bản mới nhất → **Redeploy** để biến môi trường có hiệu lực.
+5. Khai báo biến môi trường theo mục **1.1** ngay dưới đây, rồi vào tab **Deployments** → bấm **⋯** ở bản mới nhất → **Redeploy** để biến có hiệu lực.
+
+#### 1.1 Khai báo biến môi trường trên Vercel
+
+Giao diện Vercel mới **không còn** mục "Environment Variables" ở sidebar nữa — nó nằm bên trong
+từng Environment.
+
+Đường tắt: https://vercel.com/duyhieu24082000-6871s-projects/celestia-tuvi/settings/environment-variables
+
+Hoặc bấm theo đường dẫn: **Settings** → **Environments** → bấm vào dòng **Production** → cuộn
+xuống khu **Environment Variables**.
+
+Cần khai 4 biến bắt buộc (lấy giá trị từ file `.env.local` trên máy bạn):
+
+| Key | Lấy ở đâu | Ai đọc được |
+|---|---|---|
+| `GEMINI_API_KEY` | Google AI Studio | Chỉ server |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | Trình duyệt (bình thường) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → API Keys (`sb_publishable_...`) | Trình duyệt (bình thường) |
+| `ADMIN_EMAILS` | Email của bạn, ngăn cách bằng dấu phẩy | Chỉ server |
+
+Thêm nếu muốn: `AI_FALLBACK_ORDER`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`.
+
+**Lưu ý khi nhập:**
+- **Đừng tự thêm/bớt tiền tố `NEXT_PUBLIC_`.** Biến có tiền tố này được nhúng thẳng vào mã chạy
+  trong trình duyệt — thêm nhầm vào `GEMINI_API_KEY` là công khai key cho cả thiên hạ.
+- Tick đủ cả **Production, Preview, Development** để bản preview cũng chạy được.
+- Vercel cho dán nguyên khối `KEY=value` nhiều dòng một lúc (nó tự tách thành từng biến), không
+  cần nhập từng cái.
+- Biến môi trường **chỉ có hiệu lực từ lần deploy sau khi thêm** — phải Redeploy, không tự áp
+  dụng cho bản đã build trước đó.
 
 #### Từ lần sau: cập nhật code
 
@@ -287,8 +317,11 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Lập lá số, an sao Nam phái | Xong |
 | Mệnh bàn 12 cung, độ sáng sao, Tuần–Triệt, tam phương tứ chính | Xong |
 | Đại vận / tiểu hạn / nguyệt hạn | Xong |
-| Lịch âm dương, giờ hoàng đạo | Xong |
-| Luận giải AI 7 chủ đề, fallback nhiều model | Xong — đã test thật với Gemini |
+| Luận giải tổng quan ngay cạnh lá số (tab Lá số) | Xong |
+| Tab Luận giải chi tiết theo 7 chủ đề | Xong |
+| Fallback nhiều model AI | Xong — đã test thật với Gemini |
+| Đăng nhập SSO (Google/Facebook/GitHub/Microsoft/Apple) | Xong — nút tự hiện khi bật provider trong Supabase |
+| Tên hiển thị (username) | Xong — đặt tại trang Tài khoản |
 | Đăng nhập email + Google | Xong — cần tạo project Supabase |
 | Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
 | Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |

@@ -3,51 +3,48 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Logo } from '@/components/Logo';
+import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
 import { taoSupabaseClient } from '@/lib/supabase/client';
 import { ThemeToggle } from './ThemeToggle';
 
 const LIEN_KET = [
   { href: '/', nhan: 'Lá số' },
-  { href: '/luan-giai', nhan: 'Luận giải' },
+  { href: '/luan-giai', nhan: 'Luận giải chi tiết' },
   { href: '/ho-so', nhan: 'Hồ sơ' },
-  { href: '/lich', nhan: 'Lịch âm' },
   { href: '/admin', nhan: 'Quản trị' },
 ];
 
 export function SiteNav() {
   const pathname = usePathname();
-  const [email, setEmail] = useState<string | null>(null);
+  const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   const [daCauHinhAuth, setDaCauHinhAuth] = useState(false);
 
   useEffect(() => {
     const supabase = taoSupabaseClient();
     if (!supabase) return;
     setDaCauHinhAuth(true);
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) =>
-      setEmail(session?.user?.email ?? null)
-    );
+
+    taiTaiKhoan().then(setTaiKhoan);
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      taiTaiKhoan().then(setTaiKhoan);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const dangXuat = async () => {
     const supabase = taoSupabaseClient();
     await supabase?.auth.signOut();
-    setEmail(null);
+    setTaiKhoan(null);
   };
 
   return (
     <nav
-      className="no-print flex flex-wrap items-center justify-between gap-[16px] border-b py-[20px]"
+      className="no-print flex flex-wrap items-center justify-between gap-[16px] border-b py-[18px]"
       style={{ borderColor: 'var(--line)' }}
     >
-      <Link href="/" className="flex items-baseline gap-[8px]">
-        <span className="heading-sm" style={{ fontSize: 28, lineHeight: 1 }}>
-          Tử Vi
-        </span>
-        <span className="text-[13px] font-medium" style={{ color: 'var(--accent)' }}>
-          AI
-        </span>
+      <Link href="/" aria-label="Celestia — trang chu">
+        <Logo />
       </Link>
 
       <div className="flex flex-wrap items-center gap-[20px]">
@@ -60,11 +57,16 @@ export function SiteNav() {
 
       <div className="flex flex-wrap items-center gap-[12px]">
         <ThemeToggle />
-        {email ? (
+        {taiKhoan ? (
           <>
-            <span className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-              {email}
-            </span>
+            <Link
+              href="/tai-khoan"
+              className="text-[13px] font-medium"
+              style={{ color: 'var(--fg)' }}
+              title={taiKhoan.email ?? undefined}
+            >
+              {taiKhoan.tenHienThi}
+            </Link>
             <button onClick={dangXuat} className="nav-link">
               Đăng xuất
             </button>

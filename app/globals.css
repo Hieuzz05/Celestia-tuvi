@@ -269,6 +269,14 @@ body {
   color: var(--fg-body);
 }
 
+.o-cung-cuon {
+  scrollbar-width: none;
+}
+
+.o-cung-cuon::-webkit-scrollbar {
+  display: none;
+}
+
 .card {
   background: var(--surface-card);
   border: 1px solid var(--line);
