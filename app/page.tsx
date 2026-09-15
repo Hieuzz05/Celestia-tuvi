@@ -1,69 +1,132 @@
-import Image from "next/image";
+'use client';
+
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Field, FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
+import { TuViChart } from '@/components/laso/TuViChart';
+import { luuHoSo } from '@/lib/store/hoso';
+import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+
+function TrangLaSo() {
+  const params = useSearchParams();
+  const [form, setForm] = useState<ThongTinForm>({
+    hoTen: '',
+    ngaySinh: '2000-08-24',
+    gio: 9,
+    gioiTinh: 'nam',
+  });
+  const [namXem, setNamXem] = useState(new Date().getFullYear());
+  const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
+  const [daLuu, setDaLuu] = useState(false);
+
+  // Mở lá số từ trang Hồ sơ
+  useEffect(() => {
+    const ngay = Number(params.get('ngay'));
+    const thang = Number(params.get('thang'));
+    const nam = Number(params.get('nam'));
+    if (!ngay || !thang || !nam) return;
+    setForm({
+      hoTen: params.get('ten') ?? '',
+      ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
+      gio: Number(params.get('gio')) || 9,
+      gioiTinh: (params.get('gt') as GioiTinh) || 'nam',
+    });
+  }, [params]);
+
+  const laSo = useMemo(() => {
+    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
+    if (!ngay || !thang || !nam) return null;
+    try {
+      return lapLaSo({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, hoTen: form.hoTen });
+    } catch {
+      return null;
+    }
+  }, [form]);
+
+  const luu = () => {
+    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
+    if (!ngay || !thang || !nam) return;
+    luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
+    setDaLuu(true);
+    setTimeout(() => setDaLuu(false), 2500);
+  };
+
+  const lienKetLuanGiai = laSo
+    ? `/luan-giai?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form.hoTen)}`
+    : '/luan-giai';
+
+  return (
+    <main className="flex flex-col">
+      <section className="grid gap-[36px] py-[36px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-[60px]">
+        <div>
+          <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+            Tử Vi Đẩu Số — Nam phái
+          </p>
+          <h1 className="display mt-[18px]">Lá số của bạn, đọc bằng ngôn ngữ hôm nay.</h1>
+          <p
+            className="body-text mt-[24px] max-w-[480px]"
+            style={{ color: 'var(--fg-body)' }}
+          >
+            An sao theo Nam phái, đối chiếu Bắc phái khi luận vận hạn. Nhập ngày giờ sinh để dựng
+            mệnh bàn đầy đủ 12 cung, rồi để AI đọc lá số cho bạn.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-[24px]">
+          <FormSinh giaTri={form} onChange={setForm} />
+          <div className="grid grid-cols-2 gap-[18px]">
+            <Field label="Xem hạn năm">
+              <input
+                type="number"
+                value={namXem}
+                onChange={(e) => setNamXem(Number(e.target.value))}
+                className="field-input"
+              />
+            </Field>
+            <Field label="Xem hạn tháng">
+              <select
+                value={thangXem}
+                onChange={(e) => setThangXem(Number(e.target.value))}
+                className="field-input"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    Tháng {m}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-[24px]">
+            <Link href={lienKetLuanGiai} className="btn-primary">
+              Luận giải lá số này
+            </Link>
+            <button onClick={luu} className="link-text">
+              {daLuu ? 'Đã lưu hồ sơ ✓' : 'Lưu hồ sơ'}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="la-so" className="py-[36px]">
+        {laSo ? (
+          <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
+        ) : (
+          <p className="body-text" style={{ color: 'var(--chart-hung)' }}>
+            Ngày sinh không hợp lệ, vui lòng kiểm tra lại.
+          </p>
+        )}
+      </section>
+    </main>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Suspense fallback={<main className="py-[60px]">Đang tải…</main>}>
+      <TrangLaSo />
+    </Suspense>
   );
 }

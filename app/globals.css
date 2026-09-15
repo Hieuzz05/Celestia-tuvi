@@ -1,26 +1,288 @@
 @import "tailwindcss";
 
+/*
+ * Design system: Slash — "midnight vault with gilded ledger lines".
+ * Chữ ký của hệ: serif didone cho heading >= 28px, Inter cho mọi text < 28px,
+ * đồng (copper) là màu chromatic duy nhất, viền hairline thay vì đổ bóng.
+ *
+ * Tầng token chia hai lớp:
+ *   1. Palette gốc của design system (cố định)
+ *   2. Token ngữ nghĩa (--bg, --fg, --line...) đổi theo Day/Night — component chỉ dùng lớp này
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Palette gốc */
+  --color-obsidian: #08080a;
+  --color-onyx: #040406;
+  --color-carbon: #121317;
+  --color-graphite: #1c1d22;
+  --color-slate: #2e3038;
+  --color-smoke: #464853;
+  --color-ash: #5e616e;
+  --color-steel: #777a88;
+  --color-fog: #9194a1;
+  --color-mist: #acafb9;
+  --color-silver: #c7c9d1;
+  --color-bone: #e2e3e9;
+  --color-paper-white: #ffffff;
+  --color-copper: #cc9166;
+  --gradient-gilded: linear-gradient(
+    103deg,
+    rgb(174, 147, 87),
+    rgb(255, 240, 204) 40%,
+    rgb(174, 147, 87) 70%,
+    rgba(189, 157, 79, 0)
+  );
+
+  --page-max-width: 1216px;
+  --radius-cards: 10px;
+  --radius-full: 9999px;
+
+  /* Token ngữ nghĩa — Night (mặc định theo design system) */
+  --bg: var(--color-obsidian);
+  --surface-card: var(--color-onyx);
+  --surface-panel: var(--color-carbon);
+  --line: var(--color-graphite);
+  --line-strong: var(--color-slate);
+  --fg: var(--color-paper-white);
+  --fg-body: var(--color-bone);
+  --fg-soft: var(--color-mist);
+  --fg-muted: var(--color-fog);
+  --fg-subtle: var(--color-steel);
+  --accent: var(--color-copper);
+
+  /* Nút hành động chính: trắng trên nền tối */
+  --action-bg: var(--color-paper-white);
+  --action-fg: #000000;
+
+  /* Mã màu dữ liệu lá số — tín hiệu chức năng, không phải màu thương hiệu */
+  --chart-hung: #c96f56;
+  --chart-cat: #7f9c7b;
+  --chart-cell: rgba(255, 255, 255, 0.012);
+  --chart-han: rgba(204, 145, 102, 0.07);
+}
+
+:root[data-theme="day"] {
+  --bg: #faf8f5;
+  --surface-card: #ffffff;
+  --surface-panel: #f3f1ec;
+  --line: #e4e1d9;
+  --line-strong: #cfcabd;
+  --fg: #08080a;
+  --fg-body: #23242a;
+  --fg-soft: #4a4c55;
+  --fg-muted: #6d707a;
+  --fg-subtle: #8a8d96;
+  --accent: #9a5f2c;
+
+  --action-bg: var(--color-obsidian);
+  --action-fg: var(--color-paper-white);
+
+  --chart-hung: #a8412a;
+  --chart-cat: #3f6b3b;
+  --chart-cell: rgba(0, 0, 0, 0.012);
+  --chart-han: rgba(154, 95, 44, 0.08);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-display-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--bg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg-body);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ---------- Serif: chỉ dùng từ 28px trở lên ---------- */
+.display,
+.heading,
+.heading-sm {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+
+.display {
+  font-size: clamp(40px, 6.5vw, 88px);
+  line-height: 1.02;
+}
+
+.heading {
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.13;
+}
+
+.heading-sm {
+  font-size: clamp(28px, 2.6vw, 44px);
+  line-height: 1.24;
+}
+
+/* ---------- Inter: mọi thứ dưới 28px ---------- */
+.subheading {
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.013em;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.eyebrow {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.body-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--fg-body);
+}
+
+.body-lg {
+  font-size: 20px;
+  line-height: 1.38;
+  letter-spacing: -0.04em;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.meta {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--fg-muted);
+}
+
+/* ---------- Controls ---------- */
+.btn-primary {
+  background: var(--action-bg);
+  color: var(--action-fg);
+  border-radius: var(--radius-full);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--fg);
+  border-radius: var(--radius-full);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.btn-outline:hover {
+  opacity: 0.75;
+}
+
+.pill-tag {
+  background: transparent;
+  color: var(--fg-body);
+  border: 1px solid var(--fg-subtle);
+  border-radius: var(--radius-full);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.pill-tag:hover,
+.pill-tag[data-active="true"] {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+.nav-link {
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 0;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover,
+.nav-link[data-active="true"] {
+  color: var(--fg);
+}
+
+.link-text {
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.link-text:hover {
+  color: var(--fg);
+}
+
+.field-input {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-full);
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--fg-body);
+  width: 100%;
+  transition: border-color 0.15s ease;
+}
+
+.field-input::placeholder {
+  color: var(--fg-subtle);
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--fg);
+}
+
+.field-input option {
+  background: var(--surface-panel);
+  color: var(--fg-body);
+}
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-cards);
+  padding: 24px;
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
 }
