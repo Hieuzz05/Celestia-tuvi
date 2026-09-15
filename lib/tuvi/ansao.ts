@@ -23,6 +23,14 @@ import {
   VI_TRI_THIEN_KHOI,
   VI_TRI_THIEN_MA,
   VI_TRI_THIEN_VIET,
+  VI_TRI_DUONG_PHU,
+  VI_TRI_HOA_CAI,
+  VI_TRI_LUU_HA,
+  VI_TRI_PHA_TOAI,
+  VI_TRI_QUOC_AN,
+  VI_TRI_THIEN_PHUC,
+  VI_TRI_THIEN_QUAN,
+  VI_TRI_THIEN_TRU,
   VI_TRI_TRIET,
   VONG_LOC_TON,
   VONG_THAI_TUE,
@@ -255,19 +263,23 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
   them(VI_TRI_THIEN_VIET[canNam], 'Thiên Việt', 'phu-tinh', 'cat');
 
   // ----- Phụ tinh theo tháng sinh -----
-  them(3 + thangAm, 'Tả Phù', 'phu-tinh', 'cat'); // khởi Thìn, thuận
-  them(11 - thangAm, 'Hữu Bật', 'phu-tinh', 'cat'); // khởi Tuất, nghịch
+  const taPhu = mod12(3 + thangAm); // khởi Thìn, thuận theo tháng
+  const huuBat = mod12(11 - thangAm); // khởi Tuất, nghịch theo tháng
+  them(taPhu, 'Tả Phù', 'phu-tinh', 'cat');
+  them(huuBat, 'Hữu Bật', 'phu-tinh', 'cat');
   them(9 + thangAm - 1, 'Thiên Hình', 'phu-tinh', 'hung'); // khởi Dậu, thuận
   them(1 + thangAm - 1, 'Thiên Riêu', 'phu-tinh', 'hung'); // khởi Sửu, thuận
   them(1 + thangAm - 1, 'Thiên Y', 'phu-tinh', 'cat');
 
   // ----- Phụ tinh theo giờ sinh -----
-  them(10 - chiGio, 'Văn Xương', 'phu-tinh', 'cat'); // khởi Tuất, nghịch
-  them(4 + chiGio, 'Văn Khúc', 'phu-tinh', 'cat'); // khởi Thìn, thuận
+  const vanXuong = mod12(10 - chiGio); // khởi Tuất, nghịch theo giờ
+  const vanKhuc = mod12(4 + chiGio); // khởi Thìn, thuận theo giờ
+  them(vanXuong, 'Văn Xương', 'phu-tinh', 'cat');
+  them(vanKhuc, 'Văn Khúc', 'phu-tinh', 'cat');
   them(11 + chiGio, 'Địa Kiếp', 'phu-tinh', 'hung'); // khởi Hợi, thuận
   them(11 - chiGio, 'Địa Không', 'phu-tinh', 'hung'); // khởi Hợi, nghịch
-  them(1 + chiGio, 'Thai Phụ', 'phu-tinh', 'cat');
-  them(7 + chiGio, 'Phong Cáo', 'phu-tinh', 'cat');
+  them(6 + chiGio, 'Thai Phụ', 'phu-tinh', 'cat'); // khởi Ngọ, thuận theo giờ
+  them(2 + chiGio, 'Phong Cáo', 'phu-tinh', 'cat'); // khởi Dần, thuận theo giờ
 
   // ----- Hỏa Tinh / Linh Tinh: khởi theo tam hợp tuổi, đếm thuận tới giờ sinh -----
   const tamHop = nhomTamHop(chiNam);
@@ -290,6 +302,44 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
   const { coThan, quaTu } = viTriCoThanQuaTu(chiNam);
   them(coThan, 'Cô Thần', 'phu-tinh', 'hung');
   them(quaTu, 'Quả Tú', 'phu-tinh', 'hung');
+
+  // ----- Sao theo ngày sinh -----
+  them(taPhu + (ngayAm - 1), 'Tam Thai', 'phu-tinh', 'cat');
+  them(huuBat - (ngayAm - 1), 'Bát Tọa', 'phu-tinh', 'cat');
+  them(vanXuong + ngayAm - 2, 'Ân Quang', 'phu-tinh', 'cat');
+  them(vanKhuc - ngayAm + 2, 'Thiên Quý', 'phu-tinh', 'cat');
+
+  // ----- Sao theo can năm -----
+  them(VI_TRI_QUOC_AN[canNam], 'Quốc Ấn', 'phu-tinh', 'cat');
+  them(VI_TRI_DUONG_PHU[canNam], 'Đường Phù', 'phu-tinh', 'trung');
+  them(VI_TRI_LUU_HA[canNam], 'Lưu Hà', 'phu-tinh', 'hung');
+  them(VI_TRI_THIEN_TRU[canNam], 'Thiên Trù', 'phu-tinh', 'cat');
+  them(VI_TRI_THIEN_QUAN[canNam], 'Thiên Quan', 'phu-tinh', 'cat');
+  them(VI_TRI_THIEN_PHUC[canNam], 'Thiên Phúc', 'phu-tinh', 'cat');
+
+  // ----- Sao theo chi năm -----
+  them(VI_TRI_HOA_CAI[chiNam], 'Hoa Cái', 'phu-tinh', 'trung');
+  them(VI_TRI_PHA_TOAI[chiNam], 'Phá Toái', 'phu-tinh', 'hung');
+  them(10 - chiNam, 'Giải Thần', 'phu-tinh', 'cat'); // khởi Tuất, nghịch theo chi năm
+  them(thanIndex + chiNam, 'Thiên Thọ', 'phu-tinh', 'cat');
+  them(menhIndex + chiNam, 'Thiên Tài', 'phu-tinh', 'trung');
+
+  // ----- Sao theo tháng sinh -----
+  them(7 + thangAm - 1, 'Địa Giải', 'phu-tinh', 'cat'); // khởi Mùi, thuận
+  them(8 + thangAm - 1, 'Thiên Giải', 'phu-tinh', 'cat'); // khởi Thân, thuận
+
+  // ----- Sao đóng cố định theo cung -----
+  // Gán theo TÊN cung chứ không theo độ lệch số: chiều đánh số cung khác nhau
+  // giữa các tài liệu, dùng độ lệch là nguồn gốc của việc đặt nhầm chỗ.
+  const cungTen = (ten: string) => cungs.findIndex((c) => c.tenCung === ten);
+  them(cungTen('Nô Bộc'), 'Thiên Thương', 'phu-tinh', 'hung');
+  them(cungTen('Tật Ách'), 'Thiên Sứ', 'phu-tinh', 'hung');
+  them(4, 'Thiên La', 'phu-tinh', 'hung'); // luôn tại Thìn
+  them(10, 'Địa Võng', 'phu-tinh', 'hung'); // luôn tại Tuất
+
+  // Đẩu Quân: lấy Thái Tuế làm tháng Giêng, đếm nghịch tới tháng sinh, rồi đếm
+  // thuận tới giờ sinh
+  them(chiNam - (thangAm - 1) + chiGio, 'Đẩu Quân', 'phu-tinh', 'trung');
 
   // ----- Vòng Tràng Sinh: lưu riêng để hiển thị ở footer từng cung -----
   const khoiTruongSinh = KHOI_TRUONG_SINH[cucSo];

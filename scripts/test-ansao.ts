@@ -125,3 +125,40 @@ kiemTraLich();
 console.log('\n### Lá số mẫu');
 inLaSo({ ngay: 24, thang: 8, nam: 2000, gio: 10, gioiTinh: 'nam', hoTen: 'Mẫu A' });
 inLaSo({ ngay: 15, thang: 3, nam: 1990, gio: 23, gioiTinh: 'nu', hoTen: 'Mẫu B (giờ Tý sớm)' });
+
+// --- Kiểm chứng các sao có vị trí cố định theo cung ---
+function kiemTraSaoCoDinh() {
+  const ls = lapLaSo({ ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' });
+  const cungCuaSao = (ten: string) =>
+    ls.cungs.find((c) => c.sao.some((s) => s.ten === ten))?.tenCung ?? '(không có)';
+  const kyVong: [string, string][] = [
+    ['Thiên Thương', 'Nô Bộc'],
+    ['Thiên Sứ', 'Tật Ách'],
+  ];
+  let loi = 0;
+  for (const [sao, cung] of kyVong) {
+    const thuc = cungCuaSao(sao);
+    if (thuc !== cung) {
+      console.log(`  SAI: ${sao} nằm ở ${thuc}, kỳ vọng ${cung}`);
+      loi++;
+    }
+  }
+  // Thiên La luôn tại Thìn, Địa Võng luôn tại Tuất
+  const chiCuaSao = (ten: string) =>
+    ls.cungs.find((c) => c.sao.some((s) => s.ten === ten))?.chi ?? '(không có)';
+  for (const [sao, chi] of [['Thiên La', 'Thìn'], ['Địa Võng', 'Tuất']] as [string, string][]) {
+    if (chiCuaSao(sao) !== chi) {
+      console.log(`  SAI: ${sao} nằm ở ${chiCuaSao(sao)}, kỳ vọng ${chi}`);
+      loi++;
+    }
+  }
+  const tongSao = ls.cungs.reduce((t, c) => t + c.sao.length, 0);
+  console.log(
+    loi === 0
+      ? `✓ Sao cố định theo cung đóng đúng chỗ (tổng ${tongSao} lượt an sao)`
+      : `✗ ${loi} sao sai vị trí`
+  );
+}
+
+console.log('\n### Kiểm tra sao cố định');
+kiemTraSaoCoDinh();

@@ -261,6 +261,22 @@ export function viTriCoThanQuaTu(chiNam: number): { coThan: number; quaTu: numbe
   return { coThan: 2, quaTu: 10 };
 }
 
+
+/**
+ * Bảng an sao theo CAN năm (index 0 = Giáp ... 9 = Quý), giá trị là index cung
+ * (0 = Tý ... 11 = Hợi). Chuyển từ bảng 1-index của dự án tham chiếu CanChi.
+ */
+export const VI_TRI_QUOC_AN = [10, 11, 1, 2, 1, 2, 4, 5, 7, 8];
+export const VI_TRI_DUONG_PHU = [7, 8, 10, 11, 10, 11, 1, 2, 4, 5];
+export const VI_TRI_LUU_HA = [9, 10, 7, 8, 5, 6, 4, 3, 11, 2];
+export const VI_TRI_THIEN_TRU = [5, 6, 0, 5, 6, 8, 2, 6, 9, 10];
+export const VI_TRI_THIEN_QUAN = [7, 4, 5, 2, 3, 9, 11, 9, 10, 6];
+export const VI_TRI_THIEN_PHUC = [9, 8, 0, 11, 3, 2, 6, 5, 6, 5];
+
+/** Bảng an sao theo CHI năm (index 0 = Tý ... 11 = Hợi) */
+export const VI_TRI_HOA_CAI = [4, 1, 10, 7, 4, 1, 10, 7, 4, 1, 10, 7];
+export const VI_TRI_PHA_TOAI = [5, 1, 9, 5, 1, 9, 5, 1, 9, 5, 1, 9];
+
 export type LoaiSao = 'chinh-tinh' | 'phu-tinh' | 'vong-sao' | 'tu-hoa' | 'khong-vong';
 
 export interface Sao {
