@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
 import { taoSupabaseClient } from '@/lib/supabase/client';
 
 type Che = 'dang-nhap' | 'dang-ky';
@@ -13,8 +14,19 @@ export default function DangNhapPage() {
   const [matKhau, setMatKhau] = useState('');
   const [thongBao, setThongBao] = useState<{ loai: 'loi' | 'ok'; noiDung: string } | null>(null);
   const [dangXuLy, setDangXuLy] = useState(false);
+  const [coGoogle, setCoGoogle] = useState(false);
 
   const supabase = taoSupabaseClient();
+
+  // Chỉ hiện nút Google khi provider thực sự được bật trong Supabase — bằng
+  // không người dùng bấm vào chỉ nhận về lỗi khó hiểu.
+  useEffect(() => {
+    if (!SUPABASE_URL) return;
+    fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY } })
+      .then((r) => r.json())
+      .then((d) => setCoGoogle(Boolean(d?.external?.google)))
+      .catch(() => setCoGoogle(false));
+  }, []);
 
   if (!supabase) {
     return (
@@ -114,9 +126,11 @@ export default function DangNhapPage() {
       </form>
 
       <div className="mt-[30px] flex flex-col gap-[12px]">
-        <button onClick={dangNhapGoogle} className="link-text self-start">
-          Đăng nhập bằng Google
-        </button>
+        {coGoogle && (
+          <button onClick={dangNhapGoogle} className="link-text self-start">
+            Đăng nhập bằng Google
+          </button>
+        )}
         <button
           onClick={() => {
             setChe(che === 'dang-nhap' ? 'dang-ky' : 'dang-nhap');

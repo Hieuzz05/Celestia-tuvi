@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   );
 
   try {
-    const kq = await goiVoiFallback({ system, user, maxTokens: 2400 }, body.model);
+    const kq = await goiVoiFallback({ system, user, maxTokens: 6000 }, body.model);
     return NextResponse.json({
       noiDung: kq.text,
       model: `${kq.provider}/${kq.model}`,

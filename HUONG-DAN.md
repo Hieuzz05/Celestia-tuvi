@@ -176,7 +176,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 ### 2.4 Đặt thứ tự fallback
 
 ```
-AI_FALLBACK_ORDER=gemini|gemini-2.5-flash,openrouter|deepseek/deepseek-chat-v3-0324:free
+AI_FALLBACK_ORDER=gemini|gemini-3.6-flash,openrouter|deepseek/deepseek-chat-v3-0324:free
 ```
 
 Bỏ trống biến này thì thứ tự mặc định là: Gemini → OpenRouter → OpenAI → Anthropic.
@@ -191,42 +191,77 @@ Vào trang **/admin**: xem model nào đã có key, dán thử key vào ô *Test
 
 Supabase cho cả 4 thứ trong một gói miễn phí: database Postgres, đăng nhập, lưu file, và pgvector cho RAG.
 
-### 3.1 Tạo project
+### 3.1 Project đang dùng
 
-1. Đăng ký tại https://supabase.com → **New project**.
-2. Đặt tên `tuvi-ai`, chọn region gần Việt Nam (Singapore), đặt mật khẩu database và **lưu lại**.
-3. Vào **Project Settings → API**, copy:
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` → `SUPABASE_SERVICE_ROLE_KEY` (chỉ dùng phía server, không bao giờ để lộ)
+Project Supabase đã tạo: **wqhxksgtkyoqknicombi**
+→ https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi
+
+Hai biến đã khai trong `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://wqhxksgtkyoqknicombi.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+```
+
+> Supabase đã đổi sang định dạng key mới: `sb_publishable_...` thay cho `anon` (JWT) trước đây.
+> Đây là key công khai, để lộ ra trình duyệt là bình thường — an toàn dữ liệu dựa vào Row Level
+> Security ở bước 3.3, không dựa vào việc giấu key.
+
+Nếu cần lấy lại: **Project Settings → API Keys**.
 
 ### 3.2 Bật đăng nhập
 
-- **Email/mật khẩu**: đã bật sẵn. Trong **Authentication → Providers → Email**, nếu muốn đăng nhập được ngay không cần xác nhận email thì tắt *Confirm email* (giai đoạn thử nghiệm).
-- **Google**: vào **Authentication → Providers → Google**, bật lên và điền Client ID / Client Secret lấy từ Google Cloud Console. Trong phần **URL Configuration**, thêm:
-  - Site URL: `https://<tên-project>.vercel.app`
-  - Redirect URLs: `https://<tên-project>.vercel.app/auth/callback` và `http://localhost:3000/auth/callback`
+- **Email/mật khẩu**: đã bật sẵn, dùng được ngay.
+  Hiện tài khoản mới **phải xác nhận email** trước khi đăng nhập được. Muốn bỏ bước này cho nhanh
+  lúc thử nghiệm: [Authentication → Sign In / Providers → Email](https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/auth/providers)
+  → tắt **Confirm email**.
+- **Google**: hiện **chưa bật**, nên nút "Đăng nhập bằng Google" tự ẩn khỏi giao diện. Muốn bật:
+  vào Authentication → Providers → Google, điền Client ID / Client Secret lấy từ Google Cloud
+  Console. Sau đó vào **Authentication → URL Configuration** thêm:
+  - Site URL: `https://celestia-tuvi.vercel.app`
+  - Redirect URLs: `https://celestia-tuvi.vercel.app/auth/callback` và `http://localhost:3000/auth/callback`
 
-### 3.3 Chỉ định tài khoản quản trị
+### 3.3 Tạo các bảng dữ liệu
+
+1. Mở thẳng SQL Editor: https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/sql/new
+2. Mở file `supabase/schema.sql` trong dự án, copy **toàn bộ** nội dung.
+3. Dán vào ô SQL Editor → bấm **Run** (hoặc `Ctrl+Enter`).
+4. Thấy dòng **Success. No rows returned** là xong. File này chạy lại nhiều lần được, không sợ hỏng dữ liệu.
+
+Các bảng được tạo:
+
+| Bảng | Dùng để |
+|---|---|
+| `profiles` | Thông tin tài khoản, tự tạo khi có người đăng ký |
+| `charts` | Lá số đã lưu của từng người |
+| `readings` | Các bản luận giải AI đã tạo |
+
+Mỗi bảng đều bật **Row Level Security** — người dùng chỉ đọc/sửa được dữ liệu của chính mình,
+kể cả khi ai đó lấy được `anon key` công khai.
+
+Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) và log dùng model
+(`ai_provider_configs`, `ai_usage_logs`) sẽ bổ sung ở giai đoạn làm RAG.
+
+### 3.4 Chỉ định tài khoản quản trị
 
 ```
 ADMIN_EMAILS=it-ba@sapp.edu.vn
 ```
 
-Khi biến này để trống, trang `/admin` mở cho tất cả — chỉ nên như vậy lúc chạy máy cá nhân.
+Nhiều email thì ngăn cách bằng dấu phẩy. Chỉ những email trong danh sách này mới vào được trang
+`/admin`.
 
-### 3.4 Các bảng sẽ tạo ở bước sau
+> **Quan trọng:** khi biến này để trống **và** chưa cấu hình Supabase, trang `/admin` mở cho tất
+> cả mọi người — trang sẽ hiện băng cảnh báo đỏ. Chỉ chấp nhận được lúc chạy trên máy cá nhân;
+> phải khai báo trước khi đưa lên mạng, vì trang này cho phép thử API key.
 
-Khi bạn gửi thông tin Supabase, tôi sẽ tạo migration cho:
+### 3.5 Hồ sơ lưu ở đâu
 
-| Bảng | Dùng để |
-|---|---|
-| `profiles` | Thông tin tài khoản |
-| `charts` | Lá số đã lưu (thay cho localStorage hiện tại) |
-| `readings` | Các bản luận giải AI đã tạo |
-| `knowledge_documents`, `knowledge_chunks` | Kho tri thức + vector cho RAG |
-| `ai_provider_configs`, `ai_usage_logs` | Cấu hình model và log sử dụng |
+- **Chưa đăng nhập** — hồ sơ lưu trong `localStorage` của đúng trình duyệt đang mở.
+- **Đã đăng nhập** — hồ sơ lưu vào bảng `charts`, mở ở máy nào cũng thấy.
 
+Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt này lên tài khoản"* để mang dữ liệu
+đã lưu từ trước lên tài khoản sau khi đăng nhập.
 ---
 
 ## 4. Danh sách biến môi trường
@@ -253,8 +288,9 @@ Khi bạn gửi thông tin Supabase, tôi sẽ tạo migration cho:
 | Mệnh bàn 12 cung, độ sáng sao, Tuần–Triệt, tam phương tứ chính | Xong |
 | Đại vận / tiểu hạn / nguyệt hạn | Xong |
 | Lịch âm dương, giờ hoàng đạo | Xong |
-| Luận giải AI 7 chủ đề, fallback nhiều model | Xong — cần API key |
-| Đăng nhập email + Google | Xong — cần Supabase |
-| Lưu hồ sơ | Đang lưu ở trình duyệt, sẽ chuyển sang database |
+| Luận giải AI 7 chủ đề, fallback nhiều model | Xong — đã test thật với Gemini |
+| Đăng nhập email + Google | Xong — cần tạo project Supabase |
+| Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
+| Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |
 | Kho tri thức RAG | Chưa — cần database |
 | Xem ngày tốt, hợp tuổi, chat hỏi đáp | Chưa |

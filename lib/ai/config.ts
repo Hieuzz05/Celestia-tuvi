@@ -8,7 +8,7 @@ import type { ModelConfig, ProviderId } from './types';
  *   OPENROUTER_API_KEY=...
  *   OPENAI_API_KEY=...
  *   ANTHROPIC_API_KEY=...
- *   AI_FALLBACK_ORDER=gemini|gemini-2.5-flash,openrouter|deepseek/deepseek-chat-v3-0324:free
+ *   AI_FALLBACK_ORDER=gemini|gemini-3.6-flash,openrouter|deepseek/deepseek-chat-v3-0324:free
  *
  * Nếu không khai báo AI_FALLBACK_ORDER, hệ thống tự dựng thứ tự mặc định từ các
  * key đang có, ưu tiên nhà cung cấp có tier miễn phí dùng được thật.
@@ -22,7 +22,7 @@ const KEY_ENV: Record<ProviderId, string> = {
 };
 
 const MODEL_MAC_DINH: Record<ProviderId, string> = {
-  gemini: 'gemini-2.5-flash',
+  gemini: 'gemini-3.6-flash',
   openrouter: 'deepseek/deepseek-chat-v3-0324:free',
   openai: 'gpt-4o-mini',
   anthropic: 'claude-haiku-4-5-20251001',
@@ -37,32 +37,45 @@ export function layApiKey(provider: ProviderId): string {
 
 export function danhSachModel(): ModelConfig[] {
   const thuCong = process.env.AI_FALLBACK_ORDER?.trim();
-  if (thuCong) {
-    return thuCong
-      .split(',')
-      .map((mucStr, i) => {
-        const [providerRaw, modelRaw] = mucStr.split('|').map((s) => s.trim());
-        const provider = providerRaw as ProviderId;
-        if (!KEY_ENV[provider]) return null;
-        const apiKey = layApiKey(provider);
-        return {
-          provider,
-          model: modelRaw || MODEL_MAC_DINH[provider],
-          apiKey,
-          priority: i,
-          enabled: Boolean(apiKey),
-        } satisfies ModelConfig;
-      })
-      .filter((m): m is ModelConfig => m !== null);
-  }
 
-  return THU_TU_MAC_DINH.map((provider, i) => ({
-    provider,
-    model: MODEL_MAC_DINH[provider],
-    apiKey: layApiKey(provider),
-    priority: i,
-    enabled: Boolean(layApiKey(provider)),
-  }));
+  const theoThuTuMacDinh = (batDau = 0): ModelConfig[] =>
+    THU_TU_MAC_DINH.map((provider, i) => ({
+      provider,
+      model: MODEL_MAC_DINH[provider],
+      apiKey: layApiKey(provider),
+      priority: batDau + i,
+      enabled: Boolean(layApiKey(provider)),
+    }));
+
+  if (!thuCong) return theoThuTuMacDinh();
+
+  const daKhaiBao = thuCong
+    .split(',')
+    .map((mucStr, i) => {
+      const [providerRaw, modelRaw] = mucStr.split('|').map((s) => s.trim());
+      const provider = providerRaw as ProviderId;
+      if (!KEY_ENV[provider]) return null;
+      const apiKey = layApiKey(provider);
+      return {
+        provider,
+        model: modelRaw || MODEL_MAC_DINH[provider],
+        apiKey,
+        priority: i,
+        enabled: Boolean(apiKey),
+      } satisfies ModelConfig;
+    })
+    .filter((m): m is ModelConfig => m !== null);
+
+  // Provider có API key nhưng không được nhắc trong AI_FALLBACK_ORDER vẫn được
+  // xếp vào cuối hàng làm lưới an toàn — thêm key mà hệ thống lặng lẽ bỏ qua là
+  // một cái bẫy rất khó phát hiện.
+  const daCo = new Set(daKhaiBao.map((m) => m.provider));
+  const conLai = theoThuTuMacDinh(daKhaiBao.length).filter(
+    (m) => !daCo.has(m.provider) && m.apiKey
+  );
+
+  // Đánh số lại liên tục để thứ tự hiển thị ở trang quản trị không bị nhảy cóc
+  return [...daKhaiBao, ...conLai].map((m, i) => ({ ...m, priority: i }));
 }
 
 /** Danh sách model đang bật, đã sắp theo thứ tự fallback */

@@ -1,9 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
-import { danhSachHoSo, luuHoSo, xoaHoSo, type HoSo } from '@/lib/store/hoso';
+import {
+  chuyenHoSoLenTaiKhoan,
+  danhSachHoSo,
+  luuHoSo,
+  nguonLuuHienTai,
+  xoaHoSo,
+  type HoSo,
+  type NguonLuu,
+} from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 
@@ -16,21 +24,53 @@ export default function HoSoPage() {
     gioiTinh: 'nam',
   });
   const [dangThem, setDangThem] = useState(false);
+  const [nguon, setNguon] = useState<NguonLuu>('trinh-duyet');
+  const [loi, setLoi] = useState<string | null>(null);
 
-  useEffect(() => setDs(danhSachHoSo()), []);
+  const taiLai = useCallback(async () => {
+    try {
+      setDs(await danhSachHoSo());
+      setNguon(await nguonLuuHienTai());
+      setLoi(null);
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : 'Không đọc được hồ sơ');
+    }
+  }, []);
 
-  const them = () => {
+  useEffect(() => {
+    taiLai();
+  }, [taiLai]);
+
+  const them = async () => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return;
-    luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
-    setDs(danhSachHoSo());
-    setDangThem(false);
-    setForm({ hoTen: '', ngaySinh: '2000-01-01', gio: 9, gioiTinh: 'nam' });
+    try {
+      await luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
+      await taiLai();
+      setDangThem(false);
+      setForm({ hoTen: '', ngaySinh: '2000-01-01', gio: 9, gioiTinh: 'nam' });
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : 'Không lưu được hồ sơ');
+    }
   };
 
-  const xoa = (id: string) => {
-    xoaHoSo(id);
-    setDs(danhSachHoSo());
+  const xoa = async (id: string) => {
+    try {
+      await xoaHoSo(id);
+      await taiLai();
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : 'Không xoá được hồ sơ');
+    }
+  };
+
+  const dongBo = async () => {
+    try {
+      const so = await chuyenHoSoLenTaiKhoan();
+      await taiLai();
+      setLoi(so > 0 ? null : 'Không có hồ sơ nào trong trình duyệt để chuyển.');
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : 'Không chuyển được hồ sơ');
+    }
   };
 
   return (
@@ -40,10 +80,21 @@ export default function HoSoPage() {
           Hồ sơ đã lưu
         </p>
         <h1 className="display mt-[18px]">Lá số của bạn và người thân.</h1>
-        <p className="body-text mt-[24px] max-w-[520px]" style={{ color: 'var(--fg-body)' }}>
-          Hiện hồ sơ được lưu ngay trên trình duyệt này. Khi kết nối database, dữ liệu sẽ đồng bộ
-          theo tài khoản và dùng được trên mọi thiết bị.
+        <p className="body-text mt-[24px] max-w-[540px]" style={{ color: 'var(--fg-body)' }}>
+          {nguon === 'tai-khoan'
+            ? 'Hồ sơ đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.'
+            : 'Hồ sơ đang lưu ngay trên trình duyệt này. Đăng nhập để đồng bộ theo tài khoản và dùng được trên mọi thiết bị.'}
         </p>
+        {loi && (
+          <p className="mt-[12px] text-[13px]" style={{ color: 'var(--chart-hung)' }}>
+            {loi}
+          </p>
+        )}
+        {nguon === 'tai-khoan' && (
+          <button onClick={dongBo} className="link-text mt-[12px]">
+            Chuyển hồ sơ đang lưu ở trình duyệt này lên tài khoản
+          </button>
+        )}
       </div>
 
       {dangThem ? (

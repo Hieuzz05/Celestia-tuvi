@@ -17,6 +17,12 @@ export interface ChatRequest {
   user: string;
   maxTokens?: number;
   temperature?: number;
+  /**
+   * Tắt "thinking tokens" (Gemini 3.x trở lên). Model đời mới mặc định tiêu một
+   * phần hạn mức output cho bước suy nghĩ nội bộ; với lệnh test kết nối thì phần
+   * đó vừa thừa vừa tốn quota.
+   */
+  tatSuyNghi?: boolean;
 }
 
 export interface ChatResult {
@@ -46,15 +52,19 @@ export const TEN_PROVIDER: Record<ProviderId, string> = {
   anthropic: 'Anthropic Claude',
 };
 
-/** Gợi ý model miễn phí / rẻ cho từng nhà cung cấp (ngân sách 0) */
+/**
+ * Gợi ý model cho từng nhà cung cấp (ưu tiên rẻ/miễn phí vì ngân sách 0).
+ * Danh sách Gemini lấy từ endpoint ListModels ngày 2026-09-15 — Google đã ngừng
+ * phục vụ gemini-2.5-flash cho tài khoản mới, nên đừng quay lại tên model cũ.
+ */
 export const MODEL_GOI_Y: Record<ProviderId, string[]> = {
-  gemini: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'],
+  gemini: ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'],
   openrouter: [
     'deepseek/deepseek-chat-v3-0324:free',
     'meta-llama/llama-3.3-70b-instruct:free',
     'qwen/qwen-2.5-72b-instruct:free',
     'google/gemma-3-27b-it:free',
   ],
-  openai: ['gpt-4o-mini', 'gpt-4.1-mini'],
+  openai: ['gpt-4o-mini', 'gpt-5-mini', 'gpt-4.1-mini'],
   anthropic: ['claude-haiku-4-5-20251001', 'claude-sonnet-5'],
 };

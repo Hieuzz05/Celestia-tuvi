@@ -21,11 +21,14 @@ async function goiApi(url: string, init: RequestInit): Promise<Response> {
 async function nemLoi(res: Response, provider: ProviderId): Promise<never> {
   const body = await res.text().catch(() => '');
   const ngan = body.slice(0, 300);
-  if (res.status === 429) {
-    throw new AiRetryableError(`${provider}: hết lượt / vượt rate limit — ${ngan}`, 'rate-limit', 429);
+  // Xét nội dung lỗi trước mã 429: nhà cung cấp hay dùng chung mã 429 cho cả
+  // "gọi quá nhanh" lẫn "hết tiền/hết quota", mà hai việc này khác hẳn nhau khi
+  // người quản trị đọc log.
+  if (res.status === 402 || /quota|insufficient|credit|billing/i.test(body)) {
+    throw new AiRetryableError(`${provider}: hết quota / hết credit — ${ngan}`, 'quota', res.status);
   }
-  if (res.status === 402 || /quota|insufficient|credit/i.test(body)) {
-    throw new AiRetryableError(`${provider}: hết quota — ${ngan}`, 'quota', res.status);
+  if (res.status === 429) {
+    throw new AiRetryableError(`${provider}: gọi quá nhanh, vượt rate limit — ${ngan}`, 'rate-limit', 429);
   }
   if (res.status === 401 || res.status === 403) {
     throw new AiRetryableError(`${provider}: API key không hợp lệ — ${ngan}`, 'auth', res.status);
@@ -52,16 +55,29 @@ async function chatGemini(
       contents: [{ role: 'user', parts: [{ text: req.user }] }],
       generationConfig: {
         temperature: req.temperature ?? 0.7,
-        maxOutputTokens: req.maxTokens ?? 2048,
+        maxOutputTokens: req.maxTokens ?? 4096,
+        ...(req.tatSuyNghi ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
       },
     }),
   });
   if (!res.ok) await nemLoi(res, 'gemini');
   const data = await res.json();
-  const text = (data.candidates?.[0]?.content?.parts ?? [])
+  const candidate = data.candidates?.[0];
+  const text = (candidate?.content?.parts ?? [])
     .map((p: { text?: string }) => p.text ?? '')
     .join('');
-  if (!text) throw new AiRetryableError('gemini: phản hồi rỗng', 'server');
+  if (!text) {
+    // Gemini 3.x tiêu một phần hạn mức output cho "thinking"; nếu hạn mức quá
+    // thấp thì candidate trả về rỗng kèm finishReason MAX_TOKENS.
+    const lyDo = candidate?.finishReason ?? 'không rõ';
+    const suyNghi = data.usageMetadata?.thoughtsTokenCount;
+    throw new AiRetryableError(
+      `gemini: phản hồi rỗng (finishReason=${lyDo}` +
+        (suyNghi ? `, đã tiêu ${suyNghi} token cho thinking` : '') +
+        ')',
+      'server'
+    );
+  }
   return {
     text,
     provider: 'gemini',
@@ -176,8 +192,9 @@ export async function testKetNoi(
     const r = await goiModel(provider, model, apiKey, {
       system: 'Bạn là trợ lý kiểm tra kết nối. Trả lời đúng một từ.',
       user: 'Trả lời: OK',
-      maxTokens: 16,
+      maxTokens: 64,
       temperature: 0,
+      tatSuyNghi: true,
     });
     return {
       ok: true,

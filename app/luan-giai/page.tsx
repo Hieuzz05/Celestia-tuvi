@@ -86,7 +86,9 @@ function TrangLuanGiai() {
   const [loi, setLoi] = useState<string | null>(null);
 
   useEffect(() => {
-    setHoSos(danhSachHoSo());
+    danhSachHoSo()
+      .then(setHoSos)
+      .catch(() => setHoSos([]));
     fetch('/api/ai/trang-thai')
       .then((r) => r.json())
       .then((d) => setModels(d.models ?? []))
