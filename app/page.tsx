@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { Field, GIO_OPTIONS, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
@@ -63,24 +63,6 @@ function TrangLaSo() {
     setKetQua(null);
     setLoi(null);
   }, [form.ngaySinh, form.gio, form.gioiTinh]);
-
-  // Tự luận giải tổng quan khi lá số đã ổn định. Chờ 1.2 giây để người dùng gõ
-  // xong ngày sinh rồi mới gọi — gõ tới đâu gọi tới đó thì đốt sạch quota.
-  // Mỗi lá số chỉ gọi một lần, ghi nhớ bằng khoá để không lặp lại.
-  const daTuChay = useRef<string | null>(null);
-  useEffect(() => {
-    if (!laSo) return;
-    const khoa = `${form.ngaySinh}|${form.gio}|${form.gioiTinh}`;
-    if (daTuChay.current === khoa) return;
-
-    const hen = setTimeout(() => {
-      daTuChay.current = khoa;
-      luanGiai();
-    }, 1200);
-    return () => clearTimeout(hen);
-    // luanGiai đọc state qua closure nhưng chỉ cần chạy lại khi lá số đổi
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [laSo, form.ngaySinh, form.gio, form.gioiTinh]);
 
   const set = <K extends keyof ThongTinForm>(k: K, v: ThongTinForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
