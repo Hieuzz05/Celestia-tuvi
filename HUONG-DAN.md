@@ -261,8 +261,11 @@ Nếu cần lấy lại: **Project Settings → API Keys**.
 
 #### Bật đăng nhập bằng Google (làm một lần, ~10 phút)
 
-Nút "Tiếp tục với Google" chỉ hiện khi provider được bật thật trong Supabase — hiện **chưa bật**
-nên trang đăng nhập chỉ có ô email/mật khẩu. Làm đủ 3 bước dưới đây là nút tự xuất hiện.
+**Đã bật xong ngày 16/09/2026** — nút "Tiếp tục với Google" hiện sẵn trên trang đăng nhập.
+Giữ lại hướng dẫn dưới đây phòng khi phải làm lại (đổi project Supabase, Client Secret hết hạn...).
+
+Nút chỉ hiện khi provider được bật thật trong Supabase, nên nếu thấy mất nút thì chạy
+`npm run kiem-tra-sso` — lệnh này hỏi thẳng Supabase và in ra bước còn thiếu.
 
 **Bước 1 — Tạo OAuth Client trong Google Cloud Console**
 
