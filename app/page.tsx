@@ -27,6 +27,17 @@ function TrangLaSo() {
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
+  const [modelChon, setModelChon] = useState('');
+  const [models, setModels] = useState<{ provider: string; model: string; daCauHinh: boolean }[]>(
+    []
+  );
+
+  useEffect(() => {
+    fetch('/api/ai/trang-thai')
+      .then((r) => r.json())
+      .then((d) => setModels(d.models ?? []))
+      .catch(() => setModels([]));
+  }, []);
 
   useEffect(() => {
     const ngay = Number(params.get('ngay'));
@@ -97,6 +108,7 @@ function TrangLaSo() {
           chuDe: 'tong-quan',
           namXem,
           thangXem,
+          model: modelChon || undefined,
         })
       );
     } catch (e) {
@@ -105,6 +117,8 @@ function TrangLaSo() {
       setDangChay(false);
     }
   };
+
+  const modelSanSang = models.filter((m) => m.daCauHinh);
 
   const lienKetChiTiet = laSo
     ? `/luan-giai?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form.hoTen)}`
@@ -221,7 +235,35 @@ function TrangLaSo() {
                   AI đọc trực tiếp dữ liệu an sao của lá số bên cạnh — tên sao, độ sáng, Tuần Triệt,
                   tứ hóa — rồi diễn giải theo Nam phái.
                 </p>
-                <button onClick={luanGiai} className="btn-primary self-start">
+
+                <label className="flex flex-col gap-[6px]">
+                  <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+                    Model AI
+                  </span>
+                  <select
+                    value={modelChon}
+                    onChange={(e) => setModelChon(e.target.value)}
+                    className="field-input"
+                  >
+                    <option value="">
+                      {modelSanSang.length > 0
+                        ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
+                        : 'Tự động'}
+                    </option>
+                    {modelSanSang.map((m) => (
+                      <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
+                        {m.provider} — {m.model}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <p className="text-[12px]" style={{ color: 'var(--fg-subtle)' }}>
+                  Chọn model nào thì model đó chạy trước; nếu nó lỗi hoặc hết lượt, hệ thống vẫn tự
+                  chuyển sang model còn lại.
+                </p>
+
+                <button onClick={luanGiai} disabled={!laSo} className="btn-primary self-start">
                   Luận giải lá số này
                 </button>
               </>
