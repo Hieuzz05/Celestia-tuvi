@@ -61,19 +61,28 @@ export function SiteNav() {
 
   const daDangNhap = Boolean(taiKhoan);
 
+  // Khách đang dở dang ở trang lập lá số: bỏ bớt mục và KHÔNG lặp lại nút "Bắt
+  // đầu miễn phí" — họ đang bắt đầu rồi, nhắc nữa là nhiễu.
+  const dangLapLaSo = pathname === '/la-so';
+
   const lienKet = daDangNhap
     ? [
+        { href: '/home', nhan: t.nav.homNay },
         { href: '/la-so', nhan: t.nav.banDo },
         { href: '/luan-giai', nhan: t.nav.khamPha },
         { href: '/hoi-dap', nhan: t.nav.hoiCeles },
         { href: '/hop-tuoi', nhan: t.nav.ketNoi },
-        { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
       ]
-    : [
-        { href: '/la-so', nhan: t.nav.khamPha },
-        { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
-        { href: '/cau-chuyen', nhan: t.nav.cauChuyen },
-      ];
+    : dangLapLaSo
+      ? [
+          { href: '/', nhan: t.nav.veCelestia },
+          { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
+        ]
+      : [
+          { href: '/', nhan: t.nav.veCelestia },
+          { href: '/la-so', nhan: t.nav.khamPha },
+          { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
+        ];
 
   // Trang đăng nhập rút gọn hết mức để người dùng tập trung vào việc đang làm dở
   if (pathname === '/dang-nhap') {
@@ -107,7 +116,7 @@ export function SiteNav() {
       <Shell>
         <nav className="flex flex-wrap items-center justify-between gap-[16px] py-[16px]">
           <Link
-            href={daDangNhap ? '/la-so' : '/'}
+            href={daDangNhap ? '/home' : '/'}
             aria-label="Celestia"
             style={{ color: 'var(--fg)' }}
           >
@@ -187,9 +196,9 @@ export function SiteNav() {
                 )}
                 {/* Một CTA duy nhất trên header, và nó biến mất khi đã ở đúng chỗ
                     nó dẫn tới — spec cấm đặt nhiều CTA ngang hàng nhau. */}
-                {pathname !== '/la-so' && (
+                {!dangLapLaSo && (
                   <Link href="/la-so" className="btn-primary btn-sm">
-                    {t.chung.ctaChinh}
+                    {t.nav.batDauMienPhi}
                   </Link>
                 )}
               </>

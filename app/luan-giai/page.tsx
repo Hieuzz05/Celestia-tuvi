@@ -11,8 +11,11 @@ import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 import { Shell } from '@/components/ui';
+import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 
 function TrangLuanGiai() {
+  const { duocVao, dangDoc } = useTaiKhoan();
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinForm>({
     hoTen: '',
@@ -96,6 +99,18 @@ function TrangLuanGiai() {
       setDangChay(false);
     }
   };
+
+  // Chưa đăng nhập thì KHÔNG dựng phần nội dung sâu — spec v2 yêu cầu chặn
+  // ở tầng đường dẫn, và server cũng chặn lại ở API tương ứng.
+  if (dangDoc) return <Shell className="py-[48px]"><span /></Shell>;
+  if (!duocVao)
+    return (
+      <Shell className="py-[48px]">
+        <div className="mx-auto max-w-[620px]">
+          <CongDangNhap nguon="deep_read" />
+        </div>
+      </Shell>
+    );
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">

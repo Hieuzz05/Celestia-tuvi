@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { canDangNhap } from '@/lib/auth/cong';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { CHU_DE, dungPrompt, type ChuDeId } from '@/lib/ai/prompt';
 import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
@@ -21,6 +22,10 @@ interface Body {
 }
 
 export async function POST(req: Request) {
+  // Ẩn nút ở giao diện không phải phân quyền — chặn thật phải ở đây
+  const cong = await canDangNhap('deep_read');
+  if (!cong.duocPhep) return cong.chan!;
+
   let body: Body;
   try {
     body = await req.json();

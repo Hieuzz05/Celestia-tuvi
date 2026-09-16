@@ -26,6 +26,9 @@ export const en: TuDien = {
     khamPha: 'Explore',
     cachHoatDong: 'How it works',
     cauChuyen: 'Our story',
+    veCelestia: 'About Celestia',
+    batDauMienPhi: 'Start free',
+    homNay: 'Today',
     banDo: 'My map',
     hanhTrinh: 'Journey',
     hoiCeles: 'Ask Celes',
@@ -107,6 +110,29 @@ export const en: TuDien = {
     xemCachTinh: 'See what Celes works from',
 
     cuoiEyebrow: 'READY?',
+    cauChuyenEyebrow: 'THE CELESTIA STORY',
+    cauChuyenTieuDe: 'Why Celes exists',
+    cauChuyenDoan1:
+      'Most of the time when we are stuck, it is not information we are short of. We have already thought it over and still cannot tell whether to carry on, stop, or start again.',
+    cauChuyenDoan2:
+      'Celestia exists for exactly that moment. Not to add one more piece of advice to the pile you have already heard, but to help you see the thing from another angle — calmer, clearer, closer to yourself.',
+    cauChuyenDoan3:
+      'Celestia is the place you come to. Celes is who you talk with — a friend who listens, a teacher who sheds light, and someone alongside you at the crossroads.',
+    khongLamEyebrow: 'WHAT CELES WILL NOT DO',
+    khongLam: [
+      {
+        ten: 'No verdicts on fate',
+        mo: 'Celes describes where a season leans, never what will certainly happen. The decision stays yours.',
+      },
+      {
+        ten: 'No fear to sell',
+        mo: 'No "severe year", no "urgent remedy". If a stretch is hard, Celes says exactly where it is hard and what can be done.',
+      },
+      {
+        ten: 'Nothing unsupported',
+        mo: 'Every read opens up to show what it rests on. If it cannot be opened, Celes does not say it.',
+      },
+    ],
     cuoiTieuDe: 'Start from you',
     cuoiMo: 'Just your birth date and time. You get the first read straight away, and only then decide whether to keep it.',
   },
@@ -221,6 +247,17 @@ export const en: TuDien = {
       'Account created. If a confirmation email arrives, follow the link in it before signing in.',
     chuaBat: 'Sign-in is not set up',
     chuaBatMo: 'Accounts need to be configured first. See HUONG-DAN.md for the steps.',
+  },
+
+  home: {
+    chao: 'Hello {ten}',
+    chaoKhongTen: 'Worth noticing right now',
+    dangNoiBat: 'What stands out',
+    giaiDoan: 'The season you are in',
+    doTuoi: 'ages {tu}–{den}',
+    diTiep: 'Carry on from here',
+    chuaCoTieuDe: 'No map saved yet',
+    chuaCoMo: 'Create your first map so Celes has something to read with you each day.',
   },
 
   chan: {

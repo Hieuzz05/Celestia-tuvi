@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { canDangNhap } from '@/lib/auth/cong';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { dungPromptHoiDap, type TinNhan } from '@/lib/ai/prompt';
 import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
@@ -23,6 +24,10 @@ const soHopLe = (v: unknown, min: number, max: number) =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
 
 export async function POST(req: Request) {
+  // Ẩn nút ở giao diện không phải phân quyền — chặn thật phải ở đây
+  const cong = await canDangNhap('ask_celes');
+  if (!cong.duocPhep) return cong.chan!;
+
   let body: Body;
   try {
     body = await req.json();

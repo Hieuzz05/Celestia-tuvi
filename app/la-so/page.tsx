@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
@@ -10,6 +10,8 @@ import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { HuyHieuOk, NutVien, OChon, Shell, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
+import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { luuHoSo } from '@/lib/store/hoso';
@@ -32,6 +34,8 @@ function tachNgay(ngaySinh: string) {
 
 function TrangLaSo() {
   const { t, ngonNgu } = useNgonNgu();
+  const { duocVao } = useTaiKhoan();
+  const router = useRouter();
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinSinhForm | null>(null);
   const [namXem, setNamXem] = useState(new Date().getFullYear());
@@ -100,6 +104,12 @@ function TrangLaSo() {
 
   const luu = async () => {
     if (!form) return;
+    // Lưu là khả năng của tài khoản — khách bấm vào thì đưa sang cổng, kèm ý định
+    if (!duocVao) {
+      ghiSuKien('auth_gate_viewed', { nguon: 'save_chart' });
+      router.push('/dang-nhap?intent=save_chart&next=%2Fla-so');
+      return;
+    }
     const { ngay, thang, nam } = tachNgay(form.ngaySinh);
     try {
       await luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
@@ -292,9 +302,24 @@ function TrangLaSo() {
           </div>
         </div>
 
-        {hienMenhBan && (
-          <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
-        )}
+        {hienMenhBan &&
+          (duocVao ? (
+            <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
+          ) : (
+            /* Không ẩn hẳn: cho thấy có thứ đang chờ thì người dùng mới có lý do
+               tạo tài khoản. Ẩn sạch là mất luôn động lực. */
+            <CongDangNhap
+              nguon="full_chart"
+              xemTruoc={
+                <TuViChart
+                  laSo={laSo}
+                  namXem={namXem}
+                  thangXem={thangXem}
+                  onNamXemChange={setNamXem}
+                />
+              }
+            />
+          ))}
       </section>
     </Shell>
   );

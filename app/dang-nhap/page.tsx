@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
 import { taoSupabaseClient } from '@/lib/supabase/client';
+import { ghiSuKien } from '@/lib/analytics';
 import { dien, useT } from '@/lib/i18n/context';
 import { Shell } from '@/components/ui';
 
@@ -33,6 +34,17 @@ export default function DangNhapPage() {
 
   const supabase = taoSupabaseClient();
 
+  // Nhắc lại đúng thứ người dùng vừa bấm — spec v2 §4.5: cổng phải giải thích
+  // lợi ích CỦA TÍNH NĂNG đó, không phải lợi ích chung của tài khoản.
+  const LOI_ICH_THEO_Y_DINH: Record<string, string> = {
+    save_chart: 'Đăng nhập để giữ lại bản đồ bạn vừa lập.',
+    full_chart: 'Đăng nhập để mở toàn bộ 12 cung của bản đồ.',
+    ask_celes: 'Đăng nhập để Celes nhớ bản đồ của bạn và giữ lại cuộc trò chuyện.',
+    deep_read: 'Đăng nhập để mở các bài đọc theo chủ đề.',
+    connection: 'Đăng nhập để lưu được cả hai người và so với nhau.',
+  };
+  const [yDinh, setYDinh] = useState<string | null>(null);
+
   // Callback OAuth chuyển về đây kèm lý do khi đăng nhập thất bại.
   // Nút "Tạo tài khoản" trên thanh điều hướng mở thẳng chế độ đăng ký qua ?che=
   useEffect(() => {
@@ -40,6 +52,12 @@ export default function DangNhapPage() {
     const loi = q.get('loi');
     if (loi) setThongBao({ loai: 'loi', noiDung: loi });
     if (q.get('che') === 'dang-ky') setChe('dang-ky');
+    const it = q.get('intent');
+    if (it) {
+      setYDinh(it);
+      // Tới đây từ một cổng thì mặc định là tạo tài khoản, không phải đăng nhập
+      setChe('dang-ky');
+    }
   }, []);
 
   // Chỉ hiện nút SSO của provider thực sự được bật trong Supabase — bằng không
@@ -87,8 +105,13 @@ export default function DangNhapPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: matKhau });
         if (error) throw error;
-        const next = new URLSearchParams(window.location.search).get('next');
-        router.push(next && next.startsWith('/') && !next.startsWith('//') ? next : '/la-so');
+        const q = new URLSearchParams(window.location.search);
+        const next = q.get('next');
+        const hopLe = next && next.startsWith('/') && !next.startsWith('//');
+        if (hopLe) ghiSuKien('post_signup_feature_resumed', { nguon: q.get('intent') });
+        ghiSuKien('signup_completed', { nguon: q.get('intent') });
+        // Không có nơi cần quay về thì đáp xuống Home cá nhân hoá, không phải công cụ
+        router.push(hopLe ? next : '/home');
         router.refresh();
       }
     } catch (err) {
@@ -138,7 +161,11 @@ export default function DangNhapPage() {
       <div className="w-full">
       <h1 className="heading-sm">{che === 'dang-nhap' ? t.auth.tieuDe : t.auth.tieuDeDangKy}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
-        {che === 'dang-nhap' ? t.auth.moTa : t.auth.moTaDangKy}
+        {yDinh && LOI_ICH_THEO_Y_DINH[yDinh]
+          ? LOI_ICH_THEO_Y_DINH[yDinh]
+          : che === 'dang-nhap'
+            ? t.auth.moTa
+            : t.auth.moTaDangKy}
       </p>
 
       {ssoDangBat.length > 0 && (

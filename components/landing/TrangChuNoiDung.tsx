@@ -157,6 +157,41 @@ export function TrangChuNoiDung() {
         </Shell>
       </Section>
 
+      {/* ---------- Câu chuyện thương hiệu ---------- */}
+      {/* Neo #cau-chuyen để liên kết sâu vẫn tới thẳng đây sau khi gộp route */}
+      <Section className="pt-0" id="cau-chuyen">
+        <Shell rong="hep">
+          <SectionHeader eyebrow={t.landing.cauChuyenEyebrow} tieuDe={t.landing.cauChuyenTieuDe} />
+          <div className="mt-[24px] flex flex-col gap-[16px]">
+            <p className="body-lg" style={{ color: 'var(--fg)' }}>
+              {t.landing.cauChuyenDoan1}
+            </p>
+            <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
+              {t.landing.cauChuyenDoan2}
+            </p>
+            <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
+              {t.landing.cauChuyenDoan3}
+            </p>
+          </div>
+
+          <div className="mt-[40px]">
+            <Eyebrow className="mb-[16px]">{t.landing.khongLamEyebrow}</Eyebrow>
+            <div className="grid gap-[16px] md:grid-cols-3">
+              {t.landing.khongLam.map((k) => (
+                <The key={k.ten} className="flex flex-col gap-[8px]">
+                  <h3 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+                    {k.ten}
+                  </h3>
+                  <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                    {k.mo}
+                  </p>
+                </The>
+              ))}
+            </div>
+          </div>
+        </Shell>
+      </Section>
+
       {/* ---------- Dải CTA tối cuối trang ---------- */}
       <DarkBand className="py-[80px]">
         <Shell className="flex flex-wrap items-center justify-between gap-[32px]">

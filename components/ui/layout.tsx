@@ -75,10 +75,17 @@ export function Section({
   children,
   className = '',
   gon = false,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   gon?: boolean;
+  /** Neo cho liên kết sâu, ví dụ /#cau-chuyen */
+  id?: string;
 }) {
-  return <section className={`${gon ? 'py-[48px]' : 'py-[80px]'} ${className}`}>{children}</section>;
+  return (
+    <section id={id} className={`${gon ? 'py-[48px]' : 'py-[80px]'} ${className}`}>
+      {children}
+    </section>
+  );
 }

@@ -8,6 +8,8 @@ import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import type { KetQuaSoSanh, MucDo } from '@/lib/tuvi/hoptuoi';
 import { Shell } from '@/components/ui';
+import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 
 const MAU_MUC_DO: Record<MucDo, string> = {
   thuan: 'var(--chart-cat)',
@@ -30,6 +32,7 @@ interface KetQua {
 }
 
 export default function HopTuoiPage() {
+  const { duocVao, dangDoc } = useTaiKhoan();
   const [a, setA] = useState<ThongTinForm>({
     hoTen: '',
     ngaySinh: '1995-05-20',
@@ -84,6 +87,18 @@ export default function HopTuoiPage() {
       setDangChay(false);
     }
   };
+
+  // Chưa đăng nhập thì KHÔNG dựng phần nội dung sâu — spec v2 yêu cầu chặn
+  // ở tầng đường dẫn, và server cũng chặn lại ở API tương ứng.
+  if (dangDoc) return <Shell className="py-[48px]"><span /></Shell>;
+  if (!duocVao)
+    return (
+      <Shell className="py-[48px]">
+        <div className="mx-auto max-w-[620px]">
+          <CongDangNhap nguon="connection" />
+        </div>
+      </Shell>
+    );
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">

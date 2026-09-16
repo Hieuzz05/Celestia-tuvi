@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { canDangNhap } from '@/lib/auth/cong';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { dungPromptHopTuoi, moTaLaSo } from '@/lib/ai/prompt';
 import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
@@ -44,6 +45,10 @@ const dungLaSo = (n: NguoiXem) =>
   });
 
 export async function POST(req: Request) {
+  // Ẩn nút ở giao diện không phải phân quyền — chặn thật phải ở đây
+  const cong = await canDangNhap('connection');
+  if (!cong.duocPhep) return cong.chan!;
+
   let body: { a?: NguoiXem; b?: NguoiXem; namXem?: number; thangXem?: number };
   try {
     body = await req.json();

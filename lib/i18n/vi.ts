@@ -24,6 +24,9 @@ export const vi = {
     khamPha: 'Khám phá',
     cachHoatDong: 'Cách hoạt động',
     cauChuyen: 'Câu chuyện Celestia',
+    veCelestia: 'Về Celestia',
+    batDauMienPhi: 'Bắt đầu miễn phí',
+    homNay: 'Hôm nay',
     banDo: 'Bản đồ của tôi',
     hanhTrinh: 'Hành trình',
     hoiCeles: 'Hỏi Celes',
@@ -105,6 +108,29 @@ export const vi = {
     xemCachTinh: 'Xem Celes dựa vào đâu',
 
     cuoiEyebrow: 'SẴN SÀNG CHƯA?',
+    cauChuyenEyebrow: 'CÂU CHUYỆN CELESTIA',
+    cauChuyenTieuDe: 'Vì sao Celes tồn tại',
+    cauChuyenDoan1:
+      'Phần lớn những lúc bế tắc, chúng ta không thiếu thông tin. Chúng ta đã nghĩ rất nhiều rồi mà vẫn không biết nên tiếp tục, dừng lại hay bắt đầu lại.',
+    cauChuyenDoan2:
+      'Celestia ra đời cho đúng khoảnh khắc đó. Không phải để thêm một lời khuyên nữa vào đống lời khuyên bạn đã nghe, mà để giúp bạn nhìn vấn đề từ một góc khác — bình tĩnh hơn, rõ hơn, và gần với chính bạn hơn.',
+    cauChuyenDoan3:
+      'Celestia là nơi bạn đến. Celes là người bạn trò chuyện cùng — một người bạn để lắng nghe, một người thầy để soi sáng, và một người đồng hành ở những ngã rẽ.',
+    khongLamEyebrow: 'ĐIỀU CELES KHÔNG LÀM',
+    khongLam: [
+      {
+        ten: 'Không phán số phận',
+        mo: 'Celes nói về xu hướng của một giai đoạn, không khẳng định điều gì chắc chắn sẽ xảy ra. Bạn vẫn là người quyết định.',
+      },
+      {
+        ten: 'Không doạ để bán',
+        mo: 'Không có "hạn nặng", không có "hoá giải gấp". Nếu một giai đoạn khó, Celes nói rõ khó ở chỗ nào và có thể làm gì.',
+      },
+      {
+        ten: 'Không nói vo',
+        mo: 'Mỗi nhận định đều mở ra được để xem nó dựa trên đâu. Không mở ra được thì Celes không nói.',
+      },
+    ],
     cuoiTieuDe: 'Bắt đầu từ chính bạn',
     cuoiMo: 'Chỉ cần ngày và giờ sinh. Bạn nhận góc nhìn đầu tiên ngay, rồi mới cần quyết định có giữ lại hay không.',
   },
@@ -219,6 +245,17 @@ export const vi = {
       'Đã tạo tài khoản. Nếu hộp thư của bạn nhận được email xác nhận, hãy bấm liên kết trong đó trước khi đăng nhập.',
     chuaBat: 'Chưa bật đăng nhập',
     chuaBatMo: 'Tính năng tài khoản cần được cấu hình trước. Xem hướng dẫn trong tệp HUONG-DAN.md.',
+  },
+
+  home: {
+    chao: 'Chào {ten}',
+    chaoKhongTen: 'Điều đáng chú ý lúc này',
+    dangNoiBat: 'Điều đang nổi bật',
+    giaiDoan: 'Giai đoạn bạn đang đi qua',
+    doTuoi: '{tu}–{den} tuổi',
+    diTiep: 'Đi tiếp từ đây',
+    chuaCoTieuDe: 'Chưa có bản đồ nào được lưu',
+    chuaCoMo: 'Lập bản đồ đầu tiên để Celes có thứ để đọc cùng bạn mỗi ngày.',
   },
 
   chan: {
