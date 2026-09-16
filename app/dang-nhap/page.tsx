@@ -30,6 +30,12 @@ export default function DangNhapPage() {
 
   const supabase = taoSupabaseClient();
 
+  // Callback OAuth chuyển về đây kèm lý do khi đăng nhập thất bại
+  useEffect(() => {
+    const loi = new URLSearchParams(window.location.search).get('loi');
+    if (loi) setThongBao({ loai: 'loi', noiDung: loi });
+  }, []);
+
   // Chỉ hiện nút SSO của provider thực sự được bật trong Supabase — bằng không
   // người dùng bấm vào chỉ nhận về lỗi khó hiểu.
   useEffect(() => {
@@ -84,10 +90,15 @@ export default function DangNhapPage() {
   };
 
   const dangNhapSSO = async (provider: SsoId) => {
-    await supabase.auth.signInWithOAuth({
+    setThongBao(null);
+    const quayVe = new URLSearchParams(window.location.search).get('next') ?? '/';
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(quayVe)}`,
+      },
     });
+    if (error) setThongBao({ loai: 'loi', noiDung: error.message });
   };
 
   return (
