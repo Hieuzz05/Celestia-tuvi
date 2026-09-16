@@ -69,6 +69,7 @@ export function SiteNav() {
     ? [
         { href: '/home', nhan: t.nav.homNay },
         { href: '/la-so', nhan: t.nav.banDo },
+        { href: '/hanh-trinh', nhan: t.nav.hanhTrinh },
         { href: '/luan-giai', nhan: t.nav.khamPha },
         { href: '/hoi-dap', nhan: t.nav.hoiCeles },
         { href: '/hop-tuoi', nhan: t.nav.ketNoi },

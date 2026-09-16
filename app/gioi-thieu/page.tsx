@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { DarkBand, Section, SectionHeader, Shell, The } from '@/components/ui';
 
 export const metadata: Metadata = {
-  title: 'Cách Celestia tính lá số — Celestia',
+  title: 'Cách Celestia tính lá số',
   description:
     'Phần nào trong Celestia được tính cố định, phần nào do AI diễn giải, và Celestia dựa trên tài liệu nào.',
 };

@@ -10,6 +10,7 @@ import { useT } from '@/lib/i18n/context';
  *
  * Luôn giữ đường về trang giới thiệu và câu chuyện — lỗi đã được chỉ ra là người
  * dùng đi sang màn khác rồi thì không còn chỗ nào quay lại phần giới thiệu nữa.
+ * Câu chuyện giờ là một section trong trang chủ nên liên kết là neo, không phải route.
  */
 export function SiteFooter() {
   const t = useT();
@@ -30,7 +31,9 @@ export function SiteFooter() {
           <Link href="/gioi-thieu" className="link-text">
             {t.nav.cachHoatDong}
           </Link>
-          <Link href="/cau-chuyen" className="link-text">
+          {/* Quyết định #9 gộp Câu chuyện vào trang chủ; giữ liên kết ở đây
+              nhưng trỏ vào neo, bằng không chân trang nào cũng có một link 404. */}
+          <Link href="/#cau-chuyen" className="link-text">
             {t.nav.cauChuyen}
           </Link>
         </div>

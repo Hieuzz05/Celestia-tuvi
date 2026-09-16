@@ -1,0 +1,23 @@
+<!-- Dấu thương hiệu Celestia trên nền Midnight Indigo — biểu tượng tab trình duyệt.
+     Giữ đồng bộ với components/Logo.tsx: sửa nét ở đây thì sửa cả bên đó. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="vang" x1="10" y1="9" x2="38" y2="39" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EBD489" />
+      <stop offset="0.5" stop-color="#D4AF37" />
+      <stop offset="1" stop-color="#B08B24" />
+    </linearGradient>
+    <linearGradient id="nen" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A" />
+      <stop offset="1" stop-color="#0A0E1A" />
+    </linearGradient>
+  </defs>
+
+  <rect width="48" height="48" rx="10" fill="url(#nen)" />
+
+  <g transform="translate(24 24) scale(0.74) translate(-24 -24)">
+    <path d="M15.4 13.7A15 15 0 1 0 32.6 13.7" stroke="url(#vang)" stroke-width="2.2" stroke-linecap="round" />
+    <path d="M24 8 27.1 16.8 36.4 17 29 22.6 31.6 31.5 24 26.2 16.4 31.5 19.1 22.6 11.6 17 20.9 16.8Z"
+      stroke="url(#vang)" stroke-width="2.2" stroke-linejoin="round" />
+  </g>
+</svg>

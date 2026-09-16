@@ -36,6 +36,8 @@ họ còn nguyên và nên làm gì tiếp.
 | Chữ trong giao diện | `lib/i18n/vi.ts` + `lib/i18n/en.ts` (thiếu khoá bên EN là build đỏ) |
 | Lời văn Quick Read (14 chính tinh, 12 cung) | `lib/tuvi/quick-read-noi-dung.ts` |
 | Logic đọc lá số ra góc nhìn | `lib/tuvi/quick-read.ts` |
+| Dòng thời gian Hành trình | `lib/tuvi/hanh-trinh.ts` |
+| Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
 | Giọng và cấu trúc câu trả lời của Celes | `NHAN_CACH_CELES` trong `lib/ai/prompt.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
@@ -56,18 +58,22 @@ họ còn nguyên và nên làm gì tiếp.
   lấy danh sách thật.
 - **Hồng `#df37a7` chỉ dành cho nút hành động chính**, mỗi khung nhìn đúng một cái. Màu tốt/xấu
   trong mệnh bàn dùng token riêng `--chart-tot` / `--chart-hung`.
+- **Vàng kim `#D4AF37` là màu của RIÊNG dấu thương hiệu**, không phải màu hành động. Nền Midnight
+  Indigo `#0F172A` chỉ dùng cho biểu tượng ứng dụng và favicon.
+- **Mệnh bàn đầy đủ nằm sau cổng đăng nhập.** Kiểm tra bằng trình duyệt thì chạy dev server với
+  `NEXT_PUBLIC_SUPABASE_*` để trống, bằng không phiên sạch chỉ thấy bản xem trước mờ.
 
 ## Kiểm tra trước khi commit
 
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
-npm run lint              # ĐANG có sẵn 9 lỗi set-state-in-effect — đừng để tăng thêm
+npm run lint              # ĐANG có sẵn 8 lỗi set-state-in-effect — đừng để tăng thêm
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
 ```
 
-Nếu lint tăng quá 9, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
+Nếu lint tăng quá 8, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
 
 ## App di động
 
@@ -84,7 +90,9 @@ gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
 
 ## Việc còn dang dở
 
-Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Hai tài liệu định hướng gốc:
+Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Ba việc lớn nhất còn lại: lớp NGÀY của Hành
+trình (cần đối chiếu quy tắc an ngày hạn), bản mobile của mệnh bàn (mini-chart + carousel 12 cung),
+và cổng Gate 2 cho gói Plus. Hai tài liệu định hướng gốc:
 `D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf` và
 `D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (bản sau thay thế bản trước).
 

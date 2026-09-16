@@ -227,6 +227,22 @@ export interface KhuonChu {
     giaiDoanTuoiY: string;
     namUngVao: string;
     namUngVaoY: string;
+    thangUngVao: string;
+    thangUngVaoY: string;
+  };
+  /** Chữ cho màn Hành trình — dòng thời gian giai đoạn / năm / tháng */
+  hanhTrinh: {
+    giaiDoanNhan: string;
+    giaiDoanPhu: string;
+    thangNhan: string;
+    tuoiAm: string;
+    chuDeCo: string;
+    chuDeTrong: string;
+    nhipNhom: string;
+    nhipTieuDe: string;
+    nhipGiaiDoan: string;
+    nhipNam: string;
+    nhipThang: string;
   };
   tenCung: Record<string, string>;
 }
@@ -310,6 +326,22 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       namUngVao: 'Năm {nam} ứng vào {cung}',
       namUngVaoY:
         'Mỗi năm ứng vào một cung khác nhau. Năm {nam} (tuổi âm {tuoi}) rơi vào cung {cung}, nên chủ đề của cung này dễ được nhắc tới trong năm.',
+      thangUngVao: 'Tháng {thang} ứng vào {cung}',
+      thangUngVaoY:
+        'Trong một năm, mỗi tháng lại ứng vào một cung. Tháng {thang} năm {nam} rơi vào cung {cung}, nên chuyện của cung đó dễ nổi lên trong khoảng thời gian ngắn này.',
+    },
+    hanhTrinh: {
+      giaiDoanNhan: '{tu}–{den} tuổi',
+      giaiDoanPhu: 'Khoảng {tuNam}–{denNam}',
+      thangNhan: 'Tháng {thang}',
+      tuoiAm: 'tuổi âm {tuoi}',
+      chuDeCo: 'Nghiêng về {chuDe}.',
+      chuDeTrong: 'Quãng này không có chủ đề nào nổi hẳn lên — thường là lúc mọi thứ giữ nhịp cũ.',
+      nhipNhom: 'Điều đang chuyển động',
+      nhipTieuDe: 'Tháng {thang} năm {nam} của bạn',
+      nhipGiaiDoan: 'Bạn đang trong quãng {tu}–{den} tuổi, trọng tâm nghiêng về {chuDe}.',
+      nhipNam: 'Riêng năm {nam}, chủ đề dễ nổi lên là {chuDe}.',
+      nhipThang: 'Trong tháng {thang}, phần dễ được nhắc tới là {chuDe}.',
     },
     tenCung: TEN_CUNG_VI,
   },
@@ -373,6 +405,22 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       namUngVao: '{nam} maps to {cung}',
       namUngVaoY:
         'Each year maps to a different house. {nam} (lunar age {tuoi}) falls on {cung}, so that house’s theme comes up more often during the year.',
+      thangUngVao: 'Month {thang} maps to {cung}',
+      thangUngVaoY:
+        'Within a year, each month maps to a house in turn. Month {thang} of {nam} falls on {cung}, so that house’s concerns surface more easily over this short stretch.',
+    },
+    hanhTrinh: {
+      giaiDoanNhan: 'Ages {tu}–{den}',
+      giaiDoanPhu: 'Around {tuNam}–{denNam}',
+      thangNhan: 'Month {thang}',
+      tuoiAm: 'lunar age {tuoi}',
+      chuDeCo: 'Leans toward {chuDe}.',
+      chuDeTrong: 'Nothing stands out sharply in this stretch — usually a time that keeps its existing rhythm.',
+      nhipNhom: 'What is in motion',
+      nhipTieuDe: 'Your month {thang} of {nam}',
+      nhipGiaiDoan: 'You are in the stretch from age {tu} to {den}, with its centre of gravity on {chuDe}.',
+      nhipNam: 'In {nam} specifically, the theme most likely to surface is {chuDe}.',
+      nhipThang: 'Within month {thang}, the part most likely to come up is {chuDe}.',
     },
     tenCung: TEN_CUNG_EN,
   },

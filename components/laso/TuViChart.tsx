@@ -10,11 +10,19 @@ import {
   tamPhuongTuChinh,
   type LaSo,
 } from '@/lib/tuvi/ansao';
+import { PillTag } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 import { CenterPanel } from './CenterPanel';
 import { PalaceCell } from './PalaceCell';
 import { PalaceDrawer } from './PalaceDrawer';
 import { VoidMarkers, type VoidMarker } from './VoidMarkers';
-import { MAC_DINH_SETTINGS, NHAN_SETTINGS, type DisplaySettings } from './types';
+import {
+  NHAN_SETTINGS,
+  SETTINGS_THEO_CHE_DO,
+  THU_TU_CHE_DO,
+  type CheDoBanDo,
+  type DisplaySettings,
+} from './types';
 
 const CHART_WIDTH = 920;
 /** Dưới mức này chữ trong ô cung không còn đọc được */
@@ -31,13 +39,23 @@ export function TuViChart({
   namXem,
   thangXem,
   onNamXemChange,
+  chiBanDo = false,
 }: {
   laSo: LaSo;
   namXem: number;
   thangXem: number;
   onNamXemChange: (nam: number) => void;
+  /** Chỉ vẽ mệnh bàn, bỏ hết thanh công cụ — dùng khi làm ảnh mờ sau cổng đăng nhập */
+  chiBanDo?: boolean;
 }) {
-  const [settings, setSettings] = useState<DisplaySettings>(MAC_DINH_SETTINGS);
+  const t = useT();
+  const CHU_CHE_DO: Record<CheDoBanDo, { nhan: string; mo: string }> = {
+    'de-hieu': { nhan: t.banDo.cheDoDeHieu, mo: t.banDo.cheDoDeHieuMo },
+    'co-dien': { nhan: t.banDo.cheDoCoDien, mo: t.banDo.cheDoCoDienMo },
+    'chuyen-sau': { nhan: t.banDo.cheDoChuyenSau, mo: t.banDo.cheDoChuyenSauMo },
+  };
+  const [cheDo, setCheDo] = useState<CheDoBanDo>('co-dien');
+  const [settings, setSettings] = useState<DisplaySettings>(SETTINGS_THEO_CHE_DO['co-dien']);
   const [hoverCung, setHoverCung] = useState<number | null>(null);
   const [chonCung, setChonCung] = useState<number | null>(null);
   const [moDrawer, setMoDrawer] = useState(false);
@@ -104,6 +122,14 @@ export function TuViChart({
     return 'mo' as const;
   };
 
+  const doiCheDo = (id: CheDoBanDo) => {
+    setCheDo(id);
+    // Nạp lại nguyên bộ lớp của chế độ: nếu giữ các ô đã tick tay từ chế độ
+    // trước thì "Dễ hiểu" vẫn còn nguyên đống nhãn, tức là chẳng dễ hiểu gì.
+    setSettings(SETTINGS_THEO_CHE_DO[id]);
+    if (id !== 'chuyen-sau') setHienSettings(false);
+  };
+
   const xuatPng = useCallback(async () => {
     if (!chartRef.current) return;
     const nen = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
@@ -119,33 +145,55 @@ export function TuViChart({
 
   return (
     <div className="flex flex-col gap-[18px]">
+      {/* Ba mức độ dày của cùng một lá số */}
+      {!chiBanDo && (
+      <div className="no-print flex flex-col gap-[8px]">
+        <div className="flex flex-wrap gap-[8px]">
+          {THU_TU_CHE_DO.map((id) => (
+            <PillTag key={id} dangChon={cheDo === id} onClick={() => doiCheDo(id)}>
+              {CHU_CHE_DO[id].nhan}
+            </PillTag>
+          ))}
+        </div>
+        <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+          {CHU_CHE_DO[cheDo].mo}
+        </p>
+      </div>
+      )}
+
       {/* Toolbar */}
+      {!chiBanDo && (
       <div className="no-print flex flex-wrap items-center gap-x-[24px] gap-y-[12px]">
         <div className="flex items-center gap-[12px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-            Năm xem
+            {t.banDo.namXem}
           </span>
-          <button className="link-text" onClick={() => onNamXemChange(namXem - 1)} aria-label="Năm trước">
+          <button className="link-text" onClick={() => onNamXemChange(namXem - 1)} aria-label={t.banDo.namTruoc}>
             ‹
           </button>
           <span className="text-[15px] tabular-nums">{namXem}</span>
-          <button className="link-text" onClick={() => onNamXemChange(namXem + 1)} aria-label="Năm sau">
+          <button className="link-text" onClick={() => onNamXemChange(namXem + 1)} aria-label={t.banDo.namSau}>
             ›
           </button>
         </div>
 
         <div className="ml-auto flex items-center gap-[16px]">
-          <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
-            Hiển thị
-          </button>
+          {/* Bật tắt từng lớp là việc của người đã quen mệnh bàn — chỉ mở ở
+              chế độ Chuyên sâu, bằng không nó phá luôn ý nghĩa của hai chế độ kia. */}
+          {cheDo === 'chuyen-sau' && (
+            <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
+              {t.banDo.lopHienThi}
+            </button>
+          )}
           <button className="link-text" onClick={xuatPng}>
-            Xuất ảnh
+            {t.banDo.xuatAnh}
           </button>
           <button className="link-text" onClick={() => window.print()}>
-            In
+            {t.banDo.inRa}
           </button>
         </div>
       </div>
+      )}
 
       {hienSettings && (
         <div className="no-print flex flex-wrap gap-x-[24px] gap-y-[10px] py-[6px]">

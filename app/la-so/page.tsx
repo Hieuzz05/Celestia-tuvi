@@ -5,12 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
+import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { HuyHieuOk, NutVien, OChon, Shell, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
-import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
@@ -149,6 +149,11 @@ function TrangLaSo() {
     }
   };
 
+  // Nơi quay lại sau khi đăng nhập, mang sẵn thông tin sinh để không phải nhập lại
+  const duongVe = laSo
+    ? `/la-so?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form?.hoTen ?? '')}`
+    : '/la-so';
+
   const lienKetSau = laSo
     ? `/luan-giai?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form?.hoTen ?? '')}`
     : '/luan-giai';
@@ -194,14 +199,18 @@ function TrangLaSo() {
             </p>
           </div>
 
+          {/* Khách chưa đăng nhập không thấy nút "Giữ lại" ở đây: việc lưu đã
+              nằm trong khối chuyển đổi duy nhất bên dưới. Hai chỗ cùng mời một
+              hành động chính là kiểu phân tán mà bản audit chỉ ra. */}
           <div className="flex items-center gap-[12px]">
-            {daLuu ? (
-              <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
-            ) : (
-              <NutVien nho onClick={luu}>
-                {t.quickRead.giuLai}
-              </NutVien>
-            )}
+            {duocVao &&
+              (daLuu ? (
+                <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
+              ) : (
+                <NutVien nho onClick={luu}>
+                  {t.quickRead.giuLai}
+                </NutVien>
+              ))}
             <NutVien nho onClick={() => setForm(null)}>
               {t.quickRead.doiThongTin}
             </NutVien>
@@ -223,104 +232,108 @@ function TrangLaSo() {
         )}
       </section>
 
-      {/* ---------- Đi sâu hơn ---------- */}
-      <section className="grid gap-[16px] md:grid-cols-2">
-        <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
-          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {t.quickRead.docDai}
-          </h2>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {t.quickRead.sauMo}
-          </p>
-
-          {dangChay ? (
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.dangDoc}
-            </p>
-          ) : (
-            <NutVien nho onClick={docSau} className="self-start">
-              {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
-            </NutVien>
-          )}
-
-          {ketQua && (
-            <>
-              <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-              <NguonTriThuc nguon={ketQua.nguonTriThuc} />
-            </>
-          )}
-        </div>
-
-        <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">{t.nav.khamPha}</span>
-          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {t.quickRead.theoChuDeTieuDe}
-          </h2>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {t.quickRead.theoChuDeMo}
-          </p>
-          <div className="mt-auto flex flex-wrap gap-[12px]">
-            <Link href={lienKetSau} className="btn-outline btn-sm">
-              {t.quickRead.khamPhaSau}
-            </Link>
-            <Link href="/hoi-dap" className="btn-outline btn-sm">
-              {t.quickRead.hoiThang}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Mệnh bàn: đặt dưới, mở khi người dùng muốn ---------- */}
-      <section className="flex flex-col gap-[16px]">
-        <div className="flex flex-wrap items-center justify-between gap-[16px]">
-          <div>
+      {/* Sau ba góc nhìn, người đã đăng nhập đi tiếp; khách chỉ gặp MỘT lời mời */}
+      {duocVao ? (
+        <>
+        {/* ---------- Đi sâu hơn ---------- */}
+        <section className="grid gap-[16px] md:grid-cols-2">
+          <div className="card flex flex-col gap-[12px]">
+            <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
             <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.banDoTieuDe}{' '}
-              <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
+              {t.quickRead.docDai}
             </h2>
-            <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.banDoMo}
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.sauMo}
             </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-[12px]">
-            {hienMenhBan && (
-              <Truong nhan={t.quickRead.thangXem} className="w-[150px]">
-                <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <option key={m} value={m}>
-                      Tháng {m}
-                    </option>
-                  ))}
-                </OChon>
-              </Truong>
+            {dangChay ? (
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.dangDoc}
+              </p>
+            ) : (
+              <NutVien nho onClick={docSau} className="self-start">
+                {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
+              </NutVien>
             )}
-            <NutVien nho onClick={() => setHienMenhBan((v) => !v)}>
-              {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
-            </NutVien>
-          </div>
-        </div>
 
-        {hienMenhBan &&
-          (duocVao ? (
+            {ketQua && (
+              <>
+                <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
+                <NguonTriThuc nguon={ketQua.nguonTriThuc} />
+              </>
+            )}
+          </div>
+
+          <div className="card flex flex-col gap-[12px]">
+            <span className="eyebrow">{t.nav.khamPha}</span>
+            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.quickRead.theoChuDeTieuDe}
+            </h2>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.theoChuDeMo}
+            </p>
+            <div className="mt-auto flex flex-wrap gap-[12px]">
+              <Link href={lienKetSau} className="btn-outline btn-sm">
+                {t.quickRead.khamPhaSau}
+              </Link>
+              <Link href="/hoi-dap" className="btn-outline btn-sm">
+                {t.quickRead.hoiThang}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- Mệnh bàn: đặt dưới, mở khi người dùng muốn ---------- */}
+        <section className="flex flex-col gap-[16px]">
+          <div className="flex flex-wrap items-center justify-between gap-[16px]">
+            <div>
+              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.quickRead.banDoTieuDe}{' '}
+                <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
+              </h2>
+              <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.banDoMo}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-[12px]">
+              {hienMenhBan && (
+                <Truong nhan={t.quickRead.thangXem} className="w-[150px]">
+                  <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <option key={m} value={m}>
+                        {dien(t.banDo.thang, { thang: m })}
+                      </option>
+                    ))}
+                  </OChon>
+                </Truong>
+              )}
+              <NutVien nho onClick={() => setHienMenhBan((v) => !v)}>
+                {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
+              </NutVien>
+            </div>
+          </div>
+
+          {hienMenhBan && (
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
-          ) : (
-            /* Không ẩn hẳn: cho thấy có thứ đang chờ thì người dùng mới có lý do
-               tạo tài khoản. Ẩn sạch là mất luôn động lực. */
-            <CongDangNhap
-              nguon="full_chart"
-              xemTruoc={
-                <TuViChart
-                  laSo={laSo}
-                  namXem={namXem}
-                  thangXem={thangXem}
-                  onNamXemChange={setNamXem}
-                />
-              }
+          )}
+        </section>
+        </>
+      ) : (
+        <KhoiChuyenDoi
+          duongVe={duongVe}
+          xemTruoc={
+            <TuViChart
+              laSo={laSo}
+              namXem={namXem}
+              thangXem={thangXem}
+              onNamXemChange={setNamXem}
+              chiBanDo
             />
-          ))}
-      </section>
+          }
+        />
+      )}
+
     </Shell>
   );
 }

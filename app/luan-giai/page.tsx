@@ -23,7 +23,12 @@ function TrangLuanGiai() {
     gio: 9,
     gioiTinh: 'nam',
   });
-  const [chuDe, setChuDe] = useState<ChuDeId>('su-nghiep');
+  // Chủ đề bấm sang từ lối tắt ở trang chủ: đọc ngay lúc khởi tạo để thẻ đúng
+  // được mở từ lần vẽ đầu, không chớp qua thẻ mặc định rồi mới nhảy.
+  const chuDeUrl = params.get('chuDe');
+  const [chuDe, setChuDe] = useState<ChuDeId>(
+    chuDeUrl && chuDeUrl in CHU_DE ? (chuDeUrl as ChuDeId) : 'su-nghiep'
+  );
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
   const [cauHoi, setCauHoi] = useState('');
@@ -52,6 +57,7 @@ function TrangLuanGiai() {
       gioiTinh: (params.get('gt') as ThongTinForm['gioiTinh']) || 'nam',
     });
   }, [params]);
+
 
   const laSo = useMemo(() => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);

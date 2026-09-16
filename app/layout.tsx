@@ -33,10 +33,24 @@ const annotation = Permanent_Marker({
   weight: ["400"],
 });
 
+// Mặt trước không nhắc AI, model hay trường phái — brand spec cấm đưa lớp kỹ
+// thuật lên tiêu đề. Tiêu đề bán giá trị: bớt mơ hồ, thấy hướng đi.
 export const metadata: Metadata = {
-  title: "Celestia — Lập lá số & luận giải Tử Vi",
+  metadataBase: new URL("https://celestia-tuvi.vercel.app"),
+  title: {
+    default: "Celestia — Hiểu mình. Rõ đường. Vững bước.",
+    template: "%s — Celestia",
+  },
   description:
-    "Celestia — lập lá số Tử Vi theo Nam phái, luận giải hiện đại bằng AI.",
+    "Khi bạn chưa rõ đường, Celes giúp bạn nhìn thấy lối đi: một góc nhìn đủ rõ để hiểu mình, hiểu điều đang xảy ra và biết bước tiếp theo nên bắt đầu từ đâu.",
+  openGraph: {
+    type: "website",
+    siteName: "Celestia",
+    locale: "vi_VN",
+    title: "Celestia — Hiểu mình. Rõ đường. Vững bước.",
+    description:
+      "Khi bạn chưa rõ đường, Celes giúp bạn nhìn thấy lối đi.",
+  },
 };
 
 // Đặt theme trước khi trang vẽ lần đầu để không bị chớp nền sai màu.

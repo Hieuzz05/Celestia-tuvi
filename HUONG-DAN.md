@@ -453,10 +453,12 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Nút "Vì sao Celestia nói vậy?" | Xong — mở căn cứ từ chính lá số |
 | Nhập thông tin sinh theo từng bước | Xong — 3 bước, có xử lý "không nhớ giờ sinh" |
 | Quên mật khẩu | Xong |
-| Trang chủ cá nhân hoá sau đăng nhập | Chưa — P1 |
-| Màn Vận trình (timeline năm/tháng) | Chưa — P1 |
-| Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Chưa — P1 |
-| Điều hướng đáy trên mobile | Chưa — P1 |
+| Trang chủ cá nhân hoá sau đăng nhập | Xong — `/home`, có ô "Hôm nay bạn đang nghĩ gì?" và lối tắt chủ đề |
+| Hành trình: dòng thời gian giai đoạn / năm / tháng | Xong — `/hanh-trinh`, tính bằng công thức, không gọi AI |
+| Hành trình lớp NGÀY | Chưa — cần đối chiếu quy tắc an ngày hạn với bản mẫu trước |
+| Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Xong — ba mức độ dày, an sao không đổi |
+| Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện vẫn thu nhỏ khung 920px |
+| Điều hướng đáy trên mobile (app) | Chưa — bottom nav là của app Expo, web dùng thanh trên |
 | Gói Plus, paywall, xuất báo cáo | Chưa — P2 |
 | Xuất PDF, từ điển thuật ngữ | Chưa |
 
@@ -503,7 +505,9 @@ phương pháp. Kết quả:
 |---|---|
 | `/` | Landing công khai — mở bằng nỗi băn khoăn của người đọc, không nhắc kỹ thuật |
 | `/cau-chuyen` | Câu chuyện thương hiệu: vì sao có Celes, và Celes không làm gì |
+| `/home` | Nơi người đã đăng nhập đáp xuống: điều đáng chú ý hôm nay, giai đoạn đang đi qua, ô trò chuyện |
 | `/la-so` | Công cụ: nhập thông tin sinh → góc nhìn nhanh → mệnh bàn đầy đủ |
+| `/hanh-trinh` | Hành trình: quãng dài → từng năm → từng tháng, có mốc "đang ở đây" |
 | `/gioi-thieu` | Cách Celestia tính lá số, câu hỏi thường gặp |
 | `/luan-giai` | Khám phá sâu hơn theo chủ đề |
 | `/hoi-dap` | Hỏi Celestia |
@@ -513,6 +517,10 @@ phương pháp. Kết quả:
 
 > Công cụ lập lá số đã dời từ `/` sang `/la-so`. Ai đang lưu dấu trang cũ thì bookmark `/` giờ ra
 > trang landing.
+
+> Khách chưa đăng nhập chỉ nhận Quick Read. Sau ba góc nhìn là **một** khối chuyển đổi duy nhất
+> kèm danh sách phần đang khoá — không còn năm sáu lối đi ngang hàng như bản trước. `/hanh-trinh`,
+> `/hoi-dap`, `/luan-giai`, `/hop-tuoi` đều dừng ở cổng Gate 1.
 
 ### Quy ước ngôn ngữ ở mặt trước
 

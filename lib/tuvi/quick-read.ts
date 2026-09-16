@@ -26,7 +26,7 @@ export interface CanCu {
 }
 
 export interface GocNhin {
-  id: 'diem-noi-bat' | 'dieu-thuong-can' | 'chu-de-giai-doan' | 'linh-vuc';
+  id: 'diem-noi-bat' | 'dieu-thuong-can' | 'chu-de-giai-doan' | 'linh-vuc' | 'moc-hanh-trinh';
   nhomChu: string;
   tieuDe: string;
   noiDung: string;

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
 import { Eyebrow, IconKhien, The } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Cổng đăng nhập theo ngữ cảnh (Gate 1 — miễn phí).
@@ -19,41 +20,31 @@ import { Eyebrow, IconKhien, The } from '@/components/ui';
  *  3. Đăng nhập xong quay lại ĐÚNG chỗ vừa bấm, không đá về trang chủ.
  */
 
-export type NguonCong = 'save_chart' | 'full_chart' | 'ask_celes' | 'deep_read' | 'connection';
-
-const LOI_ICH: Record<NguonCong, { tieuDe: string; moTa: string }> = {
-  save_chart: {
-    tieuDe: 'Giữ lại bản đồ này',
-    moTa: 'Tạo tài khoản miễn phí để Celes nhớ bản đồ của bạn, và lần sau mở lên là có ngay — trên máy nào cũng vậy.',
-  },
-  full_chart: {
-    tieuDe: 'Xem toàn bộ 12 cung',
-    moTa: 'Bản đầy đủ có tất cả các cung, các sao và độ sáng. Tạo tài khoản miễn phí để mở, và để bản đồ được lưu lại.',
-  },
-  ask_celes: {
-    tieuDe: 'Tiếp tục cuộc trò chuyện với Celes',
-    moTa: 'Tạo tài khoản miễn phí để Celes nhớ bản đồ của bạn và giữ lại cuộc trò chuyện này cho lần sau.',
-  },
-  deep_read: {
-    tieuDe: 'Đi sâu vào điều bạn đang bận tâm',
-    moTa: 'Mỗi chủ đề là một bài đọc riêng, dựa trên chính bản đồ của bạn. Tạo tài khoản miễn phí để mở và lưu lại.',
-  },
-  connection: {
-    tieuDe: 'Xem hai người vận hành cùng nhau thế nào',
-    moTa: 'Cần lưu được cả hai người thì mới so được. Tạo tài khoản miễn phí để bắt đầu.',
-  },
-};
+export type NguonCong =
+  | 'save_chart'
+  | 'full_chart'
+  | 'ask_celes'
+  | 'deep_read'
+  | 'connection'
+  | 'journey';
 
 export function CongDangNhap({
   nguon,
   xemTruoc,
+  nhanCta,
+  duoiNut,
 }: {
   nguon: NguonCong;
   /** Thứ đang chờ phía sau cổng — cho thấy để người dùng biết mình đổi được gì */
   xemTruoc?: React.ReactNode;
+  /** Chữ trên nút, khi ngữ cảnh có câu hợp hơn "Tạo tài khoản miễn phí" */
+  nhanCta?: string;
+  /** Lối thoát phụ, đặt ngay dưới nút chính */
+  duoiNut?: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const loiIch = LOI_ICH[nguon];
+  const t = useT();
+  const loiIch = t.cong.loiIch[nguon];
 
   useEffect(() => {
     ghiSuKien('auth_gate_viewed', { nguon });
@@ -65,7 +56,7 @@ export function CongDangNhap({
 
   return (
     <The className="flex flex-col gap-[16px]">
-      <Eyebrow>ĐÂY MỚI CHỈ LÀ PHẦN ĐẦU</Eyebrow>
+      <Eyebrow>{t.cong.eyebrow}</Eyebrow>
 
       <div className="flex items-start gap-[12px]">
         <span style={{ color: 'var(--fg)' }}>
@@ -99,10 +90,12 @@ export function CongDangNhap({
         className="btn-primary self-start"
         onClick={() => ghiSuKien('signup_started', { nguon })}
       >
-        Tạo tài khoản miễn phí
+        {nhanCta ?? t.cong.cta}
       </Link>
 
-      <p className="caption">Miễn phí, không cần thẻ. Bản đồ bạn vừa lập sẽ được giữ lại.</p>
+      {duoiNut}
+
+      <p className="caption">{t.cong.chu}</p>
     </The>
   );
 }

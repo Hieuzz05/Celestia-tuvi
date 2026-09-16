@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { TrangChuNoiDung } from '@/components/landing/TrangChuNoiDung';
 
 export const metadata: Metadata = {
-  title: 'Celestia — Hiểu mình. Rõ đường. Vững bước.',
+  // Trang gốc dùng đúng tiêu đề mặc định, không chèn thêm hậu tố thương hiệu
+  title: { absolute: 'Celestia — Hiểu mình. Rõ đường. Vững bước.' },
   description:
     'Khi công việc, tình cảm hay một quyết định khiến bạn mất phương hướng, Celes ở đây để lắng nghe và giúp bạn nhìn rõ điều đang xảy ra.',
 };

@@ -28,6 +28,39 @@ export const MAC_DINH_SETTINGS: DisplaySettings = {
   luuTinh: false,
 };
 
+/**
+ * Ba chế độ đọc bản đồ.
+ *
+ * Cùng một lá số, khác nhau ở chỗ bật bao nhiêu lớp. Bản spec đặt ra ba mức vì
+ * người mới mở mệnh bàn đầy đủ lên là thấy hàng trăm nhãn và đóng lại ngay,
+ * còn người biết Tử Vi thì thiếu lớp nào là không đối chiếu được.
+ *
+ * Đây là ba mức ĐỘ DÀY, không phải ba bản tính khác nhau: an sao luôn y hệt.
+ */
+export type CheDoBanDo = 'de-hieu' | 'co-dien' | 'chuyen-sau';
+
+/** Thứ tự ba chế độ trên thanh chọn; chữ hiển thị nằm ở `t.banDo` */
+export const THU_TU_CHE_DO: CheDoBanDo[] = ['de-hieu', 'co-dien', 'chuyen-sau'];
+
+export const SETTINGS_THEO_CHE_DO: Record<CheDoBanDo, DisplaySettings> = {
+  'de-hieu': {
+    chinhTinh: true,
+    phuTinh: false,
+    doSang: false,
+    tuHoa: false,
+    trangSinh: false,
+    daiHan: true,
+    tieuHan: true,
+    nguyetHan: false,
+    tuanTriet: false,
+    tamPhuongTuChinh: true,
+    vongSao: false,
+    luuTinh: false,
+  },
+  'co-dien': MAC_DINH_SETTINGS,
+  'chuyen-sau': { ...MAC_DINH_SETTINGS, luuTinh: true },
+};
+
 export const NHAN_SETTINGS: { key: keyof DisplaySettings; nhan: string }[] = [
   { key: 'chinhTinh', nhan: 'Chính tinh' },
   { key: 'phuTinh', nhan: 'Phụ tinh' },

@@ -7,10 +7,15 @@
  *
  * Chạy: node scripts/test-hover-nhay.mjs
  * Cần: dev server ở cổng 3000 và Chrome headless mở cổng 9333.
+ *
+ * Mệnh bàn đầy đủ nằm sau cổng đăng nhập (Gate 1), nên phiên headless sạch chỉ
+ * thấy bản xem trước. Muốn đo đúng thì chạy dev server với hai biến
+ * NEXT_PUBLIC_SUPABASE_* để trống — lúc đó sản phẩm không có tài khoản nào và
+ * mệnh bàn mở thẳng. Cần trang khác thì đặt biến môi trường TRANG_TEST.
  */
 
 const CDP_PORT = 9333;
-const TRANG = 'http://localhost:3000';
+const TRANG = process.env.TRANG_TEST ?? 'http://localhost:3000/la-so?mau=1';
 
 async function moTab() {
   const res = await fetch(`http://localhost:${CDP_PORT}/json/new?${encodeURIComponent(TRANG)}`, {
@@ -56,6 +61,19 @@ async function main() {
   // Chờ lá số dựng xong (luận giải tổng quan chạy nền, không cần đợi)
   await nghi(6000);
 
+  // Mệnh bàn nằm sau nút "Xem bản đồ đầy đủ" — bấm mở trước khi đo
+  await goi('Runtime.evaluate', {
+    expression: `(() => {
+      const nut = [...document.querySelectorAll('button')].find((b) =>
+        /xem bản đồ đầy đủ|show the full map/i.test(b.textContent || '')
+      );
+      if (nut) nut.click();
+      return Boolean(nut);
+    })()`,
+    returnByValue: true,
+  });
+  await nghi(1500);
+
   const doKichThuoc = async () => {
     const r = await goi('Runtime.evaluate', {
       expression: `(() => {
@@ -72,7 +90,13 @@ async function main() {
 
   const banDau = await doKichThuoc();
   if (!banDau) {
-    console.log('✗ Không tìm thấy mệnh bàn trên trang');
+    console.log(
+      [
+        '✗ Không tìm thấy mệnh bàn trên trang.',
+        '  Mệnh bàn đầy đủ cần tài khoản. Chạy lại dev server với',
+        '  NEXT_PUBLIC_SUPABASE_URL và NEXT_PUBLIC_SUPABASE_ANON_KEY để trống.',
+      ].join('\n')
+    );
     dong();
     process.exit(1);
   }
