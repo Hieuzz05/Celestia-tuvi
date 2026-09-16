@@ -369,5 +369,5 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Nhật ký dùng model + cảnh báo quota | Xong — cần service role key |
 | Chủ động bỏ qua model đã cạn lượt miễn phí | Xong |
 | Hợp tuổi — so hai lá số | Xong |
-| Chat hỏi đáp tự do theo lá số | Chưa |
+| Chat hỏi đáp tự do theo lá số | Xong |
 | Xuất PDF, từ điển thuật ngữ | Chưa |

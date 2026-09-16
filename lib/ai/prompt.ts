@@ -184,6 +184,60 @@ function moTaTamPhuong(laSo: LaSo, tenCung: string): string {
   )}; xung chiếu ${ten(xungChieu)}`;
 }
 
+
+const SYSTEM_HOI_DAP = `Bạn là một nhà nghiên cứu Tử Vi Đẩu Số người Việt, luận theo hệ NAM PHÁI, đang trò chuyện trực tiếp với người xem về chính lá số của họ.
+
+NGUYÊN TẮC:
+- Trả lời đúng trọng tâm câu hỏi, không lan man sang chủ đề khác.
+- Luôn bám vào dữ kiện lá số: gọi tên cụ thể sao, cung, độ sáng, Tuần–Triệt, tứ hóa. KHÔNG bịa sao không có trong dữ liệu.
+- Giải thích cơ chế: vì sao bộ sao đó dẫn tới nhận định đó.
+- Nếu câu hỏi nằm ngoài phạm vi tử vi (VD: hỏi về thời tiết, lập trình), nói thẳng là ngoài phạm vi và mời hỏi lại về lá số.
+- Nếu lá số không đủ dữ kiện để trả lời chắc chắn, nói rõ là không đủ căn cứ thay vì đoán bừa.
+- Mô tả xu hướng và đưa lựa chọn hành động, không phán định mệnh tuyệt đối. Tránh khẳng định chắc chắn về bệnh tật, tử vong, tai nạn, pháp lý.
+- Tuyệt đối không đưa chẩn đoán y khoa, lời khuyên đầu tư cụ thể hay tư vấn pháp lý; gặp câu hỏi dạng đó thì nhắc người hỏi tìm chuyên gia đúng lĩnh vực.
+
+ĐỊNH DẠNG:
+- Tiếng Việt, văn nói tự nhiên như đang tư vấn trực tiếp.
+- NGẮN GỌN: 2-4 đoạn, khoảng 150-300 từ. Đây là hội thoại, không phải bài luận giải dài.
+- Chỉ dùng đề mục "## " khi câu trả lời thực sự có nhiều phần tách bạch.`;
+
+export interface TinNhan {
+  vaiTro: 'nguoi-dung' | 'tro-ly';
+  noiDung: string;
+}
+
+/** Prompt cho chế độ hỏi đáp: kèm lá số + lịch sử hội thoại */
+export function dungPromptHoiDap(
+  laSo: LaSo,
+  namXem: number,
+  thangXem: number,
+  lichSu: TinNhan[],
+  cauHoi: string,
+  kienThucRag?: string
+): { system: string; user: string } {
+  // Chỉ giữ vài lượt gần nhất: hội thoại dài làm prompt phình to mà phần xa
+  // thường không còn liên quan tới câu đang hỏi.
+  const ganDay = lichSu.slice(-6);
+  const dongHoiThoai = ganDay
+    .map((t) => `${t.vaiTro === 'nguoi-dung' ? 'Người hỏi' : 'Bạn'}: ${t.noiDung}`)
+    .join('\n');
+  const phanLichSu = ganDay.length ? `\n\nHỘI THOẠI TRƯỚC ĐÓ\n${dongHoiThoai}` : '';
+  const phanRag = kienThucRag
+    ? `
+
+TRI THỨC THAM KHẢO TỪ KHO TÀI LIỆU (ưu tiên khi mâu thuẫn với kiến thức chung):
+${kienThucRag}`
+    : '';
+
+  return {
+    system: SYSTEM_HOI_DAP,
+    user: `${moTaLaSo(laSo, namXem, thangXem)}${phanLichSu}${phanRag}
+
+CÂU HỎI HIỆN TẠI
+${cauHoi}`,
+  };
+}
+
 export function dungPrompt(
   laSo: LaSo,
   chuDe: ChuDeId,
