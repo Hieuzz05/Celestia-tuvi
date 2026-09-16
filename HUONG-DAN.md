@@ -272,7 +272,46 @@ kể cả khi ai đó lấy được `anon key` công khai.
 Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) và log dùng model
 (`ai_provider_configs`, `ai_usage_logs`) sẽ bổ sung ở giai đoạn làm RAG.
 
-### 3.4 Chỉ định tài khoản quản trị
+### 3.4 Bật kho tri thức (RAG)
+
+Kho tri thức cho phép nạp tài liệu tử vi của riêng bạn để AI trích dẫn khi luận giải, thay vì chỉ
+dựa vào kiến thức chung của model.
+
+1. **Tạo bảng**: mở https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/sql/new, dán toàn
+   bộ `supabase/schema-rag.sql` rồi Run. File này bật extension `pgvector` và tạo 2 bảng.
+2. **Lấy service role key**: Project Settings → API Keys → mục `service_role`. Thêm vào `.env.local`:
+   ```
+   SUPABASE_SERVICE_ROLE_KEY=...
+   ```
+   Trên Vercel khai báo biến này kiểu **Secret** (không có tiền tố `NEXT_PUBLIC_`).
+
+> **Vì sao cần service role?** Hai bảng kho tri thức bật RLS nhưng **cố tình không có policy nào**,
+> nghĩa là anon key bị chặn hoàn toàn. Chỉ mã chạy trên server mới đọc/ghi được. Đây là chủ ý:
+> tài liệu bản quyền của bạn không nên tải được từ trình duyệt của bất kỳ ai.
+>
+> Service role key có quyền bỏ qua mọi RLS — **tuyệt đối không** đặt tiền tố `NEXT_PUBLIC_` cho nó.
+
+3. **Nạp tài liệu**: vào trang `/admin` → mục *Kho tri thức*. Chọn tệp `.txt`/`.md` hoặc dán nội
+   dung, đặt tiêu đề, chọn hệ phái (Nam phái / Bắc phái / Dùng chung) rồi bấm *Nạp vào kho*.
+
+Cách hệ thống dùng kho:
+
+- Câu truy vấn được dựng từ **chính các sao có thật trong lá số** (chính tinh + tứ hóa tại cung
+  Mệnh, cục) cộng với chủ đề đang xem — nên tìm được đoạn nói đúng bộ sao đó, không chỉ khớp tên
+  chủ đề chung chung.
+- Chủ đề *Vận hạn* ưu tiên tài liệu **Bắc phái**, các chủ đề còn lại ưu tiên **Nam phái**; tài liệu
+  đánh dấu *Dùng chung* luôn được xét.
+- Chỉ lấy đoạn có độ liên quan **từ 60% trở lên**. Ngưỡng này đo thực tế: câu hỏi đúng chủ đề đạt
+  ~79%, câu lạc đề ~49%.
+- Bản luận giải hiển thị rõ đã trích từ tài liệu nào, để phân biệt được đâu là kiến thức từ kho,
+  đâu là kiến thức chung của model.
+- Kho trống hoặc chưa cấu hình thì luận giải **vẫn chạy bình thường** bằng kiến thức của model.
+
+Giới hạn hiện tại: mỗi lần nạp tối đa 60 đoạn (~60.000 ký tự) vì hạn mức embedding của Gemini free
+tier tính theo phút; tài liệu dài hơn thì chia nhỏ nạp làm nhiều lần. Định dạng nhận: `.txt`, `.md`,
+`.csv` — PDF/DOCX cần thư viện bóc tách riêng, sẽ bổ sung sau.
+
+### 3.5 Chỉ định tài khoản quản trị
 
 ```
 ADMIN_EMAILS=it-ba@sapp.edu.vn
@@ -285,7 +324,7 @@ Nhiều email thì ngăn cách bằng dấu phẩy. Chỉ những email trong da
 > cả mọi người — trang sẽ hiện băng cảnh báo đỏ. Chỉ chấp nhận được lúc chạy trên máy cá nhân;
 > phải khai báo trước khi đưa lên mạng, vì trang này cho phép thử API key.
 
-### 3.5 Hồ sơ lưu ở đâu
+### 3.6 Hồ sơ lưu ở đâu
 
 - **Chưa đăng nhập** — hồ sơ lưu trong `localStorage` của đúng trình duyệt đang mở.
 - **Đã đăng nhập** — hồ sơ lưu vào bảng `charts`, mở ở máy nào cũng thấy.
@@ -305,7 +344,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | `AI_FALLBACK_ORDER` | Không | Tự đặt thứ tự ưu tiên |
 | `NEXT_PUBLIC_SUPABASE_URL` | Cho đăng nhập | Database + Auth |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Cho đăng nhập | Database + Auth |
-| `SUPABASE_SERVICE_ROLE_KEY` | Sau này | Thao tác phía server |
+| `SUPABASE_SERVICE_ROLE_KEY` | Cho kho tri thức | Đọc/ghi kho tri thức phía server |
 | `ADMIN_EMAILS` | Nên có khi public | Giới hạn quyền vào `/admin` |
 
 ---
@@ -325,5 +364,5 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Đăng nhập email + Google | Xong — cần tạo project Supabase |
 | Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
 | Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |
-| Kho tri thức RAG | Chưa — cần database |
+| Kho tri thức RAG | Xong — cần chạy `schema-rag.sql` + service role key |
 | Xem ngày tốt, hợp tuổi, chat hỏi đáp | Chưa |

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
+import { KhoTriThuc } from '@/components/KhoTriThuc';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
 
 interface ModelTrangThai {
@@ -170,16 +171,8 @@ export default function AdminPage() {
         )}
       </section>
 
-      <section className="flex max-w-[620px] flex-col gap-[12px]">
-        <h2 className="heading-sm">Kho tri thức (RAG)</h2>
-        <p className="body-text" style={{ color: 'var(--fg-body)' }}>
-          Tải tài liệu tử vi lên để AI trích dẫn khi luận giải. Phần này cần database có pgvector —
-          sẽ bật sau khi kết nối Supabase.
-        </p>
-        <button className="btn-primary self-start" disabled>
-          Tải tài liệu lên
-        </button>
-      </section>
+      <KhoTriThuc />
+
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { CHU_DE, dungPrompt, type ChuDeId } from '@/lib/ai/prompt';
+import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 
 export const maxDuration = 60;
@@ -58,12 +59,29 @@ export async function POST(req: Request) {
     hoTen: typeof body.hoTen === 'string' ? body.hoTen.slice(0, 80) : undefined,
   });
 
+  const cauHoi = typeof body.cauHoi === 'string' ? body.cauHoi.slice(0, 500) : undefined;
+
+  // Truy hồi tri thức: mô tả câu truy vấn bằng chính các sao có thật trong lá số
+  // để tìm đúng đoạn tài liệu nói về bộ sao đó, thay vì chỉ khớp theo tên chủ đề.
+  const cungMenh = laSo.cungs[laSo.menhIndex];
+  const saoMenh = cungMenh.sao
+    .filter((s) => s.loai === 'chinh-tinh' || s.loai === 'tu-hoa')
+    .map((s) => s.ten)
+    .join(' ');
+  const cauTruyVan = [CHU_DE[chuDe].nhan, CHU_DE[chuDe].moTa, saoMenh, laSo.cuc.ten, cauHoi]
+    .filter(Boolean)
+    .join('. ');
+
+  // Vận hạn luận theo Bắc phái, các chủ đề còn lại theo Nam phái
+  const doans = await truyHoiTriThuc(cauTruyVan, 6, chuDe === 'van-han' ? 'bac-phai' : 'nam-phai');
+
   const { system, user } = dungPrompt(
     laSo,
     chuDe,
     namXem,
     thangXem,
-    typeof body.cauHoi === 'string' ? body.cauHoi.slice(0, 500) : undefined
+    cauHoi,
+    dungKhoiTriThuc(doans)
   );
 
   try {
@@ -72,6 +90,11 @@ export async function POST(req: Request) {
       noiDung: kq.text,
       model: `${kq.provider}/${kq.model}`,
       daThuHong: kq.daThuHong,
+      nguonTriThuc: doans.map((d) => ({
+        tieuDe: d.tieuDe,
+        hePhai: d.hePhai,
+        diem: Math.round(d.diemTuongDong * 100),
+      })),
       tokens: { vao: kq.tokensIn, ra: kq.tokensOut },
     });
   } catch (e) {

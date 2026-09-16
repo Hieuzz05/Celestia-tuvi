@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
+import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { Field, GIO_OPTIONS, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
@@ -244,6 +245,7 @@ function TrangLaSo() {
                   Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
                 </p>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
+                <NguonTriThuc nguon={ketQua.nguonTriThuc} />
                 <button onClick={luanGiai} className="link-text self-start">
                   Luận giải lại
                 </button>
