@@ -24,7 +24,7 @@ export const MAC_DINH_SETTINGS: DisplaySettings = {
   nguyetHan: true,
   tuanTriet: true,
   tamPhuongTuChinh: true,
-  vongSao: false,
+  vongSao: true,
   luuTinh: false,
 };
 

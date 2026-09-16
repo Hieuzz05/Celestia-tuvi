@@ -8,8 +8,8 @@ import {
   CAN_CUNG_DAN,
   CHI,
   CUC_THEO_HANH,
-  KHOI_HOA_TINH,
-  KHOI_LINH_TINH,
+  AN_HOA_TINH,
+  AN_LINH_TINH,
   KHOI_TIEU_HAN,
   KHOI_TRUONG_SINH,
   NAP_AM,
@@ -25,6 +25,7 @@ import {
   VI_TRI_THIEN_VIET,
   VI_TRI_DUONG_PHU,
   VI_TRI_HOA_CAI,
+  VI_TRI_LN_VAN_TINH,
   VI_TRI_LUU_HA,
   VI_TRI_PHA_TOAI,
   VI_TRI_QUOC_AN,
@@ -216,7 +217,7 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
     chiIndex: i,
     chi: CHI[i],
     can: CAN[mod10(canCungDan + mod12(i - 2))],
-    tenCung: TEN_CUNG[mod12(i - menhIndex)],
+    tenCung: TEN_CUNG[mod12(menhIndex - i)],
     laCungMenh: i === menhIndex,
     laCungThan: i === thanIndex,
     sao: [] as Sao[],
@@ -281,10 +282,12 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
   them(6 + chiGio, 'Thai Phụ', 'phu-tinh', 'cat'); // khởi Ngọ, thuận theo giờ
   them(2 + chiGio, 'Phong Cáo', 'phu-tinh', 'cat'); // khởi Dần, thuận theo giờ
 
-  // ----- Hỏa Tinh / Linh Tinh: khởi theo tam hợp tuổi, đếm thuận tới giờ sinh -----
+  // ----- Hỏa Tinh / Linh Tinh -----
   const tamHop = nhomTamHop(chiNam);
-  them(KHOI_HOA_TINH[tamHop] + chiGio, 'Hỏa Tinh', 'phu-tinh', 'hung');
-  them(KHOI_LINH_TINH[tamHop] + chiGio, 'Linh Tinh', 'phu-tinh', 'hung');
+  const [khoiHoa, chieuHoa] = AN_HOA_TINH[tamHop];
+  const [khoiLinh, chieuLinh] = AN_LINH_TINH[tamHop];
+  them(khoiHoa + chieuHoa * (chiGio - 1), 'Hỏa Tinh', 'phu-tinh', 'hung');
+  them(khoiLinh + chieuLinh * (chiGio - 1), 'Linh Tinh', 'phu-tinh', 'hung');
 
   // ----- Phụ tinh theo chi năm -----
   them(VI_TRI_THIEN_MA[tamHop], 'Thiên Mã', 'phu-tinh', 'cat');
@@ -316,6 +319,7 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
   them(VI_TRI_THIEN_TRU[canNam], 'Thiên Trù', 'phu-tinh', 'cat');
   them(VI_TRI_THIEN_QUAN[canNam], 'Thiên Quan', 'phu-tinh', 'cat');
   them(VI_TRI_THIEN_PHUC[canNam], 'Thiên Phúc', 'phu-tinh', 'cat');
+  them(VI_TRI_LN_VAN_TINH[canNam], 'LN Văn Tinh', 'phu-tinh', 'cat');
 
   // ----- Sao theo chi năm -----
   them(VI_TRI_HOA_CAI[chiNam], 'Hoa Cái', 'phu-tinh', 'trung');
@@ -405,7 +409,7 @@ export function lapLaSo(input: ThongTinSinh): LaSo {
     chiNamIndex: chiNam,
     menhIndex,
     thanIndex,
-    thanCuCung: TEN_CUNG[mod12(thanIndex - menhIndex)],
+    thanCuCung: TEN_CUNG[mod12(menhIndex - thanIndex)],
     cuc: { so: cucSo, ten: cucInfo.ten, hanh: napAmCungMenh.hanh },
     menhChu: MENH_CHU[menhIndex],
     thanChu: THAN_CHU[chiNam],

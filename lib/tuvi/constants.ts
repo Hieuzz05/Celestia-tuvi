@@ -31,7 +31,11 @@ export const CHI = [
   'Hợi',
 ] as const;
 
-/** Tên 12 cung theo chiều thuận kể từ cung Mệnh */
+/**
+ * Tên 12 cung kể từ cung Mệnh, đếm NGƯỢC chiều địa chi.
+ * Nghĩa là Huynh Đệ nằm ở cung liền TRƯỚC Mệnh (Mệnh − 1), Phụ Mẫu ở cung liền
+ * SAU Mệnh (Mệnh + 1). Đếm nhầm chiều là toàn bộ 10 cung còn lại sai tên.
+ */
 export const TEN_CUNG = [
   'Mệnh',
   'Huynh Đệ',
@@ -115,9 +119,15 @@ export const CAN_CUNG_DAN = [2, 4, 6, 8, 0]; // Giáp/Kỷ→Bính, Ất/Canh→
 /** Vị trí Lộc Tồn theo can năm */
 export const VI_TRI_LOC_TON = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
 
-/** Thiên Khôi / Thiên Việt theo can năm */
-export const VI_TRI_THIEN_KHOI = [1, 0, 11, 11, 1, 0, 1, 6, 3, 3];
-export const VI_TRI_THIEN_VIET = [7, 8, 9, 9, 7, 8, 7, 2, 5, 5];
+/**
+ * Thiên Khôi / Thiên Việt theo can năm — bảng NAM PHÁI.
+ * Nam phái gộp Canh và Tân chung một hàng (Khôi Ngọ, Việt Dần), khác với bảng
+ * Trung Hoa vốn gộp Giáp–Mậu–Canh. Dùng nhầm bảng là hai sao này lệch hẳn cung.
+ * Giáp/Mậu: Sửu–Mùi · Ất/Kỷ: Tý–Thân · Bính/Đinh: Hợi–Dậu
+ * Canh/Tân: Ngọ–Dần · Nhâm/Quý: Mão–Tỵ
+ */
+export const VI_TRI_THIEN_KHOI = [1, 0, 11, 11, 1, 0, 6, 6, 3, 3];
+export const VI_TRI_THIEN_VIET = [7, 8, 9, 9, 7, 8, 2, 2, 5, 5];
 
 /** Triệt lộ không vong theo can năm (2 cung liền nhau) */
 export const VI_TRI_TRIET: [number, number][] = [
@@ -157,11 +167,25 @@ export const VI_TRI_DAO_HOA = [9, 3, 6, 0];
 /** Kiếp Sát theo tam hợp */
 export const VI_TRI_KIEP_SAT = [5, 11, 2, 8];
 
-/** Khởi Hỏa Tinh theo tam hợp chi năm */
-export const KHOI_HOA_TINH = [2, 1, 3, 9];
+/**
+ * Hỏa Tinh / Linh Tinh: mỗi nhóm tam hợp có cung khởi VÀ chiều đếm riêng — đây
+ * là chỗ dễ sai nhất vì nhiều tài liệu chỉ ghi cung khởi mà bỏ qua chiều.
+ * Index theo nhomTamHop: 0 = Thân Tý Thìn, 1 = Dần Ngọ Tuất, 2 = Tỵ Dậu Sửu, 3 = Hợi Mão Mùi.
+ * Mỗi mục: [cung khởi, chiều] với chiều 1 = thuận, -1 = nghịch.
+ */
+export const AN_HOA_TINH: [number, number][] = [
+  [3, 1], // Thân Tý Thìn: khởi Mão, thuận
+  [2, 1], // Dần Ngọ Tuất: khởi Dần, thuận
+  [2, -1], // Tỵ Dậu Sửu: khởi Dần, nghịch
+  [8, -1], // Hợi Mão Mùi: khởi Thân, nghịch
+];
 
-/** Khởi Linh Tinh theo tam hợp chi năm */
-export const KHOI_LINH_TINH = [10, 3, 10, 10];
+export const AN_LINH_TINH: [number, number][] = [
+  [9, -1], // Thân Tý Thìn: khởi Dậu, nghịch
+  [2, -1], // Dần Ngọ Tuất: khởi Dần, nghịch
+  [11, 1], // Tỵ Dậu Sửu: khởi Hợi, thuận
+  [11, 1], // Hợi Mão Mùi: khởi Hợi, thuận
+];
 
 /** Khởi Trường Sinh theo cục số */
 export const KHOI_TRUONG_SINH: Record<number, number> = {
@@ -246,7 +270,7 @@ export const TU_HOA: [string, string, string, string][] = [
   ['Thái Âm', 'Thiên Đồng', 'Thiên Cơ', 'Cự Môn'], // Đinh
   ['Tham Lang', 'Thái Âm', 'Hữu Bật', 'Thiên Cơ'], // Mậu
   ['Vũ Khúc', 'Tham Lang', 'Thiên Lương', 'Văn Khúc'], // Kỷ
-  ['Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Thái Âm'], // Canh
+  ['Thái Dương', 'Vũ Khúc', 'Thái Âm', 'Thiên Đồng'], // Canh — "Nhật Vũ Âm Đồng"
   ['Cự Môn', 'Thái Dương', 'Văn Khúc', 'Văn Xương'], // Tân
   ['Thiên Lương', 'Tử Vi', 'Tả Phù', 'Vũ Khúc'], // Nhâm
   ['Phá Quân', 'Cự Môn', 'Thái Âm', 'Tham Lang'], // Quý
@@ -272,6 +296,9 @@ export const VI_TRI_LUU_HA = [9, 10, 7, 8, 5, 6, 4, 3, 11, 2];
 export const VI_TRI_THIEN_TRU = [5, 6, 0, 5, 6, 8, 2, 6, 9, 10];
 export const VI_TRI_THIEN_QUAN = [7, 4, 5, 2, 3, 9, 11, 9, 10, 6];
 export const VI_TRI_THIEN_PHUC = [9, 8, 0, 11, 3, 2, 6, 5, 6, 5];
+
+/** Lưu niên Văn tinh theo can năm: Giáp-Tỵ, Ất-Ngọ, Bính/Mậu-Thân, Đinh/Kỷ-Dậu, Canh-Hợi, Tân-Tý, Nhâm-Dần, Quý-Mão */
+export const VI_TRI_LN_VAN_TINH = [5, 6, 8, 9, 8, 9, 11, 0, 2, 3];
 
 /** Bảng an sao theo CHI năm (index 0 = Tý ... 11 = Hợi) */
 export const VI_TRI_HOA_CAI = [4, 1, 10, 7, 4, 1, 10, 7, 4, 1, 10, 7];
