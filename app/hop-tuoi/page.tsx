@@ -78,8 +78,8 @@ export default function HopTuoiPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.loi ?? 'So sánh thất bại');
       setKetQua(data);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Lỗi không xác định');
+    } catch {
+      setLoi('Celestia chưa so được lúc này — thử lại sau một chút.');
     } finally {
       setDangChay(false);
     }
@@ -88,8 +88,8 @@ export default function HopTuoiPage() {
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
-        <p className="eyebrow">Hợp tuổi</p>
-        <h1 className="heading mt-[10px]">Hai lá số, đặt cạnh nhau.</h1>
+        <p className="eyebrow">KẾT NỐI</p>
+        <h1 className="heading mt-[10px]">Hai người kết nối với nhau thế nào?</h1>
         <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
           So sánh theo các tiêu chí truyền thống: bản mệnh, địa chi, cục, âm dương, cung Mệnh và
           cung Phu Thê. Công cụ này mô tả dữ kiện chứ không chấm điểm — tử vi không quy chuyện hợp
@@ -117,7 +117,7 @@ export default function HopTuoiPage() {
                   if (h) chonHoSo(h, dat);
                 }}
               >
-                <option value="">— Chọn từ hồ sơ đã lưu —</option>
+                <option value="">— Chọn một người đã lưu —</option>
                 {hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
                     {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}
@@ -187,7 +187,7 @@ export default function HopTuoiPage() {
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="heading-sm">Nhận định</h2>
                 <span className="caption">
-                  Soạn bởi <span className="font-medium" style={{ color: 'var(--fg)' }}>{ketQua.model}</span>
+                  Celestia soạn từ hai lá số
                 </span>
               </div>
               <MarkdownLuanGiai noiDung={ketQua.noiDung} />

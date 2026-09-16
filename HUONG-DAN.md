@@ -443,7 +443,16 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Lưu tinh theo năm xem | Xong — bật trong Tuỳ chọn hiển thị |
 | Quản trị xem tài khoản + lá số của user | Xong — cần service role key |
 | Chat hỏi đáp tự do theo lá số | Xong |
-| Trang Giới thiệu (hero, lời chứng thực, CTA) | Xong — khối lời chứng thực còn là nội dung mẫu |
+| Landing ở `/`, công cụ ở `/la-so` | Xong |
+| Góc nhìn nhanh (3 insight) trước khi đăng ký | Xong — tính bằng công thức, không gọi AI |
+| Nút "Vì sao Celestia nói vậy?" | Xong — mở căn cứ từ chính lá số |
+| Nhập thông tin sinh theo từng bước | Xong — 3 bước, có xử lý "không nhớ giờ sinh" |
+| Quên mật khẩu | Xong |
+| Trang chủ cá nhân hoá sau đăng nhập | Chưa — P1 |
+| Màn Vận trình (timeline năm/tháng) | Chưa — P1 |
+| Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Chưa — P1 |
+| Điều hướng đáy trên mobile | Chưa — P1 |
+| Gói Plus, paywall, xuất báo cáo | Chưa — P2 |
 | Xuất PDF, từ điển thuật ngữ | Chưa |
 
 ---
@@ -477,3 +486,59 @@ của chính hệ (Dark Plum `#240029` — dải CTA tối cuối trang) kéo d�
 Hai dải `.hero-band` và `.dark-band` có màu cố định ở cả hai theme nên chúng tự khoá lại bộ token
 khớp với nền của mình. Nếu thêm dải nền cố định mới, nhớ làm y hệt — bằng không ở chế độ Đêm chữ
 trắng sẽ rơi xuống nền vàng.
+
+---
+
+## 7. Cấu trúc trang
+
+Bản review sản phẩm (16/09/2026) yêu cầu tách rõ ba mặt: trang bán hàng, công cụ, và trang
+phương pháp. Kết quả:
+
+| Đường dẫn | Vai trò |
+|---|---|
+| `/` | Landing công khai — bán giá trị, không nhắc kỹ thuật |
+| `/la-so` | Công cụ: nhập thông tin sinh → góc nhìn nhanh → mệnh bàn đầy đủ |
+| `/gioi-thieu` | Cách Celestia tính lá số, câu hỏi thường gặp |
+| `/luan-giai` | Khám phá sâu hơn theo chủ đề |
+| `/hoi-dap` | Hỏi Celestia |
+| `/hop-tuoi` | Kết nối — so hai lá số |
+| `/ho-so` | Người của tôi |
+| `/admin` | Quản trị — **không còn link ở đâu trên giao diện**, vào bằng địa chỉ |
+
+> Công cụ lập lá số đã dời từ `/` sang `/la-so`. Ai đang lưu dấu trang cũ thì bookmark `/` giờ ra
+> trang landing.
+
+### Quy ước ngôn ngữ ở mặt trước
+
+Giao diện người dùng **không nhắc**: Nam phái / Bắc phái, an sao, tên model AI, nhà cung cấp,
+Copy JSON, trang Quản trị. Những thứ này chuyển hết vào `/gioi-thieu` (phần giải thích) hoặc
+`/admin` (phần cấu hình).
+
+Khi thêm màn mới, đối chiếu bảng từ ngữ:
+
+| Thuật ngữ | Ngôn ngữ mặt trước |
+|---|---|
+| Luận giải chi tiết | Khám phá sâu hơn |
+| Hỏi đáp | Hỏi Celestia |
+| Hợp tuổi | Kết nối |
+| Hồ sơ | Người của tôi |
+| Vận hạn / đại vận / tiểu hạn | Giai đoạn / Năm nay / Tháng này |
+| Model AI | Không hiển thị |
+
+Lỗi phía AI **không được** lộ tên model, quota hay nhà cung cấp — người dùng chỉ cần biết dữ
+liệu của mình còn nguyên và nên làm gì tiếp.
+
+### Góc nhìn nhanh tính ở đâu
+
+`lib/tuvi/quick-read.ts` dựng ba góc nhìn thẳng từ dữ liệu lá số, **không gọi AI**. Đây là thứ
+người dùng mới nhìn thấy đầu tiên; gọi model mất 15-45 giây và có thể hỏng khi hết quota, nên
+không được đặt ở chặn đầu. AI vẫn dùng cho bài dài theo chủ đề và phần hỏi đáp.
+
+Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_CHINH_TINH` trong tệp đó.
+
+### Ghi sự kiện phễu
+
+`lib/analytics.ts` có sẵn các điểm gọi theo phễu kích hoạt (`chart_generated`,
+`quick_read_viewed`, `why_opened`...). Hiện chỉ lưu vào sessionStorage và in ra console lúc
+dev — **chưa nối dịch vụ analytics nào**. Khi chọn được nhà cung cấp, chỉ sửa hàm `ghiSuKien`,
+không phải đi rải lại khắp app.

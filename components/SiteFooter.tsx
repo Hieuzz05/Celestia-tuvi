@@ -16,19 +16,19 @@ export function SiteFooter() {
         </span>
 
         <p className="caption max-w-[420px]">
-          Nội dung luận giải do AI soạn, chỉ mang tính tham khảo — không thay thế cho quyết định
-          của chính bạn.
+          Celestia đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết về tương lai — và không
+          thay thế tư vấn y tế, tài chính hay pháp lý.
         </p>
 
         <div className="flex flex-wrap items-center gap-[20px]">
-          <Link href="/gioi-thieu" className="link-text">
-            Giới thiệu
+          <Link href="/la-so" className="link-text">
+            Tạo lá số
           </Link>
-          <Link href="/" className="link-text">
-            Lập lá số
+          <Link href="/gioi-thieu" className="link-text">
+            Cách hoạt động
           </Link>
           <Link href="/hoi-dap" className="link-text">
-            Hỏi đáp
+            Hỏi Celestia
           </Link>
         </div>
       </Shell>

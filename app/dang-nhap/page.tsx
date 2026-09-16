@@ -80,12 +80,13 @@ export default function DangNhapPage() {
         setThongBao({
           loai: 'ok',
           noiDung:
-            'Đã tạo tài khoản. Nếu Supabase bật xác nhận email, hãy mở hộp thư và bấm liên kết xác nhận trước khi đăng nhập.',
+            'Đã tạo tài khoản. Nếu hộp thư của bạn nhận được email xác nhận, hãy bấm liên kết trong đó trước khi đăng nhập.',
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: matKhau });
         if (error) throw error;
-        router.push('/');
+        const next = new URLSearchParams(window.location.search).get('next');
+        router.push(next && next.startsWith('/') && !next.startsWith('//') ? next : '/la-so');
         router.refresh();
       }
     } catch (err) {
@@ -93,6 +94,26 @@ export default function DangNhapPage() {
     } finally {
       setDangXuLy(false);
     }
+  };
+
+  const quenMatKhau = async () => {
+    if (!email.trim()) {
+      setThongBao({ loai: 'loi', noiDung: 'Điền email của bạn ở trên trước đã nhé.' });
+      return;
+    }
+    setDangXuLy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/dang-nhap`,
+    });
+    setDangXuLy(false);
+    setThongBao(
+      error
+        ? { loai: 'loi', noiDung: 'Chưa gửi được email đặt lại — thử lại sau một chút.' }
+        : {
+            loai: 'ok',
+            noiDung: 'Đã gửi email đặt lại mật khẩu. Mở hộp thư và bấm liên kết trong đó.',
+          }
+    );
   };
 
   const dangNhapSSO = async (provider: SsoId) => {
@@ -109,10 +130,13 @@ export default function DangNhapPage() {
 
   return (
     <Shell className="py-[40px]">
-      <div className="mx-auto w-full max-w-[460px]">
-      <h1 className="heading">{che === 'dang-nhap' ? 'Đăng nhập' : 'Tạo tài khoản'}</h1>
+      {/* Hai cột: form bên trái, panel nhắc lại thứ người dùng sắp giữ lại bên phải.
+          Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
+      <div className="mx-auto grid w-full max-w-[940px] gap-[40px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+      <div className="w-full">
+      <h1 className="heading-sm">{che === 'dang-nhap' ? 'Đăng nhập' : 'Tạo tài khoản'}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
-        Đăng nhập để lưu lá số và xem lại các bản luận giải đã tạo.
+        Giữ mọi lá số và góc nhìn của bạn ở một nơi — để lần sau tiếp tục đúng chỗ đang dở.
       </p>
 
       {ssoDangBat.length > 0 && (
@@ -183,6 +207,12 @@ export default function DangNhapPage() {
           />
         </label>
 
+        {che === 'dang-nhap' && (
+          <button type="button" onClick={quenMatKhau} className="link-text self-start">
+            Quên mật khẩu?
+          </button>
+        )}
+
         {thongBao && (
           <p
             className="text-[13px]"
@@ -204,8 +234,28 @@ export default function DangNhapPage() {
         }}
         className="link-text mt-[24px]"
       >
-        {che === 'dang-nhap' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
+        {che === 'dang-nhap' ? 'Mới dùng Celestia? Tạo tài khoản miễn phí.' : 'Đã có tài khoản? Đăng nhập'}
       </button>
+      </div>
+
+      <aside className="hero-band hidden flex-col justify-center gap-[16px] rounded-[var(--radius-cards)] p-[40px] lg:flex">
+        <p className="eyebrow">BẠN SẼ GIỮ LẠI ĐƯỢC</p>
+        <p className="text-[24px] font-semibold leading-[1.25]" style={{ color: 'var(--fg)' }}>
+          Lá số, góc nhìn và các cuộc trò chuyện của bạn ở một nơi.
+        </p>
+        <ul className="flex flex-col gap-[10px]">
+          {[
+            'Lưu lá số của bạn và người thân, không phải nhập lại ngày sinh mỗi lần.',
+            'Xem lại những gì đã đọc, trên máy nào cũng thấy.',
+            'Tiếp tục cuộc trò chuyện đang dở với Celestia.',
+          ].map((d) => (
+            <li key={d} className="body-sm flex gap-[8px]" style={{ color: 'var(--fg)' }}>
+              <span aria-hidden>·</span>
+              {d}
+            </li>
+          ))}
+        </ul>
+      </aside>
       </div>
     </Shell>
   );

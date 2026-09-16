@@ -106,8 +106,8 @@ export default function HoiDapPage() {
           nguon: data.nguonTriThuc,
         },
       ]);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Lỗi không xác định');
+    } catch {
+      setLoi('Celestia chưa trả lời được lúc này. Câu hỏi của bạn vẫn được giữ — thử lại sau một chút.');
     } finally {
       setDangChay(false);
     }
@@ -116,8 +116,8 @@ export default function HoiDapPage() {
   return (
     <Shell className="flex flex-col gap-[20px] py-[20px]">
       <div>
-        <p className="eyebrow">Hỏi đáp</p>
-        <h1 className="heading mt-[10px]">Hỏi thẳng về lá số của bạn.</h1>
+        <p className="eyebrow">HỎI CELESTIA</p>
+        <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì lúc này?</h1>
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -138,7 +138,7 @@ export default function HoiDapPage() {
                 });
               }}
             >
-              <option value="">— Chọn từ hồ sơ đã lưu —</option>
+              <option value="">— Chọn một người đã lưu —</option>
               {hoSos.map((h) => (
                 <option key={h.id} value={h.id}>
                   {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}
@@ -187,7 +187,7 @@ export default function HoiDapPage() {
           >
             <h2 className="subheading">Chọn lá số trước</h2>
             <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
-              Nhập ngày giờ sinh ở bên trái (hoặc chọn từ hồ sơ đã lưu), rồi bấm
+              Nhập ngày giờ sinh ở bên trái (hoặc chọn một người đã lưu), rồi bấm
               <b style={{ color: 'var(--fg)' }}> Dùng lá số này để hỏi đáp</b>. AI cần biết đang
               nói về lá số nào thì câu trả lời mới có căn cứ.
             </p>
@@ -242,7 +242,7 @@ export default function HoiDapPage() {
 
             {dangChay && (
               <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-                Đang đọc lá số…
+                Celestia đang đọc lá số của bạn…
               </p>
             )}
 

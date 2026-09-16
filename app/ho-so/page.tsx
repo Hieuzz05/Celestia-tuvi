@@ -34,7 +34,7 @@ export default function HoSoPage() {
       setNguon(await nguonLuuHienTai());
       setLoi(null);
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Không đọc được hồ sơ');
+      setLoi(e instanceof Error ? e.message : 'Chưa đọc được danh sách — thử lại sau một chút.');
     }
   }, []);
 
@@ -51,7 +51,7 @@ export default function HoSoPage() {
       setDangThem(false);
       setForm({ hoTen: '', ngaySinh: '2000-01-01', gio: 9, gioiTinh: 'nam' });
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Không lưu được hồ sơ');
+      setLoi(e instanceof Error ? e.message : 'Chưa lưu được — thử lại sau một chút.');
     }
   };
 
@@ -60,7 +60,7 @@ export default function HoSoPage() {
       await xoaHoSo(id);
       await taiLai();
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Không xoá được hồ sơ');
+      setLoi(e instanceof Error ? e.message : 'Chưa xoá được — thử lại sau một chút.');
     }
   };
 
@@ -68,23 +68,21 @@ export default function HoSoPage() {
     try {
       const so = await chuyenHoSoLenTaiKhoan();
       await taiLai();
-      setLoi(so > 0 ? null : 'Không có hồ sơ nào trong trình duyệt để chuyển.');
+      setLoi(so > 0 ? null : 'Không có ai đang lưu ở trình duyệt này để chuyển.');
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Không chuyển được hồ sơ');
+      setLoi(e instanceof Error ? e.message : 'Chưa chuyển được — thử lại sau một chút.');
     }
   };
 
   return (
     <Shell className="flex flex-col gap-[36px] py-[36px]">
       <div>
-        <p className="eyebrow">
-          Hồ sơ đã lưu
-        </p>
-        <h1 className="display mt-[18px]">Lá số của bạn và người thân.</h1>
+        <p className="eyebrow">NGƯỜI CỦA TÔI</p>
+        <h1 className="heading mt-[16px]">Lá số của bạn và người thân</h1>
         <p className="body-text mt-[24px] max-w-[540px]" style={{ color: 'var(--fg-body)' }}>
           {nguon === 'tai-khoan'
-            ? 'Hồ sơ đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.'
-            : 'Hồ sơ đang lưu ngay trên trình duyệt này. Đăng nhập để đồng bộ theo tài khoản và dùng được trên mọi thiết bị.'}
+            ? 'Đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.'
+            : 'Đang lưu ngay trên trình duyệt này. Đăng nhập để giữ lại và dùng được trên mọi thiết bị.'}
         </p>
         {loi && (
           <p className="mt-[12px] text-[13px]" style={{ color: 'var(--chart-hung)' }}>
@@ -93,7 +91,7 @@ export default function HoSoPage() {
         )}
         {nguon === 'tai-khoan' && (
           <button onClick={dongBo} className="link-text mt-[12px]">
-            Chuyển hồ sơ đang lưu ở trình duyệt này lên tài khoản
+            Chuyển những người đang lưu ở trình duyệt này lên tài khoản
           </button>
         )}
       </div>
@@ -103,7 +101,7 @@ export default function HoSoPage() {
           <FormSinh giaTri={form} onChange={setForm} />
           <div className="flex items-center gap-[18px]">
             <button onClick={them} className="btn-primary">
-              Lưu hồ sơ
+              Lưu lại
             </button>
             <button onClick={() => setDangThem(false)} className="link-text">
               Huỷ
@@ -112,14 +110,15 @@ export default function HoSoPage() {
         </section>
       ) : (
         <button onClick={() => setDangThem(true)} className="btn-primary self-start">
-          Thêm hồ sơ
+          Thêm một người
         </button>
       )}
 
       <section className="flex flex-col">
         {ds.length === 0 && (
           <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-            Chưa có hồ sơ nào được lưu.
+            Lưu lá số của bạn hoặc người thân để lần sau tiếp tục mà không cần nhập lại — và để xem
+            hai người kết nối với nhau thế nào.
           </p>
         )}
         {ds.map((h) => {
@@ -152,7 +151,7 @@ export default function HoSoPage() {
               </div>
               <div className="flex items-center gap-[18px]">
                 <Link
-                  href={`/?ngay=${h.ngay}&thang=${h.thang}&nam=${h.nam}&gio=${h.gio}&gt=${h.gioiTinh}&ten=${encodeURIComponent(h.hoTen)}`}
+                  href={`/la-so?ngay=${h.ngay}&thang=${h.thang}&nam=${h.nam}&gio=${h.gio}&gt=${h.gioiTinh}&ten=${encodeURIComponent(h.hoTen)}`}
                   className="link-text"
                 >
                   Xem lá số

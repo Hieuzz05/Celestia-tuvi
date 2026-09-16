@@ -9,39 +9,44 @@ import {
 import { CHI, NGU_HANH_CHI } from '@/lib/tuvi/constants';
 import { NHAN_DO_SANG } from '@/lib/tuvi/dosang';
 
+/*
+ * Nhãn chủ đề đặt theo câu hỏi người dùng thật sự mang tới, không theo tên cung.
+ * Phần moTa giữ ngôn ngữ chuyên môn vì nó đi thẳng vào prompt và câu truy vấn kho
+ * tri thức — đó là ngôn ngữ cho máy, người dùng không nhìn thấy.
+ */
 export const CHU_DE = {
   'tong-quan': {
-    nhan: 'Tổng quan mệnh cục',
+    nhan: 'Tôi là ai?',
     moTa: 'Tính cách, năng lực nổi trội, thế mạnh và điểm cần lưu ý của cả đời',
     cung: ['Mệnh', 'Thân', 'Phúc Đức', 'Thiên Di'],
   },
   'su-nghiep': {
-    nhan: 'Sự nghiệp & công danh',
+    nhan: 'Công việc & hướng phát triển',
     moTa: 'Hướng nghề phù hợp, cách thăng tiến, môi trường làm việc hợp mệnh',
     cung: ['Quan Lộc', 'Mệnh', 'Thiên Di', 'Nô Bộc'],
   },
   'tai-chinh': {
-    nhan: 'Tài chính & của cải',
+    nhan: 'Tiền bạc & cách bạn tạo sự ổn định',
     moTa: 'Cách kiếm tiền, giữ tiền, rủi ro tài chính, tài sản - nhà đất',
     cung: ['Tài Bạch', 'Điền Trạch', 'Phúc Đức', 'Mệnh'],
   },
   'tinh-duyen': {
-    nhan: 'Tình duyên & hôn nhân',
+    nhan: 'Tình cảm & chuyện đôi lứa',
     moTa: 'Đặc điểm người bạn đời, chất lượng hôn nhân, giai đoạn nên lưu ý',
     cung: ['Phu Thê', 'Mệnh', 'Phúc Đức', 'Tử Tức'],
   },
   'suc-khoe': {
-    nhan: 'Sức khoẻ',
+    nhan: 'Sức khoẻ & nhịp sống',
     moTa: 'Thể trạng bẩm sinh, bộ phận cần chú ý, thói quen nên giữ',
     cung: ['Tật Ách', 'Mệnh', 'Phúc Đức'],
   },
   'gia-dao': {
-    nhan: 'Gia đạo & các mối quan hệ',
+    nhan: 'Gia đình & những người quanh bạn',
     moTa: 'Quan hệ với cha mẹ, anh em, con cái và phúc phần gia đình',
     cung: ['Phụ Mẫu', 'Huynh Đệ', 'Tử Tức', 'Phúc Đức'],
   },
   'van-han': {
-    nhan: 'Vận hạn trong năm',
+    nhan: 'Năm nay có gì đáng chú ý?',
     moTa: 'Đại vận, tiểu hạn, nguyệt hạn của năm đang xem',
     cung: [],
   },

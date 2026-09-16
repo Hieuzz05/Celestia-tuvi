@@ -117,10 +117,6 @@ export function TuViChart({
     a.click();
   }, [laSo, zoomThucTe]);
 
-  const chepJson = useCallback(() => {
-    navigator.clipboard.writeText(JSON.stringify(laSo, null, 2));
-  }, [laSo]);
-
   return (
     <div className="flex flex-col gap-[18px]">
       {/* Toolbar */}
@@ -140,13 +136,10 @@ export function TuViChart({
 
         <div className="ml-auto flex items-center gap-[16px]">
           <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
-            Tuỳ chọn hiển thị
+            Hiển thị
           </button>
           <button className="link-text" onClick={xuatPng}>
-            Xuất PNG
-          </button>
-          <button className="link-text" onClick={chepJson}>
-            Copy JSON
+            Xuất ảnh
           </button>
           <button className="link-text" onClick={() => window.print()}>
             In

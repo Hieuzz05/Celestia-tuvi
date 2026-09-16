@@ -66,7 +66,7 @@ export default function TaiKhoanPage() {
       <div className="flex max-w-[520px] flex-col gap-[24px]">
       <div>
         <p className="eyebrow">Tài khoản</p>
-        <h1 className="heading mt-[10px]">Hồ sơ của bạn.</h1>
+        <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
       </div>
 
       <div

@@ -12,12 +12,6 @@ import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 import { Shell } from '@/components/ui';
 
-interface ModelTrangThai {
-  provider: string;
-  model: string;
-  daCauHinh: boolean;
-}
-
 function TrangLuanGiai() {
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinForm>({
@@ -30,8 +24,6 @@ function TrangLuanGiai() {
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
   const [cauHoi, setCauHoi] = useState('');
-  const [modelChon, setModelChon] = useState('');
-  const [models, setModels] = useState<ModelTrangThai[]>([]);
   const [hoSos, setHoSos] = useState<HoSo[]>([]);
 
   const [dangChay, setDangChay] = useState(false);
@@ -42,10 +34,6 @@ function TrangLuanGiai() {
     danhSachHoSo()
       .then(setHoSos)
       .catch(() => setHoSos([]));
-    fetch('/api/ai/trang-thai')
-      .then((r) => r.json())
-      .then((d) => setModels(d.models ?? []))
-      .catch(() => setModels([]));
   }, []);
 
   // Nhận thông tin sinh khi bấm sang từ tab Lá số
@@ -79,7 +67,6 @@ function TrangLuanGiai() {
     }
   }, [form]);
 
-  const modelSanSang = models.filter((m) => m.daCauHinh);
 
   const chay = async (chuDeChay: ChuDeId) => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
@@ -101,11 +88,10 @@ function TrangLuanGiai() {
           namXem,
           thangXem,
           cauHoi: cauHoi || undefined,
-          model: modelChon || undefined,
         })
       );
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Lỗi không xác định');
+    } catch {
+      setLoi('Phần diễn giải đang tạm gián đoạn. Lá số của bạn vẫn được giữ nguyên — thử lại sau một chút.');
     } finally {
       setDangChay(false);
     }
@@ -114,14 +100,14 @@ function TrangLuanGiai() {
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
-        <p className="eyebrow">Luận giải chi tiết</p>
-        <h1 className="heading mt-[10px]">Đi sâu vào từng vấn đề.</h1>
+        <p className="eyebrow">KHÁM PHÁ SÂU HƠN</p>
+        <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì?</h1>
       </div>
 
       <section className="grid gap-[28px] lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="flex flex-col gap-[18px]">
           {hoSos.length > 0 && (
-            <Field label="Chọn từ hồ sơ đã lưu">
+            <Field label="Chọn một người đã lưu">
               <select
                 className="field-input"
                 defaultValue=""
@@ -181,21 +167,6 @@ function TrangLuanGiai() {
             />
           </Field>
 
-          <Field label="Model AI">
-            <select
-              value={modelChon}
-              onChange={(e) => setModelChon(e.target.value)}
-              className="field-input"
-            >
-              <option value="">Tự động (ưu tiên theo thứ tự cấu hình)</option>
-              {modelSanSang.map((m) => (
-                <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
-                  {m.provider} — {m.model}
-                </option>
-              ))}
-            </select>
-          </Field>
-
           {laSo && (
             <div
               className="flex flex-wrap gap-x-[14px] gap-y-[4px] pt-[14px] text-[13px]"
@@ -211,11 +182,6 @@ function TrangLuanGiai() {
             </div>
           )}
 
-          {modelSanSang.length === 0 && (
-            <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
-              Chưa có model AI nào được cấu hình — xem trang Quản trị.
-            </p>
-          )}
         </div>
 
         <div className="flex flex-col gap-[18px]">
@@ -263,7 +229,7 @@ function TrangLuanGiai() {
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="subheading">{CHU_DE[chuDe].nhan}</h2>
                   <span className="caption">
-                    Soạn bởi <span className="font-medium" style={{ color: 'var(--fg)' }}>{ketQua.model}</span>
+                    Celestia soạn từ lá số của bạn
                   </span>
                 </div>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} />
@@ -277,7 +243,7 @@ function TrangLuanGiai() {
 
             {!ketQua && !dangChay && !loi && (
               <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-                Chọn một chủ đề ở trên để bắt đầu luận giải chi tiết.
+                Chọn một chủ đề ở trên để bắt đầu.
               </p>
             )}
           </div>

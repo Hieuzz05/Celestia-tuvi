@@ -1,289 +1,217 @@
-'use client';
-
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useState } from 'react';
-import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { NguonTriThuc } from '@/components/NguonTriThuc';
-import { GIO_OPTIONS, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
-import { Eyebrow, HuyHieuOk, NutChinh, O, OChon, Shell, Truong } from '@/components/ui';
-import { TuViChart } from '@/components/laso/TuViChart';
-import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
-import { luuHoSo } from '@/lib/store/hoso';
-import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
-import { CHI } from '@/lib/tuvi/constants';
+import type { Metadata } from 'next';
+import { LaSoMau } from '@/components/landing/LaSoMau';
+import {
+  BuocSo,
+  DarkBand,
+  Eyebrow,
+  GhiChuTay,
+  HeroBand,
+  IconDongHo,
+  IconHaiNguoi,
+  IconKhien,
+  IconLaSo,
+  IconMuiTenPhai,
+  IconSao,
+  IconTroChuyen,
+  Section,
+  SectionHeader,
+  Shell,
+  The,
+} from '@/components/ui';
 
-function TrangLaSo() {
-  const params = useSearchParams();
-  const [form, setForm] = useState<ThongTinForm>({
-    hoTen: '',
-    ngaySinh: '2000-08-24',
-    gio: 9,
-    gioiTinh: 'nam',
-  });
-  const [namXem, setNamXem] = useState(new Date().getFullYear());
-  const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
-  const [daLuu, setDaLuu] = useState(false);
+export const metadata: Metadata = {
+  title: 'Celestia — Một góc nhìn mới về chính bạn',
+  description:
+    'Celestia biến lá số phức tạp thành những điều bạn có thể hiểu và áp dụng vào đời sống: bản thân, công việc, tình cảm và giai đoạn bạn đang đi qua.',
+};
 
-  const [dangChay, setDangChay] = useState(false);
-  const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
-  const [loi, setLoi] = useState<string | null>(null);
-  const [modelChon, setModelChon] = useState('');
-  const [models, setModels] = useState<{ provider: string; model: string; daCauHinh: boolean }[]>(
-    []
-  );
+/**
+ * Landing công khai.
+ *
+ * Trang này bán cảm giác "tôi sẽ hiểu được điều gì về mình", không bán công nghệ:
+ * không nhắc trường phái, model AI hay nhà cung cấp — những thứ đó không phải giá
+ * trị của người dùng, và để ở mặt trước thì người mới không biết trang này giúp
+ * được gì cho mình.
+ */
 
-  useEffect(() => {
-    fetch('/api/ai/trang-thai')
-      .then((r) => r.json())
-      .then((d) => setModels(d.models ?? []))
-      .catch(() => setModels([]));
-  }, []);
+const BA_GIA_TRI = [
+  {
+    icon: <IconSao />,
+    ten: 'Hiểu bản thân',
+    mo: 'Thứ bạn thường làm tốt, thứ bạn hay vướng, và điều khiến bạn thấy đủ hoặc thấy thiếu.',
+  },
+  {
+    icon: <IconDongHo />,
+    ten: 'Hiểu thời điểm',
+    mo: 'Giai đoạn bạn đang đi qua đang nghiêng về chủ đề nào, và điều gì dễ nổi lên trong năm nay.',
+  },
+  {
+    icon: <IconHaiNguoi />,
+    ten: 'Hiểu mối quan hệ',
+    mo: 'Hai người dễ đồng điệu ở đâu, và ở đâu thì cần thêm thời gian để hiểu nhau.',
+  },
+];
 
-  useEffect(() => {
-    const ngay = Number(params.get('ngay'));
-    const thang = Number(params.get('thang'));
-    const nam = Number(params.get('nam'));
-    if (!ngay || !thang || !nam) return;
-    setForm({
-      hoTen: params.get('ten') ?? '',
-      ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
-      gio: Number(params.get('gio')) || 9,
-      gioiTinh: (params.get('gt') as GioiTinh) || 'nam',
-    });
-  }, [params]);
+const VI_SAO_TIN = [
+  {
+    icon: <IconLaSo />,
+    ten: 'Được tính nhất quán',
+    mo: 'Cùng một ngày giờ sinh luôn cho ra cùng một lá số. Phần tính toán không đổi theo cách bạn đặt câu hỏi.',
+  },
+  {
+    icon: <IconKhien />,
+    ten: 'Có căn cứ',
+    mo: 'Mỗi nhận định đều mở ra được để xem nó dựa trên phần nào của lá số, thay vì bắt bạn tin suông.',
+  },
+  {
+    icon: <IconTroChuyen />,
+    ten: 'Có thể xem sâu',
+    mo: 'Bạn đọc bản dễ hiểu trước. Khi muốn đi tới tận thuật ngữ gốc, mọi lớp bên dưới vẫn còn nguyên đó.',
+  },
+];
 
-  const laSo = useMemo(() => {
-    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
-    if (!ngay || !thang || !nam) return null;
-    try {
-      return lapLaSo({
-        ngay,
-        thang,
-        nam,
-        gio: form.gio,
-        gioiTinh: form.gioiTinh,
-        hoTen: form.hoTen,
-      });
-    } catch {
-      return null;
-    }
-  }, [form]);
+const BUOC = [
+  {
+    tieuDe: 'Cho biết bạn sinh khi nào',
+    mo: 'Ngày và giờ sinh — mất chưa tới một phút.',
+  },
+  {
+    tieuDe: 'Nhận góc nhìn đầu tiên',
+    mo: 'Ba điều đáng chú ý về bạn, viết bằng tiếng thường, không cần đăng ký.',
+  },
+  {
+    tieuDe: 'Đi sâu khi bạn muốn',
+    mo: 'Theo chủ đề bạn đang quan tâm, hoặc hỏi thẳng điều đang băn khoăn.',
+  },
+];
 
-  // Đổi thông tin sinh thì bản luận giải cũ không còn đúng với lá số nữa
-  useEffect(() => {
-    setKetQua(null);
-    setLoi(null);
-  }, [form.ngaySinh, form.gio, form.gioiTinh]);
-
-  const set = <K extends keyof ThongTinForm>(k: K, v: ThongTinForm[K]) =>
-    setForm((f) => ({ ...f, [k]: v }));
-
-  const luu = async () => {
-    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
-    if (!ngay || !thang || !nam) return;
-    try {
-      await luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
-      setDaLuu(true);
-      setTimeout(() => setDaLuu(false), 2500);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Không lưu được hồ sơ');
-    }
-  };
-
-  const luanGiai = async () => {
-    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
-    if (!ngay || !thang || !nam) return;
-    setDangChay(true);
-    setLoi(null);
-    setKetQua(null);
-    try {
-      setKetQua(
-        await goiLuanGiai({
-          ngay,
-          thang,
-          nam,
-          gio: form.gio,
-          gioiTinh: form.gioiTinh,
-          hoTen: form.hoTen,
-          chuDe: 'tong-quan',
-          namXem,
-          thangXem,
-          model: modelChon || undefined,
-        })
-      );
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Lỗi không xác định');
-    } finally {
-      setDangChay(false);
-    }
-  };
-
-  const modelSanSang = models.filter((m) => m.daCauHinh);
-
-  const lienKetChiTiet = laSo
-    ? `/luan-giai?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form.hoTen)}`
-    : '/luan-giai';
-
+export default function TrangChu() {
   return (
-    <Shell className="flex flex-col gap-[20px] py-[24px]">
-      <section className="no-print card">
-        <Eyebrow className="mb-[16px]">Thông tin ngày sinh</Eyebrow>
-        <div className="grid gap-x-[16px] gap-y-[12px] md:grid-cols-2 xl:grid-cols-4">
-          <Truong nhan="Họ tên">
-            <O
-              value={form.hoTen}
-              onChange={(e) => set('hoTen', e.target.value)}
-              placeholder="Nguyễn Văn A"
-            />
-          </Truong>
-          <Truong nhan="Ngày sinh">
-            <O type="date" value={form.ngaySinh} onChange={(e) => set('ngaySinh', e.target.value)} />
-          </Truong>
-          <Truong nhan="Giờ sinh">
-            <OChon value={form.gio} onChange={(e) => set('gio', Number(e.target.value))}>
-              {GIO_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </OChon>
-          </Truong>
-          <Truong nhan="Giới tính">
-            <OChon
-              value={form.gioiTinh}
-              onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
-            >
-              <option value="nam">Nam</option>
-              <option value="nu">Nữ</option>
-            </OChon>
-          </Truong>
-          <Truong nhan="Năm xem">
-            <O type="number" value={namXem} onChange={(e) => setNamXem(Number(e.target.value))} />
-          </Truong>
-          <Truong nhan="Tháng xem">
-            <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                <option key={m} value={m}>
-                  Tháng {m}
-                </option>
-              ))}
-            </OChon>
-          </Truong>
+    <>
+      {/* ---------- Dải hero: gradient hoàng hôn tràn hết chiều ngang ---------- */}
+      <HeroBand className="pt-[80px] pb-[96px]">
+        <Shell rong="hep" className="text-center">
+          <Eyebrow className="mb-[16px]">MỘT GÓC NHÌN MỚI VỀ CHÍNH BẠN</Eyebrow>
+          <h1 className="display">Lá số của bạn, giải bằng tiếng người</h1>
+          <p className="body-lg mx-auto mt-[24px] max-w-[560px]" style={{ color: 'var(--fg)' }}>
+            Celestia biến lá số phức tạp thành những điều bạn có thể hiểu và áp dụng vào đời sống —
+            về bản thân, công việc, tình cảm và giai đoạn bạn đang đi qua.
+          </p>
 
-          {/* Chọn model + nút luận giải nằm ngay trong khu nhập liệu để thao tác
-              gọn một chỗ, khỏi phải nhìn sang panel bên phải */}
-          <Truong nhan="Model AI">
-            <OChon value={modelChon} onChange={(e) => setModelChon(e.target.value)}>
-              <option value="">
-                {modelSanSang.length > 0
-                  ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
-                  : 'Tự động'}
-              </option>
-              {modelSanSang.map((m) => (
-                <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
-                  {m.provider} — {m.model}
-                </option>
-              ))}
-            </OChon>
-          </Truong>
-
-          <div className="flex items-end">
-            <NutChinh onClick={luanGiai} disabled={!laSo || dangChay} className="w-full">
-              {dangChay ? 'Đang luận giải…' : 'Luận giải lá số'}
-            </NutChinh>
-          </div>
-        </div>
-      </section>
-
-      {!laSo && (
-        <p className="body-text" style={{ color: 'var(--chart-hung)' }}>
-          Ngày sinh không hợp lệ, vui lòng kiểm tra lại.
-        </p>
-      )}
-
-      {laSo && (
-        <section className="grid gap-[20px] xl:grid-cols-[minmax(0,1fr)_390px]">
-          <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
-
-          <aside className="no-print card flex max-h-[80vh] flex-col gap-[14px] overflow-y-auto">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="subheading">Luận giải tổng quan</h2>
-              {daLuu ? (
-                <HuyHieuOk>Đã lưu</HuyHieuOk>
-              ) : (
-                <button onClick={luu} className="link-text">
-                  Lưu hồ sơ
-                </button>
-              )}
-            </div>
-
-            <div
-              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pb-[12px] text-[14px]"
-              style={{ color: 'var(--fg-muted)', borderBottom: '1px solid var(--line)' }}
-            >
-              <span>
-                Mệnh <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
-              </span>
-              <span style={{ color: 'var(--fg)' }}>{laSo.cuc.ten}</span>
-              <span>
-                Bản mệnh <b style={{ color: 'var(--fg)' }}>{laSo.banMenh.ten}</b>
-              </span>
-              <span>
-                Thân cư <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
-              </span>
-            </div>
-
-            {!ketQua && !dangChay && (
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                AI đọc trực tiếp dữ liệu an sao của lá số bên cạnh — tên sao, độ sáng, Tuần Triệt,
-                tứ hóa — rồi diễn giải theo Nam phái. Bấm <b style={{ color: 'var(--fg)' }}>Luận
-                giải lá số</b> ở khu nhập thông tin phía trên để bắt đầu.
-              </p>
-            )}
-
-            {dangChay && (
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Đang đọc lá số và soạn luận giải… mất khoảng 15–45 giây.
-              </p>
-            )}
-
-            {loi && (
-              <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
-                {loi}
-              </p>
-            )}
-
-            {ketQua && (
-              <>
-                <p className="caption">
-                  Soạn bởi{' '}
-                  <span className="font-medium" style={{ color: 'var(--fg)' }}>
-                    {ketQua.model}
-                  </span>
-                </p>
-                <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-                <NguonTriThuc nguon={ketQua.nguonTriThuc} />
-                <button onClick={luanGiai} className="link-text self-start">
-                  Luận giải lại
-                </button>
-              </>
-            )}
-
-            <Link href={lienKetChiTiet} className="btn-outline mt-auto self-start">
-              Luận giải chi tiết theo chủ đề
+          <div className="mt-[32px] flex flex-wrap items-center justify-center gap-[16px]">
+            <Link href="/la-so" className="btn-primary">
+              Tạo lá số miễn phí
             </Link>
-          </aside>
-        </section>
-      )}
-    </Shell>
-  );
-}
+            <Link href="/la-so?mau=1" className="btn-outline">
+              Xem một lá số mẫu
+            </Link>
+          </div>
 
-export default function Home() {
-  return (
-    <Suspense fallback={<Shell className="py-[40px]">Đang tải…</Shell>}>
-      <TrangLaSo />
-    </Suspense>
+          <p className="caption mt-[16px]">Không cần tài khoản để xem góc nhìn đầu tiên.</p>
+        </Shell>
+
+        {/* Xem trước một góc nhìn thật, kèm nút mở căn cứ */}
+        <Shell className="mt-[48px]">
+          <div className="relative">
+            <span className="absolute -top-[40px] right-[6%] hidden lg:block">
+              <GhiChuTay huong="duoi" xoay={-4}>
+                Bấm thử &ldquo;Vì sao?&rdquo;
+              </GhiChuTay>
+            </span>
+            <LaSoMau />
+          </div>
+        </Shell>
+      </HeroBand>
+
+      {/* ---------- Ba giá trị ---------- */}
+      <Section>
+        <Shell>
+          <SectionHeader
+            canGiua
+            eyebrow="CELESTIA GIÚP ĐƯỢC GÌ"
+            tieuDe="Ba câu hỏi bạn có thể mang tới đây"
+          />
+          <div className="mt-[48px] grid gap-[16px] md:grid-cols-3">
+            {BA_GIA_TRI.map((t) => (
+              <The key={t.ten} className="flex flex-col gap-[12px]">
+                <span style={{ color: 'var(--fg)' }}>{t.icon}</span>
+                <h3 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                  {t.ten}
+                </h3>
+                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {t.mo}
+                </p>
+              </The>
+            ))}
+          </div>
+        </Shell>
+      </Section>
+
+      {/* ---------- Ba bước ---------- */}
+      <Section className="pt-0">
+        <Shell>
+          <SectionHeader
+            canGiua
+            eyebrow="BẮT ĐẦU TRONG MỘT PHÚT"
+            tieuDe="Ba bước, không cần tài khoản"
+          />
+          <div className="mx-auto mt-[48px] grid max-w-[900px] gap-[24px] md:grid-cols-3">
+            {BUOC.map((b, i) => (
+              <BuocSo key={b.tieuDe} so={i + 1} tieuDe={b.tieuDe} mo={b.mo} />
+            ))}
+          </div>
+        </Shell>
+      </Section>
+
+      {/* ---------- Vì sao tin được ---------- */}
+      <Section className="pt-0">
+        <Shell>
+          <SectionHeader
+            canGiua
+            eyebrow="VÌ SAO TIN ĐƯỢC"
+            tieuDe="Dễ đọc, nhưng luôn mở ra xem được căn cứ"
+            mo="Người mới nhận một câu chuyện rõ ràng. Người đã biết Tử Vi vẫn lần được tới cung, sao và cách tính."
+          />
+          <div className="mt-[48px] grid gap-[16px] md:grid-cols-3">
+            {VI_SAO_TIN.map((t) => (
+              <The key={t.ten} className="flex flex-col gap-[12px]">
+                <span style={{ color: 'var(--fg)' }}>{t.icon}</span>
+                <h3 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                  {t.ten}
+                </h3>
+                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {t.mo}
+                </p>
+              </The>
+            ))}
+          </div>
+          <p className="mt-[32px] text-center">
+            <Link href="/gioi-thieu" className="link-text inline-flex items-center gap-[6px]">
+              Xem cách Celestia tính lá số
+              <IconMuiTenPhai size={16} />
+            </Link>
+          </p>
+        </Shell>
+      </Section>
+
+      {/* ---------- Dải CTA tối cuối trang ---------- */}
+      <DarkBand className="py-[80px]">
+        <Shell className="flex flex-wrap items-center justify-between gap-[32px]">
+          <div className="max-w-[560px]">
+            <p className="eyebrow mb-[16px]">SẴN SÀNG CHƯA?</p>
+            <h2 className="heading">Bắt đầu từ thông tin của bạn</h2>
+            <p className="body-text mt-[16px]" style={{ color: 'var(--fg-muted)' }}>
+              Chỉ cần ngày và giờ sinh. Góc nhìn đầu tiên hiện ngay, đọc xong rồi bạn mới cần quyết
+              định có lưu lại hay không.
+            </p>
+          </div>
+
+          <Link href="/la-so" className="btn-primary">
+            Tạo lá số miễn phí
+          </Link>
+        </Shell>
+      </DarkBand>
+    </>
   );
 }
