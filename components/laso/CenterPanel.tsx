@@ -35,13 +35,10 @@ export function CenterPanel({
   const t = laSo.thongTin;
   return (
     <div
-      className="o-cung-cuon flex flex-col gap-[7px] overflow-auto p-[14px]"
+      className="flex flex-col gap-[7px] p-[14px]"
       style={{
         gridRow: '2 / 4',
         gridColumn: '2 / 4',
-        // Không có dòng này thì grid item vẫn lấy min-content làm chiều cao tối
-        // thiểu, kéo cả hàng 2-3 cao lên dù đã cho phép cuộn.
-        minHeight: 0,
         border: '1px solid var(--line)',
         background: 'var(--chart-cell)',
       }}

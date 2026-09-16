@@ -16,6 +16,8 @@ import type { ModelConfig, ProviderId } from './types';
 
 const KEY_ENV: Record<ProviderId, string> = {
   gemini: 'GEMINI_API_KEY',
+  groq: 'GROQ_API_KEY',
+  cerebras: 'CEREBRAS_API_KEY',
   openrouter: 'OPENROUTER_API_KEY',
   openai: 'OPENAI_API_KEY',
   anthropic: 'ANTHROPIC_API_KEY',
@@ -23,13 +25,22 @@ const KEY_ENV: Record<ProviderId, string> = {
 
 const MODEL_MAC_DINH: Record<ProviderId, string> = {
   gemini: 'gemini-3.6-flash',
+  groq: 'llama-3.3-70b-versatile',
+  cerebras: 'llama-3.3-70b',
   openrouter: 'deepseek/deepseek-chat-v3-0324:free',
   openai: 'gpt-4o-mini',
   anthropic: 'claude-haiku-4-5-20251001',
 };
 
 /** Thứ tự ưu tiên mặc định: free tier dùng được thật đứng trước */
-const THU_TU_MAC_DINH: ProviderId[] = ['gemini', 'openrouter', 'openai', 'anthropic'];
+const THU_TU_MAC_DINH: ProviderId[] = [
+  'gemini',
+  'groq',
+  'cerebras',
+  'openrouter',
+  'openai',
+  'anthropic',
+];
 
 export function layApiKey(provider: ProviderId): string {
   return process.env[KEY_ENV[provider]]?.trim() ?? '';

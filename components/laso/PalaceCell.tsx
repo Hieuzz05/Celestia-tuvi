@@ -69,6 +69,7 @@ export function PalaceCell({
   laTieuHan,
   laDaiHanHienTai,
   nguyetHanThang,
+  luuTinh,
   onHover,
   onSelect,
 }: {
@@ -78,6 +79,7 @@ export function PalaceCell({
   laTieuHan: boolean;
   laDaiHanHienTai: boolean;
   nguyetHanThang?: number;
+  luuTinh?: { ten: string; tinhChat?: string }[];
   onHover: (chiIndex: number | null) => void;
   onSelect: (chiIndex: number) => void;
 }) {
@@ -106,14 +108,13 @@ export function PalaceCell({
       onMouseEnter={() => onHover(cung.chiIndex)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(cung.chiIndex)}
-      className="o-cung-cuon relative flex cursor-pointer flex-col p-[9px] transition-opacity duration-150"
+      className="relative flex cursor-pointer flex-col p-[9px] transition-opacity duration-150"
       style={{
         gridRow: pos.row,
         gridColumn: pos.col,
         minWidth: 0,
-        minHeight: 0,
-        // Ô có chiều cao cố định theo lưới; bật thêm lớp dữ liệu thì cuộn trong ô
-        overflowY: 'auto',
+        // Ô giãn theo nội dung: thà mệnh bàn cao hơn còn hơn cắt mất tên sao
+        minHeight: 150,
         border: `1px solid ${vienMau}`,
         background: laTieuHan ? 'var(--chart-han)' : 'var(--chart-cell)',
         opacity: trangThai === 'mo' ? 0.28 : 1,
@@ -224,6 +225,21 @@ export function PalaceCell({
           {vongSao.map((s) => (
             <span key={s.ten} className="text-[11px]" style={{ color: 'rgba(154,154,154,0.65)' }}>
               {s.ten}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Lưu tinh theo năm xem — phủ thêm, không thuộc lá số gốc */}
+      {settings.luuTinh && luuTinh && luuTinh.length > 0 && (
+        <div className="mt-[4px] flex flex-wrap gap-x-[6px]">
+          {luuTinh.map((s) => (
+            <span
+              key={s.ten}
+              className="text-[11px] italic"
+              style={{ color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--accent)' }}
+            >
+              {s.ten.replace('Lưu ', 'L.')}
             </span>
           ))}
         </div>

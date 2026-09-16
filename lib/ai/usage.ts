@@ -10,6 +10,8 @@ import type { ProviderId } from './types';
  */
 export const HAN_MUC_NGAY: Record<ProviderId, number | null> = {
   gemini: 250, // free tier với API key
+  groq: 900, // ~1000 request/ngày, chừa lại chút biên
+  cerebras: 900,
   openrouter: 50, // các model :free giới hạn theo ngày
   openai: null, // trả phí, không chặn theo lượt
   anthropic: null,

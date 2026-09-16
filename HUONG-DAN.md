@@ -194,7 +194,19 @@ npx vercel --prod
    ```
 3. Chọn model có đuôi `:free`, ví dụ `deepseek/deepseek-chat-v3-0324:free`.
 
-### 2.3 OpenAI / Anthropic — chỉ khi có ngân sách
+### 2.3 Groq và Cerebras — free tier, không cần thẻ
+
+Hai nhà cung cấp này dùng chung giao thức OpenAI nên hệ thống hỗ trợ sẵn, chỉ cần thêm key:
+
+- **Groq** — https://console.groq.com/keys → `GROQ_API_KEY`. Khoảng 1000 request/ngày, tốc độ
+  rất nhanh. Model gợi ý: `llama-3.3-70b-versatile`.
+- **Cerebras** — https://cloud.cerebras.ai → `CEREBRAS_API_KEY`. Model gợi ý: `llama-3.3-70b`.
+
+> Có nhà cung cấp free tier khác (Mistral ~1B token/tháng) nhưng **đòi bạn đồng ý cho dùng dữ liệu
+> để huấn luyện**. App này xử lý ngày giờ sinh và câu hỏi riêng tư của người dùng, nên tôi không
+> đưa vào mặc định. Muốn dùng thì cân nhắc kỹ phần quyền riêng tư trước.
+
+### 2.4 OpenAI / Anthropic — chỉ khi có ngân sách
 
 Hai nhà cung cấp này **không còn tier miễn phí thật cho API** (bản free chỉ áp dụng cho giao diện chat trên web). Khi nào có ngân sách thì thêm:
 
@@ -203,15 +215,16 @@ OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-### 2.4 Đặt thứ tự fallback
+### 2.5 Đặt thứ tự fallback
 
 ```
 AI_FALLBACK_ORDER=gemini|gemini-3.6-flash,openrouter|deepseek/deepseek-chat-v3-0324:free
 ```
 
-Bỏ trống biến này thì thứ tự mặc định là: Gemini → OpenRouter → OpenAI → Anthropic.
+Bỏ trống biến này thì thứ tự mặc định là:
+Gemini → Groq → Cerebras → OpenRouter → OpenAI → Anthropic.
 
-### 2.5 Kiểm tra
+### 2.6 Kiểm tra
 
 Vào trang **/admin**: xem model nào đã có key, dán thử key vào ô *Test kết nối* để xác nhận key và tên model dùng được, trước khi đưa lên Vercel.
 
@@ -369,5 +382,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Nhật ký dùng model + cảnh báo quota | Xong — cần service role key |
 | Chủ động bỏ qua model đã cạn lượt miễn phí | Xong |
 | Hợp tuổi — so hai lá số | Xong |
+| Lưu tinh theo năm xem | Xong — bật trong Tuỳ chọn hiển thị |
+| Quản trị xem tài khoản + lá số của user | Xong — cần service role key |
 | Chat hỏi đáp tự do theo lá số | Xong |
 | Xuất PDF, từ điển thuật ngữ | Chưa |

@@ -41,12 +41,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="mx-auto w-full max-w-[1216px] px-[24px]">
           <SiteNav />
           {children}
-          <footer
-            className="no-print border-t py-[40px] text-[13px]"
-            style={{ color: "var(--fg-muted)", borderColor: "var(--line)" }}
-          >
-            Kết quả an sao và luận giải mang tính tham khảo, không thay thế tư vấn chuyên môn.
-          </footer>
         </div>
       </body>
     </html>

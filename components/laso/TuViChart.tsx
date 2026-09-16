@@ -6,6 +6,7 @@ import {
   cungDaiVan,
   cungNguyetHan,
   cungTieuHan,
+  luuTinhTheoNam,
   tamPhuongTuChinh,
   type LaSo,
 } from '@/lib/tuvi/ansao';
@@ -15,15 +16,14 @@ import { PalaceDrawer } from './PalaceDrawer';
 import { VoidMarkers, type VoidMarker } from './VoidMarkers';
 import { MAC_DINH_SETTINGS, NHAN_SETTINGS, type DisplaySettings } from './types';
 
-const ZOOM_LEVELS = [0.6, 0.8, 1, 1.25, 1.5];
 const CHART_WIDTH = 920;
-/** Chiều cao cố định của mệnh bàn — 4 hàng bằng nhau, để phép tính tỉ lệ là xác định */
-const CHART_ROW = 162;
-const CHART_HEIGHT = CHART_ROW * 4;
-/** Dưới mức này chữ trong ô cung không còn đọc được, thà để cuộn dọc còn hơn */
-const ZOOM_TOI_THIEU = 0.62;
-/** Giá trị zoom đặc biệt: tự co mệnh bàn cho vừa bề ngang khung chứa */
-const VUA_KHUNG = 0;
+/**
+ * Chiều cao tự nhiên của mệnh bàn. Ô cung tự giãn theo nội dung nên con số này
+ * chỉ dùng để ước lượng tỉ lệ ban đầu; sau khi render sẽ đo lại cho chính xác.
+ */
+const CHART_HEIGHT_UOC_LUONG = 820;
+/** Dưới mức này chữ trong ô cung không còn đọc được */
+const ZOOM_TOI_THIEU = 0.5;
 
 export function TuViChart({
   laSo,
@@ -40,45 +40,52 @@ export function TuViChart({
   const [hoverCung, setHoverCung] = useState<number | null>(null);
   const [chonCung, setChonCung] = useState<number | null>(null);
   const [moDrawer, setMoDrawer] = useState(false);
-  const [zoom, setZoom] = useState<number>(VUA_KHUNG);
   const [zoomVuaKhung, setZoomVuaKhung] = useState(1);
+  const [cheoThuc, setCheoThuc] = useState(CHART_HEIGHT_UOC_LUONG);
   const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  // Mệnh bàn có kích thước cố định (CHART_WIDTH × CHART_HEIGHT) nên tỉ lệ thu
-  // nhỏ tính thẳng từ hai con số đó — không đo lại phần tử đang bị biến đổi,
-  // tránh vòng phản hồi layout từng làm treo trình duyệt.
+  // Ô cung giãn theo nội dung nên chiều cao thật chỉ biết sau khi render. Đo
+  // bằng scrollHeight của phần tử KHÔNG bị biến đổi (transform không tác động
+  // tới layout) rồi mới tính tỉ lệ — tránh vòng phản hồi từng làm treo trình duyệt.
   useEffect(() => {
     const khung = khungRef.current;
-    if (!khung) return;
+    const chart = chartRef.current;
+    if (!khung || !chart) return;
 
     const doLai = () => {
-      const conLai = window.innerHeight - khung.getBoundingClientRect().top - 24;
-      setZoomVuaKhung(
-        Math.max(
-          ZOOM_TOI_THIEU,
-          Math.min(1, khung.clientWidth / CHART_WIDTH, conLai / CHART_HEIGHT)
-        )
-      );
+      const cao = chart.scrollHeight;
+      if (cao > 0) setCheoThuc(cao);
+      setZoomVuaKhung(Math.max(ZOOM_TOI_THIEU, Math.min(1, khung.clientWidth / CHART_WIDTH)));
     };
 
     doLai();
     const ro = new ResizeObserver(doLai);
     ro.observe(khung);
+    ro.observe(chart);
     window.addEventListener('resize', doLai);
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', doLai);
     };
-  }, []);
+  }, [settings, laSo]);
 
-  const zoomThucTe = zoom === VUA_KHUNG ? zoomVuaKhung : zoom;
+  const zoomThucTe = zoomVuaKhung;
 
   const tuoiAm = namXem - laSo.thongTin.amLich.nam + 1;
   const cungTieuHanIndex = cungTieuHan(laSo, tuoiAm);
   const cungNguyetHanIndex = cungNguyetHan(laSo, tuoiAm, thangXem);
   const daiVanHienTai = cungDaiVan(laSo, tuoiAm);
+
+  const luuTinhTheoCung = useMemo(() => {
+    const theoCung = new Map<number, { ten: string; tinhChat?: string }[]>();
+    for (const s of luuTinhTheoNam(namXem)) {
+      if (!theoCung.has(s.chiIndex)) theoCung.set(s.chiIndex, []);
+      theoCung.get(s.chiIndex)!.push({ ten: s.ten, tinhChat: s.tinhChat });
+    }
+    return theoCung;
+  }, [namXem]);
 
   const cungActive = chonCung ?? hoverCung;
   const quanHe = useMemo(() => {
@@ -140,29 +147,6 @@ export function TuViChart({
           </button>
         </div>
 
-        <div className="flex items-center gap-[10px]">
-          <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-            Thu phóng
-          </span>
-          <button
-            className="pill-tag text-[13px]"
-            data-active={zoom === VUA_KHUNG}
-            onClick={() => setZoom(VUA_KHUNG)}
-          >
-            Vừa khung
-          </button>
-          {ZOOM_LEVELS.map((z) => (
-            <button
-              key={z}
-              className="pill-tag text-[13px]"
-              data-active={zoom === z}
-              onClick={() => setZoom(z)}
-            >
-              {Math.round(z * 100)}%
-            </button>
-          ))}
-        </div>
-
         <div className="ml-auto flex items-center gap-[16px]">
           <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
             Tuỳ chọn hiển thị
@@ -202,7 +186,7 @@ export function TuViChart({
         <div
           style={{
             width: CHART_WIDTH * zoomThucTe,
-            height: CHART_HEIGHT * zoomThucTe,
+            height: cheoThuc * zoomThucTe,
           }}
         >
           <div
@@ -210,8 +194,7 @@ export function TuViChart({
             className="relative grid grid-cols-4"
             style={{
               width: CHART_WIDTH,
-              height: CHART_HEIGHT,
-              gridTemplateRows: `repeat(4, ${CHART_ROW}px)`,
+              gridTemplateRows: 'repeat(4, auto)',
               background: 'var(--bg)',
               transform: `scale(${zoomThucTe})`,
               transformOrigin: 'top left',
@@ -227,6 +210,7 @@ export function TuViChart({
                 laTieuHan={settings.tieuHan && cungTieuHanIndex === cung.chiIndex}
                 laDaiHanHienTai={daiVanHienTai?.chiIndex === cung.chiIndex}
                 nguyetHanThang={cungNguyetHanIndex === cung.chiIndex ? thangXem : undefined}
+                luuTinh={luuTinhTheoCung.get(cung.chiIndex)}
                 onHover={setHoverCung}
                 onSelect={(i) => {
                   setChonCung(i);
@@ -238,24 +222,6 @@ export function TuViChart({
             {settings.tuanTriet && <VoidMarkers markers={markers} />}
           </div>
         </div>
-      </div>
-
-      {/* Legend */}
-      <div
-        className="no-print flex flex-wrap items-center gap-x-[20px] gap-y-[6px] text-[12px]"
-        style={{ color: 'var(--fg-muted)' }}
-      >
-        <span>
-          Độ sáng: <span style={{ color: 'var(--accent)' }}>M</span> Miếu ·{' '}
-          <span style={{ color: 'var(--accent)' }}>V</span> Vượng ·{' '}
-          <span style={{ color: 'var(--fg-body)' }}>D</span> Đắc ·{' '}
-          <span style={{ color: 'var(--fg-muted)' }}>B</span> Bình ·{' '}
-          <span style={{ color: 'var(--chart-hung)' }}>H</span> Hãm
-        </span>
-        <span style={{ color: 'var(--chart-hung)' }}>● Hung tinh</span>
-        <span style={{ color: 'var(--accent)' }}>▢ Cung đang chọn / tam hợp</span>
-        <span style={{ color: 'var(--accent)' }}>▢ Xung chiếu · tiểu hạn</span>
-        <span>Rê chuột để xem tam phương tứ chính · bấm vào cung để mở chi tiết</span>
       </div>
 
       <PalaceDrawer

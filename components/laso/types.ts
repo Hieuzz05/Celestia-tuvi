@@ -10,6 +10,7 @@ export interface DisplaySettings {
   tuanTriet: boolean;
   tamPhuongTuChinh: boolean;
   vongSao: boolean;
+  luuTinh: boolean;
 }
 
 export const MAC_DINH_SETTINGS: DisplaySettings = {
@@ -24,6 +25,7 @@ export const MAC_DINH_SETTINGS: DisplaySettings = {
   tuanTriet: true,
   tamPhuongTuChinh: true,
   vongSao: false,
+  luuTinh: false,
 };
 
 export const NHAN_SETTINGS: { key: keyof DisplaySettings; nhan: string }[] = [
@@ -37,6 +39,7 @@ export const NHAN_SETTINGS: { key: keyof DisplaySettings; nhan: string }[] = [
   { key: 'tieuHan', nhan: 'Tiểu hạn' },
   { key: 'nguyetHan', nhan: 'Nguyệt hạn' },
   { key: 'tuanTriet', nhan: 'Tuần / Triệt' },
+  { key: 'luuTinh', nhan: 'Lưu tinh (theo năm xem)' },
   { key: 'tamPhuongTuChinh', nhan: 'Tam phương tứ chính' },
 ];
 

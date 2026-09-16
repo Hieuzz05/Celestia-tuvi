@@ -43,9 +43,16 @@ async function main() {
   console.log('\n### 2. Test kết nối từng nhà cung cấp');
   for (const m of trangThaiModel().filter((x) => x.daCauHinh)) {
     const apiKey = process.env[
-      { gemini: 'GEMINI_API_KEY', openrouter: 'OPENROUTER_API_KEY', openai: 'OPENAI_API_KEY', anthropic: 'ANTHROPIC_API_KEY' }[
-        m.provider
-      ] as string
+      (
+        {
+          gemini: 'GEMINI_API_KEY',
+          groq: 'GROQ_API_KEY',
+          cerebras: 'CEREBRAS_API_KEY',
+          openrouter: 'OPENROUTER_API_KEY',
+          openai: 'OPENAI_API_KEY',
+          anthropic: 'ANTHROPIC_API_KEY',
+        } as Record<string, string>
+      )[m.provider]
     ]!;
     const kq = await testKetNoi(m.provider, m.model, apiKey);
     console.log(`  ${kq.ok ? '✓' : '✗'} ${m.provider}/${m.model}`);

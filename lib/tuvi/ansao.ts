@@ -457,3 +457,24 @@ export function cungDaiVan(laSo: LaSo, tuoiAm: number): Cung | undefined {
     (c) => c.daiVan && tuoiAm >= c.daiVan.tuTuoi && tuoiAm <= c.daiVan.denTuoi
   );
 }
+
+/**
+ * Lưu tinh: các sao chạy theo NĂM ĐANG XEM (không phải năm sinh), dùng khi luận
+ * vận hạn từng năm. Trả về danh sách để giao diện phủ thêm lên mệnh bàn thay vì
+ * trộn vào lá số gốc — lá số gốc phải giữ nguyên bất kể xem năm nào.
+ */
+export function luuTinhTheoNam(namXem: number): { ten: string; chiIndex: number; tinhChat: Sao['tinhChat'] }[] {
+  const canNamXem = mod10(namXem + 6);
+  const chiNamXem = mod12(namXem + 8);
+  const luuLocTon = VI_TRI_LOC_TON[canNamXem];
+
+  return [
+    { ten: 'Lưu Thái Tuế', chiIndex: chiNamXem, tinhChat: 'trung' },
+    { ten: 'Lưu Lộc Tồn', chiIndex: luuLocTon, tinhChat: 'cat' },
+    { ten: 'Lưu Kình Dương', chiIndex: mod12(luuLocTon + 1), tinhChat: 'hung' },
+    { ten: 'Lưu Đà La', chiIndex: mod12(luuLocTon - 1), tinhChat: 'hung' },
+    { ten: 'Lưu Thiên Mã', chiIndex: VI_TRI_THIEN_MA[nhomTamHop(chiNamXem)], tinhChat: 'cat' },
+    { ten: 'Lưu Thiên Khốc', chiIndex: mod12(6 - chiNamXem), tinhChat: 'hung' },
+    { ten: 'Lưu Thiên Hư', chiIndex: mod12(6 + chiNamXem), tinhChat: 'hung' },
+  ];
+}

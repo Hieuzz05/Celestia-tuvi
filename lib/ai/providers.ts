@@ -87,15 +87,24 @@ async function chatGemini(
   };
 }
 
-/** OpenAI và OpenRouter dùng chung giao thức chat/completions */
+/**
+ * Nhiều nhà cung cấp dùng chung giao thức chat/completions của OpenAI, nên chỉ
+ * cần đổi baseUrl là thêm được provider mới — không phải viết adapter riêng.
+ */
+const BASE_URL_OPENAI_COMPAT: Record<string, string> = {
+  openai: 'https://api.openai.com/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+  groq: 'https://api.groq.com/openai/v1',
+  cerebras: 'https://api.cerebras.ai/v1',
+};
+
 async function chatOpenAiCompat(
-  provider: 'openai' | 'openrouter',
+  provider: 'openai' | 'openrouter' | 'groq' | 'cerebras',
   model: string,
   apiKey: string,
   req: ChatRequest
 ): Promise<ChatResult> {
-  const baseUrl =
-    provider === 'openai' ? 'https://api.openai.com/v1' : 'https://openrouter.ai/api/v1';
+  const baseUrl = BASE_URL_OPENAI_COMPAT[provider];
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${apiKey}`,
@@ -175,6 +184,8 @@ export function goiModel(
       return chatGemini(model, apiKey, req);
     case 'openai':
     case 'openrouter':
+    case 'groq':
+    case 'cerebras':
       return chatOpenAiCompat(provider, model, apiKey, req);
     case 'anthropic':
       return chatAnthropic(model, apiKey, req);

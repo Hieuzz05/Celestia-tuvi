@@ -1,4 +1,10 @@
-export type ProviderId = 'gemini' | 'openrouter' | 'openai' | 'anthropic';
+export type ProviderId =
+  | 'gemini'
+  | 'groq'
+  | 'cerebras'
+  | 'openrouter'
+  | 'openai'
+  | 'anthropic';
 
 export interface ModelConfig {
   provider: ProviderId;
@@ -47,6 +53,8 @@ export class AiRetryableError extends Error {
 
 export const TEN_PROVIDER: Record<ProviderId, string> = {
   gemini: 'Google Gemini',
+  groq: 'Groq',
+  cerebras: 'Cerebras',
   openrouter: 'OpenRouter',
   openai: 'OpenAI',
   anthropic: 'Anthropic Claude',
@@ -59,6 +67,8 @@ export const TEN_PROVIDER: Record<ProviderId, string> = {
  */
 export const MODEL_GOI_Y: Record<ProviderId, string[]> = {
   gemini: ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'],
+  groq: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'openai/gpt-oss-120b'],
+  cerebras: ['llama-3.3-70b', 'qwen-3-235b-a22b-instruct-2507', 'gpt-oss-120b'],
   openrouter: [
     'deepseek/deepseek-chat-v3-0324:free',
     'meta-llama/llama-3.3-70b-instruct:free',

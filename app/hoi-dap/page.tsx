@@ -35,6 +35,9 @@ export default function HoiDapPage() {
   const [cauHoi, setCauHoi] = useState('');
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
+  // Phải chốt lá số trước khi mở khung chat: hỏi đáp mà chưa biết hỏi về lá số
+  // nào thì câu trả lời vô nghĩa.
+  const [daChonLaSo, setDaChonLaSo] = useState(false);
   const cuoiRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export default function HoiDapPage() {
   useEffect(() => {
     setTinNhan([]);
     setLoi(null);
+    setDaChonLaSo(false);
   }, [form.ngaySinh, form.gio, form.gioiTinh]);
 
   const hoi = async (noiDung: string) => {
@@ -158,9 +162,36 @@ export default function HoiDapPage() {
               </span>
             </div>
           )}
+
+          {!daChonLaSo ? (
+            <button
+              onClick={() => setDaChonLaSo(true)}
+              disabled={!laSo}
+              className="btn-primary self-start"
+            >
+              Dùng lá số này để hỏi đáp
+            </button>
+          ) : (
+            <button onClick={() => setDaChonLaSo(false)} className="link-text self-start">
+              Đổi lá số khác
+            </button>
+          )}
         </div>
 
-        {/* Cột phải: hội thoại */}
+        {/* Cột phải: hội thoại — chỉ mở sau khi đã chốt lá số */}
+        {!daChonLaSo ? (
+          <div
+            className="flex min-h-[320px] flex-col items-center justify-center gap-[10px] rounded-[var(--radius-cards)] border p-[24px] text-center"
+            style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
+          >
+            <h2 className="subheading">Chọn lá số trước</h2>
+            <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
+              Nhập ngày giờ sinh ở bên trái (hoặc chọn từ hồ sơ đã lưu), rồi bấm
+              <b style={{ color: 'var(--fg)' }}> Dùng lá số này để hỏi đáp</b>. AI cần biết đang
+              nói về lá số nào thì câu trả lời mới có căn cứ.
+            </p>
+          </div>
+        ) : (
         <div className="flex flex-col gap-[14px]">
           <div
             className="flex min-h-[380px] flex-col gap-[16px] overflow-y-auto rounded-[var(--radius-cards)] border p-[18px]"
@@ -258,6 +289,7 @@ export default function HoiDapPage() {
             pháp lý.
           </p>
         </div>
+        )}
       </section>
     </main>
   );
