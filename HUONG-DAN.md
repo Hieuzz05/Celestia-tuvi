@@ -258,11 +258,66 @@ Nếu cần lấy lại: **Project Settings → API Keys**.
   Hiện tài khoản mới **phải xác nhận email** trước khi đăng nhập được. Muốn bỏ bước này cho nhanh
   lúc thử nghiệm: [Authentication → Sign In / Providers → Email](https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/auth/providers)
   → tắt **Confirm email**.
-- **Google**: hiện **chưa bật**, nên nút "Đăng nhập bằng Google" tự ẩn khỏi giao diện. Muốn bật:
-  vào Authentication → Providers → Google, điền Client ID / Client Secret lấy từ Google Cloud
-  Console. Sau đó vào **Authentication → URL Configuration** thêm:
-  - Site URL: `https://celestia-tuvi.vercel.app`
-  - Redirect URLs: `https://celestia-tuvi.vercel.app/auth/callback` và `http://localhost:3000/auth/callback`
+
+#### Bật đăng nhập bằng Google (làm một lần, ~10 phút)
+
+Nút "Tiếp tục với Google" chỉ hiện khi provider được bật thật trong Supabase — hiện **chưa bật**
+nên trang đăng nhập chỉ có ô email/mật khẩu. Làm đủ 3 bước dưới đây là nút tự xuất hiện.
+
+**Bước 1 — Tạo OAuth Client trong Google Cloud Console**
+
+1. Mở https://console.cloud.google.com/ → góc trên bên trái chọn **Select a project** →
+   **New Project** → đặt tên `Celestia` → **Create**. (Nếu đã có project thì chọn project đó.)
+2. Vào menu trái **APIs & Services → OAuth consent screen**:
+   - User Type: chọn **External** → **Create**
+   - App name: `Celestia`, User support email: chọn email của bạn
+   - Kéo xuống Developer contact information: điền lại email của bạn → **Save and Continue**
+   - Các màn Scopes / Test users: bấm **Save and Continue** để bỏ qua → **Back to Dashboard**
+   - Ở mục **Publishing status**, bấm **Publish app** → **Confirm**. Không publish thì chỉ những
+     email bạn thêm vào Test users mới đăng nhập được.
+3. Vào **APIs & Services → Credentials** → **Create Credentials** → **OAuth client ID**:
+   - Application type: **Web application**
+   - Name: `Celestia Web`
+   - **Authorized JavaScript origins** → Add URI, thêm 2 dòng:
+     - `https://celestia-tuvi.vercel.app`
+     - `http://localhost:3000`
+   - **Authorized redirect URIs** → Add URI, thêm đúng 1 dòng này (đây là địa chỉ của Supabase,
+     không phải của web bạn — điền sai chỗ này là lỗi `redirect_uri_mismatch`):
+     - `https://wqhxksgtkyoqknicombi.supabase.co/auth/v1/callback`
+   - Bấm **Create** → hiện popup có **Client ID** và **Client Secret**. Copy cả hai, để tạm đâu đó.
+     Client Secret xem lại được sau nên không sợ mất.
+
+**Bước 2 — Dán vào Supabase**
+
+1. Mở [Authentication → Sign In / Providers](https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/auth/providers)
+   → tìm **Google** → gạt công tắc **Enable Sign in with Google**.
+2. Dán **Client ID** và **Client Secret** vừa lấy ở Bước 1 → **Save**.
+
+**Bước 3 — Khai báo địa chỉ được phép quay về**
+
+Vào [Authentication → URL Configuration](https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/auth/url-configuration):
+
+- **Site URL**: `https://celestia-tuvi.vercel.app`
+- **Redirect URLs** → Add URL, thêm 2 dòng:
+  - `https://celestia-tuvi.vercel.app/auth/callback`
+  - `http://localhost:3000/auth/callback`
+
+Thiếu bước này thì Google xác thực xong nhưng Supabase từ chối đẩy người dùng về web.
+
+**Kiểm tra**
+
+Mở https://celestia-tuvi.vercel.app/dang-nhap (hoặc `http://localhost:3000/dang-nhap`) —
+phải thấy nút **Tiếp tục với Google** phía trên ô email. Bấm vào, chọn tài khoản Google,
+sẽ được đưa thẳng về trang chủ và tên hiện trên thanh điều hướng.
+
+Nếu có trục trặc, web sẽ đưa bạn về trang đăng nhập kèm dòng chữ đỏ nói rõ lý do:
+
+| Dòng báo lỗi | Nguyên nhân | Sửa |
+|---|---|---|
+| `redirect_uri_mismatch` | Authorized redirect URI ở Google Cloud sai | Bước 1.3 — phải là địa chỉ `...supabase.co/auth/v1/callback` |
+| `Unsupported provider: provider is not enabled` | Chưa bật Google trong Supabase | Bước 2 |
+| `requested path is invalid` | Thiếu địa chỉ trong Redirect URLs | Bước 3 |
+| `access_denied` | Bạn bấm Huỷ ở màn chọn tài khoản, hoặc app chưa Publish | Bước 1.2 — Publish app |
 
 ### 3.3 Tạo các bảng dữ liệu
 
