@@ -80,7 +80,7 @@ export function PalaceCell({
   laDaiHanHienTai: boolean;
   nguyetHanThang?: number;
   luuTinh?: { ten: string; tinhChat?: string }[];
-  onHover: (chiIndex: number | null) => void;
+  onHover: (chiIndex: number) => void;
   onSelect: (chiIndex: number) => void;
 }) {
   const pos = VI_TRI_GRID[cung.chiIndex];
@@ -106,7 +106,6 @@ export function PalaceCell({
   return (
     <div
       onMouseEnter={() => onHover(cung.chiIndex)}
-      onMouseLeave={() => onHover(null)}
       onClick={() => onSelect(cung.chiIndex)}
       className="relative flex cursor-pointer flex-col p-[9px] transition-opacity duration-150"
       style={{

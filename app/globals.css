@@ -93,6 +93,9 @@
 
 html {
   background: var(--bg);
+  /* Giữ chỗ thanh cuộn cố định: nội dung dài ra làm thanh cuộn xuất hiện sẽ
+     thu hẹp bề ngang vài pixel, kéo theo tỉ lệ mệnh bàn đổi và nhấp nháy. */
+  scrollbar-gutter: stable;
 }
 
 body {

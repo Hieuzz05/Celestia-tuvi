@@ -17,13 +17,14 @@ import { VoidMarkers, type VoidMarker } from './VoidMarkers';
 import { MAC_DINH_SETTINGS, NHAN_SETTINGS, type DisplaySettings } from './types';
 
 const CHART_WIDTH = 920;
-/**
- * Chiều cao tự nhiên của mệnh bàn. Ô cung tự giãn theo nội dung nên con số này
- * chỉ dùng để ước lượng tỉ lệ ban đầu; sau khi render sẽ đo lại cho chính xác.
- */
-const CHART_HEIGHT_UOC_LUONG = 820;
 /** Dưới mức này chữ trong ô cung không còn đọc được */
 const ZOOM_TOI_THIEU = 0.5;
+/**
+ * Bỏ qua thay đổi tỉ lệ nhỏ hơn ngưỡng này.
+ * Thanh cuộn dọc xuất hiện/biến mất làm bề ngang đổi vài pixel; nếu tỉ lệ bám
+ * theo từng pixel thì mệnh bàn co giãn liên tục và nhấp nháy.
+ */
+const NGUONG_DOI_TI_LE = 0.02;
 
 export function TuViChart({
   laSo,
@@ -40,38 +41,28 @@ export function TuViChart({
   const [hoverCung, setHoverCung] = useState<number | null>(null);
   const [chonCung, setChonCung] = useState<number | null>(null);
   const [moDrawer, setMoDrawer] = useState(false);
-  const [zoomVuaKhung, setZoomVuaKhung] = useState(1);
-  const [cheoThuc, setCheoThuc] = useState(CHART_HEIGHT_UOC_LUONG);
+  const [zoomThucTe, setZoomThucTe] = useState(1);
   const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  // Ô cung giãn theo nội dung nên chiều cao thật chỉ biết sau khi render. Đo
-  // bằng scrollHeight của phần tử KHÔNG bị biến đổi (transform không tác động
-  // tới layout) rồi mới tính tỉ lệ — tránh vòng phản hồi từng làm treo trình duyệt.
+  // Chỉ đo BỀ NGANG của khung chứa, tuyệt đối không đo lại mệnh bàn.
+  // Đo mệnh bàn rồi đặt lại chiều cao wrapper sẽ làm thanh cuộn dọc xuất hiện
+  // rồi biến mất, kéo theo bề ngang đổi -> tỉ lệ đổi -> lặp vô tận (nhấp nháy).
   useEffect(() => {
     const khung = khungRef.current;
-    const chart = chartRef.current;
-    if (!khung || !chart) return;
+    if (!khung) return;
 
     const doLai = () => {
-      const cao = chart.scrollHeight;
-      if (cao > 0) setCheoThuc(cao);
-      setZoomVuaKhung(Math.max(ZOOM_TOI_THIEU, Math.min(1, khung.clientWidth / CHART_WIDTH)));
+      const moi = Math.max(ZOOM_TOI_THIEU, Math.min(1, khung.clientWidth / CHART_WIDTH));
+      setZoomThucTe((cu) => (Math.abs(moi - cu) < NGUONG_DOI_TI_LE ? cu : moi));
     };
 
     doLai();
     const ro = new ResizeObserver(doLai);
     ro.observe(khung);
-    ro.observe(chart);
-    window.addEventListener('resize', doLai);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', doLai);
-    };
-  }, [settings, laSo]);
-
-  const zoomThucTe = zoomVuaKhung;
+    return () => ro.disconnect();
+  }, []);
 
   const tuoiAm = namXem - laSo.thongTin.amLich.nam + 1;
   const cungTieuHanIndex = cungTieuHan(laSo, tuoiAm);
@@ -182,25 +173,23 @@ export function TuViChart({
       )}
 
       {/* Mệnh bàn */}
-      <div className="overflow-auto" ref={khungRef}>
+      <div ref={khungRef}>
         <div
+          ref={chartRef}
+          className="relative grid grid-cols-4"
           style={{
-            width: CHART_WIDTH * zoomThucTe,
-            height: cheoThuc * zoomThucTe,
+            width: CHART_WIDTH,
+            gridTemplateRows: 'repeat(4, auto)',
+            background: 'var(--bg)',
+            // Dùng CSS `zoom` chứ không phải transform: zoom có tác động tới
+            // layout nên chiều cao tự co theo, khỏi phải đo và đặt tay.
+            zoom: zoomThucTe,
           }}
+          // Chỉ xoá trạng thái rê chuột khi ra khỏi CẢ mệnh bàn. Nếu từng ô cũng
+          // xoá thì rê từ ô này sang ô kia sẽ đi qua trạng thái rỗng, làm hiệu
+          // ứng làm mờ tắt rồi bật lại — nhìn như nhấp nháy.
+          onMouseLeave={() => setHoverCung(null)}
         >
-          <div
-            ref={chartRef}
-            className="relative grid grid-cols-4"
-            style={{
-              width: CHART_WIDTH,
-              gridTemplateRows: 'repeat(4, auto)',
-              background: 'var(--bg)',
-              transform: `scale(${zoomThucTe})`,
-              transformOrigin: 'top left',
-            }}
-            onMouseLeave={() => setHoverCung(null)}
-          >
             {laSo.cungs.map((cung) => (
               <PalaceCell
                 key={cung.chiIndex}
@@ -219,8 +208,7 @@ export function TuViChart({
               />
             ))}
             <CenterPanel laSo={laSo} namXem={namXem} tuoiAm={tuoiAm} />
-            {settings.tuanTriet && <VoidMarkers markers={markers} />}
-          </div>
+          {settings.tuanTriet && <VoidMarkers markers={markers} />}
         </div>
       </div>
 
