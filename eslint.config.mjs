@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // App di động có bộ quy tắc riêng (React Native, không có DOM). Để ESLint
+    // của web quét sang đó chỉ sinh ra lỗi giả và làm mất tác dụng của mốc
+    // "đang có sẵn 9 lỗi" dùng để phát hiện lỗi mới.
+    "apps/**",
   ]),
 ]);
 

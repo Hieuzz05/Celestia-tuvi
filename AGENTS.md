@@ -69,6 +69,19 @@ npm run kiem-tra-sso      # trạng thái đăng nhập Google
 
 Nếu lint tăng quá 9, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
 
+## App di động
+
+`apps/celes-app/` — Expo + expo-router, iOS/Android. Đọc `apps/celes-app/README.md`
+trước khi sửa.
+
+Điểm dễ vấp nhất: **app không có bản sao engine an sao**, nó đọc thẳng `lib/tuvi/`
+qua `metro.config.js` và bí danh `@tuvi/*`. Sửa engine là cả web lẫn app cùng đổi.
+Đừng "tiện tay" sao chép engine sang app.
+
+Web ở gốc kho và app là hai dự án npm tách biệt. `tsconfig.json` và
+`eslint.config.mjs` của web đều đã loại trừ `apps/` — nếu thấy `npm run lint` ở
+gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
+
 ## Việc còn dang dở
 
 Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Hai tài liệu định hướng gốc:
