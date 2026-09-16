@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { IconMatTrang, IconMatTroi } from '@/components/ui';
 
 export type Theme = 'day' | 'night';
 export const KHOA_THEME = 'tuvi-ai:theme';
@@ -11,11 +12,12 @@ function apDung(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('night');
+  // Design system gốc là theme sáng nên Ngày là mặc định
+  const [theme, setTheme] = useState<Theme>('day');
 
   useEffect(() => {
     const luu = window.localStorage.getItem(KHOA_THEME) as Theme | null;
-    setTheme(luu ?? (document.documentElement.getAttribute('data-theme') as Theme) ?? 'night');
+    setTheme(luu ?? (document.documentElement.getAttribute('data-theme') as Theme) ?? 'day');
   }, []);
 
   const doi = () => {
@@ -36,16 +38,7 @@ export function ThemeToggle() {
       aria-label={theme === 'night' ? 'Chuyển sang chế độ ngày' : 'Chuyển sang chế độ đêm'}
       title={theme === 'night' ? 'Chế độ ngày' : 'Chế độ đêm'}
     >
-      {theme === 'night' ? (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-          <circle cx="12" cy="12" r="4.2" />
-          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" />
-        </svg>
-      ) : (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-          <path d="M20 14.5A8.2 8.2 0 0 1 9.5 4a8.3 8.3 0 1 0 10.5 10.5Z" />
-        </svg>
-      )}
+      {theme === 'night' ? <IconMatTroi size={14} /> : <IconMatTrang size={14} />}
       <span>{theme === 'night' ? 'Ngày' : 'Đêm'}</span>
     </button>
   );

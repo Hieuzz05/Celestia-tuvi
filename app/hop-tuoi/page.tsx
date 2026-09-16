@@ -7,6 +7,7 @@ import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh
 import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import type { KetQuaSoSanh, MucDo } from '@/lib/tuvi/hoptuoi';
+import { Shell } from '@/components/ui';
 
 const MAU_MUC_DO: Record<MucDo, string> = {
   thuan: 'var(--chart-cat)',
@@ -85,7 +86,7 @@ export default function HopTuoiPage() {
   };
 
   return (
-    <main className="flex flex-col gap-[24px] py-[20px]">
+    <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
         <p className="eyebrow">Hợp tuổi</p>
         <h1 className="heading mt-[10px]">Hai lá số, đặt cạnh nhau.</h1>
@@ -185,8 +186,8 @@ export default function HopTuoiPage() {
             <div className="flex flex-col gap-[12px]">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="heading-sm">Nhận định</h2>
-                <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                  Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
+                <span className="caption">
+                  Soạn bởi <span className="font-medium" style={{ color: 'var(--fg)' }}>{ketQua.model}</span>
                 </span>
               </div>
               <MarkdownLuanGiai noiDung={ketQua.noiDung} />
@@ -195,7 +196,7 @@ export default function HopTuoiPage() {
           )}
 
           {ketQua.loiAi && (
-            <p className="text-[14px]" style={{ color: 'var(--accent)' }}>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
               Bảng so sánh ở trên tính bằng engine nên vẫn đầy đủ, nhưng phần nhận định AI chưa chạy
               được: {ketQua.loiAi}
             </p>
@@ -207,6 +208,6 @@ export default function HopTuoiPage() {
           </p>
         </section>
       )}
-    </main>
+    </Shell>
   );
 }

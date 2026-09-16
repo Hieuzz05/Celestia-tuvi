@@ -10,13 +10,8 @@ import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 export function NguonTriThuc({ nguon }: { nguon?: Nguon[] }) {
   if (!nguon || nguon.length === 0) return null;
   return (
-    <div
-      className="flex flex-col gap-[4px] rounded-[var(--radius-cards)] border p-[12px]"
-      style={{ borderColor: 'var(--line)' }}
-    >
-      <span className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--accent)' }}>
-        Trích từ kho tri thức
-      </span>
+    <div className="flex flex-col gap-[6px] rounded-[var(--radius-cards)] p-[12px]" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <span className="eyebrow">Trích từ kho tri thức</span>
       {nguon.map((n, i) => (
         <span key={`${n.tieuDe}-${i}`} className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
           {n.tieuDe} · {n.hePhai} · {n.diem}% liên quan

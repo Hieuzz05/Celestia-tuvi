@@ -10,7 +10,7 @@ function Muc({ tieuDe, children }: { tieuDe: string; children: React.ReactNode }
     <div className="flex flex-col gap-[6px]">
       <h4
         className="text-[11px] font-semibold uppercase tracking-[0.1em]"
-        style={{ color: 'var(--accent)' }}
+        style={{ color: 'var(--chart-tot)' }}
       >
         {tieuDe}
       </h4>

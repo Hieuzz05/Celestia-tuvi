@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { laAdmin, supabaseDaCauHinh } from '@/lib/supabase/config';
 import { nguoiDungHienTai } from '@/lib/supabase/server';
+import { Shell } from '@/components/ui';
 
 /**
  * Chặn quyền vào trang quản trị ở phía server. Đặt ở layout thay vì trong page
@@ -28,7 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) {
     return (
-      <main className="py-[60px]">
+      <Shell className="py-[60px]">
         <h1 className="heading">Cần đăng nhập</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
           Trang quản trị chỉ dành cho tài khoản được cấp quyền.
@@ -36,19 +37,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/dang-nhap" className="btn-primary mt-[24px] inline-block">
           Đăng nhập
         </Link>
-      </main>
+      </Shell>
     );
   }
 
   if (!laAdmin(user.email)) {
     return (
-      <main className="py-[60px]">
+      <Shell className="py-[60px]">
         <h1 className="heading">Không có quyền</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
           Tài khoản <strong>{user.email}</strong> không nằm trong danh sách quản trị viên. Thêm
           email này vào biến môi trường <code>ADMIN_EMAILS</code> nếu đây là nhầm lẫn.
         </p>
-      </main>
+      </Shell>
     );
   }
 

@@ -104,12 +104,7 @@ export function QuanLyNguoiDung() {
                     {u.tenHienThi || u.email?.split('@')[0] || 'Không tên'}
                   </span>
                   {u.laQuanTri && (
-                    <span
-                      className="rounded-full px-[7px] text-[10px] font-semibold uppercase"
-                      style={{ color: 'var(--accent)', border: '1px solid var(--accent)' }}
-                    >
-                      Quản trị
-                    </span>
+                    <span className="pill-tag">Quản trị</span>
                   )}
                 </span>
                 <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>

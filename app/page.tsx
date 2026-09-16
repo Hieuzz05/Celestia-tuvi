@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
-import { Field, GIO_OPTIONS, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
+import { GIO_OPTIONS, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
+import { Eyebrow, HuyHieuOk, NutChinh, O, OChon, Shell, Truong } from '@/components/ui';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { luuHoSo } from '@/lib/store/hoso';
@@ -125,102 +126,73 @@ function TrangLaSo() {
     : '/luan-giai';
 
   return (
-    <main className="flex flex-col gap-[20px] py-[20px]">
-      <section
-        className="no-print grid gap-x-[18px] gap-y-[12px] rounded-[var(--radius-cards)] border p-[16px] md:grid-cols-2 xl:grid-cols-4"
-        style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
-      >
-        <Field label="Họ tên">
-          <input
-            value={form.hoTen}
-            onChange={(e) => set('hoTen', e.target.value)}
-            placeholder="Nguyễn Văn A"
-            className="field-input"
-          />
-        </Field>
-        <Field label="Ngày sinh">
-          <input
-            type="date"
-            value={form.ngaySinh}
-            onChange={(e) => set('ngaySinh', e.target.value)}
-            className="field-input"
-          />
-        </Field>
-        <Field label="Giờ sinh">
-          <select
-            value={form.gio}
-            onChange={(e) => set('gio', Number(e.target.value))}
-            className="field-input"
-          >
-            {GIO_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Giới tính">
-          <select
-            value={form.gioiTinh}
-            onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
-            className="field-input"
-          >
-            <option value="nam">Nam</option>
-            <option value="nu">Nữ</option>
-          </select>
-        </Field>
-        <Field label="Năm xem">
-          <input
-            type="number"
-            value={namXem}
-            onChange={(e) => setNamXem(Number(e.target.value))}
-            className="field-input"
-          />
-        </Field>
-        <Field label="Tháng xem">
-          <select
-            value={thangXem}
-            onChange={(e) => setThangXem(Number(e.target.value))}
-            className="field-input"
-          >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>
-                Tháng {m}
-              </option>
-            ))}
-          </select>
-        </Field>
+    <Shell className="flex flex-col gap-[20px] py-[24px]">
+      <section className="no-print card">
+        <Eyebrow className="mb-[16px]">Thông tin ngày sinh</Eyebrow>
+        <div className="grid gap-x-[16px] gap-y-[12px] md:grid-cols-2 xl:grid-cols-4">
+          <Truong nhan="Họ tên">
+            <O
+              value={form.hoTen}
+              onChange={(e) => set('hoTen', e.target.value)}
+              placeholder="Nguyễn Văn A"
+            />
+          </Truong>
+          <Truong nhan="Ngày sinh">
+            <O type="date" value={form.ngaySinh} onChange={(e) => set('ngaySinh', e.target.value)} />
+          </Truong>
+          <Truong nhan="Giờ sinh">
+            <OChon value={form.gio} onChange={(e) => set('gio', Number(e.target.value))}>
+              {GIO_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </OChon>
+          </Truong>
+          <Truong nhan="Giới tính">
+            <OChon
+              value={form.gioiTinh}
+              onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
+            >
+              <option value="nam">Nam</option>
+              <option value="nu">Nữ</option>
+            </OChon>
+          </Truong>
+          <Truong nhan="Năm xem">
+            <O type="number" value={namXem} onChange={(e) => setNamXem(Number(e.target.value))} />
+          </Truong>
+          <Truong nhan="Tháng xem">
+            <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  Tháng {m}
+                </option>
+              ))}
+            </OChon>
+          </Truong>
 
-        {/* Chọn model + nút luận giải nằm ngay trong khu nhập liệu để thao tác
-            gọn một chỗ, khỏi phải nhìn sang panel bên phải */}
-        <Field label="Model AI">
-          <select
-            value={modelChon}
-            onChange={(e) => setModelChon(e.target.value)}
-            className="field-input"
-          >
-            <option value="">
-              {modelSanSang.length > 0
-                ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
-                : 'Tự động'}
-            </option>
-            {modelSanSang.map((m) => (
-              <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
-                {m.provider} — {m.model}
+          {/* Chọn model + nút luận giải nằm ngay trong khu nhập liệu để thao tác
+              gọn một chỗ, khỏi phải nhìn sang panel bên phải */}
+          <Truong nhan="Model AI">
+            <OChon value={modelChon} onChange={(e) => setModelChon(e.target.value)}>
+              <option value="">
+                {modelSanSang.length > 0
+                  ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
+                  : 'Tự động'}
               </option>
-            ))}
-          </select>
-        </Field>
+              {modelSanSang.map((m) => (
+                <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
+                  {m.provider} — {m.model}
+                </option>
+              ))}
+            </OChon>
+          </Truong>
 
-        <div className="flex items-end">
-          <button
-            onClick={luanGiai}
-            disabled={!laSo || dangChay}
-            className="btn-primary w-full"
-            style={{ paddingTop: 11, paddingBottom: 11 }}
-          >
-            {dangChay ? 'Đang luận giải…' : 'Luận giải lá số'}
-          </button>
+          <div className="flex items-end">
+            <NutChinh onClick={luanGiai} disabled={!laSo || dangChay} className="w-full">
+              {dangChay ? 'Đang luận giải…' : 'Luận giải lá số'}
+            </NutChinh>
+          </div>
         </div>
       </section>
 
@@ -234,19 +206,20 @@ function TrangLaSo() {
         <section className="grid gap-[20px] xl:grid-cols-[minmax(0,1fr)_390px]">
           <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
 
-          <aside
-            className="no-print flex max-h-[80vh] flex-col gap-[14px] overflow-y-auto rounded-[var(--radius-cards)] border p-[20px]"
-            style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
-          >
-            <div className="flex items-baseline justify-between gap-2">
+          <aside className="no-print card flex max-h-[80vh] flex-col gap-[14px] overflow-y-auto">
+            <div className="flex items-center justify-between gap-2">
               <h2 className="subheading">Luận giải tổng quan</h2>
-              <button onClick={luu} className="link-text">
-                {daLuu ? 'Đã lưu ✓' : 'Lưu hồ sơ'}
-              </button>
+              {daLuu ? (
+                <HuyHieuOk>Đã lưu</HuyHieuOk>
+              ) : (
+                <button onClick={luu} className="link-text">
+                  Lưu hồ sơ
+                </button>
+              )}
             </div>
 
             <div
-              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pb-[12px] text-[13px]"
+              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pb-[12px] text-[14px]"
               style={{ color: 'var(--fg-muted)', borderBottom: '1px solid var(--line)' }}
             >
               <span>
@@ -262,7 +235,7 @@ function TrangLaSo() {
             </div>
 
             {!ketQua && !dangChay && (
-              <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 AI đọc trực tiếp dữ liệu an sao của lá số bên cạnh — tên sao, độ sáng, Tuần Triệt,
                 tứ hóa — rồi diễn giải theo Nam phái. Bấm <b style={{ color: 'var(--fg)' }}>Luận
                 giải lá số</b> ở khu nhập thông tin phía trên để bắt đầu.
@@ -270,21 +243,24 @@ function TrangLaSo() {
             )}
 
             {dangChay && (
-              <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 Đang đọc lá số và soạn luận giải… mất khoảng 15–45 giây.
               </p>
             )}
 
             {loi && (
-              <p className="text-[14px]" style={{ color: 'var(--chart-hung)' }}>
+              <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
                 {loi}
               </p>
             )}
 
             {ketQua && (
               <>
-                <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                  Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
+                <p className="caption">
+                  Soạn bởi{' '}
+                  <span className="font-medium" style={{ color: 'var(--fg)' }}>
+                    {ketQua.model}
+                  </span>
                 </p>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
                 <NguonTriThuc nguon={ketQua.nguonTriThuc} />
@@ -300,13 +276,13 @@ function TrangLaSo() {
           </aside>
         </section>
       )}
-    </main>
+    </Shell>
   );
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<main className="py-[40px]">Đang tải…</main>}>
+    <Suspense fallback={<Shell className="py-[40px]">Đang tải…</Shell>}>
       <TrangLaSo />
     </Suspense>
   );

@@ -8,6 +8,7 @@ import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
+import { Shell } from '@/components/ui';
 
 interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
@@ -113,7 +114,7 @@ export default function HoiDapPage() {
   };
 
   return (
-    <main className="flex flex-col gap-[20px] py-[20px]">
+    <Shell className="flex flex-col gap-[20px] py-[20px]">
       <div>
         <p className="eyebrow">Hỏi đáp</p>
         <h1 className="heading mt-[10px]">Hỏi thẳng về lá số của bạn.</h1>
@@ -291,6 +292,6 @@ export default function HoiDapPage() {
         </div>
         )}
       </section>
-    </main>
+    </Shell>
   );
 }

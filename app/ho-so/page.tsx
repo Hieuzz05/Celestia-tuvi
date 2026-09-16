@@ -14,6 +14,7 @@ import {
 } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
+import { Shell } from '@/components/ui';
 
 export default function HoSoPage() {
   const [ds, setDs] = useState<HoSo[]>([]);
@@ -74,9 +75,9 @@ export default function HoSoPage() {
   };
 
   return (
-    <main className="flex flex-col gap-[36px] py-[36px]">
+    <Shell className="flex flex-col gap-[36px] py-[36px]">
       <div>
-        <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+        <p className="eyebrow">
           Hồ sơ đã lưu
         </p>
         <h1 className="display mt-[18px]">Lá số của bạn và người thân.</h1>
@@ -164,6 +165,6 @@ export default function HoSoPage() {
           );
         })}
       </section>
-    </main>
+    </Shell>
   );
 }

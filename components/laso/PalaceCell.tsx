@@ -7,8 +7,8 @@ import { PHU_TINH_TRONG_YEU, VI_TRI_GRID, type DisplaySettings } from './types';
 type TrangThai = 'thuong' | 'chon' | 'tam-hop' | 'xung-chieu' | 'mo';
 
 const MAU_DO_SANG: Record<string, string> = {
-  M: 'var(--accent)',
-  V: 'var(--accent)',
+  M: 'var(--chart-tot)',
+  V: 'var(--chart-tot)',
   D: 'var(--fg-body)',
   L: 'var(--fg-body)',
   B: 'var(--fg-muted)',
@@ -18,7 +18,7 @@ const MAU_DO_SANG: Record<string, string> = {
 // Bốn Hóa phải phân biệt được: đồng / trắng / xám / đỏ, luôn kèm chữ nên không
 // phụ thuộc riêng vào màu.
 const MAU_TU_HOA: Record<string, string> = {
-  'Hóa Lộc': 'var(--accent)',
+  'Hóa Lộc': 'var(--chart-tot)',
   'Hóa Quyền': 'var(--fg)',
   'Hóa Khoa': 'var(--fg-muted)',
   'Hóa Kỵ': 'var(--chart-hung)',
@@ -96,7 +96,7 @@ export function PalaceCell({
     trangThai === 'chon'
       ? 'var(--fg)'
       : trangThai === 'tam-hop'
-        ? 'var(--accent)'
+        ? 'var(--chart-tot)'
         : trangThai === 'xung-chieu'
           ? 'var(--line-strong)'
           : cung.laCungMenh
@@ -135,8 +135,8 @@ export function PalaceCell({
             <span
               className="rounded-full px-[6px] text-[9px] font-semibold uppercase"
               style={{
-                color: 'var(--accent)',
-                border: '1px solid var(--accent)',
+                color: 'var(--chart-tot)',
+                border: '1px solid var(--chart-tot)',
               }}
             >
               Thân
@@ -146,7 +146,7 @@ export function PalaceCell({
         <span
           className="text-[11px] font-medium tabular-nums"
           style={{
-            color: laDaiHanHienTai ? 'var(--accent)' : 'var(--fg-muted)',
+            color: laDaiHanHienTai ? 'var(--chart-tot)' : 'var(--fg-muted)',
             visibility: settings.daiHan && cung.daiVan ? 'visible' : 'hidden',
           }}
         >
@@ -236,7 +236,7 @@ export function PalaceCell({
             <span
               key={s.ten}
               className="text-[11px] italic"
-              style={{ color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--accent)' }}
+              style={{ color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--chart-tot)' }}
             >
               {s.ten.replace('Lưu ', 'L.')}
             </span>
@@ -249,7 +249,7 @@ export function PalaceCell({
         className="mt-auto flex items-baseline justify-between gap-1 pt-[8px] text-[11px] font-medium"
         style={{ color: 'var(--fg-muted)' }}
       >
-        <span style={{ color: laTieuHan ? 'var(--accent)' : undefined }}>
+        <span style={{ color: laTieuHan ? 'var(--chart-tot)' : undefined }}>
           {settings.tieuHan && laTieuHan ? 'Tiểu hạn' : ''}
         </span>
         <span>{settings.trangSinh ? cung.trangSinh : ''}</span>

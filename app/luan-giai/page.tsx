@@ -10,6 +10,7 @@ import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
+import { Shell } from '@/components/ui';
 
 interface ModelTrangThai {
   provider: string;
@@ -111,7 +112,7 @@ function TrangLuanGiai() {
   };
 
   return (
-    <main className="flex flex-col gap-[24px] py-[20px]">
+    <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
         <p className="eyebrow">Luận giải chi tiết</p>
         <h1 className="heading mt-[10px]">Đi sâu vào từng vấn đề.</h1>
@@ -211,7 +212,7 @@ function TrangLuanGiai() {
           )}
 
           {modelSanSang.length === 0 && (
-            <p className="text-[13px]" style={{ color: 'var(--accent)' }}>
+            <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
               Chưa có model AI nào được cấu hình — xem trang Quản trị.
             </p>
           )}
@@ -226,7 +227,7 @@ function TrangLuanGiai() {
                 disabled={dangChay || !laSo}
                 className="flex flex-col gap-[4px] rounded-[var(--radius-cards)] border p-[14px] text-left transition-colors disabled:opacity-50"
                 style={{
-                  borderColor: chuDe === id ? 'var(--accent)' : 'var(--line)',
+                  borderColor: chuDe === id ? 'var(--fg)' : 'var(--line)',
                   background: 'var(--surface-card)',
                 }}
               >
@@ -261,8 +262,8 @@ function TrangLuanGiai() {
               <article className="flex flex-col gap-[10px]">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="subheading">{CHU_DE[chuDe].nhan}</h2>
-                  <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                    Soạn bởi <span style={{ color: 'var(--accent)' }}>{ketQua.model}</span>
+                  <span className="caption">
+                    Soạn bởi <span className="font-medium" style={{ color: 'var(--fg)' }}>{ketQua.model}</span>
                   </span>
                 </div>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} />
@@ -282,13 +283,13 @@ function TrangLuanGiai() {
           </div>
         </div>
       </section>
-    </main>
+    </Shell>
   );
 }
 
 export default function LuanGiaiPage() {
   return (
-    <Suspense fallback={<main className="py-[40px]">Đang tải…</main>}>
+    <Suspense fallback={<Shell className="py-[40px]">Đang tải…</Shell>}>
       <TrangLuanGiai />
     </Suspense>
   );

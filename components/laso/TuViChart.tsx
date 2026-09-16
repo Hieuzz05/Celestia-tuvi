@@ -108,7 +108,7 @@ export function TuViChart({
     if (!chartRef.current) return;
     const nen = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
     const dataUrl = await toPng(chartRef.current, {
-      backgroundColor: nen || '#08080a',
+      backgroundColor: nen || '#ffffff',
       pixelRatio: 2 / Math.max(zoomThucTe, 0.1),
     });
     const a = document.createElement('a');
@@ -162,7 +162,7 @@ export function TuViChart({
                 type="checkbox"
                 checked={settings[key]}
                 onChange={(e) => setSettings((s) => ({ ...s, [key]: e.target.checked }))}
-                className="accent-[var(--accent)]"
+                className="accent-[var(--fg)]"
               />
               <span style={{ color: settings[key] ? 'var(--fg)' : 'var(--fg-muted)' }}>
                 {nhan}

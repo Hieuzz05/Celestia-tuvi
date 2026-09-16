@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
 import { taoSupabaseClient } from '@/lib/supabase/client';
+import { Shell } from '@/components/ui';
 
 type Che = 'dang-nhap' | 'dang-ky';
 
@@ -30,10 +31,13 @@ export default function DangNhapPage() {
 
   const supabase = taoSupabaseClient();
 
-  // Callback OAuth chuyển về đây kèm lý do khi đăng nhập thất bại
+  // Callback OAuth chuyển về đây kèm lý do khi đăng nhập thất bại.
+  // Nút "Tạo tài khoản" trên thanh điều hướng mở thẳng chế độ đăng ký qua ?che=
   useEffect(() => {
-    const loi = new URLSearchParams(window.location.search).get('loi');
+    const q = new URLSearchParams(window.location.search);
+    const loi = q.get('loi');
     if (loi) setThongBao({ loai: 'loi', noiDung: loi });
+    if (q.get('che') === 'dang-ky') setChe('dang-ky');
   }, []);
 
   // Chỉ hiện nút SSO của provider thực sự được bật trong Supabase — bằng không
@@ -48,14 +52,16 @@ export default function DangNhapPage() {
 
   if (!supabase) {
     return (
-      <main className="mx-auto w-full max-w-[560px] py-[60px]">
+      <Shell className="py-[60px]">
+        <div className="mx-auto w-full max-w-[560px]">
         <h1 className="heading">Chưa bật đăng nhập</h1>
         <p className="body-text mt-[20px]" style={{ color: 'var(--fg-muted)' }}>
           Tính năng tài khoản cần Supabase. Thêm hai biến môi trường{' '}
           <code>NEXT_PUBLIC_SUPABASE_URL</code> và <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> rồi
           khởi động lại ứng dụng. Xem hướng dẫn chi tiết trong tệp <code>HUONG-DAN.md</code>.
         </p>
-      </main>
+      </div>
+      </Shell>
     );
   }
 
@@ -102,7 +108,8 @@ export default function DangNhapPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-[460px] py-[40px]">
+    <Shell className="py-[40px]">
+      <div className="mx-auto w-full max-w-[460px]">
       <h1 className="heading">{che === 'dang-nhap' ? 'Đăng nhập' : 'Tạo tài khoản'}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
         Đăng nhập để lưu lá số và xem lại các bản luận giải đã tạo.
@@ -199,6 +206,7 @@ export default function DangNhapPage() {
       >
         {che === 'dang-nhap' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
       </button>
-    </main>
+      </div>
+    </Shell>
   );
 }

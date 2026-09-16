@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { datTenHienThi, taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
 import { supabaseDaCauHinh } from '@/lib/supabase/config';
+import { Shell } from '@/components/ui';
 
 export default function TaiKhoanPage() {
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
@@ -37,18 +38,18 @@ export default function TaiKhoanPage() {
 
   if (!supabaseDaCauHinh) {
     return (
-      <main className="py-[60px]">
+      <Shell className="py-[60px]">
         <h1 className="heading">Chưa bật đăng nhập</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
           Tính năng tài khoản cần Supabase. Xem hướng dẫn trong tệp HUONG-DAN.md.
         </p>
-      </main>
+      </Shell>
     );
   }
 
   if (daTai && !taiKhoan) {
     return (
-      <main className="py-[60px]">
+      <Shell className="py-[60px]">
         <h1 className="heading">Chưa đăng nhập</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
           Đăng nhập để đặt tên hiển thị và quản lý lá số đã lưu.
@@ -56,12 +57,13 @@ export default function TaiKhoanPage() {
         <a href="/dang-nhap" className="btn-primary mt-[24px] inline-block">
           Đăng nhập
         </a>
-      </main>
+      </Shell>
     );
   }
 
   return (
-    <main className="flex max-w-[520px] flex-col gap-[24px] py-[20px]">
+    <Shell className="py-[24px]">
+      <div className="flex max-w-[520px] flex-col gap-[24px]">
       <div>
         <p className="eyebrow">Tài khoản</p>
         <h1 className="heading mt-[10px]">Hồ sơ của bạn.</h1>
@@ -101,6 +103,7 @@ export default function TaiKhoanPage() {
           {dangLuu ? 'Đang lưu…' : 'Lưu tên hiển thị'}
         </button>
       </form>
-    </main>
+      </div>
+    </Shell>
   );
 }

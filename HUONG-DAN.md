@@ -443,4 +443,37 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Lưu tinh theo năm xem | Xong — bật trong Tuỳ chọn hiển thị |
 | Quản trị xem tài khoản + lá số của user | Xong — cần service role key |
 | Chat hỏi đáp tự do theo lá số | Xong |
+| Trang Giới thiệu (hero, lời chứng thực, CTA) | Xong — khối lời chứng thực còn là nội dung mẫu |
 | Xuất PDF, từ điển thuật ngữ | Chưa |
+
+---
+
+## 6. Design system
+
+Giao diện dựng theo **Outseta** — "sunset marketplace at golden hour". Toàn bộ quy ước nằm ở
+`app/globals.css`, bộ component ở `components/ui/`.
+
+Vài luật dễ vi phạm khi sửa giao diện:
+
+- **Hồng `#df37a7` chỉ dành cho nút hành động chính**, mỗi khung nhìn đúng một cái. Không dùng cho
+  liên kết, viền, chữ nhấn hay logo. Muốn nhấn mạnh thì dùng mực Aubergine `#240029`.
+- **Không dùng đen hay xám trung tính.** Chữ, viền và bóng đều ngả tím: bóng luôn là
+  `rgba(32-41, 0, 36, x)`.
+- **Bo góc chỉ có bốn bậc**: 999px (pill/badge) · 14px (thẻ) · 6px (nút) · 3px (ô nhập). Thêm bậc
+  thứ năm là làm nhoè ranh giới "chất liệu" giữa các thành phần.
+- **Gradient hoàng hôn chỉ dùng cho dải hero tràn màn**, không bao giờ cho thẻ, nút hay icon.
+- **Chữ viết tay (Permanent Marker)** tối đa 3 lần mỗi trang và chỉ đặt trên dải gradient — ra nền
+  trắng là mất tương phản.
+- **Tối đa hai màu chữ trong một thành phần**: `--fg` và `--fg-muted`.
+
+Màu tốt/xấu trong mệnh bàn nằm ở nhóm token riêng (`--chart-tot`, `--chart-hung`) chứ không dùng
+`--accent`, vì mệnh bàn có hàng trăm nhãn mà hệ chỉ cho phép một điểm hồng mỗi khung nhìn.
+
+### Ngày / Đêm
+
+Design system gốc chỉ có theme sáng, nên **Ngày là mặc định**. Chế độ Đêm dựng từ Surface level 2
+của chính hệ (Dark Plum `#240029` — dải CTA tối cuối trang) kéo dài ra toàn trang.
+
+Hai dải `.hero-band` và `.dark-band` có màu cố định ở cả hai theme nên chúng tự khoá lại bộ token
+khớp với nền của mình. Nếu thêm dải nền cố định mới, nhớ làm y hệt — bằng không ở chế độ Đêm chữ
+trắng sẽ rơi xuống nền vàng.

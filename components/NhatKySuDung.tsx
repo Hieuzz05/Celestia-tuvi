@@ -79,7 +79,7 @@ export function NhatKySuDung() {
                     className="h-full"
                     style={{
                       width: `${tyLe}%`,
-                      background: sapCan ? 'var(--chart-hung)' : 'var(--accent)',
+                      background: sapCan ? 'var(--chart-hung)' : 'var(--fg)',
                     }}
                   />
                 </div>

@@ -1,86 +1,139 @@
 @import "tailwindcss";
 
 /*
- * Design system: Slash — "midnight vault with gilded ledger lines".
- * Chữ ký của hệ: serif didone cho heading >= 28px, Inter cho mọi text < 28px,
- * đồng (copper) là màu chromatic duy nhất, viền hairline thay vì đổ bóng.
+ * Design system: Outseta — "sunset marketplace at golden hour".
+ *
+ * Chữ ký của hệ:
+ *   - Aubergine #240029 là "mực" của cả hệ: chữ, viền, nét icon đều ngả tím,
+ *     không dùng đen/xám trung tính ở bất cứ đâu.
+ *   - Fuchsia #df37a7 là màu hành động DUY NHẤT, chỉ dành cho nút chuyển đổi chính.
+ *   - Eyebrow bằng mono giãn chữ 0.10em mở đầu mọi khối nội dung.
+ *   - Thang bo góc 999 / 14 / 6 / 3 (pill / card / button / input) — không thêm bậc thứ năm.
+ *   - Đổ bóng luôn pha tím rgba(32-41, 0, 36, x), không bao giờ đen trung tính.
  *
  * Tầng token chia hai lớp:
- *   1. Palette gốc của design system (cố định)
- *   2. Token ngữ nghĩa (--bg, --fg, --line...) đổi theo Day/Night — component chỉ dùng lớp này
+ *   1. Palette gốc của design system (cố định, không đổi theo theme)
+ *   2. Token ngữ nghĩa (--bg, --fg, --line...) đổi theo Ngày/Đêm — component chỉ dùng lớp này
+ *
+ * Design system gốc chỉ định nghĩa theme sáng. Chế độ Đêm dựng từ Surface level 2
+ * của chính hệ (Dark Plum #240029 — dải CTA tối cuối trang), tức là kéo dài một bề
+ * mặt đã có sẵn ra toàn trang chứ không bịa thêm palette mới.
  */
 :root {
-  /* Palette gốc */
-  --color-obsidian: #08080a;
-  --color-onyx: #040406;
-  --color-carbon: #121317;
-  --color-graphite: #1c1d22;
-  --color-slate: #2e3038;
-  --color-smoke: #464853;
-  --color-ash: #5e616e;
-  --color-steel: #777a88;
-  --color-fog: #9194a1;
-  --color-mist: #acafb9;
-  --color-silver: #c7c9d1;
-  --color-bone: #e2e3e9;
-  --color-paper-white: #ffffff;
-  --color-copper: #cc9166;
-  --gradient-gilded: linear-gradient(
-    103deg,
-    rgb(174, 147, 87),
-    rgb(255, 240, 204) 40%,
-    rgb(174, 147, 87) 70%,
-    rgba(189, 157, 79, 0)
-  );
+  /* ---------- Palette gốc ---------- */
+  --color-aubergine: #240029;
+  --color-fuchsia-signal: #df37a7;
+  --color-heather: #6d526d;
+  --color-glowstick: #ffcc11;
+  --color-plum-tinted: #d4ccd4;
+  --color-ink: #222222;
+  --color-smoke: #bbadbb;
+  --color-charcoal: #333333;
+  --color-frost: #767676;
+  --color-forest: #15803d;
+  --color-mint: #bbf7d0;
+  --color-honeydew: #dcfce7;
+  --color-strawberry: #ef4444;
+  --color-mango: #22c55e;
+  --color-canvas: #ffffff;
+  --color-hero-glow: #ffbdd3;
+  --color-warm-wash: #fff1bd;
 
-  --page-max-width: 1216px;
-  --radius-cards: 10px;
-  --radius-full: 9999px;
+  --gradient-hero: linear-gradient(145deg, #ffbdd3, #fff1bd 40%, #fff1bd 60%, #ffcb0f);
 
-  /* Token ngữ nghĩa — Night (mặc định theo design system) */
-  --bg: var(--color-obsidian);
-  --surface-card: var(--color-onyx);
-  --surface-panel: var(--color-carbon);
-  --line: var(--color-graphite);
-  --line-strong: var(--color-slate);
-  --fg: var(--color-paper-white);
-  --fg-body: var(--color-bone);
-  --fg-soft: var(--color-mist);
-  --fg-muted: var(--color-fog);
-  --fg-subtle: var(--color-steel);
-  --accent: var(--color-copper);
+  /* ---------- Bo góc: đúng bốn bậc ---------- */
+  --radius-inputs: 3px;
+  --radius-buttons: 6px;
+  --radius-images: 6px;
+  --radius-cards: 14px;
+  --radius-full: 999px;
 
-  /* Nút hành động chính: trắng trên nền tối */
-  --action-bg: var(--color-paper-white);
-  --action-fg: #000000;
+  /* ---------- Layout ---------- */
+  --page-max-width: 1200px;
+  --section-gap: 80px;
+  --card-padding: 24px;
+  --element-gap: 16px;
 
-  /* Mã màu dữ liệu lá số — tín hiệu chức năng, không phải màu thương hiệu */
-  --chart-hung: #c96f56;
-  --chart-cat: #7f9c7b;
-  --chart-cell: rgba(255, 255, 255, 0.012);
-  --chart-han: rgba(204, 145, 102, 0.07);
+  /* ---------- Đổ bóng: luôn pha tím ---------- */
+  --shadow-card: rgba(41, 0, 41, 0.11) 0 0 0 1px, rgba(32, 0, 36, 0.05) 0 2px 2px 0;
+  --shadow-elevated: rgba(32, 0, 36, 0.11) 0 0 0 1px, rgba(32, 0, 36, 0.01) 0 1px 1.5px 0,
+    rgba(32, 0, 36, 0.02) 0 2px 3px 0, rgba(32, 0, 36, 0.03) 0 4px 6px 0,
+    rgba(32, 0, 36, 0.04) 0 8px 12px 0, rgba(32, 0, 36, 0.05) 0 16px 24px 0;
+  --shadow-button: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-image: rgba(32, 0, 36, 0.01) 0 1px 1.5px 0, rgba(32, 0, 36, 0.02) 0 2px 3px 0,
+    rgba(32, 0, 36, 0.03) 0 4px 6px 0, rgba(32, 0, 36, 0.04) 0 8px 12px 0,
+    rgba(32, 0, 36, 0.05) 0 16px 24px 0;
+
+  /* ---------- Token ngữ nghĩa — Ngày (mặc định, đúng theme gốc) ---------- */
+  --bg: var(--color-canvas);
+  --surface-card: var(--color-canvas);
+  --surface-panel: #faf7fa;
+  --surface-wash: var(--color-warm-wash);
+  --line: var(--color-plum-tinted);
+  --line-strong: var(--color-heather);
+  --line-input: var(--color-frost);
+
+  /* Hệ chỉ dùng hai màu chữ + một màu phụ trợ mờ */
+  --fg: var(--color-aubergine);
+  --fg-body: var(--color-aubergine);
+  --fg-soft: var(--color-heather);
+  --fg-muted: var(--color-heather);
+  --fg-subtle: var(--color-smoke);
+
+  /* Hành động: hồng nóng, duy nhất trên mỗi khung nhìn */
+  --accent: var(--color-fuchsia-signal);
+  --action-bg: var(--color-fuchsia-signal);
+  --action-fg: var(--color-canvas);
+
+  /* Trạng thái thành công: bộ ba viền / nền / chữ, không rò sang chỗ khác */
+  --ok-fg: var(--color-forest);
+  --ok-bg: var(--color-honeydew);
+  --ok-line: var(--color-mint);
+
+  /*
+   * Mã màu dữ liệu lá số — tầng tín hiệu chức năng, tách hẳn khỏi màu thương hiệu.
+   * Giữ riêng để sao tốt/xấu trong mệnh bàn không mượn màu hành động: hệ yêu cầu
+   * mỗi khung nhìn chỉ có đúng một điểm hồng, mà mệnh bàn thì có hàng trăm nhãn.
+   */
+  --chart-tot: var(--color-forest);
+  --chart-cat: var(--color-forest);
+  --chart-hung: var(--color-strawberry);
+  --chart-cell: rgba(36, 0, 41, 0.015);
+  --chart-han: rgba(255, 204, 17, 0.22);
 }
 
-:root[data-theme="day"] {
-  --bg: #faf8f5;
-  --surface-card: #ffffff;
-  --surface-panel: #f3f1ec;
-  --line: #e4e1d9;
-  --line-strong: #cfcabd;
-  --fg: #08080a;
-  --fg-body: #23242a;
-  --fg-soft: #4a4c55;
-  --fg-muted: #6d707a;
-  --fg-subtle: #8a8d96;
-  --accent: #9a5f2c;
+:root[data-theme="night"] {
+  --bg: var(--color-aubergine);
+  --surface-card: #2d0334;
+  --surface-panel: #1a001e;
+  --surface-wash: #2d0334;
+  --line: rgba(212, 204, 212, 0.16);
+  --line-strong: var(--color-smoke);
+  --line-input: rgba(212, 204, 212, 0.34);
 
-  --action-bg: var(--color-obsidian);
-  --action-fg: var(--color-paper-white);
+  --fg: var(--color-canvas);
+  --fg-body: #f2e9f2;
+  --fg-soft: var(--color-plum-tinted);
+  --fg-muted: var(--color-plum-tinted);
+  --fg-subtle: var(--color-smoke);
 
-  --chart-hung: #a8412a;
-  --chart-cat: #3f6b3b;
-  --chart-cell: rgba(0, 0, 0, 0.012);
-  --chart-han: rgba(154, 95, 44, 0.08);
+  --accent: var(--color-fuchsia-signal);
+  --action-bg: var(--color-fuchsia-signal);
+  --action-fg: var(--color-canvas);
+
+  --ok-fg: var(--color-mint);
+  --ok-bg: rgba(21, 128, 61, 0.24);
+  --ok-line: rgba(187, 247, 208, 0.4);
+
+  --chart-tot: var(--color-mango);
+  --chart-cat: var(--color-mango);
+  --chart-hung: var(--color-strawberry);
+  --chart-cell: rgba(255, 255, 255, 0.02);
+  --chart-han: rgba(255, 204, 17, 0.14);
+
+  --shadow-card: rgba(255, 255, 255, 0.11) 0 0 0 1px;
+  --shadow-elevated: rgba(255, 255, 255, 0.11) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 16px 24px 0;
+  --shadow-image: rgba(0, 0, 0, 0.35) 0 16px 24px 0;
 }
 
 @theme inline {
@@ -88,7 +141,8 @@
   --color-fg: var(--fg);
   --color-accent: var(--accent);
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-display-serif);
+  --font-display: var(--font-display-sans);
+  --font-mono: var(--font-mono-label);
 }
 
 html {
@@ -104,174 +158,355 @@ body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
+  letter-spacing: -0.16px;
+  font-feature-settings: "calt" on, "cv11" on, "ss02" on, "ss03" on;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* ---------- Serif: chỉ dùng từ 28px trở lên ---------- */
+/* ---------- Display: một giọng to duy nhất, không ghép với font đậm thứ hai ---------- */
 .display,
 .heading,
 .heading-sm {
-  font-family: var(--font-display-serif), Georgia, serif;
-  font-weight: 400;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
   color: var(--fg);
 }
 
 .display {
-  font-size: clamp(40px, 6.5vw, 88px);
-  line-height: 1.02;
+  font-size: clamp(44px, 7vw, 80px);
+  line-height: 1;
+  letter-spacing: -1.6px;
 }
 
 .heading {
-  font-size: clamp(32px, 4vw, 52px);
-  line-height: 1.13;
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -1.12px;
 }
 
 .heading-sm {
-  font-size: clamp(28px, 2.6vw, 44px);
-  line-height: 1.24;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.2;
+  letter-spacing: -0.14px;
 }
 
-/* ---------- Inter: mọi thứ dưới 28px ---------- */
+/* ---------- Inter: toàn bộ phần còn lại ---------- */
 .subheading {
   font-size: 24px;
   line-height: 1.2;
-  letter-spacing: -0.013em;
-  font-weight: 500;
+  letter-spacing: -0.1px;
+  font-weight: 600;
   color: var(--fg);
 }
 
+/* Eyebrow: mono giãn rộng — tín hiệu "sang khối mới" của hệ */
 .eyebrow {
-  font-size: 13px;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  font-weight: 600;
-  color: var(--accent);
+  font-family: var(--font-mono-label), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--fg);
+}
+
+.body-lg {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.16px;
+  font-weight: 400;
+  color: var(--fg-muted);
 }
 
 .body-text {
   font-size: 16px;
   line-height: 1.5;
+  letter-spacing: -0.16px;
   color: var(--fg-body);
 }
 
-.body-lg {
-  font-size: 20px;
-  line-height: 1.38;
-  letter-spacing: -0.04em;
-  font-weight: 400;
-  color: var(--fg-muted);
+.body-sm {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  color: var(--fg-body);
 }
 
 .meta {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
   color: var(--fg-muted);
 }
 
-/* ---------- Controls ---------- */
+.caption {
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: -0.16px;
+  color: var(--fg-muted);
+}
+
+/* Chữ viết tay: chỉ đặt trên dải gradient hero, 1-3 lần mỗi trang */
+.annotation {
+  font-family: var(--font-annotation), var(--font-inter), cursive;
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--color-fuchsia-signal);
+}
+
+/* ---------- Nút ---------- */
+
+/* Nút chuyển đổi duy nhất — chỉ một cái trên mỗi khung nhìn */
 .btn-primary {
   background: var(--action-bg);
   color: var(--action-fg);
-  border-radius: var(--radius-full);
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: opacity 0.15s ease;
+  border-radius: var(--radius-buttons);
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.16px;
+  box-shadow: var(--shadow-button);
+  transition: filter 0.15s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.85;
+  filter: brightness(1.08);
 }
 
 .btn-primary:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
+/* Hành động hạng hai — viền tím nhạt, không bao giờ chuyển sang xám */
 .btn-outline {
   background: transparent;
   color: var(--fg);
-  border: 1px solid var(--fg);
-  border-radius: var(--radius-full);
-  padding: 10px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-buttons);
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.16px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--line-strong) 10%, transparent);
+}
+
+.btn-outline:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 8px 16px;
   font-size: 14px;
-  font-weight: 500;
-  transition: opacity 0.15s ease;
+  letter-spacing: -0.14px;
 }
 
-.btn-outline:hover {
-  opacity: 0.75;
-}
-
+/* ---------- Pill & badge ---------- */
 .pill-tag {
-  background: transparent;
-  color: var(--fg-body);
-  border: 1px solid var(--fg-subtle);
+  background: var(--surface-card);
+  color: var(--fg);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-full);
-  padding: 6px 10px;
-  font-size: 13px;
+  padding: 6px 12px;
+  font-size: 12px;
   font-weight: 500;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  letter-spacing: -0.16px;
+  transition: background-color 0.15s ease;
 }
 
 .pill-tag:hover,
 .pill-tag[data-active="true"] {
-  border-color: var(--fg);
-  color: var(--fg);
+  background: color-mix(in srgb, var(--line-strong) 12%, transparent);
 }
 
+.badge-ok {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- Liên kết ---------- */
 .nav-link {
-  color: var(--fg-muted);
+  color: var(--fg);
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: -0.14px;
   padding: 6px 0;
-  transition: color 0.15s ease;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .nav-link:hover,
 .nav-link[data-active="true"] {
-  color: var(--fg);
+  border-color: var(--fg);
 }
 
 .link-text {
   color: var(--fg-muted);
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: -0.14px;
   transition: color 0.15s ease;
 }
 
-.link-text:hover {
+.link-text:hover,
+.link-text[data-active="true"] {
   color: var(--fg);
 }
 
+/* ---------- Ô nhập: bo 3px, sắc hơn card/nút để thấy rõ là "vật liệu" khác ---------- */
 .field-input {
-  background: transparent;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-full);
-  padding: 10px 18px;
-  font-size: 15px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-input);
+  border-radius: var(--radius-inputs);
+  padding: 12px 16px;
+  font-size: 16px;
   font-weight: 400;
-  color: var(--fg-body);
+  letter-spacing: -0.16px;
+  color: var(--fg);
   width: 100%;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field-input::placeholder {
-  color: var(--fg-subtle);
+  color: var(--fg-muted);
 }
 
 .field-input:focus {
   outline: none;
   border-color: var(--fg);
+  box-shadow: 0 0 0 1px var(--fg);
 }
 
 .field-input option {
-  background: var(--surface-panel);
-  color: var(--fg-body);
+  background: var(--surface-card);
+  color: var(--fg);
 }
 
+.field-label {
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: -0.16px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+/* ---------- Thẻ ---------- */
+.card {
+  background: var(--surface-card);
+  border-radius: var(--radius-cards);
+  padding: var(--card-padding);
+  box-shadow: var(--shadow-card);
+}
+
+.card-elevated {
+  background: var(--surface-card);
+  border-radius: var(--radius-cards);
+  padding: 32px;
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Ảnh/khối minh hoạ tràn sát mép thẻ */
+.showcase-card {
+  background: var(--surface-card);
+  border-radius: var(--radius-cards);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------- Dải nền tràn chiều ngang ---------- */
+
+/*
+ * Hai dải này có màu CỐ ĐỊNH ở cả hai theme, nên chúng tự khoá lại bộ token khớp
+ * với nền của mình. Không làm vậy thì ở chế độ Đêm chữ trắng rơi xuống nền vàng
+ * của hero, còn ở chế độ Ngày chữ đen rơi xuống nền tím của dải CTA.
+ */
+
+/* Gradient hoàng hôn: chỉ dùng cho dải hero tràn màn, không bao giờ cho thẻ/nút/icon */
+.hero-band {
+  background: var(--gradient-hero);
+
+  --bg: var(--color-canvas);
+  --surface-card: var(--color-canvas);
+  --surface-panel: #faf7fa;
+  --line: var(--color-plum-tinted);
+  --line-strong: var(--color-heather);
+  --line-input: var(--color-frost);
+  --fg: var(--color-aubergine);
+  --fg-body: var(--color-aubergine);
+  --fg-soft: var(--color-heather);
+  --fg-muted: var(--color-heather);
+  --fg-subtle: var(--color-smoke);
+  --ok-fg: var(--color-forest);
+  --ok-bg: var(--color-honeydew);
+  --ok-line: var(--color-mint);
+  --chart-cell: rgba(36, 0, 41, 0.015);
+  --chart-han: rgba(255, 204, 17, 0.22);
+  --shadow-card: rgba(41, 0, 41, 0.11) 0 0 0 1px, rgba(32, 0, 36, 0.05) 0 2px 2px 0;
+
+  color: var(--color-aubergine);
+}
+
+.dark-band {
+  background: var(--color-aubergine);
+
+  --bg: var(--color-aubergine);
+  --surface-card: #2d0334;
+  --surface-panel: #1a001e;
+  --line: rgba(212, 204, 212, 0.16);
+  --line-strong: var(--color-smoke);
+  --line-input: rgba(212, 204, 212, 0.34);
+  --fg: var(--color-canvas);
+  --fg-body: #f2e9f2;
+  --fg-soft: var(--color-plum-tinted);
+  --fg-muted: var(--color-plum-tinted);
+  --fg-subtle: var(--color-smoke);
+  --shadow-card: rgba(255, 255, 255, 0.11) 0 0 0 1px;
+
+  color: var(--color-canvas);
+}
+
+/* ---------- Bước đánh số ---------- */
+.step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---------- Ô icon ---------- */
+.icon-tile {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+}
+
+/* ---------- Tiện ích ---------- */
 .o-cung-cuon {
   scrollbar-width: none;
 }
@@ -280,17 +515,10 @@ body {
   display: none;
 }
 
-.card {
-  background: var(--surface-card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-cards);
-  padding: 24px;
-}
-
 @media print {
   body {
     background: #fff;
-    color: #000;
+    color: var(--color-aubergine);
   }
 
   .no-print {

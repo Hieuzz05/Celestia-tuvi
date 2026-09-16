@@ -1,5 +1,6 @@
 'use client';
 
+import { O, OChon, Truong } from '@/components/ui';
 import type { GioiTinh } from '@/lib/tuvi/ansao';
 
 export const GIO_OPTIONS = [
@@ -24,15 +25,9 @@ export interface ThongTinForm {
   gioiTinh: GioiTinh;
 }
 
+/** Giữ tên cũ để các trang không phải sửa import — bên trong dùng thẳng ô nhập của design system */
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-[6px]">
-      <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-        {label}
-      </span>
-      {children}
-    </label>
-  );
+  return <Truong nhan={label}>{children}</Truong>;
 }
 
 export function FormSinh({
@@ -46,46 +41,35 @@ export function FormSinh({
     onChange({ ...giaTri, [k]: v });
 
   return (
-    <div className="grid gap-[18px] sm:grid-cols-2">
-      <Field label="Họ tên">
-        <input
+    <div className="grid gap-[16px] sm:grid-cols-2">
+      <Truong nhan="Họ tên">
+        <O
           value={giaTri.hoTen}
           onChange={(e) => set('hoTen', e.target.value)}
           placeholder="Nguyễn Văn A"
-          className="field-input"
         />
-      </Field>
-      <Field label="Ngày sinh (dương lịch)">
-        <input
-          type="date"
-          value={giaTri.ngaySinh}
-          onChange={(e) => set('ngaySinh', e.target.value)}
-          className="field-input"
-        />
-      </Field>
-      <Field label="Giờ sinh">
-        <select
-          value={giaTri.gio}
-          onChange={(e) => set('gio', Number(e.target.value))}
-          className="field-input"
-        >
+      </Truong>
+      <Truong nhan="Ngày sinh (dương lịch)">
+        <O type="date" value={giaTri.ngaySinh} onChange={(e) => set('ngaySinh', e.target.value)} />
+      </Truong>
+      <Truong nhan="Giờ sinh">
+        <OChon value={giaTri.gio} onChange={(e) => set('gio', Number(e.target.value))}>
           {GIO_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
           ))}
-        </select>
-      </Field>
-      <Field label="Giới tính">
-        <select
+        </OChon>
+      </Truong>
+      <Truong nhan="Giới tính">
+        <OChon
           value={giaTri.gioiTinh}
           onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
-          className="field-input"
         >
           <option value="nam">Nam</option>
           <option value="nu">Nữ</option>
-        </select>
-      </Field>
+        </OChon>
+      </Truong>
     </div>
   );
 }

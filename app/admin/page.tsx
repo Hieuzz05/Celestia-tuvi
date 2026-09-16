@@ -6,6 +6,7 @@ import { KhoTriThuc } from '@/components/KhoTriThuc';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
 import { QuanLyNguoiDung } from '@/components/QuanLyNguoiDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
+import { Shell } from '@/components/ui';
 
 interface ModelTrangThai {
   provider: ProviderId;
@@ -59,9 +60,9 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="flex flex-col gap-[36px] py-[36px]">
+    <Shell className="flex flex-col gap-[36px] py-[36px]">
       <div>
-        <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+        <p className="eyebrow">
           Quản trị hệ thống
         </p>
         <h1 className="display mt-[18px]">Model AI &amp; kho tri thức.</h1>
@@ -179,6 +180,6 @@ export default function AdminPage() {
 
       <KhoTriThuc />
 
-    </main>
+    </Shell>
   );
 }
