@@ -444,6 +444,11 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Quản trị xem tài khoản + lá số của user | Xong — cần service role key |
 | Chat hỏi đáp tự do theo lá số | Xong |
 | Landing ở `/`, công cụ ở `/la-so` | Xong |
+| Nhân cách Celes (thương hiệu Celestia, người đồng hành Celes) | Xong |
+| Chuyển ngữ VI/EN, tự nhận theo thiết bị, nhớ lựa chọn | Xong — đã phủ toàn bộ đường đi của khách mới |
+| Onboarding hỏi ý định trước khi hỏi ngày sinh | Xong — 4 bước |
+| Quick Read một góc nhìn chính + hai phụ, sắp theo ý định | Xong |
+| Cấu trúc trả lời của Celes (Phản chiếu → Trả lời → Vì sao → Lưu ý → Bước tiếp) | Xong — ở tầng prompt |
 | Góc nhìn nhanh (3 insight) trước khi đăng ký | Xong — tính bằng công thức, không gọi AI |
 | Nút "Vì sao Celestia nói vậy?" | Xong — mở căn cứ từ chính lá số |
 | Nhập thông tin sinh theo từng bước | Xong — 3 bước, có xử lý "không nhớ giờ sinh" |
@@ -496,7 +501,8 @@ phương pháp. Kết quả:
 
 | Đường dẫn | Vai trò |
 |---|---|
-| `/` | Landing công khai — bán giá trị, không nhắc kỹ thuật |
+| `/` | Landing công khai — mở bằng nỗi băn khoăn của người đọc, không nhắc kỹ thuật |
+| `/cau-chuyen` | Câu chuyện thương hiệu: vì sao có Celes, và Celes không làm gì |
 | `/la-so` | Công cụ: nhập thông tin sinh → góc nhìn nhanh → mệnh bàn đầy đủ |
 | `/gioi-thieu` | Cách Celestia tính lá số, câu hỏi thường gặp |
 | `/luan-giai` | Khám phá sâu hơn theo chủ đề |
@@ -542,3 +548,36 @@ Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_CHINH_TINH` tr
 `quick_read_viewed`, `why_opened`...). Hiện chỉ lưu vào sessionStorage và in ra console lúc
 dev — **chưa nối dịch vụ analytics nào**. Khi chọn được nhà cung cấp, chỉ sửa hàm `ghiSuKien`,
 không phải đi rải lại khắp app.
+
+---
+
+## 8. Nhân cách Celes và ngôn ngữ
+
+**Celestia** là thương hiệu — tên sản phẩm, tên miền, logo. **Celes** là người dùng trò chuyện
+cùng. Đừng dùng lẫn: người dùng không "hỏi Celestia", họ "hỏi Celes".
+
+Nhân cách Celes định nghĩa ở một chỗ duy nhất — hằng `NHAN_CACH_CELES` trong
+`lib/ai/prompt.ts` — và được chèn vào đầu cả prompt hội thoại lẫn prompt bài dài. Sửa giọng
+văn thì sửa đúng chỗ đó, không rải ra từng prompt.
+
+Mỗi câu trả lời đi theo năm nhịp: **Phản chiếu → Góc nhìn chính → Vì sao → Điều cần lưu ý →
+Bước tiếp theo**. Không đánh số ra ngoài, viết liền mạch.
+
+### Chuyển ngữ VI/EN
+
+Chữ trong giao diện nằm ở `lib/i18n/vi.ts` và `lib/i18n/en.ts`. Bản tiếng Việt là nguồn chân
+lý về cấu trúc khoá; bản tiếng Anh được TypeScript kiểm tra theo đúng bộ khoá đó, nên thêm khoá
+mới mà quên dịch là **build đỏ ngay**, không âm thầm rơi về tiếng Việt.
+
+Nội dung Quick Read (lời văn cho 14 chính tinh, 12 cung) nằm riêng ở
+`lib/tuvi/quick-read-noi-dung.ts` — tách khỏi `quick-read.ts` vì đó là phần VIẾT, không phải
+phần TÍNH. Bản tiếng Anh viết lại chứ không dịch từng chữ.
+
+Ngôn ngữ mặc định lấy theo `navigator.languages`, lưu vào localStorage kèm cookie. Không tách
+route `/vi` và `/en` — brand spec cho phép dùng locale state, mà tách route thì phải dựng lại
+toàn bộ cây app router cho thứ chưa có nội dung SEO riêng.
+
+**Chưa phủ tiếng Anh**: các trang công cụ sâu (`/luan-giai`, `/hoi-dap`, `/hop-tuoi`, `/ho-so`,
+`/tai-khoan`, `/gioi-thieu`, `/cau-chuyen`, `/admin`) vẫn chỉ có tiếng Việt, và nội dung AI sinh
+ra luôn trả lời tiếng Việt. Nút đổi ngôn ngữ vẫn hiện ở đó, nên người đọc tiếng Anh sẽ gặp
+tiếng Việt khi đi sâu — cần dịch nốt trước khi mở cho người dùng nước ngoài.

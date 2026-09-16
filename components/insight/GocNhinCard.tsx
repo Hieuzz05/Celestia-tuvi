@@ -4,15 +4,27 @@ import { useState } from 'react';
 import type { GocNhin } from '@/lib/tuvi/quick-read';
 import { ghiSuKien } from '@/lib/analytics';
 import { NhanPill, The } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Một góc nhìn kèm nút mở căn cứ.
  *
- * "Vì sao Celestia nói vậy?" là điểm khác biệt chính của sản phẩm chứ không phải
- * một chi tiết trang trí: nó vừa làm người mới tin được, vừa là đường dẫn để người
+ * "Muốn biết vì sao không?" là tương tác chữ ký của sản phẩm chứ không phải một
+ * chi tiết trang trí: nó vừa làm người mới tin được, vừa là đường dẫn để người
  * biết Tử Vi lần xuống tới cung và sao. Vì vậy nó luôn miễn phí và luôn có mặt.
  */
-export function GocNhinCard({ gocNhin, nho = false }: { gocNhin: GocNhin; nho?: boolean }) {
+export function GocNhinCard({
+  gocNhin,
+  nho = false,
+  chinh = false,
+}: {
+  gocNhin: GocNhin;
+  /** Thẻ phụ: chữ nhỏ hơn, dùng cho hai góc nhìn đứng sau */
+  nho?: boolean;
+  /** Thẻ dẫn đầu: tiêu đề cỡ lớn, chiếm trọn bề ngang */
+  chinh?: boolean;
+}) {
+  const t = useT();
   const [moCanCu, setMoCanCu] = useState(false);
 
   const doiTrangThai = () => {
@@ -26,20 +38,22 @@ export function GocNhinCard({ gocNhin, nho = false }: { gocNhin: GocNhin; nho?: 
       <span className="eyebrow">{gocNhin.nhomChu}</span>
 
       <h3
-        className={nho ? 'text-[17px] font-semibold' : 'text-[20px] font-semibold'}
+        className={chinh ? 'heading-sm' : nho ? 'text-[17px] font-semibold' : 'text-[20px] font-semibold'}
         style={{ color: 'var(--fg)' }}
       >
         {gocNhin.tieuDe}
       </h3>
 
-      <p className={nho ? 'body-sm' : 'body-text'}>{gocNhin.noiDung}</p>
+      <p className={chinh ? 'body-lg' : nho ? 'body-sm' : 'body-text'} style={chinh ? { color: 'var(--fg)' } : undefined}>
+        {gocNhin.noiDung}
+      </p>
 
       <button
         onClick={doiTrangThai}
         className="link-text self-start"
         aria-expanded={moCanCu}
       >
-        {moCanCu ? 'Thu gọn căn cứ' : 'Vì sao Celestia nói vậy?'}
+        {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
       </button>
 
       {moCanCu && (
@@ -47,7 +61,8 @@ export function GocNhinCard({ gocNhin, nho = false }: { gocNhin: GocNhin; nho?: 
           className="flex flex-col gap-[10px] pt-[12px]"
           style={{ borderTop: '1px solid var(--line)' }}
         >
-          <p className="caption">Câu trên dựa vào những chi tiết sau trong lá số của bạn:</p>
+          <p className="eyebrow">{t.quickRead.viSaoTieuDe}</p>
+          <p className="caption">{t.quickRead.viSaoMo}</p>
 
           <div className="flex flex-wrap gap-[6px]">
             {gocNhin.canCu.map((c) => (

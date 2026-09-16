@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { IconMatTrang, IconMatTroi } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 
 export type Theme = 'day' | 'night';
 export const KHOA_THEME = 'tuvi-ai:theme';
@@ -12,6 +13,7 @@ function apDung(theme: Theme) {
 }
 
 export function ThemeToggle() {
+  const t = useT();
   // Design system gốc là theme sáng nên Ngày là mặc định
   const [theme, setTheme] = useState<Theme>('day');
 
@@ -35,11 +37,11 @@ export function ThemeToggle() {
     <button
       onClick={doi}
       className="pill-tag flex items-center gap-[6px]"
-      aria-label={theme === 'night' ? 'Chuyển sang chế độ ngày' : 'Chuyển sang chế độ đêm'}
-      title={theme === 'night' ? 'Chế độ ngày' : 'Chế độ đêm'}
+      aria-label={theme === 'night' ? t.nav.cheDoSang : t.nav.cheDoToi}
+      title={theme === 'night' ? t.nav.cheDoSang : t.nav.cheDoToi}
     >
       {theme === 'night' ? <IconMatTroi size={14} /> : <IconMatTrang size={14} />}
-      <span>{theme === 'night' ? 'Ngày' : 'Đêm'}</span>
+      <span>{theme === 'night' ? t.nav.cheDoSang : t.nav.cheDoToi}</span>
     </button>
   );
 }

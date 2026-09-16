@@ -10,6 +10,7 @@ import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { HuyHieuOk, NutVien, OChon, Shell, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
+import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { luuHoSo } from '@/lib/store/hoso';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
@@ -30,6 +31,7 @@ function tachNgay(ngaySinh: string) {
 }
 
 function TrangLaSo() {
+  const { t, ngonNgu } = useNgonNgu();
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinSinhForm | null>(null);
   const [namXem, setNamXem] = useState(new Date().getFullYear());
@@ -79,7 +81,10 @@ function TrangLaSo() {
     }
   }, [form]);
 
-  const gocNhin = useMemo(() => (laSo ? docNhanh(laSo, namXem) : []), [laSo, namXem]);
+  const gocNhin = useMemo(
+    () => (laSo ? docNhanh(laSo, namXem, form?.yDinh, ngonNgu) : []),
+    [laSo, namXem, form?.yDinh, ngonNgu]
+  );
 
   useEffect(() => {
     if (!laSo) return;
@@ -101,8 +106,8 @@ function TrangLaSo() {
       setDaLuu(true);
       ghiSuKien('signup_after_result');
       setTimeout(() => setDaLuu(false), 2500);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Chưa lưu được — thử lại sau một chút.');
+    } catch {
+      setLoi(t.quickRead.loiLuu);
     }
   };
 
@@ -128,7 +133,7 @@ function TrangLaSo() {
       );
     } catch {
       // Người dùng không cần biết provider nào hỏng — chỉ cần biết lá số vẫn còn nguyên
-      setLoi('Phần diễn giải đang tạm gián đoạn. Lá số của bạn vẫn được giữ nguyên — thử lại sau một chút.');
+      setLoi(t.quickRead.loiDocDai);
     } finally {
       setDangChay(false);
     }
@@ -151,12 +156,12 @@ function TrangLaSo() {
     return (
       <Shell className="py-[48px]">
         <div className="card mx-auto flex max-w-[560px] flex-col gap-[16px]">
-          <h1 className="heading-sm">Ngày sinh chưa đúng</h1>
+          <h1 className="heading-sm">{t.quickRead.ngaySai}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Celestia chưa đọc được ngày bạn vừa nhập. Kiểm tra lại giúp nhé.
+            {t.quickRead.ngaySaiMo}
           </p>
           <NutVien nho onClick={() => setForm(null)} className="self-start">
-            Nhập lại
+            {t.quickRead.nhapLai}
           </NutVien>
         </div>
       </Shell>
@@ -170,28 +175,34 @@ function TrangLaSo() {
         <div className="flex flex-wrap items-end justify-between gap-[16px]">
           <div>
             <h1 className="heading-sm">
-              {form.hoTen?.trim() ? `Góc nhìn dành cho ${form.hoTen.trim()}` : 'Góc nhìn dành cho bạn'}
+              {form.hoTen?.trim()
+                ? dien(t.quickRead.tieuDeCoTen, { ten: form.hoTen.trim() })
+                : t.quickRead.tieuDeChinh}
             </h1>
             <p className="body-sm mt-[6px]" style={{ color: 'var(--fg-muted)' }}>
-              Ba điều đáng chú ý nhất, đọc từ chính lá số vừa lập.
+              {t.quickRead.moTa}
             </p>
           </div>
 
           <div className="flex items-center gap-[12px]">
-            {daLuu ? <HuyHieuOk>Đã lưu</HuyHieuOk> : (
+            {daLuu ? (
+              <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
+            ) : (
               <NutVien nho onClick={luu}>
-                Lưu để xem lại
+                {t.quickRead.giuLai}
               </NutVien>
             )}
             <NutVien nho onClick={() => setForm(null)}>
-              Đổi thông tin
+              {t.quickRead.doiThongTin}
             </NutVien>
           </div>
         </div>
 
-        <div className="grid gap-[16px] md:grid-cols-3">
-          {gocNhin.map((g) => (
-            <GocNhinCard key={g.id} gocNhin={g} />
+        {gocNhin[0] && <GocNhinCard gocNhin={gocNhin[0]} chinh />}
+
+        <div className="grid gap-[16px] md:grid-cols-2">
+          {gocNhin.slice(1, 3).map((g) => (
+            <GocNhinCard key={g.id} gocNhin={g} nho />
           ))}
         </div>
 
@@ -205,21 +216,21 @@ function TrangLaSo() {
       {/* ---------- Đi sâu hơn ---------- */}
       <section className="grid gap-[16px] md:grid-cols-2">
         <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">ĐỌC DÀI HƠN</span>
+          <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
           <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            Một bức tranh liền mạch về bạn
+            {t.quickRead.docDai}
           </h2>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Nối các phần rời trong lá số thành một bài đọc, thay vì ba đoạn ngắn ở trên.
+            {t.quickRead.sauMo}
           </p>
 
           {dangChay ? (
             <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              Celestia đang ghép các phần trong lá số của bạn thành một bức tranh dễ hiểu…
+              {t.quickRead.dangDoc}
             </p>
           ) : (
             <NutVien nho onClick={docSau} className="self-start">
-              {ketQua ? 'Đọc lại' : 'Đọc bản đầy đủ'}
+              {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
             </NutVien>
           )}
 
@@ -232,19 +243,19 @@ function TrangLaSo() {
         </div>
 
         <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">THEO CHỦ ĐỀ</span>
+          <span className="eyebrow">{t.nav.khamPha}</span>
           <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            Bạn đang muốn hiểu điều gì?
+            {t.quickRead.theoChuDeTieuDe}
           </h2>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Công việc, tiền bạc, tình cảm, gia đình, sức khoẻ — hoặc hỏi thẳng một câu của riêng bạn.
+            {t.quickRead.theoChuDeMo}
           </p>
           <div className="mt-auto flex flex-wrap gap-[12px]">
             <Link href={lienKetSau} className="btn-outline btn-sm">
-              Khám phá sâu hơn
+              {t.quickRead.khamPhaSau}
             </Link>
             <Link href="/hoi-dap" className="btn-outline btn-sm">
-              Hỏi Celestia
+              {t.quickRead.hoiThang}
             </Link>
           </div>
         </div>
@@ -255,16 +266,17 @@ function TrangLaSo() {
         <div className="flex flex-wrap items-center justify-between gap-[16px]">
           <div>
             <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              Lá số đầy đủ
+              {t.quickRead.banDoTieuDe}{' '}
+              <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
             </h2>
             <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
-              Toàn bộ 12 cung và các sao — dành cho lúc bạn muốn đối chiếu chi tiết.
+              {t.quickRead.banDoMo}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-[12px]">
             {hienMenhBan && (
-              <Truong nhan="Tháng đang xem" className="w-[150px]">
+              <Truong nhan={t.quickRead.thangXem} className="w-[150px]">
                 <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                     <option key={m} value={m}>
@@ -275,7 +287,7 @@ function TrangLaSo() {
               </Truong>
             )}
             <NutVien nho onClick={() => setHienMenhBan((v) => !v)}>
-              {hienMenhBan ? 'Thu gọn lá số' : 'Xem lá số đầy đủ'}
+              {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
             </NutVien>
           </div>
         </div>
@@ -290,7 +302,7 @@ function TrangLaSo() {
 
 export default function TrangLaSoBoc() {
   return (
-    <Suspense fallback={<Shell className="py-[48px]">Đang mở…</Shell>}>
+    <Suspense fallback={<Shell className="py-[48px]"><span /></Shell>}>
       <TrangLaSo />
     </Suspense>
   );

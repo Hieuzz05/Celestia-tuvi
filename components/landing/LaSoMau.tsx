@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { PillTag } from '@/components/ui';
+import { useNgonNgu } from '@/lib/i18n/context';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 
@@ -15,24 +16,25 @@ import { docNhanh } from '@/lib/tuvi/quick-read';
  */
 
 const NGUOI_MAU = [
-  { nhan: 'Ví dụ 1', ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' as const },
-  { nhan: 'Ví dụ 2', ngay: 12, thang: 3, nam: 1995, gio: 15, gioiTinh: 'nu' as const },
-  { nhan: 'Ví dụ 3', ngay: 2, thang: 11, nam: 1988, gio: 23, gioiTinh: 'nam' as const },
+  { nhan: '1', ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' as const },
+  { nhan: '2', ngay: 12, thang: 3, nam: 1995, gio: 15, gioiTinh: 'nu' as const },
+  { nhan: '3', ngay: 2, thang: 11, nam: 1988, gio: 23, gioiTinh: 'nam' as const },
 ];
 
 export function LaSoMau() {
+  const { ngonNgu, t } = useNgonNgu();
   const [chon, setChon] = useState(0);
   const namNay = new Date().getFullYear();
 
   const gocNhin = useMemo(() => {
     const m = NGUOI_MAU[chon];
-    return docNhanh(lapLaSo({ ...m }), namNay);
-  }, [chon, namNay]);
+    return docNhanh(lapLaSo({ ...m }), namNay, undefined, ngonNgu);
+  }, [chon, namNay, ngonNgu]);
 
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-wrap items-center justify-center gap-[8px]">
-        <span className="caption">Xem thử với một ngày sinh khác:</span>
+        <span className="caption">{t.landing.thuNgaySinhKhac}</span>
         {NGUOI_MAU.map((m, i) => (
           <PillTag key={m.nhan} dangChon={i === chon} onClick={() => setChon(i)}>
             {m.nhan}

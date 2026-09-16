@@ -1,13 +1,19 @@
+'use client';
+
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { Shell } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Chân trang: một đường hairline, logo, câu miễn trừ và vài liên kết.
- * Cố ý nhạt — design system kết thúc trang bằng dải CTA tối, chân trang chỉ là
- * phần đuôi chứ không phải một khối nội dung nữa.
+ *
+ * Luôn giữ đường về trang giới thiệu và câu chuyện — lỗi đã được chỉ ra là người
+ * dùng đi sang màn khác rồi thì không còn chỗ nào quay lại phần giới thiệu nữa.
  */
 export function SiteFooter() {
+  const t = useT();
+
   return (
     <footer className="no-print border-t" style={{ borderColor: 'var(--line)' }}>
       <Shell className="flex flex-wrap items-center justify-between gap-[16px] py-[32px]">
@@ -15,20 +21,17 @@ export function SiteFooter() {
           <Logo size={16} />
         </span>
 
-        <p className="caption max-w-[420px]">
-          Celestia đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết về tương lai — và không
-          thay thế tư vấn y tế, tài chính hay pháp lý.
-        </p>
+        <p className="caption max-w-[440px]">{t.chan.mienTru}</p>
 
         <div className="flex flex-wrap items-center gap-[20px]">
           <Link href="/la-so" className="link-text">
-            Tạo lá số
+            {t.chung.ctaChinh}
           </Link>
           <Link href="/gioi-thieu" className="link-text">
-            Cách hoạt động
+            {t.nav.cachHoatDong}
           </Link>
-          <Link href="/hoi-dap" className="link-text">
-            Hỏi Celestia
+          <Link href="/cau-chuyen" className="link-text">
+            {t.nav.cauChuyen}
           </Link>
         </div>
       </Shell>

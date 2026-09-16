@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono, Permanent_Marker } from "next/font/google";
+import { NgonNguProvider } from "@/lib/i18n/context";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
@@ -56,9 +57,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       {/* Không bọc max-width ở đây: các dải hero/CTA cần tràn hết chiều ngang,
           nên từng trang tự bọc nội dung bằng <Shell>. */}
       <body className="flex min-h-full flex-col">
-        <SiteNav />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <NgonNguProvider>
+          <SiteNav />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </NgonNguProvider>
       </body>
     </html>
   );

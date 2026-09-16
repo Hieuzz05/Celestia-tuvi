@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
 import { taoSupabaseClient } from '@/lib/supabase/client';
+import { dien, useT } from '@/lib/i18n/context';
 import { Shell } from '@/components/ui';
 
 type Che = 'dang-nhap' | 'dang-ky';
@@ -20,6 +21,7 @@ const SSO = [
 type SsoId = (typeof SSO)[number]['id'];
 
 export default function DangNhapPage() {
+  const t = useT();
   const router = useRouter();
   const [che, setChe] = useState<Che>('dang-nhap');
   const [email, setEmail] = useState('');
@@ -54,7 +56,7 @@ export default function DangNhapPage() {
     return (
       <Shell className="py-[60px]">
         <div className="mx-auto w-full max-w-[560px]">
-        <h1 className="heading">Chưa bật đăng nhập</h1>
+        <h1 className="heading-sm">{t.auth.chuaBat}</h1>
         <p className="body-text mt-[20px]" style={{ color: 'var(--fg-muted)' }}>
           Tính năng tài khoản cần Supabase. Thêm hai biến môi trường{' '}
           <code>NEXT_PUBLIC_SUPABASE_URL</code> và <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> rồi
@@ -80,7 +82,7 @@ export default function DangNhapPage() {
         setThongBao({
           loai: 'ok',
           noiDung:
-            'Đã tạo tài khoản. Nếu hộp thư của bạn nhận được email xác nhận, hãy bấm liên kết trong đó trước khi đăng nhập.',
+            t.auth.daTaoTaiKhoan,
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: matKhau });
@@ -98,7 +100,7 @@ export default function DangNhapPage() {
 
   const quenMatKhau = async () => {
     if (!email.trim()) {
-      setThongBao({ loai: 'loi', noiDung: 'Điền email của bạn ở trên trước đã nhé.' });
+      setThongBao({ loai: 'loi', noiDung: t.auth.canEmailTruoc });
       return;
     }
     setDangXuLy(true);
@@ -108,10 +110,10 @@ export default function DangNhapPage() {
     setDangXuLy(false);
     setThongBao(
       error
-        ? { loai: 'loi', noiDung: 'Chưa gửi được email đặt lại — thử lại sau một chút.' }
+        ? { loai: 'loi', noiDung: t.auth.loiGuiEmail }
         : {
             loai: 'ok',
-            noiDung: 'Đã gửi email đặt lại mật khẩu. Mở hộp thư và bấm liên kết trong đó.',
+            noiDung: t.auth.daGuiEmail,
           }
     );
   };
@@ -134,9 +136,9 @@ export default function DangNhapPage() {
           Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
       <div className="mx-auto grid w-full max-w-[940px] gap-[40px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <div className="w-full">
-      <h1 className="heading-sm">{che === 'dang-nhap' ? 'Đăng nhập' : 'Tạo tài khoản'}</h1>
+      <h1 className="heading-sm">{che === 'dang-nhap' ? t.auth.tieuDe : t.auth.tieuDeDangKy}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
-        Giữ mọi lá số và góc nhìn của bạn ở một nơi — để lần sau tiếp tục đúng chỗ đang dở.
+        {che === 'dang-nhap' ? t.auth.moTa : t.auth.moTaDangKy}
       </p>
 
       {ssoDangBat.length > 0 && (
@@ -148,13 +150,13 @@ export default function DangNhapPage() {
               className="btn-outline w-full"
               type="button"
             >
-              Tiếp tục với {SSO.find((s) => s.id === id)!.nhan}
+              {dien(t.auth.tiepTucVoi, { ten: SSO.find((s) => s.id === id)!.nhan })}
             </button>
           ))}
           <div className="my-[6px] flex items-center gap-[12px]">
             <span className="h-px flex-1" style={{ background: 'var(--line)' }} />
             <span className="text-[12px]" style={{ color: 'var(--fg-subtle)' }}>
-              hoặc dùng email
+              {t.auth.hoacEmail}
             </span>
             <span className="h-px flex-1" style={{ background: 'var(--line)' }} />
           </div>
@@ -165,13 +167,13 @@ export default function DangNhapPage() {
         {che === 'dang-ky' && (
           <label className="flex flex-col gap-[6px]">
             <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-              Tên hiển thị
+              {t.auth.tenHienThi}
             </span>
             <input
               value={tenHienThi}
               onChange={(e) => setTenHienThi(e.target.value)}
               maxLength={60}
-              placeholder="Tên bạn muốn hiện trên thanh điều hướng"
+              placeholder={t.auth.tenHienThiVD}
               className="field-input"
               autoComplete="nickname"
             />
@@ -180,7 +182,7 @@ export default function DangNhapPage() {
 
         <label className="flex flex-col gap-[6px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-            Email
+            {t.auth.email}
           </span>
           <input
             type="email"
@@ -194,7 +196,7 @@ export default function DangNhapPage() {
 
         <label className="flex flex-col gap-[6px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-            Mật khẩu
+            {t.auth.matKhau}
           </span>
           <input
             type="password"
@@ -209,7 +211,7 @@ export default function DangNhapPage() {
 
         {che === 'dang-nhap' && (
           <button type="button" onClick={quenMatKhau} className="link-text self-start">
-            Quên mật khẩu?
+            {t.auth.quenMatKhau}
           </button>
         )}
 
@@ -223,7 +225,7 @@ export default function DangNhapPage() {
         )}
 
         <button type="submit" disabled={dangXuLy} className="btn-primary self-start">
-          {dangXuLy ? 'Đang xử lý…' : che === 'dang-nhap' ? 'Đăng nhập' : 'Đăng ký'}
+          {dangXuLy ? t.auth.dangXuLy : che === 'dang-nhap' ? t.auth.nutDangNhap : t.auth.nutDangKy}
         </button>
       </form>
 
@@ -234,21 +236,17 @@ export default function DangNhapPage() {
         }}
         className="link-text mt-[24px]"
       >
-        {che === 'dang-nhap' ? 'Mới dùng Celestia? Tạo tài khoản miễn phí.' : 'Đã có tài khoản? Đăng nhập'}
+        {che === 'dang-nhap' ? t.auth.chuaCoTaiKhoan : t.auth.daCoTaiKhoan}
       </button>
       </div>
 
       <aside className="hero-band hidden flex-col justify-center gap-[16px] rounded-[var(--radius-cards)] p-[40px] lg:flex">
-        <p className="eyebrow">BẠN SẼ GIỮ LẠI ĐƯỢC</p>
+        <p className="eyebrow">{t.auth.panelEyebrow}</p>
         <p className="text-[24px] font-semibold leading-[1.25]" style={{ color: 'var(--fg)' }}>
-          Lá số, góc nhìn và các cuộc trò chuyện của bạn ở một nơi.
+          {t.auth.panelTieuDe}
         </p>
         <ul className="flex flex-col gap-[10px]">
-          {[
-            'Lưu lá số của bạn và người thân, không phải nhập lại ngày sinh mỗi lần.',
-            'Xem lại những gì đã đọc, trên máy nào cũng thấy.',
-            'Tiếp tục cuộc trò chuyện đang dở với Celestia.',
-          ].map((d) => (
+          {t.auth.panelY.map((d) => (
             <li key={d} className="body-sm flex gap-[8px]" style={{ color: 'var(--fg)' }}>
               <span aria-hidden>·</span>
               {d}

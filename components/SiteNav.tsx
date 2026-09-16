@@ -3,36 +3,29 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { ChuyenNgonNgu } from '@/components/ChuyenNgonNgu';
 import { Logo } from '@/components/Logo';
 import { IconNguoiDung, Shell } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
 import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
 import { taoSupabaseClient } from '@/lib/supabase/client';
 import { ThemeToggle } from './ThemeToggle';
 
 /**
- * Điều hướng chính — tối đa 5 mục.
+ * Điều hướng chính.
  *
- * Trước đây thanh này trộn lẫn đối tượng (Lá số, Hồ sơ), hành động (Luận giải),
- * tình huống dùng (Hợp tuổi) và cả trang quản trị nội bộ. Giờ chia lại: việc
- * người dùng muốn làm thì ở ngoài, thứ thuộc về tài khoản nằm trong menu avatar,
- * còn trang quản trị không xuất hiện ở đâu cả — vào thẳng bằng địa chỉ, và server
- * vẫn chặn theo quyền như cũ.
+ * Brand spec tách hai chế độ: khách vào trang thì thanh này là trang bán hàng
+ * (Khám phá · Cách hoạt động · Câu chuyện), đăng nhập rồi thì nó thành thanh của
+ * ứng dụng (Bản đồ · Hành trình · Hỏi Celes · Kết nối). Trộn hai thứ vào một
+ * thanh chính là lỗi đã bị chỉ ra: người dùng đang ở trong app mà vẫn nhìn thấy
+ * menu marketing, còn khách thì lạc mất trang giới thiệu.
+ *
+ * Logo luôn đưa về đúng "nhà" của từng trạng thái: landing khi chưa đăng nhập,
+ * bản đồ khi đã đăng nhập.
  */
-const LIEN_KET = [
-  { href: '/la-so', nhan: 'Lá số' },
-  { href: '/luan-giai', nhan: 'Khám phá sâu hơn' },
-  { href: '/hoi-dap', nhan: 'Hỏi Celestia' },
-  { href: '/hop-tuoi', nhan: 'Kết nối' },
-  { href: '/gioi-thieu', nhan: 'Cách hoạt động' },
-];
-
-const MUC_TAI_KHOAN = [
-  { href: '/ho-so', nhan: 'Người của tôi' },
-  { href: '/tai-khoan', nhan: 'Tài khoản' },
-];
-
 export function SiteNav() {
   const pathname = usePathname();
+  const t = useT();
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   const [daCauHinhAuth, setDaCauHinhAuth] = useState(false);
   const [moMenu, setMoMenu] = useState(false);
@@ -50,7 +43,6 @@ export function SiteNav() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Bấm ra ngoài thì đóng menu — bằng không nó dính lại khi chuyển trang
   useEffect(() => {
     if (!moMenu) return;
     const dong = (e: MouseEvent) => {
@@ -67,8 +59,23 @@ export function SiteNav() {
     setMoMenu(false);
   };
 
-  // Trang đăng nhập rút gọn hết mức: chỉ logo và đường quay lại, để người dùng
-  // tập trung vào đúng một việc đang làm dở.
+  const daDangNhap = Boolean(taiKhoan);
+
+  const lienKet = daDangNhap
+    ? [
+        { href: '/la-so', nhan: t.nav.banDo },
+        { href: '/luan-giai', nhan: t.nav.khamPha },
+        { href: '/hoi-dap', nhan: t.nav.hoiCeles },
+        { href: '/hop-tuoi', nhan: t.nav.ketNoi },
+        { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
+      ]
+    : [
+        { href: '/la-so', nhan: t.nav.khamPha },
+        { href: '/gioi-thieu', nhan: t.nav.cachHoatDong },
+        { href: '/cau-chuyen', nhan: t.nav.cauChuyen },
+      ];
+
+  // Trang đăng nhập rút gọn hết mức để người dùng tập trung vào việc đang làm dở
   if (pathname === '/dang-nhap') {
     return (
       <header
@@ -77,12 +84,15 @@ export function SiteNav() {
       >
         <Shell>
           <nav className="flex items-center justify-between gap-[16px] py-[16px]">
-            <Link href="/" aria-label="Celestia — trang chu" style={{ color: 'var(--fg)' }}>
+            <Link href="/" aria-label="Celestia" style={{ color: 'var(--fg)' }}>
               <Logo />
             </Link>
-            <Link href="/" className="link-text">
-              Quay lại
-            </Link>
+            <div className="flex items-center gap-[12px]">
+              <ChuyenNgonNgu />
+              <Link href="/" className="link-text">
+                {t.chung.quayLai}
+              </Link>
+            </div>
           </nav>
         </Shell>
       </header>
@@ -96,12 +106,16 @@ export function SiteNav() {
     >
       <Shell>
         <nav className="flex flex-wrap items-center justify-between gap-[16px] py-[16px]">
-          <Link href="/" aria-label="Celestia — trang chu" style={{ color: 'var(--fg)' }}>
+          <Link
+            href={daDangNhap ? '/la-so' : '/'}
+            aria-label="Celestia"
+            style={{ color: 'var(--fg)' }}
+          >
             <Logo />
           </Link>
 
           <div className="flex flex-wrap items-center gap-[20px]">
-            {LIEN_KET.map((l) => (
+            {lienKet.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
@@ -114,6 +128,7 @@ export function SiteNav() {
           </div>
 
           <div className="flex flex-wrap items-center gap-[12px]">
+            <ChuyenNgonNgu />
             <ThemeToggle />
 
             {taiKhoan ? (
@@ -138,7 +153,10 @@ export function SiteNav() {
                       boxShadow: 'var(--shadow-elevated)',
                     }}
                   >
-                    {MUC_TAI_KHOAN.map((m) => (
+                    {[
+                      { href: '/ho-so', nhan: t.nav.nguoiCuaToi },
+                      { href: '/tai-khoan', nhan: t.nav.taiKhoan },
+                    ].map((m) => (
                       <Link
                         key={m.href}
                         href={m.href}
@@ -155,25 +173,23 @@ export function SiteNav() {
                       role="menuitem"
                       className="link-text rounded-[var(--radius-buttons)] px-[10px] py-[8px] text-left"
                     >
-                      Đăng xuất
+                      {t.nav.dangXuat}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <>
-                {/* Chưa cấu hình đăng nhập là chuyện của người vận hành, không phải
-                    thông tin người dùng cần thấy — chỉ ẩn nút, vẫn tạo lá số được. */}
                 {daCauHinhAuth && (
                   <Link href="/dang-nhap" className="link-text">
-                    Đăng nhập
+                    {t.nav.dangNhap}
                   </Link>
                 )}
-                {/* Đang ở ngay trang tạo lá số thì nút này thừa, mà lại thành nút
-                    hồng thứ hai đối đầu với nút chính giữa màn. */}
+                {/* Một CTA duy nhất trên header, và nó biến mất khi đã ở đúng chỗ
+                    nó dẫn tới — spec cấm đặt nhiều CTA ngang hàng nhau. */}
                 {pathname !== '/la-so' && (
                   <Link href="/la-so" className="btn-primary btn-sm">
-                    Tạo lá số miễn phí
+                    {t.chung.ctaChinh}
                   </Link>
                 )}
               </>

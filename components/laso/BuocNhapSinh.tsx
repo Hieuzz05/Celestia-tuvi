@@ -1,20 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { NutChinh, NutVien, O, OChon, Truong } from '@/components/ui';
+import { NutChinh, NutVien, O, OChon, PillTag, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
+import { dien, useT } from '@/lib/i18n/context';
 import { hourToChi } from '@/lib/tuvi/lunar';
 import { CHI } from '@/lib/tuvi/constants';
 import type { GioiTinh } from '@/lib/tuvi/ansao';
 
 /**
- * Nhập thông tin sinh theo từng bước ngắn.
+ * Onboarding: Celes làm quen với người dùng.
  *
- * Trước đây tất cả ô nằm chung một thẻ, trông như một form tiện ích — người mới
- * nhìn vào thấy phải khai báo cả năm xem, tháng xem lẫn model AI trước khi nhận
- * được gì. Chia nhỏ ra ba bước làm mỗi màn chỉ hỏi đúng một việc, và những thứ
- * không cần cho lần đọc đầu thì chuyển hẳn đi chỗ khác.
+ * Bước đầu KHÔNG hỏi ngày sinh mà hỏi điều đang khiến họ bận tâm. Hai lý do: câu
+ * đầu tiên quyết định người ta cảm thấy đang nói chuyện với ai, và lựa chọn đó
+ * còn dùng để chọn góc nhìn nào nên đưa lên trước ở màn kết quả.
+ *
+ * Các bước sau chia nhỏ để mỗi màn chỉ hỏi một việc, và luôn nói rõ vì sao cần
+ * thông tin đó.
  */
+
+export type YDinh = 'banThan' | 'congViec' | 'tinhCam' | 'quyetDinh';
 
 export interface ThongTinSinhForm {
   hoTen: string;
@@ -23,6 +28,8 @@ export interface ThongTinSinhForm {
   gio: number;
   phut: number;
   gioiTinh: GioiTinh;
+  /** Điều người dùng đang bận tâm — dùng để sắp xếp góc nhìn ở màn kết quả */
+  yDinh?: YDinh;
 }
 
 export const MAC_DINH: ThongTinSinhForm = {
@@ -33,7 +40,8 @@ export const MAC_DINH: ThongTinSinhForm = {
   gioiTinh: 'nam',
 };
 
-const TONG_BUOC = 3;
+const THU_TU_Y_DINH: YDinh[] = ['banThan', 'congViec', 'tinhCam', 'quyetDinh'];
+const TONG_BUOC = 4;
 
 export function BuocNhapSinh({
   giaTriDau = MAC_DINH,
@@ -42,6 +50,7 @@ export function BuocNhapSinh({
   giaTriDau?: ThongTinSinhForm;
   onXong: (v: ThongTinSinhForm) => void;
 }) {
+  const t = useT();
   const [buoc, setBuoc] = useState(1);
   const [form, setForm] = useState<ThongTinSinhForm>(giaTriDau);
   const [hienGiaiThichGio, setHienGiaiThichGio] = useState(false);
@@ -49,10 +58,11 @@ export function BuocNhapSinh({
   const set = <K extends keyof ThongTinSinhForm>(k: K, v: ThongTinSinhForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const ngayHopLe = /^\d{4}-\d{2}-\d{2}$/.test(form.ngaySinh) && !Number.isNaN(Date.parse(form.ngaySinh));
+  const ngayHopLe =
+    /^\d{4}-\d{2}-\d{2}$/.test(form.ngaySinh) && !Number.isNaN(Date.parse(form.ngaySinh));
 
   const tien = () => {
-    if (buoc === 1) ghiSuKien('birth_flow_started');
+    if (buoc === 1) ghiSuKien('birth_flow_started', { yDinh: form.yDinh });
     if (buoc < TONG_BUOC) {
       setBuoc((b) => b + 1);
       return;
@@ -67,7 +77,7 @@ export function BuocNhapSinh({
       {/* Chỉ báo tiến độ — cho biết còn bao xa, giảm cảm giác form dài vô tận */}
       <div className="flex flex-col gap-[8px]">
         <span className="eyebrow">
-          Bước {buoc} / {TONG_BUOC}
+          {t.onboarding.buoc} {buoc} / {TONG_BUOC}
         </span>
         <div className="flex gap-[4px]" aria-hidden>
           {Array.from({ length: TONG_BUOC }, (_, i) => (
@@ -82,11 +92,44 @@ export function BuocNhapSinh({
 
       {buoc === 1 && (
         <div className="flex flex-col gap-[16px]">
-          <h1 className="heading-sm">Bạn sinh ngày nào?</h1>
+          <h1 className="heading-sm">{t.onboarding.yDinhTieuDe}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Nhập theo dương lịch — đúng như trên giấy khai sinh. Celestia tự quy đổi phần âm lịch.
+            {t.onboarding.yDinhMo}
           </p>
-          <Truong nhan="Ngày sinh (dương lịch)">
+
+          <div className="flex flex-col gap-[8px]">
+            {THU_TU_Y_DINH.map((y) => (
+              <button
+                key={y}
+                onClick={() => set('yDinh', y)}
+                className="flex flex-col gap-[2px] rounded-[var(--radius-buttons)] p-[14px] text-left transition-colors"
+                style={{
+                  boxShadow:
+                    form.yDinh === y
+                      ? 'inset 0 0 0 2px var(--fg)'
+                      : 'inset 0 0 0 1px var(--line-input)',
+                }}
+                aria-pressed={form.yDinh === y}
+              >
+                <span className="text-[16px] font-medium" style={{ color: 'var(--fg)' }}>
+                  {t.onboarding.yDinh[y]}
+                </span>
+                <span className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {t.onboarding.yDinhMoTa[y]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {buoc === 2 && (
+        <div className="flex flex-col gap-[16px]">
+          <h1 className="heading-sm">{t.onboarding.ngayTieuDe}</h1>
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            {t.onboarding.ngayMo}
+          </p>
+          <Truong nhan={t.onboarding.ngayNhan}>
             <O
               type="date"
               value={form.ngaySinh}
@@ -97,28 +140,28 @@ export function BuocNhapSinh({
         </div>
       )}
 
-      {buoc === 2 && (
+      {buoc === 3 && (
         <div className="flex flex-col gap-[16px]">
-          <h1 className="heading-sm">Bạn sinh khoảng mấy giờ?</h1>
+          <h1 className="heading-sm">{t.onboarding.gioTieuDe}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Giờ sinh quyết định phần lớn lá số, nên càng sát càng tốt. Nhớ tương đối cũng dùng được.
+            {t.onboarding.gioMo}
           </p>
 
           <div className="grid grid-cols-2 gap-[16px]">
-            <Truong nhan="Giờ">
+            <Truong nhan={t.onboarding.gioNhan}>
               <OChon value={form.gio} onChange={(e) => set('gio', Number(e.target.value))}>
                 {Array.from({ length: 24 }, (_, h) => (
                   <option key={h} value={h}>
-                    {String(h).padStart(2, '0')} giờ
+                    {String(h).padStart(2, '0')}:00
                   </option>
                 ))}
               </OChon>
             </Truong>
-            <Truong nhan="Phút">
+            <Truong nhan={t.onboarding.phutNhan}>
               <OChon value={form.phut} onChange={(e) => set('phut', Number(e.target.value))}>
                 {[0, 15, 30, 45].map((m) => (
                   <option key={m} value={m}>
-                    {String(m).padStart(2, '0')} phút
+                    {String(m).padStart(2, '0')}
                   </option>
                 ))}
               </OChon>
@@ -126,7 +169,7 @@ export function BuocNhapSinh({
           </div>
 
           <p className="body-sm" style={{ color: 'var(--fg)' }}>
-            Khớp với <b>giờ {gioChi}</b> trong lá số.
+            {dien(t.onboarding.gioKhop, { chi: gioChi })}
           </p>
 
           <button
@@ -135,7 +178,7 @@ export function BuocNhapSinh({
             className="link-text self-start"
             aria-expanded={hienGiaiThichGio}
           >
-            Tôi không nhớ giờ sinh
+            {t.onboarding.khongNhoGio}
           </button>
 
           {hienGiaiThichGio && (
@@ -144,45 +187,42 @@ export function BuocNhapSinh({
               style={{ borderTop: '1px solid var(--line)' }}
             >
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Không có giờ sinh thì cung Mệnh không xác định được, mà gần như mọi thứ còn lại đều
-                đọc từ đó. Celestia sẽ không đoán bừa một giờ rồi đưa cho bạn kết quả trông như thật.
+                {t.onboarding.khongNhoGioY1}
               </p>
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Chỗ thường tìm được: giấy chứng sinh của bệnh viện, sổ hộ tịch bản gốc, hoặc hỏi lại
-                người nhà. Nếu chỉ nhớ áng chừng buổi (sáng sớm, trưa, chiều tối), cứ chọn giờ gần
-                nhất rồi thử vài giờ lân cận để so — phần nào đổi theo giờ thì bạn sẽ thấy ngay.
+                {t.onboarding.khongNhoGioY2}
               </p>
             </div>
           )}
         </div>
       )}
 
-      {buoc === 3 && (
+      {buoc === 4 && (
         <div className="flex flex-col gap-[16px]">
-          <h1 className="heading-sm">Vậy là đủ rồi</h1>
+          <h1 className="heading-sm">{t.onboarding.xacNhanTieuDe}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Còn một thông tin nữa ảnh hưởng tới cách tính, và một chỗ để bạn dễ nhận ra lá số này về
-            sau.
+            {t.onboarding.xacNhanMo}
           </p>
 
-          <Truong
-            nhan="Giới tính"
-            goiY="Cách tính truyền thống chia theo hai nhóm để xác định chiều đi của các giai đoạn."
-          >
-            <OChon
-              value={form.gioiTinh}
-              onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
-            >
-              <option value="nam">Nam</option>
-              <option value="nu">Nữ</option>
-            </OChon>
+          <Truong nhan={t.onboarding.gioiTinh} goiY={t.onboarding.gioiTinhY}>
+            <div className="flex gap-[8px]">
+              <PillTag
+                dangChon={form.gioiTinh === 'nam'}
+                onClick={() => set('gioiTinh', 'nam')}
+              >
+                {t.onboarding.nam}
+              </PillTag>
+              <PillTag dangChon={form.gioiTinh === 'nu'} onClick={() => set('gioiTinh', 'nu')}>
+                {t.onboarding.nu}
+              </PillTag>
+            </div>
           </Truong>
 
-          <Truong nhan="Tên gọi (không bắt buộc)" goiY="Chỉ dùng để bạn phân biệt khi lưu nhiều lá số.">
+          <Truong nhan={t.onboarding.tenGoi} goiY={t.onboarding.tenGoiY}>
             <O
               value={form.hoTen}
               onChange={(e) => set('hoTen', e.target.value)}
-              placeholder="VD: Mình, Mẹ, Anh Nam"
+              placeholder={t.onboarding.tenGoiVD}
             />
           </Truong>
         </div>
@@ -191,11 +231,15 @@ export function BuocNhapSinh({
       <div className="flex items-center gap-[12px]">
         {buoc > 1 && (
           <NutVien nho onClick={() => setBuoc((b) => b - 1)}>
-            Quay lại
+            {t.chung.quayLai}
           </NutVien>
         )}
-        <NutChinh onClick={tien} disabled={buoc === 1 && !ngayHopLe} className="ml-auto">
-          {buoc < TONG_BUOC ? 'Tiếp tục' : 'Xem góc nhìn của tôi'}
+        <NutChinh
+          onClick={tien}
+          disabled={(buoc === 1 && !form.yDinh) || (buoc === 2 && !ngayHopLe)}
+          className="ml-auto"
+        >
+          {buoc < TONG_BUOC ? t.chung.tiepTuc : t.onboarding.xong}
         </NutChinh>
       </div>
     </div>
