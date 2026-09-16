@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { KhoTriThuc } from '@/components/KhoTriThuc';
+import { NhatKySuDung } from '@/components/NhatKySuDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
 
 interface ModelTrangThai {
@@ -170,6 +171,8 @@ export default function AdminPage() {
           </p>
         )}
       </section>
+
+      <NhatKySuDung />
 
       <KhoTriThuc />
 

@@ -1,6 +1,7 @@
 import { modelKhaDung } from './config';
 import { goiModel } from './providers';
 import { AiRetryableError, type ChatRequest, type ChatResult } from './types';
+import { daCanHanMuc, ghiNhanSuDung, HAN_MUC_NGAY, soLuotHomNay } from './usage';
 
 export interface KetQuaFallback extends ChatResult {
   /** Các model đã thử và thất bại trước khi có kết quả */
@@ -33,13 +34,28 @@ export async function goiVoiFallback(
     if (chon.length) danhSach = [...chon, ...conLai];
   }
 
+  // Biết trước model nào đã cạn lượt trong ngày thì bỏ qua luôn, thay vì tiêu
+  // một lần gọi chỉ để nhận về 429.
+  const daDung = await soLuotHomNay();
+
   const daThuHong: KetQuaFallback['daThuHong'] = [];
   for (const m of danhSach) {
+    if (daCanHanMuc(m.provider, daDung[m.provider] ?? 0)) {
+      daThuHong.push({
+        provider: m.provider,
+        model: m.model,
+        loi: `Đã dùng ${daDung[m.provider]}/${HAN_MUC_NGAY[m.provider]} lượt miễn phí hôm nay — bỏ qua`,
+      });
+      continue;
+    }
+
     try {
       const kq = await goiModel(m.provider, m.model, m.apiKey, req);
+      await ghiNhanSuDung(m.provider, m.model, kq.tokensIn ?? 0, kq.tokensOut ?? 0);
       return { ...kq, daThuHong };
     } catch (e) {
       if (e instanceof AiRetryableError) {
+        await ghiNhanSuDung(m.provider, m.model, 0, 0, true);
         daThuHong.push({ provider: m.provider, model: m.model, loi: e.message });
         continue;
       }

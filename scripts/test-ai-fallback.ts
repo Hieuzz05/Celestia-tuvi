@@ -129,3 +129,29 @@ async function chay() {
 }
 
 chay();
+
+// --- Kiểm chứng logic bỏ qua model đã cạn hạn mức ---
+async function kiemTraHanMuc() {
+  const { daCanHanMuc, HAN_MUC_NGAY, NGUONG_CAN_KIET } = await import('../lib/ai/usage');
+  let loi = 0;
+  const kiemTra = (dieuKien: boolean, moTa: string) => {
+    console.log(`${dieuKien ? '✓' : '✗'} ${moTa}`);
+    if (!dieuKien) loi++;
+  };
+
+  const hanGemini = HAN_MUC_NGAY.gemini!;
+  kiemTra(!daCanHanMuc('gemini', 0), 'Chưa dùng lượt nào -> không bỏ qua');
+  kiemTra(!daCanHanMuc('gemini', hanGemini - NGUONG_CAN_KIET - 1), 'Còn dư lượt -> không bỏ qua');
+  kiemTra(daCanHanMuc('gemini', hanGemini - NGUONG_CAN_KIET), 'Chạm ngưỡng dự phòng -> bỏ qua');
+  kiemTra(daCanHanMuc('gemini', hanGemini + 100), 'Đã vượt hạn mức -> bỏ qua');
+  kiemTra(!daCanHanMuc('openai', 99999), 'Model trả phí không bị chặn theo lượt');
+  kiemTra(!daCanHanMuc('khong-ton-tai', 99999), 'Provider lạ không làm sập luồng');
+
+  console.log(loi === 0 ? '\nLogic hạn mức đúng.' : `\n${loi} mục sai.`);
+  if (loi > 0) process.exit(1);
+}
+
+setTimeout(() => {
+  console.log('\n### Kiểm tra logic hạn mức ngày');
+  kiemTraHanMuc();
+}, 2000);

@@ -278,7 +278,8 @@ Kho tri thức cho phép nạp tài liệu tử vi của riêng bạn để AI t
 dựa vào kiến thức chung của model.
 
 1. **Tạo bảng**: mở https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/sql/new, dán toàn
-   bộ `supabase/schema-rag.sql` rồi Run. File này bật extension `pgvector` và tạo 2 bảng.
+   bộ `supabase/schema-rag.sql` rồi Run. File này bật extension `pgvector`, tạo 2 bảng kho tri thức
+   và bảng nhật ký dùng model. Chạy lại nhiều lần được.
 2. **Lấy service role key**: Project Settings → API Keys → mục `service_role`. Thêm vào `.env.local`:
    ```
    SUPABASE_SERVICE_ROLE_KEY=...
@@ -365,4 +366,6 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
 | Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |
 | Kho tri thức RAG | Xong — cần chạy `schema-rag.sql` + service role key |
+| Nhật ký dùng model + cảnh báo quota | Xong — cần service role key |
+| Chủ động bỏ qua model đã cạn lượt miễn phí | Xong |
 | Xem ngày tốt, hợp tuổi, chat hỏi đáp | Chưa |

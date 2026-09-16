@@ -77,3 +77,54 @@ as $$
   order by c.embedding <=> vector_truy_van
   limit so_luong;
 $$;
+
+-- ============================================================
+-- Nhật ký dùng model AI (Phase 4)
+-- Gộp vào file này để chỉ phải chạy một lần trong SQL Editor.
+-- ============================================================
+
+create table if not exists public.ai_usage_logs (
+  id uuid primary key default gen_random_uuid(),
+  ngay date not null default (now() at time zone 'utc')::date,
+  provider text not null,
+  model text not null,
+  so_request int not null default 0,
+  so_loi int not null default 0,
+  tokens_vao bigint not null default 0,
+  tokens_ra bigint not null default 0,
+  cap_nhat_luc timestamptz not null default now(),
+  -- Mỗi ngày mỗi model một dòng, cộng dồn thay vì ghi từng lượt gọi:
+  -- kho log nhỏ gọn và truy vấn hạn mức còn lại chỉ tốn một lần đọc.
+  unique (ngay, provider, model)
+);
+
+alter table public.ai_usage_logs enable row level security;
+
+-- Cộng dồn một lượt gọi. Dùng upsert nên không cần kiểm tra tồn tại trước.
+create or replace function public.ghi_nhan_su_dung(
+  p_provider text,
+  p_model text,
+  p_tokens_vao bigint default 0,
+  p_tokens_ra bigint default 0,
+  p_loi boolean default false
+)
+returns void
+language sql
+as $$
+  insert into public.ai_usage_logs (ngay, provider, model, so_request, so_loi, tokens_vao, tokens_ra)
+  values (
+    (now() at time zone 'utc')::date,
+    p_provider,
+    p_model,
+    case when p_loi then 0 else 1 end,
+    case when p_loi then 1 else 0 end,
+    p_tokens_vao,
+    p_tokens_ra
+  )
+  on conflict (ngay, provider, model) do update set
+    so_request = public.ai_usage_logs.so_request + excluded.so_request,
+    so_loi = public.ai_usage_logs.so_loi + excluded.so_loi,
+    tokens_vao = public.ai_usage_logs.tokens_vao + excluded.tokens_vao,
+    tokens_ra = public.ai_usage_logs.tokens_ra + excluded.tokens_ra,
+    cap_nhat_luc = now();
+$$;
