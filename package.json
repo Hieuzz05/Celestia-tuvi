@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "kiem-tra-sso": "node scripts/kiem-tra-sso.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
