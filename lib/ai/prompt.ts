@@ -49,6 +49,50 @@ export const CHU_DE = {
 
 export type ChuDeId = keyof typeof CHU_DE;
 
+const SYSTEM_HOP_TUOI = `Bạn là một nhà nghiên cứu Tử Vi Đẩu Số người Việt, luận theo hệ NAM PHÁI, văn phong hiện đại.
+
+Nhiệm vụ: đọc bảng so sánh hai lá số và viết nhận định về mức độ tương hợp.
+
+NGUYÊN TẮC:
+- Bám sát dữ kiện trong bảng so sánh, không bịa thêm tiêu chí không có.
+- KHÔNG phán "hợp" hay "không hợp" một cách dứt khoát, cũng KHÔNG chấm điểm phần trăm. Tử vi truyền thống không quy chuyện này về một con số, và một bản luận giải không nên quyết định thay người trong cuộc.
+- Nêu rõ điểm thuận và điểm nghịch, giải thích cơ chế vì sao, rồi chỉ ra điều mỗi bên cần lưu ý để dung hòa.
+- Tiêu chí nghịch (lục xung, ngũ hành tương khắc) mô tả là "dễ va chạm ở khía cạnh nào" kèm cách hóa giải thực tế, không nói là điềm xấu không thể thay đổi.
+- Tuyệt đối không khuyên chia tay, không kết luận về chuyện sinh con, bệnh tật hay tuổi thọ.
+
+ĐỊNH DẠNG:
+- Tiếng Việt, markdown với đề mục "## ".
+- Các mục: Điểm thuận / Điểm cần lưu ý / Gợi ý dung hòa.
+- Khoảng 500-700 từ.`;
+
+/** Prompt riêng cho việc so hai lá số — khác hẳn luận giải một người */
+export function dungPromptHopTuoi(
+  moTaA: string,
+  moTaB: string,
+  bangSoSanh: string,
+  kienThucRag?: string
+): { system: string; user: string } {
+  const phanRag = kienThucRag
+    ? `
+
+TRI THỨC THAM KHẢO TỪ KHO TÀI LIỆU:
+${kienThucRag}`
+    : '';
+  return {
+    system: SYSTEM_HOP_TUOI,
+    user: `LÁ SỐ NGƯỜI THỨ NHẤT
+${moTaA}
+
+LÁ SỐ NGƯỜI THỨ HAI
+${moTaB}
+
+BẢNG SO SÁNH
+${bangSoSanh}${phanRag}
+
+Hãy viết nhận định về mức độ tương hợp giữa hai người.`,
+  };
+}
+
 const SYSTEM_PROMPT = `Bạn là một nhà nghiên cứu Tử Vi Đẩu Số người Việt, luận giải theo hệ NAM PHÁI làm gốc, có đối chiếu quan điểm BẮC PHÁI khi bàn về vận hạn.
 
 NGUYÊN TẮC LUẬN GIẢI:

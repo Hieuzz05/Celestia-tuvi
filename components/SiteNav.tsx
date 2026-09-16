@@ -11,6 +11,7 @@ import { ThemeToggle } from './ThemeToggle';
 const LIEN_KET = [
   { href: '/', nhan: 'Lá số' },
   { href: '/luan-giai', nhan: 'Luận giải chi tiết' },
+  { href: '/hop-tuoi', nhan: 'Hợp tuổi' },
   { href: '/ho-so', nhan: 'Hồ sơ' },
   { href: '/admin', nhan: 'Quản trị' },
 ];
