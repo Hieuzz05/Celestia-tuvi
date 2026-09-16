@@ -127,7 +127,7 @@ function TrangLaSo() {
   return (
     <main className="flex flex-col gap-[20px] py-[20px]">
       <section
-        className="no-print grid gap-x-[18px] gap-y-[12px] rounded-[var(--radius-cards)] border p-[16px] md:grid-cols-2 xl:grid-cols-6"
+        className="no-print grid gap-x-[18px] gap-y-[12px] rounded-[var(--radius-cards)] border p-[16px] md:grid-cols-2 xl:grid-cols-4"
         style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
       >
         <Field label="Họ tên">
@@ -190,6 +190,38 @@ function TrangLaSo() {
             ))}
           </select>
         </Field>
+
+        {/* Chọn model + nút luận giải nằm ngay trong khu nhập liệu để thao tác
+            gọn một chỗ, khỏi phải nhìn sang panel bên phải */}
+        <Field label="Model AI">
+          <select
+            value={modelChon}
+            onChange={(e) => setModelChon(e.target.value)}
+            className="field-input"
+          >
+            <option value="">
+              {modelSanSang.length > 0
+                ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
+                : 'Tự động'}
+            </option>
+            {modelSanSang.map((m) => (
+              <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
+                {m.provider} — {m.model}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <div className="flex items-end">
+          <button
+            onClick={luanGiai}
+            disabled={!laSo || dangChay}
+            className="btn-primary w-full"
+            style={{ paddingTop: 11, paddingBottom: 11 }}
+          >
+            {dangChay ? 'Đang luận giải…' : 'Luận giải lá số'}
+          </button>
+        </div>
       </section>
 
       {!laSo && (
@@ -230,43 +262,11 @@ function TrangLaSo() {
             </div>
 
             {!ketQua && !dangChay && (
-              <>
-                <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-                  AI đọc trực tiếp dữ liệu an sao của lá số bên cạnh — tên sao, độ sáng, Tuần Triệt,
-                  tứ hóa — rồi diễn giải theo Nam phái.
-                </p>
-
-                <label className="flex flex-col gap-[6px]">
-                  <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                    Model AI
-                  </span>
-                  <select
-                    value={modelChon}
-                    onChange={(e) => setModelChon(e.target.value)}
-                    className="field-input"
-                  >
-                    <option value="">
-                      {modelSanSang.length > 0
-                        ? `Tự động — ưu tiên ${modelSanSang[0].provider}/${modelSanSang[0].model}`
-                        : 'Tự động'}
-                    </option>
-                    {modelSanSang.map((m) => (
-                      <option key={`${m.provider}|${m.model}`} value={`${m.provider}|${m.model}`}>
-                        {m.provider} — {m.model}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <p className="text-[12px]" style={{ color: 'var(--fg-subtle)' }}>
-                  Chọn model nào thì model đó chạy trước; nếu nó lỗi hoặc hết lượt, hệ thống vẫn tự
-                  chuyển sang model còn lại.
-                </p>
-
-                <button onClick={luanGiai} disabled={!laSo} className="btn-primary self-start">
-                  Luận giải lá số này
-                </button>
-              </>
+              <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+                AI đọc trực tiếp dữ liệu an sao của lá số bên cạnh — tên sao, độ sáng, Tuần Triệt,
+                tứ hóa — rồi diễn giải theo Nam phái. Bấm <b style={{ color: 'var(--fg)' }}>Luận
+                giải lá số</b> ở khu nhập thông tin phía trên để bắt đầu.
+              </p>
             )}
 
             {dangChay && (
