@@ -87,7 +87,14 @@ const PHAN_QUYET = [
   'nhat dinh se',
 ];
 
-/** Rò rỉ RAG ra giao diện người dùng — cấm tuyệt đối theo mục 10 */
+/**
+ * Rò rỉ RAG ra giao diện người dùng — cấm tuyệt đối theo mục 10.
+ *
+ * Thứ bị cấm là tên tài liệu, hệ phái gắn theo từng đoạn, và điểm liên quan.
+ * KHÔNG cấm nhãn phương pháp (`celestia-nam-phai · v2026.09.1`) — mục 10.3 của
+ * tài liệu cho phép hiện nó trong phần "Muốn biết vì sao không?", vì nó nói bộ
+ * quy tắc nào đã chạy chứ không tiết lộ nguồn nào được truy hồi.
+ */
 const RO_RI_RAG = [
   'theo tai lieu',
   'trong sach',
@@ -159,7 +166,8 @@ export interface KetQuaNgonNgu {
  */
 export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
-  const khongDau = boDau(van);
+  // Gỡ nhãn phương pháp trước khi soát: nó chứa tên hệ phái nhưng được phép hiện.
+  const khongDau = boDau(van).replace(/celestia[- ][a-z- ]+phai/g, 'phuong-phap');
   const cum = cumTu(khongDau);
 
   // Rò rỉ RAG là lỗi nặng nhất: nó phá đúng cam kết sản phẩm, và người dùng

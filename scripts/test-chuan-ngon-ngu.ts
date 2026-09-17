@@ -10,7 +10,9 @@
  */
 
 import { lapLaSo } from '../lib/tuvi/ansao';
+import { docNhanh } from '../lib/tuvi/quick-read';
 import { luanGiaiSau } from '../lib/tuvi/luan-giai-sau';
+import { luanHan } from '../lib/tuvi/luan-han';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
 const MAU: [number, number, number, number, 'nam' | 'nu'][] = [
@@ -51,6 +53,31 @@ for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
   );
 }
 console.log(`\n  Lặp khuôn mở đầu cao nhất: ${(lapCaoNhat * 100).toFixed(0)}% (trần ${TRAN_LAP_MO_DAU * 100}%)`);
+
+console.log('\n== QUICK READ (/la-so) ==\n');
+for (const [ngay, thang, nam, gio, gioiTinh] of MAU.slice(0, 4)) {
+  const the = docNhanh(lapLaSo({ ngay, thang, nam, gio, gioiTinh }), 2026, undefined, 'vi');
+  const van = the.flatMap((t) => [t.tieuDe, t.noiDung]).filter(Boolean);
+  const kq = soatNgonNgu(van.join(' '), the.map((t) => t.noiDung));
+  kiem(
+    `${`${ngay}/${thang}/${nam}`.padEnd(11)} qua cổng · lặp khuôn ${(kq.tyLeMoDauTrung * 100).toFixed(0)}%`,
+    kq.dat && kq.tyLeMoDauTrung < TRAN_LAP_MO_DAU,
+    kq.loi.map((l) => l.ma)
+  );
+}
+
+console.log('\n== HÀNH TRÌNH (luận hạn năm) ==\n');
+for (const [ngay, thang, nam, gio, gioiTinh] of MAU.slice(0, 4)) {
+  const bai = luanHan(lapLaSo({ ngay, thang, nam, gio, gioiTinh }), 'nam', 2026, 9, 'vi');
+  // Lấy mọi chuỗi đủ dài trong kết quả — không phụ thuộc hình dạng cụ thể của bài
+  const van = (JSON.stringify(bai).match(/"[^"]{25,}"/g) ?? []).map((x) => x.slice(1, -1));
+  const kq = soatNgonNgu(van.join(' '), van.slice(0, 8));
+  kiem(
+    `${`${ngay}/${thang}/${nam}`.padEnd(11)} qua cổng`,
+    kq.dat,
+    kq.loi.map((l) => `${l.ma}${l.viDu ? `(${l.viDu})` : ''}`)
+  );
+}
 
 console.log('\n== HAI LÁ SỐ KHÁC NHAU PHẢI KHÁC BỘ KHUNG CÂU ==\n');
 {
