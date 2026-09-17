@@ -80,7 +80,11 @@ họ còn nguyên và nên làm gì tiếp.
 - **Chỉ webhook đã xác thực chữ ký mới mở được quyền.** Đừng bao giờ đọc `status` trên URL trả về
   rồi kết luận đã trả xong.
 - **Vai trò admin đọc từ máy chủ, không so email ở trình duyệt.** `/api/entitlements/me` trả về
-  `tier: 'admin'`; dùng nó. Email nằm trong tay người dùng, `ADMIN_EMAILS` chỉ máy chủ mới biết.
+  `tier: 'admin'`; dùng nó để quyết định HIỆN gì. Email nằm trong tay người dùng, `ADMIN_EMAILS`
+  chỉ máy chủ mới biết.
+- **Chặn quyền vào `/admin` đã nằm ở `app/admin/layout.tsx`** — server component, chạy trước mọi
+  trang con, và in ra đúng email đang đăng nhập khi từ chối. Đừng thêm cổng thứ hai ở tầng page:
+  nó không bao giờ chạy tới, mà lại gây hiểu nhầm là chưa có cổng nào.
 - **Hôm nay đọc `idMacDinh`, không phải `idDangXem`.** Xem tạm lá số khác ở màn khác không được
   làm đổi trang chủ.
 

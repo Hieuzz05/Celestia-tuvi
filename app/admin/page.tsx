@@ -7,7 +7,6 @@ import { KhoTriThuc } from '@/components/KhoTriThuc';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
 import { QuanLyNguoiDung } from '@/components/QuanLyNguoiDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
-import { ChanQuanTri } from '@/components/auth/ChanQuanTri';
 import { Shell } from '@/components/ui';
 
 interface ModelTrangThai {
@@ -18,7 +17,7 @@ interface ModelTrangThai {
   keyMasked: string | null;
 }
 
-function AdminPageNoiDung() {
+export default function AdminPage() {
   const [models, setModels] = useState<ModelTrangThai[]>([]);
   const [provider, setProvider] = useState<ProviderId>('gemini');
   const [model, setModel] = useState(MODEL_GOI_Y.gemini[0]);
@@ -190,13 +189,5 @@ function AdminPageNoiDung() {
 
 
     </Shell>
-  );
-}
-
-export default function AdminPage() {
-  return (
-    <ChanQuanTri>
-      <AdminPageNoiDung />
-    </ChanQuanTri>
   );
 }
