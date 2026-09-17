@@ -474,21 +474,94 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 
 ---
 
-## 5b. Ủng hộ Celes — bật thế nào
+## 5b. Ủng hộ Celes — kết nối payOS
 
-Tính năng chạy được ngay cả khi **chưa** khai báo gì: lúc đó không có hạn mức, không có cổng
-ủng hộ, sản phẩm y như trước. Muốn bật thật thì cần ba bước:
+Tính năng chạy được ngay cả khi **chưa khai báo gì**: lúc đó không có hạn mức, không có cổng ủng
+hộ, sản phẩm y hệt trước. Phần dưới là cách bật nó lên thật.
 
-1. **Chạy `supabase/schema-support.sql`** trong Supabase > SQL Editor. File tạo bốn bảng
-   (`support_payments`, `entitlement_grants`, `user_entitlements`, `usage_events`) và ba hàm
-   (`dat_cho_cau_hoi`, `hoan_cau_hoi`, `cap_quyen_ung_ho`). Chạy lại nhiều lần được.
-2. **Khai báo khoá payOS** — `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`,
-   `NEXT_PUBLIC_APP_URL`. Xem `.env.example`. Ba khoá đầu **chỉ** dùng phía máy chủ; đừng bao
-   giờ thêm tiền tố `NEXT_PUBLIC_` cho chúng.
-3. **Khai webhook ở payOS** trỏ về `<NEXT_PUBLIC_APP_URL>/api/webhooks/payos`.
+### Mất bao nhiêu tiền
 
-Chưa chạy SQL thì hạn mức tự tắt (hàm chưa tồn tại → cho qua, có ghi log). Chưa có khoá payOS
-thì API tạo đơn trả `PAYMENT_NOT_CONFIGURED`.
+Từ **23/01/2026** payOS miễn phí không giới hạn cho **cá nhân và hộ kinh doanh**: miễn phí khởi
+tạo, miễn phí duy trì, miễn phí giao dịch. Celestia thuộc nhóm này.
+
+| Khoản | Cá nhân / hộ kinh doanh | Doanh nghiệp |
+|---|---|---|
+| Khởi tạo | 0đ | 0đ |
+| Duy trì hàng tháng | 0đ | 0đ |
+| Mỗi giao dịch | 0đ | Theo gói số lượng, hoặc gói Flex tính % |
+
+Cách nhận gói miễn phí: đăng ký xong thì dùng lần lượt **Free – 100** (100 giao dịch) rồi
+**Pioneer – 500** (500 giao dịch). Hết hai gói đó thì lấy **KLB – 1000** (1000 giao dịch) —
+gói này lấy lại được nhiều lần, nên thực tế là không giới hạn. Điều kiện của KLB – 1000 là có
+tài khoản Kienlongbank, mở online bằng eKYC mất khoảng 5 phút.
+
+Tiền đi **thẳng vào tài khoản ngân hàng đã liên kết** (chuyển khoản VietQR), không qua ví trung
+gian nên không có bước đối soát hay rút tiền riêng.
+
+Phía Celestia không phát sinh chi phí nào: Vercel và Supabase vẫn nằm trong free tier.
+
+### Bảy bước kết nối
+
+**1. Đăng ký tài khoản** tại `my.payos.vn`. Chỉ cần CCCD, không cần hợp đồng.
+
+**2. Xác thực tổ chức.** Chọn nhóm "chưa có pháp nhân" (kinh doanh cá thể) nếu chưa có mã số
+doanh nghiệp. Nhập số CCCD rồi thực hiện một lệnh chuyển khoản xác thực; hệ thống tự đối chiếu.
+Nếu không khớp thì gửi ảnh hai mặt CCCD (kèm giấy phép kinh doanh có mộc đỏ nếu có) tới
+`verify@payos.vn` để xác thực tay.
+
+**3. Liên kết tài khoản ngân hàng.** Đây là tài khoản tiền sẽ về. Muốn lấy gói KLB – 1000 thì mở
+tài khoản Kienlongbank ngay trong luồng eKYC của payOS.
+
+**4. Tạo kênh thanh toán.** Menu *Kênh thanh toán* → đặt tên, tải logo → chọn ngân hàng chính →
+*Tạo kênh thanh toán và tích hợp*. Màn cuối trả về ba khoá: **Client ID**, **API Key**,
+**Checksum Key**. Chép cả ba ngay, đây là lần duy nhất chúng hiện đầy đủ.
+
+**5. Chạy `supabase/schema-support.sql`** trong Supabase > SQL Editor. File tạo bốn bảng
+(`support_payments`, `entitlement_grants`, `user_entitlements`, `usage_events`) và ba hàm
+(`dat_cho_cau_hoi`, `hoan_cau_hoi`, `cap_quyen_ung_ho`). Chạy lại nhiều lần được.
+
+**6. Khai biến môi trường trên Vercel rồi Redeploy.**
+
+```
+PAYOS_CLIENT_ID=...
+PAYOS_API_KEY=...
+PAYOS_CHECKSUM_KEY=...
+NEXT_PUBLIC_APP_URL=https://celestia-tuvi.vercel.app
+```
+
+Redeploy và **bỏ tick build cache** — `NEXT_PUBLIC_APP_URL` nhúng lúc build.
+
+**7. Khai Webhook URL ở payOS**, sau khi bước 6 đã deploy xong:
+
+```
+https://celestia-tuvi.vercel.app/api/webhooks/payos
+```
+
+payOS gọi thử URL này ngay lúc lưu. Lưu được là xong; báo *Webhook URL invalid* thì xem mục bẫy
+bên dưới.
+
+### Kiểm tra sau khi nối
+
+1. Mở `/support`, bấm *Ủng hộ Celes*, chọn 10.000đ, *Tiếp tục thanh toán*.
+2. Phải sang được `/support/checkout/<id>` và hiện mã QR.
+3. Chuyển khoản thật 10.000đ.
+4. Trong vài giây màn hình tự đổi sang *Cảm ơn bạn đã đồng hành cùng Celes* — **không cần tải
+   lại trang**. Nếu phải tải lại mới thấy thì webhook chưa về, kiểm tra lại bước 7.
+5. Vào Supabase, bảng `entitlement_grants` phải có đúng **một** dòng cho đơn đó.
+
+### Bẫy đã lường trước
+
+- **Ba khoá payOS chỉ dùng phía máy chủ.** Tuyệt đối không thêm tiền tố `NEXT_PUBLIC_` — làm vậy
+  là đẩy thẳng khoá vào bundle trình duyệt, ai xem mã nguồn trang cũng đọc được.
+- **Khai webhook TRƯỚC khi deploy xong là hỏng.** Lúc chưa có `PAYOS_CHECKSUM_KEY`, endpoint trả
+  200 rỗng nên payOS vẫn lưu được URL, nhưng webhook thật sau đó sẽ không cấp quyền cho ai.
+- **Đừng khai webhook bằng URL preview của Vercel.** URL đó đổi theo từng lần deploy.
+- **Webhook phải là HTTPS.** payOS từ chối HTTP.
+- **Báo *Webhook URL invalid*** thường là do endpoint không trả 2XX. Endpoint của Celestia trả
+  `{ok:true}` cho lời gọi thử không kèm dữ liệu đơn; nếu vẫn lỗi thì kiểm tra Vercel có chặn
+  route bằng middleware hay password protection không.
+- **Số tiền lệch không bao giờ được cấp quyền.** Webhook đánh dấu đơn `verification_failed` để
+  soát tay.
 
 ### Ba điều không được đổi
 
@@ -503,6 +576,13 @@ thì API tạo đơn trả `PAYMENT_NOT_CONFIGURED`.
 
 Tất cả nằm ở `lib/support/config.ts`, đọc từ biến môi trường. Đổi trên Vercel rồi redeploy, đừng
 sửa rải trong component.
+
+### Nguồn
+
+- Gói miễn phí 2026: https://payos.vn/cong-thanh-toan-mien-phi-2026/
+- Tạo kênh thanh toán: https://payos.vn/docs/huong-dan-su-dung/tao-kenh-thanh-toan/
+- Xác thực tổ chức: https://payos.vn/docs/huong-dan-su-dung/xac-thuc-to-chuc/
+- Webhook + chữ ký: https://payos.vn/docs/du-lieu-tra-ve/webhook/
 
 ## 6. Design system
 
