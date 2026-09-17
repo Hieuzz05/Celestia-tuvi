@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { canDangNhap } from '@/lib/auth/cong';
+import { chotCauHoi, datChoCauHoi, hoanCauHoi } from '@/lib/support/quota';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { dungPromptHoiDap, type TinNhan } from '@/lib/ai/prompt';
 import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
@@ -93,8 +95,15 @@ export async function POST(req: Request) {
     dungKhoiTriThuc(doans)
   );
 
+  // Đặt chỗ NGAY TRƯỚC khi gọi model: câu thứ 6 không được phép chạm tới nhà
+  // cung cấp. Kiểm ở React không tính là chặn — ai cũng gọi thẳng endpoint được.
+  const requestId = randomUUID();
+  const cho = await datChoCauHoi(requestId);
+  if (!cho.duocPhep) return cho.chan!;
+
   try {
     const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
+    await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
     return NextResponse.json({
       traLoi: kq.text,
       model: `${kq.provider}/${kq.model}`,
@@ -105,6 +114,9 @@ export async function POST(req: Request) {
       })),
     });
   } catch (e) {
+    // Hỏng ở phía nhà cung cấp là lỗi của hệ thống, không phải của người dùng —
+    // trả lại lượt vừa trừ.
+    await hoanCauHoi(cho.nguon, requestId);
     if (e instanceof KhongCoModelError) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
     }

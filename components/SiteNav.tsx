@@ -168,6 +168,9 @@ export function SiteNav() {
                     {[
                       { href: '/ho-so', nhan: t.nav.nguoiCuaToi },
                       { href: '/tai-khoan', nhan: t.nav.taiKhoan },
+                      // Lối ủng hộ tự nguyện: luôn có mặt, không phụ thuộc còn
+                      // bao nhiêu lượt — spec cấm biến nó thành lời nhắc hết lượt.
+                      { href: '/support', nhan: t.ungHo.ten },
                     ].map((m) => (
                       <Link
                         key={m.href}

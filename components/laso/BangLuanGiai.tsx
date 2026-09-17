@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Eyebrow, NhanPill, The } from '@/components/ui';
+import { CongUngHo } from '@/components/support/CongUngHo';
+import { Eyebrow, NhanPill, NutChinh, The } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useT } from '@/lib/i18n/context';
 import type { KhoiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
@@ -17,12 +18,18 @@ import type { KhoiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 export function BangLuanGiai({
   khoi,
   duongHoi,
+  day = true,
+  duongVe = '/la-so',
 }: {
   khoi: KhoiLuanGiai[];
   /** Dựng đường sang Hỏi Celes kèm sẵn câu hỏi của khối */
   duongHoi: (cauHoi: string) => string;
+  /** Đã mở quyền đọc đầy đủ chưa; chưa thì máy chủ chỉ gửi câu kết luận */
+  day?: boolean;
+  duongVe?: string;
 }) {
   const t = useT();
+  const [moCong, setMoCong] = useState(false);
 
   return (
     <section className="flex flex-col gap-[20px]">
@@ -36,9 +43,35 @@ export function BangLuanGiai({
 
       <div className="flex flex-col gap-[16px]">
         {khoi.map((k) => (
-          <KhoiCard key={k.id} khoi={k} duongHoi={duongHoi} />
+          <KhoiCard key={k.id} khoi={k} duongHoi={duongHoi} day={day} />
         ))}
       </div>
+
+      {/* Chưa mở quyền: vẫn thấy tám câu kết luận ở trên, nên biết rõ mình đang
+          đổi lấy cái gì. Ẩn sạch là mất luôn lý do để ủng hộ. */}
+      {!day && (
+        <The className="flex flex-col gap-[12px]">
+          <Eyebrow>{t.ungHo.ten}</Eyebrow>
+          <h3 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+            {t.ungHo.cong.deep_map.tieuDe}
+          </h3>
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            {t.ungHo.cong.deep_map.moTa}
+          </p>
+          <NutChinh onClick={() => setMoCong(true)} className="self-start">
+            {t.ungHo.cong.deep_map.cta}
+          </NutChinh>
+          <p className="caption">{t.ungHo.khongPhuThuocSoTien}</p>
+        </The>
+      )}
+
+      {moCong && (
+        <CongUngHo
+          lyDo="deep_map"
+          onDong={() => setMoCong(false)}
+          quayLai={{ path: duongVe }}
+        />
+      )}
     </section>
   );
 }
@@ -46,9 +79,11 @@ export function BangLuanGiai({
 function KhoiCard({
   khoi,
   duongHoi,
+  day,
 }: {
   khoi: KhoiLuanGiai;
   duongHoi: (cauHoi: string) => string;
+  day: boolean;
 }) {
   const t = useT();
   const [moCanCu, setMoCanCu] = useState(false);
@@ -78,9 +113,11 @@ function KhoiCard({
       ))}
 
       <div className="flex flex-wrap items-center gap-[18px]">
-        <button onClick={doiTrangThai} className="link-text" aria-expanded={moCanCu}>
-          {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
-        </button>
+        {day && (
+          <button onClick={doiTrangThai} className="link-text" aria-expanded={moCanCu}>
+            {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
+          </button>
+        )}
         <Link
           href={duongHoi(khoi.cauHoiGoiY)}
           className="link-text"

@@ -15,7 +15,9 @@ import { CHI } from '@/lib/tuvi/constants';
 import { Eyebrow, NutVien, Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
-import { useT } from '@/lib/i18n/context';
+import { CongUngHo } from '@/components/support/CongUngHo';
+import { useQuyen } from '@/lib/support/useQuyen';
+import { dien, useT } from '@/lib/i18n/context';
 
 interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
@@ -49,7 +51,9 @@ function TrangHoiDap() {
   const t = useT();
   const { duocVao, dangDoc } = useTaiKhoan();
   const boiCanh = useBoiCanh();
+  const quyenCeles = useQuyen();
   const params = useSearchParams();
+  const [moCongUngHo, setMoCongUngHo] = useState(false);
 
   const [form, setForm] = useState<ThongTinForm>({
     hoTen: '',
@@ -96,6 +100,7 @@ function TrangHoiDap() {
   })();
 
   const daChonLaSo = khoaDaChot === khoaCua(form);
+  const quyen = quyenCeles.quyen;
 
   const doiNguoi = (h: HoSo) => {
     const f = formTuHoSo(h);
@@ -122,6 +127,13 @@ function TrangHoiDap() {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return;
 
+    // Hết lượt thì KHÔNG gửi đi và KHÔNG xoá ô nhập: câu người dùng vừa viết
+    // phải còn nguyên sau khi họ ủng hộ xong và quay lại.
+    if (quyenCeles.conCau !== null && quyenCeles.conCau <= 0) {
+      setMoCongUngHo(true);
+      return;
+    }
+
     const lichSu = tinNhan.map((m) => ({ vaiTro: m.vaiTro, noiDung: m.noiDung }));
     setTinNhan((ds) => [...ds, { vaiTro: 'nguoi-dung', noiDung: cau }]);
     setCauHoi('');
@@ -145,11 +157,22 @@ function TrangHoiDap() {
         }),
       });
       const data = await res.json();
+
+      // 402 là hàng rào thật ở phía máy chủ. Bỏ câu vừa đẩy vào khung chat ra và
+      // trả lại ô nhập, rồi mới mở cổng — người dùng không mất chữ nào.
+      if (res.status === 402) {
+        setTinNhan((ds) => ds.slice(0, -1));
+        setCauHoi(cau);
+        setMoCongUngHo(true);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.loi ?? 'Không nhận được trả lời');
       setTinNhan((ds) => [
         ...ds,
         { vaiTro: 'tro-ly', noiDung: data.traLoi, nguon: data.nguonTriThuc },
       ]);
+      quyenCeles.taiLai();
     } catch {
       setLoi(t.hoiCeles.loi);
     } finally {
@@ -368,6 +391,19 @@ function TrangHoiDap() {
               </button>
             </form>
 
+            {/* Chỉ nhắc khi còn ít: hiện bộ đếm ngay từ câu đầu là biến cuộc trò
+                chuyện thành cái đồng hồ đo. */}
+            {quyenCeles.conCau !== null && quyenCeles.conCau <= 2 && quyen && (
+              <p className="caption">
+                {quyenCeles.conCau > 0
+                  ? dien(t.ungHo.conCau, {
+                      con: quyenCeles.conCau,
+                      tong: quyen.ask.freeDailyLimit,
+                    })
+                  : dien(t.ungHo.hetCau, { tong: quyen.ask.freeDailyLimit })}
+              </p>
+            )}
+
             {tinNhan.length > 0 && (
               <button onClick={() => setTinNhan([])} className="link-text self-start">
                 {t.hoiCeles.xoaHoiThoai}
@@ -380,6 +416,18 @@ function TrangHoiDap() {
           </div>
         )}
       </section>
+
+      {moCongUngHo && (
+      <CongUngHo
+        lyDo="ask_quota"
+        onDong={() => setMoCongUngHo(false)}
+        quayLai={{
+          path: '/hoi-dap',
+          profileId: boiCanh.idDangXem,
+          draftMessage: cauHoi,
+        }}
+      />
+      )}
     </Shell>
   );
 }

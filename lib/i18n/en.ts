@@ -360,8 +360,8 @@ export const en: TuDien = {
 
   luanSau: {
     eyebrow: 'THE FULL PICTURE',
-    tieuDe: 'Eight parts of this chart, in plain words',
-    moTa: 'Each part opens with a conclusion, and only then the detail. Open the evidence underneath to check it.',
+    tieuDe: 'And here is what Celes reads more closely',
+    moTa: 'Each part opens with what matters most, and only then the detail. Wherever it does not convince you, open the evidence underneath to see what Celes is drawing on.',
     hoiVePhanNay: 'Ask Celes about this part',
   },
 
@@ -551,6 +551,105 @@ export const en: TuDien = {
     cuoiTieuDe: 'Reading about it takes longer than trying it',
     cuoiMo: 'Create a chart and open the evidence yourself — faster than finishing this page.',
     cuoiNut: 'Create a free chart',
+  },
+
+  ungHo: {
+    ten: 'Support Celes',
+    moiLyCaPhe: 'Buy Celes a coffee',
+    tiepTucCung: 'Carry on with Celes',
+
+    conCau: 'You have {con} of {tong} free questions left today.',
+    hetCau: 'You have used all {tong} free questions today.',
+
+    cong: {
+      ask_quota: {
+        tieuDe: 'Want to carry this conversation on?',
+        moTa: 'You have used your {tong} free questions today. If what Celes sees is useful to you, support with any amount and carry on for 24 hours.',
+        cta: 'Support & continue',
+      },
+      deep_map: {
+        tieuDe: 'Want to see your whole picture?',
+        moTa: 'The overview is free. A contribution opens the deeper parts: character, work, money, relationships, family, social circle, the season you are in, and where to grow.',
+        cta: 'Open the full reading',
+      },
+      journey_detail: {
+        tieuDe: 'Want a closer look at this stretch?',
+        moTa: 'Celes reads deeper through the period layers, the stars travelling with the year, the trine and opposition, and everything acting on the moment you picked.',
+        cta: 'Open this stretch in detail',
+      },
+      connection_full: {
+        tieuDe: 'Want to understand this relationship more deeply?',
+        moTa: 'Opens the full picture of how the two of you communicate, what each needs emotionally, where friction builds, how you support each other, and the period affecting you both.',
+        cta: 'Open the full reading',
+      },
+      long_report: {
+        tieuDe: 'Want one long, continuous reading?',
+        moTa: 'The in-depth report is the longest piece Celes writes for a chart. It is included while you have report allowance left.',
+        cta: 'Create an in-depth report',
+      },
+      profile_limit: {
+        tieuDe: 'Want to keep more charts?',
+        moTa: 'A free account keeps {soHoSoFree} chart. A contribution raises that to {soHoSoPlus} while Supporter access is active.',
+        cta: 'Support to add charts',
+      },
+      voluntary: {
+        tieuDe: 'If Celes is useful to you',
+        moTa: 'A contribution keeps the product improving, and opens more depth in your own experience of it.',
+        cta: 'Support Celes',
+      },
+    },
+
+    loiIch: [
+      'Carry on asking Celes.',
+      'Open the deeper readings.',
+      'See Your journey in detail.',
+      'Keep the conversation you are in.',
+    ],
+    quayLaiNgayMai: 'Come back tomorrow',
+    khongPhuThuocSoTien: 'You choose the amount. What opens does not depend on how much you give.',
+
+    soTienTieuDe: 'Support Celes',
+    soTienMoTa: 'A contribution keeps Celes walking with you, and opens more depth in your experience.',
+    soKhac: 'Another amount',
+    nhapSoTien: 'Enter an amount',
+    banNhanDuoc: 'What you get:',
+    nhan: [
+      'Supporter access for 24 hours',
+      'More questions for Celes',
+      'The full reading, detailed journey and connections',
+      'One in-depth report while allowance lasts',
+    ],
+    tiepTucThanhToan: 'Continue to payment',
+    chuyenKhoanAnToan: 'Paid by bank transfer.',
+    dangTao: 'Creating the payment…',
+    loiTao: 'Could not create the payment. Try again in a moment.',
+    dong: 'Close',
+
+    quetMa: 'Scan the code in your banking app to complete it.',
+    moTrangThanhToan: 'Open the payment page',
+    maQrThayThe: 'Payment QR code for {soTien}',
+    donHoTro: 'Support order',
+    hetHanSau: 'Expires in',
+    trangThai: {
+      creating: 'Creating the payment…',
+      pending: 'Waiting for payment… It confirms itself once the transfer lands.',
+      paid_processing_entitlement: 'Payment received. Celes is opening your access…',
+      success: 'Thank you for walking with Celes.',
+      cancelled: 'You cancelled the payment.',
+      expired: 'This payment session has expired.',
+      failed: 'This payment could not be confirmed.',
+    },
+    tiepTucNoiDangDo: 'Carry on where you left off',
+    thuLai: 'Try again',
+    taoMaMoi: 'Create a new code',
+
+    supporterDangHoatDong: 'Supporter access is active',
+    denKhi: 'Until {luc}',
+    conCauHoi: '{so} questions left for Celes',
+    conBaoCao: '{so} in-depth report',
+    ungHoThem: 'Support again',
+    lichSuTieuDe: 'Your contributions',
+    lichSuTrong: 'No contributions yet.',
   },
 
   chan: {

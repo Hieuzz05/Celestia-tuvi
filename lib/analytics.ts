@@ -28,7 +28,22 @@ export type TenSuKien =
   | 'relationship_started'
   | 'paywall_viewed'
   | 'purchase_started'
-  | 'purchase_success';
+  | 'purchase_success'
+  // Phễu ủng hộ — spec Support Celes mục 35 liệt kê đủ bộ này
+  | 'support_gate_viewed'
+  | 'support_gate_closed'
+  | 'support_amount_selected'
+  | 'support_custom_amount_entered'
+  | 'support_payment_create_started'
+  | 'support_payment_created'
+  | 'support_checkout_opened'
+  | 'support_payment_pending'
+  | 'support_payment_cancelled'
+  | 'support_payment_expired'
+  | 'support_payment_success_client'
+  | 'support_entitlement_granted'
+  | 'support_resume_action'
+  | 'supporter_expired';
 
 const KHOA = 'tuvi-ai:su-kien';
 const TOI_DA = 100;

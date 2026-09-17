@@ -19,8 +19,8 @@ import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { useBoiCanh, type LaSoNhap } from '@/lib/store/boi-canh';
 import { luuHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
-import { luanGiaiSau } from '@/lib/tuvi/luan-giai-sau';
 import { docNhanh } from '@/lib/tuvi/quick-read';
+import type { KhoiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -152,11 +152,40 @@ function TrangLaSo() {
     [laSo, namXem, form?.yDinh, ngonNgu]
   );
 
-  // Tám khối chỉ dựng khi thực sự được xem — khách chưa đăng nhập không cần tính
-  const khoiSau = useMemo(
-    () => (laSo && duocVao ? luanGiaiSau(laSo, namXem, ngonNgu) : []),
-    [laSo, duocVao, namXem, ngonNgu]
-  );
+  // Tám khối dựng ở MÁY CHỦ. Đây là khả năng trả phí, mà dựng trong trình duyệt
+  // thì mở devtools là đọc được hết — ẩn ở giao diện không phải phân quyền.
+  const [khoiSau, setKhoiSau] = useState<KhoiLuanGiai[]>([]);
+  const [dayLuanGiai, setDayLuanGiai] = useState(true);
+
+  useEffect(() => {
+    // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
+    // vòng vẽ lại thừa. Kết quả cũ bị thay khi câu trả lời mới về.
+    if (!laSo || !duocVao) return;
+    let huy = false;
+    fetch('/api/luan-giai-sau', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngay: laSo.thongTin.ngay,
+        thang: laSo.thongTin.thang,
+        nam: laSo.thongTin.nam,
+        gio: laSo.thongTin.gio,
+        gioiTinh: laSo.thongTin.gioiTinh,
+        hoTen: laSo.thongTin.hoTen,
+        namXem,
+        ngonNgu,
+      }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (huy) return;
+        setKhoiSau(d?.khoi ?? []);
+        setDayLuanGiai(Boolean(d?.day));
+      });
+    return () => {
+      huy = true;
+    };
+  }, [laSo, duocVao, namXem, ngonNgu]);
 
   useEffect(() => {
     if (!laSo) return;
@@ -371,7 +400,12 @@ function TrangLaSo() {
 
       {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
       {duocVao && khoiSau.length > 0 && (
-        <BangLuanGiai khoi={khoiSau} duongHoi={duongHoi} />
+        <BangLuanGiai
+          khoi={khoiSau}
+          duongHoi={duongHoi}
+          day={dayLuanGiai}
+          duongVe={duongVe}
+        />
       )}
 
       {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ---------- */}

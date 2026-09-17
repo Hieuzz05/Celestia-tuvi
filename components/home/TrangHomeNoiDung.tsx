@@ -19,7 +19,7 @@ import {
 } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
-import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
+import { useBoiCanh } from '@/lib/store/boi-canh';
 import { cungDaiVan, lapLaSo, type LaSo } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
@@ -39,17 +39,18 @@ export function TrangHomeNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { taiKhoan, dangDoc } = useTaiKhoan();
   const router = useRouter();
-  const [hoSos, setHoSos] = useState<HoSo[]>([]);
+  const boiCanh = useBoiCanh();
   const [dangNghi, setDangNghi] = useState('');
 
   useEffect(() => {
     ghiSuKien('home_returned');
-    danhSachHoSo()
-      .then(setHoSos)
-      .catch(() => setHoSos([]));
   }, []);
 
-  const chinh = hoSos[0];
+  // Hôm nay LUÔN đọc "Lá số của tôi", không phải lá số đang xem tạm ở màn khác
+  // và cũng không phải hoSos[0]. Bản cũ lấy phần tử đầu danh sách nên đặt lá số
+  // khác làm mặc định xong quay lại đây vẫn thấy lá số cũ.
+  const chinh =
+    boiCanh.hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? boiCanh.hoSos[0] ?? null;
 
   const laSo: LaSo | null = useMemo(() => {
     if (!chinh) return null;
@@ -90,14 +91,14 @@ export function TrangHomeNoiDung() {
 
   // Mang theo thông tin sinh để trang đích không hỏi lại — spec v2 xếp việc bắt
   // nhập lại ngày giờ sinh giữa luồng vào nhóm lỗi "đứt ngữ cảnh".
-  const boiCanh = chinh
+  const thamSoLaSo = chinh
     ? `&ngay=${chinh.ngay}&thang=${chinh.thang}&nam=${chinh.nam}&gio=${chinh.gio}&gt=${chinh.gioiTinh}&ten=${encodeURIComponent(chinh.hoTen ?? '')}`
     : '';
 
   const chuDes = [
-    { nhan: t.home.chuDeCongViec, href: `/luan-giai?chuDe=su-nghiep${boiCanh}` },
-    { nhan: t.home.chuDeTinhCam, href: `/luan-giai?chuDe=tinh-duyen${boiCanh}` },
-    { nhan: t.home.chuDeBanThan, href: `/luan-giai?chuDe=tong-quan${boiCanh}` },
+    { nhan: t.home.chuDeCongViec, href: `/luan-giai?chuDe=su-nghiep${thamSoLaSo}` },
+    { nhan: t.home.chuDeTinhCam, href: `/luan-giai?chuDe=tinh-duyen${thamSoLaSo}` },
+    { nhan: t.home.chuDeBanThan, href: `/luan-giai?chuDe=tong-quan${thamSoLaSo}` },
     {
       nhan: t.home.chuDeQuyetDinh,
       href: `/hoi-dap?q=${encodeURIComponent(t.home.quyetDinhCauHoi)}`,
@@ -122,7 +123,7 @@ export function TrangHomeNoiDung() {
         </div>
 
         {/* Chưa có bản đồ nào thì việc tiếp theo chỉ có một, nói thẳng ra */}
-        {!dangDoc && !chinh && (
+        {!dangDoc && !boiCanh.dangTai && !chinh && (
           <The className="flex flex-col gap-[12px]">
             <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
               {t.home.chuaCoTieuDe}

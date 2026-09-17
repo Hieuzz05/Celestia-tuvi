@@ -41,6 +41,8 @@ họ còn nguyên và nên làm gì tiếp.
 | Bảng luận giải 8 lĩnh vực | `lib/tuvi/luan-giai-sau.ts` |
 | Bộ quy tắc tính + phiên bản | `lib/tuvi/phuong-phap.ts` |
 | Lá số đang xem / lá số của tôi / bản nháp | `lib/store/boi-canh.tsx` |
+| Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
+| Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
 | Giọng và cấu trúc câu trả lời của Celes | `NHAN_CACH_CELES` trong `lib/ai/prompt.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
@@ -72,6 +74,13 @@ họ còn nguyên và nên làm gì tiếp.
   KHÔNG được đổi "Lá số của tôi" — chỉ nút "Đặt làm lá số của tôi" mới đổi.
 - **Đổi bất kỳ quy tắc tính nào thì phải tăng `PHUONG_PHAP.phienBan`.** Không tăng thì hai kết quả
   khác nhau cùng mang một nhãn và không ai lần lại được.
+- **Khả năng trả phí phải dựng ở máy chủ.** Bảng luận giải 8 lĩnh vực và luận hạn chi tiết đi qua
+  `/api/luan-giai-sau` và `/api/luan-han` chứ không tính trong trình duyệt — ẩn ở giao diện không
+  phải phân quyền.
+- **Chỉ webhook đã xác thực chữ ký mới mở được quyền.** Đừng bao giờ đọc `status` trên URL trả về
+  rồi kết luận đã trả xong.
+- **Hôm nay đọc `idMacDinh`, không phải `idDangXem`.** Xem tạm lá số khác ở màn khác không được
+  làm đổi trang chủ.
 
 ## Kiểm tra trước khi commit
 

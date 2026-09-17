@@ -92,20 +92,6 @@ export const VI_TRI_GRID: Record<number, { row: number; col: number }> = {
   11: { row: 4, col: 4 }, // Hợi
 };
 
-/** Phụ tinh trọng yếu — hiển thị nổi hơn nhóm phụ tinh còn lại */
-export const PHU_TINH_TRONG_YEU = new Set([
-  'Tả Phù',
-  'Hữu Bật',
-  'Văn Xương',
-  'Văn Khúc',
-  'Thiên Khôi',
-  'Thiên Việt',
-  'Lộc Tồn',
-  'Thiên Mã',
-  'Kình Dương',
-  'Đà La',
-  'Hỏa Tinh',
-  'Linh Tinh',
-  'Địa Không',
-  'Địa Kiếp',
-]);
+// Danh sách sao chuyển về lib/tuvi/phu-tinh-trong-yeu.ts: engine luận giải cũng
+// cần đúng danh sách này, mà engine không được phụ thuộc vào tầng giao diện.
+export { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';

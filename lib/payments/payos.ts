@@ -1,0 +1,128 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+/**
+ * payOS — chỉ gọi từ mã chạy phía máy chủ.
+ *
+ * API key và checksum key KHÔNG bao giờ được đi ra trình duyệt. Vì vậy tệp này
+ * không có `'use client'`, không export hằng nào chứa khoá, và mọi hàm ở đây
+ * chỉ được import từ route handler.
+ */
+
+const API = 'https://api-merchant.payos.vn/v2/payment-requests';
+
+export const payosDaCauHinh = Boolean(
+  process.env.PAYOS_CLIENT_ID && process.env.PAYOS_API_KEY && process.env.PAYOS_CHECKSUM_KEY
+);
+
+function khoa() {
+  return {
+    clientId: process.env.PAYOS_CLIENT_ID ?? '',
+    apiKey: process.env.PAYOS_API_KEY ?? '',
+    checksumKey: process.env.PAYOS_CHECKSUM_KEY ?? '',
+  };
+}
+
+/**
+ * Chữ ký của yêu cầu tạo đơn.
+ *
+ * payOS quy định đúng năm trường, xếp theo thứ tự chữ cái, nối bằng dấu &.
+ * Sai thứ tự là chữ ký sai, và payOS chỉ trả về một mã lỗi chung — nên thứ tự
+ * này cố định ở đây thay vì dựng động từ object.
+ */
+function kyTaoDon(d: {
+  amount: number;
+  cancelUrl: string;
+  description: string;
+  orderCode: number;
+  returnUrl: string;
+}) {
+  const chuoi =
+    `amount=${d.amount}&cancelUrl=${d.cancelUrl}&description=${d.description}` +
+    `&orderCode=${d.orderCode}&returnUrl=${d.returnUrl}`;
+  return createHmac('sha256', khoa().checksumKey).update(chuoi).digest('hex');
+}
+
+export interface DonPayos {
+  paymentLinkId: string;
+  checkoutUrl: string;
+  qrCode: string;
+  accountNumber?: string;
+  accountName?: string;
+  status: string;
+}
+
+export class LoiPayos extends Error {}
+
+export async function taoDonPayos(d: {
+  orderCode: number;
+  amount: number;
+  description: string;
+  returnUrl: string;
+  cancelUrl: string;
+  expiredAt?: number;
+}): Promise<DonPayos> {
+  if (!payosDaCauHinh) throw new LoiPayos('Chưa cấu hình payOS');
+
+  const { clientId, apiKey } = khoa();
+  const body = {
+    orderCode: d.orderCode,
+    amount: d.amount,
+    description: d.description,
+    returnUrl: d.returnUrl,
+    cancelUrl: d.cancelUrl,
+    ...(d.expiredAt ? { expiredAt: d.expiredAt } : {}),
+    signature: kyTaoDon(d),
+  };
+
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-client-id': clientId,
+      'x-api-key': apiKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const json = (await res.json()) as { code?: string; desc?: string; data?: DonPayos };
+  if (!res.ok || json.code !== '00' || !json.data) {
+    throw new LoiPayos(json.desc ?? `payOS trả về ${res.status}`);
+  }
+  return json.data;
+}
+
+/**
+ * Kiểm tra chữ ký webhook.
+ *
+ * Cách payOS ký: sắp khoá của `data` theo thứ tự chữ cái, nối thành
+ * `k1=v1&k2=v2`, HMAC-SHA256 bằng checksum key. Mảng và object lồng được
+ * chuyển thành JSON trước khi nối.
+ *
+ * So sánh bằng `timingSafeEqual`: so bằng `===` để lộ độ dài tiền tố khớp qua
+ * thời gian chạy, đủ để dò dần ra chữ ký đúng.
+ */
+export function chuKyWebhookHopLe(data: unknown, signature: unknown): boolean {
+  if (!payosDaCauHinh || typeof signature !== 'string' || !data || typeof data !== 'object') {
+    return false;
+  }
+
+  const obj = data as Record<string, unknown>;
+  const chuoi = Object.keys(obj)
+    .sort()
+    .map((k) => {
+      const v = obj[k];
+      const s =
+        v === null || v === undefined
+          ? ''
+          : typeof v === 'object'
+            ? JSON.stringify(v)
+            : String(v);
+      return `${k}=${s}`;
+    })
+    .join('&');
+
+  const mong = createHmac('sha256', khoa().checksumKey).update(chuoi).digest('hex');
+  const a = Buffer.from(mong, 'utf8');
+  const b = Buffer.from(signature, 'utf8');
+  return a.length === b.length && timingSafeEqual(a, b);
+}

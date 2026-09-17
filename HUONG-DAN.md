@@ -464,10 +464,45 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Xong — ba mức độ dày, an sao không đổi |
 | Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện vẫn thu nhỏ khung 920px |
 | Điều hướng đáy trên mobile (app) | Chưa — bottom nav là của app Expo, web dùng thanh trên |
-| Gói Plus, paywall, xuất báo cáo | Chưa — P2 |
+| Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
+| Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |
+| Khoá luận giải 8 lĩnh vực / Hành trình chi tiết theo bậc quyền | Xong — dựng ở máy chủ, không phải ẩn ở giao diện |
+| Trang quản trị `/admin/support` | Chưa |
+| Tác vụ đối soát đơn định kỳ | Chưa — webhook là luồng chính, đây là lưới an toàn |
+| Lịch sử ủng hộ ở trang Tài khoản | Chưa — dữ liệu đã có trong `support_payments` |
 | Xuất PDF, từ điển thuật ngữ | Chưa |
 
 ---
+
+## 5b. Ủng hộ Celes — bật thế nào
+
+Tính năng chạy được ngay cả khi **chưa** khai báo gì: lúc đó không có hạn mức, không có cổng
+ủng hộ, sản phẩm y như trước. Muốn bật thật thì cần ba bước:
+
+1. **Chạy `supabase/schema-support.sql`** trong Supabase > SQL Editor. File tạo bốn bảng
+   (`support_payments`, `entitlement_grants`, `user_entitlements`, `usage_events`) và ba hàm
+   (`dat_cho_cau_hoi`, `hoan_cau_hoi`, `cap_quyen_ung_ho`). Chạy lại nhiều lần được.
+2. **Khai báo khoá payOS** — `PAYOS_CLIENT_ID`, `PAYOS_API_KEY`, `PAYOS_CHECKSUM_KEY`,
+   `NEXT_PUBLIC_APP_URL`. Xem `.env.example`. Ba khoá đầu **chỉ** dùng phía máy chủ; đừng bao
+   giờ thêm tiền tố `NEXT_PUBLIC_` cho chúng.
+3. **Khai webhook ở payOS** trỏ về `<NEXT_PUBLIC_APP_URL>/api/webhooks/payos`.
+
+Chưa chạy SQL thì hạn mức tự tắt (hàm chưa tồn tại → cho qua, có ghi log). Chưa có khoá payOS
+thì API tạo đơn trả `PAYMENT_NOT_CONFIGURED`.
+
+### Ba điều không được đổi
+
+- **Webhook là nguồn sự thật duy nhất.** Tham số `status` trên URL trả về chỉ dùng để đổi chữ
+  trên màn hình, không bao giờ để mở quyền.
+- **Quota đặt chỗ TRƯỚC khi gọi model, hoàn lại khi model hỏng.** Trừ sau khi có câu trả lời thì
+  mở mười tab bấm cùng lúc là vượt hạn mức.
+- **Admin miễn hoàn toàn, nhưng không được cấp quyền supporter giả.** `ADMIN_EMAILS` đọc ở máy
+  chủ; nhật ký vẫn ghi `quota_source = admin_exempt` để thấy chi phí thật.
+
+### Con số thương mại
+
+Tất cả nằm ở `lib/support/config.ts`, đọc từ biến môi trường. Đổi trên Vercel rồi redeploy, đừng
+sửa rải trong component.
 
 ## 6. Design system
 
@@ -515,6 +550,8 @@ phương pháp. Kết quả:
 | `/hanh-trinh` | Hành trình: quãng dài → từng năm → từng tháng, có mốc "đang ở đây" |
 | `/hanh-trinh/chi-tiet` | Tầng hai của Hành trình: luận hạn đa lớp cho một quãng, kèm căn cứ mở được |
 | `/ho-so` | Danh sách lá số, đặt "Lá số của tôi" |
+| `/support` | Ủng hộ Celes — người dùng tự tìm tới, không phải cổng chặn |
+| `/support/checkout/[id]` | Màn thanh toán một đơn, tự hỏi lại máy chủ cho tới khi quyền được mở |
 | `/gioi-thieu` | Cách Celestia tính lá số, câu hỏi thường gặp |
 | `/luan-giai` | Khám phá sâu hơn theo chủ đề |
 | `/hoi-dap` | Hỏi Celestia |

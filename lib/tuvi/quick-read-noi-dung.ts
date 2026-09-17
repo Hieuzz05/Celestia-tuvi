@@ -189,6 +189,10 @@ const DO_SANG_EN: Record<string, string> = {
 /** Khuôn câu — {ngoac} được thay bằng giá trị thật lúc dựng */
 export interface KhuonChu {
   netSao: Record<string, NetSao>;
+  /** Nét của phụ tinh trọng yếu — thứ làm hai lá số cùng chính tinh đọc ra khác nhau */
+  netPhuTinh: Record<string, string>;
+  /** Vòng Tràng Sinh: nhịp sinh khí của một cung */
+  netTrangSinh: Record<string, string>;
   chuDeCung: Record<string, string>;
   doSang: Record<string, string>;
 
@@ -284,9 +288,17 @@ export interface KhuonChu {
     doanSangRo: string;
     doanSangKim: string;
     doanTuHoa: string;
+    doanTuHoaRo: string;
     doanTuanTriet: string;
     doanTamPhuong: string;
     doanTrong: string;
+    doanPhuTinh: string;
+    doanDoiCung: string;
+    doanDoiCungTrong: string;
+    doanTrangSinh: string;
+    doanGiaiDoanCham: string;
+    doanGiaiDoanKhongCham: string;
+    cauHoiPhanChieu: Record<string, string>;
     vanHanKetLuan: string;
     vanHanDan: string;
     phatTrienKetLuan: string;
@@ -331,9 +343,98 @@ const TEN_CUNG_VI: Record<string, string> = Object.fromEntries(
   Object.keys(TEN_CUNG_EN).map((k) => [k, k])
 );
 
+/**
+ * Nét của phụ tinh trọng yếu.
+ *
+ * Hai người cùng chính tinh thủ Mệnh vẫn sống rất khác nhau, và phần lớn khác
+ * biệt nằm ở nhóm sao này. Bỏ chúng đi thì mọi bản luận đều na ná nhau — đó
+ * chính là lý do bảng luận giải bản đầu bị chê là nông.
+ *
+ * Mỗi dòng viết ở dạng mệnh đề nối được vào sau "ở phần này, bạn còn…", nên
+ * không có chủ ngữ và không tự kết câu.
+ */
+const PHU_TINH_VI: Record<string, string> = {
+  'Tả Phù': 'thường có người đứng sau đỡ một tay đúng lúc cần, nhất là khi bạn không mở lời',
+  'Hữu Bật': 'hay được giúp bởi những người vốn không nợ bạn gì — và thường là người bạn từng giúp trước đó',
+  'Văn Xương': 'diễn đạt mạch lạc, nên chỗ nào cần viết ra hoặc trình bày là chỗ bạn có lợi thế',
+  'Văn Khúc': 'nhạy với cái hay cái đẹp, và thuyết phục người khác bằng cảm giác nhiều hơn bằng lý lẽ',
+  'Thiên Khôi': 'dễ gặp người đi trước sẵn lòng chỉ đường, thường ở tình huống rất tình cờ',
+  'Thiên Việt': 'hay được cất nhắc bởi người có vị thế, nhưng thường muộn hơn bạn mong',
+  'Lộc Tồn': 'giữ được phần mình một cách chắc chắn, đổi lại hay ngại mạo hiểm quá mức cần thiết',
+  'Thiên Mã': 'khó ngồi yên một chỗ lâu; đổi chỗ, đổi việc, đổi cách làm là thứ giúp bạn bật lên',
+  'Kình Dương': 'quyết liệt khi đã chọn, nhưng cái giá thường là va chạm với người xung quanh',
+  'Đà La': 'hay bị kéo dài, dây dưa — chuyện đáng xong trong một tháng dễ thành nửa năm',
+  'Hỏa Tinh': 'bốc lên rất nhanh và cũng nguội rất nhanh, nên thứ cần bền là chỗ dễ đứt gánh',
+  'Linh Tinh': 'âm ỉ khó chịu hơn là bùng nổ: thứ làm bạn mệt thường nhỏ mà kéo dài',
+  'Địa Không': 'hay mất công cho những thứ cuối cùng không thành, nhưng cũng nhờ vậy mà nghĩ khác người',
+  'Địa Kiếp': 'dễ mất mát bất ngờ ở chỗ bạn tưởng đã chắc, nên phần này không nên dồn hết trứng một giỏ',
+  'Thiên Hình': 'giữ nguyên tắc chặt, và thường tự phạt mình nặng hơn người khác phạt bạn',
+  'Thiên Riêu': 'nhạy chuyện tình cảm, dễ bị cuốn vào thứ mình biết là không nên',
+  'Hóa Lộc': 'phần này thường mở ra cơ hội thật, không phải cảm giác dễ chịu suông',
+  'Hóa Quyền': 'phần này bạn nắm được quyền quyết, đổi lại là gánh trách nhiệm nặng hơn',
+  'Hóa Khoa': 'phần này được người ngoài công nhận, tiếng tốt đến trước kết quả',
+  'Hóa Kỵ': 'phần này hay vướng và hay phải làm lại, nhưng cũng là chỗ bạn học được nhiều nhất',
+};
+
+const PHU_TINH_EN: Record<string, string> = {
+  'Tả Phù': 'usually have someone step in at the right moment, especially when you have not asked',
+  'Hữu Bật': 'often get help from people who owe you nothing — usually people you once helped',
+  'Văn Xương': 'express yourself clearly, so anything that has to be written or presented plays to your strength',
+  'Văn Khúc': 'have an eye for what is well made, and persuade people through feel more than argument',
+  'Thiên Khôi': 'tend to meet people further along who will point the way, usually by chance',
+  'Thiên Việt': 'get picked out by people with standing, though usually later than you would like',
+  'Lộc Tồn': 'hold on to your share reliably, at the cost of avoiding risk more than you need to',
+  'Thiên Mã': 'cannot sit still for long; changing place, work or method is what lifts you',
+  'Kình Dương': 'are decisive once you have chosen, and the price is usually friction with people around you',
+  'Đà La': 'tend to see things drag — what should take a month easily becomes half a year',
+  'Hỏa Tinh': 'flare up fast and cool just as fast, so anything that needs staying power is where you drop it',
+  'Linh Tinh': 'wear down slowly rather than blow up: what tires you is small but long',
+  'Địa Không': 'often spend effort on things that come to nothing, which is also why you think unlike others',
+  'Địa Kiếp': 'can lose suddenly where you thought you were safe, so this is not the place to put everything',
+  'Thiên Hình': 'hold to your rules strictly, and usually punish yourself harder than anyone else would',
+  'Thiên Riêu': 'feel things keenly, and are easily pulled toward what you know you should not',
+  'Hóa Lộc': 'this area tends to open real opportunity, not just a pleasant feeling',
+  'Hóa Quyền': 'this is where you hold the decision, and carry the heavier responsibility for it',
+  'Hóa Khoa': 'this is where others recognise you — the reputation arrives before the result',
+  'Hóa Kỵ': 'this area snags and has to be redone often, and is also where you learn the most',
+};
+
+/** Vòng Tràng Sinh — nhịp sinh khí của cung, đọc như giai đoạn của một chu kỳ */
+const TRANG_SINH_VI: Record<string, string> = {
+  'Trường Sinh': 'đang ở đầu một chu kỳ: chưa có gì rõ hình, nhưng đây là lúc gieo thì dễ mọc',
+  'Mộc Dục': 'đang ở đoạn dễ phân tâm, thứ mới mẻ hấp dẫn hơn thứ đang dở',
+  'Quan Đới': 'đang lên dần, sức bắt đầu đủ để nhận việc lớn hơn',
+  'Lâm Quan': 'đang ở đoạn sung sức nhất của chu kỳ, làm được nhiều hơn bình thường',
+  'Đế Vượng': 'đang ở đỉnh: mạnh, nhưng cũng là lúc dễ chủ quan nhất',
+  'Suy': 'đang xuống dốc nhẹ, nên giữ hơn là mở thêm',
+  'Bệnh': 'đang đuối, thứ gắng quá sức ở đây thường phải trả giá sau',
+  'Tử': 'đang ở đáy chu kỳ, chuyện cũ khó kéo lại — thường là lúc nên buông',
+  'Mộ': 'đang ở đoạn cất giữ: hợp với tích luỹ và sắp xếp hơn là bung ra',
+  'Tuyệt': 'đang ở chỗ đứt đoạn, thứ gì đứt ở đây thường không nối lại như cũ',
+  'Thai': 'đang manh nha một hướng mới, chưa thành hình nhưng đã bắt đầu',
+  'Dưỡng': 'đang ở đoạn nuôi dưỡng, làm chậm mà chắc thì về sau đỡ phải sửa',
+};
+
+const TRANG_SINH_EN: Record<string, string> = {
+  'Trường Sinh': 'sits at the start of a cycle: nothing has taken shape yet, but what you plant here takes',
+  'Mộc Dục': 'sits where attention scatters — whatever is new looks better than what is half done',
+  'Quan Đới': 'is on the way up, with just enough strength to take on something larger',
+  'Lâm Quan': 'is at the strongest stretch of the cycle, able to carry more than usual',
+  'Đế Vượng': 'is at the peak: strong, and also the easiest place to get complacent',
+  'Suy': 'is easing downward, so holding serves you better than opening more',
+  'Bệnh': 'is running thin — pushing past your limit here usually costs you later',
+  'Tử': 'sits at the bottom of the cycle, where the old thing will not be revived — usually a time to let go',
+  'Mộ': 'is in the storing stretch: better suited to gathering and ordering than to expanding',
+  'Tuyệt': 'sits at a break, and what snaps here rarely joins back the same way',
+  'Thai': 'is where a new direction stirs — not formed yet, but begun',
+  'Dưỡng': 'is in the nurturing stretch, where slow and solid saves you repairs later',
+};
+
 export const KHUON: Record<NgonNguDoc, KhuonChu> = {
   vi: {
     netSao: NET_VI,
+    netPhuTinh: PHU_TINH_VI,
+    netTrangSinh: TRANG_SINH_VI,
     chuDeCung: CHU_DE_VI,
     doSang: DO_SANG_VI,
     noiVaiVe: ', ',
@@ -507,12 +608,30 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'Các sao ở phần này đang ở mức {sang}, nên nét trên có thật nhưng hay bị hoàn cảnh kìm lại — dễ thấy mình muốn một đằng mà làm được một nẻo.',
       doanTuHoa:
         'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường bị đẩy mạnh hơn hoặc vặn đi so với mức bình thường.',
+      doanTuHoaRo: 'Có {sao} rơi vào đây: {net}.',
       doanTuanTriet:
         'Có {ten} đóng ở đây. Nét của phần này thường khó hiện ra sớm — nhiều người phải qua một quãng mới thấy rõ mình thế nào ở chỗ này.',
       doanTamPhuong:
         'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và đối diện là {xung} — chỗ hay kéo bạn về hướng ngược lại.',
       doanTrong:
         'Vì mượn nét từ cung đối diện nên bạn thường linh hoạt ở phần này, nhưng cũng dễ thấy mình thay đổi tuỳ hoàn cảnh và tuỳ người.',
+      doanPhuTinh: 'Ở phần này bạn còn {net}.',
+      doanDoiCung: 'Đối diện là {cung}, nơi {sao} đóng — phần đó luôn kéo bạn về hướng ngược lại, và thường là chỗ bạn phải cân bằng chứ không bỏ được.',
+      doanDoiCungTrong:
+        'Đối diện là {cung} và cũng không có sao chính nào đóng, nên phần này ít bị kéo về một hướng cố định — bạn tự do hơn, nhưng cũng ít điểm tựa hơn.',
+      doanTrangSinh: 'Xét theo nhịp sinh khí, phần này {net}.',
+      doanGiaiDoanCham:
+        'Giai đoạn {tu}–{den} tuổi bạn đang đi qua có chạm vào phần này, nên đây là quãng nó dễ có chuyện hơn bình thường — cả theo nghĩa cơ hội lẫn nghĩa va vấp.',
+      doanGiaiDoanKhongCham:
+        'Giai đoạn bạn đang đi qua không chạm trực tiếp vào phần này, nên nó thường giữ nguyên nhịp cũ cho tới quãng sau.',
+      cauHoiPhanChieu: {
+        'tinh-cach': 'Lần gần nhất bạn hành xử đúng như mô tả trên là khi nào — và lúc đó bạn thấy nhẹ hay thấy mệt?',
+        'cong-viec': 'Công việc hiện tại của bạn đang cho phép hay đang chặn đúng cái nét mạnh ở trên?',
+        'tai-loc': 'Tiền của bạn đang chảy ra theo thói quen nào mà bạn chưa từng đặt câu hỏi?',
+        'tinh-duyen': 'Điều bạn thường mong người kia hiểu mà chưa nói thành lời là gì?',
+        'gia-dao': 'Vai trò bạn đang giữ trong nhà là do bạn chọn, hay do không ai khác nhận?',
+        'quan-he': 'Trong những người quanh bạn, ai làm bạn đầy lên và ai làm bạn cạn đi?',
+      },
       vanHanKetLuan: 'Giai đoạn bạn đang đi qua nghiêng về {chuDe}.',
       vanHanDan: 'Xem theo quãng dài, từng năm và từng tháng ở phần Hành trình.',
       phatTrienKetLuan: 'Nếu muốn đi xa hơn, chỗ đáng rèn nhất của bạn nằm quanh {chuDe}.',
@@ -539,6 +658,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
 
   en: {
     netSao: NET_EN,
+    netPhuTinh: PHU_TINH_EN,
+    netTrangSinh: TRANG_SINH_EN,
     chuDeCung: CHU_DE_EN,
     doSang: DO_SANG_EN,
     noiVaiVe: ', ',
@@ -714,12 +835,30 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'The stars here are {sang}, so the trait is real but circumstances often hold it back — you may find yourself wanting one thing and managing another.',
       doanTuHoa:
         '{sao} falls here, so the same set of stars plays out differently: this area tends to be pushed harder, or twisted out of its usual shape.',
+      doanTuHoaRo: '{sao} falls here: {net}.',
       doanTuanTriet:
         '{ten} sits here. This part is usually slow to show itself — many people only see clearly who they are here after a stretch of time.',
       doanTamPhuong:
         'This part does not stand alone: it draws from {hoTro}, and facing it is {xung} — the place that tends to pull you the other way.',
       doanTrong:
         'Because it borrows from the house opposite, you are usually adaptable here, but also more changeable depending on the situation and the person.',
+      doanPhuTinh: 'In this area you also {net}.',
+      doanDoiCung: 'Facing it is {cung}, where {sao} sits — that house always pulls you the other way, and is usually something to balance rather than drop.',
+      doanDoiCungTrong:
+        'Facing it is {cung}, and no major star sits there either, so this area is pulled less firmly in any one direction — freer, but with less to lean on.',
+      doanTrangSinh: 'In terms of vitality, this part {net}.',
+      doanGiaiDoanCham:
+        'The stretch from age {tu} to {den} that you are moving through does touch this area, so this is when it is more likely to be live — in opportunity as much as in friction.',
+      doanGiaiDoanKhongCham:
+        'The stretch you are moving through does not touch this area directly, so it usually keeps its existing rhythm until the next one.',
+      cauHoiPhanChieu: {
+        'tinh-cach': 'When did you last act exactly as described above — and did it leave you lighter or more tired?',
+        'cong-viec': 'Is your current work letting that strength out, or blocking it?',
+        'tai-loc': 'Which spending habit of yours have you never actually questioned?',
+        'tinh-duyen': 'What do you keep hoping the other person will understand without you saying it?',
+        'gia-dao': 'Is the role you carry at home one you chose, or one nobody else would take?',
+        'quan-he': 'Among the people around you, who fills you up and who drains you?',
+      },
       vanHanKetLuan: 'The stretch you are moving through leans toward {chuDe}.',
       vanHanDan: 'See it by long stretch, year and month under Your journey.',
       phatTrienKetLuan: 'To go further, the ground worth working lies around {chuDe}.',

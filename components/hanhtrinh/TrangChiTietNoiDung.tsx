@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { Eyebrow, NhanPill, Section, Shell, The } from '@/components/ui';
@@ -10,7 +10,8 @@ import { ghiSuKien } from '@/lib/analytics';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { useBoiCanh } from '@/lib/store/boi-canh';
 import { lapLaSo } from '@/lib/tuvi/ansao';
-import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
+import { CongUngHo } from '@/components/support/CongUngHo';
+import type { CapLuanHan, LuanHan } from '@/lib/tuvi/luan-han';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 
 /**
@@ -55,10 +56,41 @@ export function TrangChiTietNoiDung() {
     }
   }, [hoSo]);
 
-  const bai = useMemo(
-    () => (laSo ? luanHan(laSo, cap, nam, thang, ngonNgu) : null),
-    [laSo, cap, nam, thang, ngonNgu]
-  );
+  // Bài luận dựng ở MÁY CHỦ: đây là khả năng trả phí, dựng trong trình duyệt
+  // thì mở devtools là đọc được hết.
+  const [bai, setBai] = useState<LuanHan | null>(null);
+  const [day, setDay] = useState(true);
+  const [moCong, setMoCong] = useState(false);
+
+  useEffect(() => {
+    if (!laSo) return;
+    let huy = false;
+    fetch('/api/luan-han', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngay: laSo.thongTin.ngay,
+        thang: laSo.thongTin.thang,
+        nam: laSo.thongTin.nam,
+        gio: laSo.thongTin.gio,
+        gioiTinh: laSo.thongTin.gioiTinh,
+        hoTen: laSo.thongTin.hoTen,
+        cap,
+        namXem: nam,
+        thangXem: thang,
+        ngonNgu,
+      }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (huy) return;
+        setBai(d?.bai ?? null);
+        setDay(Boolean(d?.day));
+      });
+    return () => {
+      huy = true;
+    };
+  }, [laSo, cap, nam, thang, ngonNgu]);
 
   if (!dangDoc && !duocVao) {
     return (
@@ -125,7 +157,38 @@ export function TrangChiTietNoiDung() {
           </p>
         </div>
 
+        {/* Chưa mở quyền: giữ tiêu đề và chủ đề chính để biết bên trong nói gì */}
+        {!day && (
+          <The className="flex flex-col gap-[12px]">
+            <Eyebrow>{t.ungHo.ten}</Eyebrow>
+            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.ungHo.cong.journey_detail.tieuDe}
+            </h2>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.ungHo.cong.journey_detail.moTa}
+            </p>
+            <button onClick={() => setMoCong(true)} className="btn-primary self-start">
+              {t.ungHo.cong.journey_detail.cta}
+            </button>
+            <p className="caption">{t.ungHo.khongPhuThuocSoTien}</p>
+          </The>
+        )}
+
+        {moCong && (
+          <CongUngHo
+            lyDo="journey_detail"
+            onDong={() => setMoCong(false)}
+            quayLai={{
+              path: `/hanh-trinh/chi-tiet?cap=${cap}&nam=${nam}&thang=${thang}`,
+              profileId: hoSo?.id ?? null,
+              year: nam,
+              month: thang,
+            }}
+          />
+        )}
+
         {/* B. Tóm tắt điều hành */}
+        {day && (
         <div className="grid gap-[16px] md:grid-cols-2">
           <The className="flex flex-col gap-[8px]">
             <Eyebrow>{k.chuDeChinh}</Eyebrow>
@@ -178,8 +241,10 @@ export function TrangChiTietNoiDung() {
             )}
           </The>
         </div>
+        )}
 
         {/* C. Luận theo lĩnh vực */}
+        {day && (
         <div className="flex flex-col gap-[16px]">
           <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
             {t.chiTietHan.theoLinhVuc}
@@ -198,8 +263,10 @@ export function TrangChiTietNoiDung() {
           </div>
           <p className="caption">{k.khongThayTheYTe}</p>
         </div>
+        )}
 
         {/* D. Căn cứ — mặc định đóng, mở ra là có cấu trúc chứ không phải dữ liệu thô */}
+        {day && (
         <div className="flex flex-col gap-[12px]">
           <button
             onClick={() => {
@@ -230,6 +297,7 @@ export function TrangChiTietNoiDung() {
             </The>
           )}
         </div>
+        )}
 
         {/* E. CTA cuối bài — mang nguyên bối cảnh sang Hỏi Celes */}
         <The className="flex flex-col gap-[12px]">

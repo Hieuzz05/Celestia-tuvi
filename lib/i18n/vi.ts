@@ -358,8 +358,8 @@ export const vi = {
 
   luanSau: {
     eyebrow: 'BỨC TRANH ĐẦY ĐỦ',
-    tieuDe: 'Tám phần của lá số này, nói bằng tiếng người',
-    moTa: 'Mỗi phần bắt đầu bằng một câu kết luận, rồi mới tới chi tiết. Muốn kiểm chứng thì mở phần căn cứ ngay dưới.',
+    tieuDe: 'Còn đây là những gì Celes đọc kỹ hơn',
+    moTa: 'Mỗi phần mở đầu bằng điều đáng chú ý nhất, rồi mới tới chi tiết. Chỗ nào bạn thấy chưa thuyết phục, mở phần căn cứ ngay dưới để xem Celes dựa vào đâu.',
     hoiVePhanNay: 'Hỏi Celes về phần này',
   },
 
@@ -549,6 +549,105 @@ export const vi = {
     cuoiTieuDe: 'Đọc thì lâu, xem thì nhanh hơn',
     cuoiMo: 'Lập một lá số và tự mở phần căn cứ — nhanh hơn là đọc hết trang này.',
     cuoiNut: 'Lập lá số miễn phí',
+  },
+
+  ungHo: {
+    ten: 'Ủng hộ Celes',
+    moiLyCaPhe: 'Mời Celes một ly cà phê',
+    tiepTucCung: 'Tiếp tục cùng Celes',
+
+    conCau: 'Hôm nay bạn còn {con}/{tong} câu miễn phí.',
+    hetCau: 'Bạn đã dùng hết {tong} câu miễn phí hôm nay.',
+
+    cong: {
+      ask_quota: {
+        tieuDe: 'Muốn tiếp tục câu chuyện này?',
+        moTa: 'Bạn đã dùng {tong} câu miễn phí hôm nay. Nếu những góc nhìn của Celes đang hữu ích, bạn có thể ủng hộ một khoản tuỳ ý để tiếp tục trong 24 giờ.',
+        cta: 'Ủng hộ & tiếp tục',
+      },
+      deep_map: {
+        tieuDe: 'Muốn hiểu toàn bộ bức tranh của bạn?',
+        moTa: 'Phần tổng quan là miễn phí. Một lời ủng hộ sẽ mở các phần chuyên sâu về tính cách, công việc, tài lộc, tình cảm, gia đình, quan hệ, vận hạn và hướng phát triển.',
+        cta: 'Mở luận giải đầy đủ',
+      },
+      journey_detail: {
+        tieuDe: 'Muốn nhìn kỹ giai đoạn này?',
+        moTa: 'Celes sẽ đọc sâu hơn theo các lớp vận, sao lưu, tam phương tứ chính và những yếu tố đang tác động trong thời điểm bạn chọn.',
+        cta: 'Mở luận giải giai đoạn này',
+      },
+      connection_full: {
+        tieuDe: 'Muốn hiểu mối quan hệ này sâu hơn?',
+        moTa: 'Mở đầy đủ cách hai người giao tiếp, nhu cầu tình cảm, điểm dễ va chạm, cách hỗ trợ nhau và giai đoạn đang ảnh hưởng tới mối quan hệ.',
+        cta: 'Mở phân tích đầy đủ',
+      },
+      long_report: {
+        tieuDe: 'Muốn một bản đọc dài, viết liền mạch?',
+        moTa: 'Báo cáo chuyên sâu là bản đọc dài nhất Celes viết được cho một lá số. Nó nằm trong phần đã mở khi bạn còn lượt báo cáo.',
+        cta: 'Tạo báo cáo chuyên sâu',
+      },
+      profile_limit: {
+        tieuDe: 'Muốn giữ thêm lá số?',
+        moTa: 'Tài khoản miễn phí giữ được {soHoSoFree} lá số. Một lời ủng hộ nâng lên {soHoSoPlus} lá số trong thời gian Supporter còn hiệu lực.',
+        cta: 'Ủng hộ để thêm lá số',
+      },
+      voluntary: {
+        tieuDe: 'Nếu Celes đang hữu ích với bạn',
+        moTa: 'Một lời ủng hộ giúp sản phẩm tiếp tục được cải thiện, và mở thêm chiều sâu cho chính trải nghiệm của bạn.',
+        cta: 'Ủng hộ Celes',
+      },
+    },
+
+    loiIch: [
+      'Tiếp tục Hỏi Celes.',
+      'Mở luận giải sâu hơn.',
+      'Xem Hành trình chi tiết.',
+      'Giữ nguyên cuộc trò chuyện đang dở.',
+    ],
+    quayLaiNgayMai: 'Quay lại vào ngày mai',
+    khongPhuThuocSoTien: 'Bạn tự chọn số tiền. Quyền mở không phụ thuộc số tiền bạn ủng hộ.',
+
+    soTienTieuDe: 'Ủng hộ Celes',
+    soTienMoTa: 'Một lời ủng hộ giúp Celes tiếp tục đồng hành và mở thêm chiều sâu cho trải nghiệm của bạn.',
+    soKhac: 'Số khác',
+    nhapSoTien: 'Nhập số tiền',
+    banNhanDuoc: 'Bạn nhận được:',
+    nhan: [
+      'Quyền Supporter trong 24 giờ',
+      'Thêm lượt Hỏi Celes',
+      'Mở luận giải đầy đủ, Hành trình chi tiết và Kết nối',
+      'Một báo cáo chuyên sâu nếu còn lượt',
+    ],
+    tiepTucThanhToan: 'Tiếp tục thanh toán',
+    chuyenKhoanAnToan: 'Thanh toán qua chuyển khoản ngân hàng.',
+    dangTao: 'Đang tạo phiên thanh toán…',
+    loiTao: 'Chưa tạo được phiên thanh toán. Thử lại sau một chút.',
+    dong: 'Đóng',
+
+    quetMa: 'Quét mã bằng ứng dụng ngân hàng để hoàn tất.',
+    moTrangThanhToan: 'Mở trang thanh toán',
+    maQrThayThe: 'Mã QR thanh toán {soTien}',
+    donHoTro: 'Đơn hỗ trợ',
+    hetHanSau: 'Hết hạn sau',
+    trangThai: {
+      creating: 'Đang tạo phiên thanh toán…',
+      pending: 'Đang chờ thanh toán… Tự động xác nhận khi tiền về.',
+      paid_processing_entitlement: 'Đã nhận thanh toán. Celes đang mở quyền cho bạn…',
+      success: 'Cảm ơn bạn đã đồng hành cùng Celes.',
+      cancelled: 'Bạn đã huỷ thanh toán.',
+      expired: 'Phiên thanh toán đã hết hạn.',
+      failed: 'Chưa xác nhận được thanh toán này.',
+    },
+    tiepTucNoiDangDo: 'Tiếp tục nơi bạn đang dở',
+    thuLai: 'Thử lại',
+    taoMaMoi: 'Tạo mã mới',
+
+    supporterDangHoatDong: 'Supporter đang hoạt động',
+    denKhi: 'Đến {luc}',
+    conCauHoi: 'Còn {so} câu Hỏi Celes',
+    conBaoCao: '{so} báo cáo chuyên sâu',
+    ungHoThem: 'Ủng hộ thêm',
+    lichSuTieuDe: 'Những lần bạn đã ủng hộ',
+    lichSuTrong: 'Chưa có lần ủng hộ nào.',
   },
 
   chan: {
