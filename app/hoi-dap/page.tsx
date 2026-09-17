@@ -127,13 +127,17 @@ function TrangHoiDap() {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return;
 
-    // Hết lượt thì KHÔNG gửi đi và KHÔNG xoá ô nhập: câu người dùng vừa viết
-    // phải còn nguyên sau khi họ ủng hộ xong và quay lại.
-    if (quyenCeles.conCau !== null && quyenCeles.conCau <= 0) {
-      setMoCongUngHo(true);
-      return;
-    }
-
+    // KHÔNG chặn ở đây dựa trên số lượt phía trình duyệt.
+    //
+    // Bản trước có một lớp kiểm trước khi gửi, và nó tạo ra đúng một kiểu hỏng
+    // không cách nào chẩn đoán từ phía người dùng: chỉ cần /api/entitlements/me
+    // trả về sai một lần — phiên chưa kịp làm mới, mạng chập — là số lượt về 0,
+    // và từ đó mọi lần bấm Gửi đều im lặng mở cổng ủng hộ. Không lỗi, không chữ,
+    // chỉ là không bao giờ gửi được.
+    //
+    // Hạn mức vốn đã được chặn ở máy chủ, và máy chủ trả 402 kèm lý do. Cứ gửi
+    // đi rồi xử theo câu trả lời thật: đúng một nguồn sự thật, và khi hết lượt
+    // thì cổng mở vì máy chủ nói thế, không phải vì một con số cũ trong bộ nhớ.
     const lichSu = tinNhan.map((m) => ({ vaiTro: m.vaiTro, noiDung: m.noiDung }));
     setTinNhan((ds) => [...ds, { vaiTro: 'nguoi-dung', noiDung: cau }]);
     setCauHoi('');
