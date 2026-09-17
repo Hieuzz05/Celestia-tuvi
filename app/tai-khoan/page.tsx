@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { datTenHienThi, taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
 import { supabaseDaCauHinh } from '@/lib/supabase/config';
+import { LichSuUngHo } from '@/components/support/LichSuUngHo';
+import { TheSupporter } from '@/components/support/TheSupporter';
 import { Shell } from '@/components/ui';
+import Link from 'next/link';
+import { useT } from '@/lib/i18n/context';
 
 export default function TaiKhoanPage() {
+  const t = useT();
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   const [ten, setTen] = useState('');
   const [dangLuu, setDangLuu] = useState(false);
@@ -63,7 +68,7 @@ export default function TaiKhoanPage() {
 
   return (
     <Shell className="py-[24px]">
-      <div className="flex max-w-[520px] flex-col gap-[24px]">
+      <div className="flex max-w-[620px] flex-col gap-[24px]">
       <div>
         <p className="eyebrow">Tài khoản</p>
         <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
@@ -103,6 +108,21 @@ export default function TaiKhoanPage() {
           {dangLuu ? 'Đang lưu…' : 'Lưu tên hiển thị'}
         </button>
       </form>
+
+      {/* Ủng hộ Celes — spec đặt lối này ở menu tài khoản và ở đây, luôn có mặt
+          chứ không chỉ hiện khi hết lượt. */}
+      <TheSupporter />
+
+      <div className="flex flex-col gap-[10px]">
+        <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          {t.ungHo.cong.voluntary.moTa}
+        </p>
+        <Link href="/support" className="btn-outline btn-sm self-start">
+          {t.ungHo.ten}
+        </Link>
+      </div>
+
+      <LichSuUngHo />
       </div>
     </Shell>
   );

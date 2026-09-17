@@ -9,6 +9,7 @@ import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import type { KetQuaSoSanh, MucDo } from '@/lib/tuvi/hoptuoi';
 import { Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 
 const MAU_MUC_DO: Record<MucDo, string> = {
@@ -33,6 +34,7 @@ interface KetQua {
 
 export default function HopTuoiPage() {
   const { duocVao, dangDoc } = useTaiKhoan();
+  const [moCongUngHo, setMoCongUngHo] = useState(false);
   const [a, setA] = useState<ThongTinForm>({
     hoTen: '',
     ngaySinh: '1995-05-20',
@@ -79,6 +81,14 @@ export default function HopTuoiPage() {
         body: JSON.stringify({ a: dung(a), b: dung(b) }),
       });
       const data = await res.json();
+
+      // 402 là hàng rào thật của máy chủ cho khả năng trả phí — mở cổng ủng hộ
+      // chứ không hiện lỗi, vì đây không phải hỏng hóc mà là một lời mời.
+      if (res.status === 402) {
+        setMoCongUngHo(true);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.loi ?? 'So sánh thất bại');
       setKetQua(data);
     } catch {
@@ -223,6 +233,15 @@ export default function HopTuoiPage() {
           </p>
         </section>
       )}
+
+      {moCongUngHo && (
+        <CongUngHo
+          lyDo="connection_full"
+          onDong={() => setMoCongUngHo(false)}
+          quayLai={{ path: '/hop-tuoi' }}
+        />
+      )}
+
     </Shell>
   );
 }

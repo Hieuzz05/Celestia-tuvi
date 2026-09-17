@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
+import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
 import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
 import { dungPromptHopTuoi, moTaLaSo } from '@/lib/ai/prompt';
 import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
@@ -48,6 +49,20 @@ export async function POST(req: Request) {
   // Ẩn nút ở giao diện không phải phân quyền — chặn thật phải ở đây
   const cong = await canDangNhap('connection');
   if (!cong.duocPhep) return cong.chan!;
+
+  // Bản đọc đầy đủ cho hai người là khả năng trả phí. Gọi model rồi mới kiểm
+  // thì tiền mua token đã tiêu mất, nên kiểm ngay tại đây.
+  const quyen = await quyenHienTai();
+  if (!moDuoc(quyen, 'connectionFull')) {
+    return NextResponse.json(
+      {
+        error: { code: 'SUPPORTER_REQUIRED', message: 'Phần này cần quyền Supporter.' },
+        loi: 'Phần này cần quyền Supporter.',
+        canUngHo: 'connection_full',
+      },
+      { status: 402 }
+    );
+  }
 
   let body: { a?: NguoiXem; b?: NguoiXem; namXem?: number; thangXem?: number };
   try {

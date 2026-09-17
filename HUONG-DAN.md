@@ -467,9 +467,12 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
 | Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |
 | Khoá luận giải 8 lĩnh vực / Hành trình chi tiết theo bậc quyền | Xong — dựng ở máy chủ, không phải ẩn ở giao diện |
-| Trang quản trị `/admin/support` | Chưa |
-| Tác vụ đối soát đơn định kỳ | Chưa — webhook là luồng chính, đây là lưới an toàn |
-| Lịch sử ủng hộ ở trang Tài khoản | Chưa — dữ liệu đã có trong `support_payments` |
+| Trang quản trị `/admin/support` | Xong — chỉ đọc, vào bằng địa chỉ |
+| Tác vụ đối soát đơn định kỳ | Xong — Vercel Cron 15 phút/lần, **cần `CRON_SECRET`** |
+| Lịch sử ủng hộ ở trang Tài khoản | Xong |
+| Cổng ủng hộ cho Kết nối | Xong — chặn ở máy chủ trước khi gọi model |
+| Rà soát gian lận nâng cao (giới hạn tần suất tạo đơn) | Chưa — hiện dùng lại đơn đang chờ cùng số tiền |
+| Bộ kiểm thử E2E theo spec | Chưa |
 | Xuất PDF, từ điển thuật ngữ | Chưa |
 
 ---
@@ -571,6 +574,22 @@ bên dưới.
   mở mười tab bấm cùng lúc là vượt hạn mức.
 - **Admin miễn hoàn toàn, nhưng không được cấp quyền supporter giả.** `ADMIN_EMAILS` đọc ở máy
   chủ; nhật ký vẫn ghi `quota_source = admin_exempt` để thấy chi phí thật.
+
+### Ba lớp bảo đảm tiền về thì quyền mở
+
+Xếp theo thứ tự chạy, mỗi lớp đỡ cho lớp trước hỏng:
+
+1. **Webhook** — nhanh nhất, gần như tức thì.
+2. **Đối soát khi mở trang thanh toán** — mỗi lần màn hình hỏi trạng thái, máy chủ hỏi thẳng
+   payOS. Lớp này đã cứu đúng một đơn thật khi webhook chưa khai được.
+3. **Tác vụ định kỳ** `/api/cron/doi-soat` — 15 phút một lần, quét đơn còn treo trong 7 ngày.
+   Lo nốt trường hợp người dùng trả tiền xong đóng trình duyệt và không quay lại.
+
+Cả ba đều gọi chung `cap_quyen_ung_ho`, mà hàm đó có `unique(payment_id)` — nên ba lớp cùng chạy
+cũng chỉ cấp quyền đúng một lần.
+
+Tác vụ định kỳ cần `CRON_SECRET` (chuỗi ngẫu nhiên dài) trên Vercel. Bỏ trống thì nó tự tắt; hai
+lớp kia vẫn chạy.
 
 ### Con số thương mại
 
