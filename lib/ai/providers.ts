@@ -123,12 +123,30 @@ async function chatOpenAiCompat(
       ],
       temperature: req.temperature ?? 0.7,
       max_tokens: req.maxTokens ?? 2048,
+      // Dòng gpt-oss trên Groq/Cerebras là model suy luận: mặc định nó tiêu một
+      // phần lớn ngân sách output cho chuỗi nghĩ nội bộ, và phần nghĩ đó nằm ở
+      // trường `reasoning` chứ không phải `content`. Với lệnh test kết nối
+      // (maxTokens 64) thì nghĩ xong là hết chỗ, `content` rỗng, và trông hệt như
+      // model hỏng. Chỉ gửi tham số này cho hai nhà cung cấp hiểu nó — OpenAI
+      // thật sẽ từ chối tham số lạ.
+      ...(req.tatSuyNghi && (provider === 'groq' || provider === 'cerebras')
+        ? { reasoning_effort: 'low' }
+        : {}),
     }),
   });
   if (!res.ok) await nemLoi(res, provider);
   const data = await res.json();
-  const text: string = data.choices?.[0]?.message?.content ?? '';
-  if (!text) throw new AiRetryableError(`${provider}: phản hồi rỗng`, 'server');
+  const lua = data.choices?.[0];
+  const text: string = lua?.message?.content ?? '';
+  if (!text) {
+    // KHÔNG lấy `message.reasoning` làm câu trả lời: chuỗi nghĩ nội bộ không phải
+    // bài viết cho người đọc. Chỉ nói rõ vì sao rỗng để lần sau khỏi phải mò.
+    const vet =
+      lua?.finish_reason === 'length' && lua?.message?.reasoning
+        ? ' — model dùng hết ngân sách token cho phần suy luận nội bộ, hãy tăng maxTokens hoặc hạ reasoning_effort'
+        : '';
+    throw new AiRetryableError(`${provider}: phản hồi rỗng${vet}`, 'server');
+  }
   return {
     text,
     provider,

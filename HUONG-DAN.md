@@ -343,6 +343,34 @@ kể cả khi ai đó lấy được `anon key` công khai.
 Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) và log dùng model
 (`ai_provider_configs`, `ai_usage_logs`) sẽ bổ sung ở giai đoạn làm RAG.
 
+### 3.3b Lưới đỡ khi model chính hỏng
+
+Chỉ có một nhà cung cấp là không có lưới. Trong lúc dựng phần này, Gemini trả về
+`503 high demand` giữa chừng và Celes câm hoàn toàn cho tới khi nó tự hồi.
+
+Hệ thống tự xếp mọi provider **có key** vào cuối hàng chờ, kể cả khi bạn không
+nhắc chúng trong `AI_FALLBACK_ORDER` — nên chỉ cần điền key là xong, không phải
+sửa gì thêm.
+
+Tình trạng các free tier (đo ngày 17/09/2026, tự kiểm lại khi thấy lỗi lạ):
+
+| Nhà cung cấp | Model | Tình trạng |
+|---|---|---|
+| Gemini | `gemini-3.6-flash` | Dùng được. Văn tiếng Việt tốt nhất, nhưng chậm (~10–20s) và hay quá tải |
+| Groq | `openai/gpt-oss-120b` | Dùng được. Nhanh gấp 5 (~4s), văn mỏng hơn — hợp làm lưới đỡ |
+| Cerebras | `gpt-oss-120b`, `qwen-3.8-27b` | **Đòi thanh toán**, cả hai model. Không dùng được nếu chưa bật billing |
+| OpenAI | `gpt-4o-mini` | Hết credit |
+
+Hai điều dễ vấp:
+
+- **Tên model free tier thay khá thường.** Groq và Cerebras đã bỏ hẳn dòng Llama 3.3
+  mà `MODEL_MAC_DINH` từng trỏ tới, nên báo `404 model_not_found`. Gặp lỗi đó thì
+  hỏi thẳng nhà cung cấp: `curl -H "Authorization: Bearer <key>" https://api.groq.com/openai/v1/models`.
+- **Dòng `gpt-oss` là model suy luận.** Nó tiêu ngân sách output cho chuỗi nghĩ nội
+  bộ, và chuỗi đó nằm ở trường `reasoning`, không phải `content`. Gọi với
+  `maxTokens` nhỏ là `content` rỗng và trông hệt như model hỏng. Lệnh test kết nối
+  đã gửi `reasoning_effort: low` để tránh; nếu tự gọi thì nhớ để `maxTokens` rộng.
+
 ### 3.4 Bật kho tri thức (RAG)
 
 Kho tri thức cho phép nạp tài liệu tử vi của riêng bạn để Celes dựa vào khi luận giải, thay vì chỉ

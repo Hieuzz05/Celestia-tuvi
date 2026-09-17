@@ -25,8 +25,11 @@ const KEY_ENV: Record<ProviderId, string> = {
 
 const MODEL_MAC_DINH: Record<ProviderId, string> = {
   gemini: 'gemini-3.6-flash',
-  groq: 'llama-3.3-70b-versatile',
-  cerebras: 'llama-3.3-70b',
+  // Groq và Cerebras đã bỏ hẳn dòng Llama 3.3; gpt-oss-120b là model mạnh nhất
+  // còn nằm trong tier miễn phí của cả hai. Kiểm lại bằng scripts/test-ai-that.ts
+  // khi thấy lỗi 404 model_not_found — nhà cung cấp free tier thay model khá thường.
+  groq: 'openai/gpt-oss-120b',
+  cerebras: 'gpt-oss-120b',
   openrouter: 'deepseek/deepseek-chat-v3-0324:free',
   openai: 'gpt-4o-mini',
   anthropic: 'claude-haiku-4-5-20251001',
