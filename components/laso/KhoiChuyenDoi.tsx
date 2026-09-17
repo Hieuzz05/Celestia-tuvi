@@ -29,11 +29,19 @@ import type { NguonCong } from '@/components/auth/CongDangNhap';
 export function KhoiChuyenDoi({
   xemTruoc,
   duongVe,
+  tieuDe,
+  moTa,
+  nhanCta,
+  chu,
 }: {
   /** Bản đồ mờ phía sau cổng — thứ đang chờ, cho thấy để có lý do đăng ký */
   xemTruoc?: React.ReactNode;
   /** Nơi quay lại sau khi đăng nhập, kèm sẵn thông tin sinh vừa nhập */
   duongVe: string;
+  tieuDe?: string;
+  moTa?: string;
+  nhanCta?: string;
+  chu?: string;
 }) {
   const t = useT();
   const [an, setAn] = useState(false);
@@ -58,7 +66,10 @@ export function KhoiChuyenDoi({
       <CongDangNhap
         nguon="save_chart"
         xemTruoc={xemTruoc}
-        nhanCta={t.quickRead.giuHanhTrinh}
+        tieuDe={tieuDe}
+        moTa={moTa}
+        chu={chu}
+        nhanCta={nhanCta ?? t.quickRead.giuHanhTrinh}
         duoiNut={
           <button onClick={() => setAn(true)} className="link-text self-start">
             {t.quickRead.chiXemTongQuan}

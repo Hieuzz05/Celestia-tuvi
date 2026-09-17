@@ -178,6 +178,25 @@ body {
   letter-spacing: -1.6px;
 }
 
+/*
+ * Headline hero: cùng hệ chữ display nhưng nhỏ hơn một bậc và rộng hơn, để câu
+ * mở đầu không rơi xuống dòng ở chỗ xấu.
+ *
+ * Cỡ chữ chốt bằng cách ĐO chứ không ước lượng: bản tiếng Anh (dài hơn bản
+ * tiếng Việt) chiếm 837px ở cỡ 44px, nên trần 58px cho ra ~1160px — vừa trong
+ * cột 1200px của hero ở mọi bề ngang từ 1180px trở lên, tức là một dòng.
+ *
+ * KHÔNG dùng white-space: nowrap: ở cỡ 72px mà spec gợi ý thì câu tràn khỏi màn
+ * hình, đúng thứ spec cấm. Dưới 1180px thì để xuống dòng, và `text-wrap: balance`
+ * chia các dòng cho đều nhau nên điểm ngắt rơi vào chỗ đọc được.
+ */
+.display-hero {
+  font-size: clamp(44px, 4.6vw, 58px);
+  line-height: 1.06;
+  letter-spacing: -1.2px;
+  text-wrap: balance;
+}
+
 .heading {
   font-size: clamp(34px, 5vw, 56px);
   line-height: 1.1;

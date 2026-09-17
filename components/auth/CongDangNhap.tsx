@@ -33,6 +33,9 @@ export function CongDangNhap({
   xemTruoc,
   nhanCta,
   duoiNut,
+  tieuDe,
+  moTa,
+  chu,
 }: {
   nguon: NguonCong;
   /** Thứ đang chờ phía sau cổng — cho thấy để người dùng biết mình đổi được gì */
@@ -41,6 +44,11 @@ export function CongDangNhap({
   nhanCta?: string;
   /** Lối thoát phụ, đặt ngay dưới nút chính */
   duoiNut?: React.ReactNode;
+  /** Ghi đè lợi ích mặc định của nguồn — dùng khi ngữ cảnh nói được câu mạnh hơn */
+  tieuDe?: string;
+  moTa?: string;
+  /** Ghi đè dòng chữ nhỏ cuối khối */
+  chu?: string;
 }) {
   const pathname = usePathname();
   const t = useT();
@@ -64,10 +72,10 @@ export function CongDangNhap({
         </span>
         <div className="flex flex-col gap-[8px]">
           <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {loiIch.tieuDe}
+            {tieuDe ?? loiIch.tieuDe}
           </h2>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {loiIch.moTa}
+            {moTa ?? loiIch.moTa}
           </p>
         </div>
       </div>
@@ -95,7 +103,7 @@ export function CongDangNhap({
 
       {duoiNut}
 
-      <p className="caption">{t.cong.chu}</p>
+      <p className="caption">{chu ?? t.cong.chu}</p>
     </The>
   );
 }

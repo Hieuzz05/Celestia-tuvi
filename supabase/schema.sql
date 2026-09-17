@@ -55,6 +55,13 @@ create table if not exists public.charts (
 );
 
 create index if not exists charts_user_id_idx on public.charts (user_id, tao_luc desc);
+-- "Lá số của tôi": mỗi tài khoản đúng một lá số làm bối cảnh mặc định cho
+-- Hôm nay / Hành trình / Hỏi Celes. Để trên profiles chứ không phải một cờ trên
+-- charts vì như vậy ràng buộc "chỉ một" là do cấu trúc bảo đảm, không phải do
+-- ứng dụng tự giữ kỷ luật.
+alter table public.profiles
+  add column if not exists la_so_mac_dinh uuid references public.charts on delete set null;
+
 
 alter table public.charts enable row level security;
 

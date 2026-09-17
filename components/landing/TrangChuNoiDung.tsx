@@ -43,9 +43,11 @@ export function TrangChuNoiDung() {
     <>
       {/* ---------- Hero: mở bằng ngã rẽ, không mở bằng tính năng ---------- */}
       <HeroBand className="pt-[80px] pb-[96px]">
-        <Shell rong="hep" className="text-center">
+        {/* Cột hero rộng hơn cột chữ thường (1040px thay vì 800px): headline dài
+            46 ký tự, để trong cột hẹp là xuống dòng ngay ở giữa mệnh đề. */}
+        <Shell rong="hero" className="text-center">
           <Eyebrow className="mb-[16px]">{t.landing.eyebrow}</Eyebrow>
-          <h1 className="display">{t.landing.tieuDe}</h1>
+          <h1 className="display display-hero">{t.landing.tieuDe}</h1>
           <p className="body-lg mx-auto mt-[24px] max-w-[600px]" style={{ color: 'var(--fg)' }}>
             {t.landing.moTa}
           </p>

@@ -29,11 +29,11 @@ export const en: TuDien = {
     veCelestia: 'About Celestia',
     batDauMienPhi: 'Start free',
     homNay: 'Today',
-    banDo: 'My map',
+    banDo: 'Explore the map',
     hanhTrinh: 'Journey',
     hoiCeles: 'Ask Celes',
     ketNoi: 'Connections',
-    nguoiCuaToi: 'My people',
+    nguoiCuaToi: 'My charts',
     taiKhoan: 'Account',
     dangNhap: 'Sign in',
     dangXuat: 'Sign out',
@@ -211,6 +211,11 @@ export const en: TuDien = {
     thangXem: 'Month in view',
     loiLuu: 'Could not keep that — please try again shortly.',
     loiDocDai: 'The longer read is briefly unavailable. Your map is untouched — try again in a moment.',
+    moBucTranhTieuDe: 'Want to see your whole picture?',
+    moBucTranhMo:
+      'Sign in and Celes will remember this chart, opening the deeper parts: character, work, money, relationships, family, social circle and the stretches you are moving through.',
+    moLuanGiaiDayDu: 'Open the full reading',
+    chuMoBucTranh: 'Free to start · Your chart will be kept for next time.',
     moiLaPhanDau: 'This is only the beginning',
     giuHanhTrinh: 'Keep my journey',
     chiXemTongQuan: 'I only want the overview',
@@ -282,13 +287,13 @@ export const en: TuDien = {
 
   hanhTrinh: {
     eyebrow: 'YOUR JOURNEY',
-    tieuDe: 'Where you are in your own rhythm',
+    tieuDe: 'The stretches that are shaping you',
     moTa: 'A life in the chart does not run evenly: some long stretches change direction, some years bring one thing to the surface, some months only ask you to hold the rhythm. These are those three layers, stacked.',
     xemCua: 'Viewing the journey of',
     giaiDoanTieuDe: 'The long stretches',
-    giaiDoanMo: 'Each stretch runs about ten years and usually shifts its centre of gravity at the handover.',
+    giaiDoanMo: 'Look at the stretches that run for years to see where the centre of your life is moving.',
     namTieuDe: 'Year by year',
-    namMo: 'Pick any year — past or ahead — to see where that year leans.',
+    namMo: 'Each year brings a different handful of themes to the surface. Pick the year you want and see what is worth noticing, and why.',
     thangTieuDe: 'Month by month in {nam}',
     thangMo: 'Months here follow the chart’s own division, so they can sit a few days off the calendar on your wall.',
     dangDienRa: 'You are here',
@@ -351,6 +356,201 @@ export const en: TuDien = {
         moTa: 'The journey is read from a saved map: the stretch you are in, where this year leans, what surfaces this month. A free account opens it.',
       },
     },
+  },
+
+  luanSau: {
+    eyebrow: 'THE FULL PICTURE',
+    tieuDe: 'Eight parts of this chart, in plain words',
+    moTa: 'Each part opens with a conclusion, and only then the detail. Open the evidence underneath to check it.',
+    hoiVePhanNay: 'Ask Celes about this part',
+  },
+
+  giuLaSo: {
+    tieuDeDaDangNhap: 'Keep this chart before you go?',
+    moTaDaDangNhap:
+      'If you save it, Celes remembers this chart so you can carry on with Your journey, Ask Celes, or come back to the part you were reading without entering it again.',
+    luu: 'Keep this chart',
+    roiDi: 'Leave without saving',
+    oLai: 'Stay here',
+    tieuDeKhach: 'Keep this chart for next time?',
+    moTaKhach:
+      'Right now this chart only lives on your device. Sign in once and Celes remembers it, ready the next time you open it.',
+    dangNhapDeLuu: 'Sign in to save',
+    dangLuu: 'Saving…',
+  },
+
+  danhSach: {
+    eyebrow: 'MY CHARTS',
+    tieuDe: 'The charts you are keeping',
+    laSoCuaToi: 'My chart',
+    datLamCuaToi: 'Make this my chart',
+    dangDat: 'Setting…',
+    themLaSo: '+ Add a chart',
+    xemLaSo: 'Open chart',
+    sua: 'Edit',
+    xoa: 'Delete',
+    xacNhanXoa: 'Delete the chart for {ten}? This cannot be undone.',
+    khongXoaMacDinh:
+      'This one is currently "My chart". Pick another chart as the default before deleting it.',
+    trong: 'No charts kept yet. Add the first one so Celes has something to read with you.',
+    luuTheoTaiKhoan: 'Saved to your account — it shows up on any device.',
+    luuTheoTrinhDuyet:
+      'Saved on this browser only. Sign in to keep them and use them on every device.',
+    chuyenLenTaiKhoan: 'Move the charts saved on this browser into your account',
+    khongCoGiDeChuyen: 'There are no charts saved on this browser to move.',
+    luuLai: 'Save',
+    huy: 'Cancel',
+    khongTen: 'Untitled',
+    gio: '{gio}:00',
+    nam: 'Male',
+    nu: 'Female',
+    loiLuu: 'Could not save — try again in a moment.',
+    loiDat: 'Could not set it — try again in a moment.',
+    loiXoa: 'Could not delete — try again in a moment.',
+    loiChuyen: 'Could not move them — try again in a moment.',
+    khongTinhDuoc: 'This chart cannot be calculated',
+    xemLaSoKhac: 'Open a different chart',
+    taoLaSoKhac: 'Create another chart',
+  },
+
+  hoiCeles: {
+    eyebrow: 'ASK CELES',
+    tieuDe: 'What is on your mind?',
+    dangNoiVe: 'Talking about',
+    nguoiVuaNhap: '— The chart you just entered —',
+    hoiVeNguoiKhac: 'Ask about a different chart',
+    hoiVeNguoiNay: 'Ask about this chart',
+    canBietAi: 'Celes needs to know which chart this is about',
+    canBietAiMo:
+      'Pick a saved chart, or enter the birth details on the left. Without a chart the answer is only generic advice.',
+    oNhap: 'Tell Celes…',
+    gui: 'Send',
+    dangTraLoi: 'Celes is reading your map…',
+    loi: 'Celes could not answer just now. Your question is kept — try again in a moment.',
+    xoaHoiThoai: 'Clear conversation',
+    mienTru:
+      'Celes offers a perspective for you to weigh, not a verdict — and it is no substitute for medical, financial or legal advice.',
+    goiYTieuDe: 'Not sure where to start?',
+    goiY: [
+      'Which of my strengths am I leaving unused?',
+      'Where do I tend to get stuck at work?',
+      'What should I prioritise in this season?',
+      'What is my current relationship teaching me?',
+      'What is most worth noticing this year?',
+      'Explain my Self house in plain language.',
+      'Why does Celes say I am in a season that needs change?',
+      'Show me the chart evidence behind this reading.',
+    ],
+    khamPhaNhanhTieuDe: 'Quick explore',
+    khamPhaNhanh: [
+      { nhan: 'Yourself', cauHoi: 'What stands out most about me right now?' },
+      { nhan: 'Work', cauHoi: 'Does my current work suit the way I operate?' },
+      { nhan: 'Relationships', cauHoi: 'What do I keep repeating in my relationships?' },
+      { nhan: 'Money', cauHoi: 'Where am I out of balance with money?' },
+      { nhan: 'Family', cauHoi: 'What role am I carrying at home without noticing?' },
+      { nhan: 'This season', cauHoi: 'What is this season trying to tell me?' },
+    ],
+    tuXemTieuDe: 'Would you rather read the map yourself?',
+    tuXemMo:
+      'Open all twelve houses, the stars and their strength — for when you want to check the detail rather than ask.',
+    tuXemNut: 'Explore the map',
+  },
+
+  chiTietHan: {
+    xemChiTiet: 'See the detail',
+    xemChiTietMo:
+      'Not just which house the period runs through. Celes puts the stars, the related houses and the overlapping period layers together to explain the fuller picture.',
+    quayLai: 'Your journey',
+    tongQuan: 'Overview',
+    viSao: 'Why does Celes say so?',
+    viSaoDong: 'Collapse the evidence',
+    theoLinhVuc: 'By area of life',
+    ctaTieuDe: 'Is something in this stretch on your mind?',
+    ctaNut: 'Ask Celes about this stretch',
+    chuaCoLaSo: 'No chart to read yet',
+    chuaCoLaSoMo: 'Pick or create a chart first, then come back to this part.',
+  },
+
+  cachHoatDong: {
+    eyebrow: 'HOW CELES WALKS WITH YOU',
+    tieuDe: 'Start from whatever is on your mind',
+    intro:
+      'You do not need to know anything about Tử Vi, and you do not need a perfectly worded question. Just start from the thing you keep thinking about. Celes will work through the layers with you.',
+    buoc: [
+      {
+        tieuDe: 'Tell Celes what is on your mind',
+        noiDung:
+          'Pick a topic, or just say the thing you are torn about. Work, a relationship, a decision — or simply wanting to understand yourself better.',
+      },
+      {
+        tieuDe: 'Celes looks at your own picture',
+        noiDung:
+          'Celes reads your chart and the stretch you are moving through, then connects the related details to find what actually deserves attention.',
+      },
+      {
+        tieuDe: 'You get a perspective, and you decide',
+        noiDung:
+          'Celes does not decide for you. Every reading has a “Why?” so you can see the evidence, weigh it, and choose your next step your own way.',
+      },
+    ],
+    tinEyebrow: 'WHY YOU CAN TRUST IT',
+    tinTieuDe: 'Three things Celes will not do',
+    tin: [
+      {
+        ten: 'No hand-waving',
+        mo: 'Everything Celes reads your chart from is calculated first and can be checked afterwards.',
+      },
+      {
+        ten: 'No hidden reasoning',
+        mo: 'Open “Why?” to see which house, star, relationship and period Celes is drawing on.',
+      },
+      {
+        ten: 'No verdicts on your behalf',
+        mo: 'Celes talks about tendencies and things worth watching, never about a future that is certain to happen.',
+      },
+    ],
+    phuongPhapEyebrow: 'HOW IT IS CALCULATED',
+    phuongPhapTieuDe: 'For those who want to check',
+    phuongPhapMo:
+      'What follows is the technical layer. You do not need it to use Celestia, but it is always here for anyone who wants to check the work.',
+    lop: [
+      {
+        ten: 'What is fixed by calculation',
+        mo: 'Converting the solar date to lunar, finding the Self, Body and Element, then placing every star across the twelve houses. All of it runs on formulas. The same birth moment always gives the same chart, today or next year.',
+      },
+      {
+        ten: 'What is interpreted',
+        mo: 'The short perspectives, the readings by area of life and the period readings are all built by formula from that same data, so they appear instantly and read the same every time. Only the long topic readings and the conversation are rewritten into flowing prose.',
+      },
+      {
+        ten: 'What you can verify',
+        mo: 'Every reading opens up to show which house, which star, how strongly it sits, and which version of the rule set produced it.',
+      },
+    ],
+    hoiEyebrow: 'FREQUENTLY ASKED',
+    hoiTieuDe: 'Worth knowing first',
+    hoi: [
+      {
+        hoi: 'Which rules does Celestia calculate by?',
+        dap: 'Celestia uses a named, versioned rule set rather than a vague school label. Every reading records the version it used, so you can still tell later where a result came from. The details sit in the evidence of each reading.',
+      },
+      {
+        hoi: 'Why is the birth time needed?',
+        dap: 'The birth time decides where the Self house falls, and almost everything else is read from there. One double-hour off and it is a different chart. If you are unsure of the time, Celestia says so rather than quietly handing you a result that may be wrong.',
+      },
+      {
+        hoi: 'Does Celes invent facts?',
+        dap: 'No. Every chart and period fact comes from the calculation layer; the interpretation may only reuse those facts. When there are documents in the knowledge base, citations say which document a passage came from.',
+      },
+      {
+        hoi: 'Does Celestia predict the future?',
+        dap: 'No. Celestia describes where a stretch of time leans, not what will happen. Read it as one more perspective before you decide, not as a verdict.',
+      },
+    ],
+    cuoiEyebrow: 'SEE FOR YOURSELF',
+    cuoiTieuDe: 'Reading about it takes longer than trying it',
+    cuoiMo: 'Create a chart and open the evidence yourself — faster than finishing this page.',
+    cuoiNut: 'Create a free chart',
   },
 
   chan: {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { DaiThoiGian } from '@/components/hanhtrinh/DaiThoiGian';
@@ -9,7 +9,7 @@ import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { Eyebrow, NutVien, OChon, Section, Shell, The, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { dien, useNgonNgu, useT } from '@/lib/i18n/context';
-import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
+import { useBoiCanh } from '@/lib/store/boi-canh';
 import { lapLaSo, type LaSo } from '@/lib/tuvi/ansao';
 import {
   cacGiaiDoan,
@@ -40,8 +40,10 @@ import { solarToLunar } from '@/lib/tuvi/lunar';
 export function TrangHanhTrinhNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { duocVao, dangDoc } = useTaiKhoan();
-  const [hoSos, setHoSos] = useState<HoSo[]>([]);
-  const [idHoSo, setIdHoSo] = useState<string | null>(null);
+  // Lá số đang xem lấy từ bối cảnh chung: đổi ở Hỏi Celes rồi sang đây phải
+  // thấy đúng lá số đó, và ngược lại (spec v4 mục 13B).
+  const boiCanh = useBoiCanh();
+  const hoSos = boiCanh.hoSos;
 
   // "Bây giờ" theo cách lá số đếm: năm và tháng âm lịch
   const nayAm = useMemo(() => {
@@ -55,13 +57,8 @@ export function TrangHanhTrinhNoiDung() {
   const [thangChon, setThangChon] = useState(nayAm.thang);
   const [idGiaiDoan, setIdGiaiDoan] = useState<string | null>(null);
 
-  useEffect(() => {
-    danhSachHoSo()
-      .then(setHoSos)
-      .catch(() => setHoSos([]));
-  }, []);
-
-  const hoSo = hoSos.find((h) => h.id === idHoSo) ?? hoSos[0];
+  const hoSo =
+    boiCanh.hoSoDangXem ?? hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? hoSos[0] ?? null;
 
   const laSo: LaSo | null = useMemo(() => {
     if (!hoSo) return null;
@@ -103,7 +100,9 @@ export function TrangHanhTrinhNoiDung() {
   );
 
   const chonNam = (m: MocHanhTrinh) => {
-    setNamChon(Number(m.nhan));
+    const n = Number(m.nhan);
+    setNamChon(n);
+    boiCanh.datThoiDiem(n, thangChon);
     ghiSuKien('timeline_year_opened', { nam: m.nhan });
   };
 
@@ -128,7 +127,7 @@ export function TrangHanhTrinhNoiDung() {
     );
   }
 
-  if (!dangDoc && !hoSo) {
+  if (!dangDoc && !boiCanh.dangTai && !hoSo) {
     return (
       <Section gon>
         <Shell className="flex flex-col gap-[24px]">
@@ -156,10 +155,11 @@ export function TrangHanhTrinhNoiDung() {
           <TieuDeTrang />
           {hoSos.length > 1 && (
             <Truong nhan={t.hanhTrinh.xemCua} className="w-[220px]">
-              <OChon value={hoSo?.id ?? ''} onChange={(e) => setIdHoSo(e.target.value)}>
+              <OChon value={hoSo?.id ?? ''} onChange={(e) => boiCanh.xemHoSo(e.target.value)}>
                 {hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
                     {h.hoTen?.trim() || `${h.ngay}/${h.thang}/${h.nam}`}
+                    {h.id === boiCanh.idMacDinh ? ` · ${t.danhSach.laSoCuaToi}` : ''}
                   </option>
                 ))}
               </OChon>
@@ -188,6 +188,7 @@ export function TrangHanhTrinhNoiDung() {
           onChon={(m) => setIdGiaiDoan(m.id)}
           chiTiet={giaiDoanChon}
           nhomChu={t.hanhTrinh.giaiDoanTieuDe}
+          duongChiTiet={`/hanh-trinh/chi-tiet?cap=giai-doan&nam=${namChon}&thang=${thangChon}`}
         />
 
         {/* Lớp 2: từng năm, có lật trang tới lui */}
@@ -199,6 +200,7 @@ export function TrangHanhTrinhNoiDung() {
           onChon={chonNam}
           chiTiet={namMoc}
           nhomChu={t.hanhTrinh.namTieuDe}
+          duongChiTiet={`/hanh-trinh/chi-tiet?cap=nam&nam=${namChon}&thang=${thangChon}`}
           dieuKhien={
             <div className="flex gap-[8px]">
               <NutVien nho onClick={() => setNamGiua((n) => n - 7)}>
@@ -220,6 +222,7 @@ export function TrangHanhTrinhNoiDung() {
           onChon={(m) => setThangChon(Number(m.id.split('-')[2]))}
           chiTiet={thangMoc}
           nhomChu={dien(t.hanhTrinh.thangTieuDe, { nam: namChon })}
+          duongChiTiet={`/hanh-trinh/chi-tiet?cap=thang&nam=${namChon}&thang=${thangChon}`}
         />
 
         <div className="flex flex-wrap gap-[12px]">
@@ -271,6 +274,7 @@ function Lop({
   chiTiet,
   nhomChu,
   dieuKhien,
+  duongChiTiet,
 }: {
   tieuDe: string;
   mo: string;
@@ -280,7 +284,10 @@ function Lop({
   chiTiet?: MocHanhTrinh;
   nhomChu: string;
   dieuKhien?: React.ReactNode;
+  /** Đường sang tầng luận hạn chi tiết của đúng mốc đang chọn */
+  duongChiTiet: string;
 }) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-wrap items-end justify-between gap-[12px]">
@@ -297,7 +304,16 @@ function Lop({
 
       <DaiThoiGian moc={moc} idDangChon={idChon} onChon={onChon} />
 
-      {chiTiet && <GocNhinCard gocNhin={mocThanhGocNhin(chiTiet, nhomChu)} nho />}
+      {chiTiet && (
+        <div className="flex flex-col gap-[10px]">
+          <GocNhinCard gocNhin={mocThanhGocNhin(chiTiet, nhomChu)} nho />
+          {/* Tầng hai: tổng quan ở trên đọc trong 10-20 giây, chi tiết nằm sau
+              một cú bấm — spec v4 tách hẳn hai độ sâu này. */}
+          <Link href={duongChiTiet} className="link-text self-start">
+            {t.chiTietHan.xemChiTiet} →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

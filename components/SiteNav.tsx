@@ -65,12 +65,14 @@ export function SiteNav() {
   // đầu miễn phí" — họ đang bắt đầu rồi, nhắc nữa là nhiễu.
   const dangLapLaSo = pathname === '/la-so';
 
+  // Spec v4 gộp "Khám phá bản đồ" vào trong Hỏi Celes: hai mục đó cùng dẫn tới
+  // một ý định — muốn hiểu điều gì đó về lá số của mình — nên để cạnh nhau ở
+  // thanh chính là bắt người dùng tự quyết định nên xem dữ liệu trước hay hỏi
+  // trước. /la-so vẫn tồn tại như một route, chỉ là không tranh chỗ ở đây nữa.
   const lienKet = daDangNhap
     ? [
         { href: '/home', nhan: t.nav.homNay },
-        { href: '/la-so', nhan: t.nav.banDo },
         { href: '/hanh-trinh', nhan: t.nav.hanhTrinh },
-        { href: '/luan-giai', nhan: t.nav.khamPha },
         { href: '/hoi-dap', nhan: t.nav.hoiCeles },
         { href: '/hop-tuoi', nhan: t.nav.ketNoi },
       ]

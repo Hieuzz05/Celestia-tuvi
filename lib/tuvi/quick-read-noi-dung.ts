@@ -230,6 +230,70 @@ export interface KhuonChu {
     thangUngVao: string;
     thangUngVaoY: string;
   };
+  /** Chữ cho màn luận hạn chi tiết của Hành trình */
+  luanHan: {
+    nhipTien: string;
+    nhipGiu: string;
+    nhipRaSoat: string;
+    nhipThuHep: string;
+    nhipTienMo: string;
+    nhipGiuMo: string;
+    nhipRaSoatMo: string;
+    nhipThuHepMo: string;
+    nhipHanhDong: string;
+    chuDeChinh: string;
+    tieuDeGiaiDoan: string;
+    tieuDeNam: string;
+    tieuDeThang: string;
+    subline: string;
+    tanDung: string;
+    luuY: string;
+    tanDungTrong: string;
+    luuYTrong: string;
+    nenLop: string;
+    lopDaiVan: string;
+    lopNam: string;
+    lopThang: string;
+    nhomLop: string;
+    nhomCung: string;
+    nhomSao: string;
+    nhomTamPhuong: string;
+    nhomTuHoa: string;
+    nhomVongSao: string;
+    nhomQuyTac: string;
+    quyTacMo: string;
+    linhVuc: Record<string, { nhan: string; cung: string }>;
+    taiO: string;
+    chamVao: string;
+    khongChamVao: string;
+    tuanTrietCau: string;
+    linhVucCo: string;
+    linhVucTrong: string;
+    trangThaiThuan: string;
+    trangThaiCan: string;
+    trangThaiCanBang: string;
+    khongThayTheYTe: string;
+  };
+  /** Chữ cho bảng luận giải 8 lĩnh vực của người đã đăng nhập */
+  luanSau: {
+    linhVuc: Record<string, { nhom: string; tieuDe: string; cauHoi: string }>;
+    ketLuanCo: string;
+    ketLuanTrong: string;
+    doanNet: string;
+    doanCan: string;
+    doanSangRo: string;
+    doanSangKim: string;
+    doanTuHoa: string;
+    doanTuanTriet: string;
+    doanTamPhuong: string;
+    doanTrong: string;
+    vanHanKetLuan: string;
+    vanHanDan: string;
+    phatTrienKetLuan: string;
+    phatTrienManh: string;
+    phatTrienCan: string;
+    phatTrienHoi: string;
+  };
   /** Chữ cho màn Hành trình — dòng thời gian giai đoạn / năm / tháng */
   hanhTrinh: {
     giaiDoanNhan: string;
@@ -330,6 +394,133 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       thangUngVaoY:
         'Trong một năm, mỗi tháng lại ứng vào một cung. Tháng {thang} năm {nam} rơi vào cung {cung}, nên chuyện của cung đó dễ nổi lên trong khoảng thời gian ngắn này.',
     },
+    luanHan: {
+      nhipTien: 'Tiến',
+      nhipGiu: 'Giữ nhịp',
+      nhipRaSoat: 'Rà soát',
+      nhipThuHep: 'Thu hẹp',
+      nhipTienMo:
+        'Các yếu tố thuận đang nhiều hơn yếu tố cản. Đây là quãng đẩy được, miễn là đẩy đúng chỗ bạn vốn mạnh.',
+      nhipGiuMo:
+        'Thuận và cản gần ngang nhau. Giữ nguyên guồng đang chạy thường có lợi hơn mở thêm mặt trận mới.',
+      nhipRaSoatMo:
+        'Có vài chỗ cần kiểm lại trước khi đi tiếp. Không phải dừng, mà là xem lại thứ mình đang dựa vào.',
+      nhipThuHepMo:
+        'Yếu tố cản đang trội. Thu gọn lại những thứ đang dàn mỏng thường đỡ mệt hơn là cố giữ hết.',
+      chuDeChinh: 'Chủ đề chính',
+      tieuDeGiaiDoan: 'Một quãng dài nghiêng về {chuDe}',
+      tieuDeNam: 'Năm {nam}: {chuDe} là thứ dễ nổi lên',
+      tieuDeThang: 'Tháng {thang}/{nam}: nhịp ngắn xoay quanh {chuDe}',
+      subline:
+        'Dưới đây là điều đáng chú ý trong quãng này, và những gì đã dẫn Celes tới nhận định đó.',
+      tanDung: 'Nên tận dụng',
+      luuY: 'Nên lưu ý',
+      tanDungTrong:
+        'Quãng này không có yếu tố thuận nào nổi hẳn lên — thường là lúc kết quả đến từ việc làm đều hơn là từ cơ hội bất ngờ.',
+      luuYTrong:
+        'Không có yếu tố cản nào nổi hẳn lên. Điều dễ hỏng nhất trong quãng như vậy lại là chủ quan.',
+      nhipHanhDong: 'Nhịp hành động',
+      nenLop: 'Nền của quãng này',
+      lopDaiVan: 'Quãng {tu}–{den} tuổi tại {cung}',
+      lopNam: 'Năm {nam} tại {cung}',
+      lopThang: 'Tháng {thang} tại {cung}',
+      nhomLop: 'Lớp đang xét',
+      nhomCung: 'Cung trọng tâm',
+      nhomSao: 'Chính tinh / phụ tinh',
+      nhomTamPhuong: 'Tam phương tứ chính',
+      nhomTuHoa: 'Tứ Hóa',
+      nhomVongSao: 'Tuần / Triệt / lưu tinh',
+      nhomQuyTac: 'Nguồn quy tắc',
+      quyTacMo:
+        'Bộ quy tắc và phiên bản đã dùng để tính quãng này. Ghi lại để kết quả đọc lại về sau vẫn tái lập được.',
+      linhVuc: {
+        'cong-viec': { nhan: 'Công việc & định hướng', cung: 'Quan Lộc' },
+        'tai-chinh': { nhan: 'Tài chính', cung: 'Tài Bạch' },
+        'tinh-cam': { nhan: 'Tình cảm & quan hệ', cung: 'Phu Thê' },
+        'gia-dinh': { nhan: 'Gia đình', cung: 'Phụ Mẫu' },
+        'suc-khoe': { nhan: 'Sức khoẻ & năng lượng', cung: 'Tật Ách' },
+        'hoc-tap': { nhan: 'Học tập & phát triển', cung: 'Phúc Đức' },
+      },
+      taiO: 'tại',
+      chamVao: ' Quãng này chạm trực tiếp vào cung đó, nên phần này dễ có chuyện hơn bình thường.',
+      khongChamVao:
+        ' Quãng này không chạm trực tiếp vào cung đó, nên phần này thường giữ nguyên nhịp cũ.',
+      tuanTrietCau: '{ten} đóng tại {cung} — {chuDe} thường chậm hiện ra đúng lúc cần',
+      linhVucCo: 'Phần {nhan} đọc từ {cung} — {trangThai}.{them}',
+      linhVucTrong: 'Phần {nhan} không đọc được từ lá số này.',
+      trangThaiThuan: 'các yếu tố ở đây đang đỡ nhiều hơn cản',
+      trangThaiCan: 'các yếu tố ở đây đang cản nhiều hơn đỡ',
+      trangThaiCanBang: 'thuận và cản ở đây gần ngang nhau',
+      khongThayTheYTe: 'Phần sức khoẻ nói về nhịp sống và mức năng lượng, không thay thế tư vấn y tế.',
+    },
+    luanSau: {
+      linhVuc: {
+        'tinh-cach': {
+          nhom: 'Tính cách',
+          tieuDe: 'Khí chất và cách bạn phản ứng',
+          cauHoi: 'Giải thích cung Mệnh của tôi theo cách dễ hiểu.',
+        },
+        'cong-viec': {
+          nhom: 'Công việc & định hướng',
+          tieuDe: 'Môi trường nào khiến bạn phát huy được',
+          cauHoi: 'Tôi dễ mắc kẹt ở đâu trong công việc?',
+        },
+        'tai-loc': {
+          nhom: 'Tài lộc',
+          tieuDe: 'Cách bạn tạo ra và giữ nguồn lực',
+          cauHoi: 'Tôi đang mất cân bằng ở đâu về tiền bạc?',
+        },
+        'tinh-duyen': {
+          nhom: 'Tình duyên',
+          tieuDe: 'Cách bạn gắn kết với một người',
+          cauHoi: 'Tình cảm hiện tại đang cho tôi bài học gì?',
+        },
+        'gia-dao': {
+          nhom: 'Gia đạo',
+          tieuDe: 'Vai trò bạn thường đảm nhận trong nhà',
+          cauHoi: 'Tôi đang gánh vai trò gì trong gia đình mà không nhận ra?',
+        },
+        'quan-he': {
+          nhom: 'Quan hệ xã hội',
+          tieuDe: 'Cách bạn đứng giữa những người xung quanh',
+          cauHoi: 'Kiểu quan hệ nào đang tiêu hao năng lượng của tôi?',
+        },
+        'van-han': {
+          nhom: 'Giai đoạn hiện tại',
+          tieuDe: 'Nhịp bạn đang đi qua',
+          cauHoi: 'Giai đoạn này tôi nên ưu tiên điều gì?',
+        },
+        'phat-trien': {
+          nhom: 'Gợi ý phát triển',
+          tieuDe: 'Chỗ đáng rèn nếu muốn đi xa hơn',
+          cauHoi: 'Điểm mạnh nào của tôi đang bị bỏ quên?',
+        },
+      },
+      ketLuanCo: 'Ở phần {chuDe}, nét rõ nhất của bạn là {net}.',
+      ketLuanTrong:
+        'Phần {chuDe} của bạn không có sao chính nào đóng, nên nét ở đây mượn từ cung đối diện.',
+      doanNet: 'Cụ thể hơn: {net}.',
+      doanCan: 'Đi kèm với nét đó là một nhu cầu ít khi nói ra: bạn thường cần {can}.',
+      doanSangRo:
+        'Các sao ở phần này đang ở mức {sang}, nên nét trên thường hiện ra sớm và người ngoài cũng nhận ra được.',
+      doanSangKim:
+        'Các sao ở phần này đang ở mức {sang}, nên nét trên có thật nhưng hay bị hoàn cảnh kìm lại — dễ thấy mình muốn một đằng mà làm được một nẻo.',
+      doanTuHoa:
+        'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường bị đẩy mạnh hơn hoặc vặn đi so với mức bình thường.',
+      doanTuanTriet:
+        'Có {ten} đóng ở đây. Nét của phần này thường khó hiện ra sớm — nhiều người phải qua một quãng mới thấy rõ mình thế nào ở chỗ này.',
+      doanTamPhuong:
+        'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và đối diện là {xung} — chỗ hay kéo bạn về hướng ngược lại.',
+      doanTrong:
+        'Vì mượn nét từ cung đối diện nên bạn thường linh hoạt ở phần này, nhưng cũng dễ thấy mình thay đổi tuỳ hoàn cảnh và tuỳ người.',
+      vanHanKetLuan: 'Giai đoạn bạn đang đi qua nghiêng về {chuDe}.',
+      vanHanDan: 'Xem theo quãng dài, từng năm và từng tháng ở phần Hành trình.',
+      phatTrienKetLuan: 'Nếu muốn đi xa hơn, chỗ đáng rèn nhất của bạn nằm quanh {chuDe}.',
+      phatTrienManh: 'Thứ bạn vốn có sẵn và hay quên dùng: {net}.',
+      phatTrienCan: 'Thứ bạn thường thiếu và nên chủ động tạo ra: {can}.',
+      phatTrienHoi:
+        'Một câu đáng tự hỏi: lần gần nhất bạn dùng đúng điểm mạnh đó là khi nào, và vì sao sau đó bạn ngừng dùng?',
+    },
     hanhTrinh: {
       giaiDoanNhan: '{tu}–{den} tuổi',
       giaiDoanPhu: 'Khoảng {tuNam}–{denNam}',
@@ -408,6 +599,134 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       thangUngVao: 'Month {thang} maps to {cung}',
       thangUngVaoY:
         'Within a year, each month maps to a house in turn. Month {thang} of {nam} falls on {cung}, so that house’s concerns surface more easily over this short stretch.',
+    },
+    luanHan: {
+      nhipTien: 'Push',
+      nhipGiu: 'Hold the rhythm',
+      nhipRaSoat: 'Review',
+      nhipThuHep: 'Narrow down',
+      nhipTienMo:
+        'The supporting factors outweigh the resisting ones. This is a stretch you can push, as long as you push where you are already strong.',
+      nhipGiuMo:
+        'Support and resistance are close to even. Keeping the machine you already have running usually beats opening a new front.',
+      nhipRaSoatMo:
+        'A few things want checking before you carry on. Not a stop — a look at what you are leaning on.',
+      nhipThuHepMo:
+        'Resisting factors are the stronger side. Pulling in what is spread thin is usually less costly than trying to hold all of it.',
+      chuDeChinh: 'The main theme',
+      tieuDeGiaiDoan: 'A long stretch leaning toward {chuDe}',
+      tieuDeNam: '{nam}: {chuDe} is what surfaces most easily',
+      tieuDeThang: 'Month {thang} of {nam}: a short rhythm around {chuDe}',
+      subline:
+        'Below is what is worth noticing in this stretch, and what led Celes to say so.',
+      tanDung: 'Worth using',
+      luuY: 'Worth watching',
+      tanDungTrong:
+        'Nothing stands out as a clear tailwind here — usually a stretch where results come from steady work rather than from an opening.',
+      luuYTrong:
+        'No resisting factor stands out. In a stretch like this, the thing most likely to go wrong is complacency.',
+      nhipHanhDong: 'Suggested rhythm',
+      nenLop: 'What this stretch sits on',
+      lopDaiVan: 'Ages {tu}–{den} in {cung}',
+      lopNam: '{nam} in {cung}',
+      lopThang: 'Month {thang} in {cung}',
+      nhomLop: 'Layers in play',
+      nhomCung: 'Focus house',
+      nhomSao: 'Major / supporting stars',
+      nhomTamPhuong: 'Trine and opposition',
+      nhomTuHoa: 'Four Transformations',
+      nhomVongSao: 'Tuần / Triệt / travelling stars',
+      nhomQuyTac: 'Rule source',
+      quyTacMo:
+        'The rule set and version used for this stretch. Recorded so the same reading can be reproduced later.',
+      linhVuc: {
+        'cong-viec': { nhan: 'Work & direction', cung: 'Quan Lộc' },
+        'tai-chinh': { nhan: 'Money', cung: 'Tài Bạch' },
+        'tinh-cam': { nhan: 'Relationships', cung: 'Phu Thê' },
+        'gia-dinh': { nhan: 'Family', cung: 'Phụ Mẫu' },
+        'suc-khoe': { nhan: 'Health & energy', cung: 'Tật Ách' },
+        'hoc-tap': { nhan: 'Learning & growth', cung: 'Phúc Đức' },
+      },
+      taiO: 'in',
+      chamVao: ' This stretch touches that house directly, so this side is more likely to be live than usual.',
+      khongChamVao:
+        ' This stretch does not touch that house directly, so this side usually keeps its existing rhythm.',
+      tuanTrietCau: '{ten} sits on {cung} — {chuDe} is usually slow to show up when needed',
+      linhVucCo: '{nhan} is read from {cung} — {trangThai}.{them}',
+      linhVucTrong: '{nhan} cannot be read from this chart.',
+      trangThaiThuan: 'the factors here support more than they resist',
+      trangThaiCan: 'the factors here resist more than they support',
+      trangThaiCanBang: 'support and resistance here are close to even',
+      khongThayTheYTe:
+        'The health section is about rhythm and energy levels, and is no substitute for medical advice.',
+    },
+    luanSau: {
+      linhVuc: {
+        'tinh-cach': {
+          nhom: 'Character',
+          tieuDe: 'Your temperament, and how you react',
+          cauHoi: 'Explain my Self house in plain language.',
+        },
+        'cong-viec': {
+          nhom: 'Work & direction',
+          tieuDe: 'The environment that lets you perform',
+          cauHoi: 'Where do I tend to get stuck at work?',
+        },
+        'tai-loc': {
+          nhom: 'Money',
+          tieuDe: 'How you create and hold resources',
+          cauHoi: 'Where am I out of balance with money?',
+        },
+        'tinh-duyen': {
+          nhom: 'Partnership',
+          tieuDe: 'How you attach to someone',
+          cauHoi: 'What is my current relationship teaching me?',
+        },
+        'gia-dao': {
+          nhom: 'Family',
+          tieuDe: 'The role you tend to carry at home',
+          cauHoi: 'What role am I carrying at home without noticing?',
+        },
+        'quan-he': {
+          nhom: 'Social circle',
+          tieuDe: 'Where you stand among the people around you',
+          cauHoi: 'Which kind of relationship is draining me?',
+        },
+        'van-han': {
+          nhom: 'This season',
+          tieuDe: 'The rhythm you are moving through',
+          cauHoi: 'What should I prioritise in this season?',
+        },
+        'phat-trien': {
+          nhom: 'Where to grow',
+          tieuDe: 'What is worth working on to go further',
+          cauHoi: 'Which of my strengths am I leaving unused?',
+        },
+      },
+      ketLuanCo: 'In the area of {chuDe}, what stands out most about you is {net}.',
+      ketLuanTrong:
+        'No major star sits in the {chuDe} part of your chart, so it draws its character from the house opposite.',
+      doanNet: 'More concretely: {net}.',
+      doanCan: 'Alongside that runs a need you rarely say out loud: you tend to need {can}.',
+      doanSangRo:
+        'The stars here are {sang}, so this side of you usually shows early, and other people notice it too.',
+      doanSangKim:
+        'The stars here are {sang}, so the trait is real but circumstances often hold it back — you may find yourself wanting one thing and managing another.',
+      doanTuHoa:
+        '{sao} falls here, so the same set of stars plays out differently: this area tends to be pushed harder, or twisted out of its usual shape.',
+      doanTuanTriet:
+        '{ten} sits here. This part is usually slow to show itself — many people only see clearly who they are here after a stretch of time.',
+      doanTamPhuong:
+        'This part does not stand alone: it draws from {hoTro}, and facing it is {xung} — the place that tends to pull you the other way.',
+      doanTrong:
+        'Because it borrows from the house opposite, you are usually adaptable here, but also more changeable depending on the situation and the person.',
+      vanHanKetLuan: 'The stretch you are moving through leans toward {chuDe}.',
+      vanHanDan: 'See it by long stretch, year and month under Your journey.',
+      phatTrienKetLuan: 'To go further, the ground worth working lies around {chuDe}.',
+      phatTrienManh: 'What you already have and often forget to use: {net}.',
+      phatTrienCan: 'What you tend to be short of and should create deliberately: {can}.',
+      phatTrienHoi:
+        'One question worth asking: when did you last use that strength properly, and why did you stop?',
     },
     hanhTrinh: {
       giaiDoanNhan: 'Ages {tu}–{den}',

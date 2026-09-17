@@ -16,10 +16,16 @@ export function Shell({
 }: {
   children: ReactNode;
   className?: string;
-  /** Cột hẹp 800px cho khối chữ căn giữa (headline + phụ đề + CTA) */
-  rong?: 'hep';
+  /**
+   * `hep` — cột 800px cho khối chữ căn giữa (headline + phụ đề + CTA).
+   * `hero` — dùng trọn cột nội dung 1200px cho headline mở đầu. Cột chữ hẹp
+   * 800px đẩy câu mở đầu xuống dòng ngay giữa mệnh đề; đo ở 1280px trở lên thì
+   * 1200px vừa đủ để nó nằm một dòng.
+   */
+  rong?: 'hep' | 'hero';
 }) {
-  const maxW = rong === 'hep' ? 'max-w-[800px]' : 'max-w-[1200px]';
+  const maxW =
+    rong === 'hep' ? 'max-w-[800px]' : rong === 'hero' ? 'max-w-[1200px]' : 'max-w-[1200px]';
   return <div className={`mx-auto w-full ${maxW} px-[24px] ${className}`}>{children}</div>;
 }
 

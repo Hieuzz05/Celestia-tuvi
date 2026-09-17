@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
@@ -7,32 +8,20 @@ import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
 import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 import { ghiSuKien } from '@/lib/analytics';
-import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
+import { useBoiCanh } from '@/lib/store/boi-canh';
+import type { HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
-import { NutVien, Shell } from '@/components/ui';
+import { Eyebrow, NutVien, Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
+import { useT } from '@/lib/i18n/context';
 
 interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
   noiDung: string;
   nguon?: Nguon[];
 }
-
-/**
- * Gợi ý mở đầu đi từ nỗi băn khoăn, không từ tính năng.
- *
- * Bản cũ mở lời bằng "Nghề nào hợp với lá số này?" — câu của người đang thử công
- * cụ, không phải của người đang vướng một chuyện. Brand spec xếp việc này vào
- * nhóm lỗi giọng: sản phẩm bán sự thấu hiểu mà lại mở lời bằng tra cứu.
- */
-const GOI_Y = [
-  'Tôi có nên đổi việc lúc này?',
-  'Tôi đang cố giữ điều gì quá lâu?',
-  'Mối quan hệ này đang cần điều gì từ tôi?',
-  'Giai đoạn này đang muốn nói gì với tôi?',
-];
 
 function formTuHoSo(h: HoSo): ThongTinForm {
   return {
@@ -43,22 +32,31 @@ function formTuHoSo(h: HoSo): ThongTinForm {
   };
 }
 
-/** Khoá nhận dạng một lá số — khoá đổi nghĩa là đang nói về người khác */
+/** Khoá nhận dạng một lá số — khoá đổi nghĩa là đang nói về lá số khác */
 function khoaCua(form: ThongTinForm) {
   return `${form.ngaySinh}|${form.gio}|${form.gioiTinh}`;
 }
 
+/**
+ * Hỏi Celes — hub duy nhất cho mọi ý định "tôi muốn hiểu điều gì đó về lá số".
+ *
+ * Spec v4 gộp "Khám phá bản đồ" vào đây. Lý do: hai màn cũ dẫn tới cùng một ý
+ * định, mà để cạnh nhau ở thanh chính thì người dùng phải tự quyết định nên xem
+ * dữ liệu trước hay hỏi trước — một lựa chọn họ không có cơ sở để quyết. Giờ
+ * mặc định là hỏi; bản đồ 12 cung nằm trong một thẻ phụ cho ai muốn tự đọc.
+ */
 function TrangHoiDap() {
+  const t = useT();
   const { duocVao, dangDoc } = useTaiKhoan();
+  const boiCanh = useBoiCanh();
   const params = useSearchParams();
+
   const [form, setForm] = useState<ThongTinForm>({
     hoTen: '',
     ngaySinh: '2000-08-24',
     gio: 9,
     gioiTinh: 'nam',
   });
-  const [hoSos, setHoSos] = useState<HoSo[]>([]);
-  const [idHoSoChon, setIdHoSoChon] = useState('');
   const [tinNhan, setTinNhan] = useState<TinNhan[]>([]);
   const [cauHoi, setCauHoi] = useState('');
   const [dangChay, setDangChay] = useState(false);
@@ -70,21 +68,18 @@ function TrangHoiDap() {
   const cuoiRef = useRef<HTMLDivElement>(null);
   const daHoiTuUrl = useRef(false);
 
-  // Tải danh sách người đã lưu, và chốt luôn người đầu tiên ngay trong callback:
-  // vừa lập xong bản đồ mà sang đây lại phải khai lại ngày giờ sinh chính là lỗi
-  // "đứt ngữ cảnh" bản audit chỉ đích danh.
+  // Lá số đang xem lấy từ bối cảnh chung, không tự đi hỏi lại: đổi lá số ở màn
+  // khác rồi sang đây phải thấy đúng lá số đó (spec v4 mục 13B).
+  const idDangDung = boiCanh.idDangXem ?? boiCanh.idMacDinh;
   useEffect(() => {
-    danhSachHoSo()
-      .then((ds) => {
-        setHoSos(ds);
-        if (!ds[0]) return;
-        const f = formTuHoSo(ds[0]);
-        setForm(f);
-        setIdHoSoChon(ds[0].id);
-        setKhoaDaChot(khoaCua(f));
-      })
-      .catch(() => setHoSos([]));
-  }, []);
+    if (khoaDaChot || boiCanh.dangTai) return;
+    const h = boiCanh.hoSos.find((x) => x.id === idDangDung) ?? boiCanh.hoSos[0];
+    if (!h) return;
+    const f = formTuHoSo(h);
+    setForm(f);
+    setKhoaDaChot(khoaCua(f));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boiCanh.dangTai, boiCanh.hoSos, idDangDung]);
 
   useEffect(() => {
     cuoiRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -105,16 +100,16 @@ function TrangHoiDap() {
   const doiNguoi = (h: HoSo) => {
     const f = formTuHoSo(h);
     setForm(f);
-    setIdHoSoChon(h.id);
     setKhoaDaChot(khoaCua(f));
+    // Xem tạm lá số khác trong phiên này; "Lá số của tôi" không đổi theo
+    boiCanh.xemHoSo(h.id);
     setTinNhan([]);
     setLoi(null);
   };
 
   const suaForm = (f: ThongTinForm) => {
     setForm(f);
-    setIdHoSoChon('');
-    // Đổi sang người khác thì hội thoại cũ không còn đúng ngữ cảnh nữa
+    // Đổi sang lá số khác thì hội thoại cũ không còn đúng ngữ cảnh nữa
     if (khoaCua(f) !== khoaDaChot) {
       setTinNhan([]);
       setLoi(null);
@@ -127,7 +122,7 @@ function TrangHoiDap() {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return;
 
-    const lichSu = tinNhan.map((t) => ({ vaiTro: t.vaiTro, noiDung: t.noiDung }));
+    const lichSu = tinNhan.map((m) => ({ vaiTro: m.vaiTro, noiDung: m.noiDung }));
     setTinNhan((ds) => [...ds, { vaiTro: 'nguoi-dung', noiDung: cau }]);
     setCauHoi('');
     setDangChay(true);
@@ -156,25 +151,25 @@ function TrangHoiDap() {
         { vaiTro: 'tro-ly', noiDung: data.traLoi, nguon: data.nguonTriThuc },
       ]);
     } catch {
-      setLoi('Celes chưa trả lời được lúc này. Câu hỏi của bạn vẫn được giữ — thử lại sau một chút.');
+      setLoi(t.hoiCeles.loi);
     } finally {
       setDangChay(false);
     }
   };
 
-  // Câu mang sang từ ô "Hôm nay bạn đang nghĩ gì?" ở trang chủ. Chỉ gửi một lần
-  // và chỉ sau khi đã chốt được lá số — sớm hơn là hỏi mà chưa biết hỏi về ai.
+  // Câu mang sang từ nơi khác (ô "Hôm nay bạn đang nghĩ gì?", "Hỏi Celes về
+  // phần này", hoặc từ Hành trình). Chỉ gửi một lần và chỉ khi đã chốt lá số.
   useEffect(() => {
     const q = params.get('q');
     if (!q || daHoiTuUrl.current || !daChonLaSo || !laSo) return;
     daHoiTuUrl.current = true;
-    ghiSuKien('post_signup_feature_resumed', { nguon: 'home_composer' });
+    ghiSuKien('post_signup_feature_resumed', { nguon: 'lien_ket' });
     hoi(q);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, daChonLaSo, laSo]);
 
-  // Chưa đăng nhập thì KHÔNG dựng phần nội dung sâu — spec v2 yêu cầu chặn
-  // ở tầng đường dẫn, và server cũng chặn lại ở API tương ứng.
+  // Chưa đăng nhập thì KHÔNG dựng phần nội dung sâu — spec yêu cầu chặn ở tầng
+  // đường dẫn, và server cũng chặn lại ở API tương ứng.
   if (dangDoc) return <Shell className="py-[48px]"><span /></Shell>;
   if (!duocVao)
     return (
@@ -188,50 +183,49 @@ function TrangHoiDap() {
   return (
     <Shell className="flex flex-col gap-[20px] py-[20px]">
       <div>
-        <p className="eyebrow">HỎI CELES</p>
-        <h1 className="heading mt-[10px]">Bạn đang băn khoăn điều gì?</h1>
+        <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
+        <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[320px_minmax(0,1fr)]">
-        {/* Cột trái: đang nói về ai */}
+        {/* Cột trái: đang nói về lá số nào, và lối sang bản đồ 12 cung */}
         <div className="flex flex-col gap-[14px]">
-          {hoSos.length > 0 && (
+          {boiCanh.hoSos.length > 0 && (
             <label className="flex flex-col gap-[6px]">
-              <span className="field-label">Đang nói về</span>
+              <span className="field-label">{t.hoiCeles.dangNoiVe}</span>
               <select
                 className="field-input"
-                value={idHoSoChon}
+                value={boiCanh.hoSos.find((h) => khoaCua(formTuHoSo(h)) === khoaCua(form))?.id ?? ''}
                 onChange={(e) => {
-                  const h = hoSos.find((x) => x.id === e.target.value);
+                  const h = boiCanh.hoSos.find((x) => x.id === e.target.value);
                   if (h) doiNguoi(h);
                 }}
               >
-                {idHoSoChon === '' && <option value="">— Người vừa nhập —</option>}
-                {hoSos.map((h) => (
+                <option value="">{t.hoiCeles.nguoiVuaNhap}</option>
+                {boiCanh.hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}
+                    {h.hoTen || '—'} — {h.ngay}/{h.thang}/{h.nam}
+                    {h.id === boiCanh.idMacDinh ? ` · ${t.danhSach.laSoCuaToi}` : ''}
                   </option>
                 ))}
               </select>
             </label>
           )}
 
-          {/* Chưa lưu ai thì phải nhập; đã lưu rồi chỉ mở form khi muốn hỏi về
-              một người khác. */}
-          {(hoSos.length === 0 || hienFormSinh) && (
+          {(boiCanh.hoSos.length === 0 || hienFormSinh) && (
             <>
               <FormSinh giaTri={form} onChange={suaForm} />
               {!daChonLaSo && (
                 <NutVien nho onClick={() => setKhoaDaChot(khoaCua(form))} disabled={!laSo}>
-                  Hỏi về người này
+                  {t.hoiCeles.hoiVeNguoiNay}
                 </NutVien>
               )}
             </>
           )}
 
-          {hoSos.length > 0 && !hienFormSinh && (
+          {boiCanh.hoSos.length > 0 && !hienFormSinh && (
             <button onClick={() => setHienFormSinh(true)} className="link-text self-start">
-              Hỏi về một người khác
+              {t.hoiCeles.hoiVeNguoiKhac}
             </button>
           )}
 
@@ -249,19 +243,30 @@ function TrangHoiDap() {
               </span>
             </div>
           )}
+
+          {/* Bản đồ 12 cung là lối phụ, không tranh chỗ với việc hỏi */}
+          <div className="card flex flex-col gap-[10px]">
+            <span className="text-[16px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.hoiCeles.tuXemTieuDe}
+            </span>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.hoiCeles.tuXemMo}
+            </p>
+            <Link href="/la-so" className="btn-outline btn-sm self-start">
+              {t.hoiCeles.tuXemNut}
+            </Link>
+          </div>
         </div>
 
-        {/* Cột phải: hội thoại — chỉ mở khi đã biết đang nói về ai */}
+        {/* Cột phải: hội thoại — chỉ mở khi đã biết đang nói về lá số nào */}
         {!daChonLaSo ? (
           <div
             className="flex min-h-[320px] flex-col items-center justify-center gap-[10px] rounded-[var(--radius-cards)] border p-[24px] text-center"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
-            <h2 className="subheading">Celes cần biết đang nói về ai</h2>
+            <h2 className="subheading">{t.hoiCeles.canBietAi}</h2>
             <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
-              Điền ngày giờ sinh ở bên trái rồi bấm{' '}
-              <b style={{ color: 'var(--fg)' }}>Hỏi về người này</b>. Không có bản đồ thì câu trả
-              lời chỉ còn là lời khuyên chung chung.
+              {t.hoiCeles.canBietAiMo}
             </p>
           </div>
         ) : (
@@ -275,43 +280,58 @@ function TrangHoiDap() {
               }}
             >
               {tinNhan.length === 0 && !dangChay && (
-                <div className="flex flex-col gap-[12px]">
-                  <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-                    Celes đọc thẳng bản đồ bên trái để trả lời. Nếu chưa biết bắt đầu từ đâu:
-                  </p>
-                  <div className="flex flex-wrap gap-[8px]">
-                    {GOI_Y.map((g) => (
-                      <button key={g} onClick={() => hoi(g)} className="pill-tag text-left">
-                        {g}
-                      </button>
-                    ))}
+                <div className="flex flex-col gap-[18px]">
+                  <div className="flex flex-col gap-[10px]">
+                    <p className="eyebrow">{t.hoiCeles.khamPhaNhanhTieuDe}</p>
+                    <div className="flex flex-wrap gap-[8px]">
+                      {t.hoiCeles.khamPhaNhanh.map((c) => (
+                        <button
+                          key={c.nhan}
+                          onClick={() => hoi(c.cauHoi)}
+                          className="pill-tag"
+                        >
+                          {c.nhan}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-[10px]">
+                    <p className="eyebrow">{t.hoiCeles.goiYTieuDe}</p>
+                    <div className="flex flex-col items-start gap-[6px]">
+                      {t.hoiCeles.goiY.map((g) => (
+                        <button key={g} onClick={() => hoi(g)} className="link-text text-left">
+                          {g}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {tinNhan.map((t, i) =>
-                t.vaiTro === 'nguoi-dung' ? (
+              {tinNhan.map((m, i) =>
+                m.vaiTro === 'nguoi-dung' ? (
                   <div key={i} className="flex justify-end">
                     <p
                       className="max-w-[80%] rounded-[var(--radius-cards)] px-[14px] py-[10px] text-[14px]"
                       style={{ background: 'var(--surface-panel)', color: 'var(--fg)' }}
                     >
-                      {t.noiDung}
+                      {m.noiDung}
                     </p>
                   </div>
                 ) : (
                   /* Không in tên model ra đây: người dùng nói chuyện với Celes,
                      nhà cung cấp phía sau là chuyện của trang quản trị. */
                   <div key={i} className="flex flex-col gap-[6px]">
-                    <MarkdownLuanGiai noiDung={t.noiDung} nho />
-                    <NguonTriThuc nguon={t.nguon} />
+                    <MarkdownLuanGiai noiDung={m.noiDung} nho />
+                    <NguonTriThuc nguon={m.nguon} />
                   </div>
                 )
               )}
 
               {dangChay && (
                 <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-                  Celes đang đọc bản đồ của bạn…
+                  {t.hoiCeles.dangTraLoi}
                 </p>
               )}
 
@@ -334,7 +354,7 @@ function TrangHoiDap() {
               <input
                 value={cauHoi}
                 onChange={(e) => setCauHoi(e.target.value)}
-                placeholder="Điều bạn đang nghĩ…"
+                placeholder={t.hoiCeles.oNhap}
                 maxLength={800}
                 className="field-input"
                 disabled={dangChay || !laSo}
@@ -344,19 +364,18 @@ function TrangHoiDap() {
                 disabled={dangChay || !cauHoi.trim() || !laSo}
                 className="btn-primary shrink-0"
               >
-                Gửi
+                {t.hoiCeles.gui}
               </button>
             </form>
 
             {tinNhan.length > 0 && (
               <button onClick={() => setTinNhan([])} className="link-text self-start">
-                Xoá hội thoại
+                {t.hoiCeles.xoaHoiThoai}
               </button>
             )}
 
             <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-              Celes đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết — và không thay thế tư
-              vấn y tế, tài chính hay pháp lý.
+              {t.hoiCeles.mienTru}
             </p>
           </div>
         )}

@@ -4,18 +4,22 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
+import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
+import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { NguonTriThuc } from '@/components/NguonTriThuc';
-import { HuyHieuOk, NutVien, OChon, Shell, Truong } from '@/components/ui';
+import { HuyHieuOk, NutVien, OChon, Shell } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
-import { luuHoSo } from '@/lib/store/hoso';
+import { useBoiCanh, type LaSoNhap } from '@/lib/store/boi-canh';
+import { luuHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { luanGiaiSau } from '@/lib/tuvi/luan-giai-sau';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
@@ -32,39 +36,97 @@ function tachNgay(ngaySinh: string) {
   return { ngay, thang, nam };
 }
 
+function formTuHoSo(h: HoSo): ThongTinSinhForm {
+  return {
+    hoTen: h.hoTen,
+    ngaySinh: `${h.nam}-${String(h.thang).padStart(2, '0')}-${String(h.ngay).padStart(2, '0')}`,
+    gio: h.gio,
+    phut: 0,
+    gioiTinh: h.gioiTinh,
+  };
+}
+
+function nhapTuForm(f: ThongTinSinhForm): LaSoNhap | null {
+  const { ngay, thang, nam } = tachNgay(f.ngaySinh);
+  if (!ngay || !thang || !nam) return null;
+  return { hoTen: f.hoTen ?? '', ngay, thang, nam, gio: f.gio, phut: f.phut, gioiTinh: f.gioiTinh };
+}
+
+function formTuNhap(n: LaSoNhap): ThongTinSinhForm {
+  return {
+    hoTen: n.hoTen,
+    ngaySinh: `${n.nam}-${String(n.thang).padStart(2, '0')}-${String(n.ngay).padStart(2, '0')}`,
+    gio: n.gio,
+    phut: n.phut ?? 0,
+    gioiTinh: n.gioiTinh,
+  };
+}
+
+/**
+ * Khám phá bản đồ.
+ *
+ * Spec v4 đổi hẳn cách màn này chọn xem lá số nào. Bản cũ coi form nhập là
+ * trạng thái mặc định, nên đổi tab rồi quay lại là mất sạch và phải khai lại
+ * ngày giờ sinh. Giờ thứ tự ưu tiên là: tham số trên URL → lá số vừa nhập chưa
+ * lưu → lá số đang xem trong phiên → "Lá số của tôi". Form chỉ hiện khi không
+ * còn gì để hiện, hoặc khi người dùng chủ động bấm tạo lá số khác.
+ */
 function TrangLaSo() {
   const { t, ngonNgu } = useNgonNgu();
   const { duocVao } = useTaiKhoan();
+  const boiCanh = useBoiCanh();
   const router = useRouter();
   const params = useSearchParams();
+
   const [form, setForm] = useState<ThongTinSinhForm | null>(null);
+  const [batNhapMoi, setBatNhapMoi] = useState(false);
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
   const [hienMenhBan, setHienMenhBan] = useState(false);
   const [daLuu, setDaLuu] = useState(false);
+  const [tuHoSoDaLuu, setTuHoSoDaLuu] = useState(false);
 
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
-  // Vào thẳng bằng liên kết có sẵn dữ liệu (lá số mẫu, hoặc quay lại từ trang khác)
+  // Chốt lá số sẽ hiển thị, theo đúng thứ tự ưu tiên ở trên
   useEffect(() => {
+    if (form || batNhapMoi) return;
+
     if (params.get('mau')) {
       setForm(MAU);
       return;
     }
+
     const ngay = Number(params.get('ngay'));
     const thang = Number(params.get('thang'));
     const nam = Number(params.get('nam'));
-    if (!ngay || !thang || !nam) return;
-    setForm({
-      hoTen: params.get('ten') ?? '',
-      ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
-      gio: Number(params.get('gio')) || 9,
-      phut: 0,
-      gioiTinh: (params.get('gt') as GioiTinh) || 'nam',
-    });
-  }, [params]);
+    if (ngay && thang && nam) {
+      setForm({
+        hoTen: params.get('ten') ?? '',
+        ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
+        gio: Number(params.get('gio')) || 9,
+        phut: 0,
+        gioiTinh: (params.get('gt') as GioiTinh) || 'nam',
+      });
+      return;
+    }
+
+    if (boiCanh.dangTai) return;
+
+    if (boiCanh.nhap) {
+      setForm(formTuNhap(boiCanh.nhap));
+      return;
+    }
+
+    const hoSo =
+      boiCanh.hoSoDangXem ?? boiCanh.hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? null;
+    if (hoSo) {
+      setForm(formTuHoSo(hoSo));
+      setTuHoSoDaLuu(true);
+    }
+  }, [form, batNhapMoi, params, boiCanh]);
 
   const laSo = useMemo(() => {
     if (!form) return null;
@@ -90,34 +152,61 @@ function TrangLaSo() {
     [laSo, namXem, form?.yDinh, ngonNgu]
   );
 
+  // Tám khối chỉ dựng khi thực sự được xem — khách chưa đăng nhập không cần tính
+  const khoiSau = useMemo(
+    () => (laSo && duocVao ? luanGiaiSau(laSo, namXem, ngonNgu) : []),
+    [laSo, duocVao, namXem, ngonNgu]
+  );
+
   useEffect(() => {
     if (!laSo) return;
     ghiSuKien('chart_generated');
     ghiSuKien('quick_read_viewed');
   }, [laSo]);
 
-  // Đổi thông tin sinh thì bài đọc sâu cũ không còn đúng với lá số nữa
-  useEffect(() => {
+  const nhanFormMoi = (f: ThongTinSinhForm) => {
+    setForm(f);
+    // Đổi thông tin sinh thì bài đọc sâu cũ không còn đúng với lá số nữa
     setKetQua(null);
     setLoi(null);
-  }, [form]);
+    setBatNhapMoi(false);
+    setTuHoSoDaLuu(false);
+    setDaLuu(false);
+    // Giữ vào bối cảnh phiên: rời trang rồi quay lại không phải nhập lại
+    boiCanh.datNhap(nhapTuForm(f));
+  };
 
-  const luu = async () => {
-    if (!form) return;
+  /** Lá số đang xem có nguy cơ mất nếu rời trang? */
+  const chuaLuu = Boolean(laSo) && !tuHoSoDaLuu && !daLuu && !params.get('mau');
+
+  const luu = async (): Promise<boolean> => {
+    if (!form) return false;
     // Lưu là khả năng của tài khoản — khách bấm vào thì đưa sang cổng, kèm ý định
     if (!duocVao) {
       ghiSuKien('auth_gate_viewed', { nguon: 'save_chart' });
-      router.push('/dang-nhap?intent=save_chart&next=%2Fla-so');
-      return;
+      router.push(`/dang-nhap?intent=save_chart&next=${encodeURIComponent(duongVe)}`);
+      return false;
     }
     const { ngay, thang, nam } = tachNgay(form.ngaySinh);
     try {
-      await luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
+      const moi = await luuHoSo({
+        hoTen: form.hoTen ?? '',
+        ngay,
+        thang,
+        nam,
+        gio: form.gio,
+        gioiTinh: form.gioiTinh,
+      });
       setDaLuu(true);
+      setTuHoSoDaLuu(true);
+      boiCanh.datNhap(null);
+      await boiCanh.taiLai();
+      boiCanh.xemHoSo(moi.id);
       ghiSuKien('signup_after_result');
-      setTimeout(() => setDaLuu(false), 2500);
+      return true;
     } catch {
       setLoi(t.quickRead.loiLuu);
+      return false;
     }
   };
 
@@ -149,20 +238,41 @@ function TrangLaSo() {
     }
   };
 
+  const boiCanhUrl = laSo
+    ? `ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form?.hoTen ?? '')}`
+    : '';
+
   // Nơi quay lại sau khi đăng nhập, mang sẵn thông tin sinh để không phải nhập lại
-  const duongVe = laSo
-    ? `/la-so?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form?.hoTen ?? '')}`
-    : '/la-so';
+  const duongVe = laSo ? `/la-so?${boiCanhUrl}` : '/la-so';
+  const lienKetSau = laSo ? `/luan-giai?${boiCanhUrl}` : '/luan-giai';
+  const duongHoi = (cauHoi: string) => `/hoi-dap?q=${encodeURIComponent(cauHoi)}`;
 
-  const lienKetSau = laSo
-    ? `/luan-giai?ngay=${laSo.thongTin.ngay}&thang=${laSo.thongTin.thang}&nam=${laSo.thongTin.nam}&gio=${laSo.thongTin.gio}&gt=${laSo.thongTin.gioiTinh}&ten=${encodeURIComponent(form?.hoTen ?? '')}`
-    : '/luan-giai';
+  /** Đổi lá số: đã đăng nhập và có lá số đã lưu thì mở danh sách trước, không quăng vào form */
+  const doiLaSo = () => {
+    if (duocVao && boiCanh.hoSos.length > 0) {
+      router.push('/ho-so');
+      return;
+    }
+    taoLaSoKhac();
+  };
 
-  // --- Chưa nhập xong: chỉ hiện luồng từng bước ---
+  const taoLaSoKhac = () => {
+    setForm(null);
+    setKetQua(null);
+    setLoi(null);
+    setBatNhapMoi(true);
+    setTuHoSoDaLuu(false);
+    boiCanh.datNhap(null);
+  };
+
+  // --- Chưa có lá số nào để hiện: luồng nhập từng bước ---
   if (!form) {
+    if (boiCanh.dangTai && !batNhapMoi) {
+      return <Shell className="py-[48px]"><span /></Shell>;
+    }
     return (
       <Shell className="py-[48px]">
-        <BuocNhapSinh giaTriDau={MAC_DINH} onXong={setForm} />
+        <BuocNhapSinh giaTriDau={MAC_DINH} onXong={nhanFormMoi} />
       </Shell>
     );
   }
@@ -175,7 +285,7 @@ function TrangLaSo() {
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {t.quickRead.ngaySaiMo}
           </p>
-          <NutVien nho onClick={() => setForm(null)} className="self-start">
+          <NutVien nho onClick={taoLaSoKhac} className="self-start">
             {t.quickRead.nhapLai}
           </NutVien>
         </div>
@@ -185,6 +295,13 @@ function TrangLaSo() {
 
   return (
     <Shell className="flex flex-col gap-[32px] py-[32px]">
+      <CanhBaoRoiTrang
+        bat={chuaLuu}
+        daDangNhap={duocVao}
+        onLuu={luu}
+        duongDangNhap={`/dang-nhap?intent=save_chart&next=${encodeURIComponent(duongVe)}`}
+      />
+
       {/* ---------- Quick Read: giá trị đầu tiên, hiện ngay, không chờ AI ---------- */}
       <section className="flex flex-col gap-[16px]">
         <div className="flex flex-wrap items-end justify-between gap-[16px]">
@@ -204,15 +321,15 @@ function TrangLaSo() {
               hành động chính là kiểu phân tán mà bản audit chỉ ra. */}
           <div className="flex items-center gap-[12px]">
             {duocVao &&
-              (daLuu ? (
+              (tuHoSoDaLuu || daLuu ? (
                 <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
               ) : (
                 <NutVien nho onClick={luu}>
                   {t.quickRead.giuLai}
                 </NutVien>
               ))}
-            <NutVien nho onClick={() => setForm(null)}>
-              {t.quickRead.doiThongTin}
+            <NutVien nho onClick={doiLaSo}>
+              {t.danhSach.xemLaSoKhac}
             </NutVien>
           </div>
         </div>
@@ -232,96 +349,14 @@ function TrangLaSo() {
         )}
       </section>
 
-      {/* Sau ba góc nhìn, người đã đăng nhập đi tiếp; khách chỉ gặp MỘT lời mời */}
-      {duocVao ? (
-        <>
-        {/* ---------- Đi sâu hơn ---------- */}
-        <section className="grid gap-[16px] md:grid-cols-2">
-          <div className="card flex flex-col gap-[12px]">
-            <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.docDai}
-            </h2>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.sauMo}
-            </p>
-
-            {dangChay ? (
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                {t.quickRead.dangDoc}
-              </p>
-            ) : (
-              <NutVien nho onClick={docSau} className="self-start">
-                {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
-              </NutVien>
-            )}
-
-            {ketQua && (
-              <>
-                <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-                <NguonTriThuc nguon={ketQua.nguonTriThuc} />
-              </>
-            )}
-          </div>
-
-          <div className="card flex flex-col gap-[12px]">
-            <span className="eyebrow">{t.nav.khamPha}</span>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.theoChuDeTieuDe}
-            </h2>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.theoChuDeMo}
-            </p>
-            <div className="mt-auto flex flex-wrap gap-[12px]">
-              <Link href={lienKetSau} className="btn-outline btn-sm">
-                {t.quickRead.khamPhaSau}
-              </Link>
-              <Link href="/hoi-dap" className="btn-outline btn-sm">
-                {t.quickRead.hoiThang}
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ---------- Mệnh bàn: đặt dưới, mở khi người dùng muốn ---------- */}
-        <section className="flex flex-col gap-[16px]">
-          <div className="flex flex-wrap items-center justify-between gap-[16px]">
-            <div>
-              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-                {t.quickRead.banDoTieuDe}{' '}
-                <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
-              </h2>
-              <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
-                {t.quickRead.banDoMo}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-[12px]">
-              {hienMenhBan && (
-                <Truong nhan={t.quickRead.thangXem} className="w-[150px]">
-                  <OChon value={thangXem} onChange={(e) => setThangXem(Number(e.target.value))}>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <option key={m} value={m}>
-                        {dien(t.banDo.thang, { thang: m })}
-                      </option>
-                    ))}
-                  </OChon>
-                </Truong>
-              )}
-              <NutVien nho onClick={() => setHienMenhBan((v) => !v)}>
-                {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
-              </NutVien>
-            </div>
-          </div>
-
-          {hienMenhBan && (
-            <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
-          )}
-        </section>
-        </>
-      ) : (
+      {/* Khách gặp lời mời mở bức tranh đầy đủ ngay sau phần tổng quan */}
+      {!duocVao && (
         <KhoiChuyenDoi
           duongVe={duongVe}
+          tieuDe={t.quickRead.moBucTranhTieuDe}
+          moTa={t.quickRead.moBucTranhMo}
+          nhanCta={t.quickRead.moLuanGiaiDayDu}
+          chu={t.quickRead.chuMoBucTranh}
           xemTruoc={
             <TuViChart
               laSo={laSo}
@@ -334,6 +369,117 @@ function TrangLaSo() {
         />
       )}
 
+      {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
+      {duocVao && khoiSau.length > 0 && (
+        <BangLuanGiai khoi={khoiSau} duongHoi={duongHoi} />
+      )}
+
+      {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ---------- */}
+      <section className="grid gap-[16px] md:grid-cols-2">
+        <div className="card flex flex-col gap-[12px]">
+          <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
+          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+            {t.quickRead.docDai}
+          </h2>
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            {t.quickRead.sauMo}
+          </p>
+
+          {!duocVao ? (
+            <Link
+              href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+              className="btn-outline btn-sm self-start"
+              onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'deep_read' })}
+            >
+              {t.quickRead.docDai}
+            </Link>
+          ) : dangChay ? (
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.dangDoc}
+            </p>
+          ) : (
+            <NutVien nho onClick={docSau} className="self-start">
+              {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
+            </NutVien>
+          )}
+
+          {ketQua && (
+            <>
+              <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
+              <NguonTriThuc nguon={ketQua.nguonTriThuc} />
+            </>
+          )}
+        </div>
+
+        <div className="card flex flex-col gap-[12px]">
+          <span className="eyebrow">{t.nav.khamPha}</span>
+          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+            {t.quickRead.theoChuDeTieuDe}
+          </h2>
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            {t.quickRead.theoChuDeMo}
+          </p>
+          <div className="mt-auto flex flex-wrap gap-[12px]">
+            <Link
+              href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+              className="btn-outline btn-sm"
+            >
+              {t.quickRead.khamPhaSau}
+            </Link>
+            <Link
+              href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
+              className="btn-outline btn-sm"
+            >
+              {t.quickRead.hoiThang}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Mệnh bàn: chế độ chuyên sâu, mở khi người dùng muốn ---------- */}
+      {duocVao && (
+        <section className="flex flex-col gap-[16px]">
+          <div className="flex flex-wrap items-end justify-between gap-[16px]">
+            <div>
+              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.quickRead.banDoTieuDe}{' '}
+                <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
+              </h2>
+              <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.banDoMo}
+              </p>
+            </div>
+
+            {/* Ô chọn tháng và nút thu gọn nằm chung một hàng, cùng chiều cao và
+                cùng căn đáy — trước đó nhãn của ô chọn đẩy nó lệch khỏi nút. */}
+            <div className="flex flex-wrap items-end gap-[10px]">
+              {hienMenhBan && (
+                <label className="flex w-[160px] flex-col gap-[6px]">
+                  <span className="field-label">{t.quickRead.thangXem}</span>
+                  <OChon
+                    className="h-[42px]"
+                    value={thangXem}
+                    onChange={(e) => setThangXem(Number(e.target.value))}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <option key={m} value={m}>
+                        {dien(t.banDo.thang, { thang: m })}
+                      </option>
+                    ))}
+                  </OChon>
+                </label>
+              )}
+              <NutVien className="h-[42px] py-0" onClick={() => setHienMenhBan((v) => !v)}>
+                {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
+              </NutVien>
+            </div>
+          </div>
+
+          {hienMenhBan && (
+            <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
+          )}
+        </section>
+      )}
     </Shell>
   );
 }

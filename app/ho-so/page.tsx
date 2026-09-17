@@ -1,23 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
+import { Eyebrow, HuyHieuOk, NutChinh, Shell } from '@/components/ui';
+import { useBoiCanh } from '@/lib/store/boi-canh';
 import {
   chuyenHoSoLenTaiKhoan,
-  danhSachHoSo,
   luuHoSo,
   nguonLuuHienTai,
   xoaHoSo,
-  type HoSo,
   type NguonLuu,
 } from '@/lib/store/hoso';
+import { dien, useT } from '@/lib/i18n/context';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
-import { Shell } from '@/components/ui';
 
-export default function HoSoPage() {
-  const [ds, setDs] = useState<HoSo[]>([]);
+/**
+ * Danh sách lá số (trước đây gọi là "Người của tôi").
+ *
+ * Spec v4 đổi tên vì tên cũ giàu cảm xúc nhưng mô tả sai chức năng: đây là chỗ
+ * quản lý các lá số, không riêng người thân. Đi kèm là khái niệm "Lá số của
+ * tôi" — đúng một lá số mang badge đó, và nó là bối cảnh mặc định của Hôm nay,
+ * Hành trình lẫn Hỏi Celes.
+ */
+export default function TrangDanhSachLaSo() {
+  const t = useT();
+  const router = useRouter();
+  const boiCanh = useBoiCanh();
   const [form, setForm] = useState<ThongTinForm>({
     hoTen: '',
     ngaySinh: '2000-01-01',
@@ -26,63 +37,94 @@ export default function HoSoPage() {
   });
   const [dangThem, setDangThem] = useState(false);
   const [nguon, setNguon] = useState<NguonLuu>('trinh-duyet');
+  const [dangDat, setDangDat] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
-  const taiLai = useCallback(async () => {
-    try {
-      setDs(await danhSachHoSo());
-      setNguon(await nguonLuuHienTai());
-      setLoi(null);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Chưa đọc được danh sách — thử lại sau một chút.');
-    }
-  }, []);
-
   useEffect(() => {
-    taiLai();
-  }, [taiLai]);
+    nguonLuuHienTai()
+      .then(setNguon)
+      .catch(() => setNguon('trinh-duyet'));
+  }, []);
 
   const them = async () => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
     if (!ngay || !thang || !nam) return;
     try {
-      await luuHoSo({ hoTen: form.hoTen, ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh });
-      await taiLai();
+      const moi = await luuHoSo({
+        hoTen: form.hoTen,
+        ngay,
+        thang,
+        nam,
+        gio: form.gio,
+        gioiTinh: form.gioiTinh,
+      });
+      await boiCanh.taiLai();
+      // Lá số đầu tiên tự thành "Lá số của tôi" — đừng bắt người dùng làm thêm
+      // một bước nữa chỉ để Hôm nay có thứ mà đọc.
+      if (!boiCanh.idMacDinh) await boiCanh.datMacDinh(moi.id);
       setDangThem(false);
       setForm({ hoTen: '', ngaySinh: '2000-01-01', gio: 9, gioiTinh: 'nam' });
+      setLoi(null);
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Chưa lưu được — thử lại sau một chút.');
+      setLoi(e instanceof Error ? e.message : t.danhSach.loiLuu);
     }
   };
 
-  const xoa = async (id: string) => {
+  const datMacDinh = async (id: string) => {
+    setDangDat(id);
+    try {
+      await boiCanh.datMacDinh(id);
+      setLoi(null);
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : t.danhSach.loiDat);
+    } finally {
+      setDangDat(null);
+    }
+  };
+
+  const xoa = async (id: string, ten: string) => {
+    // Không cho xoá lá số đang là mặc định: xoá xong thì Hôm nay, Hành trình và
+    // Hỏi Celes đều mất bối cảnh mà người dùng không hiểu vì sao.
+    if (id === boiCanh.idMacDinh && boiCanh.hoSos.length > 1) {
+      setLoi(t.danhSach.khongXoaMacDinh);
+      return;
+    }
+    if (!window.confirm(dien(t.danhSach.xacNhanXoa, { ten: ten || '—' }))) return;
     try {
       await xoaHoSo(id);
-      await taiLai();
+      await boiCanh.taiLai();
+      setLoi(null);
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Chưa xoá được — thử lại sau một chút.');
+      setLoi(e instanceof Error ? e.message : t.danhSach.loiXoa);
     }
   };
 
   const dongBo = async () => {
     try {
       const so = await chuyenHoSoLenTaiKhoan();
-      await taiLai();
-      setLoi(so > 0 ? null : 'Không có ai đang lưu ở trình duyệt này để chuyển.');
+      await boiCanh.taiLai();
+      setLoi(so > 0 ? null : t.danhSach.khongCoGiDeChuyen);
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : 'Chưa chuyển được — thử lại sau một chút.');
+      setLoi(e instanceof Error ? e.message : t.danhSach.loiChuyen);
     }
   };
 
+  const moLaSo = (id: string) => {
+    const h = boiCanh.hoSos.find((x) => x.id === id);
+    if (!h) return;
+    boiCanh.xemHoSo(id);
+    router.push(
+      `/la-so?ngay=${h.ngay}&thang=${h.thang}&nam=${h.nam}&gio=${h.gio}&gt=${h.gioiTinh}&ten=${encodeURIComponent(h.hoTen)}`
+    );
+  };
+
   return (
-    <Shell className="flex flex-col gap-[36px] py-[36px]">
+    <Shell className="flex flex-col gap-[32px] py-[36px]">
       <div>
-        <p className="eyebrow">NGƯỜI CỦA TÔI</p>
-        <h1 className="heading mt-[16px]">Lá số của bạn và người thân</h1>
-        <p className="body-text mt-[24px] max-w-[540px]" style={{ color: 'var(--fg-body)' }}>
-          {nguon === 'tai-khoan'
-            ? 'Đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.'
-            : 'Đang lưu ngay trên trình duyệt này. Đăng nhập để giữ lại và dùng được trên mọi thiết bị.'}
+        <Eyebrow className="mb-[12px]">{t.danhSach.eyebrow}</Eyebrow>
+        <h1 className="heading-sm">{t.danhSach.tieuDe}</h1>
+        <p className="body-sm mt-[12px] max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
+          {nguon === 'tai-khoan' ? t.danhSach.luuTheoTaiKhoan : t.danhSach.luuTheoTrinhDuyet}
         </p>
         {loi && (
           <p className="mt-[12px] text-[13px]" style={{ color: 'var(--chart-hung)' }}>
@@ -91,7 +133,7 @@ export default function HoSoPage() {
         )}
         {nguon === 'tai-khoan' && (
           <button onClick={dongBo} className="link-text mt-[12px]">
-            Chuyển những người đang lưu ở trình duyệt này lên tài khoản
+            {t.danhSach.chuyenLenTaiKhoan}
           </button>
         )}
       </div>
@@ -100,28 +142,26 @@ export default function HoSoPage() {
         <section className="flex max-w-[560px] flex-col gap-[24px]">
           <FormSinh giaTri={form} onChange={setForm} />
           <div className="flex items-center gap-[18px]">
-            <button onClick={them} className="btn-primary">
-              Lưu lại
-            </button>
+            <NutChinh onClick={them}>{t.danhSach.luuLai}</NutChinh>
             <button onClick={() => setDangThem(false)} className="link-text">
-              Huỷ
+              {t.danhSach.huy}
             </button>
           </div>
         </section>
       ) : (
-        <button onClick={() => setDangThem(true)} className="btn-primary self-start">
-          Thêm một người
-        </button>
+        <NutChinh onClick={() => setDangThem(true)} className="self-start">
+          {t.danhSach.themLaSo}
+        </NutChinh>
       )}
 
-      <section className="flex flex-col">
-        {ds.length === 0 && (
-          <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-            Lưu lá số của bạn hoặc người thân để lần sau tiếp tục mà không cần nhập lại — và để xem
-            hai người kết nối với nhau thế nào.
+      <section className="flex flex-col gap-[12px]">
+        {!boiCanh.dangTai && boiCanh.hoSos.length === 0 && (
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            {t.danhSach.trong}
           </p>
         )}
-        {ds.map((h) => {
+
+        {boiCanh.hoSos.map((h) => {
           let tomTat = '';
           try {
             const ls = lapLaSo({
@@ -133,37 +173,50 @@ export default function HoSoPage() {
             });
             tomTat = `Mệnh ${CHI[ls.menhIndex]} · ${ls.cuc.ten} · ${ls.banMenh.ten}`;
           } catch {
-            tomTat = 'Không tính được lá số';
+            tomTat = t.danhSach.khongTinhDuoc;
           }
+          const laMacDinh = h.id === boiCanh.idMacDinh;
+
           return (
-            <div
-              key={h.id}
-              className="flex flex-wrap items-baseline justify-between gap-[12px] py-[18px]"
-              style={{ borderBottom: '1px solid var(--line)' }}
-            >
-              <div className="flex flex-col gap-[3px]">
-                <span className="subheading">
-                  {h.hoTen || 'Không tên'}
+            <div key={h.id} className="card flex flex-wrap items-center justify-between gap-[16px]">
+              <div className="flex flex-col gap-[6px]">
+                <span className="flex flex-wrap items-center gap-[10px]">
+                  <span className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
+                    {h.hoTen || t.danhSach.khongTen}
+                  </span>
+                  {laMacDinh && <HuyHieuOk>{t.danhSach.laSoCuaToi}</HuyHieuOk>}
                 </span>
                 <span className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-                  {h.ngay}/{h.thang}/{h.nam} · {h.gioiTinh === 'nam' ? 'Nam' : 'Nữ'} · {tomTat}
+                  {h.ngay}/{h.thang}/{h.nam} · {dien(t.danhSach.gio, { gio: h.gio })} ·{' '}
+                  {h.gioiTinh === 'nam' ? t.danhSach.nam : t.danhSach.nu} · {tomTat}
                 </span>
               </div>
-              <div className="flex items-center gap-[18px]">
-                <Link
-                  href={`/la-so?ngay=${h.ngay}&thang=${h.thang}&nam=${h.nam}&gio=${h.gio}&gt=${h.gioiTinh}&ten=${encodeURIComponent(h.hoTen)}`}
-                  className="link-text"
-                >
-                  Xem lá số
-                </Link>
-                <button onClick={() => xoa(h.id)} className="link-text">
-                  Xoá
+
+              <div className="flex flex-wrap items-center gap-[18px]">
+                {!laMacDinh && (
+                  <button
+                    onClick={() => datMacDinh(h.id)}
+                    className="link-text"
+                    disabled={dangDat === h.id}
+                  >
+                    {dangDat === h.id ? t.danhSach.dangDat : t.danhSach.datLamCuaToi}
+                  </button>
+                )}
+                <button onClick={() => moLaSo(h.id)} className="link-text">
+                  {t.danhSach.xemLaSo}
+                </button>
+                <button onClick={() => xoa(h.id, h.hoTen)} className="link-text">
+                  {t.danhSach.xoa}
                 </button>
               </div>
             </div>
           );
         })}
       </section>
+
+      <Link href="/la-so" className="link-text self-start">
+        {t.danhSach.taoLaSoKhac}
+      </Link>
     </Shell>
   );
 }

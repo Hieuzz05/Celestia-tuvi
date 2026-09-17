@@ -455,6 +455,11 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Quên mật khẩu | Xong |
 | Trang chủ cá nhân hoá sau đăng nhập | Xong — `/home`, có ô "Hôm nay bạn đang nghĩ gì?" và lối tắt chủ đề |
 | Hành trình: dòng thời gian giai đoạn / năm / tháng | Xong — `/hanh-trinh`, tính bằng công thức, không gọi AI |
+| Hành trình: tầng "Xem chi tiết" luận hạn đa lớp | Xong — `/hanh-trinh/chi-tiet`, ghép nền lá số + đại hạn + năm + tháng + lưu tinh |
+| Bảng luận giải 8 lĩnh vực sau đăng nhập | Xong — `lib/tuvi/luan-giai-sau.ts`, mỗi khối có căn cứ riêng |
+| Danh sách lá số + badge "Lá số của tôi" | Xong — cần chạy lại `supabase/schema.sql` để có cột `la_so_mac_dinh` |
+| Giữ bối cảnh xuyên tab, cảnh báo lá số chưa lưu | Xong — `lib/store/boi-canh.tsx` + `CanhBaoRoiTrang` |
+| Bộ quy tắc tính có phiên bản | Xong — `lib/tuvi/phuong-phap.ts`, ghi kèm mỗi bài luận hạn |
 | Hành trình lớp NGÀY | Chưa — cần đối chiếu quy tắc an ngày hạn với bản mẫu trước |
 | Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Xong — ba mức độ dày, an sao không đổi |
 | Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện vẫn thu nhỏ khung 920px |
@@ -506,8 +511,10 @@ phương pháp. Kết quả:
 | `/` | Landing công khai — mở bằng nỗi băn khoăn của người đọc, không nhắc kỹ thuật |
 | `/cau-chuyen` | Câu chuyện thương hiệu: vì sao có Celes, và Celes không làm gì |
 | `/home` | Nơi người đã đăng nhập đáp xuống: điều đáng chú ý hôm nay, giai đoạn đang đi qua, ô trò chuyện |
-| `/la-so` | Công cụ: nhập thông tin sinh → góc nhìn nhanh → mệnh bàn đầy đủ |
+| `/la-so` | Khám phá bản đồ: nhập thông tin sinh → góc nhìn nhanh → bảng luận giải 8 lĩnh vực → mệnh bàn |
 | `/hanh-trinh` | Hành trình: quãng dài → từng năm → từng tháng, có mốc "đang ở đây" |
+| `/hanh-trinh/chi-tiet` | Tầng hai của Hành trình: luận hạn đa lớp cho một quãng, kèm căn cứ mở được |
+| `/ho-so` | Danh sách lá số, đặt "Lá số của tôi" |
 | `/gioi-thieu` | Cách Celestia tính lá số, câu hỏi thường gặp |
 | `/luan-giai` | Khám phá sâu hơn theo chủ đề |
 | `/hoi-dap` | Hỏi Celestia |
@@ -517,6 +524,10 @@ phương pháp. Kết quả:
 
 > Công cụ lập lá số đã dời từ `/` sang `/la-so`. Ai đang lưu dấu trang cũ thì bookmark `/` giờ ra
 > trang landing.
+
+> Thanh điều hướng khi đã đăng nhập chỉ còn bốn mục: Hôm nay · Hành trình · Hỏi Celes · Kết nối.
+> "Khám phá bản đồ" (`/la-so`) vẫn là một route đầy đủ nhưng vào từ trong Hỏi Celes — hai mục đó
+> cùng một ý định nên để cạnh nhau ở thanh chính là bắt người dùng tự chọn hộ.
 
 > Khách chưa đăng nhập chỉ nhận Quick Read. Sau ba góc nhìn là **một** khối chuyển đổi duy nhất
 > kèm danh sách phần đang khoá — không còn năm sáu lối đi ngang hàng như bản trước. `/hanh-trinh`,

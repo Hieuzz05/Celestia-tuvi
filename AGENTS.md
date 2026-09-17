@@ -37,6 +37,10 @@ họ còn nguyên và nên làm gì tiếp.
 | Lời văn Quick Read (14 chính tinh, 12 cung) | `lib/tuvi/quick-read-noi-dung.ts` |
 | Logic đọc lá số ra góc nhìn | `lib/tuvi/quick-read.ts` |
 | Dòng thời gian Hành trình | `lib/tuvi/hanh-trinh.ts` |
+| Luận hạn chi tiết (tầng hai của Hành trình) | `lib/tuvi/luan-han.ts` |
+| Bảng luận giải 8 lĩnh vực | `lib/tuvi/luan-giai-sau.ts` |
+| Bộ quy tắc tính + phiên bản | `lib/tuvi/phuong-phap.ts` |
+| Lá số đang xem / lá số của tôi / bản nháp | `lib/store/boi-canh.tsx` |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
 | Giọng và cấu trúc câu trả lời của Celes | `NHAN_CACH_CELES` trong `lib/ai/prompt.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
@@ -62,6 +66,12 @@ họ còn nguyên và nên làm gì tiếp.
   Indigo `#0F172A` chỉ dùng cho biểu tượng ứng dụng và favicon.
 - **Mệnh bàn đầy đủ nằm sau cổng đăng nhập.** Kiểm tra bằng trình duyệt thì chạy dev server với
   `NEXT_PUBLIC_SUPABASE_*` để trống, bằng không phiên sạch chỉ thấy bản xem trước mờ.
+- **Không màn nào được tự gọi `danhSachHoSo()` rồi lấy `hoSos[0]`.** Lá số đang xem nằm ở
+  `useBoiCanh()`; làm khác đi là đổi lá số ở màn này xong sang màn kia lại thấy người khác.
+- **`default_profile_id` và `active_profile_id` là hai thứ khác nhau.** Xem tạm một lá số khác
+  KHÔNG được đổi "Lá số của tôi" — chỉ nút "Đặt làm lá số của tôi" mới đổi.
+- **Đổi bất kỳ quy tắc tính nào thì phải tăng `PHUONG_PHAP.phienBan`.** Không tăng thì hai kết quả
+  khác nhau cùng mang một nhãn và không ai lần lại được.
 
 ## Kiểm tra trước khi commit
 

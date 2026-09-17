@@ -27,11 +27,11 @@ export const vi = {
     veCelestia: 'Về Celestia',
     batDauMienPhi: 'Bắt đầu miễn phí',
     homNay: 'Hôm nay',
-    banDo: 'Bản đồ của tôi',
+    banDo: 'Khám phá bản đồ',
     hanhTrinh: 'Hành trình',
     hoiCeles: 'Hỏi Celes',
     ketNoi: 'Kết nối',
-    nguoiCuaToi: 'Người của tôi',
+    nguoiCuaToi: 'Danh sách lá số',
     taiKhoan: 'Tài khoản',
     dangNhap: 'Đăng nhập',
     dangXuat: 'Đăng xuất',
@@ -209,6 +209,11 @@ export const vi = {
     thangXem: 'Tháng đang xem',
     loiLuu: 'Chưa giữ lại được — thử lại sau một chút.',
     loiDocDai: 'Phần diễn giải đang tạm gián đoạn. Bản đồ của bạn vẫn được giữ nguyên — thử lại sau một chút.',
+    moBucTranhTieuDe: 'Muốn hiểu toàn bộ bức tranh của bạn?',
+    moBucTranhMo:
+      'Đăng nhập để Celes ghi nhớ lá số này và mở các phần chuyên sâu về tính cách, công việc, tài lộc, tình cảm, gia đình, quan hệ và những giai đoạn bạn đang đi qua.',
+    moLuanGiaiDayDu: 'Mở luận giải đầy đủ',
+    chuMoBucTranh: 'Miễn phí để bắt đầu · Lá số của bạn sẽ được giữ lại cho lần sau.',
     moiLaPhanDau: 'Đây mới chỉ là phần đầu',
     giuHanhTrinh: 'Giữ lại hành trình của tôi',
     chiXemTongQuan: 'Tôi chỉ muốn xem tổng quan',
@@ -279,16 +284,16 @@ export const vi = {
   },
 
   hanhTrinh: {
-    eyebrow: 'HÀNH TRÌNH',
-    tieuDe: 'Bạn đang ở đâu trong nhịp của mình',
-    moTa: 'Cuộc đời trong lá số không chạy đều: có quãng dài đổi hướng, có năm nổi lên một chuyện, có tháng chỉ cần giữ nhịp. Đây là ba lớp đó xếp chồng lên nhau.',
+    eyebrow: 'HÀNH TRÌNH CỦA BẠN',
+    tieuDe: 'Nhìn lại những giai đoạn đang định hình bạn',
+    moTa: 'Có những thay đổi diễn ra trong nhiều năm, có chuyện chỉ nổi lên trong một năm, và có tháng chỉ cần chú ý đúng một điều. Celes đặt các lớp đó cạnh nhau để bạn thấy điều gì là xu hướng dài, điều gì chỉ là một nhịp ngắn.',
     xemCua: 'Đang xem hành trình của',
     giaiDoanTieuDe: 'Những quãng dài',
-    giaiDoanMo: 'Mỗi quãng khoảng mười năm và thường đổi trọng tâm khi sang quãng mới.',
+    giaiDoanMo: 'Nhìn vào những giai đoạn kéo dài nhiều năm để thấy trọng tâm cuộc sống đang dịch chuyển về đâu.',
     namTieuDe: 'Từng năm',
-    namMo: 'Chọn một năm bất kỳ — đã qua hay chưa tới — để xem năm đó nghiêng về đâu.',
+    namMo: 'Mỗi năm làm nổi lên một vài chủ đề khác nhau. Chọn năm bạn muốn xem để biết điều gì đáng chú ý và vì sao.',
     thangTieuDe: 'Từng tháng trong năm {nam}',
-    thangMo: 'Tháng ở đây tính theo cách chia của lá số, nên có thể lệch với lịch treo tường vài ngày.',
+    thangMo: 'Đi sâu vào nhịp ngắn hơn: cơ hội, điểm dễ căng và những thay đổi chỉ xuất hiện trong một khoảng thời gian ngắn. Tháng ở đây tính theo cách chia của lá số nên có thể lệch lịch treo tường vài ngày.',
     dangDienRa: 'Đang ở đây',
     veHienTai: 'Về hiện tại',
     lui: 'Lùi',
@@ -349,6 +354,201 @@ export const vi = {
         moTa: 'Hành trình đọc ra từ bản đồ đã lưu: quãng dài bạn đang đi qua, năm nay nghiêng về đâu, tháng này nổi lên chuyện gì. Tạo tài khoản miễn phí để mở.',
       },
     },
+  },
+
+  luanSau: {
+    eyebrow: 'BỨC TRANH ĐẦY ĐỦ',
+    tieuDe: 'Tám phần của lá số này, nói bằng tiếng người',
+    moTa: 'Mỗi phần bắt đầu bằng một câu kết luận, rồi mới tới chi tiết. Muốn kiểm chứng thì mở phần căn cứ ngay dưới.',
+    hoiVePhanNay: 'Hỏi Celes về phần này',
+  },
+
+  giuLaSo: {
+    tieuDeDaDangNhap: 'Bạn muốn giữ lại lá số này trước khi rời đi?',
+    moTaDaDangNhap:
+      'Nếu lưu lại, Celes sẽ nhớ lá số này để bạn tiếp tục xem Hành trình, Hỏi Celes hoặc quay lại đúng phần đang đọc mà không cần nhập lại.',
+    luu: 'Giữ lại lá số này',
+    roiDi: 'Rời đi không lưu',
+    oLai: 'Ở lại',
+    tieuDeKhach: 'Muốn giữ lại lá số này cho lần sau?',
+    moTaKhach:
+      'Lá số này đang chỉ nằm trên máy bạn. Đăng nhập một lần là Celes nhớ được, và lần sau mở lên đã có sẵn.',
+    dangNhapDeLuu: 'Đăng nhập để lưu',
+    dangLuu: 'Đang lưu…',
+  },
+
+  danhSach: {
+    eyebrow: 'DANH SÁCH LÁ SỐ',
+    tieuDe: 'Những lá số bạn đang giữ',
+    laSoCuaToi: 'Lá số của tôi',
+    datLamCuaToi: 'Đặt làm lá số của tôi',
+    dangDat: 'Đang đặt…',
+    themLaSo: '+ Thêm lá số',
+    xemLaSo: 'Xem lá số',
+    sua: 'Sửa',
+    xoa: 'Xoá',
+    xacNhanXoa: 'Xoá lá số của {ten}? Thao tác này không hoàn lại được.',
+    khongXoaMacDinh:
+      'Đây đang là "Lá số của tôi". Chọn một lá số khác làm mặc định trước khi xoá lá số này.',
+    trong: 'Chưa có lá số nào được giữ. Thêm lá số đầu tiên để Celes có thứ để đọc cùng bạn.',
+    luuTheoTaiKhoan: 'Đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.',
+    luuTheoTrinhDuyet:
+      'Đang lưu ngay trên trình duyệt này. Đăng nhập để giữ lại và dùng được trên mọi thiết bị.',
+    chuyenLenTaiKhoan: 'Chuyển những lá số đang lưu ở trình duyệt này lên tài khoản',
+    khongCoGiDeChuyen: 'Không có lá số nào đang lưu ở trình duyệt này để chuyển.',
+    luuLai: 'Lưu lại',
+    huy: 'Huỷ',
+    khongTen: 'Không tên',
+    gio: '{gio} giờ',
+    nam: 'Nam',
+    nu: 'Nữ',
+    loiLuu: 'Chưa lưu được — thử lại sau một chút.',
+    loiDat: 'Chưa đặt được — thử lại sau một chút.',
+    loiXoa: 'Chưa xoá được — thử lại sau một chút.',
+    loiChuyen: 'Chưa chuyển được — thử lại sau một chút.',
+    khongTinhDuoc: 'Không tính được lá số',
+    xemLaSoKhac: 'Xem một lá số khác',
+    taoLaSoKhac: 'Tạo lá số khác',
+  },
+
+  hoiCeles: {
+    eyebrow: 'HỎI CELES',
+    tieuDe: 'Bạn đang băn khoăn điều gì?',
+    dangNoiVe: 'Đang nói về',
+    nguoiVuaNhap: '— Lá số vừa nhập —',
+    hoiVeNguoiKhac: 'Hỏi về một lá số khác',
+    hoiVeNguoiNay: 'Hỏi về lá số này',
+    canBietAi: 'Celes cần biết đang nói về lá số nào',
+    canBietAiMo:
+      'Chọn một lá số đã lưu, hoặc điền ngày giờ sinh ở bên trái. Không có lá số thì câu trả lời chỉ còn là lời khuyên chung chung.',
+    oNhap: 'Nói với Celes…',
+    gui: 'Gửi',
+    dangTraLoi: 'Celes đang đọc bản đồ của bạn…',
+    loi: 'Celes chưa trả lời được lúc này. Câu hỏi của bạn vẫn được giữ — thử lại sau một chút.',
+    xoaHoiThoai: 'Xoá hội thoại',
+    mienTru:
+      'Celes đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết — và không thay thế tư vấn y tế, tài chính hay pháp lý.',
+    goiYTieuDe: 'Chưa biết bắt đầu từ đâu?',
+    goiY: [
+      'Điểm mạnh nào của tôi đang bị bỏ quên?',
+      'Tôi dễ mắc kẹt ở đâu trong công việc?',
+      'Giai đoạn này tôi nên ưu tiên điều gì?',
+      'Tình cảm hiện tại đang cho tôi bài học gì?',
+      'Năm nay điều gì đáng chú ý nhất?',
+      'Giải thích cung Mệnh của tôi theo cách dễ hiểu.',
+      'Vì sao Celes nói tôi đang ở một giai đoạn cần thay đổi?',
+      'Cho tôi xem căn cứ Tử Vi phía sau nhận định này.',
+    ],
+    khamPhaNhanhTieuDe: 'Khám phá nhanh',
+    khamPhaNhanh: [
+      { nhan: 'Bản thân', cauHoi: 'Điều gì đang nổi bật nhất ở bản thân tôi lúc này?' },
+      { nhan: 'Công việc', cauHoi: 'Công việc hiện tại có hợp với cách tôi vận hành không?' },
+      { nhan: 'Tình cảm', cauHoi: 'Tôi thường lặp lại điều gì trong các mối quan hệ?' },
+      { nhan: 'Tài chính', cauHoi: 'Tôi đang mất cân bằng ở đâu về tiền bạc?' },
+      { nhan: 'Gia đình', cauHoi: 'Tôi đang gánh vai trò gì trong gia đình mà không nhận ra?' },
+      { nhan: 'Giai đoạn hiện tại', cauHoi: 'Giai đoạn này đang muốn nói gì với tôi?' },
+    ],
+    tuXemTieuDe: 'Muốn tự xem bản đồ?',
+    tuXemMo:
+      'Mở toàn bộ 12 cung, các sao và độ sáng — dành cho lúc bạn muốn tự đối chiếu thay vì hỏi.',
+    tuXemNut: 'Khám phá bản đồ',
+  },
+
+  chiTietHan: {
+    xemChiTiet: 'Xem chi tiết',
+    xemChiTietMo:
+      'Không chỉ cho biết vận đang đi qua cung nào. Celes ghép sao, các cung liên hệ và những lớp vận đang cùng hoạt động để giải thích bức tranh đầy đủ hơn.',
+    quayLai: 'Hành trình',
+    tongQuan: 'Tổng quan',
+    viSao: 'Vì sao Celes nói vậy?',
+    viSaoDong: 'Thu gọn căn cứ',
+    theoLinhVuc: 'Luận theo lĩnh vực',
+    ctaTieuDe: 'Có điều gì trong giai đoạn này khiến bạn băn khoăn?',
+    ctaNut: 'Hỏi Celes về giai đoạn này',
+    chuaCoLaSo: 'Chưa có lá số nào để luận',
+    chuaCoLaSoMo: 'Chọn hoặc lập một lá số trước, rồi quay lại phần này.',
+  },
+
+  cachHoatDong: {
+    eyebrow: 'CÁCH CELES ĐỒNG HÀNH CÙNG BẠN',
+    tieuDe: 'Bắt đầu từ điều bạn đang băn khoăn',
+    intro:
+      'Bạn không cần biết Tử Vi, cũng không cần chuẩn bị một câu hỏi thật “đúng”. Chỉ cần bắt đầu từ điều đang khiến bạn nghĩ nhiều. Phần còn lại, Celes sẽ cùng bạn gỡ từng lớp.',
+    buoc: [
+      {
+        tieuDe: 'Kể Celes biết điều bạn đang nghĩ',
+        noiDung:
+          'Chọn một chủ đề hoặc nói thẳng điều đang khiến bạn phân vân. Công việc, tình cảm, một quyết định, hay đơn giản là muốn hiểu mình hơn.',
+      },
+      {
+        tieuDe: 'Celes nhìn vào bức tranh của riêng bạn',
+        noiDung:
+          'Celes đọc lá số và giai đoạn bạn đang đi qua, rồi nối các chi tiết liên quan với nhau để tìm ra điều thực sự đáng chú ý.',
+      },
+      {
+        tieuDe: 'Bạn nhận một góc nhìn để tự quyết định',
+        noiDung:
+          'Celes không quyết thay bạn. Mỗi nhận định đều có phần “Vì sao?” để bạn xem căn cứ, cân nhắc và chọn bước tiếp theo theo cách của mình.',
+      },
+    ],
+    tinEyebrow: 'VÌ SAO TIN ĐƯỢC',
+    tinTieuDe: 'Ba điều Celes không làm',
+    tin: [
+      {
+        ten: 'Không nói vo',
+        mo: 'Điều Celes dùng để đọc lá số được tính trước và có thể đối chiếu lại.',
+      },
+      {
+        ten: 'Không giấu căn cứ',
+        mo: 'Bạn có thể mở “Vì sao?” để xem Celes đang dựa vào cung, sao, mối liên hệ và giai đoạn nào.',
+      },
+      {
+        ten: 'Không phán thay bạn',
+        mo: 'Celes nói về xu hướng và điều nên lưu ý, không khẳng định tương lai chắc chắn sẽ xảy ra.',
+      },
+    ],
+    phuongPhapEyebrow: 'PHƯƠNG PHÁP TÍNH',
+    phuongPhapTieuDe: 'Phần dành cho ai muốn kiểm chứng',
+    phuongPhapMo:
+      'Phần dưới đây là lớp kỹ thuật. Không cần đọc để dùng Celestia, nhưng nó luôn ở đây cho ai muốn đối chiếu.',
+    lop: [
+      {
+        ten: 'Phần được tính cố định',
+        mo: 'Chuyển ngày dương sang âm lịch, xác định Mệnh, Thân, Cục, rồi an toàn bộ sao lên 12 cung. Toàn bộ bước này chạy bằng công thức. Cùng một ngày giờ sinh luôn ra cùng một lá số, hôm nay hay năm sau cũng vậy.',
+      },
+      {
+        ten: 'Phần được diễn giải',
+        mo: 'Các góc nhìn ngắn, bảng luận giải theo lĩnh vực và bài luận hạn đều dựng bằng công thức từ chính dữ liệu trên, nên hiện ra tức thì và lần nào cũng như nhau. Chỉ bài đọc dài theo chủ đề và phần trò chuyện mới được viết lại thành câu chuyện liền mạch.',
+      },
+      {
+        ten: 'Phần bạn kiểm chứng được',
+        mo: 'Mỗi nhận định đều có nút mở ra xem nó dựa trên cung nào, sao nào, độ sáng ra sao, và bộ quy tắc phiên bản nào đã tính ra nó.',
+      },
+    ],
+    hoiEyebrow: 'CÂU HỎI THƯỜNG GẶP',
+    hoiTieuDe: 'Những điều nên biết trước',
+    hoi: [
+      {
+        hoi: 'Celestia tính theo quy tắc nào?',
+        dap: 'Celestia dùng một bộ quy tắc có tên và có phiên bản, thay vì gắn nhãn một trường phái chung chung. Mỗi bài luận đều ghi kèm phiên bản đã dùng, nên đọc lại sau này vẫn biết kết quả sinh ra từ đâu. Chi tiết bộ quy tắc nằm ở phần căn cứ của từng bài.',
+      },
+      {
+        hoi: 'Vì sao lại cần giờ sinh?',
+        dap: 'Giờ sinh quyết định cung Mệnh nằm ở đâu, mà gần như mọi thứ còn lại đều đọc từ đó. Lệch một canh giờ là lá số khác hẳn. Nếu bạn không chắc giờ sinh, Celestia sẽ nói rõ điều đó thay vì lặng lẽ đưa ra một kết quả có thể sai.',
+      },
+      {
+        hoi: 'Celes có tự nghĩ ra dữ kiện không?',
+        dap: 'Không. Mọi dữ kiện lá số và giai đoạn đều do phần tính toán cung cấp; phần diễn giải chỉ được dùng lại đúng những dữ kiện đó. Khi có tài liệu trong kho tri thức, phần trích dẫn ghi rõ lấy từ tài liệu nào.',
+      },
+      {
+        hoi: 'Celestia có đoán trước tương lai không?',
+        dap: 'Không. Celestia mô tả xu hướng của một giai đoạn, không khẳng định sự việc sẽ xảy ra. Bạn nên đọc nó như một góc nhìn thêm trước khi tự quyết định, không phải như một lời phán.',
+      },
+    ],
+    cuoiEyebrow: 'THỬ XEM SAO',
+    cuoiTieuDe: 'Đọc thì lâu, xem thì nhanh hơn',
+    cuoiMo: 'Lập một lá số và tự mở phần căn cứ — nhanh hơn là đọc hết trang này.',
+    cuoiNut: 'Lập lá số miễn phí',
   },
 
   chan: {
