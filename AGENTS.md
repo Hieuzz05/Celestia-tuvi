@@ -88,12 +88,31 @@ họ còn nguyên và nên làm gì tiếp.
 - **Hôm nay đọc `idMacDinh`, không phải `idDangXem`.** Xem tạm lá số khác ở màn khác không được
   làm đổi trang chủ.
 
+### Kho tri thức (RAG)
+
+- **Chỉ phiên bản `da_xuat_ban` mới được truy hồi.** Nạp tài liệu xong nó dừng ở `can_duyet`.
+  Ràng buộc này nằm trong `tim_kien_thuc_vector`/`tim_kien_thuc_tu_khoa` chứ không ở tầng ứng dụng —
+  đừng viết truy vấn thẳng vào `knowledge_chunks` để "cho nhanh".
+- **Đổi bảng từ khoá hay bảng chủ đề → cung thì phải tăng `PHIEN_BAN_PLANNER`**, rồi chạy lại
+  `scripts/eval-planner.ts`. Không đánh số thì hai lần eval không so được với nhau.
+- **Từ điển `lib/rag/thuc-the.ts` phải phủ đúng mọi sao `lib/tuvi/ansao.ts` an được.** Thiếu một sao
+  là validator không bắt được khi model bịa ra nó. `scripts/test-rag-planner.ts` tự đối chiếu.
+- **Không cộng điểm vector với điểm từ khoá.** Hai thang đo khác nhau; trộn bằng RRF theo thứ hạng.
+- **Ngưỡng cosine không phải hằng số.** Mặc định của `truyHoi` là 0 (không lọc); con số nào cũng
+  phải chỉnh bằng eval chứ không chọn bằng cảm giác. Bản cũ để cứng 0.6 và không ai biết nó cắt mất gì.
+- **Model không được lấp học thuyết tử vi bằng trí nhớ của nó.** Thiếu nguồn thì thu hẹp kết luận.
+  Câu "kho trống thì vẫn chạy bằng kiến thức sẵn có của model" là sai kiến trúc, đừng viết lại.
+- **Validator bỏ ý hỏng, nhưng không bao giờ trả về bài rỗng.** Nếu mọi ý đều hỏng thì giữ nguyên
+  bài và ghi `dat: false` — xem ghi chú trong `locYHong` để biết vì sao.
+
 ## Kiểm tra trước khi commit
 
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
 npm run lint              # ĐANG có sẵn 8 lỗi set-state-in-effect — đừng để tăng thêm
+npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
+npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
 ```

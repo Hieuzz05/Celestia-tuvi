@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { canDangNhap } from '@/lib/auth/cong';
 import { chotCauHoi, datChoCauHoi, hoanCauHoi } from '@/lib/support/quota';
-import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
-import { dungPromptHoiDap, type TinNhan } from '@/lib/ai/prompt';
-import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
+import { KhongCoModelError } from '@/lib/ai/fallback';
+import type { TinNhan } from '@/lib/ai/prompt';
+import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
+import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 
 export const maxDuration = 60;
@@ -79,22 +80,6 @@ export async function POST(req: Request) {
     hoTen: typeof body.hoTen === 'string' ? body.hoTen.slice(0, 80) : undefined,
   });
 
-  const cungMenh = laSo.cungs[laSo.menhIndex];
-  const saoMenh = cungMenh.sao
-    .filter((s) => s.loai === 'chinh-tinh' || s.loai === 'tu-hoa')
-    .map((s) => s.ten)
-    .join(' ');
-  const doans = await truyHoiTriThuc(`${cauHoi}. ${saoMenh}`, 5);
-
-  const { system, user } = dungPromptHoiDap(
-    laSo,
-    namXem,
-    thangXem,
-    lichSu,
-    cauHoi,
-    dungKhoiTriThuc(doans)
-  );
-
   // Đặt chỗ NGAY TRƯỚC khi gọi model: câu thứ 6 không được phép chạm tới nhà
   // cung cấp. Kiểm ở React không tính là chặn — ai cũng gọi thẳng endpoint được.
   const requestId = randomUUID();
@@ -102,16 +87,46 @@ export async function POST(req: Request) {
   if (!cho.duocPhep) return cho.chan!;
 
   try {
-    const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
+    const kq = await traLoiCoCanCu({
+      laSo,
+      cauHoi,
+      namXem,
+      thangXem,
+      lichSu,
+      requestId,
+    });
     await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
+
+    // Ghi vết sau khi đã chốt: nhật ký hỏng không được làm mất câu trả lời.
+    await ghiVetTraLoi({
+      requestId,
+      chartHash: bamLaSo(body.ngay!, body.thang!, body.nam!, body.gio!, body.gioiTinh as string),
+      cauHoi,
+      runId: kq.runId,
+      phienBan: kq.phienBan,
+      provider: kq.provider,
+      model: kq.model,
+      doTreMs: kq.doTreMs.tong,
+      kiemDuyet: kq.kiemDuyet ?? undefined,
+    });
+
     return NextResponse.json({
-      traLoi: kq.text,
+      traLoi: kq.van,
       model: `${kq.provider}/${kq.model}`,
-      nguonTriThuc: doans.map((d) => ({
-        tieuDe: d.tieuDe,
-        hePhai: d.hePhai,
-        diem: Math.round(d.diemTuongDong * 100),
-      })),
+      // "Muốn biết vì sao không?" — căn cứ để UI mở ra khi người đọc muốn xem.
+      canCu: {
+        duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
+        nguon: kq.goi.bangChung.map((e) => ({
+          id: e.id,
+          tieuDe: e.tieuDe,
+          phienBan: e.phienBanTaiLieu,
+          deMuc: e.duongDeMuc,
+          hePhai: e.hePhai,
+        })),
+        chuDe: kq.goi.chuDe,
+        cungLienQuan: kq.goi.cungLienQuan,
+        phuongPhap: `${kq.phienBan.engine} v${kq.phienBan.phuongPhap}`,
+      },
     });
   } catch (e) {
     // Hỏng ở phía nhà cung cấp là lỗi của hệ thống, không phải của người dùng —

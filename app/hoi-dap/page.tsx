@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { NguonTriThuc } from '@/components/NguonTriThuc';
+import { CanCu, type CanCuTraLoi } from '@/components/CanCu';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
-import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
 import { ghiSuKien } from '@/lib/analytics';
 import { useBoiCanh } from '@/lib/store/boi-canh';
 import type { HoSo } from '@/lib/store/hoso';
@@ -22,7 +21,7 @@ import { dien, useT } from '@/lib/i18n/context';
 interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
   noiDung: string;
-  nguon?: Nguon[];
+  canCu?: CanCuTraLoi;
 }
 
 function formTuHoSo(h: HoSo): ThongTinForm {
@@ -174,7 +173,7 @@ function TrangHoiDap() {
       if (!res.ok) throw new Error(data.loi ?? 'Không nhận được trả lời');
       setTinNhan((ds) => [
         ...ds,
-        { vaiTro: 'tro-ly', noiDung: data.traLoi, nguon: data.nguonTriThuc },
+        { vaiTro: 'tro-ly', noiDung: data.traLoi, canCu: data.canCu },
       ]);
       quyenCeles.taiLai();
     } catch {
@@ -351,7 +350,7 @@ function TrangHoiDap() {
                      nhà cung cấp phía sau là chuyện của trang quản trị. */
                   <div key={i} className="flex flex-col gap-[6px]">
                     <MarkdownLuanGiai noiDung={m.noiDung} nho />
-                    <NguonTriThuc nguon={m.nguon} />
+                    <CanCu canCu={m.canCu} />
                   </div>
                 )
               )}

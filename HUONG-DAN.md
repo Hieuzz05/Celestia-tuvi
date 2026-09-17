@@ -345,43 +345,89 @@ Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) v
 
 ### 3.4 Bật kho tri thức (RAG)
 
-Kho tri thức cho phép nạp tài liệu tử vi của riêng bạn để AI trích dẫn khi luận giải, thay vì chỉ
-dựa vào kiến thức chung của model.
+Kho tri thức cho phép nạp tài liệu tử vi của riêng bạn để Celes dựa vào khi luận giải, thay vì chỉ
+dùng kiến thức chung của model.
 
-1. **Tạo bảng**: mở https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/sql/new, dán toàn
-   bộ `supabase/schema-rag.sql` rồi Run. File này bật extension `pgvector`, tạo 2 bảng kho tri thức
-   và bảng nhật ký dùng model. Chạy lại nhiều lần được.
-2. **Lấy service role key**: Project Settings → API Keys → mục `service_role`. Thêm vào `.env.local`:
-   ```
-   SUPABASE_SERVICE_ROLE_KEY=...
-   ```
-   Trên Vercel khai báo biến này kiểu **Secret** (không có tiền tố `NEXT_PUBLIC_`).
+**1. Tạo bảng.** Mở https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/sql/new, dán toàn bộ
+`supabase/schema-rag-v2.sql` rồi Run. File bật `pgvector` + `pg_trgm`, tạo bảng nguồn, bảng phiên
+bản, bảng đoạn, từ điển thực thể, nhật ký truy hồi và bộ đánh giá. Chạy lại nhiều lần được.
 
-> **Vì sao cần service role?** Hai bảng kho tri thức bật RLS nhưng **cố tình không có policy nào**,
-> nghĩa là anon key bị chặn hoàn toàn. Chỉ mã chạy trên server mới đọc/ghi được. Đây là chủ ý:
-> tài liệu bản quyền của bạn không nên tải được từ trình duyệt của bất kỳ ai.
->
-> Service role key có quyền bỏ qua mọi RLS — **tuyệt đối không** đặt tiền tố `NEXT_PUBLIC_` cho nó.
+> `schema-rag.sql` (bản cũ) giữ lại cho tương thích, **không cần chạy nữa**. Bản v2 tạo đủ mọi thứ
+> bản cũ tạo.
 
-3. **Nạp tài liệu**: vào trang `/admin` → mục *Kho tri thức*. Chọn tệp `.txt`/`.md` hoặc dán nội
-   dung, đặt tiêu đề, chọn hệ phái (Nam phái / Bắc phái / Dùng chung) rồi bấm *Nạp vào kho*.
+**2. Lấy service role key.** Project Settings → API Keys → `service_role`. Thêm vào `.env.local`:
 
-Cách hệ thống dùng kho:
+```
+SUPABASE_SERVICE_ROLE_KEY=...
+```
 
-- Câu truy vấn được dựng từ **chính các sao có thật trong lá số** (chính tinh + tứ hóa tại cung
-  Mệnh, cục) cộng với chủ đề đang xem — nên tìm được đoạn nói đúng bộ sao đó, không chỉ khớp tên
-  chủ đề chung chung.
-- Chủ đề *Vận hạn* ưu tiên tài liệu **Bắc phái**, các chủ đề còn lại ưu tiên **Nam phái**; tài liệu
-  đánh dấu *Dùng chung* luôn được xét.
-- Chỉ lấy đoạn có độ liên quan **từ 60% trở lên**. Ngưỡng này đo thực tế: câu hỏi đúng chủ đề đạt
-  ~79%, câu lạc đề ~49%.
-- Bản luận giải hiển thị rõ đã trích từ tài liệu nào, để phân biệt được đâu là kiến thức từ kho,
-  đâu là kiến thức chung của model.
-- Kho trống hoặc chưa cấu hình thì luận giải **vẫn chạy bình thường** bằng kiến thức của model.
+Trên Vercel khai báo kiểu **Secret**, **không** có tiền tố `NEXT_PUBLIC_`.
 
-Giới hạn hiện tại: mỗi lần nạp tối đa 60 đoạn (~60.000 ký tự) vì hạn mức embedding của Gemini free
-tier tính theo phút; tài liệu dài hơn thì chia nhỏ nạp làm nhiều lần. Định dạng nhận: `.txt`, `.md`,
-`.csv` — PDF/DOCX cần thư viện bóc tách riêng, sẽ bổ sung sau.
+> **Vì sao cần service role?** Mọi bảng kho tri thức bật RLS nhưng **cố tình không có policy nào**,
+> nên anon key bị chặn hoàn toàn. Chỉ mã chạy trên server mới đọc/ghi được — tài liệu bản quyền của
+> bạn không nên tải được từ trình duyệt của bất kỳ ai. Key này bỏ qua mọi RLS, nên tuyệt đối không
+> để nó ra phía trình duyệt.
+
+**3. Nạp nguồn.** Vào `/admin` → *Kho tri thức* → **Thêm nguồn**. Khai tiêu đề, phiên bản, hệ phái,
+loại nguồn và mức tin cậy, rồi chọn tệp `.txt`/`.md` hoặc dán nội dung.
+
+**4. Xuất bản.** Đây là bước dễ quên nhất, và nó quan trọng:
+
+> **Nạp xong tài liệu CHƯA được Celes dùng.** Nó dừng ở trạng thái *Cần duyệt*. Bạn phải mở bảng
+> phiên bản và bấm **Xuất bản** thì truy hồi mới chạm tới nó. Cột *Được truy hồi?* nói thẳng điều
+> này cho từng phiên bản.
+
+Lý do: một tài liệu cắt hỏng mà đi thẳng vào production sẽ nhiễm vào mọi câu trả lời sau đó, và
+không ai phát hiện ra vì hệ thống vẫn "chạy bình thường". Mỗi nguồn chỉ có đúng một phiên bản đang
+xuất bản — ràng buộc nằm ở tầng database, không phải ở giao diện.
+
+Vòng đời một phiên bản:
+
+| Trạng thái | Celes dùng? | Nghĩa là |
+|---|---|---|
+| Nháp | Không | Đã tạo bản ghi, chưa xử lý |
+| Đang xử lý | Không | Đang cắt đoạn, rút thực thể, sinh vector |
+| Cần duyệt | Không | Xử lý xong, chờ bạn xem rồi xuất bản |
+| Đã xuất bản | **Có** | Bản đang dùng thật |
+| Thất bại | Không | Hỏng ở bước nào đó, có ghi lỗi |
+| Lưu trữ | Không | Giữ vết nhưng không còn dùng |
+
+**5. Kiểm tra bằng Retrieval Lab.** `/admin/retrieval-lab` chạy đúng bộ lập kế hoạch và truy hồi mà
+Celes dùng, nhưng **không gọi model**. Nhập câu hỏi rồi xem:
+
+- **Bộ lập kế hoạch**: chủ đề đọc được, các cung liên quan, lớp hạn, thực thể nhận ra, và câu truy
+  vấn đã viết lại. Sai ở đây thì không phải lỗi của embedding.
+- **Bảng kết quả**: hạng và điểm của nhánh vector, hạng và điểm của nhánh từ khoá, điểm RRF, và đoạn
+  nào thật sự vào bài. Hai cột điểm để riêng vì chúng là hai thang đo khác nhau — cộng lại là mất
+  luôn khả năng gỡ lỗi.
+
+### 3.4b Celes dùng kho như thế nào
+
+Đường đi của một câu hỏi:
+
+```
+Câu hỏi
+  ↓  nhận dạng thực thể (sao / cung / Tứ Hóa / lớp hạn) bằng từ điển
+  ↓  lập kế hoạch: chủ đề → cung liên quan → lớp hạn → viết lại truy vấn
+  ↓  chọn dữ kiện lá số (F001, F002…) — không đổ cả 12 cung
+  ↓  truy hồi: vector ‖ từ khoá  →  trộn RRF  →  6 đoạn (E001, E002…)
+  ↓  gói bằng chứng  →  model  →  JSON có trích mã
+  ↓  validator đối chiếu mã và tên sao
+Câu trả lời + phần "căn cứ"
+```
+
+Vài điểm đáng biết:
+
+- **Truy vấn không phải câu bạn gõ.** Nó được viết lại để nói cả tiếng người dùng lẫn thuật ngữ tài
+  liệu: "năm nay có nên đổi việc" trở thành câu hỏi kèm *Cung liên quan: Quan Lộc, Mệnh, Tài Bạch,
+  Thiên Di* và tên các sao thật sự đứng ở những cung đó.
+- **Tìm bằng hai nhánh.** Vector bắt đúng ý, từ khoá bắt đúng chữ. Cần cả hai vì "Thiên Riêu" và
+  "Thiên Y" rất gần nhau trong không gian vector nhưng là hai sao khác hẳn.
+- **Mỗi khẳng định phải có mã.** Model trích `F003` (dữ kiện lá số) hoặc `E002` (nguồn tài liệu);
+  validator đối chiếu lại. Ý nào nhắc tên sao không có trong dữ kiện lẫn nguồn thì bị loại.
+- **Kho trống thì Celes thu hẹp kết luận**, nói rõ là chưa đủ căn cứ chuyên môn — chứ **không** tự
+  bổ sung học thuyết từ trí nhớ của model. Đây là chủ ý, không phải thiếu sót.
+
 
 ### 3.5 Chỉ định tài khoản quản trị
 
@@ -436,7 +482,12 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Đăng nhập email + Google | Xong — cần tạo project Supabase |
 | Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
 | Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |
-| Kho tri thức RAG | Xong — cần chạy `schema-rag.sql` + service role key |
+| Kho tri thức RAG | Xong — cần chạy `schema-rag-v2.sql` + service role key |
+| Từ điển thực thể + Query Planner | Xong — bộ vàng 62 câu đạt 100% |
+| Truy hồi lai vector + từ khoá (RRF) | Xong — cần schema v2 |
+| Vòng đời nguồn: phiên bản, duyệt, xuất bản | Xong — `/admin/knowledge` |
+| Retrieval Lab | Xong — `/admin/retrieval-lab` |
+| Gói bằng chứng + validator tất định | Xong |
 | Nhật ký dùng model + cảnh báo quota | Xong — cần service role key |
 | Chủ động bỏ qua model đã cạn lượt miễn phí | Xong |
 | Hợp tuổi — so hai lá số | Xong |

@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
-import { KhoTriThuc } from '@/components/KhoTriThuc';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
 import { QuanLyNguoiDung } from '@/components/QuanLyNguoiDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
@@ -179,9 +178,13 @@ export default function AdminPage() {
 
       <NhatKySuDung />
 
-      <KhoTriThuc />
-
-      <div className="pt-[8px]">
+      <div className="flex flex-col gap-[10px] pt-[8px]">
+        <Link href="/admin/knowledge" className="link-text">
+          Kho tri thức — nguồn, phiên bản, xuất bản →
+        </Link>
+        <Link href="/admin/retrieval-lab" className="link-text">
+          Retrieval Lab — xem Celes lấy đoạn nào →
+        </Link>
         <Link href="/admin/support" className="link-text">
           Tình hình Ủng hộ Celes →
         </Link>

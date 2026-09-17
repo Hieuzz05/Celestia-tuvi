@@ -429,6 +429,14 @@ export const en: TuDien = {
     dangTraLoi: 'Celes is reading your map…',
     loi: 'Celes could not answer just now. Your question is kept — try again in a moment.',
     xoaHoiThoai: 'Clear conversation',
+    canCuMo: 'Want to know why?',
+    canCuDong: 'Hide the reasoning',
+    canCuLaSo: 'From your chart',
+    canCuNguon: 'Reference sources',
+    canCuPhuongPhap: 'Method',
+    canCuChuDe: 'Topic detected',
+    canCuKhongNguon:
+      'No document in the library matched this question, so the technical claims were kept deliberately narrow.',
     mienTru:
       'Celes offers a perspective for you to weigh, not a verdict — and it is no substitute for medical, financial or legal advice.',
     goiYTieuDe: 'Not sure where to start?',

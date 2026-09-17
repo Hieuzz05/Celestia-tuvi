@@ -1,0 +1,151 @@
+import { goiVoiFallback } from '@/lib/ai/fallback';
+import type { TinNhan } from '@/lib/ai/prompt';
+import type { LaSo } from '@/lib/tuvi/ansao';
+import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
+import {
+  docTraLoi,
+  dungGoiBangChung,
+  PHIEN_BAN_SCHEMA_OUTPUT,
+  type GoiBangChung,
+  type TraLoiCoCauTruc,
+} from './bang-chung';
+import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
+import { ghiLanTruyHoi } from './nhat-ky';
+import { lapKeHoach, PHIEN_BAN_PLANNER } from './planner';
+import { dungPromptCoCanCu } from './prompt-co-can-cu';
+import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
+
+/**
+ * Ghép toàn bộ đường đi: planner → bối cảnh lá số → truy hồi → gói bằng chứng →
+ * model → kiểm duyệt → dựng chữ.
+ *
+ * Tách khỏi route API để Retrieval Lab và bộ eval chạy được đúng đường đi đó,
+ * chứ không chạy một bản sao gần giống. Hai đường đi gần giống nhau là cách chắc
+ * chắn nhất để eval báo xanh còn người dùng gặp lỗi.
+ */
+
+export interface DauVaoTraLoi {
+  laSo: LaSo;
+  cauHoi: string;
+  namXem: number;
+  thangXem: number;
+  lichSu?: TinNhan[];
+  requestId?: string;
+  cauHinhTruyHoi?: Partial<CauHinhTruyHoi>;
+  /** Không ghi nhật ký khi chạy thử trong Lab hay eval */
+  ghiNhatKy?: boolean;
+}
+
+export interface KetQuaTraLoi {
+  van: string;
+  coCauTruc: TraLoiCoCauTruc | null;
+  goi: GoiBangChung;
+  kiemDuyet: KetQuaKiemDuyet | null;
+  soYBiBo: number;
+  provider: string;
+  model: string;
+  runId: string | null;
+  khoTrong: boolean;
+  phienBan: Record<string, string>;
+  doTreMs: { truyHoi: number; model: number; tong: number };
+}
+
+/** Dựng markdown từ câu trả lời có cấu trúc — UI hiện tại đọc markdown. */
+export function dungVan(t: TraLoiCoCauTruc): string {
+  const phan: string[] = [t.tomTat.trim()];
+
+  for (const y of t.yChinh) {
+    phan.push(y.tieuDe ? `### ${y.tieuDe}\n${y.noiDung.trim()}` : y.noiDung.trim());
+  }
+
+  if (t.canNhac?.length) {
+    phan.push(`### Cần cân nhắc\n${t.canNhac.map((c) => `- ${c}`).join('\n')}`);
+  }
+  if (t.buocTiepTheo?.length) {
+    phan.push(`### Có thể làm gì\n${t.buocTiepTheo.map((c) => `- ${c}`).join('\n')}`);
+  }
+
+  return phan.join('\n\n');
+}
+
+export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
+  const batDau = Date.now();
+
+  // Planner cần biết sao nào đứng ở cung nào để viết lại truy vấn bằng đúng
+  // thuật ngữ tài liệu, nên lá số phải được đọc trước khi lập kế hoạch.
+  const keHoach = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) });
+
+  const { duKien } = chonBoiCanh({
+    laSo: vao.laSo,
+    keHoach,
+    namXem: vao.namXem,
+    thangXem: vao.thangXem,
+  });
+
+  const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
+
+  const runId =
+    vao.ghiNhatKy === false
+      ? null
+      : await ghiLanTruyHoi(keHoach, kqTruyHoi, {
+          requestId: vao.requestId,
+          cauHoi: vao.cauHoi,
+        });
+
+  const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
+  const { system, user } = dungPromptCoCanCu(goi, vao.lichSu ?? []);
+
+  const truocModel = Date.now();
+  const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
+  const doTreModel = Date.now() - truocModel;
+
+  const coCauTruc = docTraLoi(kq.text);
+
+  // Model không trả về JSON đọc được: không bỏ cả câu trả lời, nhưng cũng không
+  // giả vờ đã kiểm duyệt. Người dùng vẫn nhận được chữ, còn trace ghi rõ lượt
+  // này không qua validator.
+  if (!coCauTruc) {
+    return {
+      van: kq.text,
+      coCauTruc: null,
+      goi,
+      kiemDuyet: null,
+      soYBiBo: 0,
+      provider: kq.provider,
+      model: kq.model,
+      runId,
+      khoTrong: kqTruyHoi.khoTrong,
+      phienBan: phienBanHienTai(),
+      doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
+    };
+  }
+
+  const ketQuaKiem = kiemDuyet(coCauTruc, goi);
+  const { traLoi: daLoc, soYBiBo } = locYHong(coCauTruc, ketQuaKiem);
+
+  return {
+    van: dungVan(daLoc),
+    coCauTruc: daLoc,
+    goi,
+    kiemDuyet: ketQuaKiem,
+    soYBiBo,
+    provider: kq.provider,
+    model: kq.model,
+    runId,
+    khoTrong: kqTruyHoi.khoTrong,
+    phienBan: phienBanHienTai(),
+    doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
+  };
+}
+
+export function phienBanHienTai(): Record<string, string> {
+  return {
+    engine: PHUONG_PHAP.id,
+    phuongPhap: PHUONG_PHAP.phienBan,
+    planner: PHIEN_BAN_PLANNER,
+    truyHoi: PHIEN_BAN_TRUY_HOI,
+    schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
+    validator: PHIEN_BAN_VALIDATOR,
+  };
+}

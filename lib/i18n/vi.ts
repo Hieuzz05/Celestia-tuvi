@@ -427,6 +427,14 @@ export const vi = {
     dangTraLoi: 'Celes đang đọc bản đồ của bạn…',
     loi: 'Celes chưa trả lời được lúc này. Câu hỏi của bạn vẫn được giữ — thử lại sau một chút.',
     xoaHoiThoai: 'Xoá hội thoại',
+    canCuMo: 'Muốn biết vì sao không?',
+    canCuDong: 'Thu gọn căn cứ',
+    canCuLaSo: 'Lá số của bạn',
+    canCuNguon: 'Nguồn tham chiếu',
+    canCuPhuongPhap: 'Phương pháp',
+    canCuChuDe: 'Chủ đề đọc được',
+    canCuKhongNguon:
+      'Chưa có nguồn tài liệu nào trong kho khớp với câu hỏi này, nên phần nhận định chuyên môn đã được thu hẹp lại.',
     mienTru:
       'Celes đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết — và không thay thế tư vấn y tế, tài chính hay pháp lý.',
     goiYTieuDe: 'Chưa biết bắt đầu từ đâu?',
