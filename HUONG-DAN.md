@@ -592,6 +592,10 @@ cũng chỉ cấp quyền đúng một lần.
 Tác vụ định kỳ cần `CRON_SECRET` (chuỗi ngẫu nhiên dài) trên Vercel. Bỏ trống thì nó tự tắt; hai
 lớp kia vẫn chạy.
 
+> **Lịch cron phải hợp với gói Vercel.** Gói Hobby chỉ cho tối đa **một lần mỗi ngày**. Khai dày
+> hơn trong `vercel.json` thì Vercel **từ chối cả bản deploy** — không phải chỉ bỏ qua cron, mà
+> là build đỏ và production vẫn nằm ở bản cũ. Đang để `0 3 * * *`; lên Pro thì hạ được.
+
 ### Con số thương mại
 
 Tất cả nằm ở `lib/support/config.ts`, đọc từ biến môi trường. Đổi trên Vercel rồi redeploy, đừng

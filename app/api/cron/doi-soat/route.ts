@@ -14,8 +14,16 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
  * Bảo vệ bằng CRON_SECRET để không ai gọi tuỳ tiện. Vercel Cron gửi kèm header
  * `Authorization: Bearer <CRON_SECRET>`.
  *
+ * Lịch trong `vercel.json` để mỗi ngày một lần vì **gói Hobby chỉ cho phép tối
+ * đa một lần mỗi ngày** — khai dày hơn thì Vercel TỪ CHỐI CẢ BẢN DEPLOY, không
+ * phải chỉ bỏ qua cron. Lên Pro thì hạ xuống 15 phút một lần được.
+ *
+ * Mỗi ngày một lần nghe thưa, nhưng đây là lớp thứ ba: webhook lo phần lớn,
+ * lớp đối soát khi mở trang thanh toán lo tiếp, còn đây chỉ vét nốt những đơn
+ * mà cả hai đều trượt.
+ *
  * Chỉ đụng tới đơn tạo trong 7 ngày gần đây: cũ hơn thì payOS cũng đã đóng, và
- * quét cả bảng mỗi 15 phút là việc vô ích.
+ * quét cả bảng là việc vô ích.
  */
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
