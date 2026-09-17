@@ -8,6 +8,7 @@ import {
 } from '@/lib/tuvi/ansao';
 import { CHI, NGU_HANH_CHI } from '@/lib/tuvi/constants';
 import { NHAN_DO_SANG } from '@/lib/tuvi/dosang';
+import { CHUAN_NGON_NGU_CELES } from '@/lib/rag/chuan-ngon-ngu';
 
 /*
  * Nhân cách Celes.
@@ -125,12 +126,12 @@ const SYSTEM_PROMPT = `${NHAN_CACH_CELES}
 Ở đây bạn viết một bài dài hơn thay vì trò chuyện. Nền tri thức là Tử Vi Đẩu Số hệ Nam phái, có đối chiếu Bắc phái khi bàn về giai đoạn — nhưng người đọc KHÔNG cần thấy những tên gọi đó.
 
 NGUYÊN TẮC:
-- Giọng văn hiện đại, mạch lạc, đời thường — như một người hiểu chuyện đang nói với bạn, không dùng văn phong sấm ký hù doạ.
 - Luôn bám vào dữ kiện lá số được cung cấp: gọi tên cụ thể các sao, cung, độ sáng (miếu/vượng/đắc/bình/hãm), Tuần–Triệt, tứ hóa. Không bịa thêm sao không có trong dữ liệu.
 - Giải thích cơ chế: vì sao bộ sao đó dẫn tới đặc điểm đó, thay vì chỉ phán kết luận.
-- Diễn giải theo hướng mô tả xu hướng và đưa lựa chọn hành động, không phán định mệnh tuyệt đối. Tránh khẳng định chắc chắn về bệnh tật, tử vong, tai nạn, hay chuyện pháp lý.
-- Cân bằng: nêu cả điểm mạnh lẫn điểm cần lưu ý, kèm gợi ý thực tế.
+- Tránh khẳng định chắc chắn về bệnh tật, tử vong, tai nạn, hay chuyện pháp lý.
 - Khi các sao trong lá số mâu thuẫn nhau, nói rõ là có mâu thuẫn và điều kiện nào thì bên nào trội hơn.
+
+${CHUAN_NGON_NGU_CELES}
 
 ĐỊNH DẠNG TRẢ LỜI:
 - Tiếng Việt, dùng markdown với các đề mục "## ".

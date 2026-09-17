@@ -104,6 +104,18 @@ họ còn nguyên và nên làm gì tiếp.
   Câu "kho trống thì vẫn chạy bằng kiến thức sẵn có của model" là sai kiến trúc, đừng viết lại.
 - **Validator bỏ ý hỏng, nhưng không bao giờ trả về bài rỗng.** Nếu mọi ý đều hỏng thì giữ nguyên
   bài và ghi `dat: false` — xem ghi chú trong `locYHong` để biết vì sao.
+- **Chuẩn ngôn ngữ chỉ có MỘT bản: `lib/rag/chuan-ngon-ngu.ts`.** Cả prompt chat lẫn prompt bài
+  dài đều nhúng nó. Chép sang màn khác là hai màn cùng sản phẩm nói bằng hai giọng, và người dùng
+  cảm nhận được ngay cả khi không gọi tên được vấn đề.
+- **Bài đọc sâu 8 lĩnh vực là TEMPLATE TẤT ĐỊNH, không có AI.** Nó vẫn phải theo chuẩn ngôn ngữ —
+  người dùng cảm nhận nó như luận giải. Các khuôn câu hay lặp đã thành mảng biến thể trong
+  `quick-read-noi-dung.ts`, và `chonBienThe` chọn theo lĩnh vực + chi cung Mệnh: khác khối thì khác
+  khuôn, cùng lá số thì luôn ra đúng bài cũ. Thêm câu mẫu mới nhớ thêm cả biến thể.
+- **Luật của cổng ngôn ngữ phải khớp theo TỪ, không theo chuỗi con.** Đã trả giá hai lần: "thiên cơ"
+  bắt nhầm sao Thiên Cơ, "không hợp" bắt nhầm "không hợp lý". Và phải bỏ qua câu phủ định — câu
+  miễn trừ "không phải một sự việc chắc chắn sẽ xảy ra" chứa đúng cụm bị cấm nhưng đang nói ngược lại.
+- **`npx tsx scripts/test-chuan-ngon-ngu.ts` chạy offline** và phải luôn xanh: 8 lá số qua cổng, tỉ
+  lệ lặp khuôn mở đầu dưới 50%, và sáu ca kiểm cổng không bắt nhầm / không bỏ sót.
 - **Không có nguồn gốc RAG nào được ra tới trình duyệt.** Không tên tài liệu, không hệ phái theo
   đoạn, không điểm liên quan, không mã chunk. `components/CanCu.tsx` chỉ hiện dữ kiện lá số, mạch
   suy luận và điểm kéo ngược. Toàn bộ provenance nằm ở `retrieval_runs`/`ai_requests` cho quản trị.
@@ -175,6 +187,7 @@ npm run build             # phải qua
 npm run lint              # ĐANG có sẵn 7 lỗi set-state-in-effect — đừng để tăng thêm
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
+npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google

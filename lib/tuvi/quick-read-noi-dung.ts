@@ -70,10 +70,10 @@ const NET_VI: Record<string, NetSao> = {
   },
   'Thất Sát': {
     manh: 'bạn quyết nhanh, dám chịu và không ngại bắt đầu lại từ đầu',
-    can: 'một trận đánh đáng để đánh, vì việc quá êm làm bạn mất lửa',
+    can: 'một mục tiêu đủ khó và đủ có ý nghĩa để theo đến cùng, vì việc quá êm làm bạn mất lửa',
   },
   'Phá Quân': {
-    manh: 'bạn dám phá bỏ cái cũ để làm lại theo cách mình tin',
+    manh: 'khi một cách làm không còn thuyết phục, bạn khá sẵn sàng bắt đầu lại thay vì cố duy trì chỉ vì đã quen',
     can: 'người tin bạn ở giai đoạn dang dở, vì đó là lúc bạn dễ bị hiểu lầm nhất',
   },
 };
@@ -281,21 +281,21 @@ export interface KhuonChu {
   /** Chữ cho bảng luận giải 8 lĩnh vực của người đã đăng nhập */
   luanSau: {
     linhVuc: Record<string, { nhom: string; tieuDe: string; cauHoi: string }>;
-    ketLuanCo: string;
+    ketLuanCo: readonly string[];
     ketLuanTrong: string;
-    doanNet: string;
-    doanCan: string;
-    doanSangRo: string;
-    doanSangKim: string;
+    doanNet: readonly string[];
+    doanCan: readonly string[];
+    doanSangRo: readonly string[];
+    doanSangKim: readonly string[];
     doanTuHoa: string;
     doanTuHoaRo: string;
     doanTuanTriet: string;
     doanTamPhuong: string;
     doanTrong: string;
-    doanPhuTinh: string;
-    doanDoiCung: string;
+    doanPhuTinh: readonly string[];
+    doanDoiCung: readonly string[];
     doanDoiCungTrong: string;
-    doanTrangSinh: string;
+    doanTrangSinh: readonly string[];
     doanGiaiDoanCham: string;
     doanGiaiDoanKhongCham: string;
     cauHoiPhanChieu: Record<string, string>;
@@ -364,7 +364,7 @@ const PHU_TINH_VI: Record<string, string> = {
   'Thiên Mã': 'khó ngồi yên một chỗ lâu; đổi chỗ, đổi việc, đổi cách làm là thứ giúp bạn bật lên',
   'Kình Dương': 'quyết liệt khi đã chọn, nhưng cái giá thường là va chạm với người xung quanh',
   'Đà La': 'hay bị kéo dài, dây dưa — chuyện đáng xong trong một tháng dễ thành nửa năm',
-  'Hỏa Tinh': 'bốc lên rất nhanh và cũng nguội rất nhanh, nên thứ cần bền là chỗ dễ đứt gánh',
+  'Hỏa Tinh': 'phản ứng rất nhanh khi bị thúc ép, nhưng độ bền mới là phần cần chủ động giữ',
   'Linh Tinh': 'âm ỉ khó chịu hơn là bùng nổ: thứ làm bạn mệt thường nhỏ mà kéo dài',
   'Địa Không': 'hay mất công cho những thứ cuối cùng không thành, nhưng cũng nhờ vậy mà nghĩ khác người',
   'Địa Kiếp': 'dễ mất mát bất ngờ ở chỗ bạn tưởng đã chắc, nên phần này không nên dồn hết trứng một giỏ',
@@ -407,7 +407,7 @@ const TRANG_SINH_VI: Record<string, string> = {
   'Lâm Quan': 'đang ở đoạn sung sức nhất của chu kỳ, làm được nhiều hơn bình thường',
   'Đế Vượng': 'đang ở đỉnh: mạnh, nhưng cũng là lúc dễ chủ quan nhất',
   'Suy': 'đang xuống dốc nhẹ, nên giữ hơn là mở thêm',
-  'Bệnh': 'đang đuối, thứ gắng quá sức ở đây thường phải trả giá sau',
+  'Bệnh': 'đang đuối sức, nên thứ gắng quá mức ở đây thường đòi bù lại về sau',
   'Tử': 'đang ở đáy chu kỳ, chuyện cũ khó kéo lại — thường là lúc nên buông',
   'Mộ': 'đang ở đoạn cất giữ: hợp với tích luỹ và sắp xếp hơn là bung ra',
   'Tuyệt': 'đang ở chỗ đứt đoạn, thứ gì đứt ở đây thường không nối lại như cũ',
@@ -597,17 +597,38 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
           cauHoi: 'Điểm mạnh nào của tôi đang bị bỏ quên?',
         },
       },
-      ketLuanCo: 'Ở phần {chuDe}, nét rõ nhất của bạn là {net}.',
+      ketLuanCo: [
+        'Ở phần {chuDe}, nét rõ nhất của bạn là {net}.',
+        'Nói về {chuDe}: điều dễ thấy nhất ở bạn là {net}.',
+        'Khi chuyện chạm tới {chuDe}, thứ nổi lên trước tiên là {net}.',
+        'Về {chuDe}, một nét khá rõ trong cách bạn vận hành là {net}.',
+      ],
       ketLuanTrong:
         'Phần {chuDe} của bạn không có sao chính nào đóng, nên nét ở đây mượn từ cung đối diện.',
-      doanNet: 'Cụ thể hơn: {net}.',
-      doanCan: 'Đi kèm với nét đó là một nhu cầu ít khi nói ra: bạn thường cần {can}.',
-      doanSangRo:
+      doanNet: [
+        'Cụ thể hơn: {net}.',
+        'Đi cùng nét đó: {net}.',
+        'Thêm một lớp nữa: {net}.',
+        'Ở gần đó còn có: {net}.',
+      ],
+      doanCan: [
+        'Đi kèm với nét đó là một nhu cầu ít khi nói ra: bạn thường cần {can}.',
+        'Thứ bạn hiếm khi nói ra nhưng vẫn cần: {can}.',
+        'Phía sau nét đó là một điều kiện thầm lặng — bạn thường cần {can}.',
+        'Để nét trên phát huy được, bạn thường cần {can}.',
+      ],
+      doanSangRo: [
         'Các sao ở phần này đang ở mức {sang}, nên nét trên thường hiện ra sớm và người ngoài cũng nhận ra được.',
-      doanSangKim:
+        'Sao ở đây đạt mức {sang}: nét trên bộc lộ sớm, và thường người khác thấy trước cả bạn.',
+        'Với độ sáng {sang}, phần này không cần điều kiện gì đặc biệt để lộ ra.',
+      ],
+      doanSangKim: [
         'Các sao ở phần này đang ở mức {sang}, nên nét trên có thật nhưng hay bị hoàn cảnh kìm lại — dễ thấy mình muốn một đằng mà làm được một nẻo.',
+        'Sao ở đây chỉ đạt mức {sang}: nét trên có thật, nhưng hoàn cảnh hay chặn lại trước khi nó kịp thành hình.',
+        'Độ sáng {sang} khiến phần này thường ở dạng tiềm năng hơn là thành nếp — muốn một đằng mà làm được một nẻo là chuyện hay gặp.',
+      ],
       doanTuHoa:
-        'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường bị đẩy mạnh hơn hoặc vặn đi so với mức bình thường.',
+        'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường đậm hơn, hoặc lệch đi so với mức bình thường.',
       doanTuHoaRo: 'Có {sao} rơi vào đây: {net}.',
       doanTuanTriet:
         'Có {ten} đóng ở đây. Nét của phần này thường khó hiện ra sớm — nhiều người phải qua một quãng mới thấy rõ mình thế nào ở chỗ này.',
@@ -615,11 +636,23 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và đối diện là {xung} — chỗ hay kéo bạn về hướng ngược lại.',
       doanTrong:
         'Vì mượn nét từ cung đối diện nên bạn thường linh hoạt ở phần này, nhưng cũng dễ thấy mình thay đổi tuỳ hoàn cảnh và tuỳ người.',
-      doanPhuTinh: 'Ở phần này bạn còn {net}.',
-      doanDoiCung: 'Đối diện là {cung}, nơi {sao} đóng — phần đó luôn kéo bạn về hướng ngược lại, và thường là chỗ bạn phải cân bằng chứ không bỏ được.',
+      doanPhuTinh: [
+        'Ở phần này bạn còn {net}.',
+        'Kèm theo đó, {net}.',
+        'Một nét phụ nhưng đáng để ý: {net}.',
+      ],
+      doanDoiCung: [
+        'Đối diện là {cung}, nơi {sao} đóng — phần đó thường kéo bạn về hướng ngược lại, và là chỗ cần cân bằng hơn là bỏ đi.',
+        'Ngay đối diện là {cung} với {sao}: hai bên hay đòi hai thứ khác nhau, nên đây là chỗ bạn thường phải chọn liều lượng.',
+        'Nhìn sang cung đối là {cung}, có {sao} — lực từ đó không mất đi, nó chỉ chờ bạn để ý tới.',
+      ],
       doanDoiCungTrong:
         'Đối diện là {cung} và cũng không có sao chính nào đóng, nên phần này ít bị kéo về một hướng cố định — bạn tự do hơn, nhưng cũng ít điểm tựa hơn.',
-      doanTrangSinh: 'Xét theo nhịp sinh khí, phần này {net}.',
+      doanTrangSinh: [
+        'Xét theo nhịp sinh khí, phần này {net}.',
+        'Về nhịp, phần này {net}.',
+        'Theo vòng sinh khí thì đây là quãng {net}.',
+      ],
       doanGiaiDoanCham:
         'Giai đoạn {tu}–{den} tuổi bạn đang đi qua có chạm vào phần này, nên đây là quãng nó dễ có chuyện hơn bình thường — cả theo nghĩa cơ hội lẫn nghĩa va vấp.',
       doanGiaiDoanKhongCham:
@@ -824,15 +857,36 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
           cauHoi: 'Which of my strengths am I leaving unused?',
         },
       },
-      ketLuanCo: 'In the area of {chuDe}, what stands out most about you is {net}.',
+      ketLuanCo: [
+        'In the area of {chuDe}, what stands out most about you is {net}.',
+        'On {chuDe}: the first thing that shows is {net}.',
+        'When things touch {chuDe}, what surfaces first is {net}.',
+        'About {chuDe}, one fairly clear pattern in how you operate is {net}.',
+      ],
       ketLuanTrong:
         'No major star sits in the {chuDe} part of your chart, so it draws its character from the house opposite.',
-      doanNet: 'More concretely: {net}.',
-      doanCan: 'Alongside that runs a need you rarely say out loud: you tend to need {can}.',
-      doanSangRo:
+      doanNet: [
+        'More concretely: {net}.',
+        'Running alongside it: {net}.',
+        'One layer further: {net}.',
+        'Close by there is also: {net}.',
+      ],
+      doanCan: [
+        'Alongside that runs a need you rarely say out loud: you tend to need {can}.',
+        'Something you seldom voice but still need: {can}.',
+        'Behind that pattern sits a quiet condition — you tend to need {can}.',
+        'For that trait to work, you usually need {can}.',
+      ],
+      doanSangRo: [
         'The stars here are {sang}, so this side of you usually shows early, and other people notice it too.',
-      doanSangKim:
+        'The stars reach {sang} here: this shows early, and others often see it before you do.',
+        'At {sang} brightness, this part needs no special conditions to come out.',
+      ],
+      doanSangKim: [
         'The stars here are {sang}, so the trait is real but circumstances often hold it back — you may find yourself wanting one thing and managing another.',
+        'The stars only reach {sang} here: the trait is real, but circumstances tend to block it before it takes shape.',
+        '{sang} brightness keeps this part closer to potential than to habit — wanting one thing and managing another is common here.',
+      ],
       doanTuHoa:
         '{sao} falls here, so the same set of stars plays out differently: this area tends to be pushed harder, or twisted out of its usual shape.',
       doanTuHoaRo: '{sao} falls here: {net}.',
@@ -842,11 +896,23 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'This part does not stand alone: it draws from {hoTro}, and facing it is {xung} — the place that tends to pull you the other way.',
       doanTrong:
         'Because it borrows from the house opposite, you are usually adaptable here, but also more changeable depending on the situation and the person.',
-      doanPhuTinh: 'In this area you also {net}.',
-      doanDoiCung: 'Facing it is {cung}, where {sao} sits — that house always pulls you the other way, and is usually something to balance rather than drop.',
+      doanPhuTinh: [
+        'In this area you also {net}.',
+        'Along with that, {net}.',
+        'A secondary trait worth noting: {net}.',
+      ],
+      doanDoiCung: [
+        'Facing it is {cung}, where {sao} sits — that house tends to pull you the other way, and is usually something to balance rather than drop.',
+        'Directly opposite is {cung} with {sao}: the two sides often want different things, so this is where you keep choosing the dose.',
+        'Across from it is {cung}, holding {sao} — that pull does not go away, it just waits for your attention.',
+      ],
       doanDoiCungTrong:
         'Facing it is {cung}, and no major star sits there either, so this area is pulled less firmly in any one direction — freer, but with less to lean on.',
-      doanTrangSinh: 'In terms of vitality, this part {net}.',
+      doanTrangSinh: [
+        'In terms of vitality, this part {net}.',
+        'On rhythm, this part {net}.',
+        'On the vitality cycle this is the stretch where it {net}.',
+      ],
       doanGiaiDoanCham:
         'The stretch from age {tu} to {den} that you are moving through does touch this area, so this is when it is more likely to be live — in opportunity as much as in friction.',
       doanGiaiDoanKhongCham:

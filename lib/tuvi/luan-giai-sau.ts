@@ -151,6 +151,35 @@ function canCuCua(cung: Cung, laSo: LaSo, k: KhuonChu): CanCu[] {
 }
 
 /** Một khối đọc từ một cung cụ thể */
+/**
+ * Chọn một biến thể câu.
+ *
+ * Tám khối của bài đọc sâu trước đây dùng chung một khuôn câu cho mỗi vai trò,
+ * nên đọc liền tám khối là thấy ngay bộ xương: khối nào cũng mở bằng "Ở phần…",
+ * khối nào cũng có đúng một câu "Đối diện là… luôn kéo bạn về hướng ngược lại".
+ * Đó là thứ khiến người đọc nhận ra template chứ không phải nội dung sai.
+ *
+ * Chọn theo `hat` — số thứ tự lĩnh vực cộng một chữ số lấy từ chính lá số — nên
+ * hai khối cạnh nhau gần như luôn khác khuôn, mà cùng một lá số đọc lại vẫn ra
+ * đúng bài cũ. Ngẫu nhiên thật thì mỗi lần tải trang lại một kiểu, và không ai
+ * đối chiếu được gì nữa.
+ */
+function chonBienThe(bienThe: readonly string[], hat: number): string {
+  return bienThe[((hat % bienThe.length) + bienThe.length) % bienThe.length];
+}
+
+/** Số thứ tự của lĩnh vực, dùng làm phần chính của hạt chọn biến thể */
+const THU_TU_LINH_VUC: Record<string, number> = {
+  'tinh-cach': 0,
+  'cong-viec': 1,
+  'tai-loc': 2,
+  'tinh-duyen': 3,
+  'gia-dao': 4,
+  'quan-he': 5,
+  'van-han': 6,
+  'phat-trien': 7,
+};
+
 function khoiTheoCung(
   id: Exclude<LinhVucId, 'van-han' | 'phat-trien'>,
   laSo: LaSo,
@@ -162,6 +191,11 @@ function khoiTheoCung(
   const cung = laSo.cungs.find((c) => c.tenCung === ten) ?? laSo.cungs[laSo.menhIndex];
   const chu = k.luanSau.linhVuc[id];
   const chuDe = k.chuDeCung[ten] ?? tenCung(cung, k);
+
+  // Hạt chọn khuôn câu: thứ tự lĩnh vực để tám khối khác nhau, cộng chi cung
+  // Mệnh để hai người khác lá số không đọc được cùng một bộ khung.
+  const hat = (THU_TU_LINH_VUC[id] ?? 0) + laSo.cungs[laSo.menhIndex].chiIndex;
+  const khuon = (bt: readonly string[]) => chonBienThe(bt, hat);
   const chinh = chinhTinhCua(cung);
 
   const net = chinh.map((s) => k.netSao[s.ten]?.manh).filter(Boolean) as string[];
@@ -174,19 +208,19 @@ function khoiTheoCung(
   } else if (net.length > 1) {
     // Chỉ liệt kê những sao CHƯA nói ở câu kết luận. Liệt kê lại từ đầu thì nửa
     // đoạn này lặp nguyên văn dòng ngay phía trên.
-    doan.push(capHoaDau(dien(k.luanSau.doanNet, { net: noiLietKe(net.slice(1), k, ngonNgu) })));
+    doan.push(capHoaDau(dien(khuon(k.luanSau.doanNet), { net: noiLietKe(net.slice(1), k, ngonNgu) })));
   }
 
   if (can.length) {
     doan.push(
-      dien(k.luanSau.doanCan, { can: boChuNgu(noiLietKe(can, k, ngonNgu), ngonNgu) })
+      dien(khuon(k.luanSau.doanCan), { can: boChuNgu(noiLietKe(can, k, ngonNgu), ngonNgu) })
     );
   }
 
   // Độ sáng chỉ nói khi có sao chính để mà nói tới
   const doSang = chinh.find((s) => s.doSang)?.doSang;
   if (doSang) {
-    const mau = SANG_RO.has(doSang) ? k.luanSau.doanSangRo : k.luanSau.doanSangKim;
+    const mau = khuon(SANG_RO.has(doSang) ? k.luanSau.doanSangRo : k.luanSau.doanSangKim);
     doan.push(dien(mau, { sang: k.doSang[doSang] ?? doSang }));
   }
 
@@ -210,7 +244,7 @@ function khoiTheoCung(
 
   const phu = phuTinhCua(cung, k);
   if (phu.length) {
-    doan.push(dien(k.luanSau.doanPhuTinh, { net: noiLietKe(phu, k, ngonNgu) }));
+    doan.push(dien(khuon(k.luanSau.doanPhuTinh), { net: noiLietKe(phu, k, ngonNgu) }));
   }
 
   // Đối cung luôn tham gia vào cách đọc một cung, kể cả khi cung đó đã có chính
@@ -219,7 +253,7 @@ function khoiTheoCung(
   const chinhDoi = chinhTinhCua(doiCung);
   doan.push(
     chinhDoi.length
-      ? dien(k.luanSau.doanDoiCung, {
+      ? dien(khuon(k.luanSau.doanDoiCung), {
           cung: tenCung(doiCung, k),
           sao: chinhDoi.map((x) => x.ten).join(', '),
         })
@@ -228,7 +262,7 @@ function khoiTheoCung(
 
   const trangSinh = k.netTrangSinh[cung.trangSinh];
   if (trangSinh) {
-    doan.push(dien(k.luanSau.doanTrangSinh, { net: trangSinh }));
+    doan.push(dien(khuon(k.luanSau.doanTrangSinh), { net: trangSinh }));
   }
 
   // Giai đoạn đang chạy có chạm vào lĩnh vực này không — thông tin quyết định
@@ -256,7 +290,7 @@ function khoiTheoCung(
     // Câu kết luận đã có chủ ngữ ("nét rõ nhất của bạn là…"), nên vế nối vào sau
     // phải bỏ chủ ngữ của nó, bằng không thành "của bạn là bạn dễ…".
     ketLuan: net.length
-      ? dien(k.luanSau.ketLuanCo, { chuDe, net: boChuNgu(net[0], ngonNgu) })
+      ? dien(khuon(k.luanSau.ketLuanCo), { chuDe, net: boChuNgu(net[0], ngonNgu) })
       : dien(k.luanSau.ketLuanTrong, { chuDe }),
     // Sáu đoạn thân bài, rồi LUÔN kết bằng câu hỏi phản chiếu. Để câu hỏi nằm
     // trong danh sách bị cắt thì khối nào dài là mất đúng phần đáng giá nhất —

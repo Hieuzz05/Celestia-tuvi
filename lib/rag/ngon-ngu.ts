@@ -14,7 +14,7 @@ import { boDau } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.1';
+export const PHIEN_BAN_NGON_NGU = '2026.09.2';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -50,8 +50,14 @@ const CUM_AI = [
 /** Từ kịch tính không cần thiết */
 const TU_THO = ['tran danh', 'boc len', 'dut ganh', 'pha bo', 'van di', 'tra gia'];
 
-/** Từ huyền bí mơ hồ — không phải thuật ngữ sản phẩm */
-const TU_HUYEN_BI = ['nang luong vu tru', 'dinh menh', 'van so da an bai', 'thien co'];
+/**
+ * Từ huyền bí mơ hồ — không phải thuật ngữ sản phẩm.
+ *
+ * Cố ý KHÔNG có "thiên cơ": bỏ dấu thì nó trùng với tên sao Thiên Cơ, vốn xuất
+ * hiện trong gần như mọi lá số. Một luật chặn bắt nhầm tên sao thì người sửa sẽ
+ * học cách bỏ qua cả bộ soát.
+ */
+const TU_HUYEN_BI = ['nang luong vu tru', 'dinh menh', 'van so da an bai'];
 
 /**
  * Tính từ Barnum: đúng với gần như ai cũng được.
@@ -62,12 +68,19 @@ const TU_HUYEN_BI = ['nang luong vu tru', 'dinh menh', 'van so da an bai', 'thie
  */
 const TINH_TU_BARNUM = ['sau sac', 'nhay cam', 'manh me', 'dac biet', 'tinh te', 'phuc tap'];
 
-/** Phán quyết — Celes đưa góc nhìn, không ra quyết định thay */
+/**
+ * Phán quyết — Celes đưa góc nhìn, không ra quyết định thay.
+ *
+ * Cụm phải đủ dài để chỉ khớp đúng ý bị cấm. "khong hop" từng nằm ở đây và bắt
+ * luôn "không hợp lý", "không hợp tác" — thứ bị cấm là phán "hai người không hợp
+ * nhau", không phải chữ "hợp".
+ */
 const PHAN_QUYET = [
   'ban chac chan',
   'se xay ra',
   'nen nghi viec',
-  'khong hop',
+  'khong hop nhau',
+  'khong hop voi nhau',
   'nen cuoi',
   'khong nen cuoi',
   'chac chan se',
@@ -86,8 +99,49 @@ const RO_RI_RAG = [
   'do lien quan',
 ];
 
-function dem(khongDau: string, cum: string[]): string[] {
-  return cum.filter((c) => khongDau.includes(c));
+/**
+ * Mọi cụm 1–5 từ có trong văn bản.
+ *
+ * Khớp theo TỪ chứ không theo chuỗi con. Bộ soát bản đầu dùng `includes` nên
+ * "không hợp lý" bị bắt vì chứa "không hợp", và "Thiên Cơ" bị bắt vì chứa
+ * "thiên cơ". Một cổng chặn bắt nhầm như vậy sẽ bị người sửa học cách bỏ qua —
+ * và lúc đó nó vô dụng hơn cả không có.
+ */
+function cumTu(khongDau: string): Set<string> {
+  const tu = khongDau.split(/[^a-z0-9]+/).filter(Boolean);
+  const ra = new Set<string>();
+  for (let i = 0; i < tu.length; i++) {
+    for (let n = 1; n <= 5 && i + n <= tu.length; n++) ra.add(tu.slice(i, i + n).join(' '));
+  }
+  return ra;
+}
+
+function dem(cum: Set<string>, canTim: string[]): string[] {
+  return canTim.filter((c) => cum.has(c));
+}
+
+/** Từ đứng ngay trước một cụm phán quyết mà làm nó thành câu phủ định */
+const PHU_DINH = ['khong phai', 'chua chac', 'khong han', 'chua han', 'khong the noi'];
+
+/**
+ * Như `dem`, nhưng bỏ qua khi cụm nằm trong một câu phủ định.
+ *
+ * Câu miễn trừ "đây là xu hướng, không phải một sự việc chắc chắn sẽ xảy ra"
+ * chứa đúng cụm bị cấm, nhưng nó đang nói ngược lại điều bị cấm. Bắt cả những
+ * câu như vậy thì cổng ngôn ngữ chặn chính phần cẩn trọng nhất của bài — và
+ * người sửa sẽ đi gỡ bỏ lời miễn trừ để làm hài lòng cái máy.
+ */
+function demCoPhuDinh(khongDau: string, cum: Set<string>, canTim: string[]): string[] {
+  return canTim.filter((c) => {
+    if (!cum.has(c)) return false;
+    let i = khongDau.indexOf(c);
+    while (i !== -1) {
+      const truoc = khongDau.slice(Math.max(0, i - 48), i);
+      if (!PHU_DINH.some((p) => truoc.includes(p))) return true;
+      i = khongDau.indexOf(c, i + c.length);
+    }
+    return false;
+  });
 }
 
 export interface KetQuaNgonNgu {
@@ -106,10 +160,11 @@ export interface KetQuaNgonNgu {
 export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
   const khongDau = boDau(van);
+  const cum = cumTu(khongDau);
 
   // Rò rỉ RAG là lỗi nặng nhất: nó phá đúng cam kết sản phẩm, và người dùng
   // nhìn thấy ngay. Chặn, không cảnh báo.
-  const roRi = dem(khongDau, RO_RI_RAG);
+  const roRi = dem(cum, RO_RI_RAG);
   if (roRi.length) {
     loi.push({
       ma: 'lo-nguon-rag',
@@ -119,7 +174,7 @@ export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
     });
   }
 
-  const phan = dem(khongDau, PHAN_QUYET);
+  const phan = demCoPhuDinh(khongDau, cum, PHAN_QUYET);
   if (phan.length) {
     loi.push({
       ma: 'phan-quyet',
@@ -131,24 +186,24 @@ export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
 
   // Các lỗi còn lại chỉ cảnh báo: chúng làm bài kém hay chứ không làm bài sai,
   // và chặn một bài đúng vì nó dùng chữ "nhìn chung" là phản ứng quá tay.
-  const ai = dem(khongDau, CUM_AI);
+  const ai = dem(cum, CUM_AI);
   if (ai.length) {
     loi.push({ ma: 'cum-van-may', mucDo: 'canh-bao', moTa: 'Dùng cụm nối rỗng nghĩa.', viDu: ai.join(', ') });
   }
 
-  const tho = dem(khongDau, TU_THO);
+  const tho = dem(cum, TU_THO);
   if (tho.length) {
     loi.push({ ma: 'tu-kich-tinh', mucDo: 'canh-bao', moTa: 'Dùng từ kịch tính không cần thiết.', viDu: tho.join(', ') });
   }
 
-  const huyen = dem(khongDau, TU_HUYEN_BI);
+  const huyen = dem(cum, TU_HUYEN_BI);
   if (huyen.length) {
     loi.push({ ma: 'tu-huyen-bi', mucDo: 'canh-bao', moTa: 'Dùng từ huyền bí mơ hồ.', viDu: huyen.join(', ') });
   }
 
-  // Barnum: chỉ tính khi tính từ đứng gần dấu kết câu hoặc liên từ, tức là nó
-  // được dùng như một kết luận chứ không phải một mô tả có ví dụ theo sau.
-  const barnum = TINH_TU_BARNUM.filter((t) => new RegExp(`\\b${t}\\s*[.,;]`).test(khongDau));
+  // Ngưỡng 2: một tính từ chung chung trong cả bài là chuyện bình thường của
+  // tiếng Việt; nhiều cái cùng lúc mới là dấu hiệu bài đang nói cho ai cũng được.
+  const barnum = dem(cum, TINH_TU_BARNUM);
   if (barnum.length >= 2) {
     loi.push({
       ma: 'tinh-tu-barnum',
