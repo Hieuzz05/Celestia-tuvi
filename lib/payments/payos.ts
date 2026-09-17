@@ -10,15 +10,36 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const API = 'https://api-merchant.payos.vn/v2/payment-requests';
 
-export const payosDaCauHinh = Boolean(
-  process.env.PAYOS_CLIENT_ID && process.env.PAYOS_API_KEY && process.env.PAYOS_CHECKSUM_KEY
-);
-
+/**
+ * `.trim()` không phải cho đẹp: dán khoá vào Vercel rất dễ lẫn một dấu cách
+ * hoặc ký tự xuống dòng ở cuối. Checksum key thừa một ký tự thì MỌI chữ ký đều
+ * sai, mà triệu chứng chỉ là payOS báo "webhook không hoạt động" — không có gì
+ * chỉ ra nguyên nhân nằm ở khoảng trắng.
+ */
 function khoa() {
   return {
-    clientId: process.env.PAYOS_CLIENT_ID ?? '',
-    apiKey: process.env.PAYOS_API_KEY ?? '',
-    checksumKey: process.env.PAYOS_CHECKSUM_KEY ?? '',
+    clientId: process.env.PAYOS_CLIENT_ID?.trim() ?? '',
+    apiKey: process.env.PAYOS_API_KEY?.trim() ?? '',
+    checksumKey: process.env.PAYOS_CHECKSUM_KEY?.trim() ?? '',
+  };
+}
+
+export const payosDaCauHinh = Boolean(
+  khoa().clientId && khoa().apiKey && khoa().checksumKey
+);
+
+/** Độ dài khoá, dùng cho chẩn đoán — không lộ nội dung khoá */
+export function nhanDangCauHinh() {
+  const k = khoa();
+  return {
+    clientId: k.clientId.length,
+    apiKey: k.apiKey.length,
+    checksumKey: k.checksumKey.length,
+    // Có khoảng trắng thừa trong biến gốc không?
+    thuaKhoangTrang:
+      (process.env.PAYOS_CLIENT_ID ?? '') !== k.clientId ||
+      (process.env.PAYOS_API_KEY ?? '') !== k.apiKey ||
+      (process.env.PAYOS_CHECKSUM_KEY ?? '') !== k.checksumKey,
   };
 }
 
@@ -106,18 +127,29 @@ export function chuKyWebhookHopLe(data: unknown, signature: unknown): boolean {
     return false;
   }
 
+  // Ghép chuỗi đúng y bản tham chiếu của payOS: sắp khoá theo alphabet, bỏ
+  // chính khoá `signature`, mảng thì JSON.stringify sau khi sắp khoá từng phần
+  // tử, và coi cả chuỗi "undefined"/"null" là rỗng. Lệch một quy ước nhỏ ở đây
+  // là chữ ký sai toàn bộ mà không có cách nào nhìn ra.
+  const sapKhoa = (o: Record<string, unknown>) =>
+    Object.keys(o)
+      .sort()
+      .reduce<Record<string, unknown>>((ra, k) => {
+        ra[k] = o[k];
+        return ra;
+      }, {});
+
   const obj = data as Record<string, unknown>;
   const chuoi = Object.keys(obj)
     .sort()
+    .filter((k) => k !== 'signature')
     .map((k) => {
-      const v = obj[k];
-      const s =
-        v === null || v === undefined
-          ? ''
-          : typeof v === 'object'
-            ? JSON.stringify(v)
-            : String(v);
-      return `${k}=${s}`;
+      let v = obj[k];
+      if (Array.isArray(v)) {
+        v = JSON.stringify(v.map((x) => (x && typeof x === 'object' ? sapKhoa(x as Record<string, unknown>) : x)));
+      }
+      if (v === null || v === undefined || v === 'undefined' || v === 'null') v = '';
+      return `${k}=${v}`;
     })
     .join('&');
 

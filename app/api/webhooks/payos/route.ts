@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { chuKyWebhookHopLe, payosDaCauHinh } from '@/lib/payments/payos';
+import { chuKyWebhookHopLe, nhanDangCauHinh, payosDaCauHinh } from '@/lib/payments/payos';
 import { CAU_HINH_UNG_HO } from '@/lib/support/config';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 
@@ -10,8 +10,14 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
  * tự kiểm tra ở đây không được đảo: chữ ký trước, rồi mới tìm đơn, rồi mới đối
  * chiếu số tiền, rồi mới cấp quyền.
  *
- * Trả 200 cho những trường hợp "không làm gì" (không tìm thấy đơn, đã cấp rồi):
- * trả lỗi ở đó chỉ khiến payOS gửi lại mãi mà kết quả vẫn thế.
+ * Endpoint này LUÔN trả 2XX, kể cả khi chữ ký sai.
+ *
+ * Nghe ngược đời nhưng đúng: payOS gọi thử URL ngay lúc bạn bấm lưu, và nó coi
+ * bất cứ mã lỗi nào là "webhook không hoạt động" rồi từ chối nhận URL. Trả 400
+ * cho chữ ký sai nghĩa là không bao giờ khai được webhook.
+ *
+ * An toàn không mất gì: chữ ký sai thì KHÔNG đụng vào đơn, KHÔNG cấp quyền, chỉ
+ * ghi log. Điều bảo vệ hệ thống là chỗ đó, không phải mã trạng thái trả về.
  */
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +28,17 @@ interface Payload {
   signature?: string;
 }
 
+/**
+ * Chẩn đoán cấu hình — không lộ nội dung khoá, chỉ độ dài và cờ khoảng trắng.
+ * Dùng để trả lời câu "khoá đã vào chưa, có dính dấu cách thừa không".
+ */
+export async function GET() {
+  return NextResponse.json(
+    { payosDaCauHinh, ...nhanDangCauHinh() },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
+}
+
 export async function POST(req: Request) {
   if (!payosDaCauHinh) return NextResponse.json({ ok: true });
 
@@ -29,15 +46,17 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'bad_json' }, { status: 400 });
+    // Lời gọi thử lúc đăng ký URL có thể không kèm JSON hợp lệ. Trả lỗi ở đây
+    // cũng làm payOS từ chối URL, nên chỉ ghi nhận rồi cho qua.
+    return NextResponse.json({ ok: true, bo_qua: 'bad_json' });
   }
 
   // payOS gọi thử một lần khi đăng ký URL, không kèm dữ liệu đơn
   if (!body.data || !body.signature) return NextResponse.json({ ok: true });
 
   if (!chuKyWebhookHopLe(body.data, body.signature)) {
-    console.warn('[ung-ho] webhook chữ ký sai, bỏ qua');
-    return NextResponse.json({ error: 'bad_signature' }, { status: 400 });
+    console.warn('[ung-ho] webhook chữ ký sai, bỏ qua', nhanDangCauHinh());
+    return NextResponse.json({ ok: true, bo_qua: 'bad_signature' });
   }
 
   const db = taoSupabaseAdmin();
@@ -106,6 +125,8 @@ export async function POST(req: Request) {
   });
 
   if (error) {
+    // Đây là lỗi phía mình, nên để payOS gửi lại: 500 là mã duy nhất trong tệp
+    // này đáng trả, vì lần gửi sau có thể thành công.
     console.error('[ung-ho] cấp quyền hỏng:', error.message);
     return NextResponse.json({ error: 'grant_failed' }, { status: 500 });
   }
