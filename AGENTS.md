@@ -94,10 +94,17 @@ npm run kiem-tra-sso      # trạng thái đăng nhập Google
 
 Nếu lint tăng quá 8, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
 
-## App di động
+## App di động — ĐANG TẠM DỪNG
 
-`apps/celes-app/` — Expo + expo-router, iOS/Android. Đọc `apps/celes-app/README.md`
-trước khi sửa.
+`apps/celes-app/` (Expo + expo-router) tạm dừng: chưa có dự định đẩy lên store. Đừng làm tiếp
+tính năng cho nó. Việc di động hiện tại là **bản web khi mở trên điện thoại**.
+
+Hai luật cho web ở màn hẹp, đã đo bằng Chrome ở 390px:
+- **Không trang nào được cuộn ngang.** Kiểm bằng `scrollWidth - clientWidth` phải bằng 0.
+- **Vùng chạm tối thiểu 44px.** `.nav-link` và `.link-text` dùng `::after` phủ thêm chiều cao ở
+  `(pointer: coarse)` — nới padding thì gạch chân chỉ báo trang rời khỏi chữ.
+
+Đọc `apps/celes-app/README.md` trước nếu buộc phải sửa app.
 
 Điểm dễ vấp nhất: **app không có bản sao engine an sao**, nó đọc thẳng `lib/tuvi/`
 qua `metro.config.js` và bí danh `@tuvi/*`. Sửa engine là cả web lẫn app cùng đổi.

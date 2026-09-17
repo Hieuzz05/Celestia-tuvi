@@ -213,8 +213,12 @@ export function TuViChart({
         </div>
       )}
 
-      {/* Mệnh bàn */}
-      <div ref={khungRef}>
+      {/* Mệnh bàn
+          Cuộn ngang khi màn hẹp. Dưới 0.5 thì chữ trong ô cung không đọc nổi
+          nữa, nên ở điện thoại mệnh bàn giữ tỉ lệ 0.5 rồi cho vuốt ngang — thà
+          vuốt còn hơn nhìn một mớ chữ không đọc được. Không có khung cuộn này
+          thì mệnh bàn 460px nằm trong ô 342px và đẩy cả TRANG cuộn ngang. */}
+      <div ref={khungRef} className="overflow-x-auto">
         <div
           ref={chartRef}
           className="relative grid grid-cols-4"

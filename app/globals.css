@@ -374,6 +374,30 @@ body {
   border-color: var(--fg);
 }
 
+/*
+ * Vùng chạm trên điện thoại.
+ *
+ * Gạch chân của .nav-link là đường chỉ báo trang đang mở, nên không nới được
+ * padding dọc — nới là gạch chân rời khỏi chữ. Thay vào đó dùng ::after phủ
+ * thêm chiều cao vô hình: vùng bấm đạt 44px mà hình vẽ không đổi một pixel nào.
+ *
+ * 44px là ngưỡng của iOS; đo ở 390px thì các mục này chỉ cao 34px.
+ */
+@media (pointer: coarse) {
+  .nav-link,
+  .link-text {
+    position: relative;
+  }
+  .nav-link::after,
+  .link-text::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
 .link-text {
   color: var(--fg-muted);
   font-size: 14px;

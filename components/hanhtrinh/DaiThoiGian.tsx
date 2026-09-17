@@ -68,7 +68,7 @@ export function DaiThoiGian({
               </span>
               {m.dangDienRa && (
                 <span
-                  className="mt-[2px] text-[11px] font-semibold uppercase"
+                  className="mt-[2px] text-[12px] font-semibold uppercase"
                   style={{
                     letterSpacing: '0.08em',
                     color: chon ? 'var(--bg)' : 'var(--chart-tot)',

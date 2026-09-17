@@ -462,8 +462,9 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Bộ quy tắc tính có phiên bản | Xong — `lib/tuvi/phuong-phap.ts`, ghi kèm mỗi bài luận hạn |
 | Hành trình lớp NGÀY | Chưa — cần đối chiếu quy tắc an ngày hạn với bản mẫu trước |
 | Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Xong — ba mức độ dày, an sao không đổi |
-| Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện vẫn thu nhỏ khung 920px |
-| Điều hướng đáy trên mobile (app) | Chưa — bottom nav là của app Expo, web dùng thanh trên |
+| Web trên màn hình điện thoại | Xong — không trang nào tràn ngang, vùng chạm 45px |
+| Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện giữ tỉ lệ 0.5 và cho vuốt ngang trong khung riêng |
+| App Expo (`apps/celes-app/`) | **Tạm dừng** — chưa có dự định đẩy lên store |
 | Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
 | Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |
 | Khoá luận giải 8 lĩnh vực / Hành trình chi tiết theo bậc quyền | Xong — dựng ở máy chủ, không phải ẩn ở giao diện |
