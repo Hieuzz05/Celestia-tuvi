@@ -1,4 +1,4 @@
-import { modelKhaDung } from './config';
+import { modelKhaDungThuc } from './nguon-cau-hinh';
 import { goiModel } from './providers';
 import { AiRetryableError, type ChatRequest, type ChatResult } from './types';
 import { daCanHanMuc, ghiNhanSuDung, HAN_MUC_NGAY, soLuotHomNay } from './usage';
@@ -24,7 +24,7 @@ export async function goiVoiFallback(
   req: ChatRequest,
   uuTienProvider?: string
 ): Promise<KetQuaFallback> {
-  let danhSach = modelKhaDung();
+  let danhSach = await modelKhaDungThuc();
   if (danhSach.length === 0) throw new KhongCoModelError();
 
   // Người dùng chọn model nào thì đưa model đó lên đầu, phần còn lại vẫn là lưới an toàn

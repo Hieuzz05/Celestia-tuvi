@@ -115,6 +115,15 @@ họ còn nguyên và nên làm gì tiếp.
   không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
 - **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
   nào cũng mạch lạc một cách đáng ngờ.
+- **Chuỗi model: có dòng trong `ai_model_configs` thì bảng đó là nguồn DUY NHẤT.** Không trộn với
+  biến môi trường, không tự chèn thêm provider từ env vào cuối. Bản cũ có chèn, với lý do "thêm key
+  mà hệ thống lặng lẽ bỏ qua là một cái bẫy" — lý do đó đúng khi cấu hình chỉ nằm ở env, nhưng khi
+  đã có nút Xoá trên giao diện thì một dòng tự mọc lại là cái bẫy lớn hơn. Provider có key mà chưa
+  khai được hiện ra ở cuối trang kèm lời mời thêm.
+- **API key đi một chiều.** Trình duyệt gửi lên, không bao giờ nhận về. Mọi phản hồi chỉ có dạng
+  rút gọn. Nút "Thử kết nối" của một dòng đã lưu gửi `id`, không gửi key.
+- **Key trong database được mã hoá bằng `CONFIG_SECRET`.** Thiếu biến đó thì API từ chối lưu key —
+  cố ý không có đường lưu thô. Đổi hoặc mất `CONFIG_SECRET` là phải nhập lại toàn bộ key.
 - **Kết nối: ý định quyết định mọi thứ phía sau.** `lib/ket-noi/y-dinh.ts` định nghĩa cung nào được
   đọc, RAG tìm gì, bài có mục nào. Thêm ý định mới thì sửa đúng một chỗ đó.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
@@ -139,7 +148,7 @@ họ còn nguyên và nên làm gì tiếp.
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
-npm run lint              # ĐANG có sẵn 8 lỗi set-state-in-effect — đừng để tăng thêm
+npm run lint              # ĐANG có sẵn 7 lỗi set-state-in-effect — đừng để tăng thêm
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
@@ -147,7 +156,11 @@ node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy kh
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
 ```
 
-Nếu lint tăng quá 8, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
+Nếu lint tăng quá 7, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
+
+Cách sửa lỗi `set-state-in-effect` khi cần nạp dữ liệu lúc mở trang: tách hàm đọc thành một hàm
+RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt state trong `.then` của effect. Xem
+`app/admin/models/page.tsx` hoặc `app/admin/knowledge/page.tsx`.
 
 ## App di động — ĐANG TẠM DỪNG
 

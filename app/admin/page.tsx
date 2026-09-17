@@ -179,6 +179,9 @@ export default function AdminPage() {
       <NhatKySuDung />
 
       <div className="flex flex-col gap-[10px] pt-[8px]">
+        <Link href="/admin/models" className="link-text">
+          Model &amp; thứ tự dự phòng — thêm, đổi key, sắp thứ tự &rarr;
+        </Link>
         <Link href="/admin/knowledge" className="link-text">
           Kho tri thức — nguồn, phiên bản, xuất bản →
         </Link>

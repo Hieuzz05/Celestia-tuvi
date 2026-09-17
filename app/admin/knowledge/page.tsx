@@ -74,32 +74,37 @@ const nhan = (ds: { id: string; nhan: string }[], id: string) =>
 
 const DINH_DANG = '.txt,.md,.markdown,.csv';
 
+async function docKho(): Promise<{ taiLieu: TaiLieu[] } | { loi: string }> {
+  try {
+    const res = await fetch('/api/admin/knowledge', { cache: 'no-store' });
+    const d = await res.json();
+    if (!res.ok) return { loi: d.loi ?? 'Không đọc được kho tri thức' };
+    return { taiLieu: (d.taiLieu ?? []) as TaiLieu[] };
+  } catch {
+    return { loi: 'Không kết nối được máy chủ' };
+  }
+}
+
 export default function TrangKhoTriThuc() {
   const [taiLieu, setTaiLieu] = useState<TaiLieu[] | null>(null);
   const [loiTai, setLoiTai] = useState<string | null>(null);
   const [moNap, setMoNap] = useState(false);
   const [thongBao, setThongBao] = useState<{ loai: 'ok' | 'loi'; noiDung: string } | null>(null);
 
+  // Hàm đọc để RỖNG khỏi setState, và việc đặt state nằm ở `.then` — đây là hình
+  // dạng mà quy tắc set-state-in-effect chấp nhận, và cũng đúng tinh thần của nó.
   const tai = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/knowledge', { cache: 'no-store' });
-      const d = await res.json();
-      if (!res.ok) {
-        setLoiTai(d.loi ?? 'Không đọc được kho tri thức');
-        setTaiLieu([]);
-        return;
-      }
-      setLoiTai(null);
-      setTaiLieu(d.taiLieu ?? []);
-    } catch {
-      setLoiTai('Không kết nối được máy chủ');
-      setTaiLieu([]);
-    }
+    const kq = await docKho();
+    setLoiTai('loi' in kq ? kq.loi : null);
+    setTaiLieu('loi' in kq ? [] : kq.taiLieu);
   }, []);
 
   useEffect(() => {
-    void tai();
-  }, [tai]);
+    docKho().then((kq) => {
+      setLoiTai('loi' in kq ? kq.loi : null);
+      setTaiLieu('loi' in kq ? [] : kq.taiLieu);
+    });
+  }, []);
 
   async function doiTrangThai(versionId: string, hanhDong: 'xuat-ban' | 'luu-tru') {
     const res = await fetch('/api/admin/knowledge/phien-ban', {
