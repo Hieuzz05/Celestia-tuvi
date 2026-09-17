@@ -104,6 +104,25 @@ họ còn nguyên và nên làm gì tiếp.
   Câu "kho trống thì vẫn chạy bằng kiến thức sẵn có của model" là sai kiến trúc, đừng viết lại.
 - **Validator bỏ ý hỏng, nhưng không bao giờ trả về bài rỗng.** Nếu mọi ý đều hỏng thì giữ nguyên
   bài và ghi `dat: false` — xem ghi chú trong `locYHong` để biết vì sao.
+- **Không có nguồn gốc RAG nào được ra tới trình duyệt.** Không tên tài liệu, không hệ phái theo
+  đoạn, không điểm liên quan, không mã chunk. `components/CanCu.tsx` chỉ hiện dữ kiện lá số, mạch
+  suy luận và điểm kéo ngược. Toàn bộ provenance nằm ở `retrieval_runs`/`ai_requests` cho quản trị.
+  `soatNgonNgu` có một luật CHẶN riêng cho việc này.
+- **Hai nguồn RAG nói ngược nhau thì theo `lib/rag/uu-tien-nguon.ts`**: mức tin cậy phân xử, nhưng
+  chỉ khi hai đoạn đã ngang nhau về độ liên quan (băng dung sai 5%). Mức tin cậy không được thay
+  thế độ liên quan — một nguồn "cốt lõi" lạc đề vẫn là lạc đề.
+- **Nhiều đoạn cùng một tài liệu chỉ là MỘT tiếng nói.** `mucChacChan` đếm số tài liệu khác nhau,
+  không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
+- **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
+  nào cũng mạch lạc một cách đáng ngờ.
+- **Kết nối: ý định quyết định mọi thứ phía sau.** `lib/ket-noi/y-dinh.ts` định nghĩa cung nào được
+  đọc, RAG tìm gì, bài có mục nào. Thêm ý định mới thì sửa đúng một chỗ đó.
+- **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
+  chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
+  trả lời.
+- **Dùng heredoc `<<'PY'` cho script Python thì dấu gạch chéo bị nuốt một lớp**, nên mọi mẫu chứa
+  `
+` đều không khớp. Sửa tệp có ký tự thoát thì dùng công cụ sửa tệp, đừng dùng heredoc.
 - **Bài kiểm tra offline không thay được `test-rag-toan-tuyen.ts`.** Ba lỗi nặng nhất của lớp RAG
   đều chỉ lộ ra khi chạm database thật: mã thực thể trùng làm chết lệnh upsert, hai chỗ nuốt lỗi
   giấu mất điều đó, và nhánh từ khoá không bao giờ khớp. Đổi schema hay đổi SQL thì phải chạy nó.

@@ -10,7 +10,6 @@ import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { HuyHieuOk, NutVien, OChon, Shell } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
@@ -440,7 +439,6 @@ function TrangLaSo() {
           {ketQua && (
             <>
               <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-              <NguonTriThuc nguon={ketQua.nguonTriThuc} />
             </>
           )}
         </div>

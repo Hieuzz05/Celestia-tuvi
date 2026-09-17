@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
 import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
-import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
-import { dungPromptHopTuoi, moTaLaSo } from '@/lib/ai/prompt';
-import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
+import { KhongCoModelError } from '@/lib/ai/fallback';
+import { luanKetNoi } from '@/lib/ket-noi/tra-loi';
+import { laYDinhHopLe, Y_DINH_MAC_DINH, type YDinhKetNoi } from '@/lib/ket-noi/y-dinh';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { soSanhHaiLaSo } from '@/lib/tuvi/hoptuoi';
 
@@ -64,7 +64,11 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { a?: NguoiXem; b?: NguoiXem; namXem?: number; thangXem?: number };
+  let body: {
+    a?: NguoiXem;
+    b?: NguoiXem;
+    comparison?: { intent?: string; question?: string };
+  };
   try {
     body = await req.json();
   } catch {
@@ -79,52 +83,48 @@ export async function POST(req: Request) {
     if (loi) return NextResponse.json({ loi: `${loi} (${nhan})` }, { status: 400 });
   }
 
-  const namXem = soHopLe(body.namXem, 1900, 2100) ? body.namXem! : new Date().getFullYear();
-  const thangXem = soHopLe(body.thangXem, 1, 12) ? body.thangXem! : new Date().getMonth() + 1;
+  // Ý định so sánh quyết định cung nào được đọc, RAG tìm gì và bài có mục nào.
+  // Thiếu nó thì mọi cặp đều nhận cùng một kiểu luận giải — đúng vấn đề mà lớp
+  // này sinh ra để sửa.
+  const yDinh: YDinhKetNoi = laYDinhHopLe(body.comparison?.intent)
+    ? (body.comparison!.intent as YDinhKetNoi)
+    : Y_DINH_MAC_DINH;
+
+  const cauHoi =
+    typeof body.comparison?.question === 'string'
+      ? body.comparison.question.trim().slice(0, 500)
+      : '';
+
+  if (yDinh === 'khac' && cauHoi.length < 10) {
+    return NextResponse.json(
+      { loi: 'Hãy nói ngắn gọn điều bạn muốn hiểu về hai người này.' },
+      { status: 400 }
+    );
+  }
 
   const laSoA = dungLaSo(body.a!);
   const laSoB = dungLaSo(body.b!);
   const soSanh = soSanhHaiLaSo(laSoA, laSoB);
 
-  const bangSoSanh = soSanh.tieuChi
-    .map(
-      (t) =>
-        `- ${t.ten}: ${soSanh.tenA} = ${t.giaTriA} | ${soSanh.tenB} = ${t.giaTriB} -> ${t.ketQua} (${t.mucDo})`
-    )
-    .join('\n');
-
-  const doans = await truyHoiTriThuc(
-    `hợp tuổi hôn nhân cung Phu Thê ${soSanh.tieuChi.map((t) => t.ketQua).join(' ')}`,
-    5,
-    'nam-phai'
-  );
-
-  const { system, user } = dungPromptHopTuoi(
-    moTaLaSo(laSoA, namXem, thangXem),
-    moTaLaSo(laSoB, namXem, thangXem),
-    bangSoSanh,
-    dungKhoiTriThuc(doans)
-  );
-
   try {
-    const kq = await goiVoiFallback({ system, user, maxTokens: 5000 });
-    return NextResponse.json({
-      soSanh,
-      noiDung: kq.text,
-      model: `${kq.provider}/${kq.model}`,
-      nguonTriThuc: doans.map((d) => ({
-        tieuDe: d.tieuDe,
-        hePhai: d.hePhai,
-        diem: Math.round(d.diemTuongDong * 100),
-      })),
+    const kq = await luanKetNoi({
+      laSoA,
+      laSoB,
+      tenA: soSanh.tenA,
+      tenB: soSanh.tenB,
+      yDinh,
+      cauHoi: cauHoi || undefined,
     });
+
+    return NextResponse.json({ soSanh, ketNoi: kq, model: `${kq.provider}/${kq.model}` });
   } catch (e) {
+    // Bảng so sánh do engine tính nên luôn trả về được, kể cả khi model hỏng —
+    // người dùng vẫn nhận được phần dữ kiện thay vì một trang trắng.
     if (e instanceof KhongCoModelError) {
-      // Bảng so sánh tính bằng engine nên vẫn trả về được dù AI chưa cấu hình
-      return NextResponse.json({ soSanh, loiAi: e.message });
+      return NextResponse.json({ soSanh, yDinh, loiAi: e.message });
     }
     return NextResponse.json(
-      { soSanh, loiAi: e instanceof Error ? e.message : 'Lỗi khi gọi AI' },
+      { soSanh, yDinh, loiAi: e instanceof Error ? e.message : 'Lỗi khi gọi AI' },
       { status: 200 }
     );
   }

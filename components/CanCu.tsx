@@ -5,11 +5,13 @@ import { useT } from '@/lib/i18n/context';
 /**
  * "Muốn biết vì sao không?" — phần căn cứ phía sau một câu trả lời.
  *
- * Thay cho khối "Trích từ kho tri thức" cũ, vốn chỉ liệt kê tên tài liệu kèm
- * một con số phần trăm. Con số đó là điểm cosine — nó nói lên độ gần nghĩa giữa
- * hai vector, không nói lên tài liệu đó đáng tin đến đâu, và người đọc không có
- * cách nào dùng nó. Thứ họ cần biết là: lá số của họ đã cho thấy gì, và nhận
- * định dựa trên tài liệu nào.
+ * Chỉ ba thứ: dữ kiện lá số, cách Celes nối chúng lại, và điểm kéo ngược.
+ *
+ * Cố ý KHÔNG có tên tài liệu, hệ phái hay điểm liên quan. Đó là quyết định sản
+ * phẩm, không phải thiếu sót: người dùng không cần biết Celes lấy đoạn nào từ
+ * cuốn nào, và một con số "82% liên quan" là điểm cosine giữa hai vector — nó
+ * không nói lên nguồn đó đáng tin đến đâu, mà người đọc cũng chẳng làm gì được
+ * với nó. Toàn bộ nguồn gốc kỹ thuật nằm ở trang quản trị để gỡ lỗi và đánh giá.
  *
  * Mặc định đóng. Người đến đây để đọc câu trả lời, không phải để đọc dấu vết
  * của hệ thống — nhưng khi họ nghi ngờ thì dấu vết phải có sẵn ở đó.
@@ -20,25 +22,32 @@ export interface DuKienHienThi {
   noiDung: string;
 }
 
-export interface NguonHienThi {
-  id: string;
-  tieuDe: string;
-  phienBan: string;
-  deMuc: string | null;
-  hePhai: string;
-}
+export type MucChacChan = 'manh' | 'vua' | 'yeu' | 'trai-chieu' | 'chua-du';
 
 export interface CanCuTraLoi {
   duKien: DuKienHienThi[];
-  nguon: NguonHienThi[];
+  cachNoi?: string | null;
+  luongNguoc?: string[];
+  mucChacChan?: { tieuDe: string; muc: MucChacChan | null }[];
   chuDe: string;
   cungLienQuan: string[];
   phuongPhap: string;
+  coNguon?: boolean;
 }
 
 export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
   const t = useT();
   if (!canCu || canCu.duKien.length === 0) return null;
+
+  const nhanMuc: Record<MucChacChan, string> = {
+    manh: t.hoiCeles.chacManh,
+    vua: t.hoiCeles.chacVua,
+    yeu: t.hoiCeles.chacYeu,
+    'trai-chieu': t.hoiCeles.chacTraiChieu,
+    'chua-du': t.hoiCeles.chacChuaDu,
+  };
+
+  const coMuc = (canCu.mucChacChan ?? []).filter((m) => m.muc);
 
   return (
     <details className="rounded-[var(--radius-cards)] p-[12px]" style={{ boxShadow: 'var(--shadow-card)' }}>
@@ -49,30 +58,41 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
       <div className="mt-[12px] flex flex-col gap-[14px]">
         <Nhom tieuDe={t.hoiCeles.canCuLaSo}>
           {canCu.duKien.map((d) => (
-            <Dong key={d.id}>
-              <Ma>{d.id}</Ma> {d.noiDung}
-            </Dong>
+            <Dong key={d.id}>{d.noiDung}</Dong>
           ))}
         </Nhom>
 
-        <Nhom tieuDe={t.hoiCeles.canCuNguon}>
-          {canCu.nguon.length === 0 ? (
-            <Dong>{t.hoiCeles.canCuKhongNguon}</Dong>
-          ) : (
-            canCu.nguon.map((n) => (
-              <Dong key={n.id}>
-                <Ma>{n.id}</Ma> {n.tieuDe} v{n.phienBan}
-                {n.deMuc ? ` — ${n.deMuc}` : ''} · {n.hePhai}
+        {canCu.cachNoi && (
+          <Nhom tieuDe={t.hoiCeles.canCuCachNoi}>
+            <Dong>{canCu.cachNoi}</Dong>
+          </Nhom>
+        )}
+
+        {canCu.luongNguoc && canCu.luongNguoc.length > 0 && (
+          <Nhom tieuDe={t.hoiCeles.canCuLuongNguoc}>
+            {canCu.luongNguoc.map((l, i) => (
+              <Dong key={i}>{l}</Dong>
+            ))}
+          </Nhom>
+        )}
+
+        {coMuc.length > 0 && (
+          <Nhom tieuDe={t.hoiCeles.canCuMucChac}>
+            {coMuc.map((m, i) => (
+              <Dong key={i}>
+                {m.tieuDe ? `${m.tieuDe}: ` : ''}
+                {nhanMuc[m.muc as MucChacChan]}
               </Dong>
-            ))
-          )}
-        </Nhom>
+            ))}
+          </Nhom>
+        )}
 
         <Nhom tieuDe={t.hoiCeles.canCuPhuongPhap}>
           <Dong>{canCu.phuongPhap}</Dong>
           <Dong>
             {t.hoiCeles.canCuChuDe}: {canCu.chuDe} · {canCu.cungLienQuan.join(', ')}
           </Dong>
+          {canCu.coNguon === false && <Dong>{t.hoiCeles.canCuKhongNguon}</Dong>}
         </Nhom>
       </div>
     </details>
@@ -91,15 +111,6 @@ function Nhom({ tieuDe, children }: { tieuDe: string; children: React.ReactNode 
 function Dong({ children }: { children: React.ReactNode }) {
   return (
     <span className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
-      {children}
-    </span>
-  );
-}
-
-/** Mã F###/E### — in bằng chữ đều để tra ngược được trong nhật ký quản trị */
-function Ma({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="tabular-nums" style={{ color: 'var(--fg)', fontVariantNumeric: 'tabular-nums' }}>
       {children}
     </span>
   );

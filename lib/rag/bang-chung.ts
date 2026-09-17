@@ -1,4 +1,5 @@
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
+import { luatUuTienNguon, mucChacChan, NHAN_TIN_CAY, type MucChacChan } from './uu-tien-nguon';
 import type { DuKienLaSo } from './boi-canh-la-so';
 import { NHAN_CHU_DE, NHAN_LOP_HAN, PHIEN_BAN_PLANNER, type KeHoachTruyVan } from './planner';
 import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
@@ -15,10 +16,12 @@ import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
  * là phép so sánh chuỗi.
  */
 
-export const PHIEN_BAN_SCHEMA_OUTPUT = '1.0';
+export const PHIEN_BAN_SCHEMA_OUTPUT = '1.1';
 
 export interface Bangchung {
   id: string;
+  /** Mã ngắn của tài liệu (T1, T2…) để model biết đoạn nào cùng một nguồn */
+  maTaiLieu: string;
   chunkId: string;
   documentId: string;
   versionId: string;
@@ -46,6 +49,11 @@ export interface GoiBangChung {
   };
 }
 
+/** T1, T2… theo thứ tự tài liệu xuất hiện — ngắn hơn uuid và đủ để model phân biệt */
+function maTaiLieuNgan(id: string, tatCa: string[]): string {
+  return `T${[...new Set(tatCa)].indexOf(id) + 1}`;
+}
+
 export function dungGoiBangChung(
   cauHoi: string,
   keHoach: KeHoachTruyVan,
@@ -60,6 +68,10 @@ export function dungGoiBangChung(
     duKien,
     bangChung: doan.map((d, i) => ({
       id: `E${String(i + 1).padStart(3, '0')}`,
+      maTaiLieu: maTaiLieuNgan(
+        d.documentId,
+        doan.map((x) => x.documentId)
+      ),
       chunkId: d.chunkId,
       documentId: d.documentId,
       versionId: d.versionId,
@@ -84,11 +96,14 @@ export function dungGoiBangChung(
 export function dungKhoiChoPrompt(goi: GoiBangChung): string {
   const duKien = goi.duKien.map((f) => `${f.id}. ${f.noiDung}`).join('\n');
 
+  // Mỗi nguồn mang theo mức tin cậy và mã tài liệu. Model cần cả hai để xử mâu
+  // thuẫn theo luật: mức quyết định nghe ai, mã tài liệu để biết ba đoạn cùng
+  // một sách chỉ là một tiếng nói chứ không phải ba nguồn đồng thuận.
   const bangChung = goi.bangChung.length
     ? goi.bangChung
         .map(
           (e) =>
-            `${e.id}. [${e.tieuDe} v${e.phienBanTaiLieu}${e.duongDeMuc ? ` — ${e.duongDeMuc}` : ''}]\n${e.noiDung}`
+            `${e.id}. [mức: ${NHAN_TIN_CAY[e.mucTinCay] ?? e.mucTinCay} · tài liệu ${e.maTaiLieu}${e.duongDeMuc ? ` · mục "${e.duongDeMuc}"` : ''}]\n${e.noiDung}`
         )
         .join('\n\n')
     : '(Không có nguồn nào trong kho tri thức khớp với câu hỏi này.)';
@@ -103,45 +118,63 @@ export function dungKhoiChoPrompt(goi: GoiBangChung): string {
     '',
     'NGUỒN THAM CHIẾU:',
     bangChung,
+    '',
+    luatUuTienNguon(),
   ].join('\n');
 }
-
-/** Cấu trúc bắt buộc của câu trả lời. Gửi kèm prompt để model biết khuôn. */
-export const SCHEMA_TRA_LOI = {
-  type: 'object',
-  required: ['tomTat', 'yChinh'],
-  properties: {
-    tomTat: { type: 'string' },
-    yChinh: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['tieuDe', 'noiDung', 'maDuKien', 'maNguon'],
-        properties: {
-          tieuDe: { type: 'string' },
-          noiDung: { type: 'string' },
-          maDuKien: { type: 'array', items: { type: 'string' } },
-          maNguon: { type: 'array', items: { type: 'string' } },
-        },
-      },
-    },
-    canNhac: { type: 'array', items: { type: 'string' } },
-    buocTiepTheo: { type: 'array', items: { type: 'string' } },
-  },
-} as const;
 
 export interface YChinh {
   tieuDe: string;
   noiDung: string;
   maDuKien: string[];
   maNguon: string[];
+  /**
+   * Dữ kiện kéo theo hướng ngược lại.
+   *
+   * Framework mục 5.3 bắt buộc: trước khi chốt một nhận định, phải đi tìm thứ
+   * chỏi lại nó. Không có trường này thì model chỉ nhặt những sao củng cố câu
+   * chuyện nó muốn kể, và bài đọc nào cũng mạch lạc một cách đáng ngờ.
+   */
+  luongNguoc?: string;
+  /** Độ chắc, do máy chấm từ số nguồn độc lập — không phải model tự nhận */
+  mucChacChan?: MucChacChan;
 }
 
 export interface TraLoiCoCauTruc {
   tomTat: string;
   yChinh: YChinh[];
+  /**
+   * Một hai câu nói các dữ kiện nối với nhau ra sao.
+   *
+   * Đây là thứ duy nhất trong phần "Muốn biết vì sao không?" mà model viết. Nó
+   * thay cho việc liệt kê tên tài liệu — người đọc cần hiểu mạch suy luận, không
+   * cần biết Celes đã lấy đoạn nào từ cuốn nào.
+   */
+  cachNoi?: string;
   canNhac?: string[];
   buocTiepTheo?: string[];
+}
+
+/**
+ * Chấm độ chắc cho từng ý, dựa trên số nguồn ĐỘC LẬP đứng sau nó.
+ *
+ * Máy chấm, không để model tự nhận — model nào cũng nghĩ lập luận của mình là
+ * chắc. Ở đây độ chắc là một phép đếm: bao nhiêu tài liệu khác nhau, mức nào.
+ */
+export function chamDoChac(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): TraLoiCoCauTruc {
+  const theoMa = new Map(goi.bangChung.map((e) => [e.id, e]));
+  return {
+    ...traLoi,
+    yChinh: traLoi.yChinh.map((y) => ({
+      ...y,
+      mucChacChan: mucChacChan(
+        y.maNguon
+          .map((m) => theoMa.get(m))
+          .filter((e): e is Bangchung => !!e)
+          .map((e) => ({ documentId: e.documentId, mucTinCay: e.mucTinCay }))
+      ),
+    })),
+  };
 }
 
 /**
@@ -163,8 +196,10 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
   try {
     const d = JSON.parse(sach.slice(dau, cuoi + 1));
     if (typeof d?.tomTat !== 'string' || !Array.isArray(d?.yChinh)) return null;
+    const chuoi = (x: unknown) => (typeof x === 'string' && x.trim() ? x.trim() : undefined);
     return {
       tomTat: d.tomTat,
+      cachNoi: chuoi(d.cachNoi),
       yChinh: d.yChinh
         .filter((y: unknown): y is YChinh => !!y && typeof (y as YChinh).noiDung === 'string')
         .map((y: YChinh) => ({
@@ -172,6 +207,7 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
           noiDung: y.noiDung,
           maDuKien: Array.isArray(y.maDuKien) ? y.maDuKien.filter((x) => typeof x === 'string') : [],
           maNguon: Array.isArray(y.maNguon) ? y.maNguon.filter((x) => typeof x === 'string') : [],
+          luongNguoc: chuoi(y.luongNguoc),
         })),
       canNhac: Array.isArray(d.canNhac) ? d.canNhac.filter((x: unknown) => typeof x === 'string') : [],
       buocTiepTheo: Array.isArray(d.buocTiepTheo)

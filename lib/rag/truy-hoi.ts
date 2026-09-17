@@ -1,6 +1,7 @@
 import { embedTruyVan } from '@/lib/ai/embedding';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
-import type { KeHoachTruyVan } from './planner';
+import type { ThucThe } from './thuc-the';
+import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
 
 /**
  * Truy hồi lai (vector + từ khoá) rồi trộn theo thứ hạng.
@@ -16,7 +17,21 @@ import type { KeHoachTruyVan } from './planner';
  * với chuyện đó.
  */
 
-export const PHIEN_BAN_TRUY_HOI = '2026.09.2';
+export const PHIEN_BAN_TRUY_HOI = '2026.09.3';
+
+/**
+ * Phần kế hoạch mà truy hồi thật sự cần.
+ *
+ * Cố ý hẹp hơn `KeHoachTruyVan`: luận giải một người và so hai người có hai bộ
+ * lập kế hoạch khác nhau, nhưng đều kết thúc ở ba thứ này. Buộc truy hồi phụ
+ * thuộc vào cả `KeHoachTruyVan` thì phần Kết nối phải bịa ra `chuDe`, `lopHan`
+ * chỉ để gọi được hàm — và những trường bịa ra đó rồi sẽ đi vào nhật ký.
+ */
+export interface KeHoachChoTruyHoi {
+  truyVan: string;
+  truyVanTuKhoa: string;
+  thucThe: ThucThe[];
+}
 
 export interface CauHinhTruyHoi {
   /** Số ứng viên lấy từ mỗi nhánh trước khi trộn */
@@ -103,20 +118,8 @@ function veUngVien(d: DongSql): DoanUngVien {
   };
 }
 
-/**
- * Thứ tự ưu tiên khi hai đoạn cùng điểm RRF. Nguồn cốt lõi thắng nguồn tham
- * khảo — spec mục 09: không có thang "nguồn nào thắng tất cả", nhưng khi đã hoà
- * điểm thì mức tin cậy là tiêu chí tiếp theo hợp lý nhất.
- */
-const THU_TU_TIN_CAY: Record<string, number> = {
-  'cot-loi': 0,
-  'chuyen-gia-duyet': 1,
-  'tham-khao': 2,
-  'ho-tro': 3,
-};
-
 export async function truyHoi(
-  keHoach: KeHoachTruyVan,
+  keHoach: KeHoachChoTruyHoi,
   cauHinhVao: Partial<CauHinhTruyHoi> = {}
 ): Promise<KetQuaTruyHoi> {
   const cauHinh = { ...CAU_HINH_MAC_DINH, ...cauHinhVao };
@@ -203,13 +206,11 @@ export async function truyHoi(
       (u.hangVector ? 1 / (k + u.hangVector) : 0) + (u.hangTuKhoa ? 1 / (k + u.hangTuKhoa) : 0);
   }
 
-  const ungVien = [...gop.values()].sort(
-    (a, b) =>
-      b.diemRRF - a.diemRRF ||
-      (THU_TU_TIN_CAY[a.mucTinCay] ?? 9) - (THU_TU_TIN_CAY[b.mucTinCay] ?? 9)
-  );
-
-  const daChon = ungVien.slice(0, cauHinh.soCuoi);
+  // Xếp theo độ liên quan; mức tin cậy chỉ phân xử khi hai đoạn ngang ngửa. Rồi
+  // giới hạn số đoạn mỗi tài liệu để gói bằng chứng có nhiều tiếng nói —
+  // xem lib/rag/uu-tien-nguon.ts.
+  const ungVien = xepTheoUuTien([...gop.values()]);
+  const daChon = chonDaDang(ungVien, cauHinh.soCuoi);
   for (const u of daChon) u.duocChon = true;
 
   return {

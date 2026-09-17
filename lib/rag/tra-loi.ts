@@ -3,6 +3,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import {
+  chamDoChac,
   docTraLoi,
   dungGoiBangChung,
   PHIEN_BAN_SCHEMA_OUTPUT,
@@ -11,6 +12,8 @@ import {
 } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
+import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
+import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, PHIEN_BAN_PLANNER } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
@@ -42,6 +45,7 @@ export interface KetQuaTraLoi {
   coCauTruc: TraLoiCoCauTruc | null;
   goi: GoiBangChung;
   kiemDuyet: KetQuaKiemDuyet | null;
+  ngonNgu: KetQuaNgonNgu | null;
   soYBiBo: number;
   provider: string;
   model: string;
@@ -56,7 +60,10 @@ export function dungVan(t: TraLoiCoCauTruc): string {
   const phan: string[] = [t.tomTat.trim()];
 
   for (const y of t.yChinh) {
-    phan.push(y.tieuDe ? `### ${y.tieuDe}\n${y.noiDung.trim()}` : y.noiDung.trim());
+    // Lực ngược đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
+    // đó đáng tin, tách ra thì người đọc mất mối nối.
+    const than = y.luongNguoc ? `${y.noiDung.trim()}\n\n${y.luongNguoc.trim()}` : y.noiDung.trim();
+    phan.push(y.tieuDe ? `### ${y.tieuDe}\n${than}` : than);
   }
 
   if (t.canNhac?.length) {
@@ -111,6 +118,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       coCauTruc: null,
       goi,
       kiemDuyet: null,
+      ngonNgu: null,
       soYBiBo: 0,
       provider: kq.provider,
       model: kq.model,
@@ -121,14 +129,22 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     };
   }
 
-  const ketQuaKiem = kiemDuyet(coCauTruc, goi);
-  const { traLoi: daLoc, soYBiBo } = locYHong(coCauTruc, ketQuaKiem);
+  const daCham = chamDoChac(coCauTruc, goi);
+  const ketQuaKiem = kiemDuyet(daCham, goi);
+  const { traLoi: daLoc, soYBiBo } = locYHong(daCham, ketQuaKiem);
+
+  const van = dungVan(daLoc);
+  const ketQuaNgonNgu = soatNgonNgu(
+    van,
+    daLoc.yChinh.map((y) => y.tieuDe || y.noiDung)
+  );
 
   return {
-    van: dungVan(daLoc),
+    van,
     coCauTruc: daLoc,
     goi,
     kiemDuyet: ketQuaKiem,
+    ngonNgu: ketQuaNgonNgu,
     soYBiBo,
     provider: kq.provider,
     model: kq.model,
@@ -147,5 +163,7 @@ export function phienBanHienTai(): Record<string, string> {
     truyHoi: PHIEN_BAN_TRUY_HOI,
     schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
     validator: PHIEN_BAN_VALIDATOR,
+    ngonNgu: PHIEN_BAN_NGON_NGU,
+    uuTienNguon: PHIEN_BAN_UU_TIEN,
   };
 }

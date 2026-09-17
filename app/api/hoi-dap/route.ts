@@ -113,19 +113,26 @@ export async function POST(req: Request) {
     return NextResponse.json({
       traLoi: kq.van,
       model: `${kq.provider}/${kq.model}`,
-      // "Muốn biết vì sao không?" — căn cứ để UI mở ra khi người đọc muốn xem.
+      // "Muốn biết vì sao không?" — CHỈ dữ kiện lá số và mạch suy luận.
+      //
+      // Cố ý không có tên tài liệu, hệ phái theo đoạn, điểm liên quan hay mã
+      // chunk. Người dùng không cần biết Celes lấy đoạn nào từ cuốn nào; họ cần
+      // biết lá số của họ cho thấy gì và Celes nối chúng ra sao. Toàn bộ nguồn
+      // gốc kỹ thuật nằm ở `retrieval_runs`/`ai_requests` cho trang quản trị.
       canCu: {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
-        nguon: kq.goi.bangChung.map((e) => ({
-          id: e.id,
-          tieuDe: e.tieuDe,
-          phienBan: e.phienBanTaiLieu,
-          deMuc: e.duongDeMuc,
-          hePhai: e.hePhai,
+        cachNoi: kq.coCauTruc?.cachNoi ?? null,
+        luongNguoc: (kq.coCauTruc?.yChinh ?? [])
+          .map((y) => y.luongNguoc)
+          .filter((x): x is string => !!x),
+        mucChacChan: (kq.coCauTruc?.yChinh ?? []).map((y) => ({
+          tieuDe: y.tieuDe,
+          muc: y.mucChacChan ?? null,
         })),
         chuDe: kq.goi.chuDe,
         cungLienQuan: kq.goi.cungLienQuan,
         phuongPhap: `${kq.phienBan.engine} v${kq.phienBan.phuongPhap}`,
+        coNguon: kq.goi.bangChung.length > 0,
       },
     });
   } catch (e) {

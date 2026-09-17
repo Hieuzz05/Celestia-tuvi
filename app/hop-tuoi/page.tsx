@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
-import type { NguonTriThuc as Nguon } from '@/lib/ai/goiLuanGiai';
+import { ChonYDinh } from '@/components/ketnoi/ChonYDinh';
+import { KetQuaKetNoi, type DuLieuKetNoi } from '@/components/ketnoi/KetQuaKetNoi';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
+import { CAU_HINH_Y_DINH, Y_DINH_MAC_DINH, type YDinhKetNoi } from '@/lib/ket-noi/y-dinh';
 import type { KetQuaSoSanh, MucDo } from '@/lib/tuvi/hoptuoi';
 import { Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
+import { ghiSuKien } from '@/lib/analytics';
 
 const MAU_MUC_DO: Record<MucDo, string> = {
   thuan: 'var(--chart-cat)',
@@ -26,13 +27,12 @@ const NHAN_MUC_DO: Record<MucDo, string> = {
 
 interface KetQua {
   soSanh: KetQuaSoSanh;
-  noiDung?: string;
+  ketNoi?: DuLieuKetNoi;
   model?: string;
-  nguonTriThuc?: Nguon[];
   loiAi?: string;
 }
 
-export default function HopTuoiPage() {
+export default function KetNoiPage() {
   const { duocVao, dangDoc } = useTaiKhoan();
   const [moCongUngHo, setMoCongUngHo] = useState(false);
   const [a, setA] = useState<ThongTinForm>({
@@ -47,6 +47,8 @@ export default function HopTuoiPage() {
     gio: 15,
     gioiTinh: 'nu',
   });
+  const [yDinh, setYDinh] = useState<YDinhKetNoi>(Y_DINH_MAC_DINH);
+  const [cauHoi, setCauHoi] = useState('');
   const [hoSos, setHoSos] = useState<HoSo[]>([]);
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQua | null>(null);
@@ -57,6 +59,11 @@ export default function HopTuoiPage() {
       .then(setHoSos)
       .catch(() => setHoSos([]));
   }, []);
+
+  const cauHinh = CAU_HINH_Y_DINH[yDinh];
+  // "Một điều khác" thì câu hỏi là nguồn duy nhất cho biết phải nhìn vào đâu,
+  // nên nó thành bắt buộc — thiếu nó thì chẳng còn gì để lập kế hoạch.
+  const thieuCauHoi = yDinh === 'khac' && cauHoi.trim().length < 10;
 
   const chonHoSo = (h: HoSo, dat: (v: ThongTinForm) => void) =>
     dat({
@@ -70,6 +77,7 @@ export default function HopTuoiPage() {
     setDangChay(true);
     setLoi(null);
     setKetQua(null);
+    ghiSuKien('connection_compare_started', { yDinh, coCauHoi: Boolean(cauHoi.trim()) });
     try {
       const dung = (f: ThongTinForm) => {
         const { ngay, thang, nam } = tachNgaySinh(f.ngaySinh);
@@ -78,7 +86,11 @@ export default function HopTuoiPage() {
       const res = await fetch('/api/hop-tuoi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ a: dung(a), b: dung(b) }),
+        body: JSON.stringify({
+          a: dung(a),
+          b: dung(b),
+          comparison: { intent: yDinh, question: cauHoi.trim() || undefined },
+        }),
       });
       const data = await res.json();
 
@@ -91,8 +103,10 @@ export default function HopTuoiPage() {
 
       if (!res.ok) throw new Error(data.loi ?? 'So sánh thất bại');
       setKetQua(data);
+      ghiSuKien('connection_compare_completed', { yDinh, coAi: Boolean(data.ketNoi) });
     } catch {
-      setLoi('Celestia chưa so được lúc này — thử lại sau một chút.');
+      setLoi('Celes chưa so được lúc này — thử lại sau một chút.');
+      ghiSuKien('connection_compare_failed', { yDinh });
     } finally {
       setDangChay(false);
     }
@@ -110,15 +124,48 @@ export default function HopTuoiPage() {
       </Shell>
     );
 
+  const bangKyThuat = ketQua ? (
+    <div className="flex flex-col">
+      {ketQua.soSanh.tieuChi.map((t) => (
+        <div
+          key={t.ten}
+          className="grid gap-x-[16px] gap-y-[4px] py-[12px] md:grid-cols-[180px_1fr_1fr_170px]"
+          style={{ borderBottom: '1px solid var(--line)' }}
+        >
+          <span className="text-[13px] font-medium" style={{ color: 'var(--fg)' }}>
+            {t.ten}
+          </span>
+          <span className="text-[13px]" style={{ color: 'var(--fg-body)' }}>
+            <span style={{ color: 'var(--fg-muted)' }}>{ketQua.soSanh.tenA}: </span>
+            {t.giaTriA}
+          </span>
+          <span className="text-[13px]" style={{ color: 'var(--fg-body)' }}>
+            <span style={{ color: 'var(--fg-muted)' }}>{ketQua.soSanh.tenB}: </span>
+            {t.giaTriB}
+          </span>
+          <span className="flex flex-col gap-[2px]">
+            <span className="text-[13px] font-medium" style={{ color: MAU_MUC_DO[t.mucDo] }}>
+              {t.ketQua}
+            </span>
+            <span className="text-[11px]" style={{ color: 'var(--fg-subtle)' }}>
+              {NHAN_MUC_DO[t.mucDo]}
+            </span>
+          </span>
+          <span className="text-[12px] md:col-span-4" style={{ color: 'var(--fg-subtle)' }}>
+            {t.giaiThich}
+          </span>
+        </div>
+      ))}
+    </div>
+  ) : null;
+
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
         <p className="eyebrow">KẾT NỐI</p>
-        <h1 className="heading mt-[10px]">Hai người kết nối với nhau thế nào?</h1>
+        <h1 className="heading mt-[10px]">Hai người gặp nhau ở đâu — và dễ lệch nhau ở đâu?</h1>
         <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-          So sánh theo các tiêu chí truyền thống: bản mệnh, địa chi, cục, âm dương, cung Mệnh và
-          cung Phu Thê. Công cụ này mô tả dữ kiện chứ không chấm điểm — tử vi không quy chuyện hợp
-          tuổi về một con số, và quyết định là của bạn.
+          Celes sẽ nhìn hai lá số theo điều bạn thực sự muốn hiểu về mối quan hệ này.
         </p>
       </div>
 
@@ -155,8 +202,38 @@ export default function HopTuoiPage() {
         ))}
       </section>
 
-      <button onClick={chay} disabled={dangChay} className="btn-primary self-start">
-        {dangChay ? 'Đang so sánh…' : 'So hai lá số'}
+      <section className="flex flex-col gap-[14px]">
+        <h2 className="subheading">Bạn muốn hiểu điều gì giữa hai người?</h2>
+        <ChonYDinh
+          giaTri={yDinh}
+          onChon={(y) => {
+            setYDinh(y);
+            ghiSuKien('connection_intent_selected', { yDinh: y });
+          }}
+        />
+      </section>
+
+      <section className="flex flex-col gap-[8px]">
+        <label className="subheading" htmlFor="cau-hoi-ket-noi">
+          Có điều gì cụ thể bạn muốn Celes nhìn kỹ hơn?
+        </label>
+        <textarea
+          id="cau-hoi-ket-noi"
+          value={cauHoi}
+          onChange={(e) => setCauHoi(e.target.value.slice(0, 500))}
+          rows={3}
+          className="field-input"
+          placeholder={cauHinh.goiYCauHoi}
+        />
+        <p className="caption" style={{ color: 'var(--fg-muted)' }}>
+          {yDinh === 'khac'
+            ? 'Bắt buộc với “Một điều khác” — đây là thứ duy nhất cho Celes biết cần nhìn vào đâu.'
+            : 'Không bắt buộc. Celes sẽ ưu tiên trả lời câu này trong phần kết quả.'}
+        </p>
+      </section>
+
+      <button onClick={chay} disabled={dangChay || thieuCauHoi} className="btn-primary self-start">
+        {dangChay ? 'Celes đang nhìn hai lá số…' : cauHinh.nutBam}
       </button>
 
       {loi && (
@@ -165,72 +242,26 @@ export default function HopTuoiPage() {
         </p>
       )}
 
-      {ketQua && (
-        <section className="flex flex-col gap-[24px]">
-          {/* Bảng so sánh do engine tính — luôn có, không phụ thuộc AI */}
-          <div className="flex flex-col gap-[10px]">
-            <h2 className="heading-sm">Bảng so sánh</h2>
-            <div className="flex flex-col">
-              {ketQua.soSanh.tieuChi.map((t) => (
-                <div
-                  key={t.ten}
-                  className="grid gap-x-[16px] gap-y-[4px] py-[12px] md:grid-cols-[180px_1fr_1fr_170px]"
-                  style={{ borderBottom: '1px solid var(--line)' }}
-                >
-                  <span className="text-[13px] font-medium" style={{ color: 'var(--fg)' }}>
-                    {t.ten}
-                  </span>
-                  <span className="text-[13px]" style={{ color: 'var(--fg-body)' }}>
-                    <span style={{ color: 'var(--fg-muted)' }}>{ketQua.soSanh.tenA}: </span>
-                    {t.giaTriA}
-                  </span>
-                  <span className="text-[13px]" style={{ color: 'var(--fg-body)' }}>
-                    <span style={{ color: 'var(--fg-muted)' }}>{ketQua.soSanh.tenB}: </span>
-                    {t.giaTriB}
-                  </span>
-                  <span className="flex flex-col gap-[2px]">
-                    <span className="text-[13px] font-medium" style={{ color: MAU_MUC_DO[t.mucDo] }}>
-                      {t.ketQua}
-                    </span>
-                    <span className="text-[11px]" style={{ color: 'var(--fg-subtle)' }}>
-                      {NHAN_MUC_DO[t.mucDo]}
-                    </span>
-                  </span>
-                  <span
-                    className="text-[12px] md:col-span-4"
-                    style={{ color: 'var(--fg-subtle)' }}
-                  >
-                    {t.giaiThich}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+      {ketQua?.ketNoi && bangKyThuat && (
+        <KetQuaKetNoi
+          duLieu={ketQua.ketNoi}
+          tenA={ketQua.soSanh.tenA}
+          tenB={ketQua.soSanh.tenB}
+          bangKyThuat={bangKyThuat}
+        />
+      )}
 
-          {ketQua.noiDung && (
-            <div className="flex flex-col gap-[12px]">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="heading-sm">Nhận định</h2>
-                <span className="caption">
-                  Celestia soạn từ hai lá số
-                </span>
-              </div>
-              <MarkdownLuanGiai noiDung={ketQua.noiDung} />
-              <NguonTriThuc nguon={ketQua.nguonTriThuc} />
-            </div>
-          )}
-
-          {ketQua.loiAi && (
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              Bảng so sánh ở trên tính bằng engine nên vẫn đầy đủ, nhưng phần nhận định AI chưa chạy
-              được: {ketQua.loiAi}
-            </p>
-          )}
-
-          <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-            Nội dung mang tính tham khảo. Không dùng kết quả này làm cơ sở quyết định chuyện hệ
-            trọng của đời người.
+      {/* Model hỏng nhưng engine chạy: vẫn phải trả được phần dữ kiện. */}
+      {ketQua && !ketQua.ketNoi && bangKyThuat && (
+        <section className="flex flex-col gap-[12px]">
+          <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
+            Celes chưa hoàn thành phần diễn giải lúc này. Dữ kiện so sánh bên dưới vẫn được tính từ
+            hai lá số.
           </p>
+          <button onClick={chay} className="link-text self-start">
+            Thử luận giải lại
+          </button>
+          <div>{bangKyThuat}</div>
         </section>
       )}
 
@@ -241,7 +272,6 @@ export default function HopTuoiPage() {
           quayLai={{ path: '/hop-tuoi' }}
         />
       )}
-
     </Shell>
   );
 }

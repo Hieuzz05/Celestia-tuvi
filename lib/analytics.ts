@@ -26,6 +26,11 @@ export type TenSuKien =
   | 'timeline_year_opened'
   | 'ask_submitted'
   | 'relationship_started'
+  // Phễu Kết nối — spec Relationship Intent mục 35
+  | 'connection_intent_selected'
+  | 'connection_compare_started'
+  | 'connection_compare_completed'
+  | 'connection_compare_failed'
   | 'paywall_viewed'
   | 'purchase_started'
   | 'purchase_success'

@@ -3,7 +3,6 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { NguonTriThuc } from '@/components/NguonTriThuc';
 import { Field, FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
@@ -254,7 +253,6 @@ function TrangLuanGiai() {
                   </span>
                 </div>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} />
-                <NguonTriThuc nguon={ketQua.nguonTriThuc} />
                 <p className="mt-[14px] text-[12px]" style={{ color: 'var(--fg-muted)' }}>
                   Nội dung do AI tạo ra, mang tính tham khảo — không thay thế tư vấn chuyên môn về y
                   tế, tài chính hay pháp lý.

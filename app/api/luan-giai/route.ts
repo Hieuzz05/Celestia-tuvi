@@ -95,11 +95,7 @@ export async function POST(req: Request) {
       noiDung: kq.text,
       model: `${kq.provider}/${kq.model}`,
       daThuHong: kq.daThuHong,
-      nguonTriThuc: doans.map((d) => ({
-        tieuDe: d.tieuDe,
-        hePhai: d.hePhai,
-        diem: Math.round(d.diemTuongDong * 100),
-      })),
+      // Nguồn gốc RAG không ra tới trình duyệt — xem ghi chú ở components/CanCu.tsx
       tokens: { vao: kq.tokensIn, ra: kq.tokensOut },
     });
   } catch (e) {
