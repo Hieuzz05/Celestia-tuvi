@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { doiSoatDon } from '@/lib/support/doi-soat';
 import { quyenHienTai } from '@/lib/support/entitlements';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { nguoiDungHienTai } from '@/lib/supabase/server';
@@ -25,16 +26,23 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: { code: 'PAYMENT_NOT_CONFIGURED' } }, { status: 503 });
   }
 
-  const { data: don } = await db
-    .from('support_payments')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  let { data: don } = await db.from('support_payments').select('*').eq('id', id).maybeSingle();
 
   // Không phân biệt "không có" với "của người khác": trả lời khác nhau là để lộ
   // đơn nào tồn tại.
   if (!don || don.user_id !== user.id) {
     return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 });
+  }
+
+  // Đơn còn treo thì hỏi thẳng payOS thay vì ngồi chờ webhook. Webhook hỏng im
+  // lặng được (khai sai URL, gói tin rơi), và khi đó người dùng đã trả tiền mà
+  // màn hình thì đứng yên mãi ở "đang chờ".
+  if (don.status === 'pending' || don.status === 'paid') {
+    const kq = await doiSoatDon(don);
+    if (kq !== 'khong-doi' && kq !== 'chua-tra') {
+      const { data: moi } = await db.from('support_payments').select('*').eq('id', id).maybeSingle();
+      if (moi) don = moi;
+    }
   }
 
   const daCap = don.status === 'entitlement_granted';

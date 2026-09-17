@@ -641,6 +641,10 @@ export const vi = {
     thuLai: 'Thử lại',
     taoMaMoi: 'Tạo mã mới',
 
+    camOn: 'Cảm ơn bạn đã đồng hành cùng Celes.',
+    camOnMo: 'Quyền Supporter đang hoạt động đến {luc} — còn {so} câu Hỏi Celes.',
+    xemChiTietQuyen: 'Xem chi tiết',
+    daHieu: 'Đã rõ',
     supporterDangHoatDong: 'Supporter đang hoạt động',
     denKhi: 'Đến {luc}',
     conCauHoi: 'Còn {so} câu Hỏi Celes',

@@ -126,3 +126,41 @@ export function chuKyWebhookHopLe(data: unknown, signature: unknown): boolean {
   const b = Buffer.from(signature, 'utf8');
   return a.length === b.length && timingSafeEqual(a, b);
 }
+
+/**
+ * Hỏi thẳng payOS xem một đơn đã trả chưa.
+ *
+ * Webhook là luồng chính, nhưng nó phụ thuộc vào việc khai đúng URL ở phía
+ * payOS và vào việc gói tin tới được. Cả hai đều hỏng được mà không báo gì:
+ * người dùng chuyển tiền xong, payOS báo thành công, còn Celestia thì vẫn thấy
+ * đơn treo ở `pending` mãi.
+ *
+ * Nên trang thanh toán hỏi lại đường này mỗi lần nó hỏi trạng thái. Đây không
+ * phải cách thay webhook — vẫn là payOS xác nhận, chỉ khác ở chỗ ta chủ động
+ * hỏi thay vì chờ được báo.
+ */
+export async function docDonPayos(
+  dinhDanh: string | number
+): Promise<{ status: string; amount: number; reference?: string } | null> {
+  if (!payosDaCauHinh) return null;
+  const { clientId, apiKey } = khoa();
+
+  const res = await fetch(`${API}/${dinhDanh}`, {
+    headers: { 'x-client-id': clientId, 'x-api-key': apiKey },
+    cache: 'no-store',
+  });
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as {
+    code?: string;
+    data?: { status?: string; amountPaid?: number; amount?: number; transactions?: { reference?: string }[] };
+  };
+  if (json.code !== '00' || !json.data) return null;
+
+  return {
+    status: String(json.data.status ?? ''),
+    // amountPaid là số tiền THỰC SỰ đã về; amount chỉ là số tiền yêu cầu
+    amount: Number(json.data.amountPaid ?? json.data.amount ?? 0),
+    reference: json.data.transactions?.[0]?.reference,
+  };
+}

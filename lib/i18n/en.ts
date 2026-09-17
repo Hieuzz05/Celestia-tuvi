@@ -643,6 +643,10 @@ export const en: TuDien = {
     thuLai: 'Try again',
     taoMaMoi: 'Create a new code',
 
+    camOn: 'Thank you for walking with Celes.',
+    camOnMo: 'Supporter access is active until {luc} — {so} questions left for Celes.',
+    xemChiTietQuyen: 'See details',
+    daHieu: 'Got it',
     supporterDangHoatDong: 'Supporter access is active',
     denKhi: 'Until {luc}',
     conCauHoi: '{so} questions left for Celes',

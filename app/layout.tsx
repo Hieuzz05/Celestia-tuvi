@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono, Permanent_Marker } from "next/font/google";
 import { NgonNguProvider } from "@/lib/i18n/context";
 import { BoiCanhProvider } from "@/lib/store/boi-canh";
+import { BangCamOn } from "@/components/support/BangCamOn";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
@@ -76,6 +77,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {/* Bối cảnh lá số nằm trên cùng: đổi route không được làm mất lá số
               đang xem hay lá số vừa nhập mà chưa lưu (spec v4 mục 13-14). */}
           <BoiCanhProvider>
+            {/* Đặt trên cả thanh điều hướng: người vừa ủng hộ xong quay lại bằng
+                đường nào cũng thấy, không phải chỉ khi ở màn thanh toán. */}
+            <BangCamOn />
             <SiteNav />
             <main className="flex-1">{children}</main>
             <SiteFooter />
