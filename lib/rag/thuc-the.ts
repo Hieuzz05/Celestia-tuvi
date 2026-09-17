@@ -40,8 +40,20 @@ export function boDau(s: string): string {
     .trim();
 }
 
+/**
+ * Vài cặp sao trùng nhau hoàn toàn sau khi bỏ dấu, nên phải đặt mã tay.
+ *
+ * "Quan Phù" (vòng Thái Tuế) và "Quan Phủ" (vòng Lộc Tồn) là hai sao khác nhau
+ * nhưng đều thành "quan phu". Lấy tên vòng làm phần phân biệt — đó là cấu trúc
+ * có thật của tử vi, không phải hậu tố kỹ thuật bịa ra.
+ */
+const ID_RIENG: Record<string, string> = {
+  'Quan Phù': 'STAR.QUAN_PHU_THAI_TUE',
+  'Quan Phủ': 'STAR.QUAN_PHU_LOC_TON',
+};
+
 function ma(loai: LoaiThucThe, ten: string): string {
-  return `${loai}.${boDau(ten).replace(/[^a-z0-9]+/g, '_').toUpperCase()}`;
+  return ID_RIENG[ten] ?? `${loai}.${boDau(ten).replace(/[^a-z0-9]+/g, '_').toUpperCase()}`;
 }
 
 /**
@@ -122,6 +134,20 @@ export const TU_DIEN_THUC_THE: ThucThe[] = [
   ...TEN_CUNG.map((c) => muc('PALACE', c, BI_DANH_CUNG[c] ?? [])),
   ...HAN_TT,
 ];
+
+// Mã trùng nhau sẽ làm hỏng cả bảng tra lẫn lệnh upsert xuống database, mà hỏng
+// im lặng: Postgres báo "ON CONFLICT DO UPDATE cannot affect row a second time"
+// còn ứng dụng thì chỉ thấy bảng thực thể trống. Nổ ngay lúc nạp module thì rẻ hơn.
+{
+  const dem = new Map<string, string[]>();
+  for (const t of TU_DIEN_THUC_THE) dem.set(t.id, [...(dem.get(t.id) ?? []), t.ten]);
+  const trung = [...dem].filter(([, ten]) => ten.length > 1);
+  if (trung.length) {
+    throw new Error(
+      `Từ điển thực thể có mã trùng: ${trung.map(([id, ten]) => `${id} (${ten.join(', ')})`).join('; ')}`
+    );
+  }
+}
 
 /**
  * Những chuỗi một âm tiết trùng với từ tiếng Việt thông thường.

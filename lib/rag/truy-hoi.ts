@@ -16,7 +16,7 @@ import type { KeHoachTruyVan } from './planner';
  * với chuyện đó.
  */
 
-export const PHIEN_BAN_TRUY_HOI = '2026.09.1';
+export const PHIEN_BAN_TRUY_HOI = '2026.09.2';
 
 export interface CauHinhTruyHoi {
   /** Số ứng viên lấy từ mỗi nhánh trước khi trộn */
@@ -156,7 +156,7 @@ export async function truyHoi(
       loc_thuc_the: locThucThe,
     }),
     supabase.rpc('tim_kien_thuc_tu_khoa', {
-      cau_truy_van: keHoach.truyVan,
+      cau_truy_van: keHoach.truyVanTuKhoa || keHoach.truyVan,
       so_luong: cauHinh.soUngVienTuKhoa,
       loc_he_phai: cauHinh.hePhai ?? null,
       loc_thuc_the: locThucThe,

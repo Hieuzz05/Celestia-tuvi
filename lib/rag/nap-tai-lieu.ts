@@ -216,11 +216,16 @@ export async function napTaiLieu(vao: DauVaoNap): Promise<KetQuaNap> {
   for (const c of chunkDaLuu ?? []) {
     const doan = doans[c.thu_tu];
     for (const tt of nhanDangThucThe(doan)) {
-      const so = (boDauDem(doan, tt.ten) || 1);
+      const so = boDauDem(doan, tt.ten) || 1;
       noi.push({ chunk_id: c.id, entity_id: tt.id, so_lan: so });
     }
   }
-  if (noi.length) await supabase.from('chunk_entities').insert(noi);
+  if (noi.length) {
+    // Bỏ qua lỗi ở đây từng làm cả bộ lọc theo thực thể chết lặng: tài liệu nạp
+    // xong trông như bình thường, chỉ có điều không đoạn nào gắn được sao nào.
+    const { error } = await supabase.from('chunk_entities').insert(noi);
+    if (error) await hong('gan-thuc-the', error.message);
+  }
 
   const canhBao = soatChatLuong(doans);
 
@@ -269,7 +274,7 @@ export async function dongBoTuDienThucThe(): Promise<void> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return;
 
-  await supabase.from('knowledge_entities').upsert(
+  const { error } = await supabase.from('knowledge_entities').upsert(
     TU_DIEN_THUC_THE.map((t) => ({
       id: t.id,
       loai: t.loai,
@@ -279,4 +284,8 @@ export async function dongBoTuDienThucThe(): Promise<void> {
     })),
     { onConflict: 'id' }
   );
+
+  // Ném lỗi thay vì bỏ qua: bảng thực thể trống thì mọi lần gắn thực thể sau đó
+  // đều vi phạm khoá ngoại, và triệu chứng hiện ra ở tận bước truy hồi.
+  if (error) throw new LoiNap(`Không đồng bộ được từ điển thực thể: ${error.message}`);
 }

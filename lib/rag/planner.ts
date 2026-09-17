@@ -15,7 +15,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.1';
+export const PHIEN_BAN_PLANNER = '2026.09.2';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -30,6 +30,13 @@ export interface KeHoachTruyVan {
   thucThe: ThucThe[];
   /** Câu truy vấn đã viết lại cho retrieval — không phải câu người dùng gõ */
   truyVan: string;
+  /**
+   * Truy vấn riêng cho nhánh từ khoá: chỉ những thuật ngữ đặc trưng.
+   *
+   * Nhánh từ khoá tồn tại để bắt ĐÚNG CHỮ. Ném cả câu văn vào đó thì các từ nối
+   * ("của", "thế nào") lấn át tên sao, mà tên sao mới là thứ nó giỏi hơn vector.
+   */
+  truyVanTuKhoa: string;
   phienBan: string;
 }
 
@@ -227,6 +234,7 @@ export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyV
     lopHan: doanLopHan(cum, thucThe),
     thucThe,
     truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung),
+    truyVanTuKhoa: [...new Set([...thucThe.map((t) => t.ten), ...cungLienQuan])].join(' '),
     phienBan: PHIEN_BAN_PLANNER,
   };
 }
