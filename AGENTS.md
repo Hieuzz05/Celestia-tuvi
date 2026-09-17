@@ -165,6 +165,13 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Dữ kiện lá số (F###) chỉ mang phụ tinh TRỌNG YẾU** (`PHU_TINH_TRONG_YEU`), không dump cả cung.
+  Đưa 6-8 phụ tinh vào dữ kiện là model chép nguyên danh sách ấy vào bài — đo được: 78% câu có tên
+  sao, có câu kê 7 sao. Đây mới là gốc của "nêu sao dài dòng", không phải prompt.
+- **Môi trường Bash của harness nuốt một lớp dấu gạch chéo ở MỌI lệnh**, không chỉ heredoc: gõ hai
+  gạch chéo + b thì tệp nhận một gạch chéo + b, rồi Python đọc thành ký tự backspace 0x08 nằm im
+  trong regex — không bao giờ khớp mà tsc vẫn xanh. Sửa tệp có ký tự thoát thì viết script Python
+  bằng công cụ Write rồi chạy, hoặc dùng công cụ Edit. Kiểm bằng cách đếm byte 0x08.
 - **Dùng heredoc `<<'PY'` cho script Python thì dấu gạch chéo bị nuốt một lớp**, nên mọi mẫu chứa
   `
 ` đều không khớp. Sửa tệp có ký tự thoát thì dùng công cụ sửa tệp, đừng dùng heredoc.

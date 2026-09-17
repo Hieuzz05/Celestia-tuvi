@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
-import { goiVoiFallback, KhongCoModelError } from '@/lib/ai/fallback';
-import { CHU_DE, dungPrompt, type ChuDeId } from '@/lib/ai/prompt';
-import { dungKhoiTriThuc, truyHoiTriThuc } from '@/lib/ai/rag';
+import { randomUUID } from 'node:crypto';
+import { KhongCoModelError } from '@/lib/ai/fallback';
+import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
+import { luanBaiDai } from '@/lib/rag/bai-dai';
+import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { nhanPhuongPhap } from '@/lib/tuvi/phuong-phap';
 
 export const maxDuration = 60;
 
@@ -66,37 +69,66 @@ export async function POST(req: Request) {
 
   const cauHoi = typeof body.cauHoi === 'string' ? body.cauHoi.slice(0, 500) : undefined;
 
-  // Truy hồi tri thức: mô tả câu truy vấn bằng chính các sao có thật trong lá số
-  // để tìm đúng đoạn tài liệu nói về bộ sao đó, thay vì chỉ khớp theo tên chủ đề.
-  const cungMenh = laSo.cungs[laSo.menhIndex];
-  const saoMenh = cungMenh.sao
-    .filter((s) => s.loai === 'chinh-tinh' || s.loai === 'tu-hoa')
-    .map((s) => s.ten)
-    .join(' ');
-  const cauTruyVan = [CHU_DE[chuDe].nhan, CHU_DE[chuDe].moTa, saoMenh, laSo.cuc.ten, cauHoi]
-    .filter(Boolean)
-    .join('. ');
-
-  // Vận hạn luận theo Bắc phái, các chủ đề còn lại theo Nam phái
-  const doans = await truyHoiTriThuc(cauTruyVan, 6, chuDe === 'van-han' ? 'bac-phai' : 'nam-phai');
-
-  const { system, user } = dungPrompt(
-    laSo,
-    chuDe,
-    namXem,
-    thangXem,
-    cauHoi,
-    dungKhoiTriThuc(doans)
-  );
-
   try {
-    const kq = await goiVoiFallback({ system, user, maxTokens: 6000 }, body.model);
+    const requestId = randomUUID();
+    const kq = await luanBaiDai({
+      laSo,
+      chuDe,
+      namXem,
+      thangXem,
+      cauHoiThem: cauHoi,
+      requestId,
+      uuTienModel: body.model,
+    });
+
+    // Ghi vết sau khi có bài: nhật ký hỏng không được làm mất bài.
+    await ghiVetTraLoi({
+      requestId,
+      chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
+      tinhNang: 'luan-giai',
+      cauHoi: `${chuDe}${cauHoi ? ` · ${cauHoi}` : ''}`,
+      runId: kq.runId,
+      phienBan: kq.phienBan,
+      provider: kq.provider,
+      model: kq.model,
+      kiemDuyet: kq.ngonNgu
+        ? {
+            dat: kq.kiemDuyet.dat && kq.ngonNgu.dat,
+            loi: [
+              ...kq.kiemDuyet.loi.map((m) => ({ ma: 'bai-dai', mucDo: 'chan' as const, moTa: m })),
+              ...kq.ngonNgu.loi,
+            ],
+            phuSong: 0,
+            phienBan: kq.phienBan.baiDai,
+          }
+        : undefined,
+    });
+
     return NextResponse.json({
-      noiDung: kq.text,
+      noiDung: kq.van,
       model: `${kq.provider}/${kq.model}`,
       daThuHong: kq.daThuHong,
-      // Nguồn gốc RAG không ra tới trình duyệt — xem ghi chú ở components/CanCu.tsx
-      tokens: { vao: kq.tokensIn, ra: kq.tokensOut },
+      // "Muốn biết vì sao không?" — chỉ dữ kiện lá số và mạch suy luận. Không tên
+      // tài liệu, không điểm liên quan — xem ghi chú ở components/CanCu.tsx.
+      canCu: {
+        duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
+        cachNoi: kq.coCauTruc?.cachNoi ?? null,
+        luongNguoc: kq.coCauTruc
+          ? [kq.coCauTruc.cauTruc, ...kq.coCauTruc.diemManh, ...kq.coCauTruc.choDeKet]
+              .map((y) => y.luongNguoc)
+              .filter((x): x is string => !!x)
+          : [],
+        mucChacChan: kq.coCauTruc
+          ? [kq.coCauTruc.cauTruc, ...kq.coCauTruc.diemManh, ...kq.coCauTruc.choDeKet].map((y) => ({
+              tieuDe: y.tieuDe,
+              muc: y.mucChacChan ?? null,
+            }))
+          : [],
+        chuDe: kq.goi.chuDe,
+        cungLienQuan: kq.goi.cungLienQuan,
+        phuongPhap: nhanPhuongPhap(),
+        coNguon: kq.goi.bangChung.length > 0,
+      },
     });
   } catch (e) {
     if (e instanceof KhongCoModelError) {

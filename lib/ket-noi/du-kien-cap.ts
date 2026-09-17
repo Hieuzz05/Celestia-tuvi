@@ -1,4 +1,5 @@
 import { tamPhuongTuChinh, type Cung, type LaSo } from '@/lib/tuvi/ansao';
+import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { CAU_HINH_Y_DINH, type YDinhKetNoi } from './y-dinh';
 
 /**
@@ -31,7 +32,10 @@ const TEN_CHI_TAM_HOP: Record<number, string> = {
 function net(c: Cung): string {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const tuHoa = c.sao.filter((s) => s.loai === 'tu-hoa');
-  const phu = c.sao.filter((s) => s.loai !== 'chinh-tinh' && s.loai !== 'tu-hoa');
+  // Chỉ phụ tinh trọng yếu — xem ghi chú ở lib/rag/boi-canh-la-so.ts
+  const phu = c.sao.filter(
+    (s) => s.loai !== 'chinh-tinh' && s.loai !== 'tu-hoa' && PHU_TINH_TRONG_YEU.has(s.ten)
+  );
 
   const phan: string[] = [
     chinh.length
@@ -39,7 +43,7 @@ function net(c: Cung): string {
       : 'vô chính diệu',
   ];
   if (tuHoa.length) phan.push(tuHoa.map((s) => s.ten).join(', '));
-  if (phu.length) phan.push(`phụ tinh ${phu.slice(0, 5).map((s) => s.ten).join(', ')}`);
+  if (phu.length) phan.push(`phụ tinh ${phu.map((s) => s.ten).join(', ')}`);
   if (c.coTuan) phan.push('gặp Tuần');
   if (c.coTriet) phan.push('gặp Triệt');
   return phan.join('; ');

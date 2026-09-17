@@ -343,6 +343,29 @@ kể cả khi ai đó lấy được `anon key` công khai.
 Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) và log dùng model
 (`ai_provider_configs`, `ai_usage_logs`) sẽ bổ sung ở giai đoạn làm RAG.
 
+### 3.3a Vì sao bài đọc bỗng nhạt đi — hãy xem model nào đang viết
+
+Bài luận giải dài, Hỏi Celes và Kết nối giờ đi chung một đường: chọn đúng dữ kiện theo chủ đề
+(không đổ cả 12 cung), truy hồi nguồn, bắt model trả cấu trúc, kiểm từng ý bằng luật, rồi mới dựng
+thành chữ. Đường đi đó **làm bài đúng hơn**, nhưng **độ sâu và giọng văn vẫn do model quyết định**.
+Cùng một dữ kiện, một prompt, đo ngày 18/09/2026:
+
+| Model | Bài dài đọc ra sao |
+|---|---|
+| `gemini-3.6-flash` | Văn tiếng Việt tốt nhất — nhưng free tier chỉ cho **20 bài mỗi ngày** (`GenerateRequestsPerDay… = 20`), cạn là 429 và rơi xuống model kế tiếp |
+| `groq / gpt-oss-120b` | Cụ thể, có "cái giá" của mỗi điểm mạnh, có lực ngược; còn hay lấy tên sao làm chủ ngữ |
+| `openai / gpt-4o-mini` | Nhạt, tính từ chung chung ("mạnh mẽ", "sâu sắc"); nhiều ý không trích căn cứ nên bị validator loại, bài mỏng đi |
+
+Hai thứ dễ khiến bạn tưởng "chẳng có gì thay đổi":
+
+1. **Thứ tự trong `/admin/models`.** Model đứng đầu viết gần như mọi bài. Xếp OpenAI lên đầu thì
+   bài do `gpt-4o-mini` viết, dù pipeline phía sau đã khác hẳn.
+2. **Gemini hết hạn mức ngày.** Khi đó nó im lặng rơi xuống model kế tiếp. Trang `/luan-giai` trả về
+   kèm trường `daThuHong` — bấm F12 → Network xem là biết bài này do ai viết và vì sao model trước rơi.
+
+Gợi ý thứ tự nếu ưu tiên chất lượng bài dài: **Gemini → Groq → OpenAI**, và bật thanh toán cho khoá
+Gemini để hết trần ngày (cùng lý do với embedding ở mục 3.4).
+
 ### 3.3b Lưới đỡ khi model chính hỏng
 
 Chỉ có một nhà cung cấp là không có lưới. Trong lúc dựng phần này, Gemini trả về

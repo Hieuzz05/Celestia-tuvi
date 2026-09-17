@@ -127,8 +127,15 @@ function dem(cum: Set<string>, canTim: string[]): string[] {
   return canTim.filter((c) => cum.has(c));
 }
 
-/** Từ đứng ngay trước một cụm phán quyết mà làm nó thành câu phủ định */
-const PHU_DINH = ['khong phai', 'chua chac', 'khong han', 'chua han', 'khong the noi'];
+/**
+ * Từ đứng ngay trước một cụm phán quyết mà làm nó thành câu phủ định — hoặc
+ * thành câu hỏi. "Điều gì sẽ xảy ra nếu bạn mở lòng hơn?" là câu phản chiếu,
+ * đúng thứ framework muốn kết bài, không phải lời tiên đoán.
+ */
+const PHU_DINH = [
+  'khong phai', 'chua chac', 'khong han', 'chua han', 'khong the noi',
+  'dieu gi', 'chuyen gi', 'lieu',
+];
 
 /**
  * Như `dem`, nhưng bỏ qua khi cụm nằm trong một câu phủ định.

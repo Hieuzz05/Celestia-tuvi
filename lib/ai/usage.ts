@@ -9,7 +9,9 @@ import type { ProviderId } from './types';
  * chính sách thường xuyên. Đặt hơi thấp còn hơn để tràn.
  */
 export const HAN_MUC_NGAY: Record<ProviderId, number | null> = {
-  gemini: 250, // free tier với API key
+  // Đo ngày 18/09/2026: GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20, không phải 250.
+  // Ghi sai con so nay la luoi chan han muc khong bao gio kich, moi bai ton mot vong 429 roi moi roi.
+  gemini: 20, // free tier với API key
   groq: 900, // ~1000 request/ngày, chừa lại chút biên
   cerebras: 900,
   openrouter: 50, // các model :free giới hạn theo ngày

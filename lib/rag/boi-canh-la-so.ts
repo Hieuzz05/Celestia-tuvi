@@ -6,6 +6,7 @@ import {
   type Cung,
   type LaSo,
 } from '@/lib/tuvi/ansao';
+import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import type { KeHoachTruyVan } from './planner';
 
@@ -34,7 +35,12 @@ export interface DuKienLaSo {
 function motTaCung(c: Cung): string {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const tuHoa = c.sao.filter((s) => s.loai === 'tu-hoa');
-  const phu = c.sao.filter((s) => s.loai !== 'chinh-tinh' && s.loai !== 'tu-hoa');
+  // Chỉ phụ tinh đủ sức đổi cách đọc một cung. Đưa cả 6-8 phụ tinh vào dữ kiện
+  // thì model chép nguyên danh sách ấy vào bài — đó chính là "kê sao dài dòng".
+  // Framework §5.1: phụ tinh thật sự có trọng lượng, không dump toàn bộ.
+  const phu = c.sao.filter(
+    (s) => s.loai !== 'chinh-tinh' && s.loai !== 'tu-hoa' && PHU_TINH_TRONG_YEU.has(s.ten)
+  );
 
   const phan: string[] = [];
   phan.push(
@@ -43,7 +49,7 @@ function motTaCung(c: Cung): string {
       : 'vô chính diệu'
   );
   if (tuHoa.length) phan.push(`${tuHoa.map((s) => s.ten).join(', ')}`);
-  if (phu.length) phan.push(`phụ tinh ${phu.slice(0, 6).map((s) => s.ten).join(', ')}`);
+  if (phu.length) phan.push(`phụ tinh ${phu.map((s) => s.ten).join(', ')}`);
   if (c.coTuan) phan.push('gặp Tuần');
   if (c.coTriet) phan.push('gặp Triệt');
 
