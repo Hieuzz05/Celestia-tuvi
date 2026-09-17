@@ -100,16 +100,37 @@ export default function TrangModel() {
     return true;
   }
 
+  /** Chuyển sang thứ tự mới: hiện ngay rồi mới gọi máy chủ */
+  async function sapLai(ds: Dong[]) {
+    if (!d) return;
+    // Đổi chỗ mà phải chờ mạng thì bấm hai lần liên tiếp sẽ nhảy lung tung.
+    setD({ ...d, dong: ds });
+    await goi('PUT', { thuTu: ds.map((x) => x.id) });
+  }
+
   async function doiCho(i: number, huong: -1 | 1) {
     if (!d) return;
     const ds = [...d.dong];
     const j = i + huong;
     if (j < 0 || j >= ds.length) return;
     [ds[i], ds[j]] = [ds[j], ds[i]];
-    // Hiện ngay thứ tự mới rồi mới gọi máy chủ: đổi chỗ mà phải chờ mạng thì
-    // bấm hai lần liên tiếp sẽ nhảy lung tung.
-    setD({ ...d, dong: ds });
-    await goi('PUT', { thuTu: ds.map((x) => x.id) });
+    await sapLai(ds);
+  }
+
+  /** Đưa một dòng lên đầu — "tôi muốn model này chạy trước" là ý định hay gặp
+   *  nhất, và bấm Lên bốn lần để làm việc đó là thừa. */
+  async function lenDau(i: number) {
+    if (!d || i === 0) return;
+    const ds = [...d.dong];
+    const [x] = ds.splice(i, 1);
+    await sapLai([x, ...ds]);
+  }
+
+  /** Chép chuỗi từ biến môi trường xuống database để bắt đầu quản lý tại đây */
+  async function khoiTao() {
+    if (await goi('POST', { hanhDong: 'khoi-tao' })) {
+      setThongBao(null);
+    }
   }
 
   async function thu(id: string) {
@@ -163,12 +184,17 @@ export default function TrangModel() {
 
       {d && !d.tuDatabase && (
         <div
-          className="rounded-[var(--radius-cards)] p-[14px] text-[13px]"
-          style={{ background: 'var(--surface-panel)', color: 'var(--fg-muted)' }}
+          className="flex flex-col items-start gap-[12px] rounded-[var(--radius-cards)] p-[16px]"
+          style={{ background: 'var(--surface-panel)' }}
         >
-          Danh sách dưới đây đang đọc từ <strong>biến môi trường</strong>. Khi bạn thêm model đầu
-          tiên, toàn bộ chuỗi đang chạy sẽ được chép xuống database trước, rồi từ đó quản lý tại
-          đây — không có model nào bị mất giữa chừng.
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            Danh sách dưới đây đang đọc từ <strong>biến môi trường</strong>, nên chưa sắp lại thứ tự
+            được — muốn sắp thì các dòng phải nằm trong database đã. Bấm nút bên dưới để chép nguyên
+            chuỗi đang chạy xuống, không model nào bị mất và không có gì đổi cho tới khi bạn tự sắp.
+          </p>
+          <button onClick={khoiTao} className="btn-primary">
+            Chuyển sang quản lý tại đây
+          </button>
         </div>
       )}
 
@@ -209,6 +235,9 @@ export default function TrangModel() {
 
                 {x.id && (
                   <div className="flex flex-wrap items-center gap-[10px]">
+                    <button onClick={() => lenDau(i)} disabled={i === 0} className="caption underline">
+                      Lên đầu
+                    </button>
                     <button onClick={() => doiCho(i, -1)} disabled={i === 0} className="caption underline">
                       Lên
                     </button>

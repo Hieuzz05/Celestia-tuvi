@@ -19,6 +19,29 @@ const PROVIDER: ProviderId[] = ['gemini', 'groq', 'cerebras', 'openrouter', 'ope
 const laProvider = (x: unknown): x is ProviderId =>
   typeof x === 'string' && (PROVIDER as string[]).includes(x);
 
+type Khach = NonNullable<ReturnType<typeof taoSupabaseAdmin>>;
+
+async function demDong(supabase: Khach): Promise<number> {
+  const { count } = await supabase.from('ai_model_configs').select('*', { count: 'exact', head: true });
+  return count ?? 0;
+}
+
+/**
+ * Chép chuỗi đang chạy từ biến môi trường xuống bảng.
+ *
+ * Chỉ chép provider ĐANG CÓ key — chép cả những dòng không có key thì danh sách
+ * đầy những model không bao giờ gọi được, và người vận hành phải tự đoán dòng
+ * nào thật sự nằm trong hàng chờ.
+ */
+async function chepChuoiTuEnv(supabase: Khach): Promise<number> {
+  const theoEnv = danhSachModel()
+    .filter((m) => m.apiKey)
+    .map((m, i) => ({ provider: m.provider, model: m.model, uu_tien: i, bat: true }));
+  if (theoEnv.length === 0) return 0;
+  const { error } = await supabase.from('ai_model_configs').insert(theoEnv);
+  return error ? 0 : theoEnv.length;
+}
+
 export async function GET() {
   const cong = await canQuanTri();
   if (!cong.duocPhep) return cong.chan;
@@ -42,11 +65,29 @@ export async function POST(req: Request) {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return NextResponse.json({ loi: LOI_CHUA_CAU_HINH }, { status: 503 });
 
-  let body: { provider?: string; model?: string; apiKey?: string; ghiChu?: string };
+  let body: { provider?: string; model?: string; apiKey?: string; ghiChu?: string; hanhDong?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ loi: 'Body không hợp lệ' }, { status: 400 });
+  }
+
+  // Chuyển quyền quản lý từ biến môi trường sang database mà KHÔNG thêm model mới.
+  // Cần một hành động riêng: người vận hành chỉ muốn sắp lại thứ tự thì không có
+  // lý do gì bắt họ thêm một model chẳng dùng tới chỉ để bảng có dòng.
+  if (body.hanhDong === 'khoi-tao') {
+    const soDong = await demDong(supabase);
+    if (soDong > 0) return NextResponse.json({ ok: true, daCo: true });
+
+    const them = await chepChuoiTuEnv(supabase);
+    if (them === 0) {
+      return NextResponse.json(
+        { loi: 'Chưa có API key nào trong biến môi trường để chép xuống. Hãy thêm model kèm key.' },
+        { status: 400 }
+      );
+    }
+    await ghiNhatKyQuanTri('khoi-tao-chuoi-model', 'ai_model_config', `${them} dòng`, cong.actor);
+    return NextResponse.json({ ok: true, soDong: them });
   }
 
   if (!laProvider(body.provider)) {
@@ -71,16 +112,7 @@ export async function POST(req: Request) {
   // Lần đầu chuyển từ biến môi trường sang database: chép nguyên chuỗi đang chạy
   // xuống bảng trước, rồi mới thêm dòng mới. Nếu không, bảng chỉ có một dòng và
   // toàn bộ lưới đỡ đang hoạt động biến mất ngay lúc bấm Thêm.
-  const { count } = await supabase
-    .from('ai_model_configs')
-    .select('*', { count: 'exact', head: true });
-
-  if ((count ?? 0) === 0) {
-    const theoEnv = danhSachModel()
-      .filter((m) => m.apiKey)
-      .map((m, i) => ({ provider: m.provider, model: m.model, uu_tien: i, bat: true }));
-    if (theoEnv.length) await supabase.from('ai_model_configs').insert(theoEnv);
-  }
+  if ((await demDong(supabase)) === 0) await chepChuoiTuEnv(supabase);
 
   const { data: cuoi } = await supabase
     .from('ai_model_configs')
