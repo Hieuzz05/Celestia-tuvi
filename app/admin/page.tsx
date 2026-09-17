@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { KhoTriThuc } from '@/components/KhoTriThuc';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
 import { QuanLyNguoiDung } from '@/components/QuanLyNguoiDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
+import { ChanQuanTri } from '@/components/auth/ChanQuanTri';
 import { Shell } from '@/components/ui';
 
 interface ModelTrangThai {
@@ -16,7 +18,7 @@ interface ModelTrangThai {
   keyMasked: string | null;
 }
 
-export default function AdminPage() {
+function AdminPageNoiDung() {
   const [models, setModels] = useState<ModelTrangThai[]>([]);
   const [provider, setProvider] = useState<ProviderId>('gemini');
   const [model, setModel] = useState(MODEL_GOI_Y.gemini[0]);
@@ -180,6 +182,21 @@ export default function AdminPage() {
 
       <KhoTriThuc />
 
+      <div className="pt-[8px]">
+        <Link href="/admin/support" className="link-text">
+          Tình hình Ủng hộ Celes →
+        </Link>
+      </div>
+
+
     </Shell>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <ChanQuanTri>
+      <AdminPageNoiDung />
+    </ChanQuanTri>
   );
 }

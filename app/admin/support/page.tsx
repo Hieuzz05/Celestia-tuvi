@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ChanQuanTri } from '@/components/auth/ChanQuanTri';
 import { Eyebrow, Shell, The } from '@/components/ui';
 
 /**
@@ -25,7 +26,7 @@ interface SoLieu {
   donGanDay: { soTien: number; lyDo: string; trangThai: string; luc: string }[];
 }
 
-export default function TrangQuanTriUngHo() {
+function TrangQuanTriUngHoNoiDung() {
   const [d, setD] = useState<SoLieu | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
@@ -134,5 +135,13 @@ export default function TrangQuanTriUngHo() {
         </div>
       </section>
     </Shell>
+  );
+}
+
+export default function TrangQuanTriUngHo() {
+  return (
+    <ChanQuanTri>
+      <TrangQuanTriUngHoNoiDung />
+    </ChanQuanTri>
   );
 }

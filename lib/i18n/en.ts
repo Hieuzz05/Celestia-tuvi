@@ -35,6 +35,7 @@ export const en: TuDien = {
     ketNoi: 'Connections',
     nguoiCuaToi: 'My charts',
     taiKhoan: 'Account',
+    quanTri: 'Admin',
     dangNhap: 'Sign in',
     dangXuat: 'Sign out',
     ngonNgu: 'Language',

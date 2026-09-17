@@ -79,6 +79,8 @@ họ còn nguyên và nên làm gì tiếp.
   phải phân quyền.
 - **Chỉ webhook đã xác thực chữ ký mới mở được quyền.** Đừng bao giờ đọc `status` trên URL trả về
   rồi kết luận đã trả xong.
+- **Vai trò admin đọc từ máy chủ, không so email ở trình duyệt.** `/api/entitlements/me` trả về
+  `tier: 'admin'`; dùng nó. Email nằm trong tay người dùng, `ADMIN_EMAILS` chỉ máy chủ mới biết.
 - **Hôm nay đọc `idMacDinh`, không phải `idDangXem`.** Xem tạm lá số khác ở màn khác không được
   làm đổi trang chủ.
 

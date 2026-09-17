@@ -33,6 +33,7 @@ export const vi = {
     ketNoi: 'Kết nối',
     nguoiCuaToi: 'Danh sách lá số',
     taiKhoan: 'Tài khoản',
+    quanTri: 'Quản trị',
     dangNhap: 'Đăng nhập',
     dangXuat: 'Đăng xuất',
     ngonNgu: 'Ngôn ngữ',

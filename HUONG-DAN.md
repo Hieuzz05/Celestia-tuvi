@@ -657,7 +657,8 @@ phương pháp. Kết quả:
 | `/hoi-dap` | Hỏi Celestia |
 | `/hop-tuoi` | Kết nối — so hai lá số |
 | `/ho-so` | Người của tôi |
-| `/admin` | Quản trị — **không còn link ở đâu trên giao diện**, vào bằng địa chỉ |
+| `/admin` | Quản trị — chỉ tài khoản trong `ADMIN_EMAILS` vào được; link hiện trong menu tài khoản của chính họ |
+| `/admin/support` | Tình hình Ủng hộ Celes — vào từ `/admin` |
 
 > Công cụ lập lá số đã dời từ `/` sang `/la-so`. Ai đang lưu dấu trang cũ thì bookmark `/` giờ ra
 > trang landing.

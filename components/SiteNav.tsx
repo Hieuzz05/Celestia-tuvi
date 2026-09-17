@@ -7,6 +7,7 @@ import { ChuyenNgonNgu } from '@/components/ChuyenNgonNgu';
 import { Logo } from '@/components/Logo';
 import { IconNguoiDung, Shell } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
+import { useQuyen } from '@/lib/support/useQuyen';
 import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
 import { taoSupabaseClient } from '@/lib/supabase/client';
 import { ThemeToggle } from './ThemeToggle';
@@ -29,6 +30,9 @@ export function SiteNav() {
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   const [daCauHinhAuth, setDaCauHinhAuth] = useState(false);
   const [moMenu, setMoMenu] = useState(false);
+  // Vai trò admin do MÁY CHỦ quyết. Không bao giờ so email ở trình duyệt:
+  // email nằm trong tay người dùng, danh sách admin thì chỉ máy chủ mới biết.
+  const { quyen } = useQuyen();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -171,6 +175,11 @@ export function SiteNav() {
                       // Lối ủng hộ tự nguyện: luôn có mặt, không phụ thuộc còn
                       // bao nhiêu lượt — spec cấm biến nó thành lời nhắc hết lượt.
                       { href: '/support', nhan: t.ungHo.ten },
+                      // Quản trị chỉ hiện với tài khoản thật sự có quyền. Người
+                      // dùng thường không bao giờ thấy mục này.
+                      ...(quyen?.tier === 'admin'
+                        ? [{ href: '/admin', nhan: t.nav.quanTri }]
+                        : []),
                     ].map((m) => (
                       <Link
                         key={m.href}
