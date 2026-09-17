@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { catThanhDoan } from '@/lib/ai/chunk';
-import { embedNhieuDoan, SO_CHIEU_VECTOR } from '@/lib/ai/embedding';
+import { embedLoTaiLieu, SO_CHIEU_VECTOR } from '@/lib/ai/embedding';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { nhanDangThucThe, TU_DIEN_THUC_THE } from './thuc-the';
 
@@ -13,7 +13,43 @@ import { nhanDangThucThe, TU_DIEN_THUC_THE } from './thuc-the';
  * câu trả lời sau đó đều nhiễm, và không ai biết vì nó vẫn "chạy bình thường".
  */
 
-const GIOI_HAN_DOAN_MOT_LAN = 60;
+/**
+ * Trần đoạn cho một lần nạp.
+ *
+ * Trước đây là 60, vì đoạn và vector phải sinh ra cùng lúc trong một HTTP
+ * request. Giờ vector điền sau theo từng lô nên trần đó không còn lý do tồn tại;
+ * con số này chỉ còn để chặn trường hợp dán nhầm cả một tệp khổng lồ.
+ */
+const TRAN_DOAN = 5000;
+
+/**
+ * Số đoạn xử lý mỗi lượt điền vector.
+ *
+ * Trần thật không phải thời gian mà là HẠN MỨC: free tier của
+ * gemini-embedding-001 cho 100 đoạn mỗi phút, và mỗi phần tử trong lô tính là
+ * một request. Lấy 90 để một lượt gần chạm trần mà không vượt, rồi client chờ
+ * theo đúng số giây nhà cung cấp báo. Đặt cao hơn không nhanh hơn — chỉ khiến
+ * lượt nào cũng bị chặn giữa chừng.
+ */
+const DOAN_MOI_LUOT = Number(process.env.EMBED_MOI_LUOT ?? 90);
+
+/** Số dòng mỗi lần chèn xuống PostgREST — chèn cả nghìn dòng một lúc thì vỡ payload */
+const LO_CHEN = 500;
+
+/**
+ * Bỏ YAML frontmatter và chú thích HTML.
+ *
+ * Chúng không phải nội dung tri thức. Lọt vào đoạn thì vừa làm nhiễu vector, vừa
+ * đi thẳng vào ngữ cảnh gửi cho model — và một dòng `source_encoding: VNI-Times`
+ * nằm giữa bài luận về sao Tử Vi là thứ không ai muốn giải thích.
+ */
+function lamSachMarkdown(s: string): string {
+  return s
+    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 export interface DauVaoNap {
   tieuDe: string;
@@ -95,17 +131,19 @@ export async function napTaiLieu(vao: DauVaoNap): Promise<KetQuaNap> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) throw new LoiNap('Chưa cấu hình SUPABASE_SERVICE_ROLE_KEY');
 
-  const noiDung = vao.noiDung.trim();
+  const noiDung = lamSachMarkdown(vao.noiDung);
   if (noiDung.length < 100) throw new LoiNap('Nội dung quá ngắn (tối thiểu 100 ký tự)');
 
   const doans = catThanhDoan(noiDung);
   if (doans.length === 0) throw new LoiNap('Không cắt được đoạn nào từ nội dung');
-  if (doans.length > GIOI_HAN_DOAN_MOT_LAN) {
+  if (doans.length > TRAN_DOAN) {
     throw new LoiNap(
-      `Tài liệu bị cắt thành ${doans.length} đoạn, vượt mức xử lý một lần (${GIOI_HAN_DOAN_MOT_LAN}). Hãy chia nhỏ tài liệu rồi nạp từng phần.`
+      `Tài liệu bị cắt thành ${doans.length} đoạn, vượt trần ${TRAN_DOAN}. Kiểm tra xem có dán nhầm tệp không.`
     );
   }
 
+  // Checksum tính trên bản ĐÃ làm sạch. Tính trên bản thô thì sửa một dòng
+  // frontmatter là checksum đổi, và cơ chế chặn nạp trùng mất tác dụng.
   const checksum = createHash('sha256').update(noiDung).digest('hex');
 
   // Trùng byte với một phiên bản đã có nghĩa là nạp lại đúng tệp cũ. Chặn ở đây
@@ -174,78 +212,195 @@ export async function napTaiLieu(vao: DauVaoNap): Promise<KetQuaNap> {
     throw new LoiNap(loi);
   };
 
-  let vectors: number[][];
-  try {
-    vectors = await embedNhieuDoan(doans);
-  } catch (e) {
-    await hong('embedding', e instanceof Error ? e.message : 'Lỗi khi sinh vector');
-    throw e;
+  // Lưu đoạn KHÔNG kèm vector. Sinh vector cho cả nghìn đoạn không thể lọt vào
+  // 60 giây của một request, nên việc đó chuyển sang `embedTiep` và chạy nhiều
+  // lượt ngắn. Version ở lại 'dang_xu_ly' cho tới khi xong.
+  for (let i = 0; i < doans.length; i += LO_CHEN) {
+    const { error } = await supabase.from('knowledge_chunks').insert(
+      doans.slice(i, i + LO_CHEN).map((d, k) => {
+        const { deMuc, than } = tachDeMuc(d);
+        return {
+          document_id: documentId,
+          version_id: versionId,
+          thu_tu: i + k,
+          noi_dung: d,
+          duong_de_muc: deMuc,
+          so_token: uocTinhToken(than),
+          embedding: null,
+          sieu_du_lieu: {
+            hePhai: vao.hePhai,
+            mucTinCay: vao.mucTinCay,
+            theChuDe: vao.theChuDe ?? [],
+            thucThe: nhanDangThucThe(d).map((t) => t.id),
+          },
+        };
+      })
+    );
+    if (error) await hong('luu-chunk', error.message);
   }
-
-  const banGhi = doans.map((d, i) => {
-    const { deMuc, than } = tachDeMuc(d);
-    return {
-      document_id: documentId,
-      version_id: versionId,
-      thu_tu: i,
-      noi_dung: d,
-      duong_de_muc: deMuc,
-      so_token: uocTinhToken(than),
-      embedding: vectors[i],
-      sieu_du_lieu: {
-        hePhai: vao.hePhai,
-        mucTinCay: vao.mucTinCay,
-        theChuDe: vao.theChuDe ?? [],
-        thucThe: nhanDangThucThe(d).map((t) => t.id),
-      },
-    };
-  });
-
-  const { data: chunkDaLuu, error: loiChunk } = await supabase
-    .from('knowledge_chunks')
-    .insert(banGhi)
-    .select('id, thu_tu');
-  if (loiChunk) {
-    await hong('luu-chunk', loiChunk.message);
-  }
-
-  // Bảng nối chunk ↔ thực thể: cho phép lọc truy hồi theo sao/cung mà không phải
-  // đọc jsonb của từng dòng.
-  await dongBoTuDienThucThe();
-  const noi: { chunk_id: string; entity_id: string; so_lan: number }[] = [];
-  for (const c of chunkDaLuu ?? []) {
-    const doan = doans[c.thu_tu];
-    for (const tt of nhanDangThucThe(doan)) {
-      const so = boDauDem(doan, tt.ten) || 1;
-      noi.push({ chunk_id: c.id, entity_id: tt.id, so_lan: so });
-    }
-  }
-  if (noi.length) {
-    // Bỏ qua lỗi ở đây từng làm cả bộ lọc theo thực thể chết lặng: tài liệu nạp
-    // xong trông như bình thường, chỉ có điều không đoạn nào gắn được sao nào.
-    const { error } = await supabase.from('chunk_entities').insert(noi);
-    if (error) await hong('gan-thuc-the', error.message);
-  }
-
-  const canhBao = soatChatLuong(doans);
-
-  await supabase
-    .from('knowledge_document_versions')
-    .update({ trang_thai: 'can_duyet', canh_bao: canhBao })
-    .eq('id', versionId);
 
   await supabase
     .from('knowledge_documents')
     .update({ so_chunk: doans.length, so_ky_tu: noiDung.length, cap_nhat_luc: new Date().toISOString() })
     .eq('id', documentId);
 
-  return {
-    documentId: documentId!,
-    versionId,
-    soDoan: doans.length,
-    canhBao,
-    soThucThe: new Set(noi.map((n) => n.entity_id)).size,
-  };
+  return { documentId: documentId!, versionId, soDoan: doans.length, canhBao: [], soThucThe: 0 };
+}
+
+export interface TienDoEmbed {
+  daXong: number;
+  tong: number;
+  xong: boolean;
+  canhBao?: string[];
+  /** Số giây phải chờ trước lượt sau — hạn mức nhà cung cấp, không phải lỗi */
+  choGiay?: number;
+  /** Hạn mức THEO NGÀY đã cạn: chờ thêm vô ích, mai bấm "Nạp tiếp" */
+  hetNgay?: boolean;
+}
+
+/**
+ * Pha điền vector — gọi lại nhiều lượt cho tới khi xong.
+ *
+ * Luôn chọn theo `embedding is null`, nên đứt mạng giữa chừng thì bấm lại là
+ * chạy tiếp từ chỗ dở: không embed lại đoạn đã xong, không tốn quota.
+ */
+export async function embedTiep(versionId: string): Promise<TienDoEmbed> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) throw new LoiNap('Chưa cấu hình SUPABASE_SERVICE_ROLE_KEY');
+
+  const { data: ver } = await supabase
+    .from('knowledge_document_versions')
+    .select('id, document_id, so_chunk')
+    .eq('id', versionId)
+    .maybeSingle();
+  if (!ver) throw new LoiNap('Không tìm thấy phiên bản');
+
+  const { data: con } = await supabase
+    .from('knowledge_chunks')
+    .select('id, thu_tu, noi_dung')
+    .eq('version_id', versionId)
+    .is('embedding', null)
+    .order('thu_tu')
+    .limit(DOAN_MOI_LUOT);
+
+  let choGiay: number | undefined;
+  let hetNgay: boolean | undefined;
+
+  if (con?.length) {
+    let vectors: number[][];
+    try {
+      const kq = await embedLoTaiLieu(con.map((c) => c.noi_dung));
+      vectors = kq.vectors;
+      choGiay = kq.choGiay;
+      hetNgay = kq.hetNgay;
+    } catch (e) {
+      const loi = e instanceof Error ? e.message : 'Lỗi khi sinh vector';
+      await supabase
+        .from('knowledge_document_versions')
+        .update({ trang_thai: 'that_bai', buoc_loi: 'embedding', loi })
+        .eq('id', versionId);
+      throw new LoiNap(loi);
+    }
+
+    // Cập nhật từng dòng theo id: không đụng tới cột nào khác, nên một lượt hỏng
+    // giữa chừng không làm hỏng dữ liệu đã có. Chạy 8 dòng song song thay vì
+    // tuần tự — vài trăm lượt đi về Supabase nối đuôi nhau tốn nhiều giây hơn cả
+    // phần sinh vector, và đó là thứ đẩy request chạm trần thời gian.
+    //
+    // `vectors` có thể ngắn hơn `con` khi chạm hạn mức giữa chừng; phần chưa có
+    // vector để nguyên cho lượt sau.
+    const SONG_SONG = 8;
+    for (let i = 0; i < vectors.length; i += SONG_SONG) {
+      const loi = (
+        await Promise.all(
+          con.slice(i, Math.min(i + SONG_SONG, vectors.length)).map(async (c, k) => {
+            const { error } = await supabase
+              .from('knowledge_chunks')
+              .update({ embedding: vectors[i + k] })
+              .eq('id', c.id);
+            return error?.message;
+          })
+        )
+      ).find(Boolean);
+      if (loi) throw new LoiNap(`Lưu vector lỗi: ${loi}`);
+    }
+  }
+
+  const { count: conLai } = await supabase
+    .from('knowledge_chunks')
+    .select('id', { count: 'exact', head: true })
+    .eq('version_id', versionId)
+    .is('embedding', null);
+
+  const daXong = ver.so_chunk - (conLai ?? 0);
+  if ((conLai ?? 0) > 0) return { daXong, tong: ver.so_chunk, xong: false, choGiay, hetNgay };
+
+  const canhBao = await hoanTatNap(supabase, versionId, ver.document_id, ver.so_chunk);
+  return { daXong, tong: ver.so_chunk, xong: true, canhBao };
+}
+
+/**
+ * Pha chốt — gắn thực thể, soát chất lượng, chuyển sang `can_duyet`.
+ *
+ * Phải chạy lại được: client có thể gọi trùng lượt cuối, và một lần chốt thứ hai
+ * không được phép làm số liệu lệch đi.
+ */
+async function hoanTatNap(
+  supabase: NonNullable<ReturnType<typeof taoSupabaseAdmin>>,
+  versionId: string,
+  documentId: string,
+  soChunk: number
+): Promise<string[]> {
+  // Đọc theo trang. PostgREST mặc định trả tối đa 1000 dòng, nên `.select()`
+  // trần trụi sẽ lặng lẽ bỏ sót đuôi của tài liệu lớn — và hậu quả là những đoạn
+  // cuối sách không bao giờ có liên kết thực thể, không lỗi nào báo ra.
+  const TRANG = 1000;
+  const chunks: { id: string; noi_dung: string }[] = [];
+  for (let tu = 0; tu < soChunk; tu += TRANG) {
+    const { data, error } = await supabase
+      .from('knowledge_chunks')
+      .select('id, thu_tu, noi_dung')
+      .eq('version_id', versionId)
+      .order('thu_tu')
+      .range(tu, tu + TRANG - 1);
+    if (error) throw new LoiNap(`Đọc đoạn lỗi: ${error.message}`);
+    if (!data?.length) break;
+    chunks.push(...data);
+  }
+
+  await dongBoTuDienThucThe();
+
+  // Xoá trước khi chèn: gọi trùng lượt cuối mà không xoá thì số lần đếm được
+  // nhân đôi, làm lệch xếp hạng truy hồi mà không có lỗi nào báo.
+  const { error: loiXoa } = await supabase.rpc('xoa_lien_ket_thuc_the', {
+    p_version_id: versionId,
+  });
+  if (loiXoa) throw new LoiNap(`Xoá liên kết cũ lỗi: ${loiXoa.message}`);
+
+  const noi: { chunk_id: string; entity_id: string; so_lan: number }[] = [];
+  for (const c of chunks) {
+    for (const tt of nhanDangThucThe(c.noi_dung)) {
+      noi.push({ chunk_id: c.id, entity_id: tt.id, so_lan: boDauDem(c.noi_dung, tt.ten) || 1 });
+    }
+  }
+  for (let i = 0; i < noi.length; i += LO_CHEN) {
+    const { error } = await supabase.from('chunk_entities').insert(noi.slice(i, i + LO_CHEN));
+    if (error) throw new LoiNap(`Gắn thực thể lỗi: ${error.message}`);
+  }
+
+  const canhBao = soatChatLuong(chunks.map((c) => c.noi_dung));
+
+  await supabase
+    .from('knowledge_document_versions')
+    .update({ trang_thai: 'can_duyet', canh_bao: canhBao, buoc_loi: null, loi: null })
+    .eq('id', versionId);
+
+  await supabase
+    .from('knowledge_documents')
+    .update({ so_chunk: chunks.length, cap_nhat_luc: new Date().toISOString() })
+    .eq('id', documentId);
+
+  return canhBao;
 }
 
 /** Đếm số lần một tên xuất hiện trong đoạn, bỏ qua dấu */

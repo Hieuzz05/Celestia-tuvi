@@ -74,6 +74,88 @@ const nhan = (ds: { id: string; nhan: string }[], id: string) =>
 
 const DINH_DANG = '.txt,.md,.markdown,.csv';
 
+interface TienDoEmbed {
+  daXong: number;
+  tong: number;
+  xong: boolean;
+  canhBao?: string[];
+  choGiay?: number;
+  hetNgay?: boolean;
+}
+
+const nghi = (giay: number) => new Promise((r) => setTimeout(r, giay * 1000));
+
+/**
+ * Chạy hết các lượt điền vector cho một phiên bản.
+ *
+ * Nút thắt không phải tốc độ mà là hạn mức: free tier cho 100 đoạn mỗi phút.
+ * Nên vòng lặp này chủ yếu là CHỜ — máy chủ trả về `choGiay` đúng bằng số giây
+ * nhà cung cấp yêu cầu, và ở đây đếm ngược cho người dùng thấy nó vẫn đang chạy
+ * chứ không phải treo.
+ *
+ * Bỏ dở giữa chừng không mất gì: lượt sau chỉ lấy đoạn chưa có vector.
+ */
+async function chayEmbed(
+  versionId: string,
+  tong: number,
+  onTienDo: (s: string | null) => void
+): Promise<TienDoEmbed | { loi: string }> {
+  let tienDo: TienDoEmbed = { daXong: 0, tong, xong: false };
+  // Chặn vòng lặp vô hạn khi máy chủ báo chưa xong mà cũng không tiến thêm và
+  // cũng không hẹn chờ — lúc đó có gì đó hỏng thật.
+  let khongTien = 0;
+  // Trần thời gian chờ cộng dồn. Hạn mức theo PHÚT thì chờ là đúng, nhưng hạn
+  // mức theo NGÀY cạn thì mỗi lượt vẫn hẹn chờ 60 giây và vòng lặp chạy tới sáng.
+  let tongCho = 0;
+  const TRAN_CHO = 45 * 60;
+
+  while (!tienDo.xong) {
+    onTienDo(`Đang sinh vector ${tienDo.daXong}/${tienDo.tong} đoạn…`);
+    const r = await fetch('/api/admin/knowledge/embed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ versionId }),
+    });
+    const t: TienDoEmbed & { loi?: string } = await r.json();
+    if (!r.ok) return { loi: t.loi ?? 'Lỗi khi sinh vector' };
+
+    khongTien = t.daXong > tienDo.daXong || t.choGiay ? 0 : khongTien + 1;
+    if (khongTien >= 3) {
+      return { loi: `Dừng ở ${t.daXong}/${t.tong} đoạn: ba lượt liên tiếp không tiến thêm được.` };
+    }
+    tienDo = t;
+
+    // Hạn mức theo NGÀY thì chờ bao lâu cũng vô ích. Dừng ngay và nói rõ, thay vì
+    // để người dùng ngồi nhìn đồng hồ đếm ngược suốt 45 phút rồi mới biết.
+    if (t.hetNgay) {
+      return {
+        loi:
+          `Dừng ở ${t.daXong}/${t.tong} đoạn: đã cạn hạn mức embedding của cả ngày ` +
+          '(gói miễn phí Gemini cho 1.000 đoạn/ngày). Mai mở lại trang này và bấm "Nạp tiếp" — ' +
+          'phần đã xong vẫn được giữ. Muốn nạp liền mạch thì bật thanh toán cho khoá Gemini.',
+      };
+    }
+
+    if (!t.xong && t.choGiay) {
+      tongCho += t.choGiay;
+      if (tongCho > TRAN_CHO) {
+        return {
+          loi:
+            `Dừng ở ${t.daXong}/${t.tong} đoạn: đã chờ hạn mức quá ${Math.round(TRAN_CHO / 60)} phút. ` +
+            'Nhiều khả năng hạn mức NGÀY của Gemini đã cạn — mai nạp tiếp, hoặc dùng key có trả phí.',
+        };
+      }
+      for (let con = t.choGiay; con > 0; con--) {
+        onTienDo(`${t.daXong}/${t.tong} đoạn — chờ hạn mức nhà cung cấp, còn ${con}s…`);
+        await nghi(1);
+      }
+    }
+  }
+
+  onTienDo(null);
+  return tienDo;
+}
+
 async function docKho(): Promise<{ taiLieu: TaiLieu[] } | { loi: string }> {
   try {
     const res = await fetch('/api/admin/knowledge', { cache: 'no-store' });
@@ -90,6 +172,7 @@ export default function TrangKhoTriThuc() {
   const [loiTai, setLoiTai] = useState<string | null>(null);
   const [moNap, setMoNap] = useState(false);
   const [thongBao, setThongBao] = useState<{ loai: 'ok' | 'loi'; noiDung: string } | null>(null);
+  const [dangEmbed, setDangEmbed] = useState<string | null>(null);
 
   // Hàm đọc để RỖNG khỏi setState, và việc đặt state nằm ở `.then` — đây là hình
   // dạng mà quy tắc set-state-in-effect chấp nhận, và cũng đúng tinh thần của nó.
@@ -105,6 +188,21 @@ export default function TrangKhoTriThuc() {
       setTaiLieu('loi' in kq ? [] : kq.taiLieu);
     });
   }, []);
+
+  /** Chạy tiếp phần vector còn dở của một phiên bản */
+  async function napTiep(versionId: string, soChunk: number) {
+    setDangEmbed(versionId);
+    const kq = await chayEmbed(versionId, soChunk, (s) =>
+      setThongBao(s ? { loai: 'ok', noiDung: s } : null)
+    );
+    setDangEmbed(null);
+    setThongBao(
+      'loi' in kq
+        ? { loai: 'loi', noiDung: kq.loi }
+        : { loai: 'ok', noiDung: `Xong ${kq.tong} đoạn. Tài liệu đã chuyển sang Cần duyệt.` }
+    );
+    void tai();
+  }
 
   async function doiTrangThai(versionId: string, hanhDong: 'xuat-ban' | 'luu-tru') {
     const res = await fetch('/api/admin/knowledge/phien-ban', {
@@ -310,6 +408,17 @@ export default function TrangKhoTriThuc() {
                                   >
                                     Xuất bản
                                   </button>
+                                ) : v.trang_thai === 'dang_xu_ly' || v.trang_thai === 'that_bai' ? (
+                                  // Nạp dở rồi đóng tab, hoặc một lượt hỏng giữa
+                                  // chừng: bấm đây chạy tiếp từ đoạn chưa có vector,
+                                  // không làm lại từ đầu và không tốn thêm quota.
+                                  <button
+                                    onClick={() => napTiep(v.id, v.so_chunk)}
+                                    disabled={dangEmbed === v.id}
+                                    className="caption underline"
+                                  >
+                                    {dangEmbed === v.id ? 'Đang chạy…' : 'Nạp tiếp'}
+                                  </button>
                                 ) : null}
                               </td>
                             </tr>
@@ -363,6 +472,7 @@ function DangNap({
   const [noiDung, setNoiDung] = useState('');
   const [tenTep, setTenTep] = useState<string | null>(null);
   const [dangNap, setDangNap] = useState(false);
+  const [tienDo, setTienDo] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
   async function chonTep(e: React.ChangeEvent<HTMLInputElement>) {
@@ -397,14 +507,29 @@ function DangNap({
         setLoi(d.loi ?? 'Không nạp được tài liệu');
         return;
       }
+
+      // Pha A chỉ lưu đoạn. Vector điền theo từng lượt ngắn để mỗi request nằm
+      // gọn trong giới hạn thời gian của Vercel — vòng lặp nằm ở đây, người dùng
+      // vẫn chỉ thao tác một lần.
+      const kq = await chayEmbed(d.versionId, d.soDoan, setTienDo);
+      if ('loi' in kq) {
+        setLoi(kq.loi);
+        setTienDo(null);
+        return;
+      }
+
       onXong({
         loai: 'ok',
-        noiDung: `Đã xử lý ${d.soDoan} đoạn, nhận ra ${d.soThucThe} thực thể. Tài liệu đang ở trạng thái Cần duyệt — Celes chưa dùng cho tới khi bạn bấm Xuất bản.`,
+        noiDung:
+          `Đã xử lý ${kq.tong} đoạn.` +
+          (kq.canhBao?.length ? ` ${kq.canhBao.length} cảnh báo cần xem.` : '') +
+          ' Tài liệu đang ở trạng thái Cần duyệt — Celes chưa dùng cho tới khi bạn bấm Xuất bản.',
       });
     } catch {
       setLoi('Không kết nối được máy chủ');
     } finally {
       setDangNap(false);
+      setTienDo(null);
     }
   }
 
@@ -478,6 +603,12 @@ function DangNap({
       {loi && (
         <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
           {loi}
+        </p>
+      )}
+
+      {tienDo && (
+        <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          {tienDo} Đừng đóng tab — tiến trình chạy từ trình duyệt này.
         </p>
       )}
 

@@ -115,6 +115,30 @@ họ còn nguyên và nên làm gì tiếp.
   không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
 - **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
   nào cũng mạch lạc một cách đáng ngờ.
+- **Nút thắt khi nạp tài liệu là HẠN MỨC, không phải tốc độ.** Free tier của
+  `gemini-embedding-001` có HAI trần, và mỗi phần tử trong lô `batchEmbedContents` tính là một
+  request:
+  - **100 đoạn mỗi phút** — chờ vài chục giây rồi chạy tiếp được.
+  - **1.000 đoạn mỗi NGÀY** (`EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier`) —
+    chờ bao lâu cũng vô ích.
+
+  Gộp lô giảm số lần đi về nhưng không nâng thông lượng. Tăng `EMBED_MOI_LUOT` không làm nhanh hơn.
+  Toàn bộ 14 tài liệu (7.743 đoạn) cần **8 ngày** ở gói miễn phí, hoặc bật thanh toán.
+- **Gemini trả cùng mã 429 và cùng câu "Please retry in Ns" cho CẢ HAI trần.** Bám vào câu đó là
+  hệ thống ngồi chờ đến sáng mà không tiến thêm đoạn nào — đã đo thấy: dừng ở đúng 720/1134 rồi
+  lặp 27 lượt chờ 58 giây vô ích. Dấu hiệu tin được là `quotaId` có chứa `PerDay`.
+- **429 không phải lỗi, là áp lực ngược.** `embedTiep` trả về `choGiay` để client chờ, và KHÔNG
+  đánh dấu phiên bản là `that_bai` — đánh dấu thất bại chỉ vì nạp hơi nhanh sẽ khiến người vận hành
+  đi tìm một cái bug không tồn tại.
+- **Chạm hạn mức giữa chừng thì giữ phần đã làm.** `embedLoTaiLieu` trả về số vector đã lấy được
+  kèm `choGiay`, không ném đi. Ném lỗi là vứt luôn quota đã trả tiền để đổi lấy chúng.
+- **Nạp tài liệu đi ba pha**: lưu đoạn (không vector) → điền vector từng lượt → chốt. Mỗi request
+  ngắn nên không phụ thuộc gói Vercel, và đứt giữa chừng thì bấm "Nạp tiếp" chạy tiếp từ chỗ dở vì
+  pha B luôn chọn `embedding is null`.
+- **Pha chốt phải chạy lại được.** Client có thể gọi trùng lượt cuối; không xoá liên kết thực thể
+  trước khi chèn thì số lần đếm nhân đôi, làm lệch xếp hạng truy hồi mà không lỗi nào báo ra.
+- **PostgREST trả tối đa 1000 dòng.** `.select()` trần trụi trên bảng đoạn sẽ lặng lẽ bỏ sót đuôi
+  của tài liệu lớn. Đọc theo trang bằng `.range()`.
 - **Chuỗi model: có dòng trong `ai_model_configs` thì bảng đó là nguồn DUY NHẤT.** Không trộn với
   biến môi trường, không tự chèn thêm provider từ env vào cuối. Bản cũ có chèn, với lý do "thêm key
   mà hệ thống lặng lẽ bỏ qua là một cái bẫy" — lý do đó đúng khi cấu hình chỉ nằm ở env, nhưng khi

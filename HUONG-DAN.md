@@ -400,8 +400,33 @@ Trên Vercel khai báo kiểu **Secret**, **không** có tiền tố `NEXT_PUBLI
 > bạn không nên tải được từ trình duyệt của bất kỳ ai. Key này bỏ qua mọi RLS, nên tuyệt đối không
 > để nó ra phía trình duyệt.
 
+> Nếu bạn đã chạy `schema-rag-v2.sql` trước ngày 18/09/2026, chạy thêm
+> `supabase/schema-rag-v3.sql`. Bản đầu bắt mỗi đoạn phải có vector ngay lúc lưu, nên cả tài liệu
+> phải lọt trong một request — tài liệu hơn 60 đoạn là không nạp nổi.
+
 **3. Nạp nguồn.** Vào `/admin` → *Kho tri thức* → **Thêm nguồn**. Khai tiêu đề, phiên bản, hệ phái,
 loại nguồn và mức tin cậy, rồi chọn tệp `.txt`/`.md` hoặc dán nội dung.
+
+**3b. Chờ sinh vector.** Nạp xong đoạn, trang tự chạy tiếp phần sinh vector và hiện tiến độ.
+Đừng đóng tab — vòng lặp chạy từ trình duyệt.
+
+> **Nạp một cuốn sách mất bao lâu?** Không phụ thuộc máy mà phụ thuộc hạn mức của Gemini. Gói miễn
+> phí có hai trần, đo được ngày 18/09/2026:
+>
+> | Trần | Giá trị | Ý nghĩa |
+> |---|---|---|
+> | Mỗi phút | 100 đoạn | Chờ vài chục giây rồi chạy tiếp — trang tự chờ hộ bạn |
+> | **Mỗi ngày** | **1.000 đoạn** | Chờ bao lâu cũng vô ích, phải sang hôm sau |
+>
+> Nghĩa là **một ngày nạp được khoảng một cuốn sách vừa**. Toàn bộ 14 tài liệu (7.743 đoạn) cần
+> khoảng **8 ngày** ở gói miễn phí.
+>
+> Muốn nạp liền một mạch thì bật thanh toán cho khoá Gemini. Embedding rất rẻ: 7.743 đoạn khoảng
+> 3 triệu token, dưới một đô la cho toàn bộ kho.
+>
+> Đóng tab giữa chừng cũng không mất gì. Mở lại `/admin/knowledge`, phiên bản đó nằm ở trạng thái
+> *Đang xử lý* kèm nút **Nạp tiếp** — bấm vào là chạy tiếp từ đoạn chưa có vector, không làm lại từ
+> đầu và không tốn thêm quota.
 
 **4. Xuất bản.** Đây là bước dễ quên nhất, và nó quan trọng:
 
