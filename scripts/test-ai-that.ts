@@ -22,7 +22,7 @@ async function main() {
   const { goiVoiFallback } = await import('../lib/ai/fallback');
   const { trangThaiModel } = await import('../lib/ai/config');
   const { lapLaSo } = await import('../lib/tuvi/ansao');
-  const { dungPrompt } = await import('../lib/ai/prompt');
+  const { luanBaiDai } = await import('../lib/rag/bai-dai');
 
   const gach = '─'.repeat(72);
   let loi = 0;
@@ -77,28 +77,25 @@ async function main() {
     ketLuan(false, `Fallback thất bại: ${e instanceof Error ? e.message : e}`);
   }
 
-  console.log('\n### 4. Luận giải lá số thật (đầu-cuối)');
+  console.log('\n### 4. Bài luận giải thật, đi đúng đường đi của trang (đầu-cuối)');
   const laSo = lapLaSo({ ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam', hoTen: 'Mẫu A' });
-  const { system, user } = dungPrompt(laSo, 'tong-quan', 2026, 9);
-  console.log(`  Độ dài prompt: ${user.length} ký tự`);
   const batDau = Date.now();
   try {
-    const kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
+    const kq = await luanBaiDai({ laSo, chuDe: 'tong-quan', namXem: 2026, thangXem: 9, ghiNhatKy: false });
     const giay = ((Date.now() - batDau) / 1000).toFixed(1);
-    console.log(`  Model: ${kq.provider}/${kq.model} — ${giay}s — ${kq.tokensOut ?? '?'} token ra`);
+    console.log(`  Model: ${kq.provider}/${kq.model} — ${giay}s — ${kq.van.split(/\s+/).length} từ`);
+    for (const h of kq.daThuHong) console.log(`      đã rơi: ${h.provider}/${h.model}: ${h.loi.slice(0, 90)}`);
     console.log(gach);
-    console.log(kq.text.trim().slice(0, 900));
+    console.log(kq.van.trim().slice(0, 900));
     console.log(gach);
 
-    const co = (t: string) => kq.text.includes(t);
-    ketLuan(kq.text.length > 400, `Luận giải có nội dung thực chất (${kq.text.length} ký tự)`);
-    ketLuan(kq.text.includes('##'), 'Có chia đề mục theo markdown như yêu cầu trong prompt');
-    ketLuan(
-      co('Thái Dương') || co('Thiên Lương') || co('Mệnh'),
-      'Có nhắc đúng sao/cung có thật trong lá số (không bịa)'
-    );
+    ketLuan(kq.van.length > 400, `Bài có nội dung thực chất (${kq.van.length} ký tự)`);
+    ketLuan(kq.coCauTruc !== null, 'Model trả đúng cấu trúc JSON theo khung §11.3');
+    ketLuan(kq.van.includes('##'), 'Bài được dựng thành đề mục, không phải một khối chữ');
+    ketLuan(kq.kiemDuyet.dat, `Kiểm duyệt tất định đạt (bỏ ${kq.kiemDuyet.soYBiBo} ý không căn cứ)`);
+    ketLuan(kq.goi.duKien.length > 0, `Có dữ kiện lá số đưa vào (${kq.goi.duKien.length} mã F###)`);
   } catch (e) {
-    ketLuan(false, `Luận giải thất bại: ${e instanceof Error ? e.message : e}`);
+    ketLuan(false, `Bài luận giải thất bại: ${e instanceof Error ? e.message : e}`);
   }
 
   console.log(`\n${loi === 0 ? 'TẤT CẢ ĐỀU ĐẠT.' : `${loi} mục KHÔNG đạt.`}`);

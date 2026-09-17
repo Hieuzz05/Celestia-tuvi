@@ -17,18 +17,10 @@ export interface YeuCauLuanGiai {
   model?: string;
 }
 
-export interface NguonTriThuc {
-  tieuDe: string;
-  hePhai: string;
-  diem: number;
-}
-
 export interface KetQuaLuanGiai {
   noiDung: string;
   model: string;
   daThuHong: { provider: string; model: string; loi: string }[];
-  /** Tài liệu trong kho tri thức đã được trích dẫn cho bản luận giải này */
-  nguonTriThuc?: NguonTriThuc[];
 }
 
 /** Gọi API luận giải — dùng chung cho panel tổng quan và trang chi tiết */

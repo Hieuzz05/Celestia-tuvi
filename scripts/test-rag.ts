@@ -1,5 +1,8 @@
 /**
  * Kiểm chứng phần cắt đoạn + embedding của kho tri thức.
+ *
+ * Chỉ còn hai lớp nền này. Phần truy hồi đã chuyển hẳn sang lib/rag/* và
+ * được nghiệm thu bằng test-rag-toan-tuyen.ts trên kho thật.
  * Chạy: npx tsx scripts/test-rag.ts
  * Có gọi API embedding thật (tốn quota Gemini, vài request).
  */
@@ -33,7 +36,6 @@ Thái Dương và Thái Âm là cặp âm dương của lá số. Nhật Nguyệ
 async function main() {
   const { catThanhDoan } = await import('../lib/ai/chunk');
   const { embedTaiLieu, embedTruyVan, SO_CHIEU_VECTOR } = await import('../lib/ai/embedding');
-  const { truyHoiTriThuc } = await import('../lib/ai/rag');
 
   let loi = 0;
   const ketLuan = (ok: boolean, moTa: string) => {
@@ -85,13 +87,6 @@ async function main() {
   console.log(`  Đoạn "Sao Tử Vi" vs câu hỏi về nấu phở : ${diemXa.toFixed(3)}`);
   ketLuan(diemGan > diemXa, 'Câu hỏi đúng chủ đề cho điểm tương đồng cao hơn câu lạc đề');
   ketLuan(diemGan > 0.6 && diemXa < 0.6, 'Khoảng cách đủ rộng để ngưỡng lọc 0.6 có ý nghĩa');
-
-  console.log('\n### 3. Truy hồi khi kho chưa cấu hình');
-  const rong = await truyHoiTriThuc('thử khi chưa có service role key');
-  ketLuan(
-    Array.isArray(rong) && rong.length === 0,
-    'Trả mảng rỗng thay vì ném lỗi — luận giải vẫn chạy được khi thiếu kho'
-  );
 
   console.log(`\n${loi === 0 ? 'TẤT CẢ ĐỀU ĐẠT.' : `${loi} mục KHÔNG đạt.`}`);
   process.exit(loi === 0 ? 0 : 1);
