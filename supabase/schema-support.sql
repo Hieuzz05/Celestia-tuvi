@@ -153,6 +153,7 @@ create policy "doc nhat ky cua minh" on public.usage_events
 -- thể cùng lấy được một lượt.
 -- ============================================================
 create or replace function public.dat_cho_cau_hoi(
+  p_user_id uuid,
   p_han_muc_mien_phi int,
   p_request_id text default null
 )
@@ -162,7 +163,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_user uuid := auth.uid();
+  v_user uuid := p_user_id;
   v_hom_nay date := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
   v_row public.user_entitlements%rowtype;
 begin
@@ -242,6 +243,7 @@ $$;
 -- Người dùng không được mất một câu đã trả tiền vì lỗi hệ thống.
 -- ============================================================
 create or replace function public.hoan_cau_hoi(
+  p_user_id uuid,
   p_nguon text,
   p_request_id text default null
 )
@@ -251,9 +253,17 @@ security definer
 set search_path = public
 as $$
 declare
-  v_user uuid := auth.uid();
+  v_user uuid := p_user_id;
+  v_co boolean;
 begin
-  if v_user is null then return; end if;
+  if v_user is null or p_request_id is null then return; end if;
+
+  -- Chỉ hoàn đúng MỘT lần, và chỉ cho lượt thật sự đã đặt chỗ. Không có chốt
+  -- này thì gọi lặp lại là tự nạp thêm lượt.
+  select true into v_co from public.usage_events
+  where user_id = v_user and request_id = p_request_id and status = 'reserved'
+  limit 1;
+  if v_co is not true then return; end if;
 
   if p_nguon = 'supporter' then
     update public.user_entitlements
@@ -291,7 +301,7 @@ set search_path = public
 as $$
 declare
   v_pay public.support_payments%rowtype;
-  v_moi boolean := false;
+  v_so_dong int := 0;
 begin
   select * into v_pay from public.support_payments
   where id = p_payment_id for update;
@@ -310,9 +320,11 @@ begin
   )
   on conflict (payment_id) do nothing;
 
-  get diagnostics v_moi = row_count;
+  -- ROW_COUNT là bigint. Gán thẳng vào biến boolean là dựa vào phép ép kiểu
+  -- qua chuỗi, chạy được với 0/1 rồi vỡ ngay khi giá trị khác.
+  get diagnostics v_so_dong = row_count;
 
-  if not v_moi then
+  if v_so_dong = 0 then
     return jsonb_build_object('ok', true, 'duplicate', true);
   end if;
 
@@ -341,4 +353,31 @@ begin
 end;
 $$;
 
-revoke execute on function public.cap_quyen_ung_ho(uuid, int, int, int) from anon, authenticated;
+-- ============================================================
+-- Khoá quyền gọi ba hàm trên.
+--
+-- Postgres mặc định cấp EXECUTE cho PUBLIC, mà anon/authenticated đều thừa kế
+-- từ đó — nên chỉ revoke khỏi hai vai đó là KHÔNG đủ, hàm vẫn gọi được bằng
+-- anon key ngay từ trình duyệt. Phải revoke khỏi chính PUBLIC.
+--
+-- Vì sao phải khoá: `cap_quyen_ung_ho` cấp quyền cho một đơn bất kỳ, và
+-- `hoan_cau_hoi` cộng lại lượt đã dùng. Để hở là ai cũng tự mở quyền hoặc tự
+-- nạp thêm lượt mà không trả đồng nào.
+--
+-- Máy chủ Celestia gọi chúng bằng service role key nên không bị ảnh hưởng.
+-- ============================================================
+revoke execute on function public.dat_cho_cau_hoi(uuid, int, text) from public, anon, authenticated;
+revoke execute on function public.hoan_cau_hoi(uuid, text, text) from public, anon, authenticated;
+revoke execute on function public.cap_quyen_ung_ho(uuid, int, int, int) from public, anon, authenticated;
+
+-- Revoke khỏi PUBLIC cắt luôn service_role, vì vai đó cũng thừa kế từ PUBLIC.
+-- Không cấp lại tường minh thì máy chủ Celestia hết gọi được, và hạn mức im
+-- lặng tắt (mã phía server bắt lỗi rồi cho qua).
+grant execute on function public.dat_cho_cau_hoi(uuid, int, text) to service_role;
+grant execute on function public.hoan_cau_hoi(uuid, text, text) to service_role;
+grant execute on function public.cap_quyen_ung_ho(uuid, int, int, int) to service_role;
+
+-- Bản cũ của hai hàm quota không có tham số user_id. Nếu project đã chạy file
+-- này trước đó thì bản cũ vẫn nằm lại và VẪN gọi được từ trình duyệt — bỏ hẳn.
+drop function if exists public.dat_cho_cau_hoi(int, text);
+drop function if exists public.hoan_cau_hoi(text, text);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { laAdmin, supabaseDaCauHinh } from '@/lib/supabase/config';
-import { nguoiDungHienTai, taoSupabaseServer } from '@/lib/supabase/server';
+import { nguoiDungHienTai } from '@/lib/supabase/server';
 import { CAU_HINH_UNG_HO } from './config';
 
 /**
@@ -12,6 +13,10 @@ import { CAU_HINH_UNG_HO } from './config';
  *
  * Toàn bộ phép đếm nằm trong hàm `dat_cho_cau_hoi` ở Postgres. Đếm ở tầng
  * JavaScript thì hai yêu cầu song song đọc cùng một số cũ rồi cùng ghi đè.
+ *
+ * Ba hàm quota gọi bằng SERVICE ROLE và nhận user id tường minh. Nếu để chúng
+ * chạy dưới phiên người dùng thì cũng chính người đó gọi thẳng được từ trình
+ * duyệt bằng anon key — và `hoan_cau_hoi` khi đó thành nút nạp thêm lượt.
  */
 
 export type NguonQuota = 'free_daily' | 'supporter' | 'admin_exempt';
@@ -54,10 +59,14 @@ export async function datChoCauHoi(requestId: string): Promise<KetQuaDatCho> {
   // Admin không bị tính lượt và cũng KHÔNG được cấp quyền supporter giả
   if (laAdmin(user.email)) return { duocPhep: true, nguon: 'admin_exempt' };
 
-  const supabase = await taoSupabaseServer();
-  if (!supabase) return CHUA_CAU_HINH;
+  const db = taoSupabaseAdmin();
+  if (!db) {
+    console.warn('[ung-ho] thiếu SUPABASE_SERVICE_ROLE_KEY, không áp được hạn mức');
+    return CHUA_CAU_HINH;
+  }
 
-  const { data, error } = await supabase.rpc('dat_cho_cau_hoi', {
+  const { data, error } = await db.rpc('dat_cho_cau_hoi', {
+    p_user_id: user.id,
     p_han_muc_mien_phi: CAU_HINH_UNG_HO.freeAskDailyLimit,
     p_request_id: requestId,
   });
@@ -95,15 +104,23 @@ export async function datChoCauHoi(requestId: string): Promise<KetQuaDatCho> {
 /** Trả lại lượt đã đặt chỗ khi phía AI hỏng */
 export async function hoanCauHoi(nguon: NguonQuota | undefined, requestId: string) {
   if (!supabaseDaCauHinh || !nguon || nguon === 'admin_exempt') return;
-  const supabase = await taoSupabaseServer();
-  await supabase?.rpc('hoan_cau_hoi', { p_nguon: nguon, p_request_id: requestId });
+  const user = await nguoiDungHienTai();
+  const db = taoSupabaseAdmin();
+  if (!user || !db) return;
+  await db.rpc('hoan_cau_hoi', {
+    p_user_id: user.id,
+    p_nguon: nguon,
+    p_request_id: requestId,
+  });
 }
 
 /** Ghi nhận một lượt đã dùng thành công */
 export async function chotCauHoi(requestId: string, model?: string) {
   if (!supabaseDaCauHinh) return;
-  const supabase = await taoSupabaseServer();
-  await supabase
+  // Người dùng chỉ có quyền SELECT trên usage_events, nên bản cập nhật này phải
+  // đi bằng service role — chạy dưới phiên người dùng là sửa đúng 0 dòng.
+  const db = taoSupabaseAdmin();
+  await db
     ?.from('usage_events')
     .update({ status: 'success', completed_at: new Date().toISOString(), model_name: model })
     .eq('request_id', requestId);
