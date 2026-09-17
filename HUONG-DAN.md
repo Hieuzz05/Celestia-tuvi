@@ -355,6 +355,10 @@ bản, bảng đoạn, từ điển thực thể, nhật ký truy hồi và bộ
 > `schema-rag.sql` (bản cũ) giữ lại cho tương thích, **không cần chạy nữa**. Bản v2 tạo đủ mọi thứ
 > bản cũ tạo.
 
+> Nếu bạn đã chạy `schema-rag-v2.sql` **trước ngày 17/09/2026**, chạy thêm `supabase/va-rag-tu-khoa.sql`.
+> Bản đầu dùng `plainto_tsquery` vốn nối mọi từ bằng AND, khiến nhánh tìm theo từ khoá luôn trả về
+> rỗng — truy hồi vẫn chạy nhưng rơi về vector thuần mà không báo gì.
+
 **2. Lấy service role key.** Project Settings → API Keys → `service_role`. Thêm vào `.env.local`:
 
 ```

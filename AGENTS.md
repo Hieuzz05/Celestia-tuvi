@@ -104,6 +104,16 @@ họ còn nguyên và nên làm gì tiếp.
   Câu "kho trống thì vẫn chạy bằng kiến thức sẵn có của model" là sai kiến trúc, đừng viết lại.
 - **Validator bỏ ý hỏng, nhưng không bao giờ trả về bài rỗng.** Nếu mọi ý đều hỏng thì giữ nguyên
   bài và ghi `dat: false` — xem ghi chú trong `locYHong` để biết vì sao.
+- **Bài kiểm tra offline không thay được `test-rag-toan-tuyen.ts`.** Ba lỗi nặng nhất của lớp RAG
+  đều chỉ lộ ra khi chạm database thật: mã thực thể trùng làm chết lệnh upsert, hai chỗ nuốt lỗi
+  giấu mất điều đó, và nhánh từ khoá không bao giờ khớp. Đổi schema hay đổi SQL thì phải chạy nó.
+- **`plainto_tsquery` nối mọi từ bằng AND.** Truy vấn nhiều chữ sẽ không khớp gì cả. Dùng
+  `public.tsquery_hoac` (đổi `&` thành `|`). Đây là lỗi im lặng: nhánh từ khoá trả rỗng, truy hồi
+  vẫn "chạy", chỉ là thành vector thuần.
+- **Nhánh từ khoá dùng `truyVanTuKhoa`, không dùng `truyVan`.** Nó tồn tại để bắt đúng chữ; ném cả
+  câu văn vào thì từ nối lấn át tên sao.
+- **Mã thực thể phải là duy nhất** — `thuc-the.ts` tự kiểm và ném lỗi ngay khi nạp module. Thêm sao
+  mới mà bỏ dấu ra trùng sao cũ thì khai mã tay trong `ID_RIENG`, lấy tên vòng làm phần phân biệt.
 
 ## Kiểm tra trước khi commit
 
@@ -113,6 +123,7 @@ npm run build             # phải qua
 npm run lint              # ĐANG có sẵn 8 lỗi set-state-in-effect — đừng để tăng thêm
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
+npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
 ```
