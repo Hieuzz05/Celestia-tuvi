@@ -23,6 +23,7 @@ import { useBoiCanh } from '@/lib/store/boi-canh';
 import { cungDaiVan, lapLaSo, type LaSo } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
+import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 /**
  * Trang chủ cá nhân hoá — nơi người đã đăng nhập đáp xuống.
@@ -102,6 +103,40 @@ export function TrangHomeNoiDung() {
       .then((r) => (r.status === 200 ? r.json() : null))
       .then((d) => {
         if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [chinh, ngonNgu]);
+
+  /*
+   * Thẻ Giai đoạn cũng do model viết, nhưng khoá theo KHOẢNG TUỔI chứ không theo
+   * ngày: một quãng kéo mười năm thì không có lý do gì mỗi hôm một bài khác.
+   * Dùng chung tuyến /api/nhip với Hành trình nên không thêm đường sinh mới.
+   */
+  const [giaiDoanAi, setGiaiDoanAi] = useState<string | null>(null);
+  useEffect(() => {
+    if (!chinh) return;
+    let huy = false;
+    fetch('/api/nhip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngay: chinh.ngay,
+        thang: chinh.thang,
+        nam: chinh.nam,
+        gio: chinh.gio,
+        gioiTinh: chinh.gioiTinh,
+        cap: 'giai-doan',
+        namXem: namAmHienTai(),
+        thangXem: thangAmHienTai(),
+        ngonNgu,
+      }),
+    })
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy && d?.ghepLai) setGiaiDoanAi(String(d.ghepLai));
       })
       .catch(() => {});
     return () => {
@@ -226,9 +261,9 @@ export function TrangHomeNoiDung() {
                   KHUON[ngonNgu].tenCung[giaiDoan.tenCung] ??
                   giaiDoan.tenCung}
               </p>
-              {gocNhin[1] && (
+              {(giaiDoanAi || gocNhin[1]) && (
                 <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  {gocNhin[1].noiDung}
+                  {giaiDoanAi ?? gocNhin[1]?.noiDung}
                 </p>
               )}
               <Link href="/hanh-trinh" className="link-text self-start">
