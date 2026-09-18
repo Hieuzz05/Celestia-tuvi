@@ -198,6 +198,8 @@ export interface KhuonChu {
 
   noiVaiVe: string;
   noiVeCuoi: string;
+  /** Dùng thay noiVeCuoi khi một vế đã tự mang gạch ngang — hai gạch trong một câu là câu gãy */
+  noiVeCuoiKhongGach: string;
 
   diemNoiBat: { nhom: string; tieuDe: string; tieuDeTrong: string; trong: string };
   dieuThuongCan: { nhom: string; tieuDe: string; mo: string; moTrong: string; dong: string };
@@ -296,8 +298,8 @@ export interface KhuonChu {
     doanDoiCung: readonly string[];
     doanDoiCungTrong: string;
     doanTrangSinh: readonly string[];
-    doanGiaiDoanCham: string;
-    doanGiaiDoanKhongCham: string;
+    doanGiaiDoanCham: readonly string[];
+    doanGiaiDoanKhongCham: readonly string[];
     cauHoiPhanChieu: Record<string, string>;
     vanHanKetLuan: string;
     vanHanDan: string;
@@ -439,6 +441,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     doSang: DO_SANG_VI,
     noiVaiVe: ', ',
     noiVeCuoi: ' — đồng thời ',
+    noiVeCuoiKhongGach: '; đồng thời ',
     diemNoiBat: {
       nhom: 'Điểm nổi bật',
       tieuDe: 'Thứ bạn thường làm tốt hơn người khác',
@@ -606,57 +609,65 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       ketLuanTrong:
         'Phần {chuDe} của bạn không có sao chính nào đóng, nên nét ở đây mượn từ cung đối diện.',
       doanNet: [
-        'Cụ thể hơn: {net}.',
-        'Đi cùng nét đó: {net}.',
-        'Thêm một lớp nữa: {net}.',
-        'Ở gần đó còn có: {net}.',
+        'Trong đời sống hằng ngày, điều đó hiện ra thành việc {net}.',
+        'Nét ấy không đứng một mình: nó đi cùng chuyện {net}.',
+        'Kéo theo đó là việc {net}.',
+        'Đủ lâu thì nó thành nếp: {net}.',
       ],
       doanCan: [
-        'Đi kèm với nét đó là một nhu cầu ít khi nói ra: bạn thường cần {can}.',
-        'Thứ bạn hiếm khi nói ra nhưng vẫn cần: {can}.',
-        'Phía sau nét đó là một điều kiện thầm lặng — bạn thường cần {can}.',
-        'Để nét trên phát huy được, bạn thường cần {can}.',
+        'Thiếu điều kiện sau thì nét mạnh ở trên chùng xuống rất nhanh: {can}.',
+        'Cái giá phải trả là một điều kiện bạn hiếm khi nói ra: {can}.',
+        'Muốn nét trên bền chứ không bật lên từng đợt, bạn cần {can}.',
+        'Phần này mạnh hay yếu không do sao quyết, mà do bạn có được {can}.',
       ],
       doanSangRo: [
-        'Các sao ở phần này đang ở mức {sang}, nên nét trên thường hiện ra sớm và người ngoài cũng nhận ra được.',
-        'Sao ở đây đạt mức {sang}: nét trên bộc lộ sớm, và thường người khác thấy trước cả bạn.',
-        'Với độ sáng {sang}, phần này không cần điều kiện gì đặc biệt để lộ ra.',
+        'Vì ở mức {sang}, nó lộ ra sớm và gần như không cần hoàn cảnh thuận — người ngoài thường thấy trước cả bạn.',
+        'Ở mức {sang}, phần này đã thành nếp từ sớm chứ không phải thứ bạn phải tập.',
+        'Độ sáng {sang} khiến nó bật ra mặc định, kể cả những lúc bạn không định thể hiện.',
       ],
       doanSangKim: [
-        'Các sao ở phần này đang ở mức {sang}, nên nét trên có thật nhưng hay bị hoàn cảnh kìm lại — dễ thấy mình muốn một đằng mà làm được một nẻo.',
-        'Sao ở đây chỉ đạt mức {sang}: nét trên có thật, nhưng hoàn cảnh hay chặn lại trước khi nó kịp thành hình.',
-        'Độ sáng {sang} khiến phần này thường ở dạng tiềm năng hơn là thành nếp — muốn một đằng mà làm được một nẻo là chuyện hay gặp.',
+        'Chỉ ở mức {sang} nên nó có thật mà hay bị hoàn cảnh chặn lại — cảm giác muốn một đằng làm được một nẻo là chuyện quen thuộc.',
+        'Ở mức {sang}, phần này còn là tiềm năng hơn là nếp sẵn: nó cần đúng hoàn cảnh mới bật ra.',
+        'Độ sáng {sang} bắt phần này trả giá bằng thời gian trước khi thành hình, nên đừng đọc sự chậm ấy thành thiếu năng lực.',
       ],
       doanTuHoa:
         'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường đậm hơn, hoặc lệch đi so với mức bình thường.',
       doanTuHoaRo: 'Có {sao} rơi vào đây: {net}.',
       doanTuanTriet:
-        'Có {ten} đóng ở đây. Nét của phần này thường khó hiện ra sớm — nhiều người phải qua một quãng mới thấy rõ mình thế nào ở chỗ này.',
+        'Có {ten} đóng ở đây, nên phần này hay đến muộn: nhiều người phải qua một quãng chệch nhịp rồi mới thấy rõ mình thế nào ở chỗ này.',
       doanTamPhuong:
         'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và đối diện là {xung} — chỗ hay kéo bạn về hướng ngược lại.',
       doanTrong:
         'Vì mượn nét từ cung đối diện nên bạn thường linh hoạt ở phần này, nhưng cũng dễ thấy mình thay đổi tuỳ hoàn cảnh và tuỳ người.',
       doanPhuTinh: [
-        'Ở phần này bạn còn {net}.',
-        'Kèm theo đó, {net}.',
-        'Một nét phụ nhưng đáng để ý: {net}.',
+        'Cùng chỗ đó, bạn {net}.',
+        'Chồng lên trên là chuyện bạn {net}.',
+        'Thực tế hơn: bạn {net}.',
+        'Đi liền với nó, bạn {net}.',
       ],
       doanDoiCung: [
-        'Đối diện là {cung}, nơi {sao} đóng — phần đó thường kéo bạn về hướng ngược lại, và là chỗ cần cân bằng hơn là bỏ đi.',
-        'Ngay đối diện là {cung} với {sao}: hai bên hay đòi hai thứ khác nhau, nên đây là chỗ bạn thường phải chọn liều lượng.',
-        'Nhìn sang cung đối là {cung}, có {sao} — lực từ đó không mất đi, nó chỉ chờ bạn để ý tới.',
+        'Kéo ngược lại là {cung} với {sao}: phần đó đòi gần như thứ trái hẳn, nên chuyện ở đây không bao giờ là chọn một bên mà là chỉnh liều lượng.',
+        'Lực ngược nằm ở {cung}, nơi {sao} đóng — ép nó im thì được yên một quãng, rồi nó quay lại to hơn.',
+        'Ở phía đối diện, {cung} có {sao} kéo theo hướng khác. Lực đó không mất đi; nó chỉ chờ lúc bạn mệt nhất để lên tiếng.',
+        'Cân lại phần trên là {cung} với {sao}: đây là chỗ điểm mạnh ở trên dễ quay ra làm khó chính bạn.',
       ],
       doanDoiCungTrong:
         'Đối diện là {cung} và cũng không có sao chính nào đóng, nên phần này ít bị kéo về một hướng cố định — bạn tự do hơn, nhưng cũng ít điểm tựa hơn.',
       doanTrangSinh: [
-        'Xét theo nhịp sinh khí, phần này {net}.',
-        'Về nhịp, phần này {net}.',
-        'Theo vòng sinh khí thì đây là quãng {net}.',
+        'Phần này nên đọc theo quãng chứ đừng đọc theo một lát cắt, vì về nhịp thì nó {net}.',
+        'Đặt vào vòng sinh khí, đây là quãng {net}.',
+        'Chuyện nên đẩy hay nên giữ nằm ở nhịp, mà nhịp lúc này thì {net}.',
       ],
-      doanGiaiDoanCham:
-        'Giai đoạn {tu}–{den} tuổi bạn đang đi qua có chạm vào phần này, nên đây là quãng nó dễ có chuyện hơn bình thường — cả theo nghĩa cơ hội lẫn nghĩa va vấp.',
-      doanGiaiDoanKhongCham:
-        'Giai đoạn bạn đang đi qua không chạm trực tiếp vào phần này, nên nó thường giữ nguyên nhịp cũ cho tới quãng sau.',
+      doanGiaiDoanCham: [
+        'Quãng {tu}–{den} tuổi bạn đang đi qua có chạm vào đây, nên đây là lúc phần này dễ có chuyện hơn bình thường — cả cơ hội lẫn va vấp.',
+        'Giai đoạn {tu}–{den} tuổi rọi thẳng vào phần này: những gì lâu nay còn âm ỉ thì quãng này hay nổi lên thành chuyện cụ thể.',
+        'Vì giai đoạn {tu}–{den} tuổi đi qua đúng chỗ này, đây là phần đáng để tâm bây giờ chứ không phải để dành.',
+      ],
+      doanGiaiDoanKhongCham: [
+        'Giai đoạn bạn đang đi qua không rọi vào đây, nên phần này thường giữ nhịp cũ cho tới quãng sau.',
+        'Quãng hiện tại không chạm trực tiếp vào phần này — nó vẫn chạy, chỉ là chạy lặng.',
+        'Đây không phải phần được giai đoạn này làm nổi lên, nên đừng sốt ruột nếu thấy nó im.',
+      ],
       cauHoiPhanChieu: {
         'tinh-cach': 'Lần gần nhất bạn hành xử đúng như mô tả trên là khi nào — và lúc đó bạn thấy nhẹ hay thấy mệt?',
         'cong-viec': 'Công việc hiện tại của bạn đang cho phép hay đang chặn đúng cái nét mạnh ở trên?',
@@ -668,8 +679,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       vanHanKetLuan: 'Giai đoạn bạn đang đi qua nghiêng về {chuDe}.',
       vanHanDan: 'Xem theo quãng dài, từng năm và từng tháng ở phần Hành trình.',
       phatTrienKetLuan: 'Nếu muốn đi xa hơn, chỗ đáng rèn nhất của bạn nằm quanh {chuDe}.',
-      phatTrienManh: 'Thứ bạn vốn có sẵn và hay quên dùng: {net}.',
-      phatTrienCan: 'Thứ bạn thường thiếu và nên chủ động tạo ra: {can}.',
+      phatTrienManh: 'Vốn liếng bạn đã có sẵn, và hay quên dùng hơn là phải xây thêm, là chuyện {net}.',
+      phatTrienCan: 'Chỗ lệch nằm ở phía còn lại, và nó không tự đến mà phải chủ động tạo ra: {can}.',
       phatTrienHoi:
         'Một câu đáng tự hỏi: lần gần nhất bạn dùng đúng điểm mạnh đó là khi nào, và vì sao sau đó bạn ngừng dùng?',
     },
@@ -697,6 +708,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     doSang: DO_SANG_EN,
     noiVaiVe: ', ',
     noiVeCuoi: ' — and at the same time ',
+    noiVeCuoiKhongGach: '; and at the same time ',
     diemNoiBat: {
       nhom: 'What stands out',
       tieuDe: 'What you tend to do better than most',
@@ -866,57 +878,65 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       ketLuanTrong:
         'No major star sits in the {chuDe} part of your chart, so it draws its character from the house opposite.',
       doanNet: [
-        'More concretely: {net}.',
-        'Running alongside it: {net}.',
-        'One layer further: {net}.',
-        'Close by there is also: {net}.',
+        'Day to day, that shows up as {net}.',
+        'It does not travel alone: it comes with {net}.',
+        'Trailing behind it is {net}.',
+        'Given long enough it becomes habit: {net}.',
       ],
       doanCan: [
-        'Alongside that runs a need you rarely say out loud: you tend to need {can}.',
-        'Something you seldom voice but still need: {can}.',
-        'Behind that pattern sits a quiet condition — you tend to need {can}.',
-        'For that trait to work, you usually need {can}.',
+        'Without the following, the strength above sags fast: {can}.',
+        'The price is a condition you rarely voice: {can}.',
+        'For that trait to hold rather than flare in bursts, you need {can}.',
+        'Whether this area is strong is decided less by the stars than by your having {can}.',
       ],
       doanSangRo: [
-        'The stars here are {sang}, so this side of you usually shows early, and other people notice it too.',
-        'The stars reach {sang} here: this shows early, and others often see it before you do.',
-        'At {sang} brightness, this part needs no special conditions to come out.',
+        'At {sang} it surfaces early and needs almost no favourable conditions — others usually see it before you do.',
+        'At {sang}, this became habit early rather than something you had to practise.',
+        'Brightness {sang} makes it show by default, including when you were not trying to.',
       ],
       doanSangKim: [
-        'The stars here are {sang}, so the trait is real but circumstances often hold it back — you may find yourself wanting one thing and managing another.',
-        'The stars only reach {sang} here: the trait is real, but circumstances tend to block it before it takes shape.',
-        '{sang} brightness keeps this part closer to potential than to habit — wanting one thing and managing another is common here.',
+        'Only at {sang}, so it is real but circumstance keeps checking it — wanting one thing and managing another is familiar here.',
+        'At {sang} this stays potential more than habit: it needs the right setting to come out.',
+        'Brightness {sang} makes this area pay in time before it takes shape, so do not read that slowness as lack of ability.',
       ],
       doanTuHoa:
         '{sao} falls here, so the same set of stars plays out differently: this area tends to be pushed harder, or twisted out of its usual shape.',
       doanTuHoaRo: '{sao} falls here: {net}.',
       doanTuanTriet:
-        '{ten} sits here. This part is usually slow to show itself — many people only see clearly who they are here after a stretch of time.',
+        'There is {ten} sitting here, so this area tends to arrive late: many people go through a stretch of being out of step before they see how they actually are here.',
       doanTamPhuong:
         'This part does not stand alone: it draws from {hoTro}, and facing it is {xung} — the place that tends to pull you the other way.',
       doanTrong:
         'Because it borrows from the house opposite, you are usually adaptable here, but also more changeable depending on the situation and the person.',
       doanPhuTinh: [
-        'In this area you also {net}.',
-        'Along with that, {net}.',
-        'A secondary trait worth noting: {net}.',
+        'In the same place, you {net}.',
+        'Layered on top, you {net}.',
+        'More concretely, you {net}.',
+        'Right beside it, you {net}.',
       ],
       doanDoiCung: [
-        'Facing it is {cung}, where {sao} sits — that house tends to pull you the other way, and is usually something to balance rather than drop.',
-        'Directly opposite is {cung} with {sao}: the two sides often want different things, so this is where you keep choosing the dose.',
-        'Across from it is {cung}, holding {sao} — that pull does not go away, it just waits for your attention.',
+        'Pulling the other way is {cung} with {sao}: that side wants close to the opposite, so this is never about picking a side but about setting the dose.',
+        'The counterweight sits in {cung}, where {sao} is — force it quiet and you get a calm stretch, then it comes back louder.',
+        'Opposite, {cung} holds {sao} and pulls elsewhere. That pull does not go away; it waits for the day you are most tired.',
+        'Balancing the above is {cung} with {sao}: this is where that strength turns around and makes things hard for you.',
       ],
       doanDoiCungTrong:
         'Facing it is {cung}, and no major star sits there either, so this area is pulled less firmly in any one direction — freer, but with less to lean on.',
       doanTrangSinh: [
-        'In terms of vitality, this part {net}.',
-        'On rhythm, this part {net}.',
-        'On the vitality cycle this is the stretch where it {net}.',
+        'Read this by the stretch rather than a single slice, because on rhythm it {net}.',
+        'Set against the vitality cycle, this is the stretch where it {net}.',
+        'Whether to push or to hold comes down to rhythm, and right now it {net}.',
       ],
-      doanGiaiDoanCham:
-        'The stretch from age {tu} to {den} that you are moving through does touch this area, so this is when it is more likely to be live — in opportunity as much as in friction.',
-      doanGiaiDoanKhongCham:
-        'The stretch you are moving through does not touch this area directly, so it usually keeps its existing rhythm until the next one.',
+      doanGiaiDoanCham: [
+        'The stretch from age {tu} to {den} does touch this area, so this is when it is more likely to be live — in opportunity as much as in friction.',
+        'Ages {tu}–{den} shine straight onto this area: what has been smouldering tends to surface as something concrete in this stretch.',
+        'Because the stretch from {tu} to {den} runs through exactly here, this is the part worth attention now rather than later.',
+      ],
+      doanGiaiDoanKhongCham: [
+        'The stretch you are in does not shine here, so this area usually keeps its existing rhythm until the next one.',
+        'The current stretch does not touch this area directly — it still runs, it just runs quietly.',
+        'This is not the part the current stretch brings forward, so do not read its quietness as a problem.',
+      ],
       cauHoiPhanChieu: {
         'tinh-cach': 'When did you last act exactly as described above — and did it leave you lighter or more tired?',
         'cong-viec': 'Is your current work letting that strength out, or blocking it?',
@@ -928,8 +948,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       vanHanKetLuan: 'The stretch you are moving through leans toward {chuDe}.',
       vanHanDan: 'See it by long stretch, year and month under Your journey.',
       phatTrienKetLuan: 'To go further, the ground worth working lies around {chuDe}.',
-      phatTrienManh: 'What you already have and often forget to use: {net}.',
-      phatTrienCan: 'What you tend to be short of and should create deliberately: {can}.',
+      phatTrienManh: 'The capital you already hold, more often forgotten than missing, is that {net}.',
+      phatTrienCan: 'The gap sits on the other side, and it does not arrive on its own: {can}.',
       phatTrienHoi:
         'One question worth asking: when did you last use that strength properly, and why did you stop?',
     },

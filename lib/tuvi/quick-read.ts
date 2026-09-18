@@ -59,7 +59,11 @@ function noiLietKe(items: string[], k: KhuonChu, ngonNgu: NgonNguDoc) {
   const boChuNgu = ngonNgu === 'vi' ? /^bạn\s+/ : /^you\s+/;
   const sach = items.map((v, i) => (i === 0 ? v : v.replace(boChuNgu, '')));
   if (sach.length <= 1) return sach[0] ?? '';
-  return `${sach.slice(0, -1).join(k.noiVaiVe)}${k.noiVeCuoi}${sach[sach.length - 1]}`;
+  // Vế cuối vốn nối bằng một gạch ngang. Nhưng vài nét sao tự nó đã có gạch
+  // ngang bên trong, và hai gạch ngang trong một câu thì chỗ nối thứ hai đọc như
+  // bị chắp. Gặp trường hợp đó thì nối bằng liên từ thường.
+  const noiCuoi = sach.some((v) => v.includes('—')) ? k.noiVeCuoiKhongGach : k.noiVeCuoi;
+  return `${sach.slice(0, -1).join(k.noiVaiVe)}${noiCuoi}${sach[sach.length - 1]}`;
 }
 
 function canCuCung(cung: Cung, nhanCung: string, k: KhuonChu): CanCu[] {

@@ -64,23 +64,6 @@ function chinhTinhCua(cung: Cung) {
   return cung.sao.filter((s) => (CHINH_TINH as readonly string[]).includes(s.ten)).slice(0, 2);
 }
 
-/**
- * Phụ tinh trọng yếu có nét viết sẵn.
- *
- * Đây là thứ làm hai người cùng chính tinh thủ Mệnh đọc ra khác nhau. Bản đầu
- * của bảng luận giải bỏ qua nhóm này nên khối nào cũng na ná khối nào.
- */
-function phuTinhCua(cung: Cung, k: KhuonChu) {
-  // Tứ Hóa KHÔNG nằm ở đây: nét của nó viết ở dạng câu hoàn chỉnh ("phần này
-  // thường mở ra cơ hội thật") nên nhét vào khuôn "ở phần này bạn còn…" là câu
-  // hỏng. Nó có đoạn riêng bên dưới.
-  return cung.sao
-    .filter((s) => PHU_TINH_TRONG_YEU.has(s.ten))
-    .map((s) => k.netPhuTinh[s.ten])
-    .filter(Boolean)
-    .slice(0, 3) as string[];
-}
-
 /** Bỏ chủ ngữ đầu câu — dùng khi vế được ghép vào sau một mệnh đề đã có chủ ngữ */
 function boChuNgu(cau: string, ngonNgu: NgonNguDoc) {
   return cau.replace(ngonNgu === 'vi' ? /^bạn\s+/ : /^you\s+/, '');
@@ -89,7 +72,11 @@ function boChuNgu(cau: string, ngonNgu: NgonNguDoc) {
 function noiLietKe(items: string[], k: KhuonChu, ngonNgu: NgonNguDoc) {
   const sach = items.map((v, i) => (i === 0 ? v : boChuNgu(v, ngonNgu)));
   if (sach.length <= 1) return sach[0] ?? '';
-  return `${sach.slice(0, -1).join(k.noiVaiVe)}${k.noiVeCuoi}${sach[sach.length - 1]}`;
+  // Vế cuối vốn nối bằng một gạch ngang. Nhưng vài nét sao tự nó đã có gạch
+  // ngang bên trong, và hai gạch ngang trong một câu thì chỗ nối thứ hai đọc như
+  // bị chắp. Gặp trường hợp đó thì nối bằng liên từ thường.
+  const noiCuoi = sach.some((v) => v.includes('—')) ? k.noiVeCuoiKhongGach : k.noiVeCuoi;
+  return `${sach.slice(0, -1).join(k.noiVaiVe)}${noiCuoi}${sach[sach.length - 1]}`;
 }
 
 function tenCung(cung: Cung, k: KhuonChu) {
@@ -98,6 +85,21 @@ function tenCung(cung: Cung, k: KhuonChu) {
 
 /** Độ sáng được coi là "hiện ra rõ" — miếu, vượng, đắc địa, lợi */
 const SANG_RO = new Set(['M', 'V', 'D', 'L']);
+
+/**
+ * Sao mang lực cản. Nét của nhóm này thuộc về đoạn lực ngược, không phải đoạn
+ * điểm mạnh — trộn chung là lý do bản cũ đọc như một danh sách không có hướng.
+ */
+const SAO_TRO_LUC = new Set([
+  'Kình Dương',
+  'Đà La',
+  'Hỏa Tinh',
+  'Linh Tinh',
+  'Địa Không',
+  'Địa Kiếp',
+  'Thiên Hình',
+  'Thiên Riêu',
+]);
 
 /**
  * Căn cứ của một khối: chỉ liệt kê thứ THỰC SỰ tham gia vào kết luận.
@@ -201,69 +203,101 @@ function khoiTheoCung(
   const net = chinh.map((s) => k.netSao[s.ten]?.manh).filter(Boolean) as string[];
   const can = chinh.map((s) => k.netSao[s.ten]?.can).filter(Boolean) as string[];
 
-  const doan: string[] = [];
+  /*
+   * Ba đoạn, mỗi đoạn một nhiệm vụ kể chuyện — KHÔNG phải mỗi dữ kiện một câu.
+   *
+   * Bản cũ phát lần lượt: nét phụ → nhu cầu → độ sáng → tứ hoá → Tuần Triệt →
+   * phụ tinh → đối cung → trạng sinh → giai đoạn, rồi cắt còn sáu câu đầu. Thứ
+   * tự ấy cố định ở cả tám khối, nên đọc khối thứ hai là người ta đã đoán được
+   * khối thứ ba nói gì ở dòng nào. Cắt ở câu thứ sáu còn làm mất đúng những lớp
+   * đặt ở cuối — phụ tinh, nhịp, giai đoạn — tức là phần khiến hai lá số khác
+   * nhau đọc ra khác nhau.
+   *
+   * Giờ gom theo nghĩa: cấu trúc này tạo ra gì → cái gì kéo ngược lại → nó cần
+   * điều kiện nào và đang ở nhịp nào. Đó là khung luận của tài liệu: nói hệ quả
+   * trước, luôn có lực ngược, và không kê sao.
+   */
 
+  // Đoạn 1 — cấu trúc này tạo ra gì trong đời sống
+  const doanCauTruc: string[] = [];
   if (!net.length) {
-    doan.push(k.luanSau.doanTrong);
+    doanCauTruc.push(k.luanSau.doanTrong);
   } else if (net.length > 1) {
-    // Chỉ liệt kê những sao CHƯA nói ở câu kết luận. Liệt kê lại từ đầu thì nửa
-    // đoạn này lặp nguyên văn dòng ngay phía trên.
-    doan.push(capHoaDau(dien(khuon(k.luanSau.doanNet), { net: noiLietKe(net.slice(1), k, ngonNgu) })));
-  }
-
-  if (can.length) {
-    doan.push(
-      dien(khuon(k.luanSau.doanCan), { can: boChuNgu(noiLietKe(can, k, ngonNgu), ngonNgu) })
+    // Chỉ nói những sao CHƯA nằm ở câu kết luận, bằng không nửa đoạn này lặp
+    // nguyên văn dòng ngay phía trên.
+    doanCauTruc.push(
+      capHoaDau(dien(khuon(k.luanSau.doanNet), { net: noiLietKe(net.slice(1), k, ngonNgu) }))
     );
   }
 
-  // Độ sáng chỉ nói khi có sao chính để mà nói tới
   const doSang = chinh.find((s) => s.doSang)?.doSang;
   if (doSang) {
     const mau = khuon(SANG_RO.has(doSang) ? k.luanSau.doanSangRo : k.luanSau.doanSangKim);
-    doan.push(dien(mau, { sang: k.doSang[doSang] ?? doSang }));
+    doanCauTruc.push(dien(mau, { sang: k.doSang[doSang] ?? doSang }));
   }
 
-  for (const s of cung.sao.filter((x) => x.loai === 'tu-hoa')) {
-    const net = k.netPhuTinh[s.ten];
-    doan.push(
-      net
-        ? dien(k.luanSau.doanTuHoaRo, { sao: s.ten, net })
-        : dien(k.luanSau.doanTuHoa, { sao: s.ten })
-    );
-  }
+  const tuHoa = cung.sao.filter((x) => x.loai === 'tu-hoa');
+  const cauTuHoa = (ten: string) => {
+    const netTh = k.netPhuTinh[ten];
+    return netTh
+      ? dien(k.luanSau.doanTuHoaRo, { sao: ten, net: netTh })
+      : dien(k.luanSau.doanTuHoa, { sao: ten });
+  };
+  for (const x of tuHoa.filter((y) => y.ten !== 'Hóa Kỵ')) doanCauTruc.push(cauTuHoa(x.ten));
 
-  if (cung.coTuan || cung.coTriet) {
-    const tenVong = [cung.coTuan ? 'Tuần' : null, cung.coTriet ? 'Triệt' : null]
-      .filter(Boolean)
-      .join(' + ');
-    doan.push(dien(k.luanSau.doanTuanTriet, { ten: tenVong }));
-  }
-
-  // --- Các lớp làm nên chiều sâu: phụ tinh, đối cung, nhịp sinh khí, giai đoạn ---
-
-  const phu = phuTinhCua(cung, k);
-  if (phu.length) {
-    doan.push(dien(khuon(k.luanSau.doanPhuTinh), { net: noiLietKe(phu, k, ngonNgu) }));
-  }
-
-  // Đối cung luôn tham gia vào cách đọc một cung, kể cả khi cung đó đã có chính
-  // tinh — bỏ nó đi là mất hẳn phần "điều kéo bạn về hướng ngược lại".
+  // Đoạn 2 — cái gì kéo ngược lại. Đối cung luôn tham gia vào cách đọc một cung;
+  // bỏ nó đi là mất hẳn phần khiến bài đọc không thành lời khen một chiều.
   const doiCung = laSo.cungs[tamPhuongTuChinh(cung.chiIndex).xungChieu];
   const chinhDoi = chinhTinhCua(doiCung);
-  doan.push(
+  const doanLucNguoc: string[] = [
     chinhDoi.length
       ? dien(khuon(k.luanSau.doanDoiCung), {
           cung: tenCung(doiCung, k),
           sao: chinhDoi.map((x) => x.ten).join(', '),
         })
-      : dien(k.luanSau.doanDoiCungTrong, { cung: tenCung(doiCung, k) })
-  );
+      : dien(k.luanSau.doanDoiCungTrong, { cung: tenCung(doiCung, k) }),
+  ];
+
+  if (cung.coTuan || cung.coTriet) {
+    const tenVong = [cung.coTuan ? 'Tuần' : null, cung.coTriet ? 'Triệt' : null]
+      .filter(Boolean)
+      .join(' + ');
+    doanLucNguoc.push(dien(k.luanSau.doanTuanTriet, { ten: tenVong }));
+  }
+
+  const tenPhu = cung.sao.filter((x) => PHU_TINH_TRONG_YEU.has(x.ten)).map((x) => x.ten);
+  const netTheoTen = (ds: string[]) =>
+    ds.map((t) => k.netPhuTinh[t]).filter(Boolean).slice(0, 2) as string[];
+  const phuCan = netTheoTen(tenPhu.filter((t) => SAO_TRO_LUC.has(t)));
+  const phuDo = netTheoTen(tenPhu.filter((t) => !SAO_TRO_LUC.has(t)));
+
+  if (phuCan.length) {
+    doanLucNguoc.push(
+      capHoaDau(dien(khuon(k.luanSau.doanPhuTinh), { net: noiLietKe(phuCan, k, ngonNgu) }))
+    );
+  }
+  for (const x of tuHoa.filter((y) => y.ten === 'Hóa Kỵ')) doanLucNguoc.push(cauTuHoa(x.ten));
+
+  // Đoạn 3 — nó cần điều kiện gì, và đang ở nhịp nào
+  const doanDieuKien: string[] = [];
+  if (can.length) {
+    doanDieuKien.push(
+      capHoaDau(dien(khuon(k.luanSau.doanCan), { can: boChuNgu(noiLietKe(can, k, ngonNgu), ngonNgu) }))
+    );
+  }
+  if (phuDo.length) {
+    // Lệch một nhịp so với đoạn lực ngược, để hai đoạn không mở bằng cùng một khuôn
+    doanDieuKien.push(
+      capHoaDau(
+        dien(chonBienThe(k.luanSau.doanPhuTinh, hat + 1), {
+          net: noiLietKe(phuDo, k, ngonNgu),
+        })
+      )
+    );
+  }
 
   const trangSinh = k.netTrangSinh[cung.trangSinh];
-  if (trangSinh) {
-    doan.push(dien(khuon(k.luanSau.doanTrangSinh), { net: trangSinh }));
-  }
+  if (trangSinh) doanDieuKien.push(dien(khuon(k.luanSau.doanTrangSinh), { net: trangSinh }));
 
   // Giai đoạn đang chạy có chạm vào lĩnh vực này không — thông tin quyết định
   // người đọc nên để tâm phần này bây giờ hay để dành cho quãng sau.
@@ -273,15 +307,19 @@ function khoiTheoCung(
       ...tamPhuongTuChinh(giaiDoan.chiIndex).tamHop,
       tamPhuongTuChinh(giaiDoan.chiIndex).xungChieu,
     ]);
-    doan.push(
+    doanDieuKien.push(
       trong.has(cung.chiIndex)
-        ? dien(k.luanSau.doanGiaiDoanCham, {
+        ? dien(khuon(k.luanSau.doanGiaiDoanCham), {
             tu: giaiDoan.daiVan.tuTuoi,
             den: giaiDoan.daiVan.denTuoi,
           })
-        : k.luanSau.doanGiaiDoanKhongCham
+        : khuon(k.luanSau.doanGiaiDoanKhongCham)
     );
   }
+
+  const doan = [doanCauTruc, doanLucNguoc, doanDieuKien]
+    .map((v) => v.filter(Boolean).join(' ').trim())
+    .filter((v) => v.length > 0);
 
   return {
     id,
@@ -292,10 +330,9 @@ function khoiTheoCung(
     ketLuan: net.length
       ? dien(khuon(k.luanSau.ketLuanCo), { chuDe, net: boChuNgu(net[0], ngonNgu) })
       : dien(k.luanSau.ketLuanTrong, { chuDe }),
-    // Sáu đoạn thân bài, rồi LUÔN kết bằng câu hỏi phản chiếu. Để câu hỏi nằm
-    // trong danh sách bị cắt thì khối nào dài là mất đúng phần đáng giá nhất —
-    // brand spec chốt mỗi bài kết bằng một điều người đọc tự hỏi tiếp.
-    doan: [...doan.slice(0, 6), k.luanSau.cauHoiPhanChieu[id]].filter(Boolean),
+    // Câu hỏi phản chiếu luôn đứng cuối và không bao giờ bị cắt: brand spec chốt
+    // mỗi bài kết bằng một điều người đọc tự hỏi tiếp.
+    doan: [...doan, k.luanSau.cauHoiPhanChieu[id]].filter(Boolean),
     canCu: canCuCua(cung, laSo, k),
     cauHoiGoiY: chu.cauHoi,
   };
@@ -309,11 +346,15 @@ function khoiVanHan(laSo: LaSo, namXem: number, k: KhuonChu): KhoiLuanGiai {
   const cungNam = laSo.cungs[cungTieuHan(laSo, tuoi)];
   const goc = giaiDoan ?? cungNam;
 
-  const doan = [
+  // Một đoạn liền mạch chứ không phải ba dòng rời: năm đang xem nói gì, rồi
+  // ngay đó là câu nhắc đây là xu hướng chứ không phải lời hứa. Tách ra thành
+  // hai dòng thì câu nhắc trông như dòng chữ nhỏ ở cuối hợp đồng.
+  const nhipNam =
     k.hanhTrinh.nhipNam && k.chuDeCung[cungNam.tenCung]
       ? dien(k.hanhTrinh.nhipNam, { nam: namXem, chuDe: k.chuDeCung[cungNam.tenCung] })
-      : '',
-    k.giaiDoan.nhacXuHuong,
+      : '';
+  const doan = [
+    [nhipNam, k.giaiDoan.nhacXuHuong].filter(Boolean).join(' '),
     k.luanSau.vanHanDan,
   ].filter(Boolean);
 
@@ -368,9 +409,15 @@ function khoiPhatTrien(laSo: LaSo, k: KhuonChu, ngonNgu: NgonNguDoc): KhoiLuanGi
     .map((s) => k.netSao[s.ten]?.can)
     .filter(Boolean) as string[];
 
+  // Cái sẵn có và cái còn thiếu là hai vế của cùng một ý, nên đứng chung một
+  // đoạn. Tách đôi thì thành hai mục của một bảng kiểm, không phải một nhận xét.
   const doan = [
-    manh.length ? dien(k.luanSau.phatTrienManh, { net: noiLietKe(manh, k, ngonNgu) }) : '',
-    can.length ? dien(k.luanSau.phatTrienCan, { can: noiLietKe(can, k, ngonNgu) }) : '',
+    [
+      manh.length ? dien(k.luanSau.phatTrienManh, { net: noiLietKe(manh, k, ngonNgu) }) : '',
+      can.length ? dien(k.luanSau.phatTrienCan, { can: noiLietKe(can, k, ngonNgu) }) : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
     k.luanSau.phatTrienHoi,
   ].filter(Boolean);
 

@@ -54,6 +54,32 @@ for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
 }
 console.log(`\n  Lặp khuôn mở đầu cao nhất: ${(lapCaoNhat * 100).toFixed(0)}% (trần ${TRAN_LAP_MO_DAU * 100}%)`);
 
+console.log('\n== CÂU GHÉP KHÔNG ĐƯỢC GÃY ==\n');
+{
+  let caiHai = 0;
+  let cutDuoi = 0;
+  let viDu = '';
+  for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
+    const laSo = lapLaSo({ ngay, thang, nam, gio, gioiTinh });
+    for (const k of luanGiaiSau(laSo, 2026, 'vi')) {
+      for (const d of [k.ketLuan, ...(k.doan ?? [])].filter(Boolean)) {
+        for (const cau of d.split(/(?<=[.!?])\s+/)) {
+          // Vế ghép sẵn đã mang một gạch ngang; khuôn nào thêm vế đuôi nữa là
+          // câu có hai, và chỗ nối thứ hai luôn đọc như bị chắp.
+          if ((cau.match(/—/g) ?? []).length >= 2) {
+            caiHai += 1;
+            if (!viDu) viDu = cau.slice(0, 120);
+          }
+          // Câu kết thúc ngay sau dấu ngắt mệnh đề là dấu hiệu khuôn bị cắt cụt
+          if (/[,;:—]\s*$/.test(cau.trim())) cutDuoi += 1;
+        }
+      }
+    }
+  }
+  kiem('Không câu nào có hai gạch ngang', caiHai === 0, viDu);
+  kiem('Không câu nào cụt sau dấu ngắt', cutDuoi === 0, cutDuoi);
+}
+
 console.log('\n== QUICK READ (/la-so) ==\n');
 for (const [ngay, thang, nam, gio, gioiTinh] of MAU.slice(0, 4)) {
   const the = docNhanh(lapLaSo({ ngay, thang, nam, gio, gioiTinh }), 2026, undefined, 'vi');
