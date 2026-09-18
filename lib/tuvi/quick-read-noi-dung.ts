@@ -247,6 +247,7 @@ export interface KhuonChu {
     nhipRaSoatMo: string;
     nhipThuHepMo: string;
     nhipHanhDong: string;
+    nhomTongHop: string;
     chuDeChinh: string;
     tieuDeGiaiDoan: string;
     tieuDeNam: string;
@@ -532,6 +533,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       luuYTrong:
         'Không có yếu tố cản nào nổi hẳn lên. Điều dễ hỏng nhất trong quãng như vậy lại là chủ quan.',
       nhipHanhDong: 'Nhịp hành động',
+      nhomTongHop: 'Nếu ghép lại',
       nenLop: 'Nền của quãng này',
       lopDaiVan: 'Quãng {tu}–{den} tuổi tại {cung}',
       lopNam: 'Năm {nam} tại {cung}',
@@ -835,6 +837,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       luuYTrong:
         'No resisting factor stands out. In a stretch like this, the thing most likely to go wrong is complacency.',
       nhipHanhDong: 'Suggested rhythm',
+      nhomTongHop: 'Putting it together',
       nenLop: 'What this stretch sits on',
       lopDaiVan: 'Ages {tu}–{den} in {cung}',
       lopNam: '{nam} in {cung}',

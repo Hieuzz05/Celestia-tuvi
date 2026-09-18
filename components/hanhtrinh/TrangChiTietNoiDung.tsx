@@ -25,6 +25,18 @@ import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
  * Thuật ngữ Tử Vi không xuất hiện ở dòng đầu. Nó nằm trong phần căn cứ, và ở
  * đó thì hiện đầy đủ — người muốn kiểm chứng phải kiểm chứng được.
  */
+interface ChuyenDongAi {
+  tieuDe: string;
+  noiDung: string;
+}
+
+interface NhipChiTietAi {
+  dangMo: ChuyenDongAi;
+  dangCang: ChuyenDongAi;
+  canCho: ChuyenDongAi;
+  ghepLai: string;
+}
+
 export function TrangChiTietNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -63,6 +75,12 @@ export function TrangChiTietNoiDung() {
   // thì mở devtools là đọc được hết.
   const [bai, setBai] = useState<LuanHan | null>(null);
   const [day, setDay] = useState(true);
+  /*
+   * Phần chữ do model viết. Các lớp tất định bên dưới — nhịp, yếu tố thuận/cản,
+   * luận theo lĩnh vực, căn cứ — vẫn giữ nguyên và vẫn là thứ chứng minh kết
+   * luận. Model viết phần mà luật không viết được, không thay chỗ của luật.
+   */
+  const [ai, setAi] = useState<NhipChiTietAi | null>(null);
   const [moCong, setMoCong] = useState(false);
 
   useEffect(() => {
@@ -89,6 +107,7 @@ export function TrangChiTietNoiDung() {
         if (huy) return;
         setBai(d?.bai ?? null);
         setDay(Boolean(d?.day));
+        setAi((d?.ai as NhipChiTietAi | null) ?? null);
       });
     return () => {
       huy = true;
@@ -188,6 +207,39 @@ export function TrangChiTietNoiDung() {
               month: thang,
             }}
           />
+        )}
+
+        {/* A2. Ba chuyển động — phần chữ do model viết, theo §11.4 của khung luận.
+            Đặt trên phần tóm tắt vì đây mới là thứ người đọc cần trước; các lớp
+            đếm được ở dưới là chỗ để họ lần xuống khi muốn biết vì sao. */}
+        {day && ai && (
+          <div className="flex flex-col gap-[12px]">
+            {(
+              [
+                [t.hanhTrinh.dangMo, ai.dangMo],
+                [t.hanhTrinh.dangCang, ai.dangCang],
+                [t.hanhTrinh.canCho, ai.canCho],
+              ] as const
+            ).map(([nhan, cd]) => (
+              <The key={nhan} className="flex flex-col gap-[6px]">
+                <Eyebrow>{nhan}</Eyebrow>
+                {cd.tieuDe && (
+                  <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
+                    {cd.tieuDe}
+                  </p>
+                )}
+                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {cd.noiDung}
+                </p>
+              </The>
+            ))}
+            <The className="flex flex-col gap-[6px]">
+              <Eyebrow>{k.nhomTongHop}</Eyebrow>
+              <p className="body-text" style={{ color: 'var(--fg)' }}>
+                {ai.ghepLai}
+              </p>
+            </The>
+          </div>
         )}
 
         {/* B. Tóm tắt điều hành */}

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
 import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
-import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { cungDaiVan, lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
 import type { NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { sinhNhipHanhTrinh, type NhipHanhTrinh } from '@/lib/rag/be-mat-ngan';
+import { bamLaSo } from '@/lib/rag/nhat-ky';
+import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
+import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
 
 /**
  * Luận hạn chi tiết cho một quãng / năm / tháng.
@@ -61,9 +65,54 @@ export async function POST(req: Request) {
   const day = moDuoc(quyen, 'journeyDetail');
   const bai = luanHan(laSo, cap, namXem, thangXem, ngonNgu);
 
+  /*
+   * Phần chữ do model viết, chỉ cho người đã mở quyền.
+   *
+   * Sinh một lần cho mỗi kỳ rồi cất: một quãng dài khoá theo khoảng tuổi chứ
+   * không theo năm, nên bấm năm nào trong quãng cũng ra đúng bài của quãng ấy.
+   * Không có nó thì trang vẫn đủ dùng — các lớp tất định bên dưới vẫn nguyên.
+   */
+  const giaiDoan = cungDaiVan(laSo, tuoiAmTaiNam(laSo, namXem));
+  const khoaKy =
+    cap === 'giai-doan'
+      ? `giai-doan:${giaiDoan?.daiVan?.tuTuoi ?? '?'}-${giaiDoan?.daiVan?.denTuoi ?? '?'}`
+      : cap === 'nam'
+        ? `nam:${namXem}`
+        : `thang:${namXem}-${String(thangXem).padStart(2, '0')}`;
+
+  const ai = day
+    ? await layHoacSinh<NhipHanhTrinh>(
+        {
+          chartHash: bamLaSo(
+            body.ngay as number,
+            body.thang as number,
+            body.nam as number,
+            body.gio as number,
+            body.gioiTinh as GioiTinh
+          ),
+          beMat: 'luan-han-chi-tiet',
+          khoaKy,
+          ngonNgu,
+        },
+        async () => {
+          const kq = await sinhNhipHanhTrinh({
+            laSo,
+            cap,
+            namXem,
+            thangXem,
+            nhip: bai.nhip.nhan,
+          });
+          return kq
+            ? { noiDung: kq.noiDung, provider: kq.provider, model: kq.model, phienBan: kq.phienBan }
+            : null;
+        }
+      )
+    : null;
+
   return NextResponse.json(
     {
       day,
+      ai: ai?.noiDung ?? null,
       bai: day
         ? bai
         : { ...bai, tanDung: [], luuY: [], linhVuc: [], canCu: [], nhip: { nhan: '', mo: '' } },
