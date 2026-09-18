@@ -155,6 +155,34 @@ function TrangLaSo() {
     }
   }, [form]);
 
+  /*
+   * Thẻ dẫn đầu cũng do model viết, một bài mỗi ngày — cùng tuyến với trang chủ
+   * nên hai màn nói cùng một thứ thì đọc ra cùng một bài.
+   *
+   * Thẻ tất định vẫn hiện ngay và vẫn là đường lùi: model hỏng hoặc hết hạn mức
+   * thì màn này vẫn có chữ, chỉ là chữ cũ.
+   */
+  const [noiBatAi, setNoiBatAi] = useState<DiemNoiBatAi | null>(null);
+  useEffect(() => {
+    if (!form) return;
+    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
+    if (!ngay || !thang || !nam) return;
+    let huy = false;
+    fetch('/api/diem-noi-bat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, ngonNgu }),
+    })
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [form, ngonNgu]);
+
   const gocNhin = useMemo(
     () => (laSo ? docNhanh(laSo, namXem, form?.yDinh, ngonNgu) : []),
     [laSo, namXem, form?.yDinh, ngonNgu]
@@ -371,7 +399,19 @@ function TrangLaSo() {
           </div>
         </div>
 
-        {gocNhin[0] && <GocNhinCard gocNhin={gocNhin[0]} chinh />}
+        {gocNhin[0] && (
+          <GocNhinCard
+            gocNhin={
+              noiBatAi
+                ? {
+                    ...gocNhin[0],
+                    noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
+                  }
+                : gocNhin[0]
+            }
+            chinh
+          />
+        )}
 
         <div className="grid gap-[16px] md:grid-cols-2">
           {gocNhin.slice(1, 3).map((g) => (
@@ -523,6 +563,13 @@ function TrangLaSo() {
       )}
     </Shell>
   );
+}
+
+interface DiemNoiBatAi {
+  insight: string;
+  doiSong: string;
+  matTrai: string;
+  cauMangTheo: string;
 }
 
 export default function TrangLaSoBoc() {
