@@ -26,8 +26,19 @@ export const SO_CHIEU_VECTOR = 768;
  */
 export type NhaCungCapEmbedding = 'gemini' | 'openai';
 
+/*
+ * Mặc định là openai, không phải gemini.
+ *
+ * Mặc định phải khớp với thứ kho ĐANG chứa. Kho hiện tại — 7.559 đoạn của 15
+ * cuốn — sinh bằng OpenAI. Để mặc định là gemini thì bản trên máy chủ sẽ mã hoá
+ * câu hỏi bằng một model, còn kho thì chứa vector của model khác: truy vấn vẫn
+ * chạy, vẫn trả về kết quả, chỉ là kết quả vô nghĩa. Và không có gì báo lỗi.
+ *
+ * Đổi kho sang nhà cung cấp khác thì đổi luôn dòng này, đừng chỉ đặt biến môi
+ * trường ở một máy.
+ */
 export const NHA_CUNG_CAP_EMBEDDING: NhaCungCapEmbedding =
-  process.env.EMBEDDING_PROVIDER === 'openai' ? 'openai' : 'gemini';
+  process.env.EMBEDDING_PROVIDER === 'gemini' ? 'gemini' : 'openai';
 
 const MODEL_EMBEDDING =
   NHA_CUNG_CAP_EMBEDDING === 'openai'
