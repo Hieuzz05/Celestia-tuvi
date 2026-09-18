@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { laAdmin, supabaseDaCauHinh } from '@/lib/supabase/config';
 import { nguoiDungHienTai } from '@/lib/supabase/server';
 import { Shell } from '@/components/ui';
+import { TabQuanTri } from '@/components/admin/TabQuanTri';
 
 /**
  * Chặn quyền vào trang quản trị ở phía server. Đặt ở layout thay vì trong page
@@ -53,5 +54,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  return <>{children}</>;
+  /*
+   * Thanh tab đặt ở layout nên có mặt trên mọi trang con.
+   *
+   * Trước đây bốn trang nối nhau bằng bốn dòng chữ ở ĐÁY trang tổng quan: muốn
+   * sang Kho tri thức phải về tổng quan rồi cuộn hết xuống, còn từ Kho tri thức
+   * sang Retrieval Lab thì không có đường nào ngoài gõ tay địa chỉ.
+   */
+  // Thanh tab có Shell riêng, KHÔNG bọc `children`: mỗi trang con đã tự có
+  // Shell của nó, lồng hai lớp là nhân đôi lề và bóp hẹp bề ngang nội dung.
+  return (
+    <>
+      <Shell className="pt-[24px]">
+        <TabQuanTri />
+      </Shell>
+      {children}
+    </>
+  );
 }

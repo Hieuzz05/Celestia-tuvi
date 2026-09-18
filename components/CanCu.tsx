@@ -26,6 +26,17 @@ export interface DuKienHienThi {
 
 export type MucChacChan = 'manh' | 'vua' | 'yeu' | 'trai-chieu' | 'chua-du';
 
+/** Một đoạn tri thức đã thật sự đưa vào prompt */
+export interface NguonDaDung {
+  ma: string;
+  maTaiLieu: string;
+  tieuDe: string;
+  duongDeMuc: string | null;
+  hePhai: string;
+  mucTinCay: string;
+  trich: string;
+}
+
 export interface CanCuTraLoi {
   duKien: DuKienHienThi[];
   cachNoi?: string | null;
@@ -35,6 +46,8 @@ export interface CanCuTraLoi {
   cungLienQuan: string[];
   phuongPhap: string;
   coNguon?: boolean;
+  /** Chỉ máy chủ gửi cho quản trị — xem lib/rag và app/api/hoi-dap */
+  nguon?: NguonDaDung[];
 }
 
 export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
@@ -85,6 +98,35 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
                 {m.tieuDe ? `${m.tieuDe}: ` : ''}
                 {nhanMuc[m.muc as MucChacChan]}
               </Dong>
+            ))}
+          </Nhom>
+        )}
+
+        {/*
+          Đoạn tri thức đã dùng thật.
+          Khối này từng cố ý giấu tên tài liệu — đúng khi nó hiện với người dùng
+          thường. Giờ nó chỉ còn hiện với quản trị, mà quản trị mở ra chính là để
+          đối soát "Celes lấy cái này từ đâu".
+        */}
+        {canCu.nguon && canCu.nguon.length > 0 && (
+          <Nhom tieuDe={`${t.hoiCeles.canCuNguon} (${canCu.nguon.length})`}>
+            {canCu.nguon.map((n) => (
+              <div
+                key={n.ma}
+                className="flex flex-col gap-[3px] rounded-[8px] p-[8px]"
+                style={{ background: 'var(--surface-sunken, rgba(127,127,127,0.07))' }}
+              >
+                <Dong>
+                  <strong>
+                    {n.ma} · {n.tieuDe}
+                  </strong>
+                  {n.duongDeMuc ? ` — ${n.duongDeMuc}` : ''}
+                </Dong>
+                <Dong>
+                  {n.maTaiLieu} · {n.hePhai} · {n.mucTinCay}
+                </Dong>
+                <Dong>{n.trich}</Dong>
+              </div>
             ))}
           </Nhom>
         )}

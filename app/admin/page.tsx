@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
@@ -177,22 +176,6 @@ export default function AdminPage() {
       <QuanLyNguoiDung />
 
       <NhatKySuDung />
-
-      <div className="flex flex-col gap-[10px] pt-[8px]">
-        <Link href="/admin/models" className="link-text">
-          Model &amp; thứ tự dự phòng — thêm, đổi key, sắp thứ tự &rarr;
-        </Link>
-        <Link href="/admin/knowledge" className="link-text">
-          Kho tri thức — nguồn, phiên bản, xuất bản →
-        </Link>
-        <Link href="/admin/retrieval-lab" className="link-text">
-          Retrieval Lab — xem Celes lấy đoạn nào →
-        </Link>
-        <Link href="/admin/support" className="link-text">
-          Tình hình Ủng hộ Celes →
-        </Link>
-      </div>
-
 
     </Shell>
   );

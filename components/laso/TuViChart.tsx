@@ -10,7 +10,6 @@ import {
   tamPhuongTuChinh,
   type LaSo,
 } from '@/lib/tuvi/ansao';
-import { PillTag } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
 import { CenterPanel } from './CenterPanel';
 import { PalaceCell } from './PalaceCell';
@@ -19,8 +18,6 @@ import { VoidMarkers, type VoidMarker } from './VoidMarkers';
 import {
   NHAN_SETTINGS,
   SETTINGS_THEO_CHE_DO,
-  THU_TU_CHE_DO,
-  type CheDoBanDo,
   type DisplaySettings,
 } from './types';
 
@@ -49,13 +46,15 @@ export function TuViChart({
   chiBanDo?: boolean;
 }) {
   const t = useT();
-  const CHU_CHE_DO: Record<CheDoBanDo, { nhan: string; mo: string }> = {
-    'de-hieu': { nhan: t.banDo.cheDoDeHieu, mo: t.banDo.cheDoDeHieuMo },
-    'co-dien': { nhan: t.banDo.cheDoCoDien, mo: t.banDo.cheDoCoDienMo },
-    'chuyen-sau': { nhan: t.banDo.cheDoChuyenSau, mo: t.banDo.cheDoChuyenSauMo },
-  };
-  const [cheDo, setCheDo] = useState<CheDoBanDo>('co-dien');
-  const [settings, setSettings] = useState<DisplaySettings>(SETTINGS_THEO_CHE_DO['co-dien']);
+  /*
+   * Luôn ở mức CHUYÊN SÂU. Không còn ba nút chọn độ dày.
+   *
+   * Ba chiếc nút ấy nằm ngay trên mệnh bàn là một câu hỏi đặt sai lúc: người mở
+   * lá số ra để đọc, không phải để chọn mức hiển thị trước đã. Ai muốn bớt lớp
+   * thì mở "Lớp hiển thị" và tắt đúng lớp mình không cần — chi tiết hơn hẳn ba
+   * mức làm sẵn.
+   */
+  const [settings, setSettings] = useState<DisplaySettings>(SETTINGS_THEO_CHE_DO['chuyen-sau']);
   const [hoverCung, setHoverCung] = useState<number | null>(null);
   const [chonCung, setChonCung] = useState<number | null>(null);
   const [moDrawer, setMoDrawer] = useState(false);
@@ -122,13 +121,6 @@ export function TuViChart({
     return 'mo' as const;
   };
 
-  const doiCheDo = (id: CheDoBanDo) => {
-    setCheDo(id);
-    // Nạp lại nguyên bộ lớp của chế độ: nếu giữ các ô đã tick tay từ chế độ
-    // trước thì "Dễ hiểu" vẫn còn nguyên đống nhãn, tức là chẳng dễ hiểu gì.
-    setSettings(SETTINGS_THEO_CHE_DO[id]);
-    if (id !== 'chuyen-sau') setHienSettings(false);
-  };
 
   const xuatPng = useCallback(async () => {
     if (!chartRef.current) return;
@@ -145,22 +137,6 @@ export function TuViChart({
 
   return (
     <div className="flex flex-col gap-[18px]">
-      {/* Ba mức độ dày của cùng một lá số */}
-      {!chiBanDo && (
-      <div className="no-print flex flex-col gap-[8px]">
-        <div className="flex flex-wrap gap-[8px]">
-          {THU_TU_CHE_DO.map((id) => (
-            <PillTag key={id} dangChon={cheDo === id} onClick={() => doiCheDo(id)}>
-              {CHU_CHE_DO[id].nhan}
-            </PillTag>
-          ))}
-        </div>
-        <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-          {CHU_CHE_DO[cheDo].mo}
-        </p>
-      </div>
-      )}
-
       {/* Toolbar */}
       {!chiBanDo && (
       <div className="no-print flex flex-wrap items-center gap-x-[24px] gap-y-[12px]">
@@ -180,11 +156,9 @@ export function TuViChart({
         <div className="ml-auto flex items-center gap-[16px]">
           {/* Bật tắt từng lớp là việc của người đã quen mệnh bàn — chỉ mở ở
               chế độ Chuyên sâu, bằng không nó phá luôn ý nghĩa của hai chế độ kia. */}
-          {cheDo === 'chuyen-sau' && (
-            <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
-              {t.banDo.lopHienThi}
-            </button>
-          )}
+          <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
+            {t.banDo.lopHienThi}
+          </button>
           <button className="link-text" onClick={xuatPng}>
             {t.banDo.xuatAnh}
           </button>

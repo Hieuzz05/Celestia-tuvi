@@ -10,7 +10,7 @@ import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { HuyHieuOk, NutVien, OChon, Shell } from '@/components/ui';
+import { HuyHieuOk, NutVien, Shell } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
@@ -89,10 +89,10 @@ function TrangLaSo() {
   const [batNhapMoi, setBatNhapMoi] = useState(params.get('moi') === '1');
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   // Tháng ÂM: nguyệt hạn chia theo tuần trăng, đưa tháng dương vào là lệch cung
-  const [thangXem, setThangXem] = useState(thangAmHienTai());
-  // Mở sẵn: ở bố cục hai cột thì lá số là cột trái cố định, không phải một
-  // khối phụ nằm cuối trang phải bấm mới thấy.
-  const [hienMenhBan, setHienMenhBan] = useState(true);
+  // Luôn là tháng ÂM hiện tại. Ô chọn tháng đã bỏ: người mở lá số muốn xem
+  // tháng này, và ai cần tháng khác thì sang Hành trình — nơi cả dòng thời
+  // gian bày ra chứ không phải một ô thả xuống.
+  const thangXem = thangAmHienTai();
   const [daLuu, setDaLuu] = useState(false);
 
   const [dangChay, setDangChay] = useState(false);
@@ -566,41 +566,7 @@ function TrangLaSo() {
       {duocVao ? (
         <div className="grid items-start gap-[24px] lg:grid-cols-12">
           <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-5 lg:max-h-[calc(100vh-48px)] lg:overflow-y-auto">
-            <div className="flex flex-wrap items-end justify-between gap-[10px]">
-              <h2 className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
-                {t.quickRead.banDoTieuDe}
-              </h2>
-              <div className="flex flex-wrap items-end gap-[10px]">
-                {hienMenhBan && (
-                  <label className="flex w-[120px] flex-col gap-[6px]">
-                    <span className="field-label">{t.quickRead.thangXem}</span>
-                    <OChon
-                      className="h-[38px]"
-                      value={thangXem}
-                      onChange={(e) => setThangXem(Number(e.target.value))}
-                    >
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                        <option key={m} value={m}>
-                          {dien(t.banDo.thang, { thang: m })}
-                        </option>
-                      ))}
-                    </OChon>
-                  </label>
-                )}
-                <NutVien nho className="h-[38px] py-0" onClick={() => setHienMenhBan((v) => !v)}>
-                  {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
-                </NutVien>
-              </div>
-            </div>
-
-            {hienMenhBan && (
-              <TuViChart
-                laSo={laSo}
-                namXem={namXem}
-                thangXem={thangXem}
-                onNamXemChange={setNamXem}
-              />
-            )}
+            <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 
           <div className="flex flex-col gap-[32px] lg:col-span-7">{phanDoc}</div>

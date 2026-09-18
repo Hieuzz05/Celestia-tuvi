@@ -144,6 +144,25 @@ export async function POST(req: Request) {
         cungLienQuan: kq.goi.cungLienQuan,
         phuongPhap: `${kq.phienBan.engine} v${kq.phienBan.phuongPhap}`,
         coNguon: kq.goi.bangChung.length > 0,
+        /*
+         * Đoạn tri thức thật sự đã đưa vào prompt — chỉ quản trị mới nhận.
+         *
+         * Đây là thứ duy nhất trả lời được câu "Celes lấy cái này từ đâu". Thiếu
+         * nó thì phần căn cứ chỉ nói được lá số có gì, còn nửa kia của câu trả
+         * lời — phần đến từ sách — vẫn là hộp đen.
+         *
+         * Cắt nội dung ở 600 ký tự: đủ để đối chiếu xem đoạn có đúng chỗ không,
+         * mà không biến mỗi lượt chat thành một phản hồi vài chục KB.
+         */
+        nguon: kq.goi.bangChung.map((e) => ({
+          ma: e.id,
+          maTaiLieu: e.maTaiLieu,
+          tieuDe: e.tieuDe,
+          duongDeMuc: e.duongDeMuc,
+          hePhai: e.hePhai,
+          mucTinCay: e.mucTinCay,
+          trich: e.noiDung.replace(/\s+/g, ' ').slice(0, 600),
+        })),
       },
     });
   } catch (e) {

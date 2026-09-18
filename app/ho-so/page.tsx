@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Eyebrow, HuyHieuOk, NutChinh, Shell } from '@/components/ui';
+import { Eyebrow, HuyHieuOk, NutChinh, NutVien, Shell } from '@/components/ui';
 import { useBoiCanh } from '@/lib/store/boi-canh';
 import {
   chuyenHoSoLenTaiKhoan,
@@ -146,22 +146,29 @@ export default function TrangDanhSachLaSo() {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-[18px]">
+              {/*
+                Ba thao tác này là NÚT, không phải liên kết trong câu.
+                Kiểu `link-text` khiến chúng trông như chữ thường, nên người dùng
+                không biết bấm được — mà đây lại là ba việc chính của cả trang.
+                "Xem lá số" là việc hay làm nhất nên để dạng đặc, hai việc kia
+                dạng viền; "Xoá" tô màu cảnh báo vì nó không hoàn tác được.
+              */}
+              <div className="flex flex-wrap items-center gap-[10px]">
                 {!laMacDinh && (
-                  <button
-                    onClick={() => datMacDinh(h.id)}
-                    className="link-text"
-                    disabled={dangDat === h.id}
-                  >
+                  <NutVien nho onClick={() => datMacDinh(h.id)} disabled={dangDat === h.id}>
                     {dangDat === h.id ? t.danhSach.dangDat : t.danhSach.datLamCuaToi}
-                  </button>
+                  </NutVien>
                 )}
-                <button onClick={() => moLaSo(h.id)} className="link-text">
+                <NutChinh nho onClick={() => moLaSo(h.id)}>
                   {t.danhSach.xemLaSo}
-                </button>
-                <button onClick={() => xoa(h.id, h.hoTen)} className="link-text">
+                </NutChinh>
+                <NutVien
+                  nho
+                  onClick={() => xoa(h.id, h.hoTen)}
+                  style={{ color: 'var(--chart-hung)', borderColor: 'var(--chart-hung)' }}
+                >
                   {t.danhSach.xoa}
-                </button>
+                </NutVien>
               </div>
             </div>
           );

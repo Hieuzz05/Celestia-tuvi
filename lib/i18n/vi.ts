@@ -442,6 +442,7 @@ export const vi = {
     chacChuaDu: 'chưa đủ căn cứ từ nguồn tài liệu',
     canCuDong: 'Thu gọn căn cứ',
     canCuLaSo: 'Lá số của bạn',
+    canCuNguon: 'Đoạn tri thức đã dùng',
     canCuPhuongPhap: 'Bộ quy tắc an sao đã dùng',
     canCuPhuongPhapMo: 'Đây là phiên bản luật tính lá số, không phải tên tài liệu trong kho.',
     canCuChuDe: 'Chủ đề đọc được',

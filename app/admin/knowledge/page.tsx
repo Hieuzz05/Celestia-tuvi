@@ -252,7 +252,6 @@ export default function TrangKhoTriThuc() {
         <h1 className="heading-sm">Kho tri thức</h1>
         <div className="mt-[10px] flex flex-wrap gap-[16px]">
           <Link href="/admin" className="link-text">← Trang quản trị</Link>
-          <Link href="/admin/retrieval-lab" className="link-text">Retrieval Lab →</Link>
         </div>
       </div>
 
