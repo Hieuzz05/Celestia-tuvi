@@ -165,6 +165,29 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Bề mặt ngắn gọi model theo NHÓM, không theo từng phần tử.** Dòng thời gian có
+  ~29 mốc; sinh riêng từng mốc là 29 lượt cho một lần mở trang, trong khi gói miễn
+  phí của Gemini cho 20 lượt cả ngày. `moc-hanh-trinh.ts` và `bang-linh-vuc.ts`
+  gọi một lượt cho cả nhóm. Gọi theo nhóm còn được thêm một thứ: model nhìn cả dãy
+  nên không lặp ý ở phần tử sau.
+- **Mọi nội dung AI đều đi qua `layHoacSinh` và cất vào `noi_dung_ai`.** Khoá là
+  (lá số, bề mặt, kỳ). Kỳ quyết định khi nào làm mới: ngày cho Điểm nổi bật, tháng
+  ÂM cho Hành trình, khoảng tuổi cho giai đoạn, năm cho bảng 8 lĩnh vực. Bảng này
+  phải chạy tay: `supabase/schema-noi-dung-ai.sql`. Thiếu bảng thì có lớp đệm RAM
+  đỡ tạm, nhưng nó không chia sẻ giữa các instance.
+- **Bề mặt AI luôn phải có đường lùi về chữ tất định.** Model hỏng, hết hạn mức,
+  hay bài trượt kiểm duyệt thì tuyến trả 204 và giao diện giữ nguyên bản template.
+  Trang trắng hỏng nặng hơn chữ nhạt. Đừng xoá engine tất định trong `lib/tuvi/`.
+- **Lọc câu ra lệnh bằng `CAU_RA_LENH`, và BỎ CÂU chứ đừng bỏ cả khối.** Bản đầu
+  loại thẳng cả khối: một câu "bạn nên…" lọt vào trường bắt buộc là mất cả bảng vì
+  không đủ số khối tối thiểu. Dùng `boCauRaLenh`.
+- **Model không giữ được luật "đừng mở giống nhau" dù dặn hai lần.** Chín trên mười
+  hai mốc vẫn mở bằng "Giai đoạn này". Xử bằng luật: `catMoDauThua` cắt cụm thời
+  gian mở đầu — cụm đó không mang thông tin vì người đọc đang nhìn đúng cái nhãn
+  ngay cạnh. Cắt chứ không viết lại.
+- **`cungNguyetHan` nhận tháng ÂM.** Mọi mặc định "tháng này" lấy từ
+  `lib/tuvi/bay-gio.ts`, đừng gọi `getMonth() + 1`. Đã từng có bốn chỗ đưa tháng
+  dương vào đó, nên Bản đồ và Hành trình ra hai cung nguyệt hạn khác nhau.
 - **Dòng `gpt-5` trở lên của OpenAI dùng tham số khác**: `max_completion_tokens` chứ không phải
   `max_tokens`, và chỉ nhận nhiệt độ mặc định. Gửi sai là 400 ngay, trông hệt như key hỏng. Token
   nghĩ nội bộ cũng trừ vào ngân sách đó nên `chatOpenAiCompat` cộng thêm 2048 chỗ; thiếu chỗ thì bài

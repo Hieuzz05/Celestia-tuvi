@@ -3,7 +3,7 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
-import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { lapKeHoach, type ChuDe } from './planner';
@@ -99,12 +99,16 @@ function sachCau(cau: unknown, nen: DuLieuNen): string | null {
     .trim();
   if (s.length < 12) return null;
 
+  // Celes không kê đơn. Bỏ đúng câu sai vai, không bỏ cả trường.
+  const khongLenh = boCauRaLenh(s);
+  if (khongLenh.length < 12) return null;
+
   // Sao bịa là lỗi nặng nhất của bề mặt ngắn: cả thẻ chỉ có ba câu, sai một câu
   // là hỏng cả thẻ. Thà bỏ còn hơn hiện một cái tên không có trong lá số.
-  const bia = nhanDangThucThe(s).filter(
+  const bia = nhanDangThucThe(khongLenh).filter(
     (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !nen.saoChoPhep.has(t.id)
   );
-  return bia.length ? null : s;
+  return bia.length ? null : khongLenh;
 }
 
 // ---------------------------------------------------------------- Điểm nổi bật
@@ -155,14 +159,34 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   const cauMangTheo = sachCau(tho.cauMangTheo, nen);
 
   // Thiếu mặt trái là hỏng theo luật counterweight §5.3: một thẻ chỉ khen là
-  // thẻ không dùng được, dù nó đọc dễ chịu.
-  if (!insight || !doiSong || !matTrai || !cauMangTheo) return null;
+  // thẻ không dùng được, dù nó đọc dễ chịu. Ba trường này là bắt buộc.
+  if (!insight || !doiSong || !matTrai) {
+    console.warn('[diem-noi-bat] thiếu trường bắt buộc', {
+      insight: Boolean(insight),
+      doiSong: Boolean(doiSong),
+      matTrai: Boolean(matTrai),
+    });
+    return null;
+  }
 
-  const gate = soatNgonNgu([insight, doiSong, matTrai, cauMangTheo].join(' '), [insight]);
-  if (!gate.dat) return null;
+  /*
+   * Câu mang theo KHÔNG bắt buộc.
+   *
+   * Nó là dòng trích dẫn dưới thẻ, và giao diện đã tự ẩn khi không có. Bắt nó
+   * bắt buộc thì một câu ra lệnh ở đúng chỗ đó làm mất cả thẻ — đo được: hai
+   * trên ba lượt sinh trả về rỗng chỉ vì dòng này.
+   *
+   * Cổng ngôn ngữ cũng chỉ soát phần thân thẻ, vì đó mới là phần người đọc
+   * nhận như một nhận định.
+   */
+  const gate = soatNgonNgu([insight, doiSong, matTrai].join(' '), [insight]);
+  if (!gate.dat) {
+    console.warn('[diem-noi-bat] không qua cổng ngôn ngữ', gate.loi.map((l) => l.ma));
+    return null;
+  }
 
   return {
-    noiDung: { insight, doiSong, matTrai, cauMangTheo },
+    noiDung: { insight, doiSong, matTrai, cauMangTheo: cauMangTheo ?? '' },
     provider: kq.provider,
     model: kq.model,
     phienBan: nen.phienBan,

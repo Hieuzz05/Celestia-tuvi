@@ -343,6 +343,46 @@ kể cả khi ai đó lấy được `anon key` công khai.
 Các bảng cho kho tri thức RAG (`knowledge_documents`, `knowledge_chunks`) và log dùng model
 (`ai_provider_configs`, `ai_usage_logs`) sẽ bổ sung ở giai đoạn làm RAG.
 
+### 3.2c Phần nào trên Celes do AI viết, và nó đổi lúc nào
+
+Trước đây phần lớn chữ trên Hôm nay, Lá số và Hành trình là template tất định: mở bao nhiêu lần
+cũng ra đúng một bài, và đổi model bao nhiêu lần cũng không đổi được một chữ. Giờ model viết, nhưng
+đi qua đúng đường đi của bài dài — chọn dữ kiện theo chủ đề, truy hồi nguồn, bắt trả cấu trúc, kiểm
+từng ý bằng luật.
+
+| Bề mặt | Ở đâu | Làm mới khi |
+|---|---|---|
+| Điểm nổi bật + câu mang theo | Hôm nay, Lá số | Mỗi ngày |
+| Giai đoạn | Hôm nay | Mỗi khoảng tuổi (10 năm) |
+| Bảng 8 lĩnh vực | Lá số | Mỗi năm |
+| Điều đang chuyển động | Hành trình | Mỗi tháng âm |
+| Mốc giai đoạn / năm / tháng | Hành trình | Giai đoạn: một lần. Năm và tháng: theo dải đang xem |
+| Luận giải chi tiết | Hành trình → Xem chi tiết | Mỗi giai đoạn / năm / tháng được mở |
+
+**Bắt buộc chạy một lần trước khi dùng:** mở Supabase → SQL Editor → dán toàn bộ
+`supabase/schema-noi-dung-ai.sql` → Run. Đó là bảng nhớ đệm. Thiếu nó thì nội dung sinh lại mỗi lần
+mở trang: chậm, tốn tiền, và mất đúng tính chất "trong ngày không thay đổi".
+
+**Thứ luật giữ, model không được đụng vào.** Nhịp hành động (Tiến / Giữ / Rà soát / Thu hẹp) đếm
+được từ tương quan cát/hung nên do engine quyết, chỉ đưa xuống cho model như một ràng buộc — để
+model tự chọn là mở đường cho hai lần đọc ra hai kết luận trái nhau trên cùng một lá số. Phần "Muốn
+biết vì sao không?" cũng vậy: nó phải truy ngược được về cung và sao.
+
+**Model hỏng thì không ai thấy gì cả.** Hết hạn mức hoặc bài trượt kiểm duyệt thì tuyến trả 204 và
+giao diện giữ nguyên chữ tất định cũ. Lần tải sau sẽ thử lại.
+
+Nghiệm thu bằng `npx tsx scripts/test-be-mat-ai.ts`. Nó gọi model thật và đo bốn thứ mắt thường hay
+bỏ qua: qua kiểm duyệt không, các khối có cùng một hình không, có câu ra lệnh không, và bao nhiêu
+câu mở giống nhau.
+
+### 3.2d Tháng trên Hành trình là tháng ÂM
+
+Lá số chia tháng theo tuần trăng. Ngày 18/9/2026 dương là mồng 8 tháng 8 âm, và tháng 8 âm trải từ
+11/9 đến 9/10 dương — nên màn hình ghi "Tháng 8" trong khi điện thoại ghi tháng 9 là **đúng**, không
+phải chạy sai. Nhãn giờ ghi rõ "âm" và kèm khoảng ngày dương.
+
+Đừng "sửa" bằng cách cộng thêm một tháng. `cungNguyetHan` cần tháng âm; cộng vào là lệch cung thật.
+
 ### 3.3a Vì sao bài đọc bỗng nhạt đi — hãy xem model nào đang viết
 
 Bài luận giải dài, Hỏi Celes và Kết nối giờ đi chung một đường: chọn đúng dữ kiện theo chủ đề

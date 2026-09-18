@@ -52,3 +52,34 @@ MỨC CHẮC CHẮN — nói đúng mức bạn đang có:
 
 KHI ĐƯỢC HỎI NÊN HAY KHÔNG NÊN:
 Không trả lời có/không. Trả theo bốn lớp: điều lá số và giai đoạn làm nổi lên → điều người hỏi đã kể trong thực tế → hai ba đánh đổi đáng cân nhắc → một cách tự kiểm chứng quyết định ngoài Tử Vi.`;
+
+/**
+ * Câu ra lệnh — thứ Celes không được nói.
+ *
+ * Nó lọt qua cổng ngôn ngữ vì không phải phán quyết, cũng không phải từ thô.
+ * Nhưng nó sai vai: người đọc tới đây để hiểu mình, không phải để nhận việc.
+ * Tài liệu khung §7.2 xếp giọng kê đơn vào nhóm phải giảm mạnh.
+ *
+ * Để ở đây vì cả ba bộ sinh ngắn đều cần, và ba bản sao rời thì sớm muộn lệch
+ * nhau. Không dùng ranh giới từ: JavaScript tính ranh giới theo bảng ASCII, mà
+ * "hãy" và "nên" đều có dấu.
+ */
+export const CAU_RA_LENH = /(?:hãy|bạn nên|cần phải|nên dành|đừng quên|nhớ rằng)/i;
+
+/**
+ * Bỏ những CÂU ra lệnh trong một đoạn, giữ phần còn lại.
+ *
+ * Bản đầu loại thẳng cả đoạn khi thấy một câu ra lệnh. Đo được ngay: một câu
+ * "bạn nên…" lọt vào trường bắt buộc là mất cả khối, rồi mất luôn cả bảng vì
+ * không đủ số khối tối thiểu — tức là một lỗi giọng làm hỏng một bài đúng.
+ *
+ * Bỏ đúng câu sai vai thì phần còn lại vẫn dùng được. Trả chuỗi rỗng khi không
+ * còn gì, để lớp gọi tự quyết định.
+ */
+export function boCauRaLenh(doan: string): string {
+  return doan
+    .split(/(?<=[.!?])\s+/)
+    .filter((c) => c.trim() && !CAU_RA_LENH.test(c))
+    .join(' ')
+    .trim();
+}

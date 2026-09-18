@@ -4,7 +4,7 @@ import type { LinhVucId } from '@/lib/tuvi/luan-giai-sau';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
-import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { lapKeHoach } from './planner';
@@ -122,7 +122,8 @@ CẤU TRÚC MỖI LĨNH VỰC (§11.2): kết luận → biểu hiện → mặt
 - Lĩnh vực nào lá số nói mạnh thì viết dài và cụ thể. Lĩnh vực nào dữ kiện mỏng thì viết NGẮN, bỏ bớt trường, và nói thẳng là chỗ này lá số nói ít.
 - Ít nhất HAI lĩnh vực phải ngắn rõ rệt so với phần còn lại. Tám khối dài bằng nhau là tám khối sai.
 - "matThuan" và "dangCanNhac" được phép bỏ trống khi không có gì đáng nói. Đừng điền cho đủ ô.
-- Không mở đầu tám khối bằng cùng một kiểu câu, không dùng chung một bộ từ nối.
+- KHÔNG HAI KẾT LUẬN NÀO ĐƯỢC BẮT ĐẦU BẰNG CÙNG BA TỪ. Luật đếm được, không phải lời khuyên.
+- Xoay vòng kiểu mở đầu của kết luận: khi thì bắt đầu bằng hành vi ("Bạn đo mọi thứ bằng…"), khi thì bằng hệ quả ("Chỗ này hay đến muộn…"), khi thì bằng điều kiện ("Khi được giao quyền…"), khi thì bằng chính chỗ vướng ("Điều làm bạn mệt ở đây…"). Cấm mở cả tám bằng "Một nét…" hay "Bạn có…".
 
 ĐIỀU KIỆN ĐỂ MỘT CÂU KẾT LUẬN ĐƯỢC CHẤP NHẬN:
 Nó phải nói CƠ CHẾ, tức là cấu trúc nào tạo ra hệ quả nào trong đời sống. Một tính từ về người thì không phải kết luận.
@@ -177,7 +178,10 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   const mang = Array.isArray((tho as { linhVuc?: unknown } | null)?.linhVuc)
     ? ((tho as { linhVuc: unknown[] }).linhVuc as ThoKhoi[])
     : null;
-  if (!mang) return null;
+  if (!mang) {
+    console.warn('[bang-linh-vuc] model không trả về mảng linhVuc');
+    return null;
+  }
 
   /** Bóc mã khỏi câu, và bỏ câu nhắc sao không có trong dữ liệu */
   const sach = (x: unknown): string | null => {
@@ -189,10 +193,17 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       .replace(/\s+([.,;])/g, '$1')
       .trim();
     if (s.length < 12) return null;
-    const bia = nhanDangThucThe(s).filter(
+
+    // Celes mô tả và nêu điều đáng cân nhắc, không ra lệnh cho người đọc. Bỏ
+    // đúng câu sai vai, không bỏ cả khối — một lỗi giọng không được phép làm
+    // hỏng một khối còn lại vẫn đúng.
+    const khongLenh = boCauRaLenh(s);
+    if (khongLenh.length < 12) return null;
+
+    const bia = nhanDangThucThe(khongLenh).filter(
       (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !saoChoPhep.has(t.id)
     );
-    return bia.length ? null : s;
+    return bia.length ? null : khongLenh;
   };
 
   const hopLe = new Set(Object.keys(NHAN_LINH_VUC));
@@ -217,13 +228,19 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 
   // Thiếu quá nửa thì đừng vá víu: trả null để lớp gọi lùi hẳn về bản tất định,
   // thay vì hiện một bảng nửa AI nửa template với hai giọng khác nhau.
-  if (ra.length < 5) return null;
+  if (ra.length < 5) {
+    console.warn('[bang-linh-vuc] chỉ dựng được', ra.length, 'lĩnh vực — lùi về bản tất định');
+    return null;
+  }
 
   const gate = soatNgonNgu(
     ra.flatMap((k) => [k.ketLuan, ...k.doan]).join(' '),
     ra.map((k) => k.ketLuan)
   );
-  if (!gate.dat) return null;
+  if (!gate.dat) {
+    console.warn('[bang-linh-vuc] không qua cổng ngôn ngữ', gate.loi.map((l) => `${l.mucDo}:${l.ma}`));
+    return null;
+  }
 
   return {
     noiDung: ra,
