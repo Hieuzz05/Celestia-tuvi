@@ -60,6 +60,33 @@ const TU_THO = ['tran danh', 'boc len', 'dut ganh', 'pha bo', 'van di', 'tra gia
 const TU_HUYEN_BI = ['nang luong vu tru', 'dinh menh', 'van so da an bai'];
 
 /**
+ * Từ chuyên môn của sách, KHÔNG được tới thẳng người đọc.
+ *
+ * Chúng hoàn toàn đúng trong nguồn, và chính vì thế mà nguy: kho tri thức càng
+ * đầy thì model càng dễ bê nguyên chữ của sách ra. Đo trên bộ vàng RAG: một bài
+ * lọt chữ "tọa thủ" tới mặt trước.
+ *
+ * Khung luận §7 xếp chúng vào nhóm phải dịch sang lời thường. Ghi ở mức cảnh báo
+ * chứ không chặn: một chữ lọt ra không đáng vứt cả bài, nhưng phải đếm được để
+ * biết nó đang tăng hay giảm.
+ *
+ * Danh sách chỉ gồm từ KHÔNG có nghĩa đời thường. "Hãm" hay "vượng" không nằm
+ * đây vì người Việt vẫn dùng chúng ngoài đời.
+ */
+const TU_CHUYEN_MON = [
+  'mieu vien',
+  'toa thu',
+  'hoi chieu',
+  'cung chieu',
+  'xung chieu',
+  'tam phuong tu chinh',
+  'nhi hop',
+  'ban tien cach',
+  'phu quy cach',
+  'thu menh',
+];
+
+/**
  * Tính từ Barnum: đúng với gần như ai cũng được.
  *
  * Chỉ bị bắt khi đứng một mình. "Bạn là người sâu sắc" thì sáo; "bạn cân nhắc
@@ -214,6 +241,16 @@ export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
   const huyen = dem(cum, TU_HUYEN_BI);
   if (huyen.length) {
     loi.push({ ma: 'tu-huyen-bi', mucDo: 'canh-bao', moTa: 'Dùng từ huyền bí mơ hồ.', viDu: huyen.join(', ') });
+  }
+
+  const chuyenMon = dem(cum, TU_CHUYEN_MON);
+  if (chuyenMon.length) {
+    loi.push({
+      ma: 'tu-chuyen-mon-chua-dich',
+      mucDo: 'canh-bao',
+      moTa: 'Bê nguyên chữ chuyên môn của sách ra mặt trước, chưa dịch sang lời thường.',
+      viDu: chuyenMon.join(', '),
+    });
   }
 
   // Ngưỡng 2: một tính từ chung chung trong cả bài là chuyện bình thường của

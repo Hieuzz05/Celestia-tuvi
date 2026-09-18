@@ -31,6 +31,7 @@ Dự án đang được phát triển bởi hai AI trên hai máy khác nhau.
   kiểm tra trước khi đẩy.
 - [TRANG-THAI.md](./TRANG-THAI.md) — bảng bàn giao giữa hai máy.
 - [supabase/DA-CHAY.md](./supabase/DA-CHAY.md) — tệp SQL nào đã chạy.
+- [NGHIEM-THU-RAG.md](./NGHIEM-THU-RAG.md) — tiêu chí nghiệm thu kho tri thức và mức đã đo.
 
 ## Công nghệ
 

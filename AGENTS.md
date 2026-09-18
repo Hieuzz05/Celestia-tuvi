@@ -170,6 +170,17 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Sửa truy hồi, planner, prompt hay model thì chạy `scripts/eval-rag.ts`.** Nó có
+  ngưỡng và mã thoát, nên chặn được hồi quy. Bốn tầng: truy hồi, bám nguồn, so có
+  kho với không kho, và CHUYỂN HOÁ chứ không chép. Tầng cuối là tầng hay bị bỏ
+  sót: bám nguồn càng chặt càng đẩy model về phía chép nguyên văn sách, mà chép
+  nguyên văn là hỏng theo cách khác — đúng nguồn, và người đọc không hiểu gì.
+  Tiêu chí và mức đã đo nằm ở `NGHIEM-THU-RAG.md`.
+- **Nhánh từ khoá phải mang theo chữ của chính câu hỏi**, không chỉ thực thể có
+  trong từ điển. Tên cách cục không nằm trong từ điển, nhưng luôn xuất hiện
+  nguyên chữ trong câu người hỏi. Bỏ chúng đi thì recall tụt từ 90% xuống 50%.
+- **Danh sách từ dừng tiếng Việt phải CÓ DẤU.** Bỏ dấu thì "Đà" trùng "đã", "Cơ"
+  trùng "có", "La" trùng "là" — nuốt mất tên sao mà không ai thấy.
 - **Nút thắt khi nạp kho là EMBEDDING, không phải kích thước tệp.** Pha lưu đoạn xử
   được cả cuốn trong một lượt. Gemini gói miễn phí chặn ở 1.000 đoạn/ngày nên nó
   dừng giữa chừng, và người ta tưởng phải chia nhỏ tệp. Chia nhỏ không giúp gì:

@@ -214,6 +214,66 @@ export interface DauVaoPlanner {
   saoTheoCung?: Record<string, string[]>;
 }
 
+/**
+ * Từ nối và từ hỏi — bỏ khỏi truy vấn từ khoá.
+ *
+ * So trên chữ CÓ DẤU. Bản đầu so trên chữ đã bỏ dấu và nuốt mất tên sao: trong
+ * tiếng Việt dấu phân biệt nghĩa, nên "Đà" thành "da" rồi trùng với "đã", "Cơ"
+ * thành "co" rồi trùng với "có". Đo được: câu hỏi về "Linh Xương Đà Vũ" cho ra
+ * truy vấn "Linh Xương Vũ" — mất đúng chữ cần tìm.
+ *
+ * Danh sách cố ý ngắn, chỉ những từ không bao giờ là thứ cần tìm.
+ */
+const TU_DUNG = new Set([
+  'của', 'tôi', 'là', 'gì', 'thế', 'nào', 'có', 'không', 'thì', 'và', 'với',
+  'ở', 'tại', 'cho', 'như', 'ra', 'sao', 'này', 'đó', 'ấy', 'những', 'mà',
+  'được', 'bị', 'sẽ', 'đang', 'đã', 'về', 'nói', 'lên', 'điều', 'cách',
+  'nghĩa', 'đúng', 'lo', 'hay', 'các', 'nhiều', 'ít', 'rất', 'một', 'người',
+  'nên', 'khi', 'nếu', 'còn', 'cùng', 'đến', 'từ', 'trong', 'ngoài', 'bao',
+]);
+
+/**
+ * Từ đặc trưng lấy thẳng từ câu người dùng gõ.
+ *
+ * Tên cách cục không nằm trong từ điển thực thể — không thể liệt kê hết, vì mỗi
+ * cuốn sách đặt tên một kiểu. Nhưng chúng LUÔN xuất hiện nguyên chữ trong câu
+ * hỏi của người muốn tra chúng. Giữ lại chữ ấy là cách rẻ nhất để bắt được.
+ */
+function tuDacTrung(cauHoi: string): string[] {
+  const ra: string[] = [];
+  const daCo = new Set<string>();
+  for (const tu of cauHoi.split(/[^\p{L}\p{N}]+/u)) {
+    if (tu.length < 2) continue;
+    const thuong = tu.toLowerCase();
+    if (TU_DUNG.has(thuong) || daCo.has(thuong)) continue;
+    daCo.add(thuong);
+    ra.push(tu);
+  }
+  // Trần 12 từ: dài hơn thì truy vấn loãng và nhánh từ khoá mất tính chọn lọc
+  return ra.slice(0, 12);
+}
+
+/**
+ * Dựng truy vấn cho nhánh từ khoá.
+ *
+ * Nhánh này dùng ngữ nghĩa HOẶC, nên mỗi từ thêm vào là một cách nữa để lọt vào
+ * kết quả. Với câu hỏi đã có cụm đặc trưng, thêm tên cung là tự làm loãng: đo
+ * được, mười lăm kết quả đầu bị ba cung phổ biến chiếm hết và đoạn đúng rơi ra
+ * ngoài, trong khi tìm bằng riêng cụm đặc trưng thì nó đứng thứ nhất.
+ *
+ * Nhưng câu hỏi mơ hồ ("công việc của tôi thế nào") thì tên cung lại là tín hiệu
+ * duy nhất. Nên chỉ thêm khi câu hỏi không tự mang đủ chữ.
+ */
+function dungTruyVanTuKhoa(
+  cauHoi: string,
+  thucThe: ThucThe[],
+  cungLienQuan: string[]
+): string {
+  const rieng = [...new Set([...thucThe.map((t) => t.ten), ...tuDacTrung(cauHoi)])];
+  // Ba từ trở lên là đủ đặc trưng để tự đứng một mình
+  return (rieng.length >= 3 ? rieng : [...new Set([...rieng, ...cungLienQuan])]).join(' ');
+}
+
 export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyVan {
   const cum = cumTu(boDau(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
@@ -234,7 +294,7 @@ export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyV
     lopHan: doanLopHan(cum, thucThe),
     thucThe,
     truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung),
-    truyVanTuKhoa: [...new Set([...thucThe.map((t) => t.ten), ...cungLienQuan])].join(' '),
+    truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan),
     phienBan: PHIEN_BAN_PLANNER,
   };
 }
