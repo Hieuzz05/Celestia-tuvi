@@ -102,6 +102,51 @@ export function TrangHanhTrinhNoiDung() {
     [laSo, namChon, nayAm.nam, nayAm.thang, ngonNgu]
   );
 
+  /*
+   * Chữ cho từng mốc, do model viết theo nhóm.
+   *
+   * Ba nhóm chạy song song vì cả ba đều hiện cùng lúc trên màn. Gọi tuần tự thì
+   * người dùng chờ tổng thời gian của cả ba, mà ba nhóm không phụ thuộc nhau.
+   */
+  const [mocAi, setMocAi] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!hoSo) return;
+    let huy = false;
+    const nen = {
+      ngay: hoSo.ngay,
+      thang: hoSo.thang,
+      nam: hoSo.nam,
+      gio: hoSo.gio,
+      gioiTinh: hoSo.gioiTinh,
+      namXem: namChon,
+      ngonNgu,
+    };
+    Promise.all(
+      (['giai-doan', 'nam', 'thang'] as const).map((loai) =>
+        fetch('/api/moc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...nen, loai }),
+        })
+          .then((r) => (r.status === 200 ? r.json() : null))
+          .catch(() => null)
+      )
+    ).then((ds) => {
+      if (huy) return;
+      const gop: Record<string, string> = {};
+      for (const d of ds) Object.assign(gop, (d?.moc as Record<string, string>) ?? {});
+      // Ghi cả khi rỗng: đổi lá số xong phải xoá chữ của lá số trước
+      setMocAi(gop);
+    });
+    return () => {
+      huy = true;
+    };
+  }, [hoSo, namChon, ngonNgu]);
+
+  /** Thay câu tất định bằng câu của model, mốc nào chưa có thì giữ nguyên */
+  const dapChu = (ds: MocHanhTrinh[]) =>
+    ds.map((m) => (mocAi[m.id] ? { ...m, chuDe: mocAi[m.id] } : m));
+
   const giaiDoanChon =
     giaiDoans.find((g) => g.id === idGiaiDoan) ?? giaiDoans.find((g) => g.dangDienRa) ?? giaiDoans[0];
   const namMoc = nams.find((n) => n.nhan === String(namChon));
@@ -261,10 +306,10 @@ export function TrangHanhTrinhNoiDung() {
         <Lop
           tieuDe={t.hanhTrinh.giaiDoanTieuDe}
           mo={t.hanhTrinh.giaiDoanMo}
-          moc={giaiDoans}
+          moc={dapChu(giaiDoans)}
           idChon={giaiDoanChon?.id ?? ''}
           onChon={(m) => setIdGiaiDoan(m.id)}
-          chiTiet={giaiDoanChon}
+          chiTiet={giaiDoanChon && dapChu([giaiDoanChon])[0]}
           nhomChu={t.hanhTrinh.giaiDoanTieuDe}
           duongChiTiet={`/hanh-trinh/chi-tiet?cap=giai-doan&nam=${namChon}&thang=${thangChon}`}
         />
@@ -273,10 +318,10 @@ export function TrangHanhTrinhNoiDung() {
         <Lop
           tieuDe={t.hanhTrinh.namTieuDe}
           mo={t.hanhTrinh.namMo}
-          moc={nams}
+          moc={dapChu(nams)}
           idChon={`nam-${namChon}`}
           onChon={chonNam}
-          chiTiet={namMoc}
+          chiTiet={namMoc && dapChu([namMoc])[0]}
           nhomChu={t.hanhTrinh.namTieuDe}
           duongChiTiet={`/hanh-trinh/chi-tiet?cap=nam&nam=${namChon}&thang=${thangChon}`}
           dieuKhien={
@@ -295,10 +340,10 @@ export function TrangHanhTrinhNoiDung() {
         <Lop
           tieuDe={dien(t.hanhTrinh.thangTieuDe, { nam: namChon })}
           mo={t.hanhTrinh.thangMo}
-          moc={thangs}
+          moc={dapChu(thangs)}
           idChon={`thang-${namChon}-${thangChon}`}
           onChon={(m) => setThangChon(Number(m.id.split('-')[2]))}
-          chiTiet={thangMoc}
+          chiTiet={thangMoc && dapChu([thangMoc])[0]}
           nhomChu={dien(t.hanhTrinh.thangTieuDe, { nam: namChon })}
           duongChiTiet={`/hanh-trinh/chi-tiet?cap=thang&nam=${namChon}&thang=${thangChon}`}
         />
