@@ -103,6 +103,46 @@ export async function luuNoiDung(
  * `sinh` được phép ném hoặc trả null khi model hỏng, hết hạn mức, hoặc bài
  * không qua kiểm duyệt. Khi đó hàm này trả null và lớp gọi lùi về chữ tất định.
  */
+/*
+ * Lớp đệm thứ hai, nằm trong bộ nhớ của chính tiến trình.
+ *
+ * Lý do phải có dù đã có bảng: bảng có thể chưa được tạo. Khi đó `docNoiDung`
+ * im lặng trả null và mọi lần mở trang lại sinh lại từ đầu — mười lăm giây và
+ * một lần trả tiền cho mỗi lần tải. Một người dùng bấm qua lại vài màn là đủ
+ * cạn hạn mức ngày.
+ *
+ * Instance serverless sống lại giữa các request nên lớp này hứng được phần lớn
+ * lượt lặp. Nó KHÔNG thay bảng: bộ nhớ tiến trình không chia sẻ giữa các
+ * instance và mất khi instance bị thu hồi, nên hai người đọc cùng lá số vẫn có
+ * thể ra hai bài nếu chưa chạy SQL. Đây là lưới đỡ, không phải lời giải.
+ */
+const TRAN_DEM_RAM = 200;
+const HAN_DEM_RAM_MS = 30 * 60 * 1000;
+const demRam = new Map<string, { luc: number; giaTri: unknown }>();
+
+function khoaChuoi(k: Khoa): string {
+  return `${k.chartHash}|${k.beMat}|${k.khoaKy}|${k.ngonNgu}`;
+}
+
+function docRam<T>(k: Khoa): T | null {
+  const o = demRam.get(khoaChuoi(k));
+  if (!o) return null;
+  if (Date.now() - o.luc > HAN_DEM_RAM_MS) {
+    demRam.delete(khoaChuoi(k));
+    return null;
+  }
+  return o.giaTri as T;
+}
+
+function ghiRam(k: Khoa, giaTri: unknown): void {
+  // Chặn trên để một tiến trình sống lâu không phình mãi
+  if (demRam.size >= TRAN_DEM_RAM) {
+    const cu = demRam.keys().next().value;
+    if (cu) demRam.delete(cu);
+  }
+  demRam.set(khoaChuoi(k), { luc: Date.now(), giaTri });
+}
+
 export async function layHoacSinh<T>(
   k: Khoa,
   sinh: () => Promise<{
@@ -113,8 +153,14 @@ export async function layHoacSinh<T>(
     runId?: string | null;
   } | null>
 ): Promise<{ noiDung: T; tuDem: boolean } | null> {
+  const ram = docRam<T>(k);
+  if (ram) return { noiDung: ram, tuDem: true };
+
   const dem = await docNoiDung<T>(k);
-  if (dem) return { noiDung: dem.noiDung, tuDem: true };
+  if (dem) {
+    ghiRam(k, dem.noiDung);
+    return { noiDung: dem.noiDung, tuDem: true };
+  }
 
   let ra: Awaited<ReturnType<typeof sinh>> = null;
   try {
@@ -125,6 +171,7 @@ export async function layHoacSinh<T>(
   }
   if (!ra) return null;
 
+  ghiRam(k, ra.noiDung);
   await luuNoiDung(k, ra.noiDung, ra);
   return { noiDung: ra.noiDung, tuDem: false };
 }
