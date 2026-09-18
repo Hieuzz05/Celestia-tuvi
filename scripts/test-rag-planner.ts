@@ -7,6 +7,7 @@
 
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { chonBoiCanh } from '../lib/rag/boi-canh-la-so';
+import { docObjectJson } from '../lib/rag/doc-json';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
 import { nhanDangThucThe, TEN_SAO_TRONG_TU_DIEN, TU_DIEN_THUC_THE, traThucThe } from '../lib/rag/thuc-the';
@@ -210,6 +211,23 @@ if (saoThatSuCo) {
     kq.loi.some((l) => l.ma === 'dien-giai-khong-nguon'),
     kq.loi
   );
+}
+
+// ---- Bộ đọc JSON dùng chung ----
+console.log('\n== ĐỌC JSON CỦA MODEL ==\n');
+{
+  kiem('Object thường đọc được', docObjectJson('{"a":1}')?.a === 1);
+  kiem('Có rào code vẫn đọc được', docObjectJson('```json\n{"a":1}\n```')?.a === 1);
+  kiem('Có lời dẫn trước sau vẫn đọc được', docObjectJson('Đây:\n{"a":1}\nHết.')?.a === 1);
+
+  // Kiểu hỏng đã gặp thật trên gpt-5.4-mini: đóng object sớm rồi mở object mới
+  const dongSom = docObjectJson('{"baDieu":["x"],"cauTruc":{"noiDung":"y"}},{"ghepLai":"z"}');
+  kiem('Đóng ngoặc sớm rồi viết tiếp: gộp lại được', dongSom !== null && dongSom.ghepLai === 'z', dongSom);
+  kiem('Gộp xong không mất phần đầu', Array.isArray(dongSom?.baDieu), dongSom?.baDieu);
+
+  kiem('Không có object nào thì trả null', docObjectJson('chỉ là chữ') === null);
+  kiem('Cắt giữa chừng thì trả null, không đoán bừa', docObjectJson('{"a":1,"b":') === null);
+  kiem('Mảng ở ngoài cùng không bị nhận nhầm là object', docObjectJson('[1,2,3]') === null);
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);

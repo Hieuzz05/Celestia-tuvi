@@ -1,4 +1,5 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
+import { docObjectJson } from '@/lib/rag/doc-json';
 import { mucChacChan, luatUuTienNguon, NHAN_TIN_CAY, type MucChacChan } from '@/lib/rag/uu-tien-nguon';
 import { soatNgonNgu, type KetQuaNgonNgu } from '@/lib/rag/ngon-ngu';
 import { truyHoi, type DoanUngVien } from '@/lib/rag/truy-hoi';
@@ -138,17 +139,7 @@ interface ThoModel {
   cauHoiCuaBan?: { traLoi?: string; maDuKien?: string[]; maNguon?: string[] };
 }
 
-function docJson(text: string): ThoModel | null {
-  const sach = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  const dau = sach.indexOf('{');
-  const cuoi = sach.lastIndexOf('}');
-  if (dau === -1 || cuoi <= dau) return null;
-  try {
-    return JSON.parse(sach.slice(dau, cuoi + 1)) as ThoModel;
-  } catch {
-    return null;
-  }
-}
+const docJson = (text: string): ThoModel | null => docObjectJson(text) as ThoModel | null;
 
 const mang = (x: unknown): string[] =>
   Array.isArray(x) ? x.filter((v): v is string => typeof v === 'string') : [];

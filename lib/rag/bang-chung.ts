@@ -1,4 +1,5 @@
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
+import { docObjectJson } from './doc-json';
 import { luatUuTienNguon, mucChacChan, NHAN_TIN_CAY, type MucChacChan } from './uu-tien-nguon';
 import type { DuKienLaSo } from './boi-canh-la-so';
 import { NHAN_CHU_DE, NHAN_LOP_HAN, PHIEN_BAN_PLANNER, type KeHoachTruyVan } from './planner';
@@ -183,18 +184,25 @@ export function chamDoChac(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): TraLoiCo
  * Model hay bọc JSON trong ```json dù đã dặn không — nên gỡ rào trước, và nếu
  * vẫn không parse được thì trả về null để tầng gọi tự quyết, chứ không đoán.
  */
+/** Hình dạng thô model trả về — chỉ để đọc, mọi trường đều phải kiểm lại */
+interface ThoTraLoi {
+  tomTat?: unknown;
+  yChinh?: unknown;
+  cachNoi?: unknown;
+  canNhac?: unknown;
+  buocTiepTheo?: unknown;
+}
+
 export function docTraLoi(text: string): TraLoiCoCauTruc | null {
   const sach = text
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/, '');
 
-  const dau = sach.indexOf('{');
-  const cuoi = sach.lastIndexOf('}');
-  if (dau === -1 || cuoi <= dau) return null;
+  const d = docObjectJson(sach) as ThoTraLoi | null;
+  if (!d) return null;
 
   try {
-    const d = JSON.parse(sach.slice(dau, cuoi + 1));
     if (typeof d?.tomTat !== 'string' || !Array.isArray(d?.yChinh)) return null;
     const chuoi = (x: unknown) => (typeof x === 'string' && x.trim() ? x.trim() : undefined);
     return {

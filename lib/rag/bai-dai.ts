@@ -4,6 +4,7 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { docObjectJson } from './doc-json';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { ghiLanTruyHoi } from './nhat-ky';
@@ -131,38 +132,7 @@ interface Tho {
   cachNoi?: unknown;
 }
 
-function docJson(text: string): Tho | null {
-  const sach = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  const dau = sach.indexOf('{');
-  const cuoi = sach.lastIndexOf('}');
-  if (dau === -1 || cuoi <= dau) return null;
-  const than = sach.slice(dau, cuoi + 1);
-
-  const thu = (x: string): unknown => {
-    try {
-      return JSON.parse(x);
-    } catch {
-      return null;
-    }
-  };
-
-  const mot = thu(than);
-  if (mot && typeof mot === 'object' && !Array.isArray(mot)) return mot as Tho;
-
-  // Model dài hơi hay đóng object sớm rồi mở object mới cho phần còn lại:
-  // `{...},{"ghepLai": ...}`. Nội dung vẫn đủ và đúng, sai đúng một dấu ngoặc.
-  // Vứt cả bài vì chuyện đó là phí — đo được trên gpt-5.4-mini: bài sâu, có
-  // căn cứ, mà người đọc nhận về một khối JSON thô. Gộp lại rồi dùng tiếp.
-  const nhieu = thu(`[${than}]`);
-  if (Array.isArray(nhieu)) {
-    const gop = nhieu.reduce<Record<string, unknown>>(
-      (t, x) => (x && typeof x === 'object' && !Array.isArray(x) ? { ...t, ...(x as object) } : t),
-      {}
-    );
-    if (Object.keys(gop).length) return gop as Tho;
-  }
-  return null;
-}
+const docJson = (text: string): Tho | null => docObjectJson(text) as Tho | null;
 
 const mangChuoi = (x: unknown): string[] =>
   Array.isArray(x) ? x.filter((v): v is string => typeof v === 'string' && v.trim().length > 0) : [];
