@@ -1,4 +1,5 @@
 import type { TinNhan } from '@/lib/ai/prompt';
+import { chonBoiCanhHoiThoai } from './tiep-noi';
 import { dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 
@@ -55,12 +56,29 @@ export function dungPromptCoCanCu(
   goi: GoiBangChung,
   lichSu: TinNhan[]
 ): { system: string; user: string } {
-  const ganDay = lichSu.slice(-6);
-  const phanLichSu = ganDay.length
-    ? `\n\nHỘI THOẠI TRƯỚC ĐÓ\n${ganDay
+  /*
+   * §12.5: không nhét toàn bộ lịch sử vào mọi request.
+   *
+   * Bản cũ cắt sáu lượt gần nhất rồi dán nguyên. Vừa thừa vừa thiếu: thừa vì
+   * phần lớn câu cũ không liên quan tới câu đang hỏi, mà mỗi câu thừa là một
+   * chỗ để model bám nhầm; thiếu vì điều người dùng tự kể trôi mất khi nó lùi
+   * quá lượt thứ sáu, dù đó mới là thứ đáng nhớ nhất.
+   */
+  const bc = chonBoiCanhHoiThoai(goi.cauHoi, lichSu);
+
+  const phanTuKe = bc.dieuTuKe.length
+    ? `\n\nĐIỀU NGƯỜI ĐỌC TỰ KỂ (là bối cảnh, KHÔNG phải dữ kiện lá số — đừng luận nó như một cung)\n${bc.dieuTuKe
+        .map((d) => `- ${d}`)
+        .join('\n')}`
+    : '';
+
+  const phanMach = bc.machDangNoi.length
+    ? `\n\nĐANG NÓI DỞ — câu hỏi hiện tại là câu nối, hãy đi tiếp mạch này thay vì luận lại từ đầu\n${bc.machDangNoi
         .map((t) => `${t.vaiTro === 'nguoi-dung' ? 'Người hỏi' : 'Bạn'}: ${t.noiDung}`)
         .join('\n')}`
     : '';
+
+  const phanLichSu = `${phanTuKe}${phanMach}`;
 
   const canhBaoTrong = goi.bangChung.length
     ? ''

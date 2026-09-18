@@ -9,6 +9,7 @@ import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { chonBoiCanh } from '../lib/rag/boi-canh-la-so';
 import { docObjectJson } from '../lib/rag/doc-json';
 import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
+import { chonBoiCanhHoiThoai, gomDieuTuKe, laCauNoiTiep } from '../lib/rag/tiep-noi';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
 import { nhanDangThucThe, TEN_SAO_TRONG_TU_DIEN, TU_DIEN_THUC_THE, traThucThe } from '../lib/rag/thuc-the';
@@ -244,6 +245,40 @@ console.log('\n== ĐẾM TÊN SAO ĐỂ BẮT CÂU KÊ SAO ==\n');
     demTenSao('Vũ Khúc ở đây, và cũng chính Vũ Khúc làm nên nét ấy.') === 1
   );
   kiem('Một tên sao KHÔNG bị coi là kê sao', !laCauKeSao(motSao));
+}
+
+// ---- Trí nhớ hội thoại (§12.5) ----
+console.log('\n== TRÍ NHỚ HỘI THOẠI ==\n');
+{
+  const ls: { vaiTro: 'nguoi-dung' | 'tro-ly'; noiDung: string }[] = [
+    { vaiTro: 'nguoi-dung', noiDung: 'Tôi đang làm kế toán ở một công ty xây dựng.' },
+    { vaiTro: 'tro-ly', noiDung: 'Celes đoán rằng bạn đang cân nhắc đổi nghề sang thiết kế.' },
+    { vaiTro: 'nguoi-dung', noiDung: 'Nếu tôi nghỉ việc thì sao? Tôi muốn ổn định hơn.' },
+  ];
+
+  const tuKe = gomDieuTuKe(ls);
+  kiem('Nhặt được điều người dùng tự kể', tuKe.some((d) => d.includes('kế toán')), tuKe);
+  kiem(
+    'KHÔNG nhặt suy đoán của Celes thành điều người dùng nói',
+    !tuKe.some((d) => d.includes('thiết kế')),
+    tuKe
+  );
+  kiem('Bỏ câu giả định, không cất thành sự thật', !tuKe.some((d) => d.includes('nghỉ việc')), tuKe);
+  kiem('Vẫn nhặt được mong muốn nói thẳng', tuKe.some((d) => d.includes('ổn định')), tuKe);
+
+  kiem('Câu ngắn sau một câu trả lời là câu nối', laCauNoiTiep('Vì sao vậy?', ls));
+  kiem('Đại từ trỏ ngược là câu nối', laCauNoiTiep('Điều đó ảnh hưởng gì tới công việc?', ls));
+  kiem(
+    'Câu mở chủ đề mới KHÔNG phải câu nối',
+    !laCauNoiTiep('Tình duyên của tôi năm nay có gì đáng chú ý không?', ls)
+  );
+  kiem('Chưa có lượt nào của Celes thì không thể là câu nối', !laCauNoiTiep('Vì sao vậy?', []));
+
+  const bcNoi = chonBoiCanhHoiThoai('Vì sao vậy?', ls);
+  kiem('Câu nối thì giữ mạch đang nói', bcNoi.machDangNoi.length === 2);
+  const bcMoi = chonBoiCanhHoiThoai('Tình duyên của tôi năm nay thế nào?', ls);
+  kiem('Câu mở chủ đề mới thì KHÔNG kéo mạch cũ sang', bcMoi.machDangNoi.length === 0);
+  kiem('Nhưng vẫn giữ điều người dùng tự kể', bcMoi.dieuTuKe.length > 0);
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
