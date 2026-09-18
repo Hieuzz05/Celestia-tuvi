@@ -74,6 +74,21 @@ function laChinhTinh(s: Sao) {
   return (CHINH_TINH as readonly string[]).includes(s.ten);
 }
 
+/**
+ * Chọn một khuôn câu theo hạt lấy từ chính lá số.
+ *
+ * Ngẫu nhiên thật thì mỗi lần mở trang lại ra một bài khác, và không ai đối
+ * chiếu được gì nữa — kể cả chính người đọc với bản họ đọc hôm qua.
+ */
+function chonKhuon(bienThe: readonly string[], hat: number): string {
+  return bienThe[((hat % bienThe.length) + bienThe.length) % bienThe.length];
+}
+
+/** Bỏ chủ ngữ đầu câu — nét sao viết sẵn dạng "bạn …", mà ở đây nó nối vào sau một mệnh đề */
+function boChuNgu(cau: string) {
+  return cau.replace(/^(?:bạn|you)\s+/i, '');
+}
+
 /** Độ sáng đủ để sao thể hiện được nét của nó */
 const SANG_RO = new Set(['M', 'V', 'D', 'L']);
 
@@ -89,22 +104,49 @@ function yeuToCuaCung(cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; c
   const ten = tenCung(cung, k);
   const chuDe = k.chuDeCung[cung.tenCung] ?? ten;
 
-  for (const s of cung.sao) {
+  cung.sao.forEach((s, i) => {
     const trongYeu = laChinhTinh(s) || s.loai === 'tu-hoa';
-    if (!trongYeu && s.tinhChat === 'trung') continue;
+    if (!trongYeu && s.tinhChat === 'trung') return;
 
     const sang = s.doSang ? k.doSang[s.doSang] : undefined;
     const manh = !s.doSang || SANG_RO.has(s.doSang);
-    const cau = sang
-      ? `${s.ten} (${sang}) ${k.luanHan.taiO} ${ten} — ${chuDe}`
-      : `${s.ten} ${k.luanHan.taiO} ${ten} — ${chuDe}`;
-    const yt: YeuTo = { sao: s.ten, cung: ten, lop, cau };
 
-    if (s.tinhChat === 'cat' && manh) thuan.push(yt);
-    else if (s.tinhChat === 'hung' || (s.tinhChat === 'cat' && !manh)) can.push(yt);
-    else if (laChinhTinh(s) && manh) thuan.push(yt);
-    else if (laChinhTinh(s) && !manh) can.push(yt);
-  }
+    /*
+     * Dòng này là thứ người đọc thấy, nên nó phải nói nét sao TẠO RA gì.
+     *
+     * Bản cũ ghép "Tên sao (độ sáng) tại Cung — chủ đề của cung": ba mẩu dữ
+     * liệu và một lần nhắc lại chính chủ đề vừa nói ở tiêu đề. Đọc sáu dòng như
+     * thế xong người ta vẫn không biết nó liên quan gì tới mình. Nét của từng
+     * sao đã nằm sẵn trong cùng kho chữ mà bảng tám lĩnh vực đang dùng.
+     *
+     * Sao nào chưa có nét viết sẵn — chủ yếu là lưu tinh theo năm — thì vẫn ghi
+     * dạng gọn, thà nói ít còn hơn bịa một nét không có trong kho.
+     */
+    const net = laChinhTinh(s) ? k.netSao[s.ten]?.manh : k.netPhuTinh[s.ten];
+    const dungCau = (laThuan: boolean) => {
+      if (!net) {
+        return sang
+          ? `${s.ten} (${sang}) ${k.luanHan.taiO} ${ten}`
+          : `${s.ten} ${k.luanHan.taiO} ${ten}`;
+      }
+      // Chính tinh vào nhóm lưu ý cần khuôn riêng: nét viết sẵn của nó là một
+      // ĐIỂM MẠNH, nên nhét vào câu "chỗ dễ vướng là chuyện …" thì thành khen
+      // ngược. Chỗ vướng thật của một chính tinh là lúc nó bị dùng quá liều.
+      const bank = laThuan
+        ? k.luanHan.netThuan
+        : laChinhTinh(s)
+          ? k.luanHan.netCanChinh
+          : k.luanHan.netCan;
+      const mau = bank[(cung.chiIndex + i) % bank.length];
+      return dien(mau, { chuDe, net: boChuNgu(net) });
+    };
+    const yt = (laThuan: boolean): YeuTo => ({ sao: s.ten, cung: ten, lop, cau: dungCau(laThuan) });
+
+    if (s.tinhChat === 'cat' && manh) thuan.push(yt(true));
+    else if (s.tinhChat === 'hung' || (s.tinhChat === 'cat' && !manh)) can.push(yt(false));
+    else if (laChinhTinh(s) && manh) thuan.push(yt(true));
+    else if (laChinhTinh(s) && !manh) can.push(yt(false));
+  });
 
   // Tuần/Triệt không phải sao xấu, nhưng làm nét của cung khó hiện ra đúng lúc —
   // xếp vào nhóm cần lưu ý chứ không phải nhóm cản.
@@ -255,11 +297,16 @@ export function luanHan(
     return {
       id,
       nhan: lv.nhan,
-      cau: dien(k.luanHan.linhVucCo, {
+      // Chọn khuôn theo chi của chính cung đang đọc: sáu lĩnh vực đọc từ sáu cung
+      // khác nhau nên gần như luôn ra sáu khuôn khác nhau, mà cùng một lá số mở
+      // lại vẫn ra đúng bài cũ.
+      cau: dien(chonKhuon(k.luanHan.linhVucCo, cung.chiIndex), {
         nhan: lv.nhan,
         cung: tenCung(cung, k),
         trangThai,
-        them: lienQuan.has(cung.chiIndex) ? k.luanHan.chamVao : k.luanHan.khongChamVao,
+        them: lienQuan.has(cung.chiIndex)
+          ? chonKhuon(k.luanHan.chamVao, cung.chiIndex)
+          : chonKhuon(k.luanHan.khongChamVao, cung.chiIndex),
       }),
     };
   });

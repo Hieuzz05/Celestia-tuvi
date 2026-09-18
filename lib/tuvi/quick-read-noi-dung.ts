@@ -270,10 +270,16 @@ export interface KhuonChu {
     quyTacMo: string;
     linhVuc: Record<string, { nhan: string; cung: string }>;
     taiO: string;
-    chamVao: string;
-    khongChamVao: string;
+    /** Dòng "nên tận dụng" — nói nét sao tạo ra gì, thay vì đọc tên sao */
+    netThuan: readonly string[];
+    /** Dòng "nên lưu ý" cho sao vốn mang lực cản */
+    netCan: readonly string[];
+    /** Dòng "nên lưu ý" cho CHÍNH TINH: nét của nó là điểm mạnh, chỗ vướng nằm ở lúc nó quá tay */
+    netCanChinh: readonly string[];
+    chamVao: readonly string[];
+    khongChamVao: readonly string[];
     tuanTrietCau: string;
-    linhVucCo: string;
+    linhVucCo: readonly string[];
     linhVucTrong: string;
     trangThaiThuan: string;
     trangThaiCan: string;
@@ -314,8 +320,10 @@ export interface KhuonChu {
     giaiDoanPhu: string;
     thangNhan: string;
     tuoiAm: string;
-    chuDeCo: string;
+    chuDeCo: readonly string[];
     chuDeTrong: string;
+    /** Câu thứ hai của một mốc: nét dùng được ở quãng đó, để mười mốc không giống hệt nhau */
+    chuDeNet: readonly string[];
     nhipNhom: string;
     nhipTieuDe: string;
     nhipGiaiDoan: string;
@@ -546,15 +554,41 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'hoc-tap': { nhan: 'Học tập & phát triển', cung: 'Phúc Đức' },
       },
       taiO: 'tại',
-      chamVao: ' Quãng này chạm trực tiếp vào cung đó, nên phần này dễ có chuyện hơn bình thường.',
-      khongChamVao:
-        ' Quãng này không chạm trực tiếp vào cung đó, nên phần này thường giữ nguyên nhịp cũ.',
+      netThuan: [
+        'Ở phần {chuDe}, thứ đang đỡ bạn là chuyện {net}.',
+        'Phần {chuDe} đang có chỗ dựa: {net}.',
+        'Cái chạy thuận trong quãng này nằm ở {chuDe}, cụ thể là {net}.',
+      ],
+      netCan: [
+        'Ở phần {chuDe}, chỗ dễ vướng là chuyện {net}.',
+        'Phần {chuDe} là nơi phải giữ ý: {net}.',
+        'Chỗ tiêu sức trong quãng này nằm ở {chuDe}, cụ thể là {net}.',
+      ],
+      netCanChinh: [
+        'Ở phần {chuDe}, chỗ cần canh là lúc quá tay với nét {net}.',
+        'Phần {chuDe} vướng không phải vì thiếu sức, mà vì dùng quá liều cái nết {net}.',
+        'Trong quãng này, {chuDe} là nơi điểm mạnh dễ quay ra làm khó chính bạn: {net}.',
+      ],
+      chamVao: [
+        ' Quãng này chạm thẳng vào cung đó, nên phần này dễ có chuyện hơn bình thường.',
+        ' Quãng đang xét đi qua đúng cung đó, nên đây là phần đáng để tâm trước.',
+        ' Cung đó nằm trong tầm của quãng này, nên phần này khó giữ yên được lâu.',
+      ],
+      khongChamVao: [
+        ' Quãng này không chạm vào cung đó, nên phần này thường giữ nhịp cũ.',
+        ' Cung đó nằm ngoài tầm quãng đang xét, nên phần này ít biến động hơn.',
+        ' Quãng đang xét không đi qua cung đó, nên đây chưa phải chỗ cần dồn sức.',
+      ],
       tuanTrietCau: '{ten} đóng tại {cung} — {chuDe} thường chậm hiện ra đúng lúc cần',
-      linhVucCo: 'Phần {nhan} đọc từ {cung} — {trangThai}.{them}',
+      linhVucCo: [
+        'Phần {nhan} đọc từ {cung}: {trangThai}.{them}',
+        '{nhan} nhìn từ {cung} thì {trangThai}.{them}',
+        'Về {nhan}, chỗ để nhìn là {cung}, và ở đó {trangThai}.{them}',
+      ],
       linhVucTrong: 'Phần {nhan} không đọc được từ lá số này.',
-      trangThaiThuan: 'các yếu tố ở đây đang đỡ nhiều hơn cản',
-      trangThaiCan: 'các yếu tố ở đây đang cản nhiều hơn đỡ',
-      trangThaiCanBang: 'thuận và cản ở đây gần ngang nhau',
+      trangThaiThuan: 'các yếu tố đang đỡ nhiều hơn cản',
+      trangThaiCan: 'các yếu tố đang cản nhiều hơn đỡ',
+      trangThaiCanBang: 'thuận và cản gần ngang nhau',
       khongThayTheYTe: 'Phần sức khoẻ nói về nhịp sống và mức năng lượng, không thay thế tư vấn y tế.',
     },
     luanSau: {
@@ -689,7 +723,16 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       giaiDoanPhu: 'Khoảng {tuNam}–{denNam}',
       thangNhan: 'Tháng {thang}',
       tuoiAm: 'tuổi âm {tuoi}',
-      chuDeCo: 'Nghiêng về {chuDe}.',
+      chuDeCo: [
+        'Nghiêng về {chuDe}.',
+        'Trọng tâm rơi vào {chuDe}.',
+        'Quãng này xoay quanh {chuDe}.',
+      ],
+      chuDeNet: [
+        'Nét dùng được nhất ở đây là {net}.',
+        'Thứ đỡ bạn trong quãng đó thường là {net}.',
+        'Phần này hay bật lên qua chuyện {net}.',
+      ],
       chuDeTrong: 'Quãng này không có chủ đề nào nổi hẳn lên — thường là lúc mọi thứ giữ nhịp cũ.',
       nhipNhom: 'Điều đang chuyển động',
       nhipTieuDe: 'Tháng {thang} năm {nam} của bạn',
@@ -814,15 +857,41 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'hoc-tap': { nhan: 'Learning & growth', cung: 'Phúc Đức' },
       },
       taiO: 'in',
-      chamVao: ' This stretch touches that house directly, so this side is more likely to be live than usual.',
-      khongChamVao:
-        ' This stretch does not touch that house directly, so this side usually keeps its existing rhythm.',
+      netThuan: [
+        'In {chuDe}, what is holding you up is that {net}.',
+        'The {chuDe} side has something to lean on: {net}.',
+        'What runs smoothly in this stretch sits in {chuDe}, specifically that {net}.',
+      ],
+      netCan: [
+        'In {chuDe}, the place that snags is that {net}.',
+        'The {chuDe} side is where to tread carefully: {net}.',
+        'What drains you in this stretch sits in {chuDe}, specifically that {net}.',
+      ],
+      netCanChinh: [
+        'In {chuDe}, what to watch is overplaying the fact that {net}.',
+        'The {chuDe} side snags not from weakness but from too large a dose of this: {net}.',
+        'In this stretch, {chuDe} is where the strength turns on you: {net}.',
+      ],
+      chamVao: [
+        ' This stretch runs straight into that house, so this side is more likely to be live than usual.',
+        ' The stretch under view passes through that house, so this is the side to watch first.',
+        ' That house is within reach of this stretch, so this side rarely stays quiet for long.',
+      ],
+      khongChamVao: [
+        ' This stretch does not touch that house, so this side usually keeps its existing rhythm.',
+        ' That house sits outside the stretch under view, so this side moves less.',
+        ' The stretch under view does not pass through that house, so this is not where to spend effort yet.',
+      ],
       tuanTrietCau: '{ten} sits on {cung} — {chuDe} is usually slow to show up when needed',
-      linhVucCo: '{nhan} is read from {cung} — {trangThai}.{them}',
+      linhVucCo: [
+        '{nhan} is read from {cung}: {trangThai}.{them}',
+        'Seen from {cung}, {nhan} shows that {trangThai}.{them}',
+        'For {nhan}, the place to look is {cung}, and there {trangThai}.{them}',
+      ],
       linhVucTrong: '{nhan} cannot be read from this chart.',
-      trangThaiThuan: 'the factors here support more than they resist',
-      trangThaiCan: 'the factors here resist more than they support',
-      trangThaiCanBang: 'support and resistance here are close to even',
+      trangThaiThuan: 'the factors support more than they resist',
+      trangThaiCan: 'the factors resist more than they support',
+      trangThaiCanBang: 'support and resistance are close to even',
       khongThayTheYTe:
         'The health section is about rhythm and energy levels, and is no substitute for medical advice.',
     },
@@ -958,7 +1027,16 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       giaiDoanPhu: 'Around {tuNam}–{denNam}',
       thangNhan: 'Month {thang}',
       tuoiAm: 'lunar age {tuoi}',
-      chuDeCo: 'Leans toward {chuDe}.',
+      chuDeCo: [
+        'Leans toward {chuDe}.',
+        'The centre of gravity falls on {chuDe}.',
+        'This stretch turns around {chuDe}.',
+      ],
+      chuDeNet: [
+        'The most usable trait here is that {net}.',
+        'What tends to hold you up in that stretch is that {net}.',
+        'This side usually comes alive through the fact that {net}.',
+      ],
       chuDeTrong: 'Nothing stands out sharply in this stretch — usually a time that keeps its existing rhythm.',
       nhipNhom: 'What is in motion',
       nhipTieuDe: 'Your month {thang} of {nam}',

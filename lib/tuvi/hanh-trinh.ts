@@ -1,4 +1,4 @@
-import { CHI } from './constants';
+import { CHI, CHINH_TINH } from './constants';
 import {
   canChiCuaNam,
   cungDaiVan,
@@ -51,9 +51,36 @@ function tenCung(cung: Cung, k: KhuonChu): string {
   return k.tenCung[cung.tenCung] ?? cung.tenCung;
 }
 
+/**
+ * Chọn một khuôn câu theo hạt lấy từ chính lá số — không ngẫu nhiên, vì mốc
+ * đọc lại phải ra đúng chữ cũ thì người dùng mới đối chiếu được.
+ */
+function chonKhuon(bienThe: readonly string[], hat: number): string {
+  return bienThe[((hat % bienThe.length) + bienThe.length) % bienThe.length];
+}
+
+/** Bỏ chủ ngữ đầu câu — nét sao viết sẵn dạng "bạn …" */
+function boChuNgu(cau: string) {
+  return cau.replace(/^(?:bạn|you)\s+/i, '');
+}
+
+/*
+ * Một mốc trước đây chỉ có đúng "Nghiêng về {chuDe}.". Mười mốc xếp dọc nhau
+ * thành mười dòng cùng một khuôn, và không dòng nào nói quãng ấy cho người đọc
+ * cái gì — chỉ nói nó thuộc về đề tài nào. Thêm một câu lấy từ chính tinh đóng
+ * ở cung đó: cùng kho chữ mà bảng tám lĩnh vực vẫn dùng, nên không phải bịa
+ * thêm luật nào.
+ */
 function chuDeCua(cung: Cung, k: KhuonChu): string {
   const chuDe = k.chuDeCung[cung.tenCung];
-  return chuDe ? dien(k.hanhTrinh.chuDeCo, { chuDe }) : k.hanhTrinh.chuDeTrong;
+  if (!chuDe) return k.hanhTrinh.chuDeTrong;
+
+  const mo = dien(chonKhuon(k.hanhTrinh.chuDeCo, cung.chiIndex), { chuDe });
+  const chinh = cung.sao.find((s) => (CHINH_TINH as readonly string[]).includes(s.ten));
+  const net = chinh ? k.netSao[chinh.ten]?.manh : undefined;
+  if (!net) return mo;
+
+  return `${mo} ${dien(chonKhuon(k.hanhTrinh.chuDeNet, cung.chiIndex), { net: boChuNgu(net) })}`;
 }
 
 /** Căn cứ chung cho mọi mốc: sao nào đóng ở cung đó, có Tuần/Triệt không */

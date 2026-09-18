@@ -76,6 +76,29 @@ console.log('\n== CÂU GHÉP KHÔNG ĐƯỢC GÃY ==\n');
       }
     }
   }
+  // Trang chi tiết Hành trình dùng cùng kho nét sao, nên dính cùng một bẫy
+  for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
+    const laSo = lapLaSo({ ngay, thang, nam, gio, gioiTinh });
+    for (const cap of ['giai-doan', 'nam', 'thang'] as const) {
+      const b = luanHan(laSo, cap, 2026, 9, 'vi');
+      const dong = [
+        b.tieuDe,
+        ...b.tanDung.map((y) => y.cau),
+        ...b.luuY.map((y) => y.cau),
+        ...b.linhVuc.map((l) => l.cau),
+      ];
+      for (const d of dong.filter(Boolean)) {
+        for (const cau of d.split(/(?<=[.!?])\s+/)) {
+          if ((cau.match(/—/g) ?? []).length >= 2) {
+            caiHai += 1;
+            if (!viDu) viDu = cau.slice(0, 120);
+          }
+          if (/[,;:—]\s*$/.test(cau.trim())) cutDuoi += 1;
+        }
+      }
+    }
+  }
+
   kiem('Không câu nào có hai gạch ngang', caiHai === 0, viDu);
   kiem('Không câu nào cụt sau dấu ngắt', cutDuoi === 0, cutDuoi);
 }
