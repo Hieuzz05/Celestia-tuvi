@@ -1,4 +1,5 @@
 import { CHI, CHINH_TINH } from './constants';
+import { khoangDuongCuaThangAm } from './bay-gio';
 import {
   canChiCuaNam,
   cungDaiVan,
@@ -253,7 +254,15 @@ export function nhipHienTai(
         })
       : null,
     chuDe(cungNam) ? dien(k.hanhTrinh.nhipNam, { nam, chuDe: chuDe(cungNam)! }) : null,
-    chuDe(cungThang) ? dien(k.hanhTrinh.nhipThang, { thang, chuDe: chuDe(cungThang)! }) : null,
+    chuDe(cungThang)
+      ? dien(k.hanhTrinh.nhipThang, {
+          thang,
+          chuDe: chuDe(cungThang)!,
+          // Tháng 8 âm rơi vào khoảng tháng 9 dương. Không ghi khoảng ngày thì
+          // màn hình trông như chạy sai một tháng so với lịch điện thoại.
+          khoang: khoangDuongCuaThangAm(nam, thang) ?? '',
+        })
+      : null,
     k.giaiDoan.nhacXuHuong,
   ].filter(Boolean) as string[];
 

@@ -721,7 +721,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     hanhTrinh: {
       giaiDoanNhan: '{tu}–{den} tuổi',
       giaiDoanPhu: 'Khoảng {tuNam}–{denNam}',
-      thangNhan: 'Tháng {thang}',
+      thangNhan: 'Tháng {thang} âm',
       tuoiAm: 'tuổi âm {tuoi}',
       chuDeCo: [
         'Nghiêng về {chuDe}.',
@@ -735,10 +735,10 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       ],
       chuDeTrong: 'Quãng này không có chủ đề nào nổi hẳn lên — thường là lúc mọi thứ giữ nhịp cũ.',
       nhipNhom: 'Điều đang chuyển động',
-      nhipTieuDe: 'Tháng {thang} năm {nam} của bạn',
+      nhipTieuDe: 'Tháng {thang} âm lịch năm {nam} của bạn',
       nhipGiaiDoan: 'Bạn đang trong quãng {tu}–{den} tuổi, trọng tâm nghiêng về {chuDe}.',
       nhipNam: 'Riêng năm {nam}, chủ đề dễ nổi lên là {chuDe}.',
-      nhipThang: 'Trong tháng {thang}, phần dễ được nhắc tới là {chuDe}.',
+      nhipThang: 'Trong tháng {thang} âm ({khoang} dương lịch), phần dễ được nhắc tới là {chuDe}.',
     },
     tenCung: TEN_CUNG_VI,
   },
@@ -1025,7 +1025,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     hanhTrinh: {
       giaiDoanNhan: 'Ages {tu}–{den}',
       giaiDoanPhu: 'Around {tuNam}–{denNam}',
-      thangNhan: 'Month {thang}',
+      thangNhan: 'Lunar month {thang}',
       tuoiAm: 'lunar age {tuoi}',
       chuDeCo: [
         'Leans toward {chuDe}.',
@@ -1039,10 +1039,10 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       ],
       chuDeTrong: 'Nothing stands out sharply in this stretch — usually a time that keeps its existing rhythm.',
       nhipNhom: 'What is in motion',
-      nhipTieuDe: 'Your month {thang} of {nam}',
+      nhipTieuDe: 'Your lunar month {thang} of {nam}',
       nhipGiaiDoan: 'You are in the stretch from age {tu} to {den}, with its centre of gravity on {chuDe}.',
       nhipNam: 'In {nam} specifically, the theme most likely to surface is {chuDe}.',
-      nhipThang: 'Within month {thang}, the part most likely to come up is {chuDe}.',
+      nhipThang: 'Within lunar month {thang} ({khoang} by the solar calendar), the part most likely to come up is {chuDe}.',
     },
     tenCung: TEN_CUNG_EN,
   },

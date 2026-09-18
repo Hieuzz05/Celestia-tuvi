@@ -20,6 +20,7 @@ import { luuHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { KhoiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
+import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -78,9 +79,17 @@ function TrangLaSo() {
   const params = useSearchParams();
 
   const [form, setForm] = useState<ThongTinSinhForm | null>(null);
-  const [batNhapMoi, setBatNhapMoi] = useState(false);
+  /*
+   * `?moi=1` ép vào màn nhập bốn bước, bỏ qua mọi lá số đã lưu.
+   *
+   * Nút "Thêm lá số" ở danh sách trước đây bung một form phẳng ngay tại chỗ —
+   * không có bước chọn ý định, cũng không hỏi phút sinh. Nghĩa là lá số thêm từ
+   * đó thiếu đúng thứ dùng để xếp thứ tự các thẻ insight. Giờ nó dẫn sang đây.
+   */
+  const [batNhapMoi, setBatNhapMoi] = useState(params.get('moi') === '1');
   const [namXem, setNamXem] = useState(new Date().getFullYear());
-  const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
+  // Tháng ÂM: nguyệt hạn chia theo tuần trăng, đưa tháng dương vào là lệch cung
+  const [thangXem, setThangXem] = useState(thangAmHienTai());
   const [hienMenhBan, setHienMenhBan] = useState(false);
   const [daLuu, setDaLuu] = useState(false);
   const [tuHoSoDaLuu, setTuHoSoDaLuu] = useState(false);

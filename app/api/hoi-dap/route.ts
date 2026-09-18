@@ -7,6 +7,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 export const maxDuration = 60;
 
@@ -69,7 +70,8 @@ export async function POST(req: Request) {
     : [];
 
   const namXem = soHopLe(body.namXem, 1900, 2100) ? body.namXem! : new Date().getFullYear();
-  const thangXem = soHopLe(body.thangXem, 1, 12) ? body.thangXem! : new Date().getMonth() + 1;
+  // Tháng ÂM, không phải tháng dương — xem lib/tuvi/bay-gio.ts
+  const thangXem = soHopLe(body.thangXem, 1, 12) ? body.thangXem! : thangAmHienTai();
 
   const laSo = lapLaSo({
     ngay: body.ngay!,

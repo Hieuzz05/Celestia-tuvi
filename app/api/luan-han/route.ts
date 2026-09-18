@@ -4,6 +4,7 @@ import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
 import type { NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
+import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 /**
  * Luận hạn chi tiết cho một quãng / năm / tháng.
@@ -52,7 +53,8 @@ export async function POST(req: Request) {
   const namXem = soHopLe(body.namXem, 1900, 2100)
     ? (body.namXem as number)
     : new Date().getFullYear();
-  const thangXem = soHopLe(body.thangXem, 1, 12) ? (body.thangXem as number) : 1;
+  // Mặc định là tháng ÂM hiện tại, không phải tháng 1
+  const thangXem = soHopLe(body.thangXem, 1, 12) ? (body.thangXem as number) : thangAmHienTai();
   const ngonNgu: NgonNguDoc = body.ngonNgu === 'en' ? 'en' : 'vi';
 
   const quyen = await quyenHienTai();

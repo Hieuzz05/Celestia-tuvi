@@ -76,6 +76,10 @@ export function SiteNav() {
   const lienKet = daDangNhap
     ? [
         { href: '/home', nhan: t.nav.homNay },
+        // Danh sách lá số đứng ngang hàng với Hành trình và Hỏi Celes: nó là
+        // một nơi người dùng quay lại thường xuyên, không phải một mục cài đặt.
+        // Nằm trong menu tài khoản thì mỗi lần đổi lá số phải mò qua avatar.
+        { href: '/ho-so', nhan: t.nav.nguoiCuaToi },
         { href: '/hanh-trinh', nhan: t.nav.hanhTrinh },
         { href: '/hoi-dap', nhan: t.nav.hoiCeles },
         { href: '/hop-tuoi', nhan: t.nav.ketNoi },
@@ -170,7 +174,6 @@ export function SiteNav() {
                     }}
                   >
                     {[
-                      { href: '/ho-so', nhan: t.nav.nguoiCuaToi },
                       { href: '/tai-khoan', nhan: t.nav.taiKhoan },
                       // Lối ủng hộ tự nguyện: luôn có mặt, không phụ thuộc còn
                       // bao nhiêu lượt — spec cấm biến nó thành lời nhắc hết lượt.

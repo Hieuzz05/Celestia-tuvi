@@ -35,6 +35,13 @@ import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
  * Không làm theo kiểu bảng điều khiển đếm số: xếp theo thứ tự cảm xúc, mỗi khối
  * là một câu chuyện ngắn.
  */
+interface DiemNoiBatAi {
+  insight: string;
+  doiSong: string;
+  matTrai: string;
+  cauMangTheo: string;
+}
+
 export function TrangHomeNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { taiKhoan, dangDoc } = useTaiKhoan();
@@ -45,6 +52,7 @@ export function TrangHomeNoiDung() {
   useEffect(() => {
     ghiSuKien('home_returned');
   }, []);
+
 
   // Hôm nay LUÔN đọc "Lá số của tôi", không phải lá số đang xem tạm ở màn khác
   // và cũng không phải hoSos[0]. Bản cũ lấy phần tử đầu danh sách nên đặt lá số
@@ -67,6 +75,39 @@ export function TrangHomeNoiDung() {
       return null;
     }
   }, [chinh]);
+
+  /*
+   * Điểm nổi bật do model viết, một bài mỗi ngày cho mỗi lá số.
+   *
+   * Không dọn `noiBatAi` khi đổi lá số ngay trong thân effect: đặt state đồng bộ
+   * ở đó là một vòng vẽ lại thừa. Bài cũ bị thay khi bài mới về.
+   */
+  const [noiBatAi, setNoiBatAi] = useState<DiemNoiBatAi | null>(null);
+  useEffect(() => {
+    if (!chinh) return;
+    let huy = false;
+    fetch('/api/diem-noi-bat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngay: chinh.ngay,
+        thang: chinh.thang,
+        nam: chinh.nam,
+        gio: chinh.gio,
+        gioiTinh: chinh.gioiTinh,
+        ngonNgu,
+      }),
+    })
+      // 204 = không có gì để thay. Giữ nguyên thẻ tất định đang hiện.
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [chinh, ngonNgu]);
 
   const namNay = new Date().getFullYear();
   const gocNhin = useMemo(
@@ -139,7 +180,31 @@ export function TrangHomeNoiDung() {
 
         {/* Điều đáng chú ý lúc này — thẻ đã tự mang nhóm chữ của nó, đặt thêm
             tiêu đề bên trên là nói hai lần cùng một câu */}
-        {gocNhin[0] && <GocNhinCard gocNhin={gocNhin[0]} chinh />}
+        {gocNhin[0] && (
+          <GocNhinCard
+            gocNhin={
+              noiBatAi
+                ? {
+                    ...gocNhin[0],
+                    noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
+                  }
+                : gocNhin[0]
+            }
+            chinh
+          />
+        )}
+
+        {/* Câu để mang theo — mọc ra từ chính điểm mạnh vừa nói ở trên, nên chỉ
+            hiện khi có bài của model. Một câu châm ngôn chung chung gắn dưới một
+            thẻ tất định thì chỉ là chữ trang trí. */}
+        {noiBatAi?.cauMangTheo && (
+          <figure className="card flex flex-col gap-[8px] p-[24px]">
+            <span className="eyebrow">{t.home.mangTheo}</span>
+            <blockquote className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {noiBatAi.cauMangTheo}
+            </blockquote>
+          </figure>
+        )}
 
         {/* Giai đoạn đang đi qua */}
         {giaiDoan?.daiVan && (

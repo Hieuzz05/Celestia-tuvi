@@ -12,6 +12,7 @@ import { CHI } from '@/lib/tuvi/constants';
 import { Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
+import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 function TrangLuanGiai() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -29,7 +30,8 @@ function TrangLuanGiai() {
     chuDeUrl && chuDeUrl in CHU_DE ? (chuDeUrl as ChuDeId) : 'su-nghiep'
   );
   const [namXem, setNamXem] = useState(new Date().getFullYear());
-  const [thangXem, setThangXem] = useState(new Date().getMonth() + 1);
+  // Tháng ÂM — cùng lý do với trang Bản đồ
+  const [thangXem, setThangXem] = useState(thangAmHienTai());
   const [cauHoi, setCauHoi] = useState('');
   const [hoSos, setHoSos] = useState<HoSo[]>([]);
 

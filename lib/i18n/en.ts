@@ -33,7 +33,7 @@ export const en: TuDien = {
     hanhTrinh: 'Journey',
     hoiCeles: 'Ask Celes',
     ketNoi: 'Connections',
-    nguoiCuaToi: 'My charts',
+    nguoiCuaToi: 'Charts',
     taiKhoan: 'Account',
     quanTri: 'Admin',
     dangNhap: 'Sign in',
@@ -270,6 +270,7 @@ export const en: TuDien = {
     chaoKhongTen: 'Worth noticing right now',
     dangNoiBat: 'What stands out',
     giaiDoan: 'The season you are in',
+    mangTheo: 'One line to carry today',
     doTuoi: 'ages {tu}–{den}',
     diTiep: 'Carry on from here',
     composerNhan: 'What is on your mind today?',
@@ -287,6 +288,9 @@ export const en: TuDien = {
   },
 
   hanhTrinh: {
+    dangMo: 'Opening up',
+    dangCang: 'Under strain',
+    canCho: 'Not yet',
     eyebrow: 'YOUR JOURNEY',
     tieuDe: 'The stretches that are shaping you',
     moTa: 'A life in the chart does not run evenly: some long stretches change direction, some years bring one thing to the surface, some months only ask you to hold the rhythm. These are those three layers, stacked.',

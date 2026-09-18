@@ -3,12 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
 import { Eyebrow, HuyHieuOk, NutChinh, Shell } from '@/components/ui';
 import { useBoiCanh } from '@/lib/store/boi-canh';
 import {
   chuyenHoSoLenTaiKhoan,
-  luuHoSo,
   nguonLuuHienTai,
   xoaHoSo,
   type NguonLuu,
@@ -29,13 +27,6 @@ export default function TrangDanhSachLaSo() {
   const t = useT();
   const router = useRouter();
   const boiCanh = useBoiCanh();
-  const [form, setForm] = useState<ThongTinForm>({
-    hoTen: '',
-    ngaySinh: '2000-01-01',
-    gio: 9,
-    gioiTinh: 'nam',
-  });
-  const [dangThem, setDangThem] = useState(false);
   const [nguon, setNguon] = useState<NguonLuu>('trinh-duyet');
   const [dangDat, setDangDat] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
@@ -45,30 +36,6 @@ export default function TrangDanhSachLaSo() {
       .then(setNguon)
       .catch(() => setNguon('trinh-duyet'));
   }, []);
-
-  const them = async () => {
-    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
-    if (!ngay || !thang || !nam) return;
-    try {
-      const moi = await luuHoSo({
-        hoTen: form.hoTen,
-        ngay,
-        thang,
-        nam,
-        gio: form.gio,
-        gioiTinh: form.gioiTinh,
-      });
-      await boiCanh.taiLai();
-      // Lá số đầu tiên tự thành "Lá số của tôi" — đừng bắt người dùng làm thêm
-      // một bước nữa chỉ để Hôm nay có thứ mà đọc.
-      if (!boiCanh.idMacDinh) await boiCanh.datMacDinh(moi.id);
-      setDangThem(false);
-      setForm({ hoTen: '', ngaySinh: '2000-01-01', gio: 9, gioiTinh: 'nam' });
-      setLoi(null);
-    } catch (e) {
-      setLoi(e instanceof Error ? e.message : t.danhSach.loiLuu);
-    }
-  };
 
   const datMacDinh = async (id: string) => {
     setDangDat(id);
@@ -138,21 +105,9 @@ export default function TrangDanhSachLaSo() {
         )}
       </div>
 
-      {dangThem ? (
-        <section className="flex max-w-[560px] flex-col gap-[24px]">
-          <FormSinh giaTri={form} onChange={setForm} />
-          <div className="flex items-center gap-[18px]">
-            <NutChinh onClick={them}>{t.danhSach.luuLai}</NutChinh>
-            <button onClick={() => setDangThem(false)} className="link-text">
-              {t.danhSach.huy}
-            </button>
-          </div>
-        </section>
-      ) : (
-        <NutChinh onClick={() => setDangThem(true)} className="self-start">
-          {t.danhSach.themLaSo}
-        </NutChinh>
-      )}
+      <NutChinh onClick={() => router.push('/la-so?moi=1')} className="self-start">
+        {t.danhSach.themLaSo}
+      </NutChinh>
 
       <section className="flex flex-col gap-[12px]">
         {!boiCanh.dangTai && boiCanh.hoSos.length === 0 && (

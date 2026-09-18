@@ -13,6 +13,7 @@ import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import type { CapLuanHan, LuanHan } from '@/lib/tuvi/luan-han';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
+import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 /**
  * "Xem chi tiết" của Hành trình — tầng luận hạn đa lớp.
@@ -35,7 +36,9 @@ export function TrangChiTietNoiDung() {
 
   const cap = (params.get('cap') as CapLuanHan) ?? 'nam';
   const nam = Number(params.get('nam')) || new Date().getFullYear();
-  const thang = Number(params.get('thang')) || 1;
+  // Thiếu tham số thì lấy tháng ÂM hiện tại. Mặc định cũ là tháng 1, nên mọi
+  // liên kết thiếu `thang` đều đọc nguyệt hạn tháng Giêng — sai lặng lẽ.
+  const thang = Number(params.get('thang')) || thangAmHienTai();
 
   const hoSo =
     boiCanh.hoSoDangXem ?? boiCanh.hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? null;

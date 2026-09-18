@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { DaiThoiGian } from '@/components/hanhtrinh/DaiThoiGian';
@@ -37,6 +37,19 @@ import { solarToLunar } from '@/lib/tuvi/lunar';
  *     nào — khoá lúc này là dựng tường trước một cánh cửa chưa mở. Chỗ đặt cổng
  *     Gate 2 là ngay tại `cacNam` bên dưới, khi paywall lên.
  */
+interface ChuyenDongAi {
+  tieuDe: string;
+  noiDung: string;
+}
+
+interface NhipAi {
+  dangMo: ChuyenDongAi;
+  dangCang: ChuyenDongAi;
+  canCho: ChuyenDongAi;
+  ghepLai: string;
+  nhip: { nhan: string; mo: string };
+}
+
 export function TrangHanhTrinhNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -113,6 +126,44 @@ export function TrangHanhTrinhNoiDung() {
     setIdGiaiDoan(null);
   };
 
+  /*
+   * Ba chuyển động do model viết — đang mở / đang căng / cần chờ (§11.4).
+   *
+   * Nhịp hành động không nằm ở đây: nó đếm được từ tương quan cát/hung nên do
+   * luật quyết, máy chủ đưa xuống cho model như một ràng buộc rồi trả kèm.
+   *
+   * Thẻ tất định phía trên vẫn hiện ngay và vẫn là đường lùi: model hỏng hoặc
+   * hết hạn mức thì trang vẫn có chữ, chỉ là chữ cũ.
+   */
+  const [nhipAi, setNhipAi] = useState<NhipAi | null>(null);
+  useEffect(() => {
+    if (!hoSo) return;
+    let huy = false;
+    fetch('/api/nhip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ngay: hoSo.ngay,
+        thang: hoSo.thang,
+        nam: hoSo.nam,
+        gio: hoSo.gio,
+        gioiTinh: hoSo.gioiTinh,
+        cap: 'thang',
+        namXem: namChon,
+        thangXem: thangChon,
+        ngonNgu,
+      }),
+    })
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy) setNhipAi((d as NhipAi | null) ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [hoSo, namChon, thangChon, ngonNgu]);
+
   const dangONay = namChon === nayAm.nam && thangChon === nayAm.thang;
 
   // Khách chưa đăng nhập: cho thấy có thứ đang chờ, chặn ở cổng Gate 1
@@ -170,7 +221,34 @@ export function TrangHanhTrinhNoiDung() {
         {/* Tổng hợp ba lớp thành một đoạn — thứ người dùng đọc trước tiên */}
         {nhip && (
           <div className="flex flex-col gap-[12px]">
-            <GocNhinCard gocNhin={nhip} chinh />
+            <GocNhinCard
+              gocNhin={nhipAi ? { ...nhip, noiDung: nhipAi.ghepLai } : nhip}
+              chinh
+            />
+
+            {nhipAi && (
+              <div className="flex flex-col gap-[12px]">
+                {(
+                  [
+                    [t.hanhTrinh.dangMo, nhipAi.dangMo],
+                    [t.hanhTrinh.dangCang, nhipAi.dangCang],
+                    [t.hanhTrinh.canCho, nhipAi.canCho],
+                  ] as const
+                ).map(([nhan, cd]) => (
+                  <The key={nhan} className="flex flex-col gap-[6px]">
+                    <span className="eyebrow">{nhan}</span>
+                    {cd.tieuDe && (
+                      <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
+                        {cd.tieuDe}
+                      </p>
+                    )}
+                    <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                      {cd.noiDung}
+                    </p>
+                  </The>
+                ))}
+              </div>
+            )}
             {!dangONay && (
               <NutVien nho onClick={veHienTai} className="self-start">
                 {t.hanhTrinh.veHienTai}

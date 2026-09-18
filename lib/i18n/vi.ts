@@ -31,7 +31,7 @@ export const vi = {
     hanhTrinh: 'Hành trình',
     hoiCeles: 'Hỏi Celes',
     ketNoi: 'Kết nối',
-    nguoiCuaToi: 'Danh sách lá số',
+    nguoiCuaToi: 'Lá số',
     taiKhoan: 'Tài khoản',
     quanTri: 'Quản trị',
     dangNhap: 'Đăng nhập',
@@ -268,6 +268,7 @@ export const vi = {
     chaoKhongTen: 'Điều đáng chú ý lúc này',
     dangNoiBat: 'Điều đang nổi bật',
     giaiDoan: 'Giai đoạn bạn đang đi qua',
+    mangTheo: 'Câu để mang theo hôm nay',
     doTuoi: '{tu}–{den} tuổi',
     diTiep: 'Đi tiếp từ đây',
     composerNhan: 'Hôm nay bạn đang nghĩ gì?',
@@ -286,6 +287,9 @@ export const vi = {
 
   hanhTrinh: {
     eyebrow: 'HÀNH TRÌNH CỦA BẠN',
+    dangMo: 'Đang mở ra',
+    dangCang: 'Đang căng',
+    canCho: 'Cần chờ',
     tieuDe: 'Nhìn lại những giai đoạn đang định hình bạn',
     moTa: 'Có những thay đổi diễn ra trong nhiều năm, có chuyện chỉ nổi lên trong một năm, và có tháng chỉ cần chú ý đúng một điều. Celes đặt các lớp đó cạnh nhau để bạn thấy điều gì là xu hướng dài, điều gì chỉ là một nhịp ngắn.',
     xemCua: 'Đang xem hành trình của',
