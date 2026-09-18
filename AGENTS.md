@@ -165,6 +165,16 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Dòng `gpt-5` trở lên của OpenAI dùng tham số khác**: `max_completion_tokens` chứ không phải
+  `max_tokens`, và chỉ nhận nhiệt độ mặc định. Gửi sai là 400 ngay, trông hệt như key hỏng. Token
+  nghĩ nội bộ cũng trừ vào ngân sách đó nên `chatOpenAiCompat` cộng thêm 2048 chỗ; thiếu chỗ thì bài
+  dài bị cắt giữa chừng và JSON gãy.
+- **Đọc JSON của model phải chịu được ngoặc đóng sớm.** Model dài hơi hay đóng object rồi mở object
+  mới cho phần còn lại (`{...},{"ghepLai":...}`). Đo trên gpt-5.4-mini: bài đúng và sâu mà bị vứt cả
+  vì một dấu ngoặc. `docJson` thử gộp `[...]` trước khi chịu thua.
+- **Hàm trên Vercel Hobby chỉ sống 60 giây** (`TIMEOUT_MS = 55_000`). Model suy luận mạnh như
+  `gpt-5.5` viết bài dài mất hơn thế, bị huỷ giữa chừng rồi rơi xuống model sau — nhìn log thấy
+  "This operation was aborted". Không phải lỗi mã.
 - **Dữ kiện lá số (F###) chỉ mang phụ tinh TRỌNG YẾU** (`PHU_TINH_TRONG_YEU`), không dump cả cung.
   Đưa 6-8 phụ tinh vào dữ kiện là model chép nguyên danh sách ấy vào bài — đo được: 78% câu có tên
   sao, có câu kê 7 sao. Đây mới là gốc của "nêu sao dài dòng", không phải prompt.

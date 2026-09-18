@@ -112,27 +112,45 @@ async function chatOpenAiCompat(
   if (provider === 'openrouter') {
     headers['X-Title'] = 'Tu Vi AI';
   }
+  // Dòng gpt-5 trở lên (và o-series) của OpenAI đổi giao kèo: `max_tokens` bị từ
+  // chối thẳng, phải gọi là `max_completion_tokens`; nhiệt độ chỉ nhận giá trị
+  // mặc định. Gửi sai một trong hai thì trả 400 ngay từ nút "Thử kết nối", nên
+  // trước bản sửa này mọi model mới đều trông như "key hỏng".
+  const laDongMoiOpenAi = provider === 'openai' && /^(?:gpt-[5-9]|gpt-\d\d|o[1-9])/.test(model);
+
+  const than: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: 'system', content: req.system },
+      { role: 'user', content: req.user },
+    ],
+  };
+
+  if (laDongMoiOpenAi) {
+    // Token nghĩ nội bộ cũng trừ vào ngân sách này. Không cộng thêm chỗ thì bài
+    // dài bị cắt giữa chừng và JSON gãy — trông hệt như model không biết trả
+    // đúng cấu trúc.
+    than.max_completion_tokens = (req.maxTokens ?? 2048) + 2048;
+    // 'minimal' không còn được nhận ở gpt-5.5; 'low' là mức thấp nhất mà cả
+    // dòng cũ lẫn dòng mới đều hiểu.
+    if (req.tatSuyNghi) than.reasoning_effort = 'low';
+  } else {
+    than.temperature = req.temperature ?? 0.7;
+    than.max_tokens = req.maxTokens ?? 2048;
+    // Dòng gpt-oss trên Groq/Cerebras là model suy luận: mặc định nó tiêu một
+    // phần lớn ngân sách output cho chuỗi nghĩ nội bộ, và phần nghĩ đó nằm ở
+    // trường `reasoning` chứ không phải `content`. Với lệnh test kết nối
+    // (maxTokens 64) thì nghĩ xong là hết chỗ, `content` rỗng, và trông hệt như
+    // model hỏng. Chỉ gửi tham số này cho hai nhà cung cấp hiểu nó.
+    if (req.tatSuyNghi && (provider === 'groq' || provider === 'cerebras')) {
+      than.reasoning_effort = 'low';
+    }
+  }
+
   const res = await goiApi(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: req.system },
-        { role: 'user', content: req.user },
-      ],
-      temperature: req.temperature ?? 0.7,
-      max_tokens: req.maxTokens ?? 2048,
-      // Dòng gpt-oss trên Groq/Cerebras là model suy luận: mặc định nó tiêu một
-      // phần lớn ngân sách output cho chuỗi nghĩ nội bộ, và phần nghĩ đó nằm ở
-      // trường `reasoning` chứ không phải `content`. Với lệnh test kết nối
-      // (maxTokens 64) thì nghĩ xong là hết chỗ, `content` rỗng, và trông hệt như
-      // model hỏng. Chỉ gửi tham số này cho hai nhà cung cấp hiểu nó — OpenAI
-      // thật sẽ từ chối tham số lạ.
-      ...(req.tatSuyNghi && (provider === 'groq' || provider === 'cerebras')
-        ? { reasoning_effort: 'low' }
-        : {}),
-    }),
+    body: JSON.stringify(than),
   });
   if (!res.ok) await nemLoi(res, provider);
   const data = await res.json();

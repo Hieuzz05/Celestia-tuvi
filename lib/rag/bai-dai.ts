@@ -136,11 +136,32 @@ function docJson(text: string): Tho | null {
   const dau = sach.indexOf('{');
   const cuoi = sach.lastIndexOf('}');
   if (dau === -1 || cuoi <= dau) return null;
-  try {
-    return JSON.parse(sach.slice(dau, cuoi + 1)) as Tho;
-  } catch {
-    return null;
+  const than = sach.slice(dau, cuoi + 1);
+
+  const thu = (x: string): unknown => {
+    try {
+      return JSON.parse(x);
+    } catch {
+      return null;
+    }
+  };
+
+  const mot = thu(than);
+  if (mot && typeof mot === 'object' && !Array.isArray(mot)) return mot as Tho;
+
+  // Model dài hơi hay đóng object sớm rồi mở object mới cho phần còn lại:
+  // `{...},{"ghepLai": ...}`. Nội dung vẫn đủ và đúng, sai đúng một dấu ngoặc.
+  // Vứt cả bài vì chuyện đó là phí — đo được trên gpt-5.4-mini: bài sâu, có
+  // căn cứ, mà người đọc nhận về một khối JSON thô. Gộp lại rồi dùng tiếp.
+  const nhieu = thu(`[${than}]`);
+  if (Array.isArray(nhieu)) {
+    const gop = nhieu.reduce<Record<string, unknown>>(
+      (t, x) => (x && typeof x === 'object' && !Array.isArray(x) ? { ...t, ...(x as object) } : t),
+      {}
+    );
+    if (Object.keys(gop).length) return gop as Tho;
   }
+  return null;
 }
 
 const mangChuoi = (x: unknown): string[] =>

@@ -31,7 +31,10 @@ const MODEL_MAC_DINH: Record<ProviderId, string> = {
   groq: 'openai/gpt-oss-120b',
   cerebras: 'gpt-oss-120b',
   openrouter: 'deepseek/deepseek-chat-v3-0324:free',
-  openai: 'gpt-4o-mini',
+  // gpt-4o-mini viết bài dài rất nhạt (đo 18/09/2026: 15% câu kê tên sao, nhiều ý
+  // không trích được căn cứ nên bị validator loại, bài mỏng đi). gpt-5.4-mini cùng
+  // hạng giá mà hơn hẳn. Lưu ý dòng gpt-5 đổi tham số — xem chatOpenAiCompat.
+  openai: 'gpt-5.4-mini',
   anthropic: 'claude-haiku-4-5-20251001',
 };
 

@@ -350,21 +350,36 @@ Bài luận giải dài, Hỏi Celes và Kết nối giờ đi chung một đư�
 thành chữ. Đường đi đó **làm bài đúng hơn**, nhưng **độ sâu và giọng văn vẫn do model quyết định**.
 Cùng một dữ kiện, một prompt, đo ngày 18/09/2026:
 
-| Model | Bài dài đọc ra sao |
-|---|---|
-| `gemini-3.6-flash` | Văn tiếng Việt tốt nhất — nhưng free tier chỉ cho **20 bài mỗi ngày** (`GenerateRequestsPerDay… = 20`), cạn là 429 và rơi xuống model kế tiếp |
-| `groq / gpt-oss-120b` | Cụ thể, có "cái giá" của mỗi điểm mạnh, có lực ngược; còn hay lấy tên sao làm chủ ngữ |
-| `openai / gpt-4o-mini` | Nhạt, tính từ chung chung ("mạnh mẽ", "sâu sắc"); nhiều ý không trích căn cứ nên bị validator loại, bài mỏng đi |
+| Model | Số từ | Câu có tên sao | Ý có lực ngược | Đọc ra sao |
+|---|---|---|---|---|
+| `openai / gpt-5.4-mini` | 1420 | **2%** | 3 | Nói cấu trúc ấy tạo ra gì trong đời, hầu như không kê sao. Hết 20 giây. **Đang dùng.** |
+| `gemini-3.6-flash` | — | — | — | Văn tiếng Việt tốt — nhưng free tier chỉ cho **20 bài mỗi ngày** (`GenerateRequestsPerDay… = 20`), cạn là 429 |
+| `groq / gpt-oss-120b` | — | — | — | Cụ thể, có "cái giá" của mỗi điểm mạnh; còn hay lấy tên sao làm chủ ngữ |
+| `openai / gpt-4o-mini` | 992 | 15% | 1 | Nhạt, tính từ chung chung ("nhạy cảm", "mạnh mẽ", "đặc biệt") |
+| `openai / gpt-5.5` | — | — | — | **Không dùng được**: quá 55 giây, mà hàm trên Vercel Hobby chỉ sống 60 giây |
 
-Hai thứ dễ khiến bạn tưởng "chẳng có gì thay đổi":
+Ba thứ dễ khiến bạn tưởng "chẳng có gì thay đổi":
 
-1. **Thứ tự trong `/admin/models`.** Model đứng đầu viết gần như mọi bài. Xếp OpenAI lên đầu thì
-   bài do `gpt-4o-mini` viết, dù pipeline phía sau đã khác hẳn.
+1. **Thứ tự trong `/admin/models`.** Model đứng đầu viết gần như mọi bài. Đứng đầu là một model
+   yếu thì cả pipeline phía sau có tốt đến mấy, bài vẫn nhạt.
 2. **Gemini hết hạn mức ngày.** Khi đó nó im lặng rơi xuống model kế tiếp. Trang `/luan-giai` trả về
    kèm trường `daThuHong` — bấm F12 → Network xem là biết bài này do ai viết và vì sao model trước rơi.
+3. **Bản trên máy chủ chưa kịp lên.** Mở `https://celestia-tuvi.vercel.app/api/phien-ban` là thấy mã
+   commit đang chạy, so với commit mới nhất trên GitHub. Vercel mất khoảng 50 giây cho mỗi lần đẩy.
 
-Gợi ý thứ tự nếu ưu tiên chất lượng bài dài: **Gemini → Groq → OpenAI**, và bật thanh toán cho khoá
-Gemini để hết trần ngày (cùng lý do với embedding ở mục 3.4).
+**Điều đáng nhớ nhất từ lần đo này: model quyết định độ sâu, không phải đường đi.** Cùng một dữ
+kiện và một prompt, `gpt-4o-mini` cho bài 992 từ đầy tính từ chung chung, còn `gpt-5.4-mini` cho bài
+1420 từ gần như không nhắc tên sao mà vẫn nói đúng lá số. Đó là khoảng cách mà không prompt nào lấp
+được.
+
+Dòng `gpt-5` trở lên đổi giao kèo gọi API: nó từ chối `max_tokens` (phải là `max_completion_tokens`)
+và từ chối mọi nhiệt độ khác mặc định. Trước bản sửa 18/09/2026, chọn bất kỳ model gpt-5 nào cũng
+nhận 400 ngay ở nút "Thử kết nối" — trông hệt như key hỏng. Giờ đã xử đúng, nên khoá OpenAI trả tiền
+dùng được cả dòng mới.
+
+Trần 60 giây của Vercel Hobby là giới hạn thật: model càng nghĩ lâu càng dễ chạm. `gpt-5.5` viết hay
+hơn nhưng mất hơn 55 giây nên bị huỷ giữa chừng và rơi xuống model sau — đừng xếp nó đứng đầu khi
+chưa nâng gói.
 
 ### 3.3b Lưới đỡ khi model chính hỏng
 
