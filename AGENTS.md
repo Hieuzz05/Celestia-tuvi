@@ -170,6 +170,16 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Nút thắt khi nạp kho là EMBEDDING, không phải kích thước tệp.** Pha lưu đoạn xử
+  được cả cuốn trong một lượt. Gemini gói miễn phí chặn ở 1.000 đoạn/ngày nên nó
+  dừng giữa chừng, và người ta tưởng phải chia nhỏ tệp. Chia nhỏ không giúp gì:
+  tổng số đoạn không đổi. Đặt `EMBEDDING_PROVIDER=openai` là hết trần ngày.
+- **Đổi nhà cung cấp embedding thì PHẢI sinh lại vector cho toàn bộ kho**
+  (`scripts/nap-lai-embedding.ts --tat-ca`), và phải đặt cùng giá trị trên Vercel.
+  Vector hai model nằm ở hai không gian khác nhau; trộn chúng không báo lỗi, truy
+  vấn vẫn chạy, chỉ là kết quả vô nghĩa.
+- **`text-embedding-3-small` nhận tham số `dimensions`** nên trả đúng 768 chiều,
+  khớp cột `vector(768)` đang có. Không phải đổi bảng, không phải đổi cách cắt đoạn.
 - **Bề mặt ngắn gọi model theo NHÓM, không theo từng phần tử.** Dòng thời gian có
   ~29 mốc; sinh riêng từng mốc là 29 lượt cho một lần mở trang, trong khi gói miễn
   phí của Gemini cho 20 lượt cả ngày. `moc-hanh-trinh.ts` và `bang-linh-vuc.ts`

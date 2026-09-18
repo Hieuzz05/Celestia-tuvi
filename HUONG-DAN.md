@@ -536,6 +536,78 @@ Celes dùng, nhưng **không gọi model**. Nhập câu hỏi rồi xem:
   nào thật sự vào bài. Hai cột điểm để riêng vì chúng là hai thang đo khác nhau — cộng lại là mất
   luôn khả năng gỡ lỗi.
 
+### 3.4a Nạp cả kho bằng một lệnh — mỗi cuốn một lần, không chia nhỏ
+
+**Hiểu nhầm cần gỡ trước:** tệp lớn chưa bao giờ là vấn đề. Pha lưu đoạn xử được
+cả cuốn trong một lượt — đo được 694 đoạn của "Tử vi hàm số" vào kho trong vài
+giây. Thứ thật sự chặn là **hạn mức embedding**, và vì nó dừng giữa chừng nên
+người vận hành tưởng tệp quá to rồi đi chia tay thành sáu bảy mảnh. Chia nhỏ
+không giúp gì cả: tổng số đoạn vẫn thế, hạn mức vẫn thế.
+
+| Nhà cung cấp | Trần theo phút | Trần theo ngày | Nạp 4.000 đoạn mất |
+|---|---|---|---|
+| Gemini, gói miễn phí | 100 đoạn | **1.000 đoạn** | khoảng 4 ngày |
+| OpenAI `text-embedding-3-small` | 3.000 lượt · 1 triệu token | không có | khoảng 7 phút |
+
+Giá của OpenAI là 0,02 đô la cho một triệu token. Cả kho tri thức tốn vài xu.
+
+Đổi trong `.env.local`:
+
+```
+EMBEDDING_PROVIDER=openai
+```
+
+Rồi nạp:
+
+```bash
+# cả thư mục, mỗi tệp .md là một tài liệu
+npx tsx scripts/nap-kho.ts
+
+# hoặc đúng một cuốn
+npx tsx scripts/nap-kho.ts "D:/Tài liệu tử vi/markdown/Tử Vi khảo luận.md"
+```
+
+Script bỏ qua tài liệu đã có trong kho. Muốn nạp đè thì thêm `--lai`. Nạp xong
+tài liệu nằm ở trạng thái "cần duyệt"; vào `/admin/knowledge` để xuất bản.
+
+**Hai điều sai lặng lẽ, phải biết trước:**
+
+1. **Đổi `EMBEDDING_PROVIDER` thì phải sinh lại vector cho TOÀN BỘ kho:**
+
+```bash
+npx tsx scripts/nap-lai-embedding.ts --tat-ca
+```
+
+   Vector của hai model nằm trong hai không gian khác nhau. Trộn chúng không báo
+   lỗi gì cả: truy vấn vẫn chạy, vẫn trả về kết quả, chỉ là kết quả vô nghĩa. Nó
+   chỉ lộ ra ở chất lượng bài luận giải vài tuần sau.
+
+2. **Giá trị trên Vercel phải giống trong `.env.local`.** Vector câu hỏi và vector
+   tài liệu buộc phải do cùng một model sinh ra. Đặt ở máy mà quên đặt trên Vercel
+   thì bản production tra cứu bằng một loại vector, còn kho thì chứa loại khác.
+
+Bị đứt giữa chừng thì cứ chạy lại, cả hai script đều tiếp tục từ chỗ dở: chúng
+tìm theo "đoạn nào chưa có vector" chứ không đếm từ đầu.
+
+Kiểm kho bất cứ lúc nào:
+
+```bash
+npx tsx scripts/nap-lai-embedding.ts    # in số đoạn, số đoạn còn thiếu vector
+```
+
+### 3.4c Sách quét mang theo rác
+
+Sách chuyển từ PDF thường có một dòng quảng cáo của phần mềm chuyển đổi trên mỗi
+trang. Trong kho cũ nó còn nằm ở dạng đề mục, mà bộ cắt đoạn ghim đề mục vào đầu
+đoạn để giữ ngữ cảnh — nên dòng quảng cáo thành tiêu đề của cả một loạt đoạn. Đo
+được: hai trên bốn đoạn truy hồi cho câu hỏi về sao Vũ Khúc là dòng quảng cáo,
+không phải nội dung sách.
+
+`lamSachMarkdown` giờ tự bỏ những dòng đó khi nạp. Danh sách nhận dạng nằm ở
+`RAC_CHUYEN_DOI` trong `lib/rag/nap-tai-lieu.ts`, cố ý hẹp: lọc rộng tay thì cắt
+nhầm nội dung sách, mà mất một câu phú thì không ai phát hiện ra. Gặp công cụ
+chuyển đổi khác để lại dấu khác thì thêm vào danh sách đó rồi nạp lại cuốn ấy.
+
 ### 3.4b Celes dùng kho như thế nào
 
 Đường đi của một câu hỏi:

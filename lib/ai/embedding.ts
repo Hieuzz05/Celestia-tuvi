@@ -2,22 +2,123 @@ import { layApiKey } from './config';
 import { AiRetryableError } from './types';
 
 /**
- * Sinh vector ngữ nghĩa bằng Gemini embedding (nằm trong tier miễn phí).
- * Số chiều 768 phải khớp với cột `vector(768)` trong schema-rag.sql — đổi ở đây
- * thì phải đổi cả bảng, nên để thành hằng số dùng chung.
+ * Sinh vector ngữ nghĩa. Số chiều 768 phải khớp cột `vector(768)` trong
+ * schema-rag.sql — đổi ở đây thì phải đổi cả bảng, nên để thành hằng số chung.
  */
 export const SO_CHIEU_VECTOR = 768;
-const MODEL_EMBEDDING = 'gemini-embedding-001';
+
+/**
+ * Chọn nhà cung cấp embedding.
+ *
+ * Gemini nằm trong gói miễn phí nhưng có hai trần cứng: 100 đoạn mỗi phút và
+ * 1.000 đoạn mỗi ngày. Cả kho tri thức vài nghìn đoạn, nên nạp hết mất nhiều
+ * ngày — và đó là nút thắt thật, không phải kích thước tệp.
+ *
+ * OpenAI `text-embedding-3-small` nhận tham số `dimensions` nên trả đúng 768
+ * chiều, khớp cột đang có mà không phải đổi bảng. Đo ngày 18/09/2026 trên khoá
+ * hiện tại: 3.000 lượt/phút, 1 triệu token/phút, không có trần ngày, lô 64 đoạn
+ * mất 1,3 giây. Giá 0,02 đô la cho một triệu token.
+ *
+ * CẢNH BÁO: vector của hai nhà cung cấp KHÔNG so sánh được với nhau. Đổi nhà
+ * cung cấp thì phải sinh lại vector cho TOÀN BỘ kho, bằng
+ * `npx tsx scripts/nap-lai-embedding.ts`. Trộn hai loại vector trong cùng một
+ * cột không báo lỗi gì cả — nó chỉ làm truy hồi trả về kết quả vô nghĩa.
+ */
+export type NhaCungCapEmbedding = 'gemini' | 'openai';
+
+export const NHA_CUNG_CAP_EMBEDDING: NhaCungCapEmbedding =
+  process.env.EMBEDDING_PROVIDER === 'openai' ? 'openai' : 'gemini';
+
+const MODEL_EMBEDDING =
+  NHA_CUNG_CAP_EMBEDDING === 'openai'
+    ? (process.env.EMBEDDING_MODEL ?? 'text-embedding-3-small')
+    : 'gemini-embedding-001';
+
+/** Tên model đang dùng — để ghi nhật ký và để người vận hành đối chiếu */
+export const TEN_MODEL_EMBEDDING = `${NHA_CUNG_CAP_EMBEDDING}/${MODEL_EMBEDDING}`;
+
+function layKhoaEmbedding(): string {
+  const key = layApiKey(NHA_CUNG_CAP_EMBEDDING);
+  if (!key) {
+    throw new Error(
+      NHA_CUNG_CAP_EMBEDDING === 'openai'
+        ? 'EMBEDDING_PROVIDER=openai nhưng chưa có OPENAI_API_KEY.'
+        : 'Kho tri thức cần GEMINI_API_KEY để sinh vector. Thêm key rồi thử lại.'
+    );
+  }
+  return key;
+}
+
+/**
+ * Gọi OpenAI cho một lô đoạn.
+ *
+ * Endpoint nhận thẳng mảng nên một lô là một lượt gọi, không phải gói nhiều
+ * request con như Gemini. Trần đo được: 300.000 token mỗi lượt.
+ */
+async function goiLoOpenAi(lo: string[], apiKey: string, lanThu = 0): Promise<number[][]> {
+  const res = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ model: MODEL_EMBEDDING, input: lo, dimensions: SO_CHIEU_VECTOR }),
+  });
+
+  if (res.status === 429) {
+    // OpenAI không có trần theo ngày cho embedding, chỉ có trần theo phút —
+    // nên `hetNgay` luôn false: chờ là chạy tiếp được.
+    const cho = Number(res.headers.get('retry-after') ?? '') || 20;
+    throw new LoiHanMucEmbed(cho, false);
+  }
+
+  if (res.status >= 500) {
+    if (lanThu >= 3) {
+      throw new AiRetryableError('Nhà cung cấp embedding lỗi sau 3 lần thử', 'server', res.status);
+    }
+    await new Promise((r) => setTimeout(r, 2 ** lanThu * 1000));
+    return goiLoOpenAi(lo, apiKey, lanThu + 1);
+  }
+
+  // 400 với lô nhiều phần tử gần như luôn là vượt trần token của cả lô
+  if (res.status === 400 && lo.length > 1) {
+    const giua = Math.floor(lo.length / 2);
+    return [
+      ...(await goiLoOpenAi(lo.slice(0, giua), apiKey)),
+      ...(await goiLoOpenAi(lo.slice(giua), apiKey)),
+    ];
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Embedding lỗi ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  const hang: { index: number; embedding: number[] }[] = data.data ?? [];
+  if (hang.length !== lo.length) {
+    throw new Error(`OpenAI trả ${hang.length} vector cho ${lo.length} đoạn`);
+  }
+
+  // Sắp lại theo `index`: tài liệu không hứa thứ tự, mà ghép lệch vector vào sai
+  // đoạn là sai lặng lẽ — không lỗi nào báo, chỉ lộ ra ở chất lượng truy hồi.
+  const theoThuTu = [...hang].sort((a, b) => a.index - b.index).map((x) => x.embedding);
+  for (const v of theoThuTu) {
+    if (v.length !== SO_CHIEU_VECTOR) {
+      throw new Error(`Embedding trả về ${v.length} chiều, cần ${SO_CHIEU_VECTOR}`);
+    }
+  }
+  return theoThuTu;
+}
 
 /** taskType giúp Gemini tối ưu vector cho đúng mục đích dùng */
 type MucDich = 'luu-tru' | 'truy-van';
 
 async function goiEmbedding(text: string, mucDich: MucDich): Promise<number[]> {
-  const apiKey = layApiKey('gemini');
-  if (!apiKey) {
-    throw new Error(
-      'Kho tri thức cần GEMINI_API_KEY để sinh vector. Thêm key rồi thử lại.'
-    );
+  const apiKey = layKhoaEmbedding();
+
+  if (NHA_CUNG_CAP_EMBEDDING === 'openai') {
+    // OpenAI không phân biệt vector để lưu và vector để tra — cùng một không
+    // gian, nên `mucDich` không dùng tới ở nhánh này.
+    const [v] = await goiLoOpenAi([text], apiKey);
+    return v;
   }
 
   const res = await fetch(
@@ -59,7 +160,9 @@ export const embedTruyVan = (text: string) => goiEmbedding(text, 'truy-van');
  * tài liệu không ghi con số. Để 45 là còn biên an toàn; nếu vẫn vượt thì `goiLo`
  * tự chẻ đôi nên đặt cao hơn cũng không vỡ.
  */
-const KICH_THUOC_LO = Number(process.env.EMBEDDING_BATCH_SIZE ?? 45);
+const KICH_THUOC_LO = Number(
+  process.env.EMBEDDING_BATCH_SIZE ?? (NHA_CUNG_CAP_EMBEDDING === 'openai' ? 64 : 45)
+);
 
 /**
  * Hạn mức đã chạm, kèm số giây nhà cung cấp bảo phải chờ.
@@ -103,6 +206,8 @@ function docHanMuc(than: string): { giay: number; hetNgay: boolean } {
 }
 
 async function goiLo(lo: string[], apiKey: string, lanThu = 0): Promise<number[][]> {
+  if (NHA_CUNG_CAP_EMBEDDING === 'openai') return goiLoOpenAi(lo, apiKey, lanThu);
+
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_EMBEDDING}:batchEmbedContents`,
     {
@@ -191,10 +296,7 @@ export interface KetQuaLoEmbed {
  * hai bị chặn thì 45 đoạn kia phải được giữ lại.
  */
 export async function embedLoTaiLieu(doans: string[]): Promise<KetQuaLoEmbed> {
-  const apiKey = layApiKey('gemini');
-  if (!apiKey) {
-    throw new Error('Kho tri thức cần GEMINI_API_KEY để sinh vector. Thêm key rồi thử lại.');
-  }
+  const apiKey = layKhoaEmbedding();
 
   const vectors: number[][] = [];
   for (let i = 0; i < doans.length; i += KICH_THUOC_LO) {
@@ -206,7 +308,11 @@ export async function embedLoTaiLieu(doans: string[]): Promise<KetQuaLoEmbed> {
       }
       throw e;
     }
-    if (i + KICH_THUOC_LO < doans.length) await new Promise((r) => setTimeout(r, 120));
+    // Gemini free tier tính từng đoạn là một request nên phải nhả nhịp. OpenAI
+    // cho 3.000 lượt/phút, nghỉ ở đó chỉ làm chậm mà không tránh được gì.
+    if (NHA_CUNG_CAP_EMBEDDING !== 'openai' && i + KICH_THUOC_LO < doans.length) {
+      await new Promise((r) => setTimeout(r, 120));
+    }
   }
   return { vectors };
 }

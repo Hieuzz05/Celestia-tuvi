@@ -43,8 +43,38 @@ const LO_CHEN = 500;
  * đi thẳng vào ngữ cảnh gửi cho model — và một dòng `source_encoding: VNI-Times`
  * nằm giữa bài luận về sao Tử Vi là thứ không ai muốn giải thích.
  */
-function lamSachMarkdown(s: string): string {
+/**
+ * Dấu hiệu của phần mềm chuyển PDF, không phải nội dung sách.
+ *
+ * Sách quét thường mang một dòng quảng cáo trên MỖI trang. Trong kho hiện tại nó
+ * còn nằm ở dạng đề mục `###`, mà bộ cắt đoạn ghim đề mục vào đầu đoạn để giữ
+ * ngữ cảnh — nên dòng quảng cáo thành tiêu đề của cả một loạt đoạn. Đo được: hai
+ * trên bốn đoạn truy hồi được cho câu hỏi về sao Vũ Khúc là dòng quảng cáo.
+ *
+ * Danh sách cố ý hẹp, chỉ nhắm đúng tên công cụ và địa chỉ của chúng. Lọc rộng
+ * tay thì cắt nhầm nội dung sách, mà mất một câu phú thì không ai phát hiện ra.
+ */
+const RAC_CHUYEN_DOI = [
+  /pdffactory/i,
+  /context-gmbh\.de/i,
+  /created with .{0,30}(pdf|scanner|converter)/i,
+  /(trial|evaluation|demo) version of/i,
+  /www\.(pdfill|nitropdf|foxitsoftware)\.com/i,
+];
+
+function boRacChuyenDoi(s: string): string {
   return s
+    .split(/\r?\n/)
+    .filter((dong) => {
+      const sach = dong.replace(/^#{1,6}\s*/, '').trim();
+      if (!sach) return true;
+      return !RAC_CHUYEN_DOI.some((r) => r.test(sach));
+    })
+    .join('\n');
+}
+
+function lamSachMarkdown(s: string): string {
+  return boRacChuyenDoi(s)
     .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/\n{3,}/g, '\n\n')
