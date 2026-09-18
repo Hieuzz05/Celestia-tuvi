@@ -12,6 +12,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Web tử vi cá nhân hoá. Deploy: https://celestia-tuvi.vercel.app · Repo: Hieuzz05/Celestia-tuvi
 
+> **Dự án này do HAI AI trên HAI máy cùng phát triển.** Đọc **`AI-PHOI-HOP.md`**
+> trước tiên: nhánh nào được đẩy, vùng nào của ai, xử lý xung đột ra sao, và luật
+> viết SQL khi hai máy dùng chung một database. Bỏ qua tệp đó là sớm muộn ghi đè
+> mất việc của máy kia.
+
 Hướng dẫn vận hành đầy đủ (deploy, biến môi trường, Supabase, bật Google SSO, design system,
 cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước khi sửa gì lớn.
 

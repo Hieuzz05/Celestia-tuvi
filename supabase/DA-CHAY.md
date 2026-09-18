@@ -1,0 +1,51 @@
+# Sổ ghi SQL đã chạy
+
+Supabase không tự nhớ giúp file nào đã chạy. Không có sổ này thì người tiếp theo
+chỉ có hai lựa chọn: chạy lại tất cả và hy vọng không hỏng, hoặc đoán.
+
+**Luật:** chạy xong một file thì thêm một dòng vào bảng dưới, ngay trong cùng
+commit với file SQL đó. Không ghi sổ thì coi như chưa chạy.
+
+Kiểm nhanh thực tế bất cứ lúc nào:
+
+```bash
+npx tsx scripts/kiem-moi-truong.ts
+```
+
+Script đó dò từng bảng và từng hàm trên database thật rồi báo file nào còn thiếu.
+Nó là nguồn đáng tin hơn bảng dưới, vì bảng dưới do người ghi tay.
+
+---
+
+## Dự án Supabase chính (production)
+
+| File | Nội dung chính | Đã chạy |
+|---|---|---|
+| `schema.sql` | `profiles`, `charts`, `readings`, `chat_messages` | rồi |
+| `schema-rag.sql` | Kho tri thức: `knowledge_documents`, `knowledge_document_versions`, `knowledge_chunks` | rồi |
+| `schema-rag-v2.sql` | Từ điển thực thể, nhật ký truy hồi, `ai_requests`, `admin_audit_log`, bộ eval | rồi |
+| `schema-rag-v3.sql` | Cho phép `embedding` rỗng, `tim_kien_thuc`, `tim_kien_thuc_vector`, `xoa_lien_ket_thuc_the` | rồi |
+| `va-rag-tu-khoa.sql` | `tsquery_hoac`, `tim_kien_thuc_tu_khoa` — tìm theo từ khoá với ngữ nghĩa HOẶC | rồi |
+| `schema-support.sql` | Quyền, thanh toán, hạn mức: `user_entitlements`, `support_payments`, `usage_events` | rồi |
+| `schema-ai-models.sql` | `ai_model_configs` — chuỗi model quản lý được từ `/admin/models` | rồi |
+| `schema-noi-dung-ai.sql` | `noi_dung_ai` — bộ nhớ đệm nội dung do AI sinh | rồi |
+
+Trạng thái trên xác nhận bằng `scripts/kiem-moi-truong.ts` ngày 18/09/2026: đủ cả
+23 bảng và 5 hàm.
+
+---
+
+## Luật viết file SQL mới
+
+Hai máy dùng chung một database thì một câu lệnh phá là hỏng cho cả hai, và người
+kia không biết vì sao. Nên:
+
+1. **Chỉ viết câu lệnh cộng thêm.** `create table if not exists`, `add column if
+   not exists`, `create index if not exists`. Không `drop table`, không `drop
+   column`, không đổi kiểu cột đang có dữ liệu.
+2. **Chạy lại phải an toàn.** File nào chạy hai lần mà hỏng là file viết sai.
+3. **Một file một việc**, đặt tên theo việc chứ không theo số thứ tự: người đọc
+   cần biết nó làm gì, không cần biết nó là file thứ mấy.
+4. **Cột mới phải cho phép rỗng** hoặc có giá trị mặc định. Bản cũ đang chạy trên
+   production không biết cột đó tồn tại.
+5. **Ghi sổ ngay**, trong cùng commit.
