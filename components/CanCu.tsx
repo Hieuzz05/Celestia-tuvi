@@ -13,8 +13,10 @@ import { useT } from '@/lib/i18n/context';
  * không nói lên nguồn đó đáng tin đến đâu, mà người đọc cũng chẳng làm gì được
  * với nó. Toàn bộ nguồn gốc kỹ thuật nằm ở trang quản trị để gỡ lỗi và đánh giá.
  *
- * Mặc định đóng. Người đến đây để đọc câu trả lời, không phải để đọc dấu vết
- * của hệ thống — nhưng khi họ nghi ngờ thì dấu vết phải có sẵn ở đó.
+ * CHỈ HIỆN VỚI TÀI KHOẢN QUẢN TRỊ. Máy chủ không gửi khối này cho người dùng
+ * thường, nên đây là công cụ đối soát chứ không phải một phần của sản phẩm.
+ * Chặn ở máy chủ chứ không ẩn ở giao diện: ẩn ở giao diện thì dữ liệu vẫn nằm
+ * nguyên trong phản hồi.
  */
 
 export interface DuKienHienThi {
@@ -89,6 +91,10 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
 
         <Nhom tieuDe={t.hoiCeles.canCuPhuongPhap}>
           <Dong>{canCu.phuongPhap}</Dong>
+          {/* Dòng này từng bị đọc nhầm thành tên một cuốn sách trong kho. Nó là
+              phiên bản bộ quy tắc AN SAO — giờ Tý sớm hay muộn, cách xử tháng
+              nhuận, bộ Tứ Hóa, chiều an đại vận. Nói rõ ngay tại chỗ. */}
+          <Dong>{t.hoiCeles.canCuPhuongPhapMo}</Dong>
           <Dong>
             {t.hoiCeles.canCuChuDe}: {canCu.chuDe} · {canCu.cungLienQuan.join(', ')}
           </Dong>

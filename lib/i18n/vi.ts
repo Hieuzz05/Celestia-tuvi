@@ -442,7 +442,8 @@ export const vi = {
     chacChuaDu: 'chưa đủ căn cứ từ nguồn tài liệu',
     canCuDong: 'Thu gọn căn cứ',
     canCuLaSo: 'Lá số của bạn',
-    canCuPhuongPhap: 'Phương pháp',
+    canCuPhuongPhap: 'Bộ quy tắc an sao đã dùng',
+    canCuPhuongPhapMo: 'Đây là phiên bản luật tính lá số, không phải tên tài liệu trong kho.',
     canCuChuDe: 'Chủ đề đọc được',
     canCuKhongNguon:
       'Chưa có nguồn tài liệu nào trong kho khớp với câu hỏi này, nên phần nhận định chuyên môn đã được thu hẹp lại.',

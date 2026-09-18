@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Eyebrow, HuyHieuOk, NutChinh, Shell } from '@/components/ui';
@@ -168,10 +167,6 @@ export default function TrangDanhSachLaSo() {
           );
         })}
       </section>
-
-      <Link href="/la-so" className="link-text self-start">
-        {t.danhSach.taoLaSoKhac}
-      </Link>
     </Shell>
   );
 }

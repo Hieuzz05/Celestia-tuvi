@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { canDangNhap } from '@/lib/auth/cong';
 import { chotCauHoi, datChoCauHoi, hoanCauHoi } from '@/lib/support/quota';
+import { quyenHienTai } from '@/lib/support/entitlements';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
@@ -112,16 +113,24 @@ export async function POST(req: Request) {
       kiemDuyet: kq.kiemDuyet ?? undefined,
     });
 
+    /*
+     * "Muốn biết vì sao không?" giờ CHỈ dành cho quản trị.
+     *
+     * Nó là công cụ đối soát: xem engine lấy dữ kiện nào, nối ra sao, mức chắc
+     * chắn tới đâu. Với người dùng thường nó là nhiễu — và tệ hơn, dòng phương
+     * pháp "celestia-nam-phai v2026.09.1" nằm cạnh các dữ kiện khiến người đọc
+     * tưởng đó là tên một cuốn sách trong kho. Nó không phải: đó là phiên bản
+     * bộ quy tắc AN SAO, ghi lại lá số được tính bằng luật nào.
+     *
+     * Chặn ở MÁY CHỦ chứ không ẩn ở giao diện: ẩn ở giao diện thì dữ liệu vẫn
+     * nằm nguyên trong phản hồi, mở tab Network là đọc được.
+     */
+    const laQuanTri = (await quyenHienTai()).tier === 'admin';
+
     return NextResponse.json({
       traLoi: kq.van,
       model: `${kq.provider}/${kq.model}`,
-      // "Muốn biết vì sao không?" — CHỈ dữ kiện lá số và mạch suy luận.
-      //
-      // Cố ý không có tên tài liệu, hệ phái theo đoạn, điểm liên quan hay mã
-      // chunk. Người dùng không cần biết Celes lấy đoạn nào từ cuốn nào; họ cần
-      // biết lá số của họ cho thấy gì và Celes nối chúng ra sao. Toàn bộ nguồn
-      // gốc kỹ thuật nằm ở `retrieval_runs`/`ai_requests` cho trang quản trị.
-      canCu: {
+      canCu: !laQuanTri ? undefined : {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
         cachNoi: kq.coCauTruc?.cachNoi ?? null,
         luongNguoc: (kq.coCauTruc?.yChinh ?? [])

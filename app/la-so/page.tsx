@@ -90,9 +90,10 @@ function TrangLaSo() {
   const [namXem, setNamXem] = useState(new Date().getFullYear());
   // Tháng ÂM: nguyệt hạn chia theo tuần trăng, đưa tháng dương vào là lệch cung
   const [thangXem, setThangXem] = useState(thangAmHienTai());
-  const [hienMenhBan, setHienMenhBan] = useState(false);
+  // Mở sẵn: ở bố cục hai cột thì lá số là cột trái cố định, không phải một
+  // khối phụ nằm cuối trang phải bấm mới thấy.
+  const [hienMenhBan, setHienMenhBan] = useState(true);
   const [daLuu, setDaLuu] = useState(false);
-  const [tuHoSoDaLuu, setTuHoSoDaLuu] = useState(false);
 
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
@@ -130,10 +131,7 @@ function TrangLaSo() {
 
     const hoSo =
       boiCanh.hoSoDangXem ?? boiCanh.hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? null;
-    if (hoSo) {
-      setForm(formTuHoSo(hoSo));
-      setTuHoSoDaLuu(true);
-    }
+    if (hoSo) setForm(formTuHoSo(hoSo));
   }, [form, batNhapMoi, params, boiCanh]);
 
   const laSo = useMemo(() => {
@@ -154,6 +152,31 @@ function TrangLaSo() {
       return null;
     }
   }, [form]);
+
+  /**
+   * Lá số đang xem đã nằm trong danh sách đã lưu chưa.
+   *
+   * SUY RA từ thông tin sinh, không phải một cờ đặt lúc nạp. Bản cũ đặt cờ ở
+   * nhánh "nạp từ hồ sơ", nhưng khi mở lá số từ danh sách thì /ho-so điều hướng
+   * sang đây kèm tham số URL, và nhánh đọc tham số thoát sớm trước khi tới chỗ
+   * đặt cờ. Kết quả: lá số đã lưu vẫn bị hỏi "có muốn lưu không", và bấm có là
+   * có hai bản giống hệt nhau.
+   *
+   * Trạng thái suy ra thì không có nhánh nào để quên.
+   */
+  const daCoTrongDanhSach = useMemo(() => {
+    if (!form || boiCanh.dangTai) return false;
+    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
+    if (!ngay || !thang || !nam) return false;
+    return boiCanh.hoSos.some(
+      (h) =>
+        h.ngay === ngay &&
+        h.thang === thang &&
+        h.nam === nam &&
+        h.gio === form.gio &&
+        h.gioiTinh === form.gioiTinh
+    );
+  }, [form, boiCanh.hoSos, boiCanh.dangTai]);
 
   /*
    * Thẻ dẫn đầu cũng do model viết, một bài mỗi ngày — cùng tuyến với trang chủ
@@ -235,14 +258,13 @@ function TrangLaSo() {
     setKetQua(null);
     setLoi(null);
     setBatNhapMoi(false);
-    setTuHoSoDaLuu(false);
     setDaLuu(false);
     // Giữ vào bối cảnh phiên: rời trang rồi quay lại không phải nhập lại
     boiCanh.datNhap(nhapTuForm(f));
   };
 
   /** Lá số đang xem có nguy cơ mất nếu rời trang? */
-  const chuaLuu = Boolean(laSo) && !tuHoSoDaLuu && !daLuu && !params.get('mau');
+  const chuaLuu = Boolean(laSo) && !daCoTrongDanhSach && !daLuu && !params.get('mau');
 
   const luu = async (): Promise<boolean> => {
     if (!form) return false;
@@ -263,7 +285,6 @@ function TrangLaSo() {
         gioiTinh: form.gioiTinh,
       });
       setDaLuu(true);
-      setTuHoSoDaLuu(true);
       boiCanh.datNhap(null);
       await boiCanh.taiLai();
       boiCanh.xemHoSo(moi.id);
@@ -326,7 +347,6 @@ function TrangLaSo() {
     setKetQua(null);
     setLoi(null);
     setBatNhapMoi(true);
-    setTuHoSoDaLuu(false);
     boiCanh.datNhap(null);
   };
 
@@ -358,8 +378,116 @@ function TrangLaSo() {
     );
   }
 
+  /*
+   * Phần đọc, viết MỘT lần cho cả hai nhánh.
+   *
+   * Khách và người đã đăng nhập chỉ khác lớp bọc bên ngoài, không khác nội dung.
+   * Chép đôi khối JSX thì sớm muộn hai bản lệch nhau, mà lệch ở đây nghĩa là
+   * khách thấy một sản phẩm khác người dùng thấy.
+   */
+  const phanDoc = (
+    <>
+          {gocNhin[0] && (
+            <GocNhinCard
+              gocNhin={
+                noiBatAi
+                  ? {
+                      ...gocNhin[0],
+                      noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
+                    }
+                  : gocNhin[0]
+              }
+              chinh
+            />
+          )}
+
+          <div className="grid gap-[16px] md:grid-cols-2">
+            {gocNhin.slice(1, 3).map((g) => (
+              <GocNhinCard key={g.id} gocNhin={g} nho />
+            ))}
+          </div>
+
+          {loi && (
+            <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
+              {loi}
+            </p>
+          )}
+
+        {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
+        {duocVao && khoiSau.length > 0 && (
+          <BangLuanGiai
+            khoi={khoiSau}
+            duongHoi={duongHoi}
+            day={dayLuanGiai}
+            duongVe={duongVe}
+          />
+        )}
+
+        {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ---------- */}
+        <section className="grid gap-[16px] md:grid-cols-2">
+          <div className="card flex flex-col gap-[12px]">
+            <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
+            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.quickRead.docDai}
+            </h2>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.sauMo}
+            </p>
+
+            {!duocVao ? (
+              <Link
+                href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                className="btn-outline btn-sm self-start"
+                onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'deep_read' })}
+              >
+                {t.quickRead.docDai}
+              </Link>
+            ) : dangChay ? (
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.dangDoc}
+              </p>
+            ) : (
+              <NutVien nho onClick={docSau} className="self-start">
+                {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
+              </NutVien>
+            )}
+
+            {ketQua && (
+              <>
+                <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
+              </>
+            )}
+          </div>
+
+          <div className="card flex flex-col gap-[12px]">
+            <span className="eyebrow">{t.nav.khamPha}</span>
+            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.quickRead.theoChuDeTieuDe}
+            </h2>
+            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.theoChuDeMo}
+            </p>
+            <div className="mt-auto flex flex-wrap gap-[12px]">
+              <Link
+                href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                className="btn-outline btn-sm"
+              >
+                {t.quickRead.khamPhaSau}
+              </Link>
+              <Link
+                href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
+                className="btn-outline btn-sm"
+              >
+                {t.quickRead.hoiThang}
+              </Link>
+            </div>
+          </div>
+        </section>
+    </>
+  );
+
   return (
-    <Shell className="flex flex-col gap-[32px] py-[32px]">
+    <Shell className="flex flex-col gap-[24px] py-[32px]">
       <CanhBaoRoiTrang
         bat={chuaLuu}
         daDangNhap={duocVao}
@@ -367,7 +495,6 @@ function TrangLaSo() {
         duongDangNhap={`/dang-nhap?intent=save_chart&next=${encodeURIComponent(duongVe)}`}
       />
 
-      {/* ---------- Quick Read: giá trị đầu tiên, hiện ngay, không chờ AI ---------- */}
       <section className="flex flex-col gap-[16px]">
         <div className="flex flex-wrap items-end justify-between gap-[16px]">
           <div>
@@ -386,7 +513,7 @@ function TrangLaSo() {
               hành động chính là kiểu phân tán mà bản audit chỉ ra. */}
           <div className="flex items-center gap-[12px]">
             {duocVao &&
-              (tuHoSoDaLuu || daLuu ? (
+              (daCoTrongDanhSach || daLuu ? (
                 <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
               ) : (
                 <NutVien nho onClick={luu}>
@@ -398,32 +525,6 @@ function TrangLaSo() {
             </NutVien>
           </div>
         </div>
-
-        {gocNhin[0] && (
-          <GocNhinCard
-            gocNhin={
-              noiBatAi
-                ? {
-                    ...gocNhin[0],
-                    noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
-                  }
-                : gocNhin[0]
-            }
-            chinh
-          />
-        )}
-
-        <div className="grid gap-[16px] md:grid-cols-2">
-          {gocNhin.slice(1, 3).map((g) => (
-            <GocNhinCard key={g.id} gocNhin={g} nho />
-          ))}
-        </div>
-
-        {loi && (
-          <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
-            {loi}
-          </p>
-        )}
       </section>
 
       {/* Khách gặp lời mời mở bức tranh đầy đủ ngay sau phần tổng quan */}
@@ -446,120 +547,66 @@ function TrangLaSo() {
         />
       )}
 
-      {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
-      {duocVao && khoiSau.length > 0 && (
-        <BangLuanGiai
-          khoi={khoiSau}
-          duongHoi={duongHoi}
-          day={dayLuanGiai}
-          duongVe={duongVe}
-        />
-      )}
+      {/*
+        Hai cột: lá số đứng yên bên trái, phần đọc cuộn bên phải.
 
-      {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ---------- */}
-      <section className="grid gap-[16px] md:grid-cols-2">
-        <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
-          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {t.quickRead.docDai}
-          </h2>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {t.quickRead.sauMo}
-          </p>
+        Chia 5/12 và 7/12 chứ không 50/50 — mệnh bàn là hình vuông nên quá nửa
+        màn là thừa chỗ trống, còn phần đọc thì càng rộng càng dễ đọc. Trên màn
+        1440 thì cột trái khoảng 540px, đủ để 12 cung không chen chữ.
 
-          {!duocVao ? (
-            <Link
-              href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
-              className="btn-outline btn-sm self-start"
-              onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'deep_read' })}
-            >
-              {t.quickRead.docDai}
-            </Link>
-          ) : dangChay ? (
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.dangDoc}
-            </p>
-          ) : (
-            <NutVien nho onClick={docSau} className="self-start">
-              {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
-            </NutVien>
-          )}
+        Lá số bên TRÁI vì nó là đối tượng, phần bên phải là lời giải thích cho
+        nó. Đọc từ vật thể sang lời giải thích thuận hơn chiều ngược lại.
 
-          {ketQua && (
-            <>
-              <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-            </>
-          )}
-        </div>
+        `items-start` là bắt buộc: ô lưới mặc định kéo dãn hết chiều cao, mà một
+        phần tử bị kéo dãn thì `sticky` không còn chỗ nào để dính.
 
-        <div className="card flex flex-col gap-[12px]">
-          <span className="eyebrow">{t.nav.khamPha}</span>
-          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {t.quickRead.theoChuDeTieuDe}
-          </h2>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {t.quickRead.theoChuDeMo}
-          </p>
-          <div className="mt-auto flex flex-wrap gap-[12px]">
-            <Link
-              href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
-              className="btn-outline btn-sm"
-            >
-              {t.quickRead.khamPhaSau}
-            </Link>
-            <Link
-              href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
-              className="btn-outline btn-sm"
-            >
-              {t.quickRead.hoiThang}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- Mệnh bàn: chế độ chuyên sâu, mở khi người dùng muốn ---------- */}
-      {duocVao && (
-        <section className="flex flex-col gap-[16px]">
-          <div className="flex flex-wrap items-end justify-between gap-[16px]">
-            <div>
-              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-                {t.quickRead.banDoTieuDe}{' '}
-                <span className="caption font-normal">· {t.quickRead.banDoPhu}</span>
+        Dưới 1024px thì xếp dọc và bỏ dính — màn hẹp mà dính một khối cao là ăn
+        mất chỗ đọc.
+      */}
+      {duocVao ? (
+        <div className="grid items-start gap-[24px] lg:grid-cols-12">
+          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-5 lg:max-h-[calc(100vh-48px)] lg:overflow-y-auto">
+            <div className="flex flex-wrap items-end justify-between gap-[10px]">
+              <h2 className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.quickRead.banDoTieuDe}
               </h2>
-              <p className="body-sm mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
-                {t.quickRead.banDoMo}
-              </p>
+              <div className="flex flex-wrap items-end gap-[10px]">
+                {hienMenhBan && (
+                  <label className="flex w-[120px] flex-col gap-[6px]">
+                    <span className="field-label">{t.quickRead.thangXem}</span>
+                    <OChon
+                      className="h-[38px]"
+                      value={thangXem}
+                      onChange={(e) => setThangXem(Number(e.target.value))}
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <option key={m} value={m}>
+                          {dien(t.banDo.thang, { thang: m })}
+                        </option>
+                      ))}
+                    </OChon>
+                  </label>
+                )}
+                <NutVien nho className="h-[38px] py-0" onClick={() => setHienMenhBan((v) => !v)}>
+                  {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
+                </NutVien>
+              </div>
             </div>
 
-            {/* Ô chọn tháng và nút thu gọn nằm chung một hàng, cùng chiều cao và
-                cùng căn đáy — trước đó nhãn của ô chọn đẩy nó lệch khỏi nút. */}
-            <div className="flex flex-wrap items-end gap-[10px]">
-              {hienMenhBan && (
-                <label className="flex w-[160px] flex-col gap-[6px]">
-                  <span className="field-label">{t.quickRead.thangXem}</span>
-                  <OChon
-                    className="h-[42px]"
-                    value={thangXem}
-                    onChange={(e) => setThangXem(Number(e.target.value))}
-                  >
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <option key={m} value={m}>
-                        {dien(t.banDo.thang, { thang: m })}
-                      </option>
-                    ))}
-                  </OChon>
-                </label>
-              )}
-              <NutVien className="h-[42px] py-0" onClick={() => setHienMenhBan((v) => !v)}>
-                {hienMenhBan ? t.quickRead.banDoDongNut : t.quickRead.banDoMoNut}
-              </NutVien>
-            </div>
-          </div>
+            {hienMenhBan && (
+              <TuViChart
+                laSo={laSo}
+                namXem={namXem}
+                thangXem={thangXem}
+                onNamXemChange={setNamXem}
+              />
+            )}
+          </aside>
 
-          {hienMenhBan && (
-            <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
-          )}
-        </section>
+          <div className="flex flex-col gap-[32px] lg:col-span-7">{phanDoc}</div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-[32px]">{phanDoc}</div>
       )}
     </Shell>
   );

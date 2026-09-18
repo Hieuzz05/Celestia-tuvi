@@ -444,7 +444,8 @@ export const en: TuDien = {
     chacChuaDu: 'not enough grounding in the sources',
     canCuDong: 'Hide the reasoning',
     canCuLaSo: 'From your chart',
-    canCuPhuongPhap: 'Method',
+    canCuPhuongPhap: 'Chart rule set used',
+    canCuPhuongPhapMo: 'This is the chart-calculation rule version, not a document in the library.',
     canCuChuDe: 'Topic detected',
     canCuKhongNguon:
       'No document in the library matched this question, so the technical claims were kept deliberately narrow.',
