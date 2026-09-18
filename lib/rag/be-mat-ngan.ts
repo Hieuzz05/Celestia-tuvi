@@ -6,6 +6,7 @@ import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
 import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
+import { suaCauKeSao } from './sua-chua';
 import { lapKeHoach, type ChuDe } from './planner';
 import { nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
@@ -179,14 +180,32 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
    * Cổng ngôn ngữ cũng chỉ soát phần thân thẻ, vì đó mới là phần người đọc
    * nhận như một nhận định.
    */
-  const gate = soatNgonNgu([insight, doiSong, matTrai].join(' '), [insight]);
+  /*
+   * Bước sửa chữa trước khi qua cổng.
+   *
+   * Thẻ này chỉ có ba câu, nên một câu kê hai tên sao là một phần ba thẻ hỏng.
+   * Loại cả thẻ thì mất một bài đúng vì một câu sai hình; bỏ qua thì luật thành
+   * lời khuyên. Sửa đúng câu ấy là cách thứ ba, và chỉ tốn thêm một lượt gọi
+   * nhỏ khi thật sự có câu phạm.
+   */
+  const daSua = await suaCauKeSao({ insight, doiSong, matTrai });
+
+  const gate = soatNgonNgu(
+    [daSua.insight, daSua.doiSong, daSua.matTrai].join(' '),
+    [daSua.insight]
+  );
   if (!gate.dat) {
     console.warn('[diem-noi-bat] không qua cổng ngôn ngữ', gate.loi.map((l) => l.ma));
     return null;
   }
 
   return {
-    noiDung: { insight, doiSong, matTrai, cauMangTheo: cauMangTheo ?? '' },
+    noiDung: {
+      insight: daSua.insight,
+      doiSong: daSua.doiSong,
+      matTrai: daSua.matTrai,
+      cauMangTheo: cauMangTheo ?? '',
+    },
     provider: kq.provider,
     model: kq.model,
     phienBan: nen.phienBan,

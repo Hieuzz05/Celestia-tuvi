@@ -7,6 +7,7 @@ import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
 import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
+import { suaCauKeSao } from './sua-chua';
 import { lapKeHoach } from './planner';
 import { nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
@@ -231,6 +232,27 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   if (ra.length < 5) {
     console.warn('[bang-linh-vuc] chỉ dựng được', ra.length, 'lĩnh vực — lùi về bản tất định');
     return null;
+  }
+
+  /*
+   * Sửa những câu kê sao trước khi qua cổng.
+   *
+   * Gom cả bảng vào một lần gọi: tám lĩnh vực mà sửa riêng từng câu là tám lượt
+   * cho một thứ vốn chỉ tốn một. Không có câu nào phạm thì hàm không gọi model.
+   */
+  const phang: Record<string, string> = {};
+  ra.forEach((k, i) => {
+    phang[`k${i}`] = [k.ketLuan, ...k.doan].join(' ');
+  });
+  const daSua = await suaCauKeSao(phang);
+  if (daSua !== phang) {
+    ra.forEach((k, i) => {
+      const cs = daSua[`k${i}`]?.split(/(?<=[.!?])\s+/).filter((c) => c.trim()) ?? [];
+      if (cs.length) {
+        k.ketLuan = cs[0];
+        k.doan = cs.slice(1);
+      }
+    });
   }
 
   const gate = soatNgonNgu(

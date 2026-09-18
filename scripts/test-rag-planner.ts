@@ -8,6 +8,7 @@
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { chonBoiCanh } from '../lib/rag/boi-canh-la-so';
 import { docObjectJson } from '../lib/rag/doc-json';
+import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
 import { nhanDangThucThe, TEN_SAO_TRONG_TU_DIEN, TU_DIEN_THUC_THE, traThucThe } from '../lib/rag/thuc-the';
@@ -228,6 +229,21 @@ console.log('\n== ĐỌC JSON CỦA MODEL ==\n');
   kiem('Không có object nào thì trả null', docObjectJson('chỉ là chữ') === null);
   kiem('Cắt giữa chừng thì trả null, không đoán bừa', docObjectJson('{"a":1,"b":') === null);
   kiem('Mảng ở ngoài cùng không bị nhận nhầm là object', docObjectJson('[1,2,3]') === null);
+}
+
+// ---- Đếm tên sao trong một câu ----
+console.log('\n== ĐẾM TÊN SAO ĐỂ BẮT CÂU KÊ SAO ==\n');
+{
+  const keSao = 'Thể hiện qua Vũ Khúc và Thiên Phủ trong cung Mệnh.';
+  const motSao = 'Vũ Khúc ở Mệnh cho cách nhìn thực tế.';
+  kiem('Câu không có sao thì đếm 0', demTenSao('Bạn quyết nhanh và ít khi đổi ý.') === 0);
+  kiem('Một tên sao đếm 1', demTenSao(motSao) === 1);
+  kiem('Hai tên sao đếm 2 và bị coi là kê sao', demTenSao(keSao) === 2 && laCauKeSao(keSao));
+  kiem(
+    'Nhắc lại cùng một sao không tính thành hai',
+    demTenSao('Vũ Khúc ở đây, và cũng chính Vũ Khúc làm nên nét ấy.') === 1
+  );
+  kiem('Một tên sao KHÔNG bị coi là kê sao', !laCauKeSao(motSao));
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
