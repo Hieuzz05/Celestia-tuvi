@@ -18,6 +18,9 @@ import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
  * trong nói về cái gì — nhưng không nhận phần luận và căn cứ.
  */
 export const dynamic = 'force-dynamic';
+// Tuyến này giờ có thể phải chờ model viết bài. Không đặt thì hàm bị cắt ở mức
+// mặc định và người dùng nhận lỗi cho một thứ vẫn đang chạy bình thường.
+export const maxDuration = 60;
 
 const soHopLe = (v: unknown, min: number, max: number) =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;

@@ -23,7 +23,8 @@ export type BeMat =
   | 'moc-giai-doan'
   | 'moc-nam'
   | 'moc-thang'
-  | 'luan-han-chi-tiet';
+  | 'luan-han-chi-tiet'
+  | 'bang-linh-vuc';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;
