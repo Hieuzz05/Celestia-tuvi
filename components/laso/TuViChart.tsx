@@ -137,9 +137,24 @@ export function TuViChart({
 
   return (
     <div className="flex flex-col gap-[18px]">
-      {/* Toolbar */}
+      {/*
+        Toolbar dính lên đầu khối cuộn.
+
+        Mệnh bàn cao hơn màn hình nên cột chứa nó tự cuộn bên trong, và thanh
+        này nằm trên cùng thì bị đẩy khuất ngay khi người dùng cuộn xuống xem
+        cung dưới — đúng lúc họ cần đổi năm hoặc tắt bớt lớp.
+
+        `-mx` rồi `px` bù lại để nền che kín mép khi nội dung trượt qua dưới.
+
+        CHỈ dính từ lg trở lên. Dưới đó cột trái không còn cuộn riêng nữa, nên
+        `sticky` sẽ bám vào khung nhìn và chui xuống dưới thanh điều hướng —
+        thanh đó cũng dính ở top-0 và có z-index cao hơn.
+      */}
       {!chiBanDo && (
-      <div className="no-print flex flex-wrap items-center gap-x-[24px] gap-y-[12px]">
+      <div
+        className="no-print -mx-[4px] flex flex-wrap items-center gap-x-[24px] gap-y-[12px] px-[4px] py-[8px] lg:sticky lg:top-0 lg:z-10"
+        style={{ background: 'var(--bg)' }}
+      >
         <div className="flex items-center gap-[12px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             {t.banDo.namXem}

@@ -487,7 +487,8 @@ function TrangLaSo() {
   );
 
   return (
-    <Shell className="flex flex-col gap-[24px] py-[32px]">
+    <div className="flex flex-col gap-[24px] py-[32px]">
+      <Shell className="flex flex-col gap-[24px]">
       <CanhBaoRoiTrang
         bat={chuaLuu}
         daDangNhap={duocVao}
@@ -547,6 +548,8 @@ function TrangLaSo() {
         />
       )}
 
+      </Shell>
+
       {/*
         Hai cột: lá số đứng yên bên trái, phần đọc cuộn bên phải.
 
@@ -563,18 +566,30 @@ function TrangLaSo() {
         Dưới 1024px thì xếp dọc và bỏ dính — màn hẹp mà dính một khối cao là ăn
         mất chỗ đọc.
       */}
+      {/*
+        Riêng khối này dùng 1400px thay vì 1200px của cả trang.
+
+        Mệnh bàn vẽ ở bề ngang gốc 920px rồi thu nhỏ cho vừa cột, nên cột hẹp là
+        chữ trong 12 cung bé đi theo. Ở 1200px thì nó chạy ở tỉ lệ 0,51 — đúng
+        một nửa thiết kế. Nới riêng khối này, giữ 1200px cho tiêu đề và các phần
+        khác để chúng vẫn thẳng hàng với thanh điều hướng.
+      */}
+      <div className="mx-auto w-full max-w-[1400px] px-[24px]">
       {duocVao ? (
         <div className="grid items-start gap-[24px] lg:grid-cols-12">
-          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-5 lg:max-h-[calc(100vh-48px)] lg:overflow-y-auto">
+          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)] lg:overflow-y-auto">
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 
-          <div className="flex flex-col gap-[32px] lg:col-span-7">{phanDoc}</div>
+          <div className="flex flex-col gap-[32px] lg:col-span-6">{phanDoc}</div>
         </div>
       ) : (
-        <div className="flex flex-col gap-[32px]">{phanDoc}</div>
+        // Khách chỉ có một cột, nên giữ lại bề ngang 1200px của cả trang: một
+        // cột chữ trải hết 1352px thì mỗi dòng dài quá tầm mắt.
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-[32px]">{phanDoc}</div>
       )}
-    </Shell>
+      </div>
+    </div>
   );
 }
 
