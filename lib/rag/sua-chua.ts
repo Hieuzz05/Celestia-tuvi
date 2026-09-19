@@ -36,6 +36,17 @@ export function laCauKeSao(cau: string, tran = 2): boolean {
   return demTenSao(cau) >= tran;
 }
 
+/**
+ * Một CÂU có dùng tiếng lóng nội bộ của engine không.
+ *
+ * Cố ý viết lại ở đây thay vì mượn từ `ngon-ngu.ts`: bộ soát ở đó làm việc trên
+ * CẢ BÀI và trộn hai cách khớp (có dấu / không dấu) cho các cụm khác nhau. Ở
+ * đây chỉ cần một phép thử trên một câu, và nó phải khớp CÓ DẤU — bỏ dấu thì
+ * "cản" trùng "cần", và câu "những yếu tố cần thiết" sẽ bị lôi đi sửa oan.
+ */
+const TIENG_LONG_MOT_CAU =
+  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang (?:đỡ|cản)|các yếu tố|lực đỡ|nghiêng về phía (?:thuận|cản)|hai lực ngang nhau/iu;
+
 /** Nhiều câu trong một chuỗi — tách theo dấu kết câu */
 function tachCau(doan: string): string[] {
   return doan.split(/(?<=[.!?])\s+/).filter((c) => c.trim().length > 0);
@@ -109,4 +120,86 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
     ra[khoa] = cs.map((c, i) => sua[`${khoa}|${i}`] ?? c).join(' ');
   }
   return ra;
+}
+
+/**
+ * Viết lại câu dùng tiếng lóng nội bộ của engine.
+ *
+ * VÌ SAO CẦN, dù cổng ngôn ngữ đã xếp lỗi này ở mức "chặn".
+ *
+ * "Chặn" ở `soatNgonNgu` nghĩa là GHI VÀO TRACE ở mức nặng nhất, không nghĩa là
+ * giữ chữ lại: `app/api/luan-giai/route.ts` đưa `dat` vào nhật ký rồi vẫn trả
+ * `kq.van` cho người đọc. Đúng cho mọi luật chặn khác ở tệp đó, và đúng ở chỗ
+ * nó đúng — vứt cả bài vì một câu sai giọng là phản ứng quá tay.
+ *
+ * Nhưng với lỗi này thì để nguyên cũng không được: đo trên 69 bài, 2 bài vẫn
+ * viết "các yếu tố cản vẫn khá mạnh". Hai bài ấy tới người đọc với đúng câu đã
+ * làm họ phàn nàn.
+ *
+ * Nên dùng cách thứ ba, cùng cách `suaCauKeSao` đã dùng: sửa đúng câu sai, giữ
+ * phần còn lại. Chỉ gọi model khi thật sự có câu phạm — 3% số bài.
+ *
+ * Khác `suaCauKeSao` ở một điểm quan trọng: ở đây model phải THÊM thông tin, vì
+ * "yếu tố cản" không có tên nào để giữ lại. Nên phải đưa kèm danh sách dữ kiện
+ * có tên để nó lấy ra dùng, chứ không được để nó tự nghĩ.
+ */
+export async function suaCauTiengLong(
+  van: string,
+  tenDuKien: string[]
+): Promise<string> {
+  const cau = tachCau(van);
+  const pham = cau
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => TIENG_LONG_MOT_CAU.test(c));
+  if (!pham.length) return van;
+
+  const system = `Bạn là biên tập viên của Celestia. Việc duy nhất: viết lại từng câu cho bỏ hết tiếng lóng nội bộ.
+
+BỊ CẤM, vì người đọc không tra được và không đối chiếu được với đời mình:
+"yếu tố đỡ", "yếu tố cản", "các yếu tố", "đẩy tới", "lực đỡ", "nghiêng về phía thuận", và mọi câu đếm dữ kiện kiểu "bảy yếu tố đang đỡ so với hai yếu tố cản".
+
+VIẾT THAY VÀO ĐÓ: gọi ĐÍCH DANH dữ kiện trên lá số rồi dịch nghĩa ngay.
+Các tên được phép dùng, lấy từ chính bài này: ${tenDuKien.length ? tenDuKien.join(', ') : '(bài không nêu tên nào — lúc đó hãy nói thẳng chuyện quan sát được ở đời thực, đừng nhắc "yếu tố")'}
+
+LUẬT:
+- Giữ nguyên kết luận và giữ nguyên hướng nghiêng. Đây là sửa chữ, không phải đổi ý.
+- Không thêm tên sao nào NGOÀI danh sách trên. Bịa một cái tên còn tệ hơn câu gốc.
+- Không dài hơn câu gốc quá một nửa.
+- Không thêm lời khuyên, không thêm câu hỏi.
+
+Sai:  "Năm 2026 chưa rõ khả năng mua nhà, vì các yếu tố cản vẫn khá mạnh."
+Đúng: "Năm 2026 chưa phải lúc: Hóa Kỵ đóng ở phần nền tảng vật chất, nghĩa là việc ở đây hay vướng và hay phải làm lại."
+
+TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
+{ "cau": [ { "id": "C1", "moi": "..." } ] }`;
+
+  const danhSach = pham.map((p, i) => `C${i + 1}. ${p.c}`).join('\n');
+
+  const sua = new Map<number, string>();
+  try {
+    const kq = await goiVoiFallback(
+      { system, user: danhSach, maxTokens: 900, temperature: 0.3 },
+      undefined
+    );
+    const tho = docObjectJson(kq.text);
+    const mang = Array.isArray((tho as { cau?: unknown } | null)?.cau)
+      ? ((tho as { cau: unknown[] }).cau as { id?: unknown; moi?: unknown }[])
+      : [];
+    for (const m of mang) {
+      if (typeof m.id !== 'string' || typeof m.moi !== 'string') continue;
+      const so = Number(m.id.replace(/^C/i, ''));
+      const goc = pham[so - 1];
+      if (!goc) continue;
+      const moi = m.moi.trim();
+      // Sửa xong mà vẫn phạm, hoặc cụt hơn hẳn câu gốc, thì coi như hỏng
+      if (moi.length < 15 || TIENG_LONG_MOT_CAU.test(moi)) continue;
+      sua.set(goc.i, moi);
+    }
+  } catch {
+    // Sửa hỏng thì giữ nguyên văn: một câu sai giọng vẫn hơn không có câu nào
+    return van;
+  }
+  if (!sua.size) return van;
+
+  return cau.map((c, i) => sua.get(i) ?? c).join(' ');
 }

@@ -100,21 +100,44 @@ Sai: "Cân nhắc kỹ trước khi quyết định", "Tham khảo ý kiến ng�
 const THEO_Y_DINH: Record<string, string> = {
   'quyet-dinh': `NGƯỜI HỎI ĐANG PHẢI QUYẾT MỘT VIỆC.
 
-KHÔNG mở bài bằng lời từ chối. "Lá số không xác định được việc này" là né câu hỏi — lá số nói được rất nhiều về cách người này quyết, chỗ họ dễ hụt, và quãng này đang đỡ hay đang cản.
+KHÔNG mở bài bằng lời từ chối. "Lá số không xác định được việc này" là né câu hỏi — lá số nói được rất nhiều về cách người này quyết, chỗ họ dễ hụt, và quãng này đang mở đường hay đang cản lại.
 
 TRẢ LỜI THẲNG TRƯỚC, PHÂN TÍCH SAU.
-Trường "ketLuan" là thứ người đọc đọc đầu tiên và là thứ họ mang về. Một đến hai câu, nghiêng hẳn về một bên, bám đúng HƯỚNG NGHIÊNG mà engine đã đếm ở khối dưới.
+Trường "ketLuan" là thứ người đọc đọc đầu tiên và là thứ họ mang về. Một đến hai câu, nghiêng hẳn về một bên, bám đúng xu hướng mà engine đã chốt ở khối DỮ KIỆN CỦA PHẦN ĐANG HỎI.
 Vẫn cấm hứa một sự việc sẽ xảy ra. "Năm nay nghiêng về giữ hơn là chuyển" là nhận định — được. "Bạn sẽ chuyển việc vào tháng 5" là lời hứa — cấm.
 
-NĂM VIỆC BẮT BUỘC, không bỏ cái nào:
+BẢY VIỆC BẮT BUỘC, không bỏ cái nào:
 
 (0) "ketLuan" — câu trả lời thẳng cho đúng câu vừa hỏi, 1–2 câu.
-    Dùng nguyên văn nhãn hướng nghiêng của engine trong câu đó.
-    Đúng: "Năm 2026 nghiêng rõ về giữ hơn là chuyển: ba yếu tố đang cản so với một yếu tố đỡ ở phần công việc."
-    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở." — nói đúng mà không nói gì.
-    Con số đỡ/cản nói MỨC ĐỘ nghiêng. Nó không nói vì sao là người này.
-    Nên câu kết luận hoặc ý ĐẦU TIÊN bắt buộc nêu tên ít nhất MỘT cách cục có trong dữ kiện, và dịch nó ngay trong cùng câu hoặc câu kế.
-    Thiếu cách cục thì bài đọc này dùng được cho bất kỳ ai có cùng tương quan số — tức là mất đúng thứ làm nó riêng.
+    Nói xu hướng bằng LỜI THƯỜNG, rồi nêu ĐÍCH DANH dữ kiện sinh ra nó.
+
+    Đúng: "Năm 2026 nghiêng về giữ hơn là chuyển: tiểu hạn năm nay rơi vào phần
+           công việc nhưng đi kèm Hóa Kỵ, nghĩa là việc ở đây hay vướng và hay
+           phải làm lại — đổi chỗ lúc này là mang nguyên cái vướng ấy sang nơi mới."
+
+    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở."
+          — nói đúng mà không nói gì.
+    Sai:  "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu
+           tố cản ở phần công việc."
+          — đây là SỔ SÁCH NỘI BỘ của hệ thống, không phải tiếng Việt. "Đẩy tới"
+            là đẩy cái gì, "yếu tố" là yếu tố nào? Người đọc không tra được,
+            không đối chiếu được với đời mình, nên không có lý do nào để tin.
+            Câu này bị cổng ngôn ngữ CHẶN.
+
+    Một câu trả lời chỉ đứng được khi nó có TÊN đi kèm: tên sao, tên lớp hạn
+    (đại vận, tiểu hạn, lưu niên), tên cách cục. Luận Tử Vi là nói ra bạn đọc
+    được gì và đọc từ đâu — bỏ phần "từ đâu" thì còn lại là một lời phỏng đoán.
+    Nêu tên rồi phải dịch nghĩa ngay trong cùng câu hoặc câu kế.
+
+(0b) VÀ nêu tên ÍT NHẤT MỘT CÁCH CỤC có trong dữ kiện, ngay ở kết luận hoặc ý
+    đầu tiên, dịch nghĩa liền sau.
+
+    Đây là việc RIÊNG, không phải một phần của (0). Tên sao KHÔNG thay được tên
+    cách cục, và đã nêu đủ hai tên sao rồi vẫn còn thiếu việc này.
+    Lý do: sao thì lá số nào cũng có, và hai người khác nhau vẫn dễ trùng vài
+    sao ở cùng một cung. Cách cục là tổ hợp — nó là thứ hiếm, nên nó là thứ làm
+    bài đọc này khác bài đọc của người bên cạnh.
+    Dữ kiện không có cách cục nào thì thôi, không được tự ghép tên mới.
 
 (1) "tomTat" phải nêu QUÃNG ĐANG ĐỨNG BẰNG SỐ TUỔI, lấy nguyên từ dữ kiện đại vận.
     Dữ kiện đại vận luôn mở đầu bằng "Đại vận X–Y tuổi" — chép đúng cặp số ấy.
@@ -145,19 +168,45 @@ Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung v�
 
 Họ hỏi thẳng. Trả lời thẳng.
 
-Khác câu "có nên" ở chỗ: họ KHÔNG xin lời khuyên, họ xin bạn đọc lá số rồi nói ra bạn thấy gì. Đưa cho họ một danh sách tiêu chí để tự quyết là trả lời sai câu hỏi.
+Khác câu "có nên" ở chỗ: họ KHÔNG xin lời khuyên, họ xin bạn ĐỌC LÁ SỐ rồi nói ra bạn thấy gì. Đưa cho họ một danh sách tiêu chí để tự quyết là trả lời sai câu hỏi.
 
-BỐN VIỆC BẮT BUỘC:
+Và vì họ xin bạn đọc lá số, phần "đọc được từ đâu" ở đây nặng hơn mọi loại câu khác. Một nhận định không kèm tên dữ kiện là một lời phỏng đoán, và họ đã có thể tự phỏng đoán mà không cần hỏi.
+
+NĂM VIỆC BẮT BUỘC:
 
 (0) "ketLuan" — câu trả lời, 1–2 câu, NGHIÊNG HẲN về một bên.
-    Dùng nguyên văn nhãn hướng nghiêng mà engine đã đếm ở khối HƯỚNG NGHIÊNG.
-    Đúng: "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu tố cản ở phần công việc, và một trong số đó là nét khó ngồi yên một chỗ lâu."
-    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở." — nói đúng mà không nói gì.
-    Sai:  "Bạn sẽ chuyển việc vào tháng 5." — hứa một sự việc, cấm tuyệt đối.
+    Người ta hỏi "có hay không". Câu đầu phải nói được nó nghiêng về "có" hay
+    về "chưa", bằng lời thường — rồi NÊU ĐÍCH DANH dữ kiện đã dẫn tới đó.
 
-    Con số đỡ/cản nói MỨC ĐỘ nghiêng. Nó không nói vì sao là người này.
-    Nên câu kết luận hoặc ý ĐẦU TIÊN bắt buộc nêu tên ít nhất MỘT cách cục có trong dữ kiện, và dịch nó ngay trong cùng câu hoặc câu kế.
-    Thiếu cách cục thì bài đọc này dùng được cho bất kỳ ai có cùng tương quan số — tức là mất đúng thứ làm nó riêng.
+    Đúng: "Năm 2026 chuyện này nghiêng về phía có: tiểu hạn năm nay rơi đúng vào
+           phần bạn đời, mà ở đó sẵn có Hồng Loan — chuyện đôi lứa đến theo đường
+           tự nhiên, ít phải sắp đặt. Lưu Thiên Mã cũng chạy qua đây trong năm,
+           nên phần này khó đứng yên: đổi chỗ, đổi người, đổi nhịp sinh hoạt đều
+           là cửa cho chuyện ấy tới."
+
+    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở."
+          — nói đúng mà không nói gì.
+    Sai:  "Bạn sẽ gặp người ấy vào tháng 5." — hứa một sự việc, cấm tuyệt đối.
+    Sai:  "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu
+           tố cản ở phần tình cảm."
+          — "đẩy tới", "yếu tố đỡ", "yếu tố cản" là SỔ SÁCH NỘI BỘ của hệ thống,
+            không phải tiếng Việt. Đếm dữ kiện ra một con số rồi đưa con số cho
+            người đọc là đưa họ thứ không tra được và không đối chiếu được.
+            Câu này bị cổng ngôn ngữ CHẶN.
+
+    Xu hướng nói CÓ HAY KHÔNG. Tên dữ kiện nói VÌ SAO LÀ NGƯỜI NÀY. Thiếu vế
+    thứ hai thì bài đọc dùng được cho bất kỳ ai. Nêu tên xong phải dịch nghĩa
+    ngay trong cùng câu hoặc câu kế — nêu mà không dịch là vi phạm.
+
+(0b) VÀ nêu tên ÍT NHẤT MỘT CÁCH CỤC có trong dữ kiện, ngay ở kết luận hoặc ý
+    đầu tiên, dịch nghĩa liền sau.
+
+    Đây là việc RIÊNG, không phải một phần của (0). Tên sao KHÔNG thay được tên
+    cách cục, và đã nêu đủ hai tên sao rồi vẫn còn thiếu việc này.
+    Lý do: sao thì lá số nào cũng có, và hai người khác nhau vẫn dễ trùng vài
+    sao ở cùng một cung. Cách cục là tổ hợp — nó là thứ hiếm, nên nó là thứ làm
+    bài đọc này khác bài đọc của người bên cạnh.
+    Dữ kiện không có cách cục nào thì thôi, không được tự ghép tên mới.
 
 (1) Ngay sau kết luận, nói DẤU HIỆU NHẬN BIẾT: thứ quan sát được ở đời thực cho biết hướng đó đang thành hình hay đang tắt. Người đọc phải tự đối chiếu được trong vài tuần tới.
     Viết như một điều SẼ THẤY, không như một việc PHẢI LÀM. Đúng: "Dấu hiệu rõ nhất là lời mời đến từ người quen cũ chứ không từ tin tuyển dụng." Sai: "Hãy chú ý đến những đề xuất mới." — đó là ra lệnh quan sát, và Celes không giao việc.
@@ -171,6 +220,9 @@ BỐN VIỆC BẮT BUỘC:
   'thoi-diem': `NGƯỜI HỎI MUỐN BIẾT LÚC NÀO.
 
 "ketLuan" là BẮT BUỘC: nói thẳng quãng nào, bằng số tuổi hoặc số năm, ngay câu đầu.
+Và nói VÌ SAO là quãng ấy, bằng tên dữ kiện — lớp hạn nào đi qua phần đang hỏi,
+sao nào chạy theo năm đó — rồi dịch nghĩa ngay. Một mốc thời gian không có căn
+cứ đi kèm là một con số người đọc không có cách nào tin.
 
 Trả lời bằng KHOẢNG, không bằng ngày. Mốc lấy từ dữ kiện đại vận và lưu niên, nói bằng số tuổi hoặc số năm.
 Nói rõ dấu hiệu nào cho biết quãng ấy đã tới — thứ quan sát được ở đời thực, không phải thứ chỉ đọc được trên lá số.

@@ -16,7 +16,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.4';
+export const PHIEN_BAN_PLANNER = '2026.09.5';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -115,6 +115,23 @@ const TU_KHOA_CHU_DE: Record<Exclude<ChuDe, 'tong-quan'>, string[]> = {
     'to tinh', 'cau hon', 'quay lai', 'nguoi cu', 'crush', 'hen ho',
     'song thu', 'ngoai tinh', 'tha thu', 'yeu xa', 'gia dinh chong',
     'gia dinh vo', 'dam cuoi',
+    /*
+     * Cách người ta hỏi chuyện tình cảm mà KHÔNG gọi tên nó.
+     *
+     * "Có ai đang để ý tôi không" rơi vào 'tong-quan' trước khi có mấy dòng
+     * này, và hậu quả không dừng ở một nhãn sai trong log: 'tong-quan' không
+     * ứng vào cung nào, nên khối dữ kiện trả về RỖNG và bài mất sạch căn cứ.
+     * Câu trả lời chung chung người dùng nhận về bắt đầu từ đúng chỗ này.
+     *
+     * Đây lại là hình câu hỏi phổ biến nhất của người chưa có ai: họ không hỏi
+     * "tình duyên tôi thế nào", họ hỏi "có ai để ý tôi không".
+     *
+     * 'co ai' cố ý KHÔNG có mặt: nó đứng đầu quá nhiều câu chẳng liên quan
+     * ("có ai từng làm việc này chưa"). Đặc trưng nằm ở 'de y', 'thich toi'.
+     */
+    'de y', 'thich toi', 'don phuong', 'tim hieu', 'nguoi thuong',
+    'duyen', 'tim duoc nguoi', 'gap duoc nguoi', 'tan tinh', 'theo duoi',
+    'mai mot', 'cap ke',
   ],
   'gia-dao': [
     'gia dinh', 'cha me', 'bo me', 'anh em', 'anh chi em', 'con cai',

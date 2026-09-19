@@ -17,7 +17,7 @@ import { boDau } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.3';
+export const PHIEN_BAN_NGON_NGU = '2026.09.4';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -116,6 +116,79 @@ const PHAN_QUYET = [
   'chac chan se',
   'nhat dinh se',
 ];
+
+/**
+ * TIẾNG LÓNG NỘI BỘ CỦA ENGINE — chặn, không cảnh báo.
+ *
+ * Đây là lỗi đã ra tới người dùng thật, nên nó không được ở mức cảnh báo. Câu
+ * nhận về:
+ *
+ *   "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu tố
+ *    cản ở phần tình cảm."
+ *
+ * Mọi chữ trong đó đều là từ vựng hạch toán của hệ thống: engine đếm dữ kiện
+ * hai bên rồi dán nhãn cho hiệu số. Người đọc không tra được "đẩy tới" là đẩy
+ * cái gì, không biết "yếu tố" nào, và không đối chiếu được gì với đời mình.
+ *
+ * Vì sao CHẶN chứ không cảnh báo, khác với các lỗi giọng khác ở tệp này:
+ *
+ *   - Lỗi giọng làm bài kém hay. Lỗi này làm bài KHÔNG CÓ NỘI DUNG. Một câu
+ *     trả lời không có tên dữ kiện nào thì không phải một bài luận Tử Vi, nó
+ *     là một phỏng đoán có dấu chấm câu.
+ *   - Nó đã lọt một lần, và lọt vì chính prompt dạy model viết như vậy — hai
+ *     khối ý định đều để câu ấy làm ví dụ "Đúng". Khi một lỗi vào được qua
+ *     đường prompt thì mục cảnh báo không giữ được nó: cảnh báo không ai đọc.
+ *
+ * Danh sách chỉ gồm cụm KHÔNG có nghĩa đời thường trong ngữ cảnh này. "Cản trở"
+ * hay "thuận lợi" không nằm đây — chúng là tiếng Việt bình thường. Thứ bị chặn
+ * là cách nói ĐẾM và cách TRỪU TƯỢNG HÓA dữ kiện thành "yếu tố".
+ */
+const TIENG_LONG_ENGINE = [
+  'cac yeu to thuan',
+  'nghieng ve phia thuan',
+  'hai luc ngang nhau',
+  'tuong quan cat hung',
+];
+
+/**
+ * Phần còn lại phải khớp CÓ DẤU — bỏ dấu là bắt nhầm.
+ *
+ * Bộ eval bắt được ngay ở lần chạy đầu: bài viết "những yếu tố cần thiết để thu
+ * hút nhà đầu tư" bị chặn, vì bỏ dấu thì "cần" và "cản" cùng thành "can". Câu
+ * ấy là tiếng Việt bình thường và hoàn toàn đúng.
+ *
+ * Cùng hố với ba lỗi đã có ở tệp này — "không hợp lý" bị bắt vì chứa "không
+ * hợp", "Thiên Cơ" bị bắt vì chứa "thiên cơ". Khớp không dấu là công cụ tốt cho
+ * cụm dài và đặc trưng, và là công cụ sai cho cụm ngắn: tiếng Việt bỏ dấu thì
+ * "đỡ / đó / độ" về một chữ, "cản / cần / căn" về một chữ, và "lực đỡ" đụng
+ * thẳng vào "lúc đó".
+ *
+ * Một cổng chặn bắt nhầm thì người sửa sẽ học cách bỏ qua cả bộ soát — lúc đó
+ * nó vô dụng hơn cả không có.
+ */
+const TIENG_LONG_CO_DAU =
+  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang đỡ|yếu tố đang cản|lực đỡ|nghiêng về phía cản/iu;
+
+/**
+ * Câu ĐẾM dữ kiện: "bảy yếu tố đang đỡ so với hai yếu tố cản".
+ *
+ * Tách khỏi danh sách cụm vì nó là một HÌNH DẠNG câu, không phải một cụm cố
+ * định — con số đổi theo lá số nên không liệt kê hết được.
+ *
+ * BẮT BUỘC có từ chỉ chiều (đỡ / cản / thuận / nghịch) đi sau. Bản đầu chỉ tìm
+ * "một số + yếu tố", và bộ eval bắt nó chặn nhầm ngay:
+ *
+ *   "quãng này có nhiều cản trở từ Phá Quân cùng với Văn Xương — HAI YẾU TỐ NÀY
+ *    cho thấy sự chuyển mình sẽ không dễ dàng"
+ *
+ * Câu ấy là thứ NGƯỢC LẠI với lỗi cần chặn: nó đã nêu đích danh hai cái tên,
+ * rồi mới trỏ ngược về chúng. Thứ bị cấm là đếm những thứ KHÔNG có tên.
+ *
+ * Dùng bản CÓ DẤU. Bỏ dấu xong thì "nam" (số 5) trùng "năm" (đơn vị thời gian),
+ * và luật sẽ bắt nhầm cả "năm 2026".
+ */
+const CAU_DEM_YEU_TO =
+  /(?:\d+|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)\s+yếu\s+tố\s+(?:đang\s+)?(?:đỡ|cản|thuận|nghịch)/iu;
 
 /**
  * Rò rỉ RAG ra giao diện người dùng — cấm tuyệt đối theo mục 10.
@@ -322,6 +395,37 @@ export function soatNgonNgu(
       viDu: [...new Set(chuaDich)].join(', '),
     });
   }
+  /*
+   * TÊN CUNG lọt ra mặt trước.
+   *
+   * Chuẩn ngôn ngữ cấm tên cung ở mọi dạng và đưa sẵn bảng dịch sang phần đời,
+   * nhưng cho tới giờ chỉ có prompt nhắc — không có phép đếm nào. Bộ eval bắt
+   * được ngay: một bài viết "tiểu hạn năm nay rơi vào phần Phúc Đức". Đổi giới
+   * từ từ "cung" sang "phần" không làm nó dễ hiểu hơn chút nào.
+   *
+   * CẢNH BÁO chứ không chặn, cùng lý do với các lỗi giọng khác: một cái tên lọt
+   * ra không đáng vứt cả bài đúng. Nhưng phải đếm được, vì lớp dữ kiện mới
+   * khuyến khích nêu tên sao và tên lớp hạn — và khuyến khích nêu tên là làm
+   * tăng áp lực lên đúng cái ranh giới này.
+   *
+   * "Mệnh" đòi giới từ đi kèm: đứng một mình nó trùng "số mệnh", "vận mệnh",
+   * "sứ mệnh" — những chữ tiếng Việt bình thường, không phải tên cung.
+   */
+  const cungLo = [
+    ...(van.match(
+      /\b(?:Phụ Mẫu|Phúc Đức|Điền Trạch|Quan Lộc|Nô Bộc|Thiên Di|Tật Ách|Tài Bạch|Tử Tức|Phu Thê|Huynh Đệ)\b/giu
+    ) ?? []),
+    ...(van.match(/(?:cung|phần)\s+Mệnh\b/giu) ?? []),
+  ];
+  if (cungLo.length) {
+    loi.push({
+      ma: 'lo-ten-cung',
+      mucDo: 'canh-bao',
+      moTa: 'Gọi thẳng tên cung thay vì phần đời mà nó nói tới — người đọc không tra được.',
+      viDu: [...new Set(cungLo)].join(', '),
+    });
+  }
+
   // Gỡ nhãn phương pháp trước khi soát: nó chứa tên hệ phái nhưng được phép hiện.
   const khongDau = boDau(van).replace(/celestia[- ][a-z- ]+phai/g, 'phuong-phap');
   const cum = cumTu(khongDau);
@@ -335,6 +439,29 @@ export function soatNgonNgu(
       mucDo: 'chan',
       moTa: 'Nhắc tới tài liệu, hệ phái hoặc độ liên quan — những thứ chỉ được nằm ở trace quản trị.',
       viDu: roRi.join(', '),
+    });
+  }
+
+  /*
+   * Tiếng lóng engine — chặn ngang hàng với rò rỉ RAG.
+   *
+   * Không đi qua `demCoPhuDinh`: phủ định không cứu được lỗi này. "Không phải
+   * là yếu tố cản" vẫn bắt người đọc hiểu "yếu tố cản" là gì, và họ vẫn không
+   * có cách nào biết.
+   */
+  const long = [
+    ...dem(cum, TIENG_LONG_ENGINE),
+    ...(van.match(new RegExp(TIENG_LONG_CO_DAU, 'giu')) ?? []),
+    ...(van.match(CAU_DEM_YEU_TO) ?? []),
+  ];
+  if (long.length) {
+    loi.push({
+      ma: 'tieng-long-engine',
+      mucDo: 'chan',
+      moTa:
+        'Nói bằng từ vựng hạch toán của hệ thống thay vì nêu tên dữ kiện trên lá số. ' +
+        'Người đọc không tra được "yếu tố" nào, nên câu này không mang thông tin.',
+      viDu: [...new Set(long)].join(', '),
     });
   }
 

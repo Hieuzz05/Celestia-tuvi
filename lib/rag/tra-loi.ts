@@ -14,6 +14,7 @@ import {
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
+import { suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -335,10 +336,31 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     cungTrongTam: keHoach.cungLienQuan[0],
   });
 
-  const van = dungVan(daLoc, {
+  const vanTho = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
     laCauNoi: laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
   });
+
+  /*
+   * Sửa câu dùng tiếng lóng nội bộ, TRƯỚC khi soát lần cuối.
+   *
+   * Cổng ngôn ngữ xếp lỗi này ở mức "chặn", nhưng "chặn" ở đó nghĩa là ghi vào
+   * trace ở mức nặng nhất — nó không giữ chữ lại, và route vẫn trả `van` cho
+   * người đọc. Đúng cho mọi luật chặn khác, vì vứt cả bài vì một câu sai giọng
+   * là phản ứng quá tay.
+   *
+   * Với lỗi này thì để nguyên cũng không được: đo trên 69 bài, 2 bài vẫn viết
+   * "các yếu tố cản vẫn khá mạnh" — đúng câu đã làm người dùng phàn nàn. Nên
+   * sửa đúng câu ấy, giữ phần còn lại, và chỉ gọi model khi thật sự có câu phạm.
+   *
+   * Đưa kèm tên dữ kiện engine đã đọc được: câu "yếu tố cản" không còn cái tên
+   * nào để giữ lại, nên người sửa phải được đưa tên, không được tự nghĩ ra.
+   */
+  const van = await suaCauTiengLong(
+    vanTho,
+    nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []
+  );
+
   const ketQuaNgonNgu = soatNgonNgu(
     van,
     daLoc.yChinh.map((y) => y.tieuDe || y.noiDung),

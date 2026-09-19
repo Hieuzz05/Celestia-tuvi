@@ -381,6 +381,31 @@ const PHU_TINH_VI: Record<string, string> = {
   'Địa Kiếp': 'dễ mất mát bất ngờ ở chỗ bạn tưởng đã chắc, nên phần này không nên dồn hết trứng một giỏ',
   'Thiên Hình': 'giữ nguyên tắc chặt, và thường tự phạt mình nặng hơn người khác phạt bạn',
   'Thiên Riêu': 'nhạy chuyện tình cảm, dễ bị cuốn vào thứ mình biết là không nên',
+  /*
+   * Nhóm đào hoa và nhóm cô quả — thêm muộn, và việc thiếu chúng là một lỗ hổng
+   * thật chứ không phải chuyện làm cho đủ bảng.
+   *
+   * `yeuToCuaCung` và `dauMocCuaCung` đều bỏ qua sao KHÔNG có nét viết sẵn, vì
+   * đưa một cái tên không giải nghĩa được vào prompt là mở đường cho model tự
+   * nghĩ nghĩa. Hệ quả đo được: người hỏi "có ai đang để ý tôi không" nhận về
+   * một bài không hề nhắc tới Hồng Loan hay Đào Hoa đang đóng ở đâu — đúng nhóm
+   * sao mà câu hỏi ấy hỏi tới. Engine không giấu chúng; nó chưa từng đọc được.
+   */
+  'Đào Hoa': 'dễ được để ý, và thường là được để ý trước khi bạn kịp chủ động gì',
+  'Hồng Loan': 'chuyện đôi lứa ở phần này đến theo đường tự nhiên, ít phải sắp đặt',
+  'Thiên Hỷ': 'hay có tin vui do người khác mang tới, không phải từ việc bạn tự xoay',
+  'Cô Thần': 'dễ thấy một mình ngay giữa chỗ đông, và hay tự chọn đứng ngoài trước khi bị bỏ lại',
+  'Quả Tú': 'giữ khoảng cách như một phản xạ, nên người muốn đến gần thường phải kiên nhẫn hơn mức thường',
+  'Thiên Khốc': 'hay chạm lại chuyện cũ chưa xong, và nỗi buồn thường đến muộn hơn sự việc',
+  'Thiên Hư': 'thấy trống ngay cả lúc không thiếu gì — đây là cảm giác, không phải hoàn cảnh',
+  'Long Trì': 'được việc nhờ giữ được chừng mực, nhất là ở chỗ cần người biết điều',
+  'Phượng Các': 'có gu và có duyên bề ngoài, nên bạn hay được chọn vì ấn tượng đầu',
+  'Quốc Ấn': 'được giao phần việc có thực quyền, thường sớm hơn tuổi',
+  'Ân Quang': 'hay được người khác nhớ tới lúc có cơ hội, kể cả khi bạn không xin',
+  'Thiên Quý': 'gặp người sẵn lòng đỡ, và thường là người chẳng liên quan gì tới bạn trước đó',
+  'Thiên Không': 'thứ tưởng nắm được hay hụt vào phút cuối, nên phần này đừng tính là đã xong',
+  'Kiếp Sát': 'hay mất một thứ đúng lúc đang cần nó nhất, và thường mất vì chuyện ngoài tầm',
+  'Phá Toái': 'việc ở phần này hay vỡ ở đoạn cuối, chỗ đáng lẽ chỉ còn hoàn thiện',
   'Hóa Lộc': 'phần này thường mở ra cơ hội thật, không phải cảm giác dễ chịu suông',
   'Hóa Quyền': 'phần này bạn nắm được quyền quyết, đổi lại là gánh trách nhiệm nặng hơn',
   'Hóa Khoa': 'phần này được người ngoài công nhận, tiếng tốt đến trước kết quả',
@@ -404,6 +429,21 @@ const PHU_TINH_EN: Record<string, string> = {
   'Địa Kiếp': 'can lose suddenly where you thought you were safe, so this is not the place to put everything',
   'Thiên Hình': 'hold to your rules strictly, and usually punish yourself harder than anyone else would',
   'Thiên Riêu': 'feel things keenly, and are easily pulled toward what you know you should not',
+  'Đào Hoa': 'get noticed easily, usually before you have done anything about it',
+  'Hồng Loan': 'find that closeness here arrives naturally, with little arranging',
+  'Thiên Hỷ': 'tend to get good news carried to you by someone else rather than earned alone',
+  'Cô Thần': 'can feel alone in a full room, and often step outside before anyone leaves you out',
+  'Quả Tú': 'keep distance by reflex, so anyone coming closer has to be more patient than usual',
+  'Thiên Khốc': 'keep brushing against unfinished business, and the grief arrives later than the event',
+  'Thiên Hư': 'feel empty even when nothing is missing — this is a feeling, not a circumstance',
+  'Long Trì': 'get further by keeping proportion, especially where people value restraint',
+  'Phượng Các': 'have taste and outward charm, so you often get picked on first impression',
+  'Quốc Ấn': 'are handed work with real authority, usually earlier than your years',
+  'Ân Quang': 'get remembered when opportunities come round, even when you never asked',
+  'Thiên Quý': 'meet people willing to help, usually people with no prior tie to you',
+  'Thiên Không': 'see what seemed secured slip at the last moment, so nothing here is done until it is done',
+  'Kiếp Sát': 'lose something right when you need it most, usually to causes outside your reach',
+  'Phá Toái': 'watch things here break at the last stretch, where only finishing was left',
   'Hóa Lộc': 'this area tends to open real opportunity, not just a pleasant feeling',
   'Hóa Quyền': 'this is where you hold the decision, and carry the heavier responsibility for it',
   'Hóa Khoa': 'this is where others recognise you — the reputation arrives before the result',
@@ -512,14 +552,22 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       nhipGiu: 'Giữ nhịp',
       nhipRaSoat: 'Rà soát',
       nhipThuHep: 'Thu hẹp',
+      /*
+       * Bốn câu này người dùng đọc thẳng trên màn Hành trình, nên chúng phải là
+       * tiếng Việt chứ không phải sổ sách của engine.
+       *
+       * Bản cũ viết "các yếu tố thuận đang nhiều hơn yếu tố cản" — đúng về mặt
+       * kế toán và vô nghĩa với người đọc: "yếu tố" là yếu tố nào, và họ tra ở
+       * đâu? Cùng một lỗi đã rò ra mặt trước ở khối chat, và nó có gốc ở đây.
+       */
       nhipTienMo:
-        'Các yếu tố thuận đang nhiều hơn yếu tố cản. Đây là quãng đẩy được, miễn là đẩy đúng chỗ bạn vốn mạnh.',
+        'Quãng này mở hơn là khép: việc đẩy ra thường có chỗ đi, ít gặp cửa đóng. Đẩy đúng chỗ bạn vốn mạnh thì đi được xa hơn bình thường.',
       nhipGiuMo:
-        'Thuận và cản gần ngang nhau. Giữ nguyên guồng đang chạy thường có lợi hơn mở thêm mặt trận mới.',
+        'Không có chiều nào thắng hẳn chiều nào. Giữ nguyên guồng đang chạy thường có lợi hơn mở thêm một mặt trận mới.',
       nhipRaSoatMo:
         'Có vài chỗ cần kiểm lại trước khi đi tiếp. Không phải dừng, mà là xem lại thứ mình đang dựa vào.',
       nhipThuHepMo:
-        'Yếu tố cản đang trội. Thu gọn lại những thứ đang dàn mỏng thường đỡ mệt hơn là cố giữ hết.',
+        'Quãng này khép hơn là mở: việc dễ tắc ở đoạn giữa, và thứ đang dàn mỏng là thứ tốn sức nhất. Thu gọn lại thường đỡ mệt hơn cố giữ hết.',
       chuDeChinh: 'Chủ đề chính',
       tieuDeGiaiDoan: 'Một quãng dài nghiêng về {chuDe}',
       tieuDeNam: 'Năm {nam}: {chuDe} là thứ dễ nổi lên',
@@ -529,9 +577,9 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
       tanDung: 'Nên tận dụng',
       luuY: 'Nên lưu ý',
       tanDungTrong:
-        'Quãng này không có yếu tố thuận nào nổi hẳn lên — thường là lúc kết quả đến từ việc làm đều hơn là từ cơ hội bất ngờ.',
+        'Quãng này không có chỗ dựa nào nổi hẳn lên — thường là lúc kết quả đến từ việc làm đều, không từ cơ hội bất ngờ.',
       luuYTrong:
-        'Không có yếu tố cản nào nổi hẳn lên. Điều dễ hỏng nhất trong quãng như vậy lại là chủ quan.',
+        'Không có chỗ vướng nào nổi hẳn lên. Điều dễ hỏng nhất trong một quãng như vậy lại là chủ quan.',
       nhipHanhDong: 'Nhịp hành động',
       nhomTongHop: 'Nếu ghép lại',
       nenLop: 'Nền của quãng này',
@@ -588,9 +636,19 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'Về {nhan}, chỗ để nhìn là {cung}, và ở đó {trangThai}.{them}',
       ],
       linhVucTrong: 'Phần {nhan} không đọc được từ lá số này.',
-      trangThaiThuan: 'các yếu tố đang đỡ nhiều hơn cản',
-      trangThaiCan: 'các yếu tố đang cản nhiều hơn đỡ',
-      trangThaiCanBang: 'thuận và cản gần ngang nhau',
+      /*
+       * Ba câu này hiện thẳng trên màn Hành trình, mỗi lĩnh vực một câu.
+       *
+       * Bản cũ viết "các yếu tố đang đỡ nhiều hơn cản" — người đọc không tra
+       * được "yếu tố" nào và không đối chiếu được gì. Cổng ngôn ngữ giờ CHẶN
+       * đúng cách nói ấy, và bộ kiểm bắt được nó ở chính đây.
+       *
+       * Viết lại thành thứ QUAN SÁT ĐƯỢC: nói việc ở phần đó chạy ra sao, chứ
+       * không nói về sổ sách của engine.
+       */
+      trangThaiThuan: 'việc ở đây thường có chỗ đi, ít gặp cửa đóng',
+      trangThaiCan: 'việc ở đây hay tắc ở đoạn giữa, xong muộn hơn dự tính',
+      trangThaiCanBang: 'không chiều nào thắng hẳn, nên nó chạy theo thứ bạn dồn sức vào',
       khongThayTheYTe: 'Phần sức khoẻ nói về nhịp sống và mức năng lượng, không thay thế tư vấn y tế.',
     },
     luanSau: {
@@ -909,9 +967,9 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'For {nhan}, the place to look is {cung}, and there {trangThai}.{them}',
       ],
       linhVucTrong: '{nhan} cannot be read from this chart.',
-      trangThaiThuan: 'the factors support more than they resist',
-      trangThaiCan: 'the factors resist more than they support',
-      trangThaiCanBang: 'support and resistance are close to even',
+      trangThaiThuan: 'things here tend to find a way through, with few closed doors',
+      trangThaiCan: 'things here tend to stall halfway and finish later than planned',
+      trangThaiCanBang: 'neither side clearly wins, so it follows wherever you put your effort',
       khongThayTheYTe:
         'The health section is about rhythm and energy levels, and is no substitute for medical advice.',
     },

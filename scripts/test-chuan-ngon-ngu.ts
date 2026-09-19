@@ -160,9 +160,23 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
     'Đây là xu hướng của giai đoạn, không phải một sự việc chắc chắn sẽ xảy ra.',
     'Câu miễn trừ có phủ định thì không bị coi là phán quyết'
   );
+  /*
+   * Câu mẫu cố ý KHÔNG chứa tên cung.
+   *
+   * Bản đầu viết "Thiên Cơ tại cung Quan Lộc…", và luật 'lo-ten-cung' thêm sau
+   * bắt đúng nó. Luật bắt đúng — chính câu mẫu mới là câu vi phạm, vì chuẩn
+   * ngôn ngữ cấm tên cung ở mọi dạng. Sửa câu mẫu, không nới luật.
+   */
   khongBat(
-    'Thiên Cơ tại cung Quan Lộc cho thấy nhịp làm việc linh hoạt.',
+    'Thiên Cơ đóng ở phần công việc cho thấy nhịp làm việc linh hoạt.',
     'Tên sao Thiên Cơ không bị coi là từ huyền bí'
+  );
+  // Và chính luật ấy phải bắt được khi tên cung lọt ra thật
+  kiem(
+    'Tên cung lọt ra mặt trước thì bị cảnh báo',
+    soatNgonNgu('Nhịp làm việc của bạn đọc từ cung Quan Lộc.', ['x']).loi.some(
+      (l) => l.ma === 'lo-ten-cung'
+    )
   );
   khongBat(
     'Cách làm đó không hợp lý với nhịp hiện tại của bạn.',

@@ -108,6 +108,62 @@ export const BO_VANG_QUYET_DINH: CauVangQuyetDinh[] = [
     tuDoiTuong: ['học', 'đi học', 'bằng cấp', 'tuổi', 'trường'],
     the: ['education'],
   },
+
+  /*
+   * ---------- Câu HỎI XU HƯỚNG, không phải câu xin lời khuyên ----------
+   *
+   * Mười lăm câu trên đều là "tôi có nên…". Chúng đo đúng một hình: người hỏi
+   * đang cầm một lựa chọn và muốn ai đó nghiêng giúp.
+   *
+   * Nhóm này là hình còn lại, và là hình đang bị trượt: "có ai đang để ý tôi
+   * không", "năm nay tôi có chuyển việc không". Người hỏi KHÔNG cầm lựa chọn
+   * nào — họ xin một nhận định về thứ sẽ tới. Lá số trả lời hình này rõ hơn cả
+   * hình kia, vì đây đúng là thứ lớp hạn nói: quãng nào mở ra chuyện gì.
+   *
+   * Không có nhóm này trong bộ đo thì mọi cải thiện cho nó không đo được, và
+   * lỗi "trả lời chung chung" quay lại lúc nào không ai biết. Một bộ vàng chỉ
+   * đo được đúng những hình câu hỏi mà nó chứa.
+   */
+  {
+    cauHoi: 'Có ai đang để ý tôi không?',
+    tuDoiTuong: ['để ý', 'người', 'tình cảm', 'quan hệ', 'gặp', 'ai đó', 'yêu'],
+    the: ['love', 'xu-huong'],
+  },
+  {
+    cauHoi: 'năm 2026 tôi có chuyển việc ko',
+    tuDoiTuong: ['chuyển việc', 'việc', 'công việc', 'nghề', 'công ty', 'đổi'],
+    the: ['career', 'xu-huong'],
+  },
+  {
+    cauHoi: 'Năm nay tôi có cưới được không?',
+    tuDoiTuong: ['cưới', 'kết hôn', 'hôn nhân', 'bạn đời', 'người ấy'],
+    the: ['love', 'xu-huong'],
+  },
+  {
+    cauHoi: 'Năm nay tiền bạc của tôi có khá hơn không?',
+    tuDoiTuong: ['tiền', 'thu nhập', 'khá hơn', 'tài chính', 'lương'],
+    the: ['finance', 'xu-huong'],
+  },
+  {
+    cauHoi: 'Sức khoẻ tôi năm nay có vấn đề gì không?',
+    tuDoiTuong: ['sức khoẻ', 'sức khỏe', 'mệt', 'ngủ', 'năng lượng', 'người'],
+    the: ['health', 'xu-huong'],
+  },
+  {
+    cauHoi: 'sang năm tôi có mua được nhà ko',
+    tuDoiTuong: ['nhà', 'mua', 'chỗ ở', 'tiền', 'vay'],
+    the: ['finance', 'xu-huong'],
+  },
+  {
+    cauHoi: 'Chuyện tình cảm hiện tại của tôi có đi xa được không?',
+    tuDoiTuong: ['tình cảm', 'mối quan hệ', 'hai người', 'người yêu', 'đi xa', 'lâu dài'],
+    the: ['love', 'xu-huong'],
+  },
+  {
+    cauHoi: 'Năm nay tôi có được thăng chức không?',
+    tuDoiTuong: ['thăng chức', 'vị trí', 'sếp', 'việc', 'lên chức', 'quản lý'],
+    the: ['career', 'xu-huong'],
+  },
 ];
 
 /** Ba lá số dùng cho phép đo hoán lá số — khác nhau cả Mệnh, Cục lẫn giới tính */
