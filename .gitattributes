@@ -1,0 +1,5 @@
+# PRODUCT-BACKLOG.xlsx là tệp nhị phân. Không khai ra thì git cố gộp nó như
+# văn bản khi hai máy cùng sửa, và kết quả là một tệp Excel hỏng — mà nó hỏng
+# lặng lẽ: git báo gộp thành công, Excel mới báo không mở được.
+*.xlsx binary
+*.pdf  binary

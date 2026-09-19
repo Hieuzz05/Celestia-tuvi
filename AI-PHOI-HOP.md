@@ -107,10 +107,38 @@ vay. Doc den khoi thu hai la doan duoc khoi thu ba noi gi o dong nao.
 
 Xong việc thì:
 
-1. `git push -u origin viec/<ten>` — Vercel tự dựng bản xem thử.
-2. Chuyển dòng trong `TRANG-THAI.md` từ "Đang làm" xuống "Vừa xong", kèm mã commit.
-3. Báo cho chủ dự án link bản xem thử. **Không tự gộp vào `main`.** Việc gộp là
+1. Cập nhật `PRODUCT-BACKLOG.xlsx` **trong cùng commit đó** — xem mục 5b ngay dưới.
+2. `git push -u origin viec/<ten>` — Vercel tự dựng bản xem thử.
+3. Chuyển dòng trong `TRANG-THAI.md` từ "Đang làm" xuống "Vừa xong", kèm mã commit.
+4. Báo cho chủ dự án link bản xem thử. **Không tự gộp vào `main`.** Việc gộp là
    quyết định của con người.
+
+### 5b. Cập nhật bản theo dõi tính năng
+
+`PRODUCT-BACKLOG.xlsx` là chỗ chủ dự án theo dõi sản phẩm có gì và chạy thế nào.
+Nó chỉ dùng được nếu việc cập nhật nằm TRONG luồng làm việc — để thành "nhớ thì
+làm" là hai tuần sau nó mô tả một sản phẩm không còn tồn tại, mà người đọc vẫn
+tin nó. Lúc ấy nó tệ hơn không có gì.
+
+| Vừa đổi gì | Sửa sheet nào |
+|---|---|
+| Một tính năng | `Backlog` — sửa dòng tương ứng, cập nhật cả cột `Cập nhật` và `Commit` |
+| Một luồng logic | `Logic chi tiết` — Backlog nói CÓ GÌ, Logic nói CHẠY THẾ NÀO |
+| Bất cứ thứ gì ở trên | `Nhật ký thay đổi` — thêm một dòng, cột `Vì sao` là cột quan trọng nhất |
+| Thêm tính năng mới | `Backlog` — cấp ID kế tiếp, **không dùng lại ID cũ** |
+| Vừa trả giá để biết một luật | Cột `Luật bất biến` của `Logic chi tiết` |
+| Một con số đo được đổi | `Chỉ số & cấu hình` |
+
+Bỏ một tính năng thì **không xoá dòng** — đổi trạng thái thành `Tạm dừng` và ghi
+lý do. Dòng bị xoá là một câu hỏi "sao hồi đó bỏ cái này?" không ai trả lời được.
+
+Sửa bằng `openpyxl` trong một script ở thư mục tạm, đừng mở bằng tay: mở bằng
+Excel rồi lưu lại sẽ đổi định dạng của những ô bạn không đụng tới, và diff thành
+vô nghĩa.
+
+Hai máy cùng sửa tệp này thì git **không gộp được** — nó là tệp nhị phân. Nên
+mỗi lần sửa phải `git pull` ngay trước, và đẩy ngay sau. Đụng xung đột thì lấy
+bản trên `main`, áp lại thay đổi của mình, đẩy lên.
 
 ---
 
@@ -222,6 +250,7 @@ xuống trình duyệt không đổi một byte.
 | `supabase/DA-CHAY.md` | SQL nào đã chạy |
 | `HUONG-DAN.md` | Vận hành: nạp tài liệu, cấu hình model, hạn mức |
 | `PHOI-HOP.md` | Bản dành cho chủ dự án. Đọc để biết họ được hướng dẫn thế nào |
+| `PRODUCT-BACKLOG.xlsx` | Toàn bộ tính năng + logic từng luồng + nhật ký. **Đọc trước khi sửa, cập nhật sau khi sửa** |
 | `D:\Celestia\Celestia_Universal_AI_Interpretation_Framework_v1.pdf` | Khung luận giải. Mọi chữ Celes viết ra đều phải theo tệp này |
 
 Tệp cuối **không nằm trong git** vì là tài liệu sản phẩm. Máy nào cũng phải có bản

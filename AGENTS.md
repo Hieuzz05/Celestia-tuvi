@@ -265,6 +265,21 @@ npm run kiem-tra-sso      # trạng thái đăng nhập Google
 
 Nếu lint tăng quá 7, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
 
+**Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
+logic, hay thêm một luật bất biến mới, thì cập nhật `PRODUCT-BACKLOG.xlsx` TRONG CÙNG commit đó.
+
+- Đổi tính năng → sửa dòng tương ứng ở sheet `Backlog`, cập nhật cả hai cột `Cập nhật` và `Commit`.
+- Đổi logic → sửa sheet `Logic chi tiết`. Backlog nói CÓ GÌ, Logic nói CHẠY THẾ NÀO; sửa mỗi
+  Backlog là để lại một bản mô tả logic đã sai.
+- Luôn thêm một dòng vào sheet `Nhật ký thay đổi`. Cột `Vì sao` là cột quan trọng nhất — sau vài
+  tháng nó là thứ duy nhất còn giải thích được quyết định.
+- Tính năng mới thì cấp ID kế tiếp, không dùng lại ID cũ.
+
+Để việc này thành "nhớ thì làm" là hai tuần sau tệp đó mô tả một sản phẩm không còn tồn tại, và
+lúc ấy nó tệ hơn không có gì — vì người đọc vẫn tin nó.
+
+Sửa tệp .xlsx bằng openpyxl (`python -c` hoặc một script trong thư mục tạm), đừng mở bằng tay.
+
 Cách sửa lỗi `set-state-in-effect` khi cần nạp dữ liệu lúc mở trang: tách hàm đọc thành một hàm
 RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt state trong `.then` của effect. Xem
 `app/admin/models/page.tsx` hoặc `app/admin/knowledge/page.tsx`.

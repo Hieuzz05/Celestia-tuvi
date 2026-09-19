@@ -33,6 +33,9 @@ Dự án đang được phát triển bởi hai AI trên hai máy khác nhau.
 - [supabase/DA-CHAY.md](./supabase/DA-CHAY.md) — tệp SQL nào đã chạy.
 - [NGHIEM-THU-RAG.md](./NGHIEM-THU-RAG.md) — tiêu chí nghiệm thu kho tri thức và mức đã đo.
 - [NOI-DUNG-TUNG-MAN.md](./NOI-DUNG-TUNG-MAN.md) — từng màn: đâu do AI viết, kỳ làm mới, đâu là chữ cố định.
+- [PRODUCT-BACKLOG.xlsx](./PRODUCT-BACKLOG.xlsx) — **toàn bộ tính năng, logic từng luồng, trạng thái,
+  và nhật ký thay đổi.** Đây là bản theo dõi chính; sửa tính năng hay sửa logic là phải cập nhật.
+  Sheet `Đọc trước` ghi luật cập nhật.
 
 ## Công nghệ
 
