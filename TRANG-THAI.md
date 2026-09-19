@@ -28,7 +28,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
-| Spec Chat Quality v1: P1-6b — chat biết bài tổng quan đã nói gì | `(bản này)` | 19/09/2026 |
+| CEL-088 — trí nhớ hội thoại xuyên phiên (KHÔNG cần SQL mới) | `(bản này)` | 19/09/2026 |
+| Spec Chat Quality v1: P1-6b — chat biết bài tổng quan đã nói gì | `261dde7` | 19/09/2026 |
 | Spec Chat Quality v1: P1-5/7/8 — giọng chắc chắn, lối đi tiếp, lớp tự kiểm | `492fe16` | 19/09/2026 |
 | Spec Chat Quality v1: P2-10 — bộ đo chat quyết định, 6 tiêu chí | `c95fbbd` | 19/09/2026 |
 | Spec Chat Quality v1: P0-3 + P0-4 — chat ra hình dạng tin nhắn, biết hỏi ngược | `f27d802` | 19/09/2026 |
@@ -58,9 +59,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
   - Lưu trạng thái quan hệ ở Kết nối (§27) — cần quyết định sản phẩm trước.
   - Tách phần miễn phí và phần khoá (§28) — cần bảng giá trước.
   - Các kiểu quan hệ gia đình chi tiết — cần quyết định phạm vi trước.
-  - **Trí nhớ hội thoại xuyên phiên (CEL-088)** — cần một bảng Supabase mới, mà
-    bảng mới phải chạy SQL TAY rồi ghi vào `supabase/DA-CHAY.md`. Việc của chủ
-    dự án.
   - **Streaming cho chat (CEL-089)** — bẫy đã lường: validator chạy SAU khi có
     JSON đầy đủ, nên chỉ được stream `tomTat` trước rồi mới đổ các ý ĐÃ LỌC.
 - **Trần chất lượng hiện tại là model.** Chuỗi model để `gpt-4o-mini` đứng đầu

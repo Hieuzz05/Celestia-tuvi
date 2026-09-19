@@ -16,6 +16,7 @@ import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useQuyen } from '@/lib/support/useQuyen';
+import { bamLaSoTrinhDuyet, docHoiThoai, luuLuot, xoaHoiThoai } from '@/lib/store/hoi-thoai';
 import { dien, useT } from '@/lib/i18n/context';
 
 interface TinNhan {
@@ -70,6 +71,14 @@ function TrangHoiDap() {
   // Lá số đã chốt để hỏi, giữ bằng khoá chứ không phải cờ true/false: đổi ngày
   // sinh là khoá lệch ngay, nên không có đường nào lỡ hỏi tiếp trên lá số khác.
   const [khoaDaChot, setKhoaDaChot] = useState<string | null>(null);
+  /*
+   * Khoá nhóm hội thoại — bằm của lá số đang hỏi.
+   *
+   * Giữ riêng khỏi `khoaDaChot` vì hai thứ khác nhau: `khoaDaChot` là cờ "đã
+   * chốt lá số nào để hỏi", còn cái này là khoá dùng để đọc/ghi xuống database.
+   * Nó bất đồng bộ (Web Crypto) nên không tính thẳng trong lúc render được.
+   */
+  const [khoaHoiThoai, setKhoaHoiThoai] = useState<string | null>(null);
   const cuoiRef = useRef<HTMLDivElement>(null);
   const daHoiTuUrl = useRef(false);
 
@@ -89,6 +98,43 @@ function TrangHoiDap() {
   useEffect(() => {
     cuoiRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [tinNhan, dangChay]);
+
+  /*
+   * Bằm lá số đang hỏi, rồi đọc lại mạch hội thoại của chính nó.
+   *
+   * `huy` chặn đúng một lỗi: đổi lá số hai lần thật nhanh thì hai lượt đọc chạy
+   * song song, và lượt về SAU có thể là lượt của lá số TRƯỚC — người dùng thấy
+   * hội thoại của người khác dán vào màn hình đang mở.
+   */
+  useEffect(() => {
+    const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
+    /*
+     * Bằm theo FORM HIỆN TẠI, không chờ người dùng bấm nút chốt.
+     *
+     * `khoaDaChot` chỉ được đặt khi bấm nút, nên giữa lúc sửa ngày sinh và lúc
+     * bấm, nó vẫn trỏ về lá số cũ. Nếu khoá hội thoại đi theo nó thì câu hỏi về
+     * lá số mới bị cất vào mạch của lá số cũ — và lần sau mở lên, hai người
+     * lẫn vào nhau.
+     */
+    if (!ngay || !thang || !nam) return;
+
+    let huy = false;
+    (async () => {
+      const khoa = await bamLaSoTrinhDuyet(ngay, thang, nam, form.gio, form.gioiTinh);
+      if (huy) return;
+      setKhoaHoiThoai(khoa);
+
+      const cu = await docHoiThoai(khoa);
+      if (huy || cu.length === 0) return;
+      // Chỉ nạp khi màn còn trống: người dùng vừa hỏi xong mà mạch cũ đổ đè lên
+      // là mất câu họ vừa nhận.
+      setTinNhan((ds) => (ds.length ? ds : cu.map((l) => ({ vaiTro: l.vaiTro, noiDung: l.noiDung }))));
+    })();
+
+    return () => {
+      huy = true;
+    };
+  }, [form.ngaySinh, form.gio, form.gioiTinh]);
 
   const laSo = (() => {
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
@@ -182,6 +228,10 @@ function TrangHoiDap() {
           goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
         },
       ]);
+      // Cất CẢ CẶP sau khi đã có câu trả lời. Cất câu hỏi ngay lúc gửi thì model
+      // hỏng sẽ để lại một câu lơ lửng, và lần mở sau Celes đọc nó như một lượt
+      // đã xong. Không chờ: cất hỏng không được làm chậm màn hình.
+      if (khoaHoiThoai) void luuLuot(khoaHoiThoai, cau, data.traLoi, data.model);
       quyenCeles.taiLai();
     } catch {
       setLoi(t.hoiCeles.loi);
@@ -432,8 +482,19 @@ function TrangHoiDap() {
               </p>
             )}
 
+            {/*
+              Từ khi hội thoại được cất lên máy chủ, nút này không còn là dọn
+              màn hình nữa. Người dùng bấm nó là muốn thứ họ đã kể biến mất
+              thật — nên phải xoá cả ở database, không chỉ ở state.
+            */}
             {tinNhan.length > 0 && (
-              <button onClick={() => setTinNhan([])} className="link-text self-start">
+              <button
+                onClick={() => {
+                  setTinNhan([]);
+                  if (khoaHoiThoai) void xoaHoiThoai(khoaHoiThoai);
+                }}
+                className="link-text self-start"
+              >
                 {t.hoiCeles.xoaHoiThoai}
               </button>
             )}
