@@ -13,6 +13,7 @@ import {
 } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
+import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -60,6 +61,8 @@ export interface DauVaoTraLoi {
 
 export interface KetQuaTraLoi {
   van: string;
+  /** Lối đi tiếp — giao diện dựng, KHÔNG nằm trong `van` */
+  loiDi: LoiDiTiep[];
   coCauTruc: TraLoiCoCauTruc | null;
   goi: GoiBangChung;
   kiemDuyet: KetQuaKiemDuyet | null;
@@ -94,13 +97,21 @@ export interface NguCanhVan {
   yDinh?: YDinh;
   /** Câu hỏi hiện tại là câu nối tiếp mạch đang nói dở */
   laCauNoi?: boolean;
-  /** Lối đi tiếp, do bảng tra dựng — xem hinh-dang-tra-loi.ts */
-  loiDi?: LoiDiTiep[];
 }
 
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
   const tinNhan = nc.yDinh === 'tra-cuu' || nc.laCauNoi === true || t.yChinh.length <= 2;
-  const phan: string[] = [t.tomTat.trim()];
+
+  /*
+   * Kết luận đứng TRƯỚC tóm tắt, không phải trong nó.
+   *
+   * Người hỏi "năm 2026 có chuyển việc không" cần câu trả lời ở dòng đầu, chứ
+   * không phải ở đoạn thứ tư sau khi đã đọc hết phần phân tích. Tách riêng
+   * thành một đoạn để nó đứng một mình — gộp vào tomTat là nó chìm ngay.
+   */
+  const phan: string[] = [];
+  if (t.ketLuan) phan.push(t.ketLuan.trim());
+  phan.push(t.tomTat.trim());
 
   for (const y of t.yChinh) {
     /*
@@ -151,15 +162,13 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
   if (t.hoiLai) phan.push(t.hoiLai.trim());
 
   /*
-   * Lối đi tiếp, dựng từ bảng tra — model không bao giờ sinh URL.
+   * Lối đi tiếp KHÔNG nằm trong bài nữa.
    *
-   * Đặt cuối cùng và viết thành một dòng liên kết markdown: người đọc đã đọc
-   * xong thì mới cần biết đi đâu tiếp, đặt lên trên là cắt ngang mạch đọc.
+   * Bản trước nhét nó vào chính chuỗi markdown, nên nó đọc như một phần của
+   * bài luận — người dùng đọc xong một đoạn Celes vừa nói rồi vấp vào hai cái
+   * liên kết. Nó là điều hướng, không phải nội dung. Giờ tuyến trả nó ra riêng
+   * và giao diện dựng, cạnh các chip gợi ý.
    */
-  if (nc.loiDi?.length) {
-    phan.push(nc.loiDi.map((l) => `[${l.nhan}](${l.duong})`).join(' · '));
-  }
-
   return phan.filter(Boolean).join('\n\n');
 }
 
@@ -179,7 +188,7 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
  * `neuThi` nào thì giữ nguyên — thà giọng sai còn hơn mất hết lời khuyên.
  */
 function gomLoiKhuyen(t: TraLoiCoCauTruc, yDinh: YDinh): TraLoiCoCauTruc {
-  if (yDinh !== 'quyet-dinh') return t;
+  if (yDinh !== 'quyet-dinh' && yDinh !== 'co-khong') return t;
   if (!t.yChinh.some((y) => y.neuThi)) return t;
   return { ...t, canNhac: [], buocTiepTheo: [] };
 }
@@ -259,7 +268,33 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
   const daNoiTruoc = await ketLuanBaiTongQuan(vao.chartHash, vao.namXem);
-  const { system, user } = dungPromptCoCanCu(goi, vao.lichSu ?? [], daNoiTruoc);
+
+  /*
+   * Hướng nghiêng chỉ tính cho câu CẦN một câu trả lời thẳng.
+   *
+   * "Tính cách tôi thế nào" không có bên nào để nghiêng về, và ép một hướng
+   * vào đó là bịa ra một câu hỏi người ta không hỏi.
+   */
+  const canNghieng =
+    keHoach.yDinh === 'quyet-dinh' ||
+    keHoach.yDinh === 'co-khong' ||
+    keHoach.yDinh === 'thoi-diem';
+  const nghieng = canNghieng
+    ? tinhNghiengVe({
+        laSo: vao.laSo,
+        chuDe: keHoach.chuDe,
+        lopHan: keHoach.lopHan,
+        namXem: vao.namXem,
+        thangXem: vao.thangXem,
+      })
+    : null;
+
+  const { system, user } = dungPromptCoCanCu(
+    goi,
+    vao.lichSu ?? [],
+    daNoiTruoc,
+    khoiNghiengVe(nghieng)
+  );
 
   const truocModel = Date.now();
   const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
@@ -273,6 +308,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   if (!coCauTruc) {
     return {
       van: kq.text,
+      loiDi: [],
       coCauTruc: null,
       goi,
       kiemDuyet: null,
@@ -292,15 +328,16 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
   const daLoc = gomLoiKhuyen(daLocY, keHoach.yDinh);
 
+  const loiDi = loiDiTiep({
+    chuDe: keHoach.chuDe,
+    lopHan: keHoach.lopHan,
+    yDinh: keHoach.yDinh,
+    cungTrongTam: keHoach.cungLienQuan[0],
+  });
+
   const van = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
     laCauNoi: laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
-    loiDi: loiDiTiep({
-      chuDe: keHoach.chuDe,
-      lopHan: keHoach.lopHan,
-      yDinh: keHoach.yDinh,
-      cungTrongTam: keHoach.cungLienQuan[0],
-    }),
   });
   const ketQuaNgonNgu = soatNgonNgu(
     van,
@@ -313,6 +350,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   return {
     van,
+    loiDi,
     coCauTruc: daLoc,
     goi,
     kiemDuyet: ketQuaKiem,
@@ -333,6 +371,7 @@ export function phienBanHienTai(): Record<string, string> {
     phuongPhap: PHUONG_PHAP.phienBan,
     planner: PHIEN_BAN_PLANNER,
     cachCuc: PHIEN_BAN_CACH_CUC,
+    nghieng: PHIEN_BAN_NGHIENG,
     truyHoi: PHIEN_BAN_TRUY_HOI,
     schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
     validator: PHIEN_BAN_VALIDATOR,

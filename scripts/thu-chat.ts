@@ -44,6 +44,13 @@ async function main() {
   console.log('\n--- BÀI NGƯỜI ĐỌC NHẬN ---\n');
   console.log(kq.van);
 
+  // Lối đi tiếp KHÔNG nằm trong bài — giao diện vẽ riêng. In tách ra ở đây cho
+  // đúng với thứ người dùng thật sự thấy.
+  if (kq.loiDi.length) {
+    console.log('\n[lối đi tiếp — giao diện vẽ riêng, không nằm trong bài]');
+    for (const l of kq.loiDi) console.log(`   ${l.nhan} -> ${l.duong}`);
+  }
+
   console.log(`\n${'-'.repeat(72)}\n--- PHẦN KIỂM ---`);
   console.log(`model      ${kq.provider}/${kq.model}`);
   console.log(`độ trễ     truy hồi ${kq.doTreMs.truyHoi}ms · model ${kq.doTreMs.model}ms`);
@@ -56,7 +63,8 @@ async function main() {
     return;
   }
 
-  console.log(`\nhoiLai     ${c.hoiLai ?? '(KHÔNG CÓ)'}`);
+  console.log(`\nketLuan    ${c.ketLuan ?? '(KHÔNG CÓ)'}`);
+  console.log(`hoiLai     ${c.hoiLai ?? '(KHÔNG CÓ)'}`);
   console.log(`goiYTiep   ${c.goiYTiep?.length ? c.goiYTiep.join(' · ') : '(KHÔNG CÓ)'}`);
   console.log(`\nneuThi theo từng ý:`);
   for (const y of c.yChinh) {

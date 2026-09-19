@@ -148,6 +148,14 @@ export async function POST(req: Request) {
        * biến một câu trả lời cụt thành một cuộc nói chuyện.
        */
       goiYTiep: kq.coCauTruc?.goiYTiep ?? [],
+      /*
+       * Lối đi tiếp — dựng từ bảng tra ở máy chủ, giao diện chỉ vẽ.
+       *
+       * Trả ra riêng chứ không nhét vào `traLoi`: nó là điều hướng, không phải
+       * nội dung. Nằm trong bài markdown thì người đọc vấp vào hai cái liên kết
+       * ngay giữa những câu Celes vừa nói.
+       */
+      loiDi: kq.loiDi,
       canCu: !laQuanTri ? undefined : {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
         cachNoi: kq.coCauTruc?.cachNoi ?? null,

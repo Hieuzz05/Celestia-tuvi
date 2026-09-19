@@ -17,7 +17,7 @@ import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
  * là phép so sánh chuỗi.
  */
 
-export const PHIEN_BAN_SCHEMA_OUTPUT = '1.3';
+export const PHIEN_BAN_SCHEMA_OUTPUT = '1.4';
 
 export interface Bangchung {
   id: string;
@@ -157,6 +157,17 @@ export interface YChinh {
 }
 
 export interface TraLoiCoCauTruc {
+  /**
+   * Câu trả lời THẲNG cho câu vừa hỏi, nghiêng hẳn về một bên.
+   *
+   * Đứng trước `tomTat` và trước mọi phân tích. Bắt buộc với câu quyết định và
+   * câu thời điểm; các ý định khác không cần — "tính cách tôi thế nào" không có
+   * bên nào để nghiêng về.
+   *
+   * Hướng nghiêng do ENGINE đếm, không do model chọn — xem `nghieng-ve.ts`.
+   * Model chỉ viết câu chữ quanh hướng đã chốt.
+   */
+  ketLuan?: string;
   tomTat: string;
   yChinh: YChinh[];
   /**
@@ -230,6 +241,7 @@ interface ThoTraLoi {
   tomTat?: unknown;
   yChinh?: unknown;
   cachNoi?: unknown;
+  ketLuan?: unknown;
   hoiLai?: unknown;
   goiYTiep?: unknown;
   tuKiem?: unknown;
@@ -262,6 +274,7 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
           luongNguoc: chuoi(y.luongNguoc),
           neuThi: chuoi(y.neuThi),
         })),
+      ketLuan: chuoi(d.ketLuan),
       hoiLai: chuoi(d.hoiLai),
       tuKiem: chuoi(d.tuKiem),
       goiYTiep: Array.isArray(d.goiYTiep)

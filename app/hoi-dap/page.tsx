@@ -25,6 +25,8 @@ interface TinNhan {
   canCu?: CanCuTraLoi;
   /** Chip gợi ý lượt sau, do Celes đề xuất theo chính câu vừa trả lời */
   goiYTiep?: string[];
+  /** Lối đi tiếp sang bề mặt khác — bảng tra ở máy chủ dựng, không phải model */
+  loiDi?: { nhan: string; duong: string }[];
 }
 
 function formTuHoSo(h: HoSo): ThongTinForm {
@@ -226,6 +228,7 @@ function TrangHoiDap() {
           noiDung: data.traLoi,
           canCu: data.canCu,
           goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
+          loiDi: Array.isArray(data.loiDi) ? data.loiDi : [],
         },
       ]);
       // Cất CẢ CẶP sau khi đã có câu trả lời. Cất câu hỏi ngay lúc gửi thì model
@@ -421,6 +424,21 @@ function TrangHoiDap() {
                           <button key={g} onClick={() => hoi(g)} className="pill-tag">
                             {g}
                           </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/*
+                      Lối đi tiếp — nhẹ hơn chip một bậc, và cũng chỉ dưới lượt
+                      cuối. Chip là "hỏi tiếp ở đây"; đây là "rời khỏi đây".
+                      Hai việc khác nhau nên không trộn vào cùng một hàng.
+                    */}
+                    {i === tinNhan.length - 1 && !dangChay && !!m.loiDi?.length && (
+                      <div className="flex flex-wrap gap-x-[16px] gap-y-[6px] pt-[2px]">
+                        {m.loiDi.map((l) => (
+                          <Link key={l.duong} href={l.duong} className="link-text text-[13px]">
+                            {l.nhan}
+                          </Link>
                         ))}
                       </div>
                     )}

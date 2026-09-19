@@ -89,6 +89,17 @@ function cumTu(khongDau: string): Set<string> {
  */
 const LA_DIEU_KIEN = /\bnếu\b|chừng nào|(?<!trước |sau |mỗi |đến |từ )\bkhi\b/iu;
 
+/**
+ * Cụm rào trước đón sau — đếm trên chữ đã bỏ dấu.
+ *
+ * Mỗi cụm một mình là bình thường; hai cụm trở lên trong một câu kết luận thì
+ * câu ấy không còn nghiêng về bên nào nữa.
+ */
+const CUM_BA_PHAI = [
+  'co the', 'cung co the', 'con tuy', 'tuy vao', 'vua co', 'khong de noi chac',
+  'kho noi truoc', 'chua the khang dinh', 'mot mat', 'mat khac', 'tuy nhien cung',
+];
+
 export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKiemDuyet {
   const loi: LoiKiemDuyet[] = [];
 
@@ -136,7 +147,42 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
    * lấy một câu trả lời mất hẳn. Nâng lên chặn sau khi eval cho thấy model
    * điền được ổn định.
    */
-  if (goi.yDinh === 'quyet-dinh' && !traLoi.tuKiem) {
+  /*
+   * Câu hỏi thẳng mà không có câu trả lời thẳng.
+   *
+   * Đây là lỗi người dùng nhận ra đầu tiên và khó chịu nhất: hỏi "năm 2026 có
+   * chuyển việc không" rồi nhận về ba đoạn phân tích cân bằng hoàn hảo. Cảnh
+   * báo chứ chưa chặn — bài vẫn dùng được, chỉ là nó né.
+   */
+  if ((goi.yDinh === 'quyet-dinh' || goi.yDinh === 'co-khong') && !traLoi.ketLuan) {
+    loi.push({
+      ma: 'thieu-ket-luan',
+      mucDo: 'canh-bao',
+      moTa: 'Câu hỏi cần một câu trả lời thẳng mà bài không có trường ketLuan.',
+      tai: 'ketLuan',
+    });
+  }
+
+  /*
+   * Kết luận viết theo kiểu ba phải.
+   *
+   * Đếm được: "có thể … cũng có thể", "còn tuỳ", "vừa … vừa". Hai cụm trở lên
+   * trong một hai câu thì đó không còn là thận trọng, đó là né.
+   */
+  if (traLoi.ketLuan) {
+    const kd = boDau(traLoi.ketLuan);
+    const raoTruoc = CUM_BA_PHAI.filter((c) => kd.includes(c));
+    if (raoTruoc.length >= 2) {
+      loi.push({
+        ma: 'ket-luan-ba-phai',
+        mucDo: 'canh-bao',
+        moTa: 'Câu kết luận rào trước đón sau tới mức không còn nghiêng về bên nào.',
+        tai: raoTruoc.join(', '),
+      });
+    }
+  }
+
+  if ((goi.yDinh === 'quyet-dinh' || goi.yDinh === 'co-khong') && !traLoi.tuKiem) {
     loi.push({
       ma: 'thieu-tu-kiem',
       mucDo: 'canh-bao',

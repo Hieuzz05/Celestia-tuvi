@@ -55,7 +55,8 @@ LỚP THỜI GIAN PHẢI NÓI BẰNG SỐ. Dữ kiện đại vận có ghi kho�
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 {
-  "tomTat": "2-3 câu trả lời thẳng câu hỏi, không vòng vo",
+  "ketLuan": "1-2 câu NGHIÊNG HẲN VỀ MỘT BÊN, bám đúng hướng engine đã đếm. Bắt buộc với câu quyết định và câu thời điểm.",
+  "tomTat": "2-3 câu mở rộng kết luận trên — vì sao lại nghiêng về bên đó",
   "cachNoi": "1-2 câu: các dữ kiện trên nối với nhau thành mạch nào",
   "yChinh": [
     {
@@ -100,9 +101,20 @@ const THEO_Y_DINH: Record<string, string> = {
   'quyet-dinh': `NGƯỜI HỎI ĐANG PHẢI QUYẾT MỘT VIỆC.
 
 KHÔNG mở bài bằng lời từ chối. "Lá số không xác định được việc này" là né câu hỏi — lá số nói được rất nhiều về cách người này quyết, chỗ họ dễ hụt, và quãng này đang đỡ hay đang cản.
-KHÔNG phán có hay không. Không ai chịu trách nhiệm thay họ được.
 
-BỐN VIỆC BẮT BUỘC, không bỏ cái nào:
+TRẢ LỜI THẲNG TRƯỚC, PHÂN TÍCH SAU.
+Trường "ketLuan" là thứ người đọc đọc đầu tiên và là thứ họ mang về. Một đến hai câu, nghiêng hẳn về một bên, bám đúng HƯỚNG NGHIÊNG mà engine đã đếm ở khối dưới.
+Vẫn cấm hứa một sự việc sẽ xảy ra. "Năm nay nghiêng về giữ hơn là chuyển" là nhận định — được. "Bạn sẽ chuyển việc vào tháng 5" là lời hứa — cấm.
+
+NĂM VIỆC BẮT BUỘC, không bỏ cái nào:
+
+(0) "ketLuan" — câu trả lời thẳng cho đúng câu vừa hỏi, 1–2 câu.
+    Dùng nguyên văn nhãn hướng nghiêng của engine trong câu đó.
+    Đúng: "Năm 2026 nghiêng rõ về giữ hơn là chuyển: ba yếu tố đang cản so với một yếu tố đỡ ở phần công việc."
+    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở." — nói đúng mà không nói gì.
+    Con số đỡ/cản nói MỨC ĐỘ nghiêng. Nó không nói vì sao là người này.
+    Nên câu kết luận hoặc ý ĐẦU TIÊN bắt buộc nêu tên ít nhất MỘT cách cục có trong dữ kiện, và dịch nó ngay trong cùng câu hoặc câu kế.
+    Thiếu cách cục thì bài đọc này dùng được cho bất kỳ ai có cùng tương quan số — tức là mất đúng thứ làm nó riêng.
 
 (1) "tomTat" phải nêu QUÃNG ĐANG ĐỨNG BẰNG SỐ TUỔI, lấy nguyên từ dữ kiện đại vận.
     Dữ kiện đại vận luôn mở đầu bằng "Đại vận X–Y tuổi" — chép đúng cặp số ấy.
@@ -129,7 +141,36 @@ BỐN VIỆC BẮT BUỘC, không bỏ cái nào:
 
 Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.`,
 
+  'co-khong': `NGƯỜI HỎI ĐANG XIN MỘT NHẬN ĐỊNH CÓ HAY KHÔNG.
+
+Họ hỏi thẳng. Trả lời thẳng.
+
+Khác câu "có nên" ở chỗ: họ KHÔNG xin lời khuyên, họ xin bạn đọc lá số rồi nói ra bạn thấy gì. Đưa cho họ một danh sách tiêu chí để tự quyết là trả lời sai câu hỏi.
+
+BỐN VIỆC BẮT BUỘC:
+
+(0) "ketLuan" — câu trả lời, 1–2 câu, NGHIÊNG HẲN về một bên.
+    Dùng nguyên văn nhãn hướng nghiêng mà engine đã đếm ở khối HƯỚNG NGHIÊNG.
+    Đúng: "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu tố cản ở phần công việc, và một trong số đó là nét khó ngồi yên một chỗ lâu."
+    Sai:  "Năm 2026 có thể mang đến thay đổi, nhưng cũng có thể gặp cản trở." — nói đúng mà không nói gì.
+    Sai:  "Bạn sẽ chuyển việc vào tháng 5." — hứa một sự việc, cấm tuyệt đối.
+
+    Con số đỡ/cản nói MỨC ĐỘ nghiêng. Nó không nói vì sao là người này.
+    Nên câu kết luận hoặc ý ĐẦU TIÊN bắt buộc nêu tên ít nhất MỘT cách cục có trong dữ kiện, và dịch nó ngay trong cùng câu hoặc câu kế.
+    Thiếu cách cục thì bài đọc này dùng được cho bất kỳ ai có cùng tương quan số — tức là mất đúng thứ làm nó riêng.
+
+(1) Ngay sau kết luận, nói DẤU HIỆU NHẬN BIẾT: thứ quan sát được ở đời thực cho biết hướng đó đang thành hình hay đang tắt. Người đọc phải tự đối chiếu được trong vài tuần tới.
+    Viết như một điều SẼ THẤY, không như một việc PHẢI LÀM. Đúng: "Dấu hiệu rõ nhất là lời mời đến từ người quen cũ chứ không từ tin tuyển dụng." Sai: "Hãy chú ý đến những đề xuất mới." — đó là ra lệnh quan sát, và Celes không giao việc.
+
+(2) Lực ngược phải nói về CHÍNH việc đang hỏi. Nếu tương quan thật sự cân nhau thì nói THẲNG là nó cân nhau, và nói rõ thứ gì sẽ làm nó lệch — đó vẫn là một câu trả lời.
+
+(3) "hoiLai" và "tuKiem" bắt buộc, như với câu quyết định.
+
+Để "buocTiepTheo" và "canNhac" RỖNG: họ hỏi một câu, không xin một kế hoạch.`,
+
   'thoi-diem': `NGƯỜI HỎI MUỐN BIẾT LÚC NÀO.
+
+"ketLuan" là BẮT BUỘC: nói thẳng quãng nào, bằng số tuổi hoặc số năm, ngay câu đầu.
 
 Trả lời bằng KHOẢNG, không bằng ngày. Mốc lấy từ dữ kiện đại vận và lưu niên, nói bằng số tuổi hoặc số năm.
 Nói rõ dấu hiệu nào cho biết quãng ấy đã tới — thứ quan sát được ở đời thực, không phải thứ chỉ đọc được trên lá số.
@@ -159,7 +200,9 @@ export function dungPromptCoCanCu(
    * nhận ra ngay khi hai màn nói lệch nhau về cùng một người, kể cả khi họ
    * không gọi tên được vấn đề.
    */
-  daNoiTruoc: string[] = []
+  daNoiTruoc: string[] = [],
+  /** Khối hướng nghiêng do engine đếm — xem `nghieng-ve.ts`. Rỗng khi không tính được. */
+  khoiNghieng = ''
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -203,7 +246,7 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
 
   return {
     system: SYSTEM,
-    user: `${dungKhoiChoPrompt(goi)}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}
+    user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}
 
 CÂU HỎI HIỆN TẠI
 ${goi.cauHoi}`,

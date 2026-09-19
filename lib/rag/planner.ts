@@ -16,7 +16,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.3';
+export const PHIEN_BAN_PLANNER = '2026.09.4';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -31,7 +31,8 @@ export type LopHan = 'ban-menh' | 'dai-van' | 'luu-nien' | 'nguyet-han';
  * Thiếu trục này thì mọi câu ra cùng một khuôn.
  */
 export type YDinh =
-  | 'quyet-dinh'   // "có nên…", "…không", "chọn A hay B"
+  | 'quyet-dinh'   // "có nên…", "chọn A hay B" — xin lời khuyên để tự quyết
+  | 'co-khong'     // "năm 2026 có chuyển việc ko" — xin một nhận định có/không
   | 'thoi-diem'    // "khi nào", "lúc này", "năm nay có hợp"
   | 'giai-thich'   // "vì sao tôi hay…"
   | 'tra-cuu'      // "Lộc Tồn ở Tài Bạch nghĩa là gì"
@@ -171,7 +172,7 @@ const TU_KHOA_HAN: [LopHan, string[]][] = [
  * thêm thừa thì bài loãng một chút; nhận nhầm tra-cuu thì dữ kiện đại vận biến
  * mất khỏi prompt và không có gì báo.
  */
-const TU_KHOA_Y_DINH: Record<Exclude<YDinh, 'mo-ta'>, string[]> = {
+const TU_KHOA_Y_DINH: Record<Exclude<YDinh, 'mo-ta' | 'co-khong'>, string[]> = {
   'quyet-dinh': [
     'co nen', 'nen khong', 'co nen khong', 'nen hay', 'quyet dinh', 'lua chon',
     'co dang', 'dang khong', 'lieu co', 'co on khong', 'co hop ly',
@@ -201,8 +202,33 @@ const TU_KHOA_Y_DINH: Record<Exclude<YDinh, 'mo-ta'>, string[]> = {
  * trước: một câu "có nên" đã ngầm chứa "lúc này", chiều ngược lại thì không.
  */
 const UU_TIEN_Y_DINH: Exclude<YDinh, 'mo-ta'>[] = [
-  'quyet-dinh', 'tra-cuu', 'giai-thich', 'thoi-diem',
+  'quyet-dinh', 'co-khong', 'tra-cuu', 'giai-thich', 'thoi-diem',
 ];
+
+/**
+ * Câu hỏi có/không, nhận theo CẤU TRÚC chứ không theo từ khoá.
+ *
+ * Tiếng Việt hỏi có/không bằng cách đặt "không" (hay "chưa") ở CUỐI câu. Đó là
+ * một dấu hiệu hình thức, chắc hơn mọi danh sách từ khoá — và không có cách nào
+ * liệt kê hết động từ đứng giữa: chuyển việc, lấy chồng, mua nhà, hợp nghề…
+ *
+ * Phải xét VỊ TRÍ, không chỉ xét có mặt: "tôi không thích công việc hiện tại,
+ * phải làm sao" cũng chứa "không" nhưng là câu kể, không phải câu hỏi có/không.
+ * Ba từ cuối là đủ rộng để bắt "…được không", "…hay không".
+ */
+function laCauCoKhong(tu: string[]): boolean {
+  return tu.slice(-3).some((t) => t === 'khong' || t === 'chua');
+}
+
+/** Tách câu đã bỏ dấu thành từ, sau khi chuẩn hoá viết tắt chat */
+function tuCua(cauKhongDau: string): string[] {
+  return cauKhongDau
+    .replace(/\b(?:ko|kg|hok|khg)\b/g, 'khong')
+    .replace(/\bdc\b/g, 'duoc')
+    .replace(/\bntn\b/g, 'nhu the nao')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
 
 /** Mọi cụm 1–4 từ có trong câu, để so khớp theo ranh giới từ chứ không theo chuỗi con */
 function cumTu(cauKhongDau: string): Set<string> {
@@ -219,11 +245,38 @@ function cumTu(cauKhongDau: string): Set<string> {
     .replace(/\bntn\b/g, 'nhu the nao');
   const tu = daChuan.split(/[^a-z0-9]+/).filter(Boolean);
   const ra = new Set<string>();
-  for (let i = 0; i < tu.length; i++) {
-    for (let n = 1; n <= 4 && i + n <= tu.length; n++) ra.add(tu.slice(i, i + n).join(' '));
-  }
+  const nap = (ds: string[]) => {
+    for (let i = 0; i < ds.length; i++) {
+      for (let n = 1; n <= 4 && i + n <= ds.length; n++) ra.add(ds.slice(i, i + n).join(' '));
+    }
+  };
+
+  nap(tu);
+
+  /*
+   * Bộ cụm thứ hai, sau khi bỏ TỪ ĐỆM.
+   *
+   * Tiếng Việt hay chen một chữ vào giữa động từ và tân ngữ: "mua ĐƯỢC nhà",
+   * "lấy ĐƯỢC chồng", "xin ĐƯỢC việc", "đổi SANG nghề". Bảng từ khoá thì viết
+   * dạng gọn ('mua nha', 'lay chong'), nên câu thật không khớp — đo được:
+   * "năm nay có mua được nhà ko" ra chủ đề 'tong-quan' thay vì 'tai-chinh'.
+   *
+   * Vá từng cụm một là đuổi không bao giờ hết. Bỏ hẳn nhóm từ đệm rồi ghép lại
+   * là một luật, và nó phủ mọi động từ.
+   */
+  const khongDem = tu.filter((t) => !TU_DEM.has(t));
+  if (khongDem.length !== tu.length) nap(khongDem);
+
   return ra;
 }
+
+/**
+ * Từ đệm — bỏ ra khi dựng bộ cụm thứ hai.
+ *
+ * Cố ý ngắn và chỉ gồm những chữ KHÔNG BAO GIỜ là thứ cần tìm. Thêm một chữ có
+ * nghĩa vào đây là làm hỏng cụm khác: bỏ "nhà" thì "mua nhà" thành "mua".
+ */
+const TU_DEM = new Set(['duoc', 'da', 'se', 'dang', 'bi', 'con', 'cung', 'van']);
 
 function doanChuDe(cum: Set<string>): { chuDe: ChuDe; chacChan: boolean } {
   let tot: ChuDe = 'tong-quan';
@@ -251,10 +304,13 @@ function doanChuDe(cum: Set<string>): { chuDe: ChuDe; chacChan: boolean } {
  * bao giờ xong — "nên nhận", "nên đổi", "nên ở lại", "nên ký"… — mà cấu trúc
  * thì chỉ có một.
  */
-function doanYDinh(cum: Set<string>): YDinh {
+function doanYDinh(cum: Set<string>, tu: string[]): YDinh {
   if (cum.has('nen') && (cum.has('khong') || cum.has('hay'))) return 'quyet-dinh';
 
   const diem = new Map<YDinh, number>();
+  // Cấu trúc câu hỏi có/không tính như một từ khoá đã khớp, với trọng số đủ để
+  // thắng các ý định đọc bằng từ khoá lẻ.
+  if (laCauCoKhong(tu)) diem.set('co-khong', 20);
   for (const [y, tuKhoa] of Object.entries(TU_KHOA_Y_DINH) as [YDinh, string[]][]) {
     const d = tuKhoa.reduce((t, k) => (cum.has(k) ? t + k.length : t), 0);
     if (d > 0) diem.set(y, d);
@@ -297,7 +353,7 @@ function doanLopHan(cum: Set<string>, thucThe: ThucThe[], yDinh: YDinh): LopHan[
    * Nhưng nếu người ta đã gọi tên một mốc thời gian thì tin họ, không tin nhãn
    * ý định — nên chỉ thu hẹp khi luật KHÔNG tìm thấy lớp hạn nào.
    */
-  if (yDinh === 'quyet-dinh' || yDinh === 'thoi-diem') {
+  if (yDinh === 'quyet-dinh' || yDinh === 'co-khong' || yDinh === 'thoi-diem') {
     ra.add('dai-van');
     ra.add('luu-nien');
   } else if (yDinh === 'tra-cuu' && ra.size === 1) {
@@ -483,7 +539,7 @@ export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): 
     cauHoi,
     saoTheoCung,
     chuDe,
-    doanYDinh(cum),
+    doanYDinh(cum, tuCua(boDau(cauHoi))),
     theoTuKhoa.chacChan || cungGoiTen.length > 0,
     tenCachCuc
   );
@@ -495,7 +551,7 @@ const CHU_DE_HOP_LE: ChuDe[] = [
   'su-nghiep', 'tai-chinh', 'tinh-cam', 'gia-dao', 'suc-khoe', 'tong-quan',
 ];
 const Y_DINH_HOP_LE: YDinh[] = [
-  'quyet-dinh', 'thoi-diem', 'giai-thich', 'tra-cuu', 'mo-ta',
+  'quyet-dinh', 'co-khong', 'thoi-diem', 'giai-thich', 'tra-cuu', 'mo-ta',
 ];
 
 /** Chờ tối đa 8 giây. Phân loại là bước MỞ ĐẦU — nó chậm thì cả câu trả lời chậm theo. */
@@ -526,6 +582,7 @@ chuDe — câu hỏi về lĩnh vực nào:
 
 yDinh — người hỏi cần gì:
   quyet-dinh  người hỏi đang phải chọn, cần tiêu chí để quyết
+  co-khong    người hỏi muốn một nhận định có hay không
   thoi-diem   người hỏi muốn biết lúc nào
   giai-thich  người hỏi muốn hiểu vì sao
   tra-cuu     người hỏi muốn biết một thuật ngữ nghĩa là gì
