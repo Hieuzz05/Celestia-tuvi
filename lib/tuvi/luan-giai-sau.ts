@@ -1,7 +1,30 @@
-import { cungDaiVan, cungTieuHan, tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
+import { cungDaiVan, tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
 import { PHU_TINH_TRONG_YEU } from './phu-tinh-trong-yeu';
-import { CHI, CHINH_TINH } from './constants';
+import { CHINH_TINH } from './constants';
 import { KHUON, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
+import {
+  CHANG,
+  CHANG_CUA_MUC,
+  CUNG_CUA_MUC,
+  GUONG,
+  TAM_HOP,
+  THU_TU_CHANG,
+  laGuongNoiBo,
+  thamChieuNgoaiChang,
+  type ChangId,
+  type MucId,
+} from './chang-cung';
+import {
+  CAU_PHAN_MO,
+  CHU_12_CUNG,
+  CHU_CHANG,
+  MO_DAU,
+  MO_DAU_TRONG,
+  THU_TU_KIEU_MO,
+  dangTinHieu,
+  type KieuMo,
+} from './chu-12-cung';
+import { NGUONG_MO, NGUONG_NOI, TRAN_BADGE, doNoiBat } from './do-noi-bat';
 import type { CanCu } from './quick-read';
 
 /**
@@ -19,19 +42,12 @@ import type { CanCu } from './quick-read';
  * Mỗi khối: một câu kết luận đời thường → 2-4 đoạn cụ thể → căn cứ mở được.
  */
 
-export type LinhVucId =
-  | 'tinh-cach'
-  | 'cong-viec'
-  | 'tai-loc'
-  | 'tinh-duyen'
-  | 'gia-dao'
-  | 'quan-he'
-  | 'van-han'
-  | 'phat-trien';
-
 export interface KhoiLuanGiai {
-  id: LinhVucId;
+  id: MucId;
+  chang: ChangId;
+  /** Nhãn nhóm ngắn — KHÔNG phải tiêu đề, và không bao giờ là tên cung */
   nhomChu: string;
+  /** KẾT LUẬN về người đọc, không phải tên chủ đề. Cấm chứa tên cung. */
   tieuDe: string;
   /** Một câu nói thẳng điều đáng chú ý */
   ketLuan: string;
@@ -40,17 +56,52 @@ export interface KhoiLuanGiai {
   canCu: CanCu[];
   /** Câu mở sẵn khi bấm "Hỏi Celes về phần này" */
   cauHoiGoiY: string;
+
+  /** Cung gốc — chỉ hiện ở dòng "Đọc từ:" và trong phần căn cứ */
+  cungGoc: string;
+  cungTamHop: [string, string];
+  cungGuong: string;
+  /** Cung gương nằm cùng chặng — hai phần phải viết như một cặp đối thoại */
+  guongNoiBo: boolean;
+  doNoiBat: number;
+  /** Badge "đáng chú ý nhất" — tối đa ba badge một bài */
+  noiBat: boolean;
 }
 
-/** Cung chính mà mỗi lĩnh vực đọc từ đó */
-const CUNG_CUA_LINH_VUC: Record<Exclude<LinhVucId, 'van-han' | 'phat-trien'>, string> = {
-  'tinh-cach': 'Mệnh',
-  'cong-viec': 'Quan Lộc',
-  'tai-loc': 'Tài Bạch',
-  'tinh-duyen': 'Phu Thê',
-  'gia-dao': 'Phụ Mẫu',
-  'quan-he': 'Nô Bộc',
-};
+export interface ChangLuanGiai {
+  id: ChangId;
+  thuTu: 1 | 2 | 3 | 4;
+  tieuDe: string;
+  subtitle: string;
+  /** Ba phần, đã sắp theo độ nổi bật */
+  muc: KhoiLuanGiai[];
+  /** "Ba phần này nói cùng điều gì" */
+  doanKhau: string;
+  /** Một câu dẫn sang chặng sau; null ở chặng cuối */
+  cauBacCau: string | null;
+}
+
+/**
+ * Sổ bao phủ — validator đọc cái này để biết bài có đủ không.
+ *
+ * Không phải số liệu trang trí: nó là cam kết sản phẩm viết thành con số. Đủ 12
+ * cung, mỗi cung được tham chiếu từ ba lần trở lên, đủ bốn chặng, đủ mười hai
+ * khối gương, và mười hai phần đều có ít nhất một cung tham chiếu nằm ngoài
+ * chặng của nó — điều cuối là thứ chứng minh bài không đọc tuyến tính được.
+ */
+export interface SoBaoPhu {
+  cungChinh: number;
+  cungThamChieuDuBa: boolean;
+  soChang: number;
+  soGuong: number;
+  phanCoThamChieuNgoaiChang: number;
+  dat: boolean;
+}
+
+export interface BaiLuanGiai {
+  chang: ChangLuanGiai[];
+  baoPhu: SoBaoPhu;
+}
 
 function dien(mau: string, gt: Record<string, string | number>): string {
   return mau.replace(/\{(\w+)\}/g, (_, k) => String(gt[k] ?? ''));
@@ -170,33 +221,30 @@ function chonBienThe(bienThe: readonly string[], hat: number): string {
   return bienThe[((hat % bienThe.length) + bienThe.length) % bienThe.length];
 }
 
-/** Số thứ tự của lĩnh vực, dùng làm phần chính của hạt chọn biến thể */
-const THU_TU_LINH_VUC: Record<string, number> = {
-  'tinh-cach': 0,
-  'cong-viec': 1,
-  'tai-loc': 2,
-  'tinh-duyen': 3,
-  'gia-dao': 4,
-  'quan-he': 5,
-  'van-han': 6,
-  'phat-trien': 7,
-};
+/** Số thứ tự canonical của mười hai phần — phần chính của hạt chọn biến thể */
+const THU_TU_MUC: Record<MucId, number> = Object.fromEntries(
+  THU_TU_CHANG.flatMap((c, i) => CHANG[c].muc.map((m, j) => [m, i * 3 + j]))
+) as Record<MucId, number>;
 
 function khoiTheoCung(
-  id: Exclude<LinhVucId, 'van-han' | 'phat-trien'>,
+  id: MucId,
   laSo: LaSo,
   giaiDoan: Cung | undefined,
   k: KhuonChu,
-  ngonNgu: NgonNguDoc
+  ngonNgu: NgonNguDoc,
+  /** Kiểu mở đã được phân cho phần này — xem ngân sách mở đầu trong luanGiaiSau */
+  kieuMo: KieuMo,
+  diem: { diem: number; xungDot: boolean },
+  noiBat: boolean
 ): KhoiLuanGiai {
-  const ten = CUNG_CUA_LINH_VUC[id];
+  const ten = CUNG_CUA_MUC[id];
   const cung = laSo.cungs.find((c) => c.tenCung === ten) ?? laSo.cungs[laSo.menhIndex];
-  const chu = k.luanSau.linhVuc[id];
+  const chu = CHU_12_CUNG[ngonNgu][id];
   const chuDe = k.chuDeCung[ten] ?? tenCung(cung, k);
 
-  // Hạt chọn khuôn câu: thứ tự lĩnh vực để tám khối khác nhau, cộng chi cung
+  // Hạt chọn khuôn câu: thứ tự phần để mười hai khối khác nhau, cộng chi cung
   // Mệnh để hai người khác lá số không đọc được cùng một bộ khung.
-  const hat = (THU_TU_LINH_VUC[id] ?? 0) + laSo.cungs[laSo.menhIndex].chiIndex;
+  const hat = THU_TU_MUC[id] + laSo.cungs[laSo.menhIndex].chiIndex;
   const khuon = (bt: readonly string[]) => chonBienThe(bt, hat);
   const chinh = chinhTinhCua(cung);
 
@@ -321,143 +369,232 @@ function khoiTheoCung(
     .map((v) => v.filter(Boolean).join(' ').trim())
     .filter((v) => v.length > 0);
 
+  /*
+   * Câu mở — theo KIỂU đã được phân, không theo hạt.
+   *
+   * Hạt cho ra phân phối may rủi: lá số xui thì năm phần mở giống hệt nhau, và
+   * người đọc nhận ra khuôn ngay ở phần thứ ba. Kiểu được phân từ ngoài theo
+   * vòng nên trần 3/12 là bảo đảm bằng cấu trúc.
+   *
+   * Câu kết luận đã có chủ ngữ ("nét rõ nhất của bạn là…"), nên vế nối vào sau
+   * phải bỏ chủ ngữ của nó, bằng không thành "của bạn là bạn dễ…".
+   */
+  const netDau = net.length ? boChuNgu(net[0], ngonNgu) : '';
+  const ketLuan = !net.length
+    ? dien(chonBienThe(MO_DAU_TRONG[ngonNgu], hat), { chuDe })
+    : dien(chonBienThe(MO_DAU[ngonNgu][kieuMo], hat), {
+        chuDe,
+        net: netDau,
+        netHoa: capHoaDau(netDau),
+        tu: giaiDoan?.daiVan?.tuTuoi ?? '',
+        den: giaiDoan?.daiVan?.denTuoi ?? '',
+      });
+
+  /*
+   * Phần gần như không có tín hiệu vẫn được viết, chỉ ngắn hơn và mở bằng một
+   * câu thành thật. Ẩn nó đi là phá cam kết "đủ 12"; viết dài bằng phần khác là
+   * bịa cho đủ. Nói thẳng rằng ở đây lá số im lặng cũng là một thông tin.
+   */
+  const doanCuoi = catChoVua(
+    diem.diem <= NGUONG_MO
+      ? [chonBienThe(CAU_PHAN_MO[ngonNgu], hat), ...doan.slice(0, 2)]
+      : doan,
+    ketLuan,
+    diem.diem
+  );
+
   return {
     id,
-    nhomChu: chu.nhom,
-    tieuDe: chu.tieuDe,
-    // Câu kết luận đã có chủ ngữ ("nét rõ nhất của bạn là…"), nên vế nối vào sau
-    // phải bỏ chủ ngữ của nó, bằng không thành "của bạn là bạn dễ…".
-    ketLuan: net.length
-      ? dien(khuon(k.luanSau.ketLuanCo), { chuDe, net: boChuNgu(net[0], ngonNgu) })
-      : dien(k.luanSau.ketLuanTrong, { chuDe }),
+    chang: CHANG_CUA_MUC[id],
+    nhomChu: chu.nhan,
+    tieuDe: chu.tieuDeMau[dangTinHieu(diem.diem, diem.xungDot)],
+    ketLuan,
     // Câu hỏi phản chiếu luôn đứng cuối và không bao giờ bị cắt: brand spec chốt
     // mỗi bài kết bằng một điều người đọc tự hỏi tiếp.
-    doan: [...doan, k.luanSau.cauHoiPhanChieu[id]].filter(Boolean),
+    doan: [...doanCuoi, chu.cauHoi].filter(Boolean),
     canCu: canCuCua(cung, laSo, k),
     cauHoiGoiY: chu.cauHoi,
-  };
-}
-
-/** Khối vận hạn — tóm tắt giai đoạn, rồi dẫn sang Hành trình */
-function khoiVanHan(laSo: LaSo, namXem: number, k: KhuonChu): KhoiLuanGiai {
-  const chu = k.luanSau.linhVuc['van-han'];
-  const tuoi = namXem - laSo.thongTin.amLich.nam + 1;
-  const giaiDoan = cungDaiVan(laSo, tuoi);
-  const cungNam = laSo.cungs[cungTieuHan(laSo, tuoi)];
-  const goc = giaiDoan ?? cungNam;
-
-  // Một đoạn liền mạch chứ không phải ba dòng rời: năm đang xem nói gì, rồi
-  // ngay đó là câu nhắc đây là xu hướng chứ không phải lời hứa. Tách ra thành
-  // hai dòng thì câu nhắc trông như dòng chữ nhỏ ở cuối hợp đồng.
-  const nhipNam =
-    k.hanhTrinh.nhipNam && k.chuDeCung[cungNam.tenCung]
-      ? dien(k.hanhTrinh.nhipNam, { nam: namXem, chuDe: k.chuDeCung[cungNam.tenCung] })
-      : '';
-  const doan = [
-    [nhipNam, k.giaiDoan.nhacXuHuong].filter(Boolean).join(' '),
-    k.luanSau.vanHanDan,
-  ].filter(Boolean);
-
-  return {
-    id: 'van-han',
-    nhomChu: chu.nhom,
-    tieuDe: chu.tieuDe,
-    ketLuan: dien(k.luanSau.vanHanKetLuan, {
-      chuDe: k.chuDeCung[goc.tenCung] ?? tenCung(goc, k),
-    }),
-    doan,
-    canCu: [
-      ...(giaiDoan
-        ? [
-            {
-              nhan: dien(k.canCu.giaiDoanTuoi, {
-                tu: giaiDoan.daiVan?.tuTuoi ?? '',
-                den: giaiDoan.daiVan?.denTuoi ?? '',
-                cung: tenCung(giaiDoan, k),
-              }),
-              giaiThich: dien(k.canCu.giaiDoanTuoiY, {
-                cung: tenCung(giaiDoan, k),
-                chi: CHI[giaiDoan.chiIndex],
-              }),
-            },
-          ]
-        : []),
-      {
-        nhan: dien(k.canCu.namUngVao, { nam: namXem, cung: tenCung(cungNam, k) }),
-        giaiThich: dien(k.canCu.namUngVaoY, { nam: namXem, tuoi, cung: tenCung(cungNam, k) }),
-      },
-    ],
-    cauHoiGoiY: chu.cauHoi,
+    cungGoc: ten,
+    cungTamHop: TAM_HOP[ten],
+    cungGuong: GUONG[ten],
+    guongNoiBo: laGuongNoiBo(id),
+    doNoiBat: diem.diem,
+    noiBat,
   };
 }
 
 /**
- * Khối gợi ý phát triển.
+ * Cắt bài cho vừa ngân sách từ.
  *
- * Đọc từ Mệnh (thứ sẵn có) và Thân (thứ thường thiếu), rồi kết bằng một câu hỏi
- * tự phản chiếu. Không kê đơn hành động: brand spec cấm Celes quyết thay.
+ * Spec đặt 130–180 từ mỗi phần ở Bức tranh đầy đủ, co giãn ±20% theo độ nổi
+ * bật. Ba đoạn dựng xong mà không ai cắt thì ra 170–270 từ, và mười hai phần
+ * như thế là một bài không ai đọc hết.
+ *
+ * Cắt từ ĐUÔI đoạn cuối, không cắt đều. Đoạn đầu mang kết luận, đoạn hai mang
+ * lực ngược — hai thứ framework bắt buộc phải có. Đoạn ba là lớp bổ sung: mất
+ * một câu ở đó thì bài ngắn đi chứ không mất ý nào. Cắt đều thì mất cả lực
+ * ngược, tức là mất đúng thứ làm bài đọc không thành lời khen một chiều.
  */
-function khoiPhatTrien(laSo: LaSo, k: KhuonChu, ngonNgu: NgonNguDoc): KhoiLuanGiai {
-  const chu = k.luanSau.linhVuc['phat-trien'];
-  const cungMenh = laSo.cungs[laSo.menhIndex];
-  const cungThan = laSo.cungs[laSo.thanIndex];
+function demTu(s: string): number {
+  return s.trim().split(/\s+/).filter(Boolean).length;
+}
 
-  const manh = chinhTinhCua(cungMenh)
-    .map((s) => k.netSao[s.ten]?.manh)
-    .filter(Boolean) as string[];
-  const can = chinhTinhCua(cungThan)
-    .map((s) => k.netSao[s.ten]?.can)
-    .filter(Boolean) as string[];
+function catChoVua(doan: string[], ketLuan: string, diem: number): string[] {
+  const tran = diem >= NGUONG_NOI ? 216 : diem <= NGUONG_MO ? 144 : 180;
+  const ra = [...doan];
+  let tong = demTu(ketLuan) + ra.reduce((t, d) => t + demTu(d), 0);
 
-  // Cái sẵn có và cái còn thiếu là hai vế của cùng một ý, nên đứng chung một
-  // đoạn. Tách đôi thì thành hai mục của một bảng kiểm, không phải một nhận xét.
-  const doan = [
-    [
-      manh.length ? dien(k.luanSau.phatTrienManh, { net: noiLietKe(manh, k, ngonNgu) }) : '',
-      can.length ? dien(k.luanSau.phatTrienCan, { can: noiLietKe(can, k, ngonNgu) }) : '',
-    ]
-      .filter(Boolean)
-      .join(' '),
-    k.luanSau.phatTrienHoi,
-  ].filter(Boolean);
+  while (tong > tran && ra.length > 1) {
+    const cuoi = ra[ra.length - 1];
+    const cau = cuoi.split(/(?<=[.!?])\s+/).filter(Boolean);
+    if (cau.length <= 1) {
+      // Đoạn cuối chỉ còn một câu: bỏ cả đoạn, nhưng không bao giờ bỏ đoạn đầu
+      tong -= demTu(cuoi);
+      ra.pop();
+      continue;
+    }
+    tong -= demTu(cau[cau.length - 1]);
+    ra[ra.length - 1] = cau.slice(0, -1).join(' ');
+  }
+
+  return ra;
+}
+
+/**
+ * Ngân sách mở đầu — phân kiểu mở cho mười hai phần.
+ *
+ * Luật: không kiểu nào dùng quá 3 trên 12. Bảo đảm bằng CẤU TRÚC, không bằng
+ * hạt: chia vòng năm kiểu cho mười hai phần ra 3-3-2-2-2. Chọn bằng hạt thì
+ * phân phối là chuyện may rủi, và một lá số xui sẽ có năm phần mở giống hệt
+ * nhau — đúng thứ làm người đọc nhận ra đây là máy phát chữ.
+ *
+ * Điểm bắt đầu của vòng lấy từ chính lá số, nên hai người khác nhau không nhận
+ * cùng một bản đồ kiểu mở, mà cùng một lá số đọc lại vẫn ra đúng bài cũ.
+ */
+function phanKieuMo(thuTuMuc: MucId[], lech: number): Record<MucId, KieuMo> {
+  const ra = {} as Record<MucId, KieuMo>;
+  thuTuMuc.forEach((m, i) => {
+    ra[m] = THU_TU_KIEU_MO[(i + lech) % THU_TU_KIEU_MO.length];
+  });
+  return ra;
+}
+
+/**
+ * Sổ bao phủ — đếm lại từ chính bài vừa dựng, không tin bảng hằng số.
+ *
+ * Đếm từ kết quả thật là cách duy nhất bắt được lỗi ở tầng dựng bài: bảng
+ * `CHANG` có thể đúng trong khi hàm dựng bỏ sót một phần, và lúc đó một sổ đọc
+ * từ bảng sẽ báo xanh cho một bài thiếu.
+ */
+function dungSoBaoPhu(chang: ChangLuanGiai[]): SoBaoPhu {
+  const muc = chang.flatMap((c) => c.muc);
+  const demThamChieu = new Map<string, number>();
+  for (const m of muc) {
+    for (const c of [...m.cungTamHop, m.cungGuong]) {
+      demThamChieu.set(c, (demThamChieu.get(c) ?? 0) + 1);
+    }
+  }
+
+  const cungChinh = new Set(muc.map((m) => m.cungGoc)).size;
+  const moiCungDuBa = [...new Set(muc.map((m) => m.cungGoc))].every(
+    (c) => (demThamChieu.get(c) ?? 0) >= 3
+  );
+  const ngoaiChang = muc.filter((m) => thamChieuNgoaiChang(m.id).length > 0).length;
 
   return {
-    id: 'phat-trien',
-    nhomChu: chu.nhom,
-    tieuDe: chu.tieuDe,
-    ketLuan: dien(k.luanSau.phatTrienKetLuan, {
-      chuDe: k.chuDeCung[laSo.thanCuCung] ?? tenCung(cungThan, k),
-    }),
-    doan,
-    canCu: [
-      {
-        nhan: dien(k.canCu.thanCu, { cung: k.tenCung[laSo.thanCuCung] ?? laSo.thanCuCung }),
-        giaiThich: dien(k.canCu.thanCuY, {
-          cung: k.tenCung[laSo.thanCuCung] ?? laSo.thanCuCung,
-        }),
-      },
-      ...canCuCua(cungMenh, laSo, k).slice(1, 3),
-    ],
-    cauHoiGoiY: chu.cauHoi,
+    cungChinh,
+    cungThamChieuDuBa: moiCungDuBa,
+    soChang: chang.length,
+    soGuong: muc.filter((m) => !!m.cungGuong).length,
+    phanCoThamChieuNgoaiChang: ngoaiChang,
+    dat:
+      cungChinh === 12 &&
+      moiCungDuBa &&
+      chang.length === 4 &&
+      muc.length === 12 &&
+      ngoaiChang === 12,
   };
 }
 
-/** Tám khối, theo đúng thứ tự spec liệt kê */
+/**
+ * Bài luận mười hai phần, gom trong bốn chặng.
+ *
+ * Thứ tự BỐN CHẶNG luôn 1→4 — đó là một cung đường kể chuyện (bên trong → ra
+ * ngoài → cùng người khác → truyền lại), không phải một danh mục để sắp lại.
+ * Thứ tự BA PHẦN trong mỗi chặng thì do lá số quyết, giảm dần theo độ nổi bật;
+ * hoà điểm thì theo thứ tự canonical trong `CHANG`.
+ *
+ * Đó là chỗ phân biệt với mọi sản phẩm tra cứu: mục lục của hai người không
+ * giống nhau, mà bài vẫn có một mạch cố định để đi theo.
+ */
 export function luanGiaiSau(
   laSo: LaSo,
   namXem: number,
   ngonNgu: NgonNguDoc = 'vi'
-): KhoiLuanGiai[] {
+): BaiLuanGiai {
   const k = KHUON[ngonNgu];
   const giaiDoan = cungDaiVan(laSo, namXem - laSo.thongTin.amLich.nam + 1);
-  return [
-    khoiTheoCung('tinh-cach', laSo, giaiDoan, k, ngonNgu),
-    khoiTheoCung('cong-viec', laSo, giaiDoan, k, ngonNgu),
-    khoiTheoCung('tai-loc', laSo, giaiDoan, k, ngonNgu),
-    khoiTheoCung('tinh-duyen', laSo, giaiDoan, k, ngonNgu),
-    khoiTheoCung('gia-dao', laSo, giaiDoan, k, ngonNgu),
-    khoiTheoCung('quan-he', laSo, giaiDoan, k, ngonNgu),
-    khoiVanHan(laSo, namXem, k),
-    khoiPhatTrien(laSo, k, ngonNgu),
-  ];
+
+  const diemTheoMuc = new Map<MucId, { diem: number; xungDot: boolean }>();
+  for (const c of THU_TU_CHANG) {
+    for (const m of CHANG[c].muc) {
+      const d = doNoiBat(laSo, m, namXem);
+      diemTheoMuc.set(m, { diem: d.diem, xungDot: d.xungDot });
+    }
+  }
+
+  // Badge chỉ cho những phần thật sự nổi, và tối đa ba: badge ở mọi phần thì
+  // không còn là badge nữa.
+  const duocBadge = new Set(
+    [...diemTheoMuc.entries()]
+      .filter(([, d]) => d.diem >= NGUONG_NOI)
+      .sort((a, b) => b[1].diem - a[1].diem)
+      .slice(0, TRAN_BADGE)
+      .map(([m]) => m)
+  );
+
+  // Thứ tự để phân kiểu mở: theo mạch đọc thật, tức đã sắp trong từng chặng.
+  const thuTuDoc: MucId[] = THU_TU_CHANG.flatMap((cid) =>
+    [...CHANG[cid].muc].sort((a, b) => {
+      const lech = (diemTheoMuc.get(b)?.diem ?? 0) - (diemTheoMuc.get(a)?.diem ?? 0);
+      return lech !== 0 ? lech : CHANG[cid].muc.indexOf(a) - CHANG[cid].muc.indexOf(b);
+    })
+  );
+
+  const kieuMo = phanKieuMo(thuTuDoc, laSo.cungs[laSo.menhIndex].chiIndex);
+
+  const chang: ChangLuanGiai[] = THU_TU_CHANG.map((cid) => {
+    const cauHinh = CHANG[cid];
+    const muc = thuTuDoc
+      .filter((m) => CHANG_CUA_MUC[m] === cid)
+      .map((m) =>
+        khoiTheoCung(
+          m,
+          laSo,
+          giaiDoan,
+          k,
+          ngonNgu,
+          kieuMo[m],
+          diemTheoMuc.get(m) ?? { diem: 0, xungDot: false },
+          duocBadge.has(m)
+        )
+      );
+
+    return {
+      id: cid,
+      thuTu: cauHinh.thuTu,
+      tieuDe: cauHinh.tieuDe,
+      subtitle: cauHinh.subtitle,
+      muc,
+      doanKhau: CHU_CHANG[ngonNgu][cid].doanKhau,
+      cauBacCau: CHU_CHANG[ngonNgu][cid].cauBacCau,
+    };
+  });
+
+  return { chang, baoPhu: dungSoBaoPhu(chang) };
+}
+
+/** Mười hai phần theo mạch đọc, cho chỗ chỉ cần danh sách phẳng */
+export function mucPhang(bai: BaiLuanGiai): KhoiLuanGiai[] {
+  return bai.chang.flatMap((c) => c.muc);
 }

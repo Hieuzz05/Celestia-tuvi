@@ -366,6 +366,15 @@ export const vi = {
     tieuDe: 'Còn đây là những gì Celes đọc kỹ hơn',
     moTa: 'Mỗi phần mở đầu bằng điều đáng chú ý nhất, rồi mới tới chi tiết. Chỗ nào bạn thấy chưa thuyết phục, mở phần căn cứ ngay dưới để xem Celes dựa vào đâu.',
     hoiVePhanNay: 'Hỏi Celes về phần này',
+    // Chữ cho bốn chặng. "Đọc từ" là chỗ DUY NHẤT tên cung được hiện ở mặt trước.
+    phan: 'phần',
+    noiBat: 'Đáng chú ý nhất',
+    docTu: 'Đọc từ:',
+    cung: 'cùng',
+    soiQua: 'soi qua',
+    doanKhau: 'BA PHẦN NÀY NÓI CÙNG ĐIỀU GÌ',
+    theoNoiBat: 'Đọc theo điều đang khiến bạn nghĩ nhiều ⇅',
+    theoChang: 'Quay lại bốn chặng ⇅',
   },
 
   giuLaSo: {

@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
   const quyen = await quyenHienTai();
   const day = moDuoc(quyen, 'deepMap');
-  const khoi = luanGiaiSau(laSo, namXem, ngonNgu);
+  const bai = luanGiaiSau(laSo, namXem, ngonNgu);
 
   /*
    * Phần chữ do model viết, phần chứng minh vẫn do luật dựng.
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
    * Khoá đệm theo NĂM: lớp hạn của năm có tham gia vào bài, nên sang năm là bài
    * khác; trong năm thì mở lại ra đúng bài cũ.
    */
-  let khoiRa = khoi;
+  let khoiRa = bai;
   if (day) {
     const ai = await layHoacSinh<KhoiAi[]>(
       {
@@ -101,27 +101,44 @@ export async function POST(req: Request) {
     );
 
     if (ai?.noiDung?.length) {
+      /*
+       * Model chỉ được đè CHỮ, không được đổi cấu trúc.
+       *
+       * Thứ tự phần và cách gom chặng do luật quyết — bốn chặng là một cung
+       * đường kể chuyện, và ba phần trong chặng sắp theo độ nổi bật đã tính từ
+       * lá số. Cho model sắp lại là để hai lần mở trang ra hai mục lục khác
+       * nhau trên cùng một lá số.
+       *
+       * Phần nào model bỏ qua thì giữ nguyên bản tất định. Không bao giờ thiếu
+       * phần: đủ mười hai là cam kết sản phẩm.
+       */
       const theoId = new Map(ai.noiDung.map((x) => [x.id, x]));
-      // Thứ tự lấy theo model: §11.2 cho phép lĩnh vực nổi bật đứng trước. Khối
-      // nào model bỏ qua thì giữ bản tất định và xếp xuống cuối.
-      const coAi = ai.noiDung
-        .map((x) => {
-          const goc = khoi.find((k) => k.id === x.id);
-          return goc ? { ...goc, ketLuan: x.ketLuan, doan: x.doan } : null;
-        })
-        .filter((x): x is (typeof khoi)[number] => x !== null);
-      const conLai = khoi.filter((k) => !theoId.has(k.id));
-      khoiRa = [...coAi, ...conLai];
+      khoiRa = {
+        ...bai,
+        chang: bai.chang.map((c) => ({
+          ...c,
+          muc: c.muc.map((m) => {
+            const x = theoId.get(m.id);
+            return x ? { ...m, ketLuan: x.ketLuan, doan: x.doan } : m;
+          }),
+        })),
+      };
     }
   }
 
   return NextResponse.json(
     {
       day,
-      khoi: day
+      bai: day
         ? khoiRa
         : // Xem trước: chỉ câu kết luận, không thân bài, không căn cứ
-          khoi.map((k) => ({ ...k, doan: [], canCu: [] })),
+          {
+            ...bai,
+            chang: bai.chang.map((c) => ({
+              ...c,
+              muc: c.muc.map((m) => ({ ...m, doan: [], canCu: [] })),
+            })),
+          },
     },
     { headers: { 'Cache-Control': 'no-store' } }
   );

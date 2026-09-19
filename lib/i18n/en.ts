@@ -368,6 +368,14 @@ export const en: TuDien = {
     tieuDe: 'And here is what Celes reads more closely',
     moTa: 'Each part opens with what matters most, and only then the detail. Wherever it does not convince you, open the evidence underneath to see what Celes is drawing on.',
     hoiVePhanNay: 'Ask Celes about this part',
+    phan: 'parts',
+    noiBat: 'Most notable',
+    docTu: 'Read from:',
+    cung: 'with',
+    soiQua: 'mirrored by',
+    doanKhau: 'WHAT THESE THREE SAY TOGETHER',
+    theoNoiBat: 'Read by what is on your mind ⇅',
+    theoChang: 'Back to the four stretches ⇅',
   },
 
   giuLaSo: {

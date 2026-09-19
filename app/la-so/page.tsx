@@ -19,7 +19,7 @@ import { useBoiCanh, type LaSoNhap } from '@/lib/store/boi-canh';
 import { luuHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
-import type { KhoiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
+import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
@@ -213,7 +213,7 @@ function TrangLaSo() {
 
   // Tám khối dựng ở MÁY CHỦ. Đây là khả năng trả phí, mà dựng trong trình duyệt
   // thì mở devtools là đọc được hết — ẩn ở giao diện không phải phân quyền.
-  const [khoiSau, setKhoiSau] = useState<KhoiLuanGiai[]>([]);
+  const [baiSau, setBaiSau] = useState<BaiLuanGiai | null>(null);
   const [dayLuanGiai, setDayLuanGiai] = useState(true);
 
   useEffect(() => {
@@ -238,7 +238,7 @@ function TrangLaSo() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (huy) return;
-        setKhoiSau(d?.khoi ?? []);
+        setBaiSau(d?.bai ?? null);
         setDayLuanGiai(Boolean(d?.day));
       });
     return () => {
@@ -414,9 +414,9 @@ function TrangLaSo() {
           )}
 
         {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
-        {duocVao && khoiSau.length > 0 && (
+        {duocVao && baiSau && baiSau.chang.length > 0 && (
           <BangLuanGiai
-            khoi={khoiSau}
+            bai={baiSau}
             duongHoi={duongHoi}
             day={dayLuanGiai}
             duongVe={duongVe}

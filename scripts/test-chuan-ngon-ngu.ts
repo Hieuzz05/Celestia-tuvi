@@ -11,7 +11,7 @@
 
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { docNhanh } from '../lib/tuvi/quick-read';
-import { luanGiaiSau } from '../lib/tuvi/luan-giai-sau';
+import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
 import { luanHan } from '../lib/tuvi/luan-han';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
@@ -40,7 +40,7 @@ console.log('\n== BÀI ĐỌC SÂU (8 lĩnh vực, template tất định) ==\n'
 let lapCaoNhat = 0;
 for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
   const laSo = lapLaSo({ ngay, thang, nam, gio, gioiTinh });
-  const khoi = luanGiaiSau(laSo, 2026, 'vi');
+  const khoi = mucPhang(luanGiaiSau(laSo, 2026, 'vi'));
   const van = khoi.flatMap((k) => [k.ketLuan, ...(k.doan ?? [])]).filter(Boolean);
   const kq = soatNgonNgu(van.join(' '), khoi.map((k) => k.ketLuan ?? ''));
   lapCaoNhat = Math.max(lapCaoNhat, kq.tyLeMoDauTrung);
@@ -61,7 +61,7 @@ console.log('\n== CÂU GHÉP KHÔNG ĐƯỢC GÃY ==\n');
   let viDu = '';
   for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
     const laSo = lapLaSo({ ngay, thang, nam, gio, gioiTinh });
-    for (const k of luanGiaiSau(laSo, 2026, 'vi')) {
+    for (const k of mucPhang(luanGiaiSau(laSo, 2026, 'vi'))) {
       for (const d of [k.ketLuan, ...(k.doan ?? [])].filter(Boolean)) {
         for (const cau of d.split(/(?<=[.!?])\s+/)) {
           // Vế ghép sẵn đã mang một gạch ngang; khuôn nào thêm vế đuôi nữa là
@@ -130,8 +130,8 @@ for (const [ngay, thang, nam, gio, gioiTinh] of MAU.slice(0, 4)) {
 
 console.log('\n== HAI LÁ SỐ KHÁC NHAU PHẢI KHÁC BỘ KHUNG CÂU ==\n');
 {
-  const a = luanGiaiSau(lapLaSo({ ngay: 12, thang: 5, nam: 1990, gio: 10, gioiTinh: 'nam' }), 2026, 'vi');
-  const b = luanGiaiSau(lapLaSo({ ngay: 3, thang: 11, nam: 1985, gio: 21, gioiTinh: 'nu' }), 2026, 'vi');
+  const a = mucPhang(luanGiaiSau(lapLaSo({ ngay: 12, thang: 5, nam: 1990, gio: 10, gioiTinh: 'nam' }), 2026, 'vi'));
+  const b = mucPhang(luanGiaiSau(lapLaSo({ ngay: 3, thang: 11, nam: 1985, gio: 21, gioiTinh: 'nu' }), 2026, 'vi'));
   // So phần MỞ ĐẦU của câu kết luận, chỗ khuôn lộ ra rõ nhất
   const mo = (ds: typeof a) => ds.map((k) => (k.ketLuan ?? '').slice(0, 14));
   const giongNhau = mo(a).filter((x, i) => x === mo(b)[i]).length;
@@ -145,8 +145,8 @@ console.log('\n== HAI LÁ SỐ KHÁC NHAU PHẢI KHÁC BỘ KHUNG CÂU ==\n');
 console.log('\n== CÙNG MỘT LÁ SỐ ĐỌC LẠI PHẢI RA ĐÚNG BÀI CŨ ==\n');
 {
   const x = lapLaSo({ ngay: 12, thang: 5, nam: 1990, gio: 10, gioiTinh: 'nam' });
-  const lan1 = JSON.stringify(luanGiaiSau(x, 2026, 'vi'));
-  const lan2 = JSON.stringify(luanGiaiSau(x, 2026, 'vi'));
+  const lan1 = JSON.stringify(mucPhang(luanGiaiSau(x, 2026, 'vi')));
+  const lan2 = JSON.stringify(mucPhang(luanGiaiSau(x, 2026, 'vi')));
   kiem('Hai lần chạy cho kết quả giống hệt', lan1 === lan2);
 }
 

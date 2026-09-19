@@ -1,6 +1,7 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
-import type { LinhVucId } from '@/lib/tuvi/luan-giai-sau';
+import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
+import type { MucId } from '@/lib/tuvi/chang-cung';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
@@ -48,19 +49,19 @@ const CUNG_CAN_CO = [
   'Thiên Di',
 ];
 
-const NHAN_LINH_VUC: Record<LinhVucId, string> = {
-  'tinh-cach': 'Tính cách — khí chất và cách phản ứng',
-  'cong-viec': 'Công việc — môi trường nào phát huy được',
-  'tai-loc': 'Tài lộc — cách tạo ra và giữ nguồn lực',
-  'tinh-duyen': 'Tình duyên — cách gắn kết với một người',
-  'gia-dao': 'Gia đạo — vai trò thường đảm nhận trong nhà',
-  'quan-he': 'Quan hệ xã hội — cách đứng giữa những người xung quanh',
-  'van-han': 'Giai đoạn hiện tại — nhịp đang đi qua',
-  'phat-trien': 'Phát triển — chỗ đáng rèn nếu muốn đi xa hơn',
-};
+/**
+ * Nhãn mười hai phần, lấy thẳng từ kho chữ của bài luận.
+ *
+ * Viết lại ở đây là chắc chắn lệch: thêm một phần ở `chu-12-cung.ts` mà quên
+ * bảng này thì model không bao giờ được yêu cầu viết phần ấy, và không lỗi nào
+ * báo ra — chỉ là bài thiếu một khối.
+ */
+const NHAN_LINH_VUC: Record<MucId, string> = Object.fromEntries(
+  Object.entries(CHU_12_CUNG.vi).map(([id, c]) => [id, c.nhan])
+) as Record<MucId, string>;
 
 export interface KhoiAi {
-  id: LinhVucId;
+  id: MucId;
   ketLuan: string;
   doan: string[];
 }
@@ -112,7 +113,7 @@ export async function sinhBangLinhVuc(vao: {
     ).map((t) => t.id)
   );
 
-  const danhSach = (Object.keys(NHAN_LINH_VUC) as LinhVucId[])
+  const danhSach = (Object.keys(NHAN_LINH_VUC) as MucId[])
     .map((id) => `  "${id}": ${NHAN_LINH_VUC[id]}`)
     .join('\n');
 
@@ -214,7 +215,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   const hopLe = new Set(Object.keys(NHAN_LINH_VUC));
   const ra: KhoiAi[] = [];
   for (const k of mang) {
-    const id = typeof k.id === 'string' && hopLe.has(k.id) ? (k.id as LinhVucId) : null;
+    const id = typeof k.id === 'string' && hopLe.has(k.id) ? (k.id as MucId) : null;
     const ketLuan = sach(k.ketLuan);
     if (!id || !ketLuan || ra.some((x) => x.id === id)) continue;
 
