@@ -45,7 +45,7 @@ import { truyHoi } from './truy-hoi';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.2';
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.3';
 
 /** Cung cần có mặt trong dữ kiện để tám lĩnh vực đều có cái mà đọc */
 const CUNG_CAN_CO = [

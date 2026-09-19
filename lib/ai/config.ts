@@ -31,9 +31,25 @@ const MODEL_MAC_DINH: Record<ProviderId, string> = {
   groq: 'openai/gpt-oss-120b',
   cerebras: 'gpt-oss-120b',
   openrouter: 'deepseek/deepseek-chat-v3-0324:free',
-  // Giữ gpt-4o-mini làm mặc định theo yêu cầu của chủ dự án. Dòng gpt-5 đã gọi
-  // được (xem chatOpenAiCompat) nhưng chỉ đổi khi được yêu cầu, không tự nâng.
-  openai: 'gpt-4o-mini',
+  /*
+   * gpt-5.6-luna thay gpt-4o-mini, sau khi chủ dự án chốt dựa trên số đo.
+   *
+   * Đo bằng `scripts/so-model.ts` trên chính màn luận giải, cùng một lá số:
+   *   gpt-4o-mini     29% số phần nêu được tên cách cục · 2,0 cụm rỗng · 24s
+   *   gpt-5.6-luna    89% · 0 cụm rỗng · 36s
+   * Giá gần bằng nhau: $0,20/$1,20 so với $0,15/$0,60 cho mỗi triệu token, và
+   * luna còn có cache đầu vào $0,02 — prompt hệ thống của ta cố định giữa mọi
+   * lá số nên phần lớn đầu vào rơi vào mức ấy.
+   *
+   * gpt-5.4-mini CỐ Ý không chọn dù spec routing đề xuất nó cho tier sâu: ở mức
+   * nghĩ 'medium' nó vượt trần 55 giây và bị huỷ, còn ở 'low' thì kém hơn luna
+   * (27% so với 89%) mà đắt gấp 3,75 lần.
+   *
+   * LƯU Ý cho người sửa sau: hằng số này chỉ có hiệu lực khi bảng
+   * `ai_model_configs` TRỐNG. Có dòng nào trong bảng là bảng thắng. Đổi ở đây
+   * mà quên bảng thì không có gì thay đổi cả.
+   */
+  openai: 'gpt-5.6-luna',
   anthropic: 'claude-haiku-4-5-20251001',
 };
 

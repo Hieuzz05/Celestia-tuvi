@@ -133,8 +133,22 @@ async function chatOpenAiCompat(
     than.max_completion_tokens = (req.maxTokens ?? 2048) + 2048;
     // 'minimal' không còn được nhận ở gpt-5.5; 'low' là mức thấp nhất mà cả
     // dòng cũ lẫn dòng mới đều hiểu.
+    /*
+     * Mức nghĩ mặc định là 'low', và đây là một lựa chọn có số đo đỡ lưng.
+     *
+     * Đo trên chính màn Bức tranh đầy đủ: gpt-5.4-mini ở mức 'medium' VƯỢT trần
+     * 55 giây của `goiApi` và bị huỷ — hỏng theo cách không phân biệt được với
+     * một model chết. Cùng màn ấy, gpt-5.6-luna ở mức 'low' mất 36 giây và cho
+     * 89% số phần nêu được tên cách cục, so với 29% của gpt-4o-mini.
+     *
+     * Nói cách khác: với việc này, nghĩ thêm KHÔNG mua được chất lượng, nó chỉ
+     * mua thêm độ trễ và tiền — token nghĩ nội bộ tính tiền y như token ra.
+     *
+     * Chỗ nào thật sự cần nghĩ sâu thì truyền `mucSuyNghi` rõ ràng, và phải cân
+     * lại trần thời gian trước khi làm vậy.
+     */
     if (req.tatSuyNghi) than.reasoning_effort = 'low';
-    else if (req.mucSuyNghi) than.reasoning_effort = req.mucSuyNghi;
+    else than.reasoning_effort = req.mucSuyNghi ?? 'low';
   } else {
     than.temperature = req.temperature ?? 0.7;
     than.max_tokens = req.maxTokens ?? 2048;
