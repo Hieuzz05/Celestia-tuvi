@@ -12,11 +12,12 @@ import {
   type TraLoiCoCauTruc,
 } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
+import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
-import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER } from './planner';
+import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type YDinh } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
 
@@ -64,25 +65,71 @@ export interface KetQuaTraLoi {
   doTreMs: { truyHoi: number; model: number; tong: number };
 }
 
-/** Dựng markdown từ câu trả lời có cấu trúc — UI hiện tại đọc markdown. */
-export function dungVan(t: TraLoiCoCauTruc): string {
+/**
+ * Dựng markdown từ câu trả lời có cấu trúc — UI hiện tại đọc markdown.
+ *
+ * HAI khuôn, không phải một.
+ *
+ * Bản cũ luôn ghép `### Tiêu đề` cho từng ý rồi `### Cần cân nhắc` rồi `### Có
+ * thể làm gì`. Mọi câu trả lời — dài hay ngắn, câu mở chủ đề hay câu hỏi lại
+ * một chữ — đều ra cùng một khuôn BÁO CÁO. Mà đây là chat: người ta gõ một
+ * dòng rồi nhận về một bản báo cáo có mục lục thì đọc như đang tra cứu, không
+ * như đang nói chuyện.
+ *
+ * Khuôn TIN NHẮN dùng khi câu hỏi nhỏ: tra cứu, câu nối tiếp, hoặc ít hơn ba
+ * ý. Không heading nào cả, các đoạn nối liền mạch.
+ *
+ * Khuôn BÁO CÁO giữ nguyên cho câu mở chủ đề lớn, từ ba ý trở lên — ở đó
+ * heading là thứ giúp người đọc quét chứ không phải thứ làm phiền họ.
+ */
+export interface NguCanhVan {
+  yDinh?: YDinh;
+  /** Câu hỏi hiện tại là câu nối tiếp mạch đang nói dở */
+  laCauNoi?: boolean;
+}
+
+export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
+  const tinNhan = nc.yDinh === 'tra-cuu' || nc.laCauNoi === true || t.yChinh.length <= 2;
   const phan: string[] = [t.tomTat.trim()];
 
   for (const y of t.yChinh) {
+    const doan: string[] = [y.noiDung.trim()];
     // Lực ngược đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
     // đó đáng tin, tách ra thì người đọc mất mối nối.
-    const than = y.luongNguoc ? `${y.noiDung.trim()}\n\n${y.luongNguoc.trim()}` : y.noiDung.trim();
-    phan.push(y.tieuDe ? `### ${y.tieuDe}\n${than}` : than);
+    if (y.luongNguoc) doan.push(y.luongNguoc.trim());
+    // Cùng lý do với lực ngược: lời khuyên dạng điều kiện thuộc về CHÍNH ý này,
+    // gom nó xuống cuối bài là tách nó khỏi cái cớ sinh ra nó.
+    if (y.neuThi) doan.push(y.neuThi.trim());
+
+    const than = doan.join('\n\n');
+    phan.push(tinNhan || !y.tieuDe ? than : `### ${y.tieuDe}\n${than}`);
   }
 
+  /*
+   * Khuôn tin nhắn bỏ TIÊU ĐỀ, không bỏ gạch đầu dòng.
+   *
+   * Các mục trong canNhac thường là MẨU CÂU ("Tình hình tài chính cá nhân hiện
+   * tại"), không phải câu. Nối chúng bằng dấu cách ra đúng một dòng vô nghĩa —
+   * đo được trên bài thật. Gạch đầu dòng không phải heading và đọc bình thường
+   * trong chat, nên giữ.
+   */
   if (t.canNhac?.length) {
-    phan.push(`### Cần cân nhắc\n${t.canNhac.map((c) => `- ${c}`).join('\n')}`);
-  }
-  if (t.buocTiepTheo?.length) {
-    phan.push(`### Có thể làm gì\n${t.buocTiepTheo.map((c) => `- ${c}`).join('\n')}`);
+    const muc = t.canNhac.map((c) => `- ${c.trim()}`).join('\n');
+    phan.push(tinNhan ? muc : `### Cần cân nhắc\n${muc}`);
   }
 
-  return phan.join('\n\n');
+  // buocTiepTheo chỉ còn giữ việc KHÔNG thuộc riêng ý nào. Rỗng thì bỏ hẳn mục,
+  // đừng in một tiêu đề trống.
+  if (t.buocTiepTheo?.length) {
+    const muc = t.buocTiepTheo.map((c) => `- ${c.trim()}`).join('\n');
+    phan.push(tinNhan ? muc : `### Có thể làm gì\n${muc}`);
+  }
+
+  // Câu hỏi ngược luôn là đoạn CUỐI, không heading, không bullet — nó là một
+  // câu nói với người đối diện, không phải một mục trong bài.
+  if (t.hoiLai) phan.push(t.hoiLai.trim());
+
+  return phan.filter(Boolean).join('\n\n');
 }
 
 export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
@@ -159,7 +206,10 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const ketQuaKiem = kiemDuyet(daCham, goi);
   const { traLoi: daLoc, soYBiBo } = locYHong(daCham, ketQuaKiem);
 
-  const van = dungVan(daLoc);
+  const van = dungVan(daLoc, {
+    yDinh: keHoach.yDinh,
+    laCauNoi: laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
+  });
   const ketQuaNgonNgu = soatNgonNgu(
     van,
     daLoc.yChinh.map((y) => y.tieuDe || y.noiDung)

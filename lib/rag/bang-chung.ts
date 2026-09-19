@@ -17,7 +17,7 @@ import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
  * là phép so sánh chuỗi.
  */
 
-export const PHIEN_BAN_SCHEMA_OUTPUT = '1.1';
+export const PHIEN_BAN_SCHEMA_OUTPUT = '1.2';
 
 export interface Bangchung {
   id: string;
@@ -37,6 +37,8 @@ export interface Bangchung {
 export interface GoiBangChung {
   cauHoi: string;
   chuDe: string;
+  /** Người hỏi cần gì — quyết định hình dạng câu trả lời, xem prompt-co-can-cu.ts */
+  yDinh: string;
   lopHan: string[];
   cungLienQuan: string[];
   duKien: DuKienLaSo[];
@@ -64,6 +66,7 @@ export function dungGoiBangChung(
   return {
     cauHoi,
     chuDe: NHAN_CHU_DE[keHoach.chuDe],
+    yDinh: keHoach.yDinh,
     lopHan: keHoach.lopHan.map((l) => NHAN_LOP_HAN[l]),
     cungLienQuan: keHoach.cungLienQuan,
     duKien,
@@ -111,6 +114,7 @@ export function dungKhoiChoPrompt(goi: GoiBangChung): string {
 
   return [
     `CHỦ ĐỀ: ${goi.chuDe}`,
+    `NGƯỜI HỎI CẦN: ${goi.yDinh}`,
     `LỚP HẠN CẦN ĐỌC: ${goi.lopHan.join(', ')}`,
     `CUNG LIÊN QUAN: ${goi.cungLienQuan.join(', ')}`,
     '',
@@ -137,6 +141,17 @@ export interface YChinh {
    * chuyện nó muốn kể, và bài đọc nào cũng mạch lạc một cách đáng ngờ.
    */
   luongNguoc?: string;
+  /**
+   * Lời khuyên dạng ĐIỀU KIỆN, gắn với CHÍNH ý này. Không mệnh lệnh.
+   *
+   * Thay cho việc dồn mọi lời khuyên xuống `buocTiepTheo` ở cuối bài. Dồn xuống
+   * cuối là tách lời khuyên khỏi lý do sinh ra nó — cùng một lỗi mà tệp này đã
+   * tránh khi đặt `luongNguoc` ngay sau ý ("tách ra thì người đọc mất mối nối").
+   *
+   * Dạng "Nếu <điều kiện kiểm được ở đời thực> thì <hệ quả>". `CAU_RA_LENH` cắt
+   * câu mệnh lệnh, nên model viết "bạn nên…" ở đây là mất trắng nội dung đó.
+   */
+  neuThi?: string;
   /** Độ chắc, do máy chấm từ số nguồn độc lập — không phải model tự nhận */
   mucChacChan?: MucChacChan;
 }
@@ -154,6 +169,20 @@ export interface TraLoiCoCauTruc {
   cachNoi?: string;
   canNhac?: string[];
   buocTiepTheo?: string[];
+  /**
+   * ĐÚNG MỘT câu hỏi ngược, về dữ kiện ĐỜI THỰC.
+   *
+   * Với "có nên nhận offer", thứ quyết định chất lượng câu trả lời là offer đó
+   * là gì — mức lương, quy mô đội, ai quản lý trực tiếp. Lá số không biết những
+   * thứ ấy, người hỏi thì biết. Không hỏi thì Celes luận trên một nửa dữ kiện
+   * và tự tin y như khi có đủ.
+   *
+   * Cấm hỏi về lá số, và cấm hỏi "bạn thấy điều này có đúng không" — câu đó
+   * không lấy thêm được dữ kiện nào.
+   */
+  hoiLai?: string;
+  /** 2–3 chip gợi ý cho lượt sau, mỗi chip ≤ 40 ký tự */
+  goiYTiep?: string[];
 }
 
 /**
@@ -189,6 +218,8 @@ interface ThoTraLoi {
   tomTat?: unknown;
   yChinh?: unknown;
   cachNoi?: unknown;
+  hoiLai?: unknown;
+  goiYTiep?: unknown;
   canNhac?: unknown;
   buocTiepTheo?: unknown;
 }
@@ -216,7 +247,15 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
           maDuKien: Array.isArray(y.maDuKien) ? y.maDuKien.filter((x) => typeof x === 'string') : [],
           maNguon: Array.isArray(y.maNguon) ? y.maNguon.filter((x) => typeof x === 'string') : [],
           luongNguoc: chuoi(y.luongNguoc),
+          neuThi: chuoi(y.neuThi),
         })),
+      hoiLai: chuoi(d.hoiLai),
+      goiYTiep: Array.isArray(d.goiYTiep)
+        ? d.goiYTiep
+            .filter((x: unknown): x is string => typeof x === 'string' && x.trim().length > 0)
+            .map((x: string) => x.trim().slice(0, 40))
+            .slice(0, 3)
+        : [],
       canNhac: Array.isArray(d.canNhac) ? d.canNhac.filter((x: unknown) => typeof x === 'string') : [],
       buocTiepTheo: Array.isArray(d.buocTiepTheo)
         ? d.buocTiepTheo.filter((x: unknown) => typeof x === 'string')

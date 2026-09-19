@@ -27,7 +27,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
  * thêm một lượt nữa chỉ để tóm tắt lịch sử là nhân đôi chi phí cho mỗi câu hỏi.
  */
 
-export const PHIEN_BAN_TIEP_NOI = '2026.09.1';
+export const PHIEN_BAN_TIEP_NOI = '2026.09.2';
 
 function boDau(s: string): string {
   return s
@@ -87,12 +87,38 @@ export function laCauNoiTiep(cauHoi: string, lichSu: TinNhan[]): boolean {
  * ("nếu tôi nghỉ việc thì sao") và cất nó lại thành sự thật — sai nguy hiểm hơn
  * hẳn là bỏ sót.
  */
+/**
+ * Mẫu nhận ra điều người dùng TỰ KỂ.
+ *
+ * Nhóm đầu bắt câu có chủ ngữ ("tôi đang làm…"). Nhóm sau thêm ở phiên bản
+ * 2026.09.2, và nó mới là nhóm quan trọng: từ khi Celes biết hỏi ngược, phần
+ * lớn dữ kiện đời thực đến dưới dạng câu TRẢ LỜI — mà câu trả lời một câu hỏi
+ * thì gần như không bao giờ có chủ ngữ. "offer 25 triệu, vị trí team lead,
+ * công ty 30 người" không khớp mẫu nào trong năm mẫu cũ, nên nó rơi mất hoàn
+ * toàn và lượt sau Celes lại luận trên một nửa dữ kiện.
+ *
+ * Bắt theo DẤU HIỆU trong câu (con số kèm đơn vị, chức danh, quy mô đội) chứ
+ * không theo hình dạng câu, rồi lấy cả mệnh đề chứa nó.
+ */
 const MAU_TU_KE: RegExp[] = [
+  // --- có chủ ngữ ---
   /\btôi (?:đang|hiện) (?:làm|ở|sống|học|theo)\b[^.!?]{0,80}/gi,
-  /\btôi (?:đã|vừa) (?:lấy|cưới|kết hôn|ly hôn|nghỉ việc|chuyển|sinh)\b[^.!?]{0,80}/gi,
+  /\btôi (?:đã|vừa) (?:lấy|cưới|kết hôn|ly hôn|nghỉ việc|chuyển|sinh|nhận|được)\b[^.!?]{0,80}/gi,
   /\btôi (?:có|chưa có) (?:vợ|chồng|con|người yêu|gia đình)\b[^.!?]{0,60}/gi,
   /\btôi muốn\b[^.!?]{0,80}/gi,
   /\btôi (?:là|làm) (?:nghề|nhân viên|quản lý|giáo viên|kỹ sư|bác sĩ|kinh doanh)\b[^.!?]{0,60}/gi,
+
+  // --- không chủ ngữ: câu trả lời cho câu hỏi ngược ---
+  // Tiền: "25 triệu", "1tr2", "30 củ", "2000 usd"
+  /[^,.!?]{0,40}\b\d+(?:[.,]\d+)?\s?(?:triệu|tr|trieu|củ|k|nghìn|ngàn|usd|đô|đồng|vnd)\b[^,.!?]{0,40}/gi,
+  // Chức danh phổ biến, kể cả tiếng Anh vì người ta gõ tiếng Anh
+  /[^,.!?]{0,30}\b(?:team lead|tech lead|trưởng nhóm|trưởng phòng|giám đốc|quản lý|senior|junior|fresher|thực tập|intern|nhân viên|chuyên viên|kế toán|kinh doanh|sale|marketing|dev|lập trình|thiết kế|giáo viên|kỹ sư|bác sĩ|y tá|luật sư)\b[^,.!?]{0,40}/gi,
+  // Quy mô đội / công ty: "công ty 30 người", "đội 5 bạn"
+  /[^,.!?]{0,30}\b(?:công ty|đội|team|nhóm|phòng|bộ phận)\s[^,.!?]{0,20}\d+\s?(?:người|bạn|nhân sự|member)\b/gi,
+  // Thâm niên: "làm ở đó 3 năm", "được 6 tháng"
+  /[^,.!?]{0,30}\b\d+\s?(?:năm|tháng|tuần)\b[^,.!?]{0,40}/gi,
+  // Ngành: "bên ngân hàng", "ngành bất động sản"
+  /[^,.!?]{0,20}\b(?:ngành|lĩnh vực|bên)\s(?:ngân hàng|bất động sản|xây dựng|giáo dục|y tế|công nghệ|phần mềm|sản xuất|logistics|bán lẻ|du lịch|f&b|nhà hàng|khách sạn)\b[^,.!?]{0,30}/gi,
 ];
 
 /** Câu giả định không phải điều đã xảy ra — "nếu tôi nghỉ việc thì sao" */

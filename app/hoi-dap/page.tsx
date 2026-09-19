@@ -22,6 +22,8 @@ interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
   noiDung: string;
   canCu?: CanCuTraLoi;
+  /** Chip gợi ý lượt sau, do Celes đề xuất theo chính câu vừa trả lời */
+  goiYTiep?: string[];
 }
 
 function formTuHoSo(h: HoSo): ThongTinForm {
@@ -173,7 +175,12 @@ function TrangHoiDap() {
       if (!res.ok) throw new Error(data.loi ?? 'Không nhận được trả lời');
       setTinNhan((ds) => [
         ...ds,
-        { vaiTro: 'tro-ly', noiDung: data.traLoi, canCu: data.canCu },
+        {
+          vaiTro: 'tro-ly',
+          noiDung: data.traLoi,
+          canCu: data.canCu,
+          goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
+        },
       ]);
       quyenCeles.taiLai();
     } catch {
@@ -350,6 +357,24 @@ function TrangHoiDap() {
                      nhà cung cấp phía sau là chuyện của trang quản trị. */
                   <div key={i} className="flex flex-col gap-[6px]">
                     <MarkdownLuanGiai noiDung={m.noiDung} nho />
+
+                    {/*
+                      Chip chỉ hiện dưới lượt CUỐI CÙNG của Celes.
+                      Hiện dưới mọi lượt thì cuộn lên giữa hội thoại là gặp một
+                      rừng chip đã hết thời sự, và bấm vào đó là hỏi lại một
+                      chuyện đã nói xong. Dùng lại đúng lớp pill-tag của phần
+                      "Khám phá nhanh" để hai chỗ không lệch nhau.
+                    */}
+                    {i === tinNhan.length - 1 && !dangChay && !!m.goiYTiep?.length && (
+                      <div className="flex flex-wrap gap-[8px] pt-[2px]">
+                        {m.goiYTiep.map((g) => (
+                          <button key={g} onClick={() => hoi(g)} className="pill-tag">
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                     <CanCu canCu={m.canCu} />
                   </div>
                 )

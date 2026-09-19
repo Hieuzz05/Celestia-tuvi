@@ -130,6 +130,14 @@ export async function POST(req: Request) {
     return NextResponse.json({
       traLoi: kq.van,
       model: `${kq.provider}/${kq.model}`,
+      /*
+       * Chip gợi ý cho lượt sau — gửi cho MỌI bậc quyền, khác với canCu.
+       *
+       * Nó không phải provenance: không tên tài liệu, không mã đoạn, không hệ
+       * phái. Nó chỉ là vài câu người dùng có thể hỏi tiếp, và đó chính là thứ
+       * biến một câu trả lời cụt thành một cuộc nói chuyện.
+       */
+      goiYTiep: kq.coCauTruc?.goiYTiep ?? [],
       canCu: !laQuanTri ? undefined : {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
         cachNoi: kq.coCauTruc?.cachNoi ?? null,

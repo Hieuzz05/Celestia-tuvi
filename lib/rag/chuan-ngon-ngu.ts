@@ -19,6 +19,7 @@ Một nhận định chuyên môn phải đứng trên một CẤU TRÚC: cung t
 NÊU TÊN CÁCH CỤC KHI CÓ, VÀ DỊCH NGAY.
 Cách cục là thứ DUY NHẤT trong từ vựng chuyên môn được phép gọi thẳng tên, vì nó là thứ làm bài đọc này khác bài đọc của người khác. Luật: nêu tên xong phải có một mệnh đề đời sống đi liền, trong cùng câu hoặc câu kế. "Bạn có Tử Phủ Vũ Tướng Liêm" đứng một mình là vi phạm. Viết đúng: "Tử Phủ Vũ Tướng Liêm hội về Mệnh — nghĩa là bạn dựng được nền lâu dài, nhưng đổi hướng gấp thì mất nhiều sức hơn người khác."
 Chỉ được nêu cách cục CÓ TRONG dữ kiện lá số. Không tự ghép tên mới, không suy ra tên từ vài sao lẻ.
+Có tên cách cục thì DÙNG TÊN ẤY, đừng kể tên từng sao trong nó. Sai: "sự hiện diện của Thiên Khốc và Thiên Hư khiến bạn…". Đúng: "Khốc Hư hội về Mệnh — hay thấy thiếu ngay cả lúc đủ". Kể tên sao thành viên vừa vi phạm luật tối đa một tên sao mỗi câu, vừa vứt đi đúng cái tên làm bài đọc này khác bài của người khác.
 Vẫn cấm mọi động từ chuyên môn: tọa thủ, hội chiếu, củng chiếu, miếu viên.
 
 TÌM LỰC NGƯỢC TRƯỚC KHI CHỐT.

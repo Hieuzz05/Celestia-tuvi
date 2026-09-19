@@ -48,6 +48,17 @@ function laKhangDinhChuyenMon(cau: string): boolean {
   return nhanDangThucThe(cau).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION');
 }
 
+/**
+ * Câu có viết dạng điều kiện không.
+ *
+ * "nếu" và "chừng nào" là dấu hiệu không mập mờ. "khi" thì mập mờ: nó mở được
+ * một mệnh đề điều kiện ("khi người quản lý đổi, …") nhưng cũng nằm trong
+ * "trước khi", "sau khi", "mỗi khi" — những cụm đi kèm câu MỆNH LỆNH nhiều hơn
+ * là câu điều kiện. Đo được ngay khi vừa viết luật: "Bạn nên cân nhắc kỹ trước
+ * khi quyết" lọt qua thành câu điều kiện dù nó là mệnh lệnh nguyên vẹn.
+ */
+const LA_DIEU_KIEN = /\bnếu\b|chừng nào|(?<!trước |sau |mỗi |đến |từ )\bkhi\b/iu;
+
 export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKiemDuyet {
   const loi: LoiKiemDuyet[] = [];
 
@@ -80,6 +91,29 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
 
   let soYCoNguon = 0;
 
+  /*
+   * hoiLai phải hỏi ĐỜI THỰC, không hỏi lá số.
+   *
+   * Mục đích của nó là lấy về thứ lá số không biết. Hỏi "cung Quan Lộc của bạn
+   * thế nào" là hỏi lại chính thứ engine vừa đưa cho model — vòng tròn, và tốn
+   * của người dùng một lượt.
+   */
+  if (traLoi.hoiLai) {
+    const tt = nhanDangThucThe(traLoi.hoiLai);
+    const hoiLaSo = tt.some((t) => t.loai === 'PALACE' || t.loai === 'STAR' || t.loai === 'FORMATION');
+    const hoiVoNghia = /\b(?:có đúng không|đúng chứ|thấy đúng không|có giống)\b/iu.test(traLoi.hoiLai);
+    if (hoiLaSo || hoiVoNghia) {
+      loi.push({
+        ma: 'hoi-lai-sai-vai',
+        mucDo: 'canh-bao',
+        moTa: hoiLaSo
+          ? 'Câu hỏi ngược đang hỏi về lá số — thứ engine đã đưa sẵn — thay vì hỏi dữ kiện đời thực.'
+          : 'Câu hỏi ngược chỉ xin xác nhận, không lấy thêm được dữ kiện nào.',
+        tai: 'hoiLai',
+      });
+    }
+  }
+
   for (const y of traLoi.yChinh) {
     const nhan = y.tieuDe || y.noiDung.slice(0, 40);
 
@@ -105,6 +139,22 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
           tai: nhan,
         });
       }
+    }
+
+    /*
+     * neuThi phải là câu ĐIỀU KIỆN, không phải mệnh lệnh đổi vỏ.
+     *
+     * Trường này sinh ra để thay cho việc dồn lời khuyên xuống cuối bài. Nếu
+     * không kiểm, model sẽ viết "bạn nên cân nhắc kỹ" vào đúng chỗ ấy và ta
+     * được đúng cái cũ với một cái tên mới.
+     */
+    if (y.neuThi && !LA_DIEU_KIEN.test(y.neuThi)) {
+      loi.push({
+        ma: 'neu-thi-khong-dieu-kien',
+        mucDo: 'canh-bao',
+        moTa: 'Trường neuThi không viết dạng điều kiện — nó đang là một lời khuyên thẳng.',
+        tai: nhan,
+      });
     }
 
     for (const m of y.maNguon) {
