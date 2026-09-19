@@ -271,7 +271,16 @@ const CUM_THAY_TEN_CUNG: [string, string][] = [
  * đúng, mà một bộ sửa làm hỏng câu đúng thì tệ hơn là không có.
  */
 const MENH_CO_GIOI_TU =
-  /(?<!(?:bản|số|vận|sứ|định)\s)(cung|phần|tại)\s+Mệnh(?!\s*chủ)(?![\p{L}])/giu;
+  /(?<!(?:bản|số|vận|sứ|định)\s)(cung|phần|tại|ở|hội về|hội tại|tọa|thủ|đóng tại|về)\s+Mệnh(?!\s*chủ)(?![\p{L}])/giu;
+
+/**
+ * Giới từ nào cần giữ lại chữ "ở" phía trước cụm thay.
+ *
+ * "tại Mệnh" → "ở phần khí chất" thì câu liền mạch; "cung Mệnh" → "phần khí
+ * chất" cũng liền. Nhưng "hội về Mệnh" → "phần khí chất" thì mất động từ và
+ * câu gãy, nên nhóm này giữ nguyên động từ rồi mới nối cụm.
+ */
+const GIOI_TU_GIU_NGUYEN = new Set(['hội về', 'hội tại', 'tọa', 'thủ', 'đóng tại', 'về']);
 
 /**
  * KHÔNG dùng `\b` quanh tên cung, và đây không phải chuyện thẩm mỹ.
@@ -348,9 +357,11 @@ export function doiTenCung(van: string): string {
     ra = ra.replace(new RegExp(cuoiTu(ten), 'gu'), cum);
   }
 
-  ra = ra.replace(MENH_CO_GIOI_TU, (_, gt: string) =>
-    gt.toLowerCase() === 'tại' ? 'ở phần khí chất' : 'phần khí chất'
-  );
+  ra = ra.replace(MENH_CO_GIOI_TU, (_, gt: string) => {
+    const g = gt.toLowerCase();
+    if (GIOI_TU_GIU_NGUYEN.has(g)) return `${gt} phần khí chất`;
+    return g === 'tại' || g === 'ở' ? 'ở phần khí chất' : 'phần khí chất';
+  });
 
   /*
    * Chỉ dọn khi THẬT SỰ có thay.

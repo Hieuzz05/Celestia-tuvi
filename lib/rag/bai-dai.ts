@@ -7,6 +7,7 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { docObjectJson } from './doc-json';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
+import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, type ChuDe } from './planner';
 import { nhanDangThucThe } from './thuc-the';
@@ -210,7 +211,18 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
       : '\nLƯU Ý: không có nguồn tham chiếu nào. Chỉ được mô tả những gì dữ kiện lá số nói, và nêu rõ phần học thuyết chưa có căn cứ.',
   ].join('\n');
 
-  const kq = await goiVoiFallback({ system: dungSystem(vao.chuDe), user, maxTokens: 6000 }, vao.uuTienModel);
+  /*
+   * Ngân sách 8000, không phải 6000.
+   *
+   * Bài này ra khoảng 2000 từ tiếng Việt ≈ 5–6 nghìn token, và với dòng gpt-5
+   * thì token nghĩ nội bộ cũng trừ vào cùng ngân sách. Ở mức 6000, bản sinh
+   * bằng gpt-5.6-luna bị CẮT GIỮA CHỪNG: JSON gãy, `docJson` trả null, và
+   * đường lùi đổ nguyên chuỗi JSON thô ra trước mặt người đọc.
+   *
+   * `bang-linh-vuc` vốn đã để 8000 và không gặp lỗi này — đây là chỗ hai bề mặt
+   * cùng một sản phẩm đặt hai ngân sách khác nhau mà không có lý do.
+   */
+  const kq = await goiVoiFallback({ system: dungSystem(vao.chuDe), user, maxTokens: 8000 }, vao.uuTienModel);
   const tho = docJson(kq.text);
 
   const phienBan = {
@@ -220,14 +232,32 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
     phuongPhap: PHUONG_PHAP.phienBan,
   };
 
-  // Không đọc được JSON: vẫn trả chữ về cho người đọc, nhưng ghi rõ lượt này
-  // không qua kiểm duyệt — đừng giả vờ đã kiểm.
+  /*
+   * Không đọc được JSON: vẫn trả chữ, nhưng KHÔNG trả chữ là JSON.
+   *
+   * Bản cũ trả thẳng `kq.text`. Khi model bị cắt giữa chừng thì `kq.text` chính
+   * là một chuỗi JSON dở dang, và người đọc nhận về `{ "baDieu": [ ...` trên
+   * mặt trước. Đó là lỗi tệ hơn hẳn việc thiếu bài: nó làm sản phẩm trông như
+   * đang hỏng ở tầng sâu.
+   *
+   * Nhìn thấy dấu hiệu JSON thì thà không trả gì và để lớp gọi lùi về bản tất
+   * định — lớp đó đã có sẵn và vẫn đọc được.
+   */
+  const trongNhuJson = /^\s*[{[]/.test(kq.text) || /"[a-zA-Z]+"\s*:/.test(kq.text.slice(0, 400));
   if (!tho || typeof tho.cauTruc?.noiDung !== 'string') {
     return {
-      van: kq.text,
+      van: trongNhuJson ? '' : kq.text,
       coCauTruc: null,
       goi,
-      kiemDuyet: { dat: false, loi: ['Model không trả về đúng cấu trúc'], soYBiBo: 0 },
+      kiemDuyet: {
+        dat: false,
+        loi: [
+          trongNhuJson
+            ? 'Model trả về JSON gãy (nhiều khả năng bị cắt vì hết ngân sách token) — đã bỏ, không hiện chữ thô'
+            : 'Model không trả về đúng cấu trúc',
+        ],
+        soYBiBo: 0,
+      },
       ngonNgu: null,
       provider: kq.provider,
       model: kq.model,
@@ -316,9 +346,18 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
   const choDeKet = (tho.choDeKet ?? []).map((m, i) => chuan(m, `Chỗ dễ kẹt ${i + 1}`)).filter((x): x is YBaiDai => !!x);
   const giaiDoan = chuan(tho.giaiDoan, 'Giai đoạn bạn đang đi qua') ?? undefined;
 
+  /*
+   * Bóc mã dẫn chứng khỏi câu.
+   *
+   * Luật ngoặc VUÔNG phải bóc cả cặp ngoặc, không chỉ mã bên trong. Bản cũ xoá
+   * "F002" rồi để lại "[]", nên bài ra mặt trước mang những cặp ngoặc rỗng:
+   *   "…hơn là chạy theo những cú bứt phá ngắn hạn. [][]"
+   * Model viết mã trong ngoặc vuông, mà luật đầu chỉ lo ngoặc tròn.
+   */
   const bocMa = (x: string) =>
     x
       .replace(/\s*\((?:\s*[FE]\d{3}\s*,?)+\s*\)/g, '')
+      .replace(/\s*\[(?:\s*[FE]\d{3}\s*,?)*\s*\]/g, '')
       .replace(/\b[FE]\d{3}\b/g, '')
       .replace(/\s{2,}/g, ' ')
       .replace(/\s+([.,;])/g, '$1')
@@ -335,7 +374,26 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
     cachNoi: typeof tho.cachNoi === 'string' ? tho.cachNoi : undefined,
   };
 
-  const van = dungVanBaiDai(coCauTruc);
+  /*
+   * Bài dài cũng phải qua hai lớp sửa như chat và bảng mười hai phần.
+   *
+   * Thiếu chúng ở đây là một lỗ hổng thật, không phải chuyện cho đồng bộ: đo
+   * trên bản vừa sinh, bài viết "Tử Phủ Vũ Tướng Liêm tại Mệnh" và "Thiên Di có
+   * Thất Sát" — tên cung lọt thẳng ra mặt trước, đúng thứ chuẩn ngôn ngữ cấm ở
+   * mọi dạng và là thứ người đọc không tra được.
+   *
+   * Ba bề mặt cùng một sản phẩm mà hai cái dịch tên cung còn một cái thì không,
+   * người đọc nhận ra ngay cả khi không gọi tên được vấn đề.
+   */
+  const vanTho = dungVanBaiDai(coCauTruc);
+  const van = doiTenCung(
+    await suaCauTiengLong(vanTho, [
+      ...tenCachCucCho(vao.laSo),
+      ...nhanDangThucThe(vanTho)
+        .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
+        .map((t) => t.ten),
+    ])
+  );
   const ngonNgu = soatNgonNgu(
     van,
     [coCauTruc.cauTruc, ...diemManh, ...choDeKet].map((m) => m.noiDung)

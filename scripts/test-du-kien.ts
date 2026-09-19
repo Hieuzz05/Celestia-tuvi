@@ -216,6 +216,18 @@ const PHAI_DOI = [
   'Sát Phá Tham tại Phu Thê cho thấy bạn dễ thay đổi',
   'đọc từ cung Quan Lộc và cung Tài Bạch',
   'Phúc Đức của bạn có Thiên Lương',
+  /*
+   * Bốn dạng dưới do BÀI DÀI sinh ra, không phải chat.
+   *
+   * Mỗi bề mặt có thói quen câu chữ riêng: chat hay viết "tại X", bài dài hay
+   * viết "hội về X", "tọa X", "đóng tại X". Bộ kiểm chỉ mang mẫu của một bề mặt
+   * thì luật trông như đã đủ trong khi bề mặt kia vẫn rò — đúng chuyện vừa xảy
+   * ra với "Tử Phủ Vũ Tướng Liêm hội về Mệnh".
+   */
+  'Tử Phủ Vũ Tướng Liêm hội về Mệnh — nghĩa là bạn dựng nền lâu dài.',
+  'Thiên Cơ tọa Mệnh cho thấy nhịp làm việc linh hoạt.',
+  'Thiên Di có Thất Sát kéo bạn vào tình huống cần quyết nhanh.',
+  'Cách cục này đóng tại Mệnh.',
 ];
 const KHONG_DUOC_DUNG = [
   'bản Mệnh của bạn là Dương Liễu Mộc, và Mệnh chủ là Tham Lang',
@@ -224,7 +236,7 @@ const KHONG_DUOC_DUNG = [
 ];
 
 const conTenCung =
-  /\b(?:Phụ Mẫu|Phúc Đức|Điền Trạch|Quan Lộc|Nô Bộc|Thiên Di|Tật Ách|Tài Bạch|Tử Tức|Phu Thê|Huynh Đệ)|(?:cung|phần|tại)\s+Mệnh/u;
+  /\b(?:Phụ Mẫu|Phúc Đức|Điền Trạch|Quan Lộc|Nô Bộc|Thiên Di|Tật Ách|Tài Bạch|Tử Tức|Phu Thê|Huynh Đệ)|(?:cung|phần|tại|ở|hội về|tọa|thủ|đóng tại|về)\s+Mệnh/u;
 
 const conSot = PHAI_DOI.filter((t) => conTenCung.test(doiTenCung(t)));
 kiem('Mọi tên cung đều được đổi', conSot.length === 0, conSot);
