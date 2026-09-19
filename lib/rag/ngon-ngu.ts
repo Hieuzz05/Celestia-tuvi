@@ -222,6 +222,14 @@ function coLoiDoiSong(cau: string): boolean {
   return DONG_TU_DOI_SONG.some((t) => cum.has(t));
 }
 
+/** Mọi cụm đúng n từ trong một chuỗi đã bỏ dấu */
+function cumNTu(khongDau: string, n: number): Set<string> {
+  const tu = khongDau.split(/[^a-z0-9]+/).filter(Boolean);
+  const ra = new Set<string>();
+  for (let i = 0; i + n <= tu.length; i++) ra.add(tu.slice(i, i + n).join(' '));
+  return ra;
+}
+
 export interface MucTheoDoan {
   /** Đoạn mở đầu của một ý */
   moDau: string;
@@ -232,9 +240,37 @@ export interface MucTheoDoan {
 export function soatNgonNgu(
   van: string,
   doanMoDau: string[],
-  mucTheoDoan?: MucTheoDoan[]
+  mucTheoDoan?: MucTheoDoan[],
+  daNoiTruoc?: string[]
 ): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
+
+  /*
+   * Chép lại nguyên văn bài tổng quan.
+   *
+   * Khối "đã nói trước" được chèn vào prompt để giữ nhất quán giữa hai bề mặt.
+   * Nhưng model có xu hướng dùng nó làm bài mẫu thay vì làm nền — đo được ngay
+   * lần chạy đầu: bài chat mở bằng đúng câu của bảng tám lĩnh vực, không sai
+   * một chữ. Người đọc gặp lại nguyên văn thì hiểu là Celes không có gì để nói
+   * thêm, và khối ấy làm hại nhiều hơn làm lợi.
+   *
+   * Đếm cụm 7 từ dùng chung. Bảy vì tiếng Việt nhiều từ đơn âm: cụm 5 từ trùng
+   * nhau vẫn có thể là tình cờ, cụm 7 thì gần như chắc chắn là chép.
+   */
+  if (daNoiTruoc?.length) {
+    const cuaBai = cumNTu(boDau(van), 7);
+    const cuaTruoc = new Set<string>();
+    for (const d of daNoiTruoc) for (const g of cumNTu(boDau(d), 7)) cuaTruoc.add(g);
+    const chung = [...cuaBai].filter((g) => cuaTruoc.has(g));
+    if (chung.length) {
+      loi.push({
+        ma: 'chep-lai-bai-tong-quan',
+        mucDo: 'canh-bao',
+        moTa: 'Bài nhắc lại nguyên văn câu đã có trong bài tổng quan thay vì đi tiếp từ đó.',
+        viDu: chung.slice(0, 3).join(' | '),
+      });
+    }
+  }
 
   /*
    * Nói chắc hơn mức bằng chứng cho phép.

@@ -90,6 +90,14 @@ export async function POST(req: Request) {
   if (!cho.duocPhep) return cho.chan!;
 
   try {
+    const chartHash = bamLaSo(
+      body.ngay!,
+      body.thang!,
+      body.nam!,
+      body.gio!,
+      body.gioiTinh as string
+    );
+
     const kq = await traLoiCoCanCu({
       laSo,
       cauHoi,
@@ -97,13 +105,15 @@ export async function POST(req: Request) {
       thangXem,
       lichSu,
       requestId,
+      // Để Celes biết bảng tám lĩnh vực đã nói gì với chính người này
+      chartHash,
     });
     await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
 
     // Ghi vết sau khi đã chốt: nhật ký hỏng không được làm mất câu trả lời.
     await ghiVetTraLoi({
       requestId,
-      chartHash: bamLaSo(body.ngay!, body.thang!, body.nam!, body.gio!, body.gioiTinh as string),
+      chartHash,
       cauHoi,
       runId: kq.runId,
       phienBan: kq.phienBan,

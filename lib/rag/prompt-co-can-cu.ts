@@ -150,7 +150,16 @@ Nói nghĩa chung trước, rồi mới nói nó ứng thế nào trên chính l
 
 export function dungPromptCoCanCu(
   goi: GoiBangChung,
-  lichSu: TinNhan[]
+  lichSu: TinNhan[],
+  /**
+   * Những câu Celes đã nói với chính người này ở bài tổng quan.
+   *
+   * KHÔNG phải dữ kiện lá số: không mã, và validator không tính nó là nguồn.
+   * Nó chỉ để giữ nhất quán giữa hai bề mặt của cùng một sản phẩm — người đọc
+   * nhận ra ngay khi hai màn nói lệch nhau về cùng một người, kể cả khi họ
+   * không gọi tên được vấn đề.
+   */
+  daNoiTruoc: string[] = []
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -182,9 +191,19 @@ export function dungPromptCoCanCu(
 
   const phanYDinh = THEO_Y_DINH[goi.yDinh] ? `\n\n${THEO_Y_DINH[goi.yDinh]}` : '';
 
+  const phanDaNoi = daNoiTruoc.length
+    ? `\n\nĐÃ NÓI VỚI NGƯỜI NÀY TRONG BÀI TỔNG QUAN (giữ nhất quán, đừng nói ngược lại, cũng đừng lặp lại nguyên văn)\n${daNoiTruoc
+        .map((d) => `- ${d}`)
+        .join('\n')}\n\nĐây KHÔNG phải dữ kiện lá số — không trích mã cho nó.
+
+NHIỆM VỤ CỦA BẠN VỚI KHỐI NÀY LÀ ĐI TIẾP, KHÔNG PHẢI NHẮC LẠI.
+Không câu nào trong bài được trùng một mệnh đề với khối trên. Người đọc đã đọc những câu đó rồi; gặp lại nguyên văn ở đây thì họ hiểu là Celes không có gì để nói thêm.
+Được phép viết "như đã nói trong bài tổng quan của bạn…" rồi NÓI THÊM điều bài đó chưa nói: nó lộ ra ở tình huống nào, nó đổi gì khi gặp đúng câu hỏi đang hỏi, chỗ nào nó quay ra làm khó.`
+    : '';
+
   return {
     system: SYSTEM,
-    user: `${dungKhoiChoPrompt(goi)}${phanLichSu}${canhBaoTrong}${phanYDinh}
+    user: `${dungKhoiChoPrompt(goi)}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}
 
 CÂU HỎI HIỆN TẠI
 ${goi.cauHoi}`,

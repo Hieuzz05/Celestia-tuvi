@@ -25,8 +25,10 @@ async function main() {
   const { lapLaSo } = await import('../lib/tuvi/ansao');
   const { traLoiCoCanCu } = await import('../lib/rag/tra-loi');
   const { namAmHienTai, thangAmHienTai } = await import('../lib/tuvi/bay-gio');
+  const { bamLaSo } = await import('../lib/rag/nhat-ky');
 
   const laSo = lapLaSo({ ngay: 24, thang: 8, nam: 2000, gio: 20, gioiTinh: 'nam' });
+  const chartHash = bamLaSo(24, 8, 2000, 20, 'nam');
 
   console.log(`\nCâu hỏi: "${CAU_HOI}"\n${'='.repeat(72)}`);
 
@@ -36,6 +38,7 @@ async function main() {
     namXem: namAmHienTai(),
     thangXem: thangAmHienTai(),
     ghiNhatKy: false,
+    chartHash,
   });
 
   console.log('\n--- BÀI NGƯỜI ĐỌC NHẬN ---\n');

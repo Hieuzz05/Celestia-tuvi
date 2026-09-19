@@ -42,6 +42,13 @@ export interface DauVaoTraLoi {
   /** Không ghi nhật ký khi chạy thử trong Lab hay eval */
   ghiNhatKy?: boolean;
   /**
+   * Bằm lá số — để đọc bài tổng quan đã sinh trước đó cho chính lá số này.
+   *
+   * Không bắt buộc: thiếu nó thì chat vẫn chạy, chỉ là không biết hai màn đã
+   * nói gì với nhau.
+   */
+  chartHash?: string;
+  /**
    * Cho phép planner gọi model khi luật không kết luận được chủ đề.
    *
    * Mặc định BẬT cho người dùng thật. Tắt trong eval và Retrieval Lab: một bước
@@ -177,6 +184,38 @@ function gomLoiKhuyen(t: TraLoiCoCauTruc, yDinh: YDinh): TraLoiCoCauTruc {
   return { ...t, canNhac: [], buocTiepTheo: [] };
 }
 
+/**
+ * Câu kết luận của bảng tám lĩnh vực đã sinh cho lá số này, nếu có.
+ *
+ * Đọc ĐỆM, không sinh mới: một lượt chat đã tốn một lượt gọi model, thêm một
+ * lượt nữa chỉ để biết bài tổng quan nói gì là nhân đôi chi phí mỗi câu hỏi.
+ * Chưa có bài tổng quan thì trả mảng rỗng và chat chạy như cũ.
+ *
+ * Mọi lỗi đều nuốt: đây là thứ làm bài hay hơn, không phải thứ bài cần để
+ * đúng. Bảng chưa tạo, mạng chập, đệm trống — chat vẫn phải trả lời được.
+ */
+async function ketLuanBaiTongQuan(chartHash: string | undefined, namXem: number): Promise<string[]> {
+  if (!chartHash) return [];
+  try {
+    const { docNoiDung } = await import('./noi-dung-ai');
+    const ban = await docNoiDung<{ id: string; ketLuan: string }[]>({
+      chartHash,
+      beMat: 'bang-linh-vuc',
+      khoaKy: `nam:${namXem}`,
+      ngonNgu: 'vi',
+    });
+    if (!ban) return [];
+    return (ban.noiDung ?? [])
+      .map((k) => k?.ketLuan)
+      .filter((x): x is string => typeof x === 'string' && x.trim().length > 20)
+      // Sáu câu là đủ để giữ giọng; nhiều hơn thì khối này lấn át chính dữ kiện
+      // lá số ở ngay phía trên nó.
+      .slice(0, 6);
+  } catch {
+    return [];
+  }
+}
+
 export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const batDau = Date.now();
 
@@ -219,7 +258,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
         });
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
-  const { system, user } = dungPromptCoCanCu(goi, vao.lichSu ?? []);
+  const daNoiTruoc = await ketLuanBaiTongQuan(vao.chartHash, vao.namXem);
+  const { system, user } = dungPromptCoCanCu(goi, vao.lichSu ?? [], daNoiTruoc);
 
   const truocModel = Date.now();
   const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
@@ -267,7 +307,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     daLoc.yChinh.map((y) => y.tieuDe || y.noiDung),
     daLoc.yChinh
       .filter((y) => y.mucChacChan)
-      .map((y) => ({ moDau: y.noiDung, muc: y.mucChacChan! }))
+      .map((y) => ({ moDau: y.noiDung, muc: y.mucChacChan! })),
+    daNoiTruoc
   );
 
   return {
