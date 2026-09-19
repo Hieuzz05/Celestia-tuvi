@@ -170,6 +170,10 @@ họ còn nguyên và nên làm gì tiếp.
 - **Kết nối không bao giờ có phần trăm hợp nhau**, không phán hợp/không hợp, không khuyên cưới hay
   chia tay. Bảng so sánh kỹ thuật nằm dưới và đóng sẵn — nó là phần chứng minh, không phải phần
   trả lời.
+- **Trước khi sửa bất kỳ màn nào, xem `NOI-DUNG-TUNG-MAN.md`.** Nó liệt kê từng khối
+  trên từng màn là AI viết hay chữ tất định, và bề mặt AI làm mới theo kỳ nào.
+  Sửa nhầm tầng là chuyện đã xảy ra: viết lại khuôn câu của một bảng tất định rồi
+  tưởng đã "đưa AI vào", trong khi màn đó vẫn không gọi model lần nào.
 - **Sửa truy hồi, planner, prompt hay model thì chạy `scripts/eval-rag.ts`.** Nó có
   ngưỡng và mã thoát, nên chặn được hồi quy. Bốn tầng: truy hồi, bám nguồn, so có
   kho với không kho, và CHUYỂN HOÁ chứ không chép. Tầng cuối là tầng hay bị bỏ
