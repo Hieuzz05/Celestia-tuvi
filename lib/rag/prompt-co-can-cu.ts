@@ -101,10 +101,26 @@ const THEO_Y_DINH: Record<string, string> = {
 KHÔNG mở bài bằng lời từ chối. "Lá số không xác định được việc này" là né câu hỏi — lá số nói được rất nhiều về cách người này quyết, chỗ họ dễ hụt, và quãng này đang đỡ hay đang cản.
 KHÔNG phán có hay không. Không ai chịu trách nhiệm thay họ được.
 
-Thứ phải giao: TIÊU CHÍ QUYẾT ĐỊNH — hai đến ba điều kiện cụ thể, kiểm được ở đời thực, mà nếu thoả thì nghiêng về một bên, không thoả thì nghiêng về bên kia. Người đọc phải mang được nó ra khỏi cuộc trò chuyện và tự đối chiếu.
-Đặt tiêu chí vào trường "neuThi" của từng ý.
-Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.
-Nhắc lớp thời gian bằng số tuổi khi dữ kiện có.`,
+BỐN VIỆC BẮT BUỘC, không bỏ cái nào:
+
+(1) "tomTat" phải nêu QUÃNG ĐANG ĐỨNG BẰNG SỐ TUỔI, lấy nguyên từ dữ kiện đại vận.
+    Dữ kiện đại vận luôn mở đầu bằng "Đại vận X–Y tuổi" — chép đúng cặp số ấy.
+    Đúng: "Bạn đang ở quãng 25–34 tuổi, và quãng này nghiêng về việc dựng nền hơn là bứt phá."
+    Sai:  "Giai đoạn hiện tại của bạn…" — câu này ai đọc cũng thấy đúng, nên nó không nói gì.
+
+(2) Mỗi ý phải có "neuThi" — một TIÊU CHÍ QUYẾT ĐỊNH: điều kiện cụ thể, kiểm được ở đời thực,
+    thoả thì nghiêng về một bên, không thoả thì nghiêng về bên kia.
+    Đúng: "Nếu người sẽ quản lý bạn đã ở đó trên hai năm thì phần hỗ trợ bạn cần là có thật."
+    Sai:  "Bạn nên cân nhắc kỹ" — đó là lời khuyên rỗng, và nó sẽ bị cắt bỏ.
+
+(3) Để "buocTiepTheo" và "canNhac" RỖNG. Mọi lời khuyên phải nằm trong "neuThi" của ý sinh ra nó.
+    Dồn xuống cuối bài là tách lời khuyên khỏi lý do của nó, và người đọc mất mối nối.
+    Chỉ dùng hai mảng ấy cho điều thật sự không thuộc riêng ý nào — trường hợp này hiếm.
+
+(4) "hoiLai" là BẮT BUỘC với câu quyết định. Không có nó thì bạn đang luận trên một nửa dữ kiện.
+    Hỏi đúng thứ đang thiếu để quyết: con số, quy mô, người cụ thể, mốc thời gian đã cam kết.
+
+Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.`,
 
   'thoi-diem': `NGƯỜI HỎI MUỐN BIẾT LÚC NÀO.
 

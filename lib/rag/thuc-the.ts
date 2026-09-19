@@ -207,7 +207,7 @@ export const TU_DIEN_THUC_THE: ThucThe[] = [
  * Chúng vẫn ở trong từ điển (tra trực tiếp theo tên vẫn ra), chỉ là không được
  * quét tự do trong câu văn.
  */
-const KHONG_QUET_TU_DO = new Set([
+export const KHONG_QUET_TU_DO = new Set([
   'suy', 'tu', 'mo', 'thai', 'benh', 'duong', 'tuyet', 'tuan', 'triet', 'bac si',
   'tuong quan', 'linh tinh', 'thien tai', 'phuc phan',
 ]);

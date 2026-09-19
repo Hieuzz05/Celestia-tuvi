@@ -1,6 +1,7 @@
 import type { GoiBangChung, TraLoiCoCauTruc } from './bang-chung';
 import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
-import { nhanDangThucThe, boDau } from './thuc-the';
+import { nhanDangThucThe, boDau, KHONG_QUET_TU_DO, TEN_SAO_TRONG_TU_DIEN } from './thuc-the';
+import { TEN_CUNG } from '@/lib/tuvi/constants';
 
 /**
  * Validator tất định — chạy trước, và với phần lớn lỗi là chạy thay cho LLM thứ hai.
@@ -46,6 +47,35 @@ export interface KetQuaKiemDuyet {
  */
 function laKhangDinhChuyenMon(cau: string): boolean {
   return nhanDangThucThe(cau).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION');
+}
+
+/**
+ * Tên chuyên môn dùng để bắt câu hỏi ngược sai vai — đã bỏ dấu sẵn.
+ *
+ * Lọc qua `KHONG_QUET_TU_DO` của từ điển thực thể: danh sách ấy giữ những tên
+ * một âm tiết trùng từ tiếng Việt thường ("Tử" trùng "tự", "Suy" trùng "suy
+ * nghĩ"). Không lọc thì "Bạn đã TỰ hỏi vì sao muốn đi chưa?" bị coi là hỏi về
+ * lá số — đo được ngay khi vừa viết luật.
+ */
+const TEN_CHUYEN_MON: string[] = [...TEN_CUNG, ...TEN_SAO_TRONG_TU_DIEN, ...TEN_CACH_CUC]
+  .map(boDau)
+  .filter((t) => !KHONG_QUET_TU_DO.has(t));
+
+/**
+ * Mọi cụm 1–5 từ trong một câu.
+ *
+ * Khớp theo TỪ, không theo chuỗi con. Luật này đã trả giá hai lần ở cổng ngôn
+ * ngữ ("thiên cơ" bắt nhầm sao Thiên Cơ, "không hợp" bắt nhầm "không hợp lý")
+ * và suýt trả lần thứ ba ở đây: tên "Tử" — một giai đoạn vòng Tràng Sinh —
+ * khớp vào giữa "Tử Vi", và sẽ khớp cả vào "tự hỏi" sau khi bỏ dấu.
+ */
+function cumTu(khongDau: string): Set<string> {
+  const tu = khongDau.split(/[^a-z0-9]+/).filter(Boolean);
+  const ra = new Set<string>();
+  for (let i = 0; i < tu.length; i++) {
+    for (let n = 1; n <= 5 && i + n <= tu.length; n++) ra.add(tu.slice(i, i + n).join(' '));
+  }
+  return ra;
 }
 
 /**
@@ -99,8 +129,22 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
    * của người dùng một lượt.
    */
   if (traLoi.hoiLai) {
-    const tt = nhanDangThucThe(traLoi.hoiLai);
-    const hoiLaSo = tt.some((t) => t.loai === 'PALACE' || t.loai === 'STAR' || t.loai === 'FORMATION');
+    /*
+     * So trên TÊN CHÍNH THỨC, không qua bộ nhận dạng thực thể.
+     *
+     * `nhanDangThucThe` nhận cung qua bí danh, mà bí danh của cung CỐ Ý là từ
+     * đời thường — đó là cả lý do bảng bí danh tồn tại, để "công việc" trỏ
+     * được tới Quan Lộc khi người ta hỏi. Dùng nó ở đây thì "Công việc hiện
+     * tại của bạn có gì khiến bạn muốn đi?" bị coi là hỏi về lá số, trong khi
+     * đó là câu hỏi đời thực hoàn hảo.
+     *
+     * Đo được: tiêu chí "có câu hỏi ngược" đứng im ở 66,7% qua hai lần đo dù
+     * prompt đã bắt buộc hoiLai — bốn trên năm bài bị cờ đều là câu đời thực.
+     *
+     * Thứ cần chặn là tên chuyên môn: "cung Quan Lộc của bạn ra sao".
+     */
+    const cumHoi = cumTu(boDau(traLoi.hoiLai));
+    const hoiLaSo = TEN_CHUYEN_MON.some((t) => cumHoi.has(t));
     const hoiVoNghia = /\b(?:có đúng không|đúng chứ|thấy đúng không|có giống)\b/iu.test(traLoi.hoiLai);
     if (hoiLaSo || hoiVoNghia) {
       loi.push({

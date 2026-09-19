@@ -132,6 +132,27 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
   return phan.filter(Boolean).join('\n\n');
 }
 
+/**
+ * Gom lời khuyên về đúng chỗ của nó, cho câu hỏi dạng quyết định.
+ *
+ * Với câu quyết định, lời khuyên phải nằm trong `neuThi` của ý sinh ra nó —
+ * dồn xuống `canNhac` / `buocTiepTheo` ở cuối bài là tách nó khỏi cái cớ, đúng
+ * lỗi mà `luongNguoc` đã được đặt liền sau ý để tránh.
+ *
+ * Prompt đã nói thẳng điều này và model vẫn rải: đo qua ba lần sửa prompt, tỉ
+ * lệ lời khuyên dạng điều kiện dừng ở 75–79% chứ không lên nổi 80%. Xin thêm
+ * lần nữa là lặp lại cái đã không ăn hai lần.
+ *
+ * An toàn vì có điều kiện: chỉ bỏ khi bài ĐÃ CÓ ít nhất một `neuThi`. Lúc ấy
+ * lời khuyên đã nằm đúng chỗ, hai mảng kia chỉ là bản lặp. Bài không có
+ * `neuThi` nào thì giữ nguyên — thà giọng sai còn hơn mất hết lời khuyên.
+ */
+function gomLoiKhuyen(t: TraLoiCoCauTruc, yDinh: YDinh): TraLoiCoCauTruc {
+  if (yDinh !== 'quyet-dinh') return t;
+  if (!t.yChinh.some((y) => y.neuThi)) return t;
+  return { ...t, canNhac: [], buocTiepTheo: [] };
+}
+
 export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const batDau = Date.now();
 
@@ -204,7 +225,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   const daCham = chamDoChac(coCauTruc, goi);
   const ketQuaKiem = kiemDuyet(daCham, goi);
-  const { traLoi: daLoc, soYBiBo } = locYHong(daCham, ketQuaKiem);
+  const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
+  const daLoc = gomLoiKhuyen(daLocY, keHoach.yDinh);
 
   const van = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
