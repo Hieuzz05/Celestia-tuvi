@@ -79,20 +79,44 @@ export function BangLuanGiai({
         <div className="flex flex-col gap-[16px]">
           {bai.chang.map((c) => (
             <div key={c.id} className="flex flex-col gap-[12px]">
+              {/*
+                Chỉ dẫn mở chặng.
+                Bản trước chỉ có tiêu đề và subtitle, không mũi tên, không chữ
+                nào nói rằng bấm được. Người lần đầu vào đọc chặng một (mở sẵn)
+                rồi thấy ba tiêu đề trơ ở dưới, và kết luận là ba chặng kia chưa
+                có nội dung — chứ không phải là chúng đang đóng.
+
+                Nên phải nói thẳng bằng chữ: "Xem 3 phần". Mũi tên một mình
+                không đủ, vì nó chỉ có nghĩa với người đã quen dạng accordion.
+              */}
               <button
                 onClick={() => setDangMo((v) => (v === c.id ? null : c.id))}
-                className="flex flex-col items-start gap-[4px] text-left"
+                className="flex w-full items-start justify-between gap-[16px] text-left"
                 aria-expanded={dangMo === c.id}
               >
-                <span className="eyebrow">
-                  {c.thuTu} · {c.muc.length} {t.luanSau.phan}
+                <span className="flex flex-col items-start gap-[4px]">
+                  <span className="eyebrow">
+                    {c.thuTu} · {c.muc.length} {t.luanSau.phan}
+                  </span>
+                  <span className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                    {c.tieuDe}
+                  </span>
+                  {/* Subtitle hiện cả khi đóng — đây là thứ bán giá trị của chặng */}
+                  <span className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                    {c.subtitle}
+                  </span>
                 </span>
-                <span className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-                  {c.tieuDe}
-                </span>
-                {/* Subtitle hiện cả khi đóng — đây là thứ bán giá trị của chặng */}
-                <span className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  {c.subtitle}
+                <span
+                  className="link-text shrink-0 whitespace-nowrap pt-[2px]"
+                  aria-hidden
+                >
+                  {dangMo === c.id ? t.luanSau.dongChang : t.luanSau.moChang}{' '}
+                  <span
+                    className="inline-block transition-transform"
+                    style={{ transform: dangMo === c.id ? 'rotate(180deg)' : 'none' }}
+                  >
+                    ▾
+                  </span>
                 </span>
               </button>
 

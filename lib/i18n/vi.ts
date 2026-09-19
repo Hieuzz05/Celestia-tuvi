@@ -375,6 +375,13 @@ export const vi = {
     doanKhau: 'BA PHẦN NÀY NÓI CÙNG ĐIỀU GÌ',
     theoNoiBat: 'Đọc theo điều đang khiến bạn nghĩ nhiều ⇅',
     theoChang: 'Quay lại bốn chặng ⇅',
+    // Chỉ dẫn mở chặng. Bốn tiêu đề đóng mà không có dấu hiệu bấm được thì
+    // người lần đầu vào đọc tưởng ba chặng sau chưa có nội dung.
+    moChang: 'Xem 3 phần',
+    dongChang: 'Thu lại',
+    dangDoc: 'Celes đang đọc lá số của bạn',
+    dangDocMo:
+      'Mười hai phần được đọc trong một lượt để chúng biết nhau, nên phần này tới chậm hơn các phần trên. Thường mất khoảng mười đến hai mươi giây.',
   },
 
   giuLaSo: {

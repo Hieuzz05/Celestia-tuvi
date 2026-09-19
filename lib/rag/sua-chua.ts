@@ -22,18 +22,33 @@ import { nhanDangThucThe } from './thuc-the';
  * Sửa hỏng thì trả lại nguyên văn: câu kê sao vẫn hơn không có câu nào.
  */
 
-/** Số tên sao riêng biệt trong một câu */
-export function demTenSao(cau: string): number {
+/**
+ * Số tên sao riêng biệt trong một câu.
+ *
+ * `boQua` là danh sách TÊN CÁCH CỤC có trên lá số. Chúng được gỡ khỏi câu trước
+ * khi đếm, và đó không phải một ngoại lệ cho tiện.
+ *
+ * "Bạn sở hữu bộ cách Tử Phủ Vũ Tướng Liêm" chứa năm tên sao theo từ điển thực
+ * thể — Tử Vi, Thiên Phủ, Vũ Khúc, Thiên Tướng, Liêm Trinh — nên luật kê sao
+ * bắt nó ngay, rồi lớp sửa viết lại thành một câu không còn cái tên nào. Tức là
+ * hệ thống tự tay xoá đúng thứ làm bài đọc này khác bài của người bên cạnh, và
+ * xoá đúng thứ người dùng đang đòi.
+ *
+ * Một cách cục là MỘT dữ kiện, không phải năm. Đếm nó thành năm là đếm sai.
+ */
+export function demTenSao(cau: string, boQua: readonly string[] = []): number {
+  let s = cau;
+  for (const ten of boQua) s = s.split(ten).join(' ');
   return new Set(
-    nhanDangThucThe(cau)
+    nhanDangThucThe(s)
       .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
       .map((t) => t.id)
   ).size;
 }
 
 /** Câu nào có từ hai tên sao trở lên thì đang kê sao chứ không luận */
-export function laCauKeSao(cau: string, tran = 2): boolean {
-  return demTenSao(cau) >= tran;
+export function laCauKeSao(cau: string, tran = 2, boQua: readonly string[] = []): boolean {
+  return demTenSao(cau, boQua) >= tran;
 }
 
 /**
@@ -60,10 +75,11 @@ function tachCau(doan: string): string[] {
  */
 export async function suaCauKeSao(
   van: Record<string, string>,
-  tuyChon: { tran?: number; toiDa?: number } = {}
+  tuyChon: { tran?: number; toiDa?: number; boQua?: readonly string[] } = {}
 ): Promise<Record<string, string>> {
   const tran = tuyChon.tran ?? 2;
   const toiDa = tuyChon.toiDa ?? 6;
+  const boQua = tuyChon.boQua ?? [];
 
   // Gom mọi câu phạm luật của cả lượt sinh
   const viPham: { khoa: string; viTri: number; cau: string }[] = [];
@@ -72,7 +88,7 @@ export async function suaCauKeSao(
     const cs = tachCau(doan);
     cauTheoKhoa.set(khoa, cs);
     cs.forEach((c, i) => {
-      if (viPham.length < toiDa && laCauKeSao(c, tran)) viPham.push({ khoa, viTri: i, cau: c });
+      if (viPham.length < toiDa && laCauKeSao(c, tran, boQua)) viPham.push({ khoa, viTri: i, cau: c });
     });
   }
   if (!viPham.length) return van;
@@ -86,6 +102,11 @@ LUẬT:
 - Bỏ tên sao Tử Vi khỏi câu. Nếu ý của câu dựa vào một tên sao thì giữ đúng MỘT tên, bỏ phần còn lại.
 - Nói bằng lời thường: điều đó tạo ra gì trong đời sống, chứ không phải nó tên là gì.
 - Không thêm ý mới, không thêm lời khuyên, không dài hơn câu gốc.
+- TUYỆT ĐỐI KHÔNG thay tên sao bằng chữ "một sao", "một yếu tố", "các sao khác".
+  Sai:  "phần công việc của bạn có một sao và một sao khác, kết hợp với một yếu tố."
+  Đúng: "ở phần công việc, bạn vừa nghĩ nhanh vừa cân nhắc kỹ — nên hợp việc cần
+         quyết gấp mà vẫn phải chịu trách nhiệm dài."
+  Bỏ cái tên nghĩa là nói THẲNG nét nó tạo ra, không phải nói rằng có một cái tên.
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
 { "cau": [ { "id": "C1", "moi": "..." } ] }`;
@@ -105,8 +126,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
       const so = Number(m.id.replace(/^C/i, ''));
       if (!viPham[so - 1]) continue;
       const moi = m.moi.trim();
-      // Sửa xong mà vẫn kê sao, hoặc cụt hơn hẳn câu gốc, thì coi như hỏng
-      if (moi.length < 12 || laCauKeSao(moi, tran)) continue;
+      // Sửa xong mà vẫn kê sao, cụt hơn hẳn câu gốc, hoặc thành rỗng nghĩa
+      if (moi.length < 12 || laCauKeSao(moi, tran, boQua) || CAU_RONG_NGHIA.test(moi)) continue;
       sua[`${viPham[so - 1].khoa}|${viPham[so - 1].viTri}`] = moi;
     }
   } catch {
@@ -268,21 +289,76 @@ function cuoiTu(ten: string): string {
   return `${ten}(?![\\p{L}])`;
 }
 
+/**
+ * Dọn chữ thừa sinh ra ở chỗ nối.
+ *
+ * "Phần Tật Ách cho thấy…" thay xong ra "Phần phần sức khoẻ cho thấy…", vì câu
+ * gốc đã mở bằng "Phần" viết hoa nên không khớp luật "phần X", rồi tên cung trơ
+ * bị thay bằng một cụm vốn đã mang sẵn chữ "phần".
+ *
+ * Cùng loại với lỗi "của bạn của bạn" gặp trước đó: mỗi mảnh đều đúng, ghép lại
+ * thì câu gãy. Khớp không phân biệt hoa thường ở trên đã bớt phần lớn, nhưng
+ * vẫn cần một lượt dọn cuối vì tiếng Việt có nhiều chỗ nối hơn thế.
+ */
+/**
+ * Câu sửa xong mà thành RỖNG NGHĨA — phải vứt, giữ câu gốc.
+ *
+ * Lớp sửa kê sao được bảo "bỏ tên sao đi", và nó làm đúng theo nghĩa đen: câu
+ * "Quan Lộc có Thiên Cơ và Thái Âm, kết hợp Hóa Khoa" ra thành "phần công việc
+ * của bạn có một sao và một sao khác, kết hợp với một yếu tố."
+ *
+ * Câu ấy không còn tên sao nào, nên nó qua được luật kê sao — và nó tệ hơn hẳn
+ * câu gốc, vì câu gốc ít ra còn nói được điều gì đó. Một lớp sửa được phép làm
+ * câu khác đi, không được phép làm câu rỗng đi.
+ */
+const CAU_RONG_NGHIA =
+  /một sao|các sao khác|một yếu tố|những yếu tố|một số sao|vài ngôi sao|một ngôi sao/iu;
+
+function donChuThua(van: string): string {
+  return van
+    .replace(/(Phần|phần)\s+phần(?![\p{L}])/gu, '$1')
+    .replace(/(Cung|cung)\s+phần(?![\p{L}])/gu, 'phần')
+    .replace(/(?<![\p{L}])ở\s+ở(?![\p{L}])/gu, 'ở')
+    .replace(/của bạn của bạn/gu, 'của bạn')
+    .replace(/[ \t]{2,}/g, ' ')
+    /*
+     * Viết hoa lại đầu câu.
+     *
+     * "Phần Quan Lộc của bạn…" thay xong thành "phần công việc của bạn…" —
+     * đúng nội dung, mất chữ hoa. Người đọc thấy ngay một câu mở bằng chữ
+     * thường, và một lỗi chính tả ở câu đầu làm hỏng lòng tin vào cả đoạn.
+     */
+    .replace(
+      /(^|[.!?]\s+)(\p{Ll})/gu,
+      (_, dau: string, chu: string) => dau + chu.toUpperCase()
+    );
+}
+
 export function doiTenCung(van: string): string {
   let ra = van;
 
   for (const [ten, cum] of CUM_THAY_TEN_CUNG) {
-    // "cung X" / "phần X" -> cụm (cụm đã tự mang chữ "phần")
-    ra = ra.replace(new RegExp(`(?:cung|phần)\\s+${cuoiTu(ten)}`, 'gu'), cum);
+    // "cung X" / "phần X" -> cụm (cụm đã tự mang chữ "phần").
+    // Cờ `i`: model viết hoa đầu câu — "Phần Tật Ách…" — và không có cờ này thì
+    // câu ấy rơi xuống luật cuối và thành "Phần phần sức khoẻ".
+    ra = ra.replace(new RegExp(`(?:cung|phần)\\s+${cuoiTu(ten)}`, 'giu'), cum);
     // "tại X" / "ở X" -> "ở cụm", giữ lại giới từ để câu không gãy
-    ra = ra.replace(new RegExp(`(?:tại|ở)\\s+${cuoiTu(ten)}`, 'gu'), `ở ${cum}`);
+    ra = ra.replace(new RegExp(`(?:tại|ở)\\s+${cuoiTu(ten)}`, 'giu'), `ở ${cum}`);
     // Còn trơ lại tên cung thì thay nốt
     ra = ra.replace(new RegExp(cuoiTu(ten), 'gu'), cum);
   }
 
   ra = ra.replace(MENH_CO_GIOI_TU, (_, gt: string) =>
-    gt === 'tại' ? 'ở phần khí chất' : 'phần khí chất'
+    gt.toLowerCase() === 'tại' ? 'ở phần khí chất' : 'phần khí chất'
   );
 
-  return ra;
+  /*
+   * Chỉ dọn khi THẬT SỰ có thay.
+   *
+   * `donChuThua` viết hoa lại đầu câu, và nếu chạy vô điều kiện thì nó sửa cả
+   * những câu không có tên cung nào — bộ kiểm bắt được ngay: ba câu thuộc nhóm
+   * "không được đụng tới" đều bị đổi. Lớp dọn này tồn tại để vá chỗ nối do
+   * chính phép thay tạo ra, nên không có phép thay thì không có gì để vá.
+   */
+  return ra === van ? van : donChuThua(ra);
 }

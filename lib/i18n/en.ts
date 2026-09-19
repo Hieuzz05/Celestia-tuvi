@@ -374,6 +374,11 @@ export const en: TuDien = {
     cung: 'with',
     soiQua: 'mirrored by',
     doanKhau: 'WHAT THESE THREE SAY TOGETHER',
+    moChang: 'View 3 parts',
+    dongChang: 'Collapse',
+    dangDoc: 'Celes is reading your chart',
+    dangDocMo:
+      'All twelve parts are written in one pass so they know about each other, which is why this section arrives later than the ones above. It usually takes ten to twenty seconds.',
     theoNoiBat: 'Read by what is on your mind ⇅',
     theoChang: 'Back to the four stretches ⇅',
   },

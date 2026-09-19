@@ -10,7 +10,7 @@ import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { HuyHieuOk, NutVien, Shell } from '@/components/ui';
+import { Eyebrow, HuyHieuOk, NutVien, Shell } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
@@ -215,6 +215,29 @@ function TrangLaSo() {
   // thì mở devtools là đọc được hết — ẩn ở giao diện không phải phân quyền.
   const [baiSau, setBaiSau] = useState<BaiLuanGiai | null>(null);
   const [dayLuanGiai, setDayLuanGiai] = useState(true);
+  /*
+   * Đang chờ máy chủ đọc lá số.
+   *
+   * Không có trạng thái này thì giữa lúc gọi và lúc có bài, khu vực ấy trống
+   * trơn — và người dùng kết luận là hỏng. Họ đúng khi kết luận vậy: một khoảng
+   * trống mười lăm giây không phân biệt được với một tính năng chết.
+   *
+   * Vẫn chỉ vẽ bài khi đã có ĐỦ mười hai phần, không vẽ dần: bài được viết
+   * trong MỘT lượt gọi để mười hai phần biết nhau, nên không có gì để vẽ dần.
+   *
+   * DẪN XUẤT, không phải một cờ được bật trong thân effect. Bật cờ ở đó là gọi
+   * setState đồng bộ trong effect — đúng luật lint mà kho này đang có bảy lỗi
+   * tồn đọng, và thêm cái thứ tám thì con số nền mất nghĩa.
+   *
+   * So khoá của lượt ĐANG cần với khoá của lượt ĐÃ xong. Đổi năm xem hay đổi
+   * ngôn ngữ là đổi khoá, nên trạng thái chờ tự bật lại mà không cần dọn tay.
+   */
+  const khoaSau =
+    laSo && duocVao
+      ? `${laSo.thongTin.ngay}-${laSo.thongTin.thang}-${laSo.thongTin.nam}-${laSo.thongTin.gio}-${laSo.thongTin.gioiTinh}|${namXem}|${ngonNgu}`
+      : null;
+  const [khoaSauXong, setKhoaSauXong] = useState<string | null>(null);
+  const dangDocSau = Boolean(khoaSau && khoaSauXong !== khoaSau);
 
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
@@ -240,11 +263,15 @@ function TrangLaSo() {
         if (huy) return;
         setBaiSau(d?.bai ?? null);
         setDayLuanGiai(Boolean(d?.day));
+      })
+      .finally(() => {
+        // Đặt trong callback bất đồng bộ, không trong thân effect
+        if (!huy) setKhoaSauXong(khoaSau);
       });
     return () => {
       huy = true;
     };
-  }, [laSo, duocVao, namXem, ngonNgu]);
+  }, [laSo, duocVao, namXem, ngonNgu, khoaSau]);
 
   useEffect(() => {
     if (!laSo) return;
@@ -412,6 +439,20 @@ function TrangLaSo() {
               {loi}
             </p>
           )}
+
+        {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
+        {duocVao && dangDocSau && !baiSau && (
+          <section className="flex flex-col gap-[10px]">
+            <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
+            <p className="body-text" style={{ color: 'var(--fg)' }}>
+              {t.luanSau.dangDoc}
+              <span className="dot-dang-doc" aria-hidden />
+            </p>
+            <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
+              {t.luanSau.dangDocMo}
+            </p>
+          </section>
+        )}
 
         {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
         {duocVao && baiSau && baiSau.chang.length > 0 && (

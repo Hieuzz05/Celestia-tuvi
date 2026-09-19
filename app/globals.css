@@ -568,3 +568,35 @@ body {
     display: none !important;
   }
 }
+
+/*
+ * Ba chấm chạy trong câu "Celes đang đọc lá số của bạn".
+ *
+ * Dùng ::after chứ không dùng ba thẻ span: chuỗi chấm là DẤU CÂU của câu đó,
+ * không phải nội dung. Trình đọc màn hình đọc câu ấy xong là đủ, không cần
+ * nghe thêm ba dấu chấm nhảy.
+ *
+ * Nếu người dùng đã tắt hiệu ứng chuyển động ở hệ điều hành thì đứng yên ở ba
+ * chấm — vẫn nói được "đang chờ" mà không nhấp nháy.
+ */
+.dot-dang-doc::after {
+  content: '...';
+  display: inline-block;
+  width: 1.2em;
+  text-align: left;
+  animation: dot-dang-doc 1.4s steps(4, end) infinite;
+}
+
+@keyframes dot-dang-doc {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75%, 100% { content: '...'; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-dang-doc::after {
+    animation: none;
+    content: '...';
+  }
+}
