@@ -23,8 +23,10 @@ let dungChuDe = 0;
 let duCung = 0;
 let duThucThe = 0;
 let duLopHan = 0;
+let dungYDinh = 0;
 let soCoThucThe = 0;
 let soCoLopHan = 0;
+let soCoYDinh = 0;
 const hong: Hong[] = [];
 
 for (const c of BO_VANG_PLANNER) {
@@ -53,6 +55,12 @@ for (const c of BO_VANG_PLANNER) {
     else loi.push(`thiếu lớp hạn: ${thieu.join(', ')} (nhận ${k.lopHan.join(', ')})`);
   }
 
+  if (c.yDinhBatBuoc) {
+    soCoYDinh += 1;
+    if (k.yDinh === c.yDinhBatBuoc) dungYDinh += 1;
+    else loi.push(`ý định: mong ${c.yDinhBatBuoc}, nhận ${k.yDinh}`);
+  }
+
   if (loi.length) hong.push({ cauHoi: c.cauHoi, loi });
 }
 
@@ -64,6 +72,7 @@ console.log(`  Đúng chủ đề          ${pc(dungChuDe, n)}  (${dungChuDe}/${
 console.log(`  Đủ cung bắt buộc     ${pc(duCung, n)}  (${duCung}/${n})`);
 console.log(`  Đủ thực thể          ${pc(duThucThe, soCoThucThe)}  (${duThucThe}/${soCoThucThe})`);
 console.log(`  Đủ lớp hạn           ${pc(duLopHan, soCoLopHan)}  (${duLopHan}/${soCoLopHan})`);
+console.log(`  Đúng ý định          ${pc(dungYDinh, soCoYDinh)}  (${dungYDinh}/${soCoYDinh})`);
 console.log(`  Câu không lỗi nào    ${pc(n - hong.length, n)}  (${n - hong.length}/${n})`);
 
 if (hong.length) {
@@ -78,3 +87,7 @@ if (hong.length) {
   }
 }
 console.log('');
+
+// Bộ vàng là cổng chặn, không phải bảng thông tin: lệch một câu thì lệnh phải
+// đỏ, bằng không nó sẽ trôi qua checklist trước khi commit mà không ai thấy.
+if (hong.length) process.exit(1);

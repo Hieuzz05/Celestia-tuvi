@@ -1,4 +1,4 @@
-import type { ChuDe, LopHan } from './planner';
+import type { ChuDe, LopHan, YDinh } from './planner';
 
 /**
  * Bộ câu hỏi vàng — chuẩn để đo, không phải để minh hoạ.
@@ -17,6 +17,9 @@ import type { ChuDe, LopHan } from './planner';
  *     thiếu nó thì câu trả lời chắc chắn hỏng.
  *   - `thucTheBatBuoc`: mã thực thể phải nhận ra được từ câu chữ.
  *   - `lopHanBatBuoc`: lớp hạn phải xét tới.
+ *   - `yDinhBatBuoc`: ý định phải đọc ra. Chỉ ghi khi câu đó có ý định rõ một
+ *     nghĩa — phần lớn câu mô tả thì không, và ép một nhãn vào đó là biến bộ
+ *     vàng thành bản chép lại chính cái luật nó đang kiểm.
  */
 
 export interface CauVang {
@@ -25,6 +28,7 @@ export interface CauVang {
   cungBatBuoc: string[];
   thucTheBatBuoc?: string[];
   lopHanBatBuoc?: LopHan[];
+  yDinhBatBuoc?: YDinh;
   the: string[];
 }
 
@@ -106,4 +110,34 @@ export const BO_VANG_PLANNER: CauVang[] = [
   { cauHoi: 'Đổi việc có giúp tôi kiếm thêm tiền không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc', 'Tài Bạch'], the: ['career', 'finance', 'mixed'] },
   { cauHoi: 'Công việc bận quá có ảnh hưởng tới hôn nhân không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], the: ['career', 'love', 'mixed'] },
   { cauHoi: 'Sức khỏe kém có làm hỏng chuyện làm ăn không?', chuDe: 'suc-khoe', cungBatBuoc: ['Tật Ách'], the: ['health', 'finance', 'mixed'] },
+
+  /*
+   * ---------- Câu dạng QUYẾT ĐỊNH ----------
+   *
+   * Thêm ở phiên bản planner 2026.09.3. Đây là loại câu hỏi hệ thống trượt nặng
+   * nhất trước đó: không từ khoá nào bắt được "offer", và không có trục ý định
+   * nên lớp đại vận không bao giờ vào prompt. Mà hỏi "có nên" chính là lúc
+   * người ta cần đại vận nhất — họ đang đứng trước một việc phải quyết BÂY GIỜ.
+   *
+   * Viết đúng cách người ta gõ trong chat: viết tắt, thiếu dấu, thiếu dấu hỏi.
+   */
+  { cauHoi: 'tôi vừa nhận được 1 offer, tôi nên nhận nó ko', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['ban-menh', 'dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision', 'khong-dau'] },
+  { cauHoi: 'Có nên nhận lời mời làm team lead không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+  { cauHoi: 'Tôi có nên chuyển công ty lúc này không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+  { cauHoi: 'công ty đang layoff, tôi nên ở lại hay nhảy', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision', 'khong-dau'] },
+  { cauHoi: 'Có nên đàm phán tăng lương ở thời điểm này?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+  { cauHoi: 'Tôi có nên vay ngân hàng mua nhà không?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch', 'Điền Trạch'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['finance', 'decision'] },
+  { cauHoi: 'có nên gọi vốn cho dự án của tôi ko', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], yDinhBatBuoc: 'quyet-dinh', the: ['finance', 'decision', 'khong-dau'] },
+  { cauHoi: 'Tôi có nên chuyển sang ngành khác không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+  { cauHoi: 'Tôi có nên chia tay người này không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['love', 'decision'] },
+  { cauHoi: 'có nên quay lại với người cũ không', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], yDinhBatBuoc: 'quyet-dinh', the: ['love', 'decision', 'khong-dau'] },
+  { cauHoi: 'Vợ chồng tôi có nên ra ở riêng không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], yDinhBatBuoc: 'quyet-dinh', the: ['love', 'family', 'decision'] },
+  { cauHoi: 'Tôi có nên nghỉ ngơi một thời gian vì kiệt sức không?', chuDe: 'suc-khoe', cungBatBuoc: ['Tật Ách'], yDinhBatBuoc: 'quyet-dinh', the: ['health', 'decision'] },
+  { cauHoi: 'Nên chọn công việc lương cao hay công việc hợp mình?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc', 'Mệnh'], lopHanBatBuoc: ['dai-van'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+  { cauHoi: 'Tôi có nên ra riêng khởi nghiệp không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'quyet-dinh', the: ['career', 'decision'] },
+
+  // ---------- Ý định khác, để trục ý định không chỉ có một nhãn ----------
+  { cauHoi: 'Lộc Tồn ở Tài Bạch nghĩa là gì?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], yDinhBatBuoc: 'tra-cuu', the: ['finance', 'lookup', 'exact-term'] },
+  { cauHoi: 'Vì sao tôi hay bỏ dở giữa chừng?', chuDe: 'tong-quan', cungBatBuoc: ['Mệnh'], yDinhBatBuoc: 'giai-thich', the: ['general', 'why'] },
+  { cauHoi: 'Khi nào thì tôi ổn định được về tiền bạc?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'thoi-diem', the: ['finance', 'timing'] },
 ];

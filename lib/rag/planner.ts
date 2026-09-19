@@ -1,3 +1,4 @@
+import { docObjectJson } from './doc-json';
 import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
 
 /**
@@ -15,16 +16,34 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.2';
+export const PHIEN_BAN_PLANNER = '2026.09.3';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
 export type LopHan = 'ban-menh' | 'dai-van' | 'luu-nien' | 'nguyet-han';
 
+/**
+ * Trục ý định — người hỏi muốn LÀM GÌ với câu trả lời.
+ *
+ * Chủ đề nói câu hỏi VỀ cái gì; ý định nói người ta cần gì. Hai câu cùng chủ đề
+ * sự nghiệp — "công việc tôi thế nào" và "tôi có nên nhận offer này không" —
+ * cần hai câu trả lời khác hẳn nhau về hình dạng lẫn về lớp dữ liệu phải lấy.
+ * Thiếu trục này thì mọi câu ra cùng một khuôn.
+ */
+export type YDinh =
+  | 'quyet-dinh'   // "có nên…", "…không", "chọn A hay B"
+  | 'thoi-diem'    // "khi nào", "lúc này", "năm nay có hợp"
+  | 'giai-thich'   // "vì sao tôi hay…"
+  | 'tra-cuu'      // "Lộc Tồn ở Tài Bạch nghĩa là gì"
+  | 'mo-ta';       // mặc định
+
 export interface KeHoachTruyVan {
   chuDe: ChuDe;
+  yDinh: YDinh;
   /** Chủ đề đọc được từ luật hay chỉ là mặc định khi không có tín hiệu nào */
   chacChan: boolean;
+  /** Chủ đề do model phân loại chứ không do luật — chỉ để ghi trace */
+  phanLoaiBangModel?: boolean;
   cungLienQuan: string[];
   lopHan: LopHan[];
   thucThe: ThucThe[];
@@ -70,24 +89,46 @@ const TU_KHOA_CHU_DE: Record<Exclude<ChuDe, 'tong-quan'>, string[]> = {
     'doi viec', 'nhay viec', 'thang chuc', 'thang tien', 'sep', 'dong nghiep',
     'khoi nghiep', 'kinh doanh', 'nghi viec', 'phong van', 'du an', 'chuc vu',
     'hoc hanh', 'thi cu',
+    // Nhóm dưới thêm ở phiên bản 2026.09.3. Không có chúng thì câu hỏi thường
+    // gặp nhất — "tôi vừa nhận được một offer, có nên nhận không" — rơi về
+    // 'tong-quan' và cung Quan Lộc không bao giờ được truy hồi.
+    'offer', 'loi moi', 'moi lam', 'nhan viec', 'chuyen viec', 'chuyen cong ty',
+    'chuyen nganh', 'doi nganh', 'nganh khac', 'nganh nghe', 'trai nganh',
+    'deal', 'thu viec', 'thu vien', 'on boarding', 'onboarding', 'tang luong',
+    'dam phan luong', 'bi sa thai', 'sa thai', 'layoff', 'nghi that nghiep',
+    'that nghiep', 'nhay sang', 'doi cong ty', 'vao lam', 'ra rieng',
+    'team lead', 'quan ly', 'lanh dao', 'tuyen dung', 'ung tuyen', 'cv',
   ],
   'tai-chinh': [
     'tien', 'tai chinh', 'tai loc', 'thu nhap', 'luong', 'dau tu', 'chung khoan',
     'no nan', 'vay', 'tiet kiem', 'giau', 'ngheo', 'phat tai', 'lam an', 'buon ban',
     'mua nha', 'mua dat', 'bat dong san', 'tai san',
+    'vay ngan hang', 'tra gop', 'lai suat', 'goi von', 'von', 'crypto',
+    'coin', 'mua vang', 'gia vang', 'quy dau tu', 'bao hiem', 'chi tieu',
+    'pha san', 'no xau',
   ],
   'tinh-cam': [
     'tinh cam', 'tinh duyen', 'nguoi yeu', 'ban trai', 'ban gai', 'hon nhan',
     'cuoi', 'ket hon', 'lay vo', 'lay chong', 'vo chong', 'ly hon', 'chia tay',
     'doc than', 'ban doi', 'hop tuoi',
+    'to tinh', 'cau hon', 'quay lai', 'nguoi cu', 'crush', 'hen ho',
+    'song thu', 'ngoai tinh', 'tha thu', 'yeu xa', 'gia dinh chong',
+    'gia dinh vo', 'dam cuoi',
   ],
   'gia-dao': [
     'gia dinh', 'cha me', 'bo me', 'anh em', 'anh chi em', 'con cai',
     'ho hang', 'phu mau', 'sinh con',
+    // 'bo' và 'me' trần trụi thì "bỏ dở giữa chừng" thành câu hỏi gia đạo —
+    // đo được ngay khi vừa thêm. Phải đi kèm sở hữu mới đủ đặc trưng.
+    'nuoi con', 'bo me toi', 'bo cua toi', 'me cua toi', 'bo minh', 'me minh',
+    'ong ba', 'chuyen nha', 'ra o rieng',
+    'song chung', 'cham soc bo me', 'thua ke', 'chia tai san',
   ],
   'suc-khoe': [
     'suc khoe', 'benh', 'benh tat', 'om', 'om dau', 'the trang', 'tinh than',
     'stress', 'met moi', 'mat ngu', 'tai nan', 'phau thuat', 'di kham',
+    'kiet suc', 'burn out', 'burnout', 'tram cam', 'lo au', 'nghi ngoi',
+    'tap luyen', 'an uong', 'nhip song', 'nang luong',
   ],
 };
 
@@ -121,9 +162,62 @@ const TU_KHOA_HAN: [LopHan, string[]][] = [
   ['ban-menh', ['ca doi', 'suot doi', 'ban chat', 'tinh cach', 'ban menh', 'so phan']],
 ];
 
+/**
+ * Từ khoá nhận ý định. Cùng luật với TU_KHOA_CHU_DE: khớp theo TỪ, không theo
+ * chuỗi con.
+ *
+ * 'tra-cuu' cố ý hẹp nhất: nó là ý định DUY NHẤT làm THU HẸP lớp hạn, nên nhận
+ * nhầm ở đây đắt hơn hẳn nhận nhầm ở ba ý định kia. Ba ý định kia chỉ thêm lớp,
+ * thêm thừa thì bài loãng một chút; nhận nhầm tra-cuu thì dữ kiện đại vận biến
+ * mất khỏi prompt và không có gì báo.
+ */
+const TU_KHOA_Y_DINH: Record<Exclude<YDinh, 'mo-ta'>, string[]> = {
+  'quyet-dinh': [
+    'co nen', 'nen khong', 'co nen khong', 'nen hay', 'quyet dinh', 'lua chon',
+    'co dang', 'dang khong', 'lieu co', 'co on khong', 'co hop ly',
+    'dong y', 'tu choi', 'chot', 'nhan hay', 'di hay', 'o lai hay',
+  ],
+  'thoi-diem': [
+    'khi nao', 'bao gio', 'luc nao', 'thoi diem', 'luc nay', 'hien gio',
+    'sap toi', 'den bao gio', 'may tuoi', 'nam bao nhieu tuoi', 'dung luc',
+    'co phai luc', 'thoi gian nao',
+  ],
+  'giai-thich': [
+    'vi sao', 'tai sao', 'sao toi', 'sao lai', 'vi dau', 'do dau', 'ly do',
+    'giai thich', 'nguyen nhan', 'sao ma',
+  ],
+  'tra-cuu': [
+    'nghia la gi', 'la gi', 'la cach gi', 'co nghia', 'dinh nghia',
+    'nghia the nao', 'giai nghia', 'y nghia', 'hieu the nao', 'doc the nao',
+  ],
+};
+
+/**
+ * Thứ tự phân xử khi nhiều ý định cùng chạm.
+ *
+ * "Năm nay tôi có nên đổi việc không" chạm cả quyet-dinh lẫn thoi-diem, và nếu
+ * chấm bằng tổng độ dài từ khoá thì thoi-diem thắng vì cụm 'nam nay' dài hơn —
+ * trong khi thứ người ta thật sự cần là một quyết định. Quyết định luôn đứng
+ * trước: một câu "có nên" đã ngầm chứa "lúc này", chiều ngược lại thì không.
+ */
+const UU_TIEN_Y_DINH: Exclude<YDinh, 'mo-ta'>[] = [
+  'quyet-dinh', 'tra-cuu', 'giai-thich', 'thoi-diem',
+];
+
 /** Mọi cụm 1–4 từ có trong câu, để so khớp theo ranh giới từ chứ không theo chuỗi con */
 function cumTu(cauKhongDau: string): Set<string> {
-  const tu = cauKhongDau.split(/[^a-z0-9]+/).filter(Boolean);
+  /*
+   * Chuẩn hoá viết tắt trước khi tách từ.
+   *
+   * Người ta gõ "ko" nhiều hơn "không" trong chat. Không chuẩn hoá thì câu
+   * "tôi nên nhận nó ko" mất hẳn dấu hiệu câu hỏi có/không, và nó rơi về
+   * 'mo-ta' — đúng câu mà spec lấy làm ví dụ.
+   */
+  const daChuan = cauKhongDau
+    .replace(/\b(?:ko|kg|hok|khg)\b/g, 'khong')
+    .replace(/\bdc\b/g, 'duoc')
+    .replace(/\bntn\b/g, 'nhu the nao');
+  const tu = daChuan.split(/[^a-z0-9]+/).filter(Boolean);
   const ra = new Set<string>();
   for (let i = 0; i < tu.length; i++) {
     for (let n = 1; n <= 4 && i + n <= tu.length; n++) ra.add(tu.slice(i, i + n).join(' '));
@@ -148,7 +242,30 @@ function doanChuDe(cum: Set<string>): { chuDe: ChuDe; chacChan: boolean } {
   return { chuDe: tot, chacChan: diemTot > 0 };
 }
 
-function doanLopHan(cum: Set<string>, thucThe: ThucThe[]): LopHan[] {
+/**
+ * Đọc ý định từ câu hỏi.
+ *
+ * Ngoài bảng từ khoá còn một luật CẤU TRÚC: chữ "nên" đứng cạnh một dấu hiệu
+ * câu hỏi có/không ("không") hoặc một dấu hiệu chọn lựa ("hay") thì đó là câu
+ * quyết định, bất kể động từ theo sau là gì. Liệt kê hết động từ là việc không
+ * bao giờ xong — "nên nhận", "nên đổi", "nên ở lại", "nên ký"… — mà cấu trúc
+ * thì chỉ có một.
+ */
+function doanYDinh(cum: Set<string>): YDinh {
+  if (cum.has('nen') && (cum.has('khong') || cum.has('hay'))) return 'quyet-dinh';
+
+  const diem = new Map<YDinh, number>();
+  for (const [y, tuKhoa] of Object.entries(TU_KHOA_Y_DINH) as [YDinh, string[]][]) {
+    const d = tuKhoa.reduce((t, k) => (cum.has(k) ? t + k.length : t), 0);
+    if (d > 0) diem.set(y, d);
+  }
+  if (diem.size === 0) return 'mo-ta';
+
+  for (const y of UU_TIEN_Y_DINH) if (diem.has(y)) return y;
+  return 'mo-ta';
+}
+
+function doanLopHan(cum: Set<string>, thucThe: ThucThe[], yDinh: YDinh): LopHan[] {
   const ra = new Set<LopHan>();
 
   for (const [lop, tuKhoa] of TU_KHOA_HAN) {
@@ -166,6 +283,26 @@ function doanLopHan(cum: Set<string>, thucThe: ThucThe[]): LopHan[] {
   // Bản mệnh luôn có mặt: mọi lớp hạn đều đọc trên nền lá số gốc, bỏ nó ra thì
   // đoạn tài liệu về cách cục gốc không bao giờ được truy hồi.
   ra.add('ban-menh');
+
+  /*
+   * Ý định lái lớp hạn.
+   *
+   * Mọi câu "có nên" đều ngầm chứa "lúc này" — người ta không hỏi có nên nhận
+   * offer trên lý thuyết, họ hỏi có nên nhận NÓ, BÂY GIỜ. Mà "bây giờ" trong
+   * tử vi là đại vận cộng lưu niên. Không có luật này thì câu quyết định chỉ
+   * đọc bản mệnh, và bài trả lời thành một bản mô tả tính cách.
+   *
+   * Chiều ngược lại: tra-cuu KHÔNG được kéo lưu niên vào. "Lộc Tồn ở Tài Bạch
+   * nghĩa là gì" là câu hỏi về học thuyết, thêm lớp hạn chỉ làm loãng truy hồi.
+   * Nhưng nếu người ta đã gọi tên một mốc thời gian thì tin họ, không tin nhãn
+   * ý định — nên chỉ thu hẹp khi luật KHÔNG tìm thấy lớp hạn nào.
+   */
+  if (yDinh === 'quyet-dinh' || yDinh === 'thoi-diem') {
+    ra.add('dai-van');
+    ra.add('luu-nien');
+  } else if (yDinh === 'tra-cuu' && ra.size === 1) {
+    return ['ban-menh'];
+  }
 
   // Hỏi chung chung, không mốc thời gian nào — mặc định nhìn năm đang xem, vì
   // đó cũng là thứ màn Hôm nay đang hiển thị.
@@ -274,6 +411,41 @@ function dungTruyVanTuKhoa(
   return (rieng.length >= 3 ? rieng : [...new Set([...rieng, ...cungLienQuan])]).join(' ');
 }
 
+/** Dựng kế hoạch từ một cặp (chủ đề, ý định) đã chốt — dùng chung cho luật và cho nhánh LLM */
+function dungKeHoach(
+  cauHoi: string,
+  saoTheoCung: Record<string, string[]> | undefined,
+  chuDe: ChuDe,
+  yDinh: YDinh,
+  chacChan: boolean,
+  phanLoaiBangModel?: boolean
+): KeHoachTruyVan {
+  const cum = cumTu(boDau(cauHoi));
+  const thucThe = nhanDangThucThe(cauHoi);
+  const cungGoiTen = thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
+  const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
+
+  return {
+    chuDe,
+    yDinh,
+    chacChan,
+    ...(phanLoaiBangModel ? { phanLoaiBangModel: true } : {}),
+    cungLienQuan,
+    lopHan: doanLopHan(cum, thucThe, yDinh),
+    thucThe,
+    truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung),
+    truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan),
+    phienBan: PHIEN_BAN_PLANNER,
+  };
+}
+
+/**
+ * Lập kế hoạch bằng LUẬT. Đồng bộ, chạy offline, không bao giờ gọi model.
+ *
+ * Giữ đồng bộ là chủ ý: bộ eval và Retrieval Lab chạy hàng trăm lượt trên nó,
+ * và một hàm đồng bộ thì không có cách nào lỡ tay gọi model trong vòng lặp.
+ * Nhánh model nằm ở `lapKeHoachDayDu` bên dưới.
+ */
 export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyVan {
   const cum = cumTu(boDau(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
@@ -285,18 +457,83 @@ export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyV
   const theoTuKhoa = doanChuDe(cum);
   const chuDe = cungGoiTen.length ? (CHU_DE_THEO_CUNG[cungGoiTen[0]] ?? 'tong-quan') : theoTuKhoa.chuDe;
 
-  const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
-
-  return {
+  return dungKeHoach(
+    cauHoi,
+    saoTheoCung,
     chuDe,
-    chacChan: theoTuKhoa.chacChan || cungGoiTen.length > 0,
-    cungLienQuan,
-    lopHan: doanLopHan(cum, thucThe),
-    thucThe,
-    truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung),
-    truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan),
-    phienBan: PHIEN_BAN_PLANNER,
-  };
+    doanYDinh(cum),
+    theoTuKhoa.chacChan || cungGoiTen.length > 0
+  );
+}
+
+// ------------------------------------------------ Nhánh phân loại bằng model
+
+const CHU_DE_HOP_LE: ChuDe[] = [
+  'su-nghiep', 'tai-chinh', 'tinh-cam', 'gia-dao', 'suc-khoe', 'tong-quan',
+];
+const Y_DINH_HOP_LE: YDinh[] = [
+  'quyet-dinh', 'thoi-diem', 'giai-thich', 'tra-cuu', 'mo-ta',
+];
+
+/** Chờ tối đa 8 giây. Phân loại là bước MỞ ĐẦU — nó chậm thì cả câu trả lời chậm theo. */
+const HAN_CHO_MS = 8_000;
+
+/**
+ * Lập kế hoạch đầy đủ: luật trước, model chỉ khi luật bí.
+ *
+ * Bảng từ khoá không bao giờ phủ hết cách người ta gõ. Nhưng thay nó bằng model
+ * thì mất tính tái lập và trả tiền cho mọi câu, kể cả câu mà luật trả lời đúng
+ * trong một micro giây. Nên model chỉ được gọi khi `chacChan === false` — tức
+ * là khi luật đã tự nhận nó không biết.
+ *
+ * Model hỏng, hết giờ, hay trả về giá trị ngoài danh sách thì dùng nguyên kết
+ * quả của luật. Không có đường nào để một lượt phân loại hỏng làm hỏng câu trả
+ * lời.
+ */
+export async function lapKeHoachDayDu(vao: DauVaoPlanner): Promise<KeHoachTruyVan> {
+  const theoLuat = lapKeHoach(vao);
+  if (theoLuat.chacChan) return theoLuat;
+
+  try {
+    const { goiVoiFallback } = await import('@/lib/ai/fallback');
+    const system = `Bạn là bộ phân loại câu hỏi của một sản phẩm Tử Vi. Chỉ phân loại, KHÔNG trả lời câu hỏi.
+
+chuDe — câu hỏi về lĩnh vực nào:
+  su-nghiep · tai-chinh · tinh-cam · gia-dao · suc-khoe · tong-quan
+
+yDinh — người hỏi cần gì:
+  quyet-dinh  người hỏi đang phải chọn, cần tiêu chí để quyết
+  thoi-diem   người hỏi muốn biết lúc nào
+  giai-thich  người hỏi muốn hiểu vì sao
+  tra-cuu     người hỏi muốn biết một thuật ngữ nghĩa là gì
+  mo-ta       còn lại
+
+TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không giải thích:
+{"chuDe": "...", "yDinh": "..."}`;
+
+    const kq = await Promise.race([
+      goiVoiFallback({ system, user: vao.cauHoi.slice(0, 400), maxTokens: 60 }),
+      new Promise<null>((r) => setTimeout(() => r(null), HAN_CHO_MS)),
+    ]);
+    if (!kq) return theoLuat;
+
+    const tho = docObjectJson(kq.text);
+    const chuDe = tho?.chuDe as ChuDe | undefined;
+    const yDinh = tho?.yDinh as YDinh | undefined;
+    if (!chuDe || !CHU_DE_HOP_LE.includes(chuDe)) return theoLuat;
+
+    return dungKeHoach(
+      vao.cauHoi,
+      vao.saoTheoCung,
+      chuDe,
+      yDinh && Y_DINH_HOP_LE.includes(yDinh) ? yDinh : theoLuat.yDinh,
+      true,
+      true
+    );
+  } catch (e) {
+    console.warn('[planner] phân loại bằng model hỏng:', e instanceof Error ? e.message : e);
+    return theoLuat;
+  }
 }
 
 /** Nhãn tiếng Việt để hiện trong Retrieval Lab và trace */

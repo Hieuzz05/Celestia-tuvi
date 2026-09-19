@@ -15,7 +15,7 @@ import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from '
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
-import { lapKeHoach, PHIEN_BAN_PLANNER } from './planner';
+import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
 
@@ -38,6 +38,14 @@ export interface DauVaoTraLoi {
   cauHinhTruyHoi?: Partial<CauHinhTruyHoi>;
   /** Không ghi nhật ký khi chạy thử trong Lab hay eval */
   ghiNhatKy?: boolean;
+  /**
+   * Cho phép planner gọi model khi luật không kết luận được chủ đề.
+   *
+   * Mặc định BẬT cho người dùng thật. Tắt trong eval và Retrieval Lab: một bước
+   * có model ở giữa là hai lần chạy cùng câu hỏi ra hai kế hoạch khác nhau, và
+   * lúc đó con số eval không so được với lần trước.
+   */
+  dungModelPhanLoai?: boolean;
 }
 
 export interface KetQuaTraLoi {
@@ -81,7 +89,11 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   // Planner cần biết sao nào đứng ở cung nào để viết lại truy vấn bằng đúng
   // thuật ngữ tài liệu, nên lá số phải được đọc trước khi lập kế hoạch.
-  const keHoach = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) });
+  const dauVaoPlanner = { cauHoi: vao.cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) };
+  const keHoach =
+    vao.dungModelPhanLoai === false
+      ? lapKeHoach(dauVaoPlanner)
+      : await lapKeHoachDayDu(dauVaoPlanner);
 
   const { duKien } = chonBoiCanh({
     laSo: vao.laSo,

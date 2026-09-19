@@ -257,7 +257,7 @@ async function main() {
         cauHoi: c.cauHoi,
         namXem,
         thangXem,
-        ghiNhatKy: false,
+        ghiNhatKy: false, dungModelPhanLoai: false,
       });
 
       const y = kq.coCauTruc?.yChinh ?? [];
@@ -292,7 +292,7 @@ async function main() {
     console.log('\n  -- đối chứng âm: có bịa nguồn cho câu ngoài phạm vi không --');
     let amKhongBia = 0;
     for (const c of doiChungAm) {
-      const kq = await traLoiCoCanCu({ laSo, cauHoi: c.cauHoi, namXem, thangXem, ghiNhatKy: false });
+      const kq = await traLoiCoCanCu({ laSo, cauHoi: c.cauHoi, namXem, thangXem, ghiNhatKy: false, dungModelPhanLoai: false });
       /*
        * Bắt cả hai dấu hiệu, vì chối đúng cách có hai kiểu:
        *  - nói thẳng là chưa đủ căn cứ
@@ -363,7 +363,7 @@ async function main() {
     const tuCoGap = new Set<string>();
 
     for (const c of coDap) {
-      const kq = await traLoiCoCanCu({ laSo, cauHoi: c.cauHoi, namXem, thangXem, ghiNhatKy: false });
+      const kq = await traLoiCoCanCu({ laSo, cauHoi: c.cauHoi, namXem, thangXem, ghiNhatKy: false, dungModelPhanLoai: false });
 
       const nguon = kq.goi.bangChung.map((e) => e.noiDung);
       const chep = nguon.length ? chuoiChepDaiNhat(kq.van, nguon) : 0;
@@ -431,7 +431,7 @@ async function main() {
 
     for (const cauHoi of CAU_SO_SANH) {
       const vang = BO_VANG_RAG.find((c) => c.cauHoi === cauHoi);
-      const nen = { laSo, cauHoi, namXem, thangXem, ghiNhatKy: false as const };
+      const nen = { laSo, cauHoi, namXem, thangXem, ghiNhatKy: false, dungModelPhanLoai: false as const };
 
       const coKho = await traLoiCoCanCu(nen);
       const khongKho = await traLoiCoCanCu({
