@@ -88,9 +88,19 @@ function coLoiDoiSong(s: string): boolean {
   return CUM_DOI_SONG.some((t) => kd.includes(t));
 }
 
-/** Tập 5-gram theo TỪ của một bài */
+/**
+ * Tập 5-gram theo TỪ của một bài, SAU KHI bỏ phần tất định.
+ *
+ * Lối đi tiếp dựng từ bảng tra, nên hai lá số cùng chủ đề có đúng cùng một dòng
+ * liên kết. Để nó trong phép đo thì tiêu chí 6 nhảy 2,5% lên 9,6% ngay khi thêm
+ * tính năng ấy — mà không bài nào Barnum thêm chút nào.
+ *
+ * Barnum là khi PHẦN LUẬN giống nhau. Một dòng liên kết giống nhau lại là điều
+ * mong muốn: nó phải tất định để model không bịa ra URL.
+ */
 function nam(s: string): Set<string> {
-  const tu = boDau(s).split(/[^a-z0-9]+/).filter(Boolean);
+  const khongLink = s.replace(/\[[^\]]*\]\([^)]*\)/g, ' ');
+  const tu = boDau(khongLink).split(/[^a-z0-9]+/).filter(Boolean);
   const ra = new Set<string>();
   for (let i = 0; i + 5 <= tu.length; i++) ra.add(tu.slice(i, i + 5).join(' '));
   return ra;

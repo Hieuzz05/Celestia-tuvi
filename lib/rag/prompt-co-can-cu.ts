@@ -68,6 +68,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
     }
   ],
   "hoiLai": "ĐÚNG MỘT câu hỏi ngược, về dữ kiện ĐỜI THỰC mà bạn không có",
+  "tuKiem": "MỘT cách tự kiểm chứng quyết định NGOÀI Tử Vi — việc họ làm được trong tuần tới",
   "goiYTiep": ["2-3 câu NGƯỜI DÙNG sẽ gõ tiếp, viết ở ngôi của họ, tối đa 40 ký tự"],
   "canNhac": ["điều nên cân nhắc, nếu nó không thuộc riêng ý nào"],
   "buocTiepTheo": ["việc KHÔNG thuộc riêng ý nào — để rỗng nếu mọi lời khuyên đã nằm trong neuThi"]
@@ -119,6 +120,12 @@ BỐN VIỆC BẮT BUỘC, không bỏ cái nào:
 
 (4) "hoiLai" là BẮT BUỘC với câu quyết định. Không có nó thì bạn đang luận trên một nửa dữ kiện.
     Hỏi đúng thứ đang thiếu để quyết: con số, quy mô, người cụ thể, mốc thời gian đã cam kết.
+
+(5) "tuKiem" là BẮT BUỘC với câu quyết định: một cách tự kiểm chứng NGOÀI Tử Vi.
+    Phải là việc họ làm được trong tuần tới và cho ra câu trả lời quan sát được.
+    Đúng: "Hỏi thẳng người sẽ quản lý bạn: sáu tháng qua ai trong đội được giao thêm quyền, và vì việc gì."
+    Sai:  "Hãy lắng nghe trực giác của bạn" — không kiểm được gì.
+    Sai:  "Xem lại cung Quan Lộc" — đó vẫn là Tử Vi, không phải ngoài nó.
 
 Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.`,
 

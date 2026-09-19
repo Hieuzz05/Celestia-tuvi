@@ -1,4 +1,6 @@
 import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
+import { BAC_CHAC_CHAN, mucNguYCuaCum } from './hinh-dang-tra-loi';
+import type { MucChacChan } from './uu-tien-nguon';
 import { boDau } from './thuc-the';
 
 /**
@@ -220,8 +222,41 @@ function coLoiDoiSong(cau: string): boolean {
   return DONG_TU_DOI_SONG.some((t) => cum.has(t));
 }
 
-export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
+export interface MucTheoDoan {
+  /** Đoạn mở đầu của một ý */
+  moDau: string;
+  /** Mức engine đã chấm cho ý đó */
+  muc: MucChacChan;
+}
+
+export function soatNgonNgu(
+  van: string,
+  doanMoDau: string[],
+  mucTheoDoan?: MucTheoDoan[]
+): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
+
+  /*
+   * Nói chắc hơn mức bằng chứng cho phép.
+   *
+   * `haGiong` đã ghi đè những đoạn nhận ra được cụm mở đầu. Luật này bắt phần
+   * còn lại: đoạn mở bằng một cách khác mà giọng vẫn chắc hơn mức. Cảnh báo
+   * chứ không chặn — nó là lỗi giọng, và bài vẫn đúng.
+   */
+  if (mucTheoDoan?.length) {
+    const qua = mucTheoDoan.filter((d) => {
+      const nguY = mucNguYCuaCum(d.moDau);
+      return nguY !== null && BAC_CHAC_CHAN[nguY] > BAC_CHAC_CHAN[d.muc];
+    });
+    if (qua.length) {
+      loi.push({
+        ma: 'giong-chac-hon-bang-chung',
+        mucDo: 'canh-bao',
+        moTa: 'Có ý nói chắc hơn mức bằng chứng mà engine đã chấm.',
+        viDu: qua.map((d) => `${d.muc}: "${d.moDau.slice(0, 40)}…"`).join(' · '),
+      });
+    }
+  }
 
   /*
    * Cách cục nêu tên mà không dịch.

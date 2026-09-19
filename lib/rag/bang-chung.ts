@@ -17,7 +17,7 @@ import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
  * là phép so sánh chuỗi.
  */
 
-export const PHIEN_BAN_SCHEMA_OUTPUT = '1.2';
+export const PHIEN_BAN_SCHEMA_OUTPUT = '1.3';
 
 export interface Bangchung {
   id: string;
@@ -183,6 +183,18 @@ export interface TraLoiCoCauTruc {
   hoiLai?: string;
   /** 2–3 chip gợi ý cho lượt sau, mỗi chip ≤ 40 ký tự */
   goiYTiep?: string[];
+  /**
+   * Một cách TỰ KIỂM CHỨNG quyết định, ngoài Tử Vi.
+   *
+   * Chuẩn ngôn ngữ đã đòi bốn lớp cho câu "nên hay không nên", lớp cuối là
+   * "một cách tự kiểm chứng quyết định ngoài Tử Vi". Nhưng schema không có
+   * trường nào giữ nó, nên model bỏ là chuyện thường — một yêu cầu không có
+   * chỗ để sống thì nó không sống.
+   *
+   * Bắt buộc với câu quyết định. Mức cảnh báo ở v1; nâng lên chặn sau khi đo
+   * được tỉ lệ tuân thủ.
+   */
+  tuKiem?: string;
 }
 
 /**
@@ -220,6 +232,7 @@ interface ThoTraLoi {
   cachNoi?: unknown;
   hoiLai?: unknown;
   goiYTiep?: unknown;
+  tuKiem?: unknown;
   canNhac?: unknown;
   buocTiepTheo?: unknown;
 }
@@ -250,6 +263,7 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
           neuThi: chuoi(y.neuThi),
         })),
       hoiLai: chuoi(d.hoiLai),
+      tuKiem: chuoi(d.tuKiem),
       goiYTiep: Array.isArray(d.goiYTiep)
         ? d.goiYTiep
             .filter((x: unknown): x is string => typeof x === 'string' && x.trim().length > 0)

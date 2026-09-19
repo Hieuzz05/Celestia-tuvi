@@ -128,6 +128,35 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
    * thế nào" là hỏi lại chính thứ engine vừa đưa cho model — vòng tròn, và tốn
    * của người dùng một lượt.
    */
+  /*
+   * Lớp tự kiểm — bắt buộc với câu quyết định.
+   *
+   * Cảnh báo chứ chưa chặn: đây là trường mới, chưa có số về tỉ lệ tuân thủ.
+   * Chặn một bài đúng vì thiếu một trường vừa thêm là đổi một lỗi hình thức
+   * lấy một câu trả lời mất hẳn. Nâng lên chặn sau khi eval cho thấy model
+   * điền được ổn định.
+   */
+  if (goi.yDinh === 'quyet-dinh' && !traLoi.tuKiem) {
+    loi.push({
+      ma: 'thieu-tu-kiem',
+      mucDo: 'canh-bao',
+      moTa: 'Câu quyết định mà không có cách tự kiểm chứng ngoài Tử Vi — thiếu lớp thứ tư của chuẩn ngôn ngữ.',
+      tai: 'tuKiem',
+    });
+  }
+
+  if (traLoi.tuKiem) {
+    const cumTuKiem = cumTu(boDau(traLoi.tuKiem));
+    if (TEN_CHUYEN_MON.some((t) => cumTuKiem.has(t))) {
+      loi.push({
+        ma: 'tu-kiem-van-la-tu-vi',
+        mucDo: 'canh-bao',
+        moTa: 'Cách tự kiểm vẫn trỏ về lá số — nó phải là việc kiểm được ở ngoài Tử Vi.',
+        tai: 'tuKiem',
+      });
+    }
+  }
+
   if (traLoi.hoiLai) {
     /*
      * So trên TÊN CHÍNH THỨC, không qua bộ nhận dạng thực thể.

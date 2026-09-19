@@ -12,6 +12,7 @@ import {
   type TraLoiCoCauTruc,
 } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
+import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -86,6 +87,8 @@ export interface NguCanhVan {
   yDinh?: YDinh;
   /** Câu hỏi hiện tại là câu nối tiếp mạch đang nói dở */
   laCauNoi?: boolean;
+  /** Lối đi tiếp, do bảng tra dựng — xem hinh-dang-tra-loi.ts */
+  loiDi?: LoiDiTiep[];
 }
 
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
@@ -93,7 +96,14 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
   const phan: string[] = [t.tomTat.trim()];
 
   for (const y of t.yChinh) {
-    const doan: string[] = [y.noiDung.trim()];
+    /*
+     * Giọng chắc chắn do LUẬT quyết, không do model.
+     *
+     * Engine đã chấm mức bằng cách đếm số tài liệu độc lập. Để model tự chọn
+     * cụm ngôn ngữ theo mức là để nó tự chấm độ chắc của chính nó — và không
+     * ai tự chấm mình thấp cả.
+     */
+    const doan: string[] = [haGiong(y.noiDung.trim(), y.mucChacChan)];
     // Lực ngược đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
     // đó đáng tin, tách ra thì người đọc mất mối nối.
     if (y.luongNguoc) doan.push(y.luongNguoc.trim());
@@ -125,9 +135,23 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
     phan.push(tinNhan ? muc : `### Có thể làm gì\n${muc}`);
   }
 
-  // Câu hỏi ngược luôn là đoạn CUỐI, không heading, không bullet — nó là một
-  // câu nói với người đối diện, không phải một mục trong bài.
+  // Lớp tự kiểm đứng trước câu hỏi ngược: nó là thứ người đọc mang đi dùng,
+  // còn câu hỏi ngược là thứ kéo họ quay lại đây.
+  if (t.tuKiem) phan.push(t.tuKiem.trim());
+
+  // Câu hỏi ngược luôn là đoạn CUỐI TRƯỚC LIÊN KẾT, không heading, không bullet
+  // — nó là một câu nói với người đối diện, không phải một mục trong bài.
   if (t.hoiLai) phan.push(t.hoiLai.trim());
+
+  /*
+   * Lối đi tiếp, dựng từ bảng tra — model không bao giờ sinh URL.
+   *
+   * Đặt cuối cùng và viết thành một dòng liên kết markdown: người đọc đã đọc
+   * xong thì mới cần biết đi đâu tiếp, đặt lên trên là cắt ngang mạch đọc.
+   */
+  if (nc.loiDi?.length) {
+    phan.push(nc.loiDi.map((l) => `[${l.nhan}](${l.duong})`).join(' · '));
+  }
 
   return phan.filter(Boolean).join('\n\n');
 }
@@ -231,10 +255,19 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const van = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
     laCauNoi: laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
+    loiDi: loiDiTiep({
+      chuDe: keHoach.chuDe,
+      lopHan: keHoach.lopHan,
+      yDinh: keHoach.yDinh,
+      cungTrongTam: keHoach.cungLienQuan[0],
+    }),
   });
   const ketQuaNgonNgu = soatNgonNgu(
     van,
-    daLoc.yChinh.map((y) => y.tieuDe || y.noiDung)
+    daLoc.yChinh.map((y) => y.tieuDe || y.noiDung),
+    daLoc.yChinh
+      .filter((y) => y.mucChacChan)
+      .map((y) => ({ moDau: y.noiDung, muc: y.mucChacChan! }))
   );
 
   return {
