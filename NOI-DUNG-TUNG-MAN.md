@@ -99,13 +99,18 @@ Ba nhóm mốc gọi model theo NHÓM, mỗi nhóm một lượt. Một dòng th
 |---|---|---|
 | **Đang mở ra · Đang căng · Cần chờ** | **AI** — `/api/luan-han` | Mỗi mốc được mở |
 | **Nếu ghép lại** | **AI** — cùng lượt gọi trên | Mỗi mốc được mở |
+| **Luận theo lĩnh vực** (6 ô) | **AI** — cùng lượt gọi trên | Mỗi mốc được mở |
 | Nhịp hành động (Tiến/Giữ/Rà soát/Thu hẹp) | MẪU — **luật đếm, model không được chọn** | — |
 | Nên tận dụng · Nên lưu ý | MẪU | — |
-| Luận theo lĩnh vực | MẪU | — |
 | Căn cứ | MẪU | — |
 
 Nhịp hành động cố ý để luật quyết: nó đếm được từ tương quan cát/hung. Để model
 chọn là mở đường cho hai lần đọc ra hai kết luận trái nhau trên cùng một lá số.
+
+Sáu ô lĩnh vực đi CHUNG lượt gọi của ba chuyển động, không tốn thêm lượt nào.
+Luật vẫn quyết lĩnh vực nào đọc từ cung nào và bên nào đang đỡ; model chỉ viết
+lại thành chữ, không được đảo chiều. Ô nào model viết hỏng thì riêng ô đó về
+khuôn câu, các ô còn lại giữ nguyên.
 
 ## Hỏi Celes — `/hoi-dap`
 

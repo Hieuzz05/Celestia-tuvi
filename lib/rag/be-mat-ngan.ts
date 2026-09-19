@@ -39,9 +39,10 @@ function nenChung(): string {
 2. NGUỒN THAM CHIẾU (mã E###) — học thuyết Tử Vi. Mọi khẳng định chuyên môn phải dựa vào đây.
 3. Kiến thức chung của bạn — chỉ cho ngôn ngữ đời thường, KHÔNG thay cho mục 2.
 
-BA LUẬT CỨNG:
+BỐN LUẬT CỨNG:
 - KHÔNG chép lại danh sách sao từ dữ kiện. Người đọc không cần bản kê sao.
 - Tối đa MỘT tên sao trong một câu, và chỉ khi nó giải thích được điều vừa nói bằng lời thường.
+- KHÔNG viết tên cung vào câu văn: Mệnh, Phụ Mẫu, Phúc Đức, Điền Trạch, Quan Lộc, Nô Bộc, Thiên Di, Tật Ách, Tài Bạch, Tử Tức, Phu Thê, Huynh Đệ. Nói thẳng phần đời mà cung đó nói tới. Sai: "yếu tố tích cực trong cung Phúc Đức". Đúng: "phần bên trong bạn thường tự xoay xở được".
 - Mã F###/E### CHỈ nằm trong trường "maDuKien"/"maNguon". Tuyệt đối không viết vào câu văn.
 
 ${CHUAN_NGON_NGU_CELES}
@@ -89,27 +90,60 @@ async function dungNen(
   };
 }
 
-/** Bóc mã khỏi câu văn và bỏ câu nhắc sao không có trong dữ liệu */
-function sachCau(cau: unknown, nen: DuLieuNen): string | null {
-  if (typeof cau !== 'string') return null;
+/**
+ * Câu kê đơn — dạng rộng, chỉ dùng cho sáu ô lĩnh vực.
+ *
+ * `CAU_RA_LENH` ở chuan-ngon-ngu cố ý hẹp: nó chạy trên MỌI bề mặt, kể cả
+ * những trường không có gì lùi về, nên bắt rộng ở đó là đổi một lỗi giọng lấy
+ * một khối trắng. Sáu ô lĩnh vực thì khác — mỗi ô còn nguyên khuôn câu của lớp
+ * luật, nên ở đây chặn rộng được: mất câu thì ô đó về khuôn, không mất gì.
+ *
+ * Bốn lượt siết prompt vẫn ra "Đừng để cảm xúc chi phối…", "Cần thận trọng…".
+ * Model tầm này không giữ nổi một lệnh cấm qua một bài mười hai đoạn, nên chỗ
+ * nào chặn được bằng luật thì chặn bằng luật.
+ */
+const KHUYEN_BAO =
+  /(?:^|\s)(?:đừng|nên|cần|hãy|tránh|chú ý|lưu ý|cân nhắc|quan trọng là|điều đáng)/iu;
+
+/** Bỏ câu kê đơn trong một ô lĩnh vực, giữ phần còn lại */
+function boCauKhuyenBao(doan: string): string {
+  return doan
+    .split(/(?<=[.!?])\s+/)
+    .filter((c) => c.trim() && !KHUYEN_BAO.test(c))
+    .join(' ')
+    .trim();
+}
+
+/**
+ * Bóc mã khỏi câu văn và bỏ câu nhắc sao không có trong dữ liệu.
+ *
+ * `nhan` chỉ để ghi log: khi một trường BẮT BUỘC bị loại thì cả khối rơi về
+ * khuôn câu, và không có dòng này thì chỉ thấy hậu quả chứ không thấy lý do.
+ */
+function sachCau(cau: unknown, nen: DuLieuNen, nhan?: string): string | null {
+  const bo = (vi: string, chiTiet?: string) => {
+    if (nhan) console.warn(`[be-mat-ngan] loại ${nhan}: ${vi}${chiTiet ? ` — ${chiTiet}` : ''}`);
+    return null;
+  };
+  if (typeof cau !== 'string') return bo('không phải chuỗi');
   const s = cau
     .replace(/\s*\((?:\s*[FE]\d{3}\s*,?)+\s*\)/g, '')
     .replace(/\b[FE]\d{3}\b/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/\s+([.,;])/g, '$1')
     .trim();
-  if (s.length < 12) return null;
+  if (s.length < 12) return bo('quá ngắn sau khi bóc mã', s);
 
   // Celes không kê đơn. Bỏ đúng câu sai vai, không bỏ cả trường.
   const khongLenh = boCauRaLenh(s);
-  if (khongLenh.length < 12) return null;
+  if (khongLenh.length < 12) return bo('chỉ còn câu ra lệnh', s);
 
   // Sao bịa là lỗi nặng nhất của bề mặt ngắn: cả thẻ chỉ có ba câu, sai một câu
   // là hỏng cả thẻ. Thà bỏ còn hơn hiện một cái tên không có trong lá số.
   const bia = nhanDangThucThe(khongLenh).filter(
     (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !nen.saoChoPhep.has(t.id)
   );
-  return bia.length ? null : khongLenh;
+  return bia.length ? bo('nhắc sao không có trong dữ liệu', bia.map((t) => t.id).join(', ')) : khongLenh;
 }
 
 // ---------------------------------------------------------------- Điểm nổi bật
@@ -224,6 +258,18 @@ export interface NhipHanhTrinh {
   dangCang: ChuyenDong;
   canCho: ChuyenDong;
   ghepLai: string;
+  /** id lĩnh vực -> đoạn văn. Thiếu id nào thì lớp trên dùng khuôn cũ của id đó. */
+  linhVuc?: Record<string, string>;
+}
+
+/** Dữ kiện luật của một lĩnh vực, đưa cho model viết lại chứ không cho nó tự đọc */
+export interface LinhVucChoAi {
+  id: string;
+  nhan: string;
+  cung: string;
+  cham: boolean;
+  thuan: string[];
+  can: string[];
 }
 
 const NHAN_CAP: Record<string, string> = {
@@ -239,6 +285,8 @@ export async function sinhNhipHanhTrinh(vao: {
   thangXem: number;
   /** Nhịp do luật đếm ra — model viết chữ quanh nó, không được tự đổi */
   nhip: string;
+  /** Sáu lĩnh vực kèm dữ kiện luật. Bỏ trống thì model không viết phần này. */
+  linhVuc?: LinhVucChoAi[];
 }): Promise<{ noiDung: NhipHanhTrinh; provider: string; model: string; phienBan: Record<string, string> } | null> {
   const nen = await dungNen(
     vao.laSo,
@@ -247,6 +295,52 @@ export async function sinhNhipHanhTrinh(vao: {
     vao.namXem,
     vao.thangXem
   );
+
+  /*
+   * Sáu lĩnh vực đi CHUNG một lượt gọi với ba chuyển động.
+   *
+   * Tách ra là sáu lượt nữa cho mỗi lần mở một mốc, mà cả sáu đều dựa trên
+   * đúng bộ dữ kiện vừa dựng ở trên. Đi chung còn được một cái quan trọng hơn:
+   * model thấy ba chuyển động và sáu lĩnh vực cùng lúc nên không viết ra sáu ô
+   * mâu thuẫn với phần tổng ngay phía trên chúng.
+   *
+   * Dữ kiện đưa vào là đồ LUẬT ĐÃ CHỐT: lĩnh vực nào đọc từ cung nào, yếu tố
+   * nào đỡ, yếu tố nào cản, quãng có chạm vào cung đó không. Model không được
+   * tự đọc lá số ở đây, và không được đảo chiều kết luận — nó chỉ viết lại
+   * thành chữ đọc được.
+   */
+  const coLinhVuc = Boolean(vao.linhVuc?.length);
+  const khoiLinhVuc = coLinhVuc
+    ? `
+
+SÁU LĨNH VỰC — DỮ KIỆN LUẬT ĐÃ CHỐT, VIẾT LẠI CHỨ KHÔNG ĐỌC LẠI:
+${vao
+  .linhVuc!.map((lv) => {
+    const dong = [
+      `- ${lv.id} · ${lv.nhan} · đọc từ cung ${lv.cung} · quãng này ${lv.cham ? 'CÓ' : 'KHÔNG'} đi qua cung đó`,
+      `  đang đỡ (${lv.thuan.length}): ${lv.thuan.length ? lv.thuan.join(' | ') : 'không có'}`,
+      `  đang cản (${lv.can.length}): ${lv.can.length ? lv.can.join(' | ') : 'không có'}`,
+    ];
+    return dong.join('\n');
+  })
+  .join('\n')}
+
+LUẬT CHO SÁU Ô NÀY:
+- Mỗi ô ĐÚNG 2 câu, tối đa 45 từ. Câu đầu nói phần này đang ở đâu; câu sau nói nó có nghĩa gì với người đọc. Một câu là thiếu.
+- Tương quan đỡ/cản ở trên là KẾT LUẬN ĐÃ CHỐT. Không được đảo. Nhiều đỡ hơn cản thì không được viết thành đang khó, và ngược lại.
+- CẤM viết trần tương quan kiểu "các yếu tố đang đỡ nhiều hơn cản", "thuận nhiều hơn nghịch". Đó là số đếm, không phải nhận định. Phải nói ĐỠ Ở CHỖ NÀO và CẢN Ở CHỖ NÀO, bằng chính các nét đã liệt kê.
+- CẤM nhắc tên cung ("đọc từ cung Quan Lộc"). Người đọc không cần biết nó đọc từ đâu.
+- "Quãng này không đi qua cung đó" nghĩa là phần này giữ nhịp cũ — viết ra thành điều có ích, không viết thành "không có gì đáng nói".
+- CẤM nói phần này nằm ngoài quãng: "phần tài chính không nằm trong giai đoạn này", "chưa tới lượt", "không thuộc quãng này". Đó là chuyện nội bộ của cách tính, người đọc không hỏi.
+- Celes MÔ TẢ, không khuyên. Cùng một ý, viết theo cột phải:
+    "cần thận trọng khi ra quyết định tài chính"  ->  "quyết định tiền bạc lúc này dễ bị cảm xúc của tuần đó kéo đi"
+    "nên chú ý giữ sức khoẻ"                       ->  "sức bền tụt xuống trước khi bạn kịp nhận ra, thường là qua giấc ngủ"
+    "đừng để áp lực công việc ảnh hưởng"           ->  "việc tràn sang giờ nghỉ là chuyện dễ xảy ra trong quãng này"
+    "việc chăm sóc mối quan hệ sẽ hỗ trợ bạn"      ->  "người quanh bạn đang sẵn lòng hơn bình thường, phần đó đỡ được nhiều"
+  Nhận ra mình đang viết "cần", "nên", "đừng", "tránh", "lưu ý", "chú ý" thì viết lại câu đó theo cột phải.
+- Sáu ô phải khác nhau thật. Đổi một hai chữ trong cùng một câu là hỏng.
+- Riêng suc-khoe: nói nhịp sống và mức năng lượng, không chẩn đoán, không nhắc bệnh.`
+    : '';
 
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, bình tĩnh, nói với người đối diện.
 
@@ -264,36 +358,93 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   "dangMo":   { "tieuDe": "ngắn, cụ thể", "noiDung": "2-3 câu: điều đang mở ra, và dùng được vào việc gì" },
   "dangCang": { "tieuDe": "ngắn", "noiDung": "2-3 câu: chỗ đang căng, nó biểu hiện thế nào" },
   "canCho":   { "tieuDe": "ngắn", "noiDung": "2-3 câu: chỗ chưa tới lúc, và vì sao chờ lại hơn đẩy" },
-  "ghepLai": "2-3 câu: ghép ba chuyển động lại thì quãng này là gì. Không lặp lại từng phần.",
+  "ghepLai": "2-3 câu: ghép ba chuyển động lại thì quãng này là gì. Không lặp lại từng phần.",${
+    coLinhVuc
+      ? `
+  "linhVuc": { ${vao.linhVuc!.map((lv) => `"${lv.id}": "2 câu"`).join(', ')} },`
+      : ''
+  }
   "maDuKien": [], "maNguon": []
-}`;
+}${khoiLinhVuc}`;
 
-  const kq = await goiVoiFallback({ system, user: nen.khoi, maxTokens: 2000 });
+  // 4800 chứ không 3600: đo được ở lượt chạy thật là JSON bị cắt giữa ô thứ
+  // năm, ô còn lại rỗng nên rơi về khuôn. Cắt token ở đây không tiết kiệm được
+  // gì — bài cụt vẫn phải trả tiền, mà lại không dùng được.
+  const kq = await goiVoiFallback({ system, user: nen.khoi, maxTokens: coLinhVuc ? 4800 : 2000 });
   const tho = docObjectJson(kq.text);
   if (!tho) return null;
 
-  const doc = (x: unknown): ChuyenDong | null => {
+  const doc = (x: unknown, nhan: string): ChuyenDong | null => {
     const o = x as { tieuDe?: unknown; noiDung?: unknown } | undefined;
-    const noiDung = sachCau(o?.noiDung, nen);
+    const noiDung = sachCau(o?.noiDung, nen, nhan);
     if (!noiDung) return null;
     const tieuDe = typeof o?.tieuDe === 'string' && o.tieuDe.trim() ? o.tieuDe.trim() : '';
     return { tieuDe, noiDung };
   };
 
-  const dangMo = doc(tho.dangMo);
-  const dangCang = doc(tho.dangCang);
-  const canCho = doc(tho.canCho);
-  const ghepLai = sachCau(tho.ghepLai, nen);
-  if (!dangMo || !dangCang || !canCho || !ghepLai) return null;
+  const dangMo = doc(tho.dangMo, 'dangMo');
+  const dangCang = doc(tho.dangCang, 'dangCang');
+  const canCho = doc(tho.canCho, 'canCho');
+  const ghepLai = sachCau(tho.ghepLai, nen, 'ghepLai');
+  if (!dangMo || !dangCang || !canCho || !ghepLai) {
+    console.warn('[nhip-hanh-trinh] thiếu trường bắt buộc', {
+      dangMo: Boolean(dangMo),
+      dangCang: Boolean(dangCang),
+      canCho: Boolean(canCho),
+      ghepLai: Boolean(ghepLai),
+    });
+    return null;
+  }
 
+  /*
+   * Sáu lĩnh vực: sai một ô thì bỏ RIÊNG ô đó.
+   *
+   * Khác ba chuyển động ở trên — thiếu một chuyển động là bài mất nghĩa nên
+   * loại cả bài. Ở đây mỗi ô đứng độc lập, và lớp gọi còn nguyên khuôn cũ để
+   * lấp vào. Loại cả bài chỉ vì một ô là ném đi năm ô viết đúng.
+   */
+  const linhVuc: Record<string, string> = {};
+  if (coLinhVuc) {
+    const tho6 = tho.linhVuc as Record<string, unknown> | undefined;
+    for (const lv of vao.linhVuc!) {
+      const cau = sachCau(tho6?.[lv.id], nen);
+      if (!cau) continue;
+      /*
+       * Bỏ câu kê đơn NẾU phần còn lại vẫn đứng được. Không bỏ bằng mọi giá.
+       *
+       * Bản trước cho ô về khuôn khi phần còn lại dưới 40 ký tự, và đo được
+       * ngay: 17% số ô rơi về khuôn, tức là đổi một câu hơi giống lời khuyên
+       * lấy đúng câu "các yếu tố đang đỡ nhiều hơn cản" — thứ tệ hơn hẳn theo
+       * đúng cái người đọc phàn nàn. Giọng kê đơn là lỗi nhẹ hơn văn cụt.
+       */
+      const khongKhuyen = boCauKhuyenBao(cau);
+      const dung = khongKhuyen.length >= 40 ? khongKhuyen : cau;
+      // Soát RIÊNG từng ô. Gộp sáu ô vào cùng một lượt soát với ba chuyển động
+      // là để một chữ vấp ở ô Sức khoẻ xoá luôn cả bài — đo được ở lượt chạy
+      // thật: hai trên ba mốc của một lá số mất trắng vì đúng chuyện này.
+      if (soatNgonNgu(dung, [dung]).dat) linhVuc[lv.id] = dung;
+    }
+  }
+
+  // Ba chuyển động và phần ghép mới là thứ quyết định bài còn dùng được hay
+  // không: thiếu một cái là bài mất nghĩa, mà lớp gọi không có gì lấp vào.
   const gate = soatNgonNgu(
     [dangMo.noiDung, dangCang.noiDung, canCho.noiDung, ghepLai].join(' '),
     [dangMo.noiDung, dangCang.noiDung, canCho.noiDung]
   );
-  if (!gate.dat) return null;
+  if (!gate.dat) {
+    console.warn('[nhip-hanh-trinh] không qua cổng ngôn ngữ', gate.loi.map((l) => l.ma));
+    return null;
+  }
 
   return {
-    noiDung: { dangMo, dangCang, canCho, ghepLai },
+    noiDung: {
+      dangMo,
+      dangCang,
+      canCho,
+      ghepLai,
+      linhVuc: Object.keys(linhVuc).length ? linhVuc : undefined,
+    },
     provider: kq.provider,
     model: kq.model,
     phienBan: nen.phienBan,

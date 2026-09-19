@@ -150,18 +150,26 @@ export const TU_DIEN_THUC_THE: ThucThe[] = [
 }
 
 /**
- * Những chuỗi một âm tiết trùng với từ tiếng Việt thông thường.
+ * Những chuỗi trùng với từ tiếng Việt thông thường sau khi bỏ dấu.
  *
  * "Suy" là một giai đoạn vòng Tràng Sinh, nhưng cũng là chữ trong "suy nghĩ".
  * "Tử" là giai đoạn, cũng là "tư duy" sau khi bỏ dấu. Nhận nhầm những chữ này
  * khiến validator chặn oan những câu hoàn toàn đúng — mà validator chặn oan còn
  * tệ hơn là bỏ sót, vì người dùng mất hẳn phần nội dung đó.
  *
+ * Nhóm hai âm tiết thêm vào sau, sau khi bắt được tận tay một lần mất khối:
+ *   [be-mat-ngan] loại canCho: nhắc sao không có trong dữ liệu — STAR.TUONG_QUAN
+ * Câu bị loại viết "tương quan" — một từ hoàn toàn bình thường, trùng "Tướng
+ * Quân" sau khi bỏ dấu. Ba chuỗi còn lại cùng dạng: "linh tinh" (lung tung),
+ * "thiên tài" / "thiên tai", "phúc phận". Cả bốn xuất hiện trong lời thường
+ * dày hơn hẳn so với lúc chúng thật sự là tên sao.
+ *
  * Chúng vẫn ở trong từ điển (tra trực tiếp theo tên vẫn ra), chỉ là không được
  * quét tự do trong câu văn.
  */
 const KHONG_QUET_TU_DO = new Set([
   'suy', 'tu', 'mo', 'thai', 'benh', 'duong', 'tuyet', 'tuan', 'triet', 'bac si',
+  'tuong quan', 'linh tinh', 'thien tai', 'phuc phan',
 ]);
 
 /** Bảng tra: chuỗi đã bỏ dấu → thực thể. Dựng sẵn để nhận dạng không phải quét mảng. */

@@ -423,8 +423,16 @@ function TrangLaSo() {
           />
         )}
 
-        {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ---------- */}
-        <section className="grid gap-[16px] md:grid-cols-2">
+        {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ----------
+
+            Một cột, không phải hai.
+
+            Thẻ trái chứa cả BÀI ĐỌC DÀI sau khi bấm — vài trăm từ. Xếp nó cạnh
+            một thẻ bốn dòng thì cột trái dài gấp nhiều lần cột phải, và khoảng
+            trắng bên phải kéo suốt cả bài. Xếp dọc thì Khám phá tự xuống cuối,
+            đúng vai của nó: lối đi tiếp, không phải nội dung để đọc.
+        */}
+        <section className="flex flex-col gap-[16px]">
           <div className="card flex flex-col gap-[12px]">
             <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
             <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
@@ -577,7 +585,14 @@ function TrangLaSo() {
       <div className="mx-auto w-full max-w-[1400px] px-[24px]">
       {duocVao ? (
         <div className="grid items-start gap-[24px] lg:grid-cols-12">
-          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)] lg:overflow-y-auto">
+          {/*
+            Cột này CHỈ dính, không tự cuộn. Khung cuộn nằm bên trong
+            TuViChart, ôm riêng mệnh bàn — xem chú thích ở đó.
+
+            `lg:flex` + `lg:max-h`: cao tối đa một màn trừ hai mép 24px, và là
+            cột dọc để con bên trong chia được phần cao còn lại.
+          */}
+          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]">
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 

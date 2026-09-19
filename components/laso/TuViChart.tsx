@@ -136,25 +136,24 @@ export function TuViChart({
   }, [laSo, zoomThucTe]);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    // `min-h-0` + `flex-1`: khi nằm trong cột dính ở /la-so thì nhận đúng phần
+    // cao còn lại và cho phép khung cuộn bên trong co lại. Ở mọi chỗ khác cha
+    // không phải flex nên hai lớp này không có tác dụng gì.
+    <div className="flex min-h-0 flex-1 flex-col gap-[18px]">
       {/*
-        Toolbar dính lên đầu khối cuộn.
+        Thanh công cụ đứng yên cùng mệnh bàn.
 
-        Mệnh bàn cao hơn màn hình nên cột chứa nó tự cuộn bên trong, và thanh
-        này nằm trên cùng thì bị đẩy khuất ngay khi người dùng cuộn xuống xem
-        cung dưới — đúng lúc họ cần đổi năm hoặc tắt bớt lớp.
+        Không dùng `sticky` nữa. Bản trước cho thanh này `sticky top-0` bên
+        trong cột trái, mà cột trái khi đó vừa dính vừa tự cuộn — thanh dính so
+        với khung cuộn ấy chứ không so với màn hình, nên cửa sổ thấp hơn mệnh
+        bàn là nó trôi mất.
 
-        `-mx` rồi `px` bù lại để nền che kín mép khi nội dung trượt qua dưới.
-
-        CHỈ dính từ lg trở lên. Dưới đó cột trái không còn cuộn riêng nữa, nên
-        `sticky` sẽ bám vào khung nhìn và chui xuống dưới thanh điều hướng —
-        thanh đó cũng dính ở top-0 và có z-index cao hơn.
+        Giờ khung cuộn chuyển xuống ôm riêng mệnh bàn, còn thanh nằm NGOÀI nó,
+        chỉ cần `shrink-0` để không bị bóp lại. Đã ở ngoài khung cuộn thì không
+        có đường nào trôi đi được, bất kể cửa sổ cao bao nhiêu.
       */}
       {!chiBanDo && (
-      <div
-        className="no-print -mx-[4px] flex flex-wrap items-center gap-x-[24px] gap-y-[12px] px-[4px] py-[8px] lg:sticky lg:top-0 lg:z-10"
-        style={{ background: 'var(--bg)' }}
-      >
+      <div className="no-print flex shrink-0 flex-wrap items-center gap-x-[24px] gap-y-[12px]">
         <div className="flex items-center gap-[12px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             {t.banDo.namXem}
@@ -185,7 +184,7 @@ export function TuViChart({
       )}
 
       {hienSettings && (
-        <div className="no-print flex flex-wrap gap-x-[24px] gap-y-[10px] py-[6px]">
+        <div className="no-print flex shrink-0 flex-wrap gap-x-[24px] gap-y-[10px] py-[6px]">
           {NHAN_SETTINGS.map(({ key, nhan }) => (
             <label key={key} className="flex cursor-pointer items-center gap-[8px] text-[13px]">
               <input
@@ -202,12 +201,18 @@ export function TuViChart({
         </div>
       )}
 
-      {/* Mệnh bàn
+      {/* Mệnh bàn — và là khung cuộn DUY NHẤT của khối này.
+
           Cuộn ngang khi màn hẹp. Dưới 0.5 thì chữ trong ô cung không đọc nổi
           nữa, nên ở điện thoại mệnh bàn giữ tỉ lệ 0.5 rồi cho vuốt ngang — thà
           vuốt còn hơn nhìn một mớ chữ không đọc được. Không có khung cuộn này
-          thì mệnh bàn 460px nằm trong ô 342px và đẩy cả TRANG cuộn ngang. */}
-      <div ref={khungRef} className="overflow-x-auto">
+          thì mệnh bàn 460px nằm trong ô 342px và đẩy cả TRANG cuộn ngang.
+
+          Từ lg thêm cuộn DỌC: ở /la-so khối này nằm trong cột dính cao tối đa
+          một màn, nên khi cửa sổ thấp hơn mệnh bàn thì phần thừa phải cuộn ở
+          đây — không phải ở cả cột, vì cuộn cả cột là kéo thanh công cụ đi
+          theo. Dưới lg thì cột không dính, trang cuộn như thường. */}
+      <div ref={khungRef} className="overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         <div
           ref={chartRef}
           className="relative grid grid-cols-4"

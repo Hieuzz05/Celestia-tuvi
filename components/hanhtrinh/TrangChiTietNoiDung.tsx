@@ -35,6 +35,8 @@ interface NhipChiTietAi {
   dangCang: ChuyenDongAi;
   canCho: ChuyenDongAi;
   ghepLai: string;
+  /** id lĩnh vực -> đoạn văn model viết. Thiếu id nào thì ô đó dùng khuôn cũ. */
+  linhVuc?: Record<string, string>;
 }
 
 export function TrangChiTietNoiDung() {
@@ -310,8 +312,9 @@ export function TrangChiTietNoiDung() {
                 <span className="text-[16px] font-semibold" style={{ color: 'var(--fg)' }}>
                   {lv.nhan}
                 </span>
+                {/* Model viết nếu có; không thì rơi về khuôn câu của lớp luật */}
                 <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  {lv.cau}
+                  {ai?.linhVuc?.[lv.id] ?? lv.cau}
                 </p>
               </The>
             ))}

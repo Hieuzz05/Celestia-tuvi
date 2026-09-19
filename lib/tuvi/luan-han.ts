@@ -55,7 +55,24 @@ export interface LuanHan {
   tanDung: YeuTo[];
   luuY: YeuTo[];
   nhip: { nhan: string; mo: string };
-  linhVuc: { id: string; nhan: string; cau: string }[];
+  /**
+   * Sáu lĩnh vực, mỗi cái đọc từ cung của nó.
+   *
+   * `cau` là bản khuôn — vẫn giữ làm đường lùi khi model hỏng. Các trường còn
+   * lại là dữ kiện luật đã chốt, để lớp trên đưa cho model viết lại thành chữ
+   * đọc được mà không được phép đảo chiều kết luận.
+   */
+  linhVuc: {
+    id: string;
+    nhan: string;
+    cau: string;
+    /** Cung đọc ra lĩnh vực này */
+    cung: string;
+    /** Quãng đang xét có đi qua cung đó không (tam phương tứ chính) */
+    cham: boolean;
+    thuan: string[];
+    can: string[];
+  }[];
   canCu: NhomCanCu[];
   /** Câu mở sẵn khi bấm "Hỏi Celes về giai đoạn này" */
   cauHoiGoiY: string;
@@ -281,7 +298,15 @@ export function luanHan(
   const linhVuc = Object.entries(k.luanHan.linhVuc).map(([id, lv]) => {
     const cung = laSo.cungs.find((c) => c.tenCung === lv.cung);
     if (!cung) {
-      return { id, nhan: lv.nhan, cau: dien(k.luanHan.linhVucTrong, { nhan: lv.nhan }) };
+      return {
+        id,
+        nhan: lv.nhan,
+        cau: dien(k.luanHan.linhVucTrong, { nhan: lv.nhan }),
+        cung: '',
+        cham: false,
+        thuan: [],
+        can: [],
+      };
     }
 
     // Mọi lĩnh vực đều đọc được từ cung của chính nó. Việc quãng đang xét có
@@ -308,6 +333,10 @@ export function luanHan(
           ? chonKhuon(k.luanHan.chamVao, cung.chiIndex)
           : chonKhuon(k.luanHan.khongChamVao, cung.chiIndex),
       }),
+      cung: tenCung(cung, k),
+      cham: lienQuan.has(cung.chiIndex),
+      thuan: thuan.map((y) => y.cau),
+      can: can.map((y) => y.cau),
     };
   });
 

@@ -460,7 +460,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     },
     dieuThuongCan: {
       nhom: 'Điều bạn thường cần',
-      tieuDe: 'Thứ khiến bạn thấy đủ, hoặc thấy thiếu',
+      tieuDe: 'Chỗ bạn thấy thiếu, kể cả khi mọi thứ đang ổn',
       mo: 'Bạn thường cần {net}.',
       moTrong:
         'Phần lớn năng lượng của bạn dồn về {chuDe} — đó thường là nơi bạn đầu tư nhiều nhất mà không tính toán thiệt hơn.',
@@ -468,7 +468,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     },
     giaiDoan: {
       nhom: 'Giai đoạn hiện tại',
-      tieuDe: 'Điều dễ nổi lên quanh năm {nam}',
+      tieuDe: 'Thứ năm {nam} đang đẩy lên trước',
       daiVan: 'Bạn đang ở trong một giai đoạn dài mà trọng tâm nghiêng về {chuDe}.',
       nam: 'Riêng năm {nam}, chủ đề dễ nổi lên là {chuDe}.',
       nhacXuHuong: 'Đây là xu hướng của giai đoạn, không phải một sự việc chắc chắn sẽ xảy ra.',
@@ -763,7 +763,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     },
     dieuThuongCan: {
       nhom: 'What you tend to need',
-      tieuDe: 'What makes you feel full, or short',
+      tieuDe: 'Where you feel short, even when things are fine',
       mo: 'You tend to need {net}.',
       moTrong:
         'Most of your energy goes toward {chuDe} — usually the place you invest in most without weighing the cost.',
@@ -771,7 +771,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     },
     giaiDoan: {
       nhom: 'This season',
-      tieuDe: 'What is likely to surface around {nam}',
+      tieuDe: 'What {nam} is pushing to the front',
       daiVan: 'You are in a longer stretch whose centre of gravity leans toward {chuDe}.',
       nam: 'In {nam} specifically, the theme most likely to surface is {chuDe}.',
       nhacXuHuong: 'This is where the season leans, not something certain to happen.',

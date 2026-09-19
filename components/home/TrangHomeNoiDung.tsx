@@ -43,6 +43,11 @@ interface DiemNoiBatAi {
   cauMangTheo: string;
 }
 
+/** Viết hoa chữ cái đầu — cho cụm vốn viết để nhúng giữa câu nhưng bị dùng làm tiêu đề */
+function hoaDau(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
 export function TrangHomeNoiDung() {
   const { t, ngonNgu } = useNgonNgu();
   const { taiKhoan, dangDoc } = useTaiKhoan();
@@ -254,12 +259,21 @@ export function TrangHomeNoiDung() {
                   den: giaiDoan.daiVan.denTuoi,
                 })}
               </Eyebrow>
-              {/* Tên cung là chữ của lớp chuyên môn — mặt trước gọi bằng chủ đề
-                  đời thường, đúng bảng từ ngữ của brand spec */}
+              {/*
+                Tên cung là chữ của lớp chuyên môn — mặt trước gọi bằng chủ đề
+                đời thường, đúng bảng từ ngữ của brand spec.
+
+                Phải viết hoa lại chữ đầu: bảng chủ đề viết thường vì mọi chỗ
+                khác đều nhúng nó vào giữa câu ("trọng tâm nghiêng về sự yên
+                trong lòng…"). Riêng chỗ này nó đứng làm tiêu đề, nên bê thẳng
+                vào là ra một dòng tiêu đề bắt đầu bằng chữ thường.
+              */}
               <p className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-                {KHUON[ngonNgu].chuDeCung[giaiDoan.tenCung] ??
-                  KHUON[ngonNgu].tenCung[giaiDoan.tenCung] ??
-                  giaiDoan.tenCung}
+                {hoaDau(
+                  KHUON[ngonNgu].chuDeCung[giaiDoan.tenCung] ??
+                    KHUON[ngonNgu].tenCung[giaiDoan.tenCung] ??
+                    giaiDoan.tenCung
+                )}
               </p>
               {(giaiDoanAi || gocNhin[1]) && (
                 <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>

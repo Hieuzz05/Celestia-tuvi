@@ -104,6 +104,16 @@ export async function POST(req: Request) {
             namXem,
             thangXem,
             nhip: bai.nhip.nhan,
+            // Dữ kiện luật của sáu lĩnh vực, đi chung lượt gọi này. Không có nó
+            // thì khối "Luận theo lĩnh vực" vẫn chạy bằng khuôn câu như trước.
+            linhVuc: bai.linhVuc.map((lv) => ({
+              id: lv.id,
+              nhan: lv.nhan,
+              cung: lv.cung,
+              cham: lv.cham,
+              thuan: lv.thuan,
+              can: lv.can,
+            })),
           });
           return kq
             ? { noiDung: kq.noiDung, provider: kq.provider, model: kq.model, phienBan: kq.phienBan }
