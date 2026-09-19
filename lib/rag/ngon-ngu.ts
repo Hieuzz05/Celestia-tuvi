@@ -165,9 +165,16 @@ const TIENG_LONG_ENGINE = [
  *
  * Một cổng chặn bắt nhầm thì người sửa sẽ học cách bỏ qua cả bộ soát — lúc đó
  * nó vô dụng hơn cả không có.
+ *
+ * Nhóm "(các|những|nhiều|một số|vài) yếu tố" thêm sau, khi một bài thật viết
+ * "dễ bị cản trở bởi nhiều yếu tố không lường trước". Luật đếm không bắt được
+ * vì nó đòi một con số, mà "nhiều" thì không phải con số — nhưng câu ấy y hệt
+ * về bản chất: gộp những thứ CÓ TÊN thành một danh từ trừu tượng rồi đưa cho
+ * người đọc. Trong giọng của Celes, "các yếu tố" luôn thay được bằng chính tên
+ * của chúng; không thay được thì nghĩa là bài đang không có gì để nói.
  */
 const TIENG_LONG_CO_DAU =
-  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang đỡ|yếu tố đang cản|lực đỡ|nghiêng về phía cản/iu;
+  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang đỡ|yếu tố đang cản|lực đỡ|nghiêng về phía cản|(?:các|những|nhiều|một số|vài)\s+yếu\s+tố/iu;
 
 /**
  * Câu ĐẾM dữ kiện: "bảy yếu tố đang đỡ so với hai yếu tố cản".

@@ -45,7 +45,7 @@ export function laCauKeSao(cau: string, tran = 2): boolean {
  * "cản" trùng "cần", và câu "những yếu tố cần thiết" sẽ bị lôi đi sửa oan.
  */
 const TIENG_LONG_MOT_CAU =
-  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang (?:đỡ|cản)|các yếu tố|lực đỡ|nghiêng về phía (?:thuận|cản)|hai lực ngang nhau/iu;
+  /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang (?:đỡ|cản)|(?:các|những|nhiều|một số|vài)\s+yếu\s+tố|lực đỡ|nghiêng về phía (?:thuận|cản)|hai lực ngang nhau/iu;
 
 /** Nhiều câu trong một chuỗi — tách theo dấu kết câu */
 function tachCau(doan: string): string[] {
@@ -202,4 +202,87 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   if (!sua.size) return van;
 
   return cau.map((c, i) => sua.get(i) ?? c).join(' ');
+}
+
+/**
+ * Đổi tên cung lọt ra mặt trước thành phần đời mà nó nói tới.
+ *
+ * TẤT ĐỊNH — không gọi model. Đây là một phép tra bảng: mười hai cái tên, mười
+ * hai mệnh đề đời sống, ánh xạ một-một và không phụ thuộc ngữ cảnh. Gọi model
+ * cho một việc tra bảng là trả tiền và trả độ trễ cho một kết quả kém tin hơn.
+ *
+ * Vì sao cần, dù chuẩn ngôn ngữ đã cấm tên cung ở mọi dạng và prompt đã đưa sẵn
+ * bảng dịch: đo trên 69 bài, 24 bài vẫn lọt. Và tỉ lệ ấy CÒN TĂNG sau khi lớp
+ * dữ kiện mới bảo model "nêu đích danh tên sao và tên lớp hạn" — dặn nêu tên là
+ * làm tăng áp lực lên đúng cái ranh giới này.
+ *
+ * Chặn bằng cổng thì phải vứt 35% số bài, tức là làm hỏng sản phẩm để làm hài
+ * lòng cái máy. Sửa thì giữ được bài và bỏ được cái tên.
+ *
+ * Cụm thay thế viết NGẮN, khác bảng `chuDeCung` vốn dài và dùng làm tiêu đề:
+ * ở đây chúng phải lọt vừa vào giữa một câu đã viết xong.
+ *
+ * Và không cụm nào được mang sẵn "của bạn". Câu gốc thường đã có sẵn sở hữu
+ * ("Phúc Đức của bạn có Thiên Lương"), nên cụm mang thêm một lần nữa là ra
+ * "phần bên trong của bạn của bạn". Cùng loại lỗi với hai gạch ngang trong một
+ * câu: mỗi mảnh đều đúng, ghép lại thì câu gãy.
+ */
+const CUM_THAY_TEN_CUNG: [string, string][] = [
+  ['Phụ Mẫu', 'phần cha mẹ và người trên'],
+  ['Phúc Đức', 'phần bên trong'],
+  ['Điền Trạch', 'phần chỗ ở và nền tảng'],
+  ['Quan Lộc', 'phần công việc'],
+  ['Nô Bộc', 'phần bạn bè và đồng nghiệp'],
+  ['Thiên Di', 'phần chuyện ra ngoài'],
+  ['Tật Ách', 'phần sức khoẻ'],
+  ['Tài Bạch', 'phần tiền bạc'],
+  ['Tử Tức', 'phần con cái'],
+  ['Phu Thê', 'phần bạn đời'],
+  ['Huynh Đệ', 'phần anh chị em'],
+];
+
+/**
+ * "Mệnh" xử riêng, và CHỈ khi có giới từ đi kèm.
+ *
+ * Đứng một mình nó trùng những chữ tiếng Việt bình thường — "số mệnh", "vận
+ * mệnh", "sứ mệnh", "định mệnh" — và trùng cả hai khái niệm khác của chính bộ
+ * môn: "bản Mệnh" (nạp âm năm sinh) và "Mệnh chủ". Thay bừa là làm hỏng câu
+ * đúng, mà một bộ sửa làm hỏng câu đúng thì tệ hơn là không có.
+ */
+const MENH_CO_GIOI_TU =
+  /(?<!(?:bản|số|vận|sứ|định)\s)(cung|phần|tại)\s+Mệnh(?!\s*chủ)(?![\p{L}])/giu;
+
+/**
+ * KHÔNG dùng `\b` quanh tên cung, và đây không phải chuyện thẩm mỹ.
+ *
+ * `\b` của JavaScript tính ranh giới theo bảng ASCII. "Điền" mở đầu bằng Đ và
+ * "Thê" kết thúc bằng ê — cả hai đều KHÔNG phải ký tự từ theo ASCII, nên không
+ * có ranh giới nào ở đó và biểu thức không bao giờ khớp. Đúng cái hố mà
+ * `CAU_RA_LENH` ở `chuan-ngon-ngu.ts` đã ghi lại: "hãy" và "nên" đều có dấu.
+ *
+ * Thay bằng `(?![\p{L}])` — không được có CHỮ CÁI nào ngay sau, tính theo
+ * Unicode. Phía trước thì tên cung luôn đi sau giới từ hoặc khoảng trắng nên
+ * không cần chặn.
+ */
+function cuoiTu(ten: string): string {
+  return `${ten}(?![\\p{L}])`;
+}
+
+export function doiTenCung(van: string): string {
+  let ra = van;
+
+  for (const [ten, cum] of CUM_THAY_TEN_CUNG) {
+    // "cung X" / "phần X" -> cụm (cụm đã tự mang chữ "phần")
+    ra = ra.replace(new RegExp(`(?:cung|phần)\\s+${cuoiTu(ten)}`, 'gu'), cum);
+    // "tại X" / "ở X" -> "ở cụm", giữ lại giới từ để câu không gãy
+    ra = ra.replace(new RegExp(`(?:tại|ở)\\s+${cuoiTu(ten)}`, 'gu'), `ở ${cum}`);
+    // Còn trơ lại tên cung thì thay nốt
+    ra = ra.replace(new RegExp(cuoiTu(ten), 'gu'), cum);
+  }
+
+  ra = ra.replace(MENH_CO_GIOI_TU, (_, gt: string) =>
+    gt === 'tại' ? 'ở phần khí chất' : 'phần khí chất'
+  );
+
+  return ra;
 }

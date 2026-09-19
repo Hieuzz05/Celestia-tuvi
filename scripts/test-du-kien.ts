@@ -28,6 +28,7 @@
 import { lapLaSo, type GioiTinh } from '../lib/tuvi/ansao';
 import { khoiNghiengVe, tinhNghiengVe } from '../lib/rag/nghieng-ve';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
+import { doiTenCung } from '../lib/rag/sua-chua';
 import type { ChuDe, LopHan } from '../lib/rag/planner';
 
 let sai = 0;
@@ -198,6 +199,44 @@ kiem(
   !soatNgonNgu('Có năm yếu tố đang đỡ.', ['x']).dat &&
     soatNgonNgu('Năm 2026 là quãng bạn đổi chỗ làm.', ['x']).dat
 );
+
+console.log('\n== ĐỔI TÊN CUNG THÀNH PHẦN ĐỜI ==\n');
+
+/*
+ * Phép thay này TẤT ĐỊNH, nên nó phải đúng 100% — khác các tiêu chí đo model.
+ *
+ * Hai nhóm phải tách bạch: nhóm PHẢI đổi, và nhóm KHÔNG được đụng tới. Nhóm
+ * thứ hai quan trọng ngang nhóm thứ nhất: "bản Mệnh" là nạp âm năm sinh và
+ * "Mệnh chủ" là một khái niệm khác hẳn, còn "số mệnh" với "vận mệnh" là tiếng
+ * Việt bình thường. Một bộ sửa làm hỏng câu đúng thì tệ hơn là không có.
+ */
+const PHAI_DOI = [
+  'tiểu hạn năm nay rơi đúng vào phần Điền Trạch, nơi có Liêm Trinh',
+  'cách cục Nhật Nguyệt tịnh minh tại Mệnh, cho thấy bạn thu hút tài chính',
+  'Sát Phá Tham tại Phu Thê cho thấy bạn dễ thay đổi',
+  'đọc từ cung Quan Lộc và cung Tài Bạch',
+  'Phúc Đức của bạn có Thiên Lương',
+];
+const KHONG_DUOC_DUNG = [
+  'bản Mệnh của bạn là Dương Liễu Mộc, và Mệnh chủ là Tham Lang',
+  'số mệnh không quyết định tất cả, vận mệnh cũng vậy',
+  'bạn phù hợp nghề tự do, không hợp việc bàn giấy',
+];
+
+const conTenCung =
+  /\b(?:Phụ Mẫu|Phúc Đức|Điền Trạch|Quan Lộc|Nô Bộc|Thiên Di|Tật Ách|Tài Bạch|Tử Tức|Phu Thê|Huynh Đệ)|(?:cung|phần|tại)\s+Mệnh/u;
+
+const conSot = PHAI_DOI.filter((t) => conTenCung.test(doiTenCung(t)));
+kiem('Mọi tên cung đều được đổi', conSot.length === 0, conSot);
+
+const doiOan = KHONG_DUOC_DUNG.filter((t) => doiTenCung(t) !== t);
+kiem('Không đụng vào câu không có tên cung', doiOan.length === 0, doiOan);
+
+// Câu sau khi đổi không được gãy: hai lần sở hữu là lỗi đã gặp một lần
+const gay = PHAI_DOI.map(doiTenCung).filter(
+  (t) => /của bạn của bạn|phần phần|ở ở/u.test(t)
+);
+kiem('Câu sau khi đổi không gãy', gay.length === 0, gay);
 
 console.log('\n== MỘT KHỐI THẬT, ĐỂ ĐỌC BẰNG MẮT ==\n');
 const mau = tinhNghiengVe({ laSo: ls, chuDe: 'tinh-cam', lopHan: THEO_NAM, namXem: 2026, thangXem: 6 });

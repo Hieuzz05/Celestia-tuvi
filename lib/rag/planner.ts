@@ -16,7 +16,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.5';
+export const PHIEN_BAN_PLANNER = '2026.09.6';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -172,6 +172,22 @@ const CHU_DE_THEO_CUNG: Record<string, ChuDe> = {
   'Thiên Di': 'tong-quan',
   'Nô Bộc': 'tong-quan',
 };
+
+/**
+ * Chữ báo rằng câu hỏi nhắm tới CẢ CHẶNG DÀI, không nhắm tới một năm.
+ *
+ * Không có nhóm này thì mọi câu có/không đều bị kéo về lưu niên, kể cả câu hỏi
+ * về cả đời. Đo được trên câu thật: "sau này tôi có giàu có ko?" nhận về một
+ * bài mở bằng "Năm 2026…".
+ *
+ * Cố ý KHÔNG có "lâu dài": nó hay đi với một mốc gần ("kế hoạch lâu dài cho năm
+ * nay"), nên nó không phân biệt được hai hình câu hỏi.
+ */
+const TU_KHOA_CHANG_DAI = [
+  'sau nay', 've sau', 'tuong lai', 've gia', 'cuoi doi', 'ca doi',
+  'suot doi', 'doi toi', 'den gia', 'luc gia', 'nhung nam toi',
+  'may nam toi', 'mai sau',
+];
 
 const TU_KHOA_HAN: [LopHan, string[]][] = [
   ['nguyet-han', ['thang nay', 'thang toi', 'thang sau', 'trong thang', 'nguyet han']],
@@ -372,7 +388,21 @@ function doanLopHan(cum: Set<string>, thucThe: ThucThe[], yDinh: YDinh): LopHan[
    */
   if (yDinh === 'quyet-dinh' || yDinh === 'co-khong' || yDinh === 'thoi-diem') {
     ra.add('dai-van');
-    ra.add('luu-nien');
+    /*
+     * ... TRỪ khi câu hỏi nói rõ nó hỏi về CẢ CHẶNG DÀI.
+     *
+     * "Sau này tôi có giàu có không" không hỏi về năm nay. Nhưng luật trên kéo
+     * lưu niên vào mọi câu có/không, nên bài trả lời mở bằng "Năm 2026…" — trả
+     * lời một câu người ta không hỏi, và bỏ qua đúng câu người ta hỏi.
+     *
+     * Hai hình câu hỏi này nằm chung một ý định mà cần hai lớp khác hẳn nhau:
+     *   "năm nay có cưới được không"   → lưu niên, vì họ hỏi về một năm
+     *   "sau này tôi có giàu có không" → đại vận và nền lá số, vì họ hỏi cả đời
+     *
+     * Thiếu phân biệt này thì câu hỏi về cả đời được trả lời bằng tiểu hạn của
+     * một năm — mà tiểu hạn là thứ nói ít nhất về việc một người rồi sẽ ra sao.
+     */
+    if (!TU_KHOA_CHANG_DAI.some((t) => cum.has(t))) ra.add('luu-nien');
   } else if (yDinh === 'tra-cuu' && ra.size === 1) {
     return ['ban-menh'];
   }

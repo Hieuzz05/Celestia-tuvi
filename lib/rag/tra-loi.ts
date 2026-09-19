@@ -14,7 +14,7 @@ import {
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
-import { suaCauTiengLong } from './sua-chua';
+import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -356,10 +356,18 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * Đưa kèm tên dữ kiện engine đã đọc được: câu "yếu tố cản" không còn cái tên
    * nào để giữ lại, nên người sửa phải được đưa tên, không được tự nghĩ ra.
    */
-  const van = await suaCauTiengLong(
+  const vanDaSua = await suaCauTiengLong(
     vanTho,
     nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []
   );
+
+  /*
+   * Đổi tên cung thành phần đời — TẤT ĐỊNH, không gọi model.
+   *
+   * Chạy SAU lớp sửa tiếng lóng: lớp kia gọi model và có thể sinh ra tên cung
+   * mới trong câu nó vừa viết, nên phải quét lại sau nó, không phải trước.
+   */
+  const van = doiTenCung(vanDaSua);
 
   const ketQuaNgonNgu = soatNgonNgu(
     van,

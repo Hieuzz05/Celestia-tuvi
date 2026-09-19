@@ -467,6 +467,21 @@ export function khoiNghiengVe(n: NghiengVe | null): string {
 
   const moc: string[] = [];
   if (n.cham.daiVan && n.khoangTuoi) moc.push(`Đại vận ${n.khoangTuoi} CÓ đi qua phần này.`);
+  /*
+   * Câu hỏi về cả chặng dài: phải nói ra, không để model tự suy.
+   *
+   * Thiếu dòng này thì model vẫn mở bài bằng "Năm 2026…" theo thói quen, dù
+   * khối dữ kiện không hề nhắc tới năm nào. Đo được trên câu thật "sau này tôi
+   * có giàu có ko?" — bài trả lời neo vào tiểu hạn một năm, tức là trả lời một
+   * câu người ta không hỏi.
+   */
+  if (n.cap === 'giai-doan') {
+    moc.push(
+      'Câu hỏi này KHÔNG hỏi về một năm cụ thể — nó hỏi về cả chặng dài. ' +
+        'ĐỪNG mở bài bằng "Năm 2026…". Neo vào quãng đại vận bằng SỐ TUỔI, và vào ' +
+        'cấu trúc sẵn có trên lá số, vì đó mới là thứ nói được về cả chặng.'
+    );
+  }
   if (n.cap !== 'giai-doan') {
     moc.push(
       n.cham.nam
