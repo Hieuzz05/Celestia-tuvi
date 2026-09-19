@@ -323,9 +323,14 @@ function vietLaiTruyVan(
   cauHoi: string,
   cungLienQuan: string[],
   thucThe: ThucThe[],
-  saoTheoCung: Record<string, string[]> | undefined
+  saoTheoCung: Record<string, string[]> | undefined,
+  tenCachCuc?: string[]
 ): string {
   const phan: string[] = [cauHoi.trim()];
+
+  // Cách cục đứng TRƯỚC danh sách cung: nó là chữ đặc trưng nhất trong cả truy
+  // vấn, và embedding đọc phần đầu nặng hơn phần đuôi.
+  if (tenCachCuc?.length) phan.push(`Cách cục: ${tenCachCuc.join(', ')}.`);
 
   phan.push(`Cung liên quan: ${cungLienQuan.join(', ')}.`);
 
@@ -349,6 +354,15 @@ export interface DauVaoPlanner {
   cauHoi: string;
   /** Sao đứng tại từng cung của lá số đang xem, để truy vấn nói đúng tên sao */
   saoTheoCung?: Record<string, string[]>;
+  /**
+   * Tên cách cục đã nhận diện trên lá số này.
+   *
+   * Đây là nửa còn lại của giá trị lớp cách cục. Nhánh từ khoá tồn tại để bắt
+   * ĐÚNG CHỮ, mà tên cách cục là chữ đặc trưng nhất có thể có: "Tử Phủ Vũ Tướng
+   * Liêm" chỉ xuất hiện trong những đoạn sách nói đúng về nó, còn "Tử Vi" thì
+   * xuất hiện ở khắp nơi.
+   */
+  tenCachCuc?: string[];
 }
 
 /**
@@ -404,9 +418,16 @@ function tuDacTrung(cauHoi: string): string[] {
 function dungTruyVanTuKhoa(
   cauHoi: string,
   thucThe: ThucThe[],
-  cungLienQuan: string[]
+  cungLienQuan: string[],
+  tenCachCuc?: string[]
 ): string {
-  const rieng = [...new Set([...thucThe.map((t) => t.ten), ...tuDacTrung(cauHoi)])];
+  // Tên cách cục luôn vào, kể cả khi câu hỏi đã đủ đặc trưng: nhánh từ khoá
+  // dùng ngữ nghĩa HOẶC, và đây là chuỗi hiếm nhất trong cả kho — nó không làm
+  // loãng như tên cung, mà lại là thứ duy nhất trỏ thẳng vào đoạn sách nói về
+  // đúng tổ hợp này.
+  const rieng = [
+    ...new Set([...(tenCachCuc ?? []), ...thucThe.map((t) => t.ten), ...tuDacTrung(cauHoi)]),
+  ];
   // Ba từ trở lên là đủ đặc trưng để tự đứng một mình
   return (rieng.length >= 3 ? rieng : [...new Set([...rieng, ...cungLienQuan])]).join(' ');
 }
@@ -418,6 +439,7 @@ function dungKeHoach(
   chuDe: ChuDe,
   yDinh: YDinh,
   chacChan: boolean,
+  tenCachCuc?: string[],
   phanLoaiBangModel?: boolean
 ): KeHoachTruyVan {
   const cum = cumTu(boDau(cauHoi));
@@ -433,8 +455,8 @@ function dungKeHoach(
     cungLienQuan,
     lopHan: doanLopHan(cum, thucThe, yDinh),
     thucThe,
-    truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung),
-    truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan),
+    truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung, tenCachCuc),
+    truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),
     phienBan: PHIEN_BAN_PLANNER,
   };
 }
@@ -446,7 +468,7 @@ function dungKeHoach(
  * và một hàm đồng bộ thì không có cách nào lỡ tay gọi model trong vòng lặp.
  * Nhánh model nằm ở `lapKeHoachDayDu` bên dưới.
  */
-export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyVan {
+export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): KeHoachTruyVan {
   const cum = cumTu(boDau(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
 
@@ -462,7 +484,8 @@ export function lapKeHoach({ cauHoi, saoTheoCung }: DauVaoPlanner): KeHoachTruyV
     saoTheoCung,
     chuDe,
     doanYDinh(cum),
-    theoTuKhoa.chacChan || cungGoiTen.length > 0
+    theoTuKhoa.chacChan || cungGoiTen.length > 0,
+    tenCachCuc
   );
 }
 
@@ -528,6 +551,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không giải thích:
       chuDe,
       yDinh && Y_DINH_HOP_LE.includes(yDinh) ? yDinh : theoLuat.yDinh,
       true,
+      vao.tenCachCuc,
       true
     );
   } catch (e) {

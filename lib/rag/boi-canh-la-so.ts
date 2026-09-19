@@ -6,6 +6,7 @@ import {
   type Cung,
   type LaSo,
 } from '@/lib/tuvi/ansao';
+import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import type { KeHoachTruyVan } from './planner';
@@ -25,11 +26,22 @@ import type { KeHoachTruyVan } from './planner';
 
 export interface DuKienLaSo {
   id: string;
-  loai: 'cung' | 'menh' | 'than' | 'cuc' | 'dai-van' | 'luu-nien' | 'nguyet-han' | 'tam-hop';
+  loai:
+    | 'cung'
+    | 'menh'
+    | 'than'
+    | 'cuc'
+    | 'cach-cuc'
+    | 'dai-van'
+    | 'luu-nien'
+    | 'nguyet-han'
+    | 'tam-hop';
   /** Câu mô tả dữ kiện, viết đủ để đứng một mình */
   noiDung: string;
   cung?: string;
   sao?: string[];
+  /** Chỉ dữ kiện loai 'cach-cuc': tên được phép gọi thẳng trong bài */
+  tenCachCuc?: string;
 }
 
 function motTaCung(c: Cung): string {
@@ -70,6 +82,18 @@ export interface BoiCanhLaSo {
 }
 
 /** Sao đáng đưa vào truy vấn: chính tinh và Tứ Hóa. Phụ tinh để dành cho dữ kiện. */
+/**
+ * Tên cách cục để đưa vào truy vấn.
+ *
+ * Tách riêng khỏi `chonBoiCanh` vì planner cần nó TRƯỚC khi có kế hoạch, còn
+ * `chonBoiCanh` lại cần kế hoạch để biết cung trọng tâm. Hai bên gọi cùng một
+ * engine nên không lệch nhau; chỉ khác ở chỗ planner chưa biết cung trọng tâm
+ * cuối cùng, nên nó nhận danh sách của cung được đoán trước.
+ */
+export function tenCachCucCho(laSo: LaSo, cungTrongTam?: string): string[] {
+  return nhanDangCachCuc(laSo, cungTrongTam).map((c) => c.ten);
+}
+
 export function saoChinhTheoCung(laSo: LaSo): Record<string, string[]> {
   const ra: Record<string, string[]> = {};
   for (const c of laSo.cungs) {
@@ -98,6 +122,30 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem }: DauVaoBoiCanh):
 
   const cungMenh = laSo.cungs[laSo.menhIndex];
   them({ loai: 'menh', noiDung: motTaCung(cungMenh), cung: 'Mệnh', sao: cungMenh.sao.map((s) => s.ten) });
+
+  /*
+   * Cách cục — đặt NGAY SAU Mệnh và TRƯỚC các cung theo chủ đề.
+   *
+   * Thứ tự trong prompt là thứ tự ưu tiên model đọc, và đây là thứ đáng đọc
+   * trước: một tổ hợp có tên nói được nhiều hơn hẳn một danh sách sao rời. Để
+   * nó nằm sau mười dữ kiện cung thì model đã dựng xong luận điểm bằng sao lẻ
+   * trước khi đọc tới.
+   *
+   * Cách cục `loai: 'han'` chỉ vào prompt khi câu hỏi thật sự đang nói về một
+   * quãng thời gian. Tang Môn / Thái Tuế / Tuế Phá mô tả không khí một NĂM, đưa
+   * vào bài luận tính cách là nói sai chuyện.
+   */
+  const xetHan = keHoach.lopHan.some((l) => l !== 'ban-menh');
+  for (const cc of nhanDangCachCuc(laSo, keHoach.cungLienQuan[0])) {
+    if (cc.loai === 'han' && !xetHan) continue;
+    them({
+      loai: 'cach-cuc',
+      noiDung: `Cách cục ${cc.ten} tại ${cc.cung}. ${cc.dieuKien}`,
+      cung: cc.cung,
+      sao: cc.sao,
+      tenCachCuc: cc.ten,
+    });
+  }
 
   if (laSo.thanCuCung && laSo.thanCuCung !== 'Mệnh') {
     them({ loai: 'than', noiDung: `Thân cư ${laSo.thanCuCung}.`, cung: laSo.thanCuCung });

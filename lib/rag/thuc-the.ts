@@ -17,7 +17,7 @@ import { CHINH_TINH, TEN_CUNG } from '@/lib/tuvi/constants';
  * và khoá metadata mà không lo dấu tiếng Việt.
  */
 
-export type LoaiThucThe = 'STAR' | 'PALACE' | 'TRANSFORMATION' | 'PERIOD' | 'MARKER';
+export type LoaiThucThe = 'STAR' | 'PALACE' | 'TRANSFORMATION' | 'PERIOD' | 'MARKER' | 'FORMATION';
 
 export interface ThucThe {
   id: string;
@@ -120,6 +120,45 @@ const MARKER_KHAC: ThucThe[] = [
   { id: 'MARKER.TRIET', loai: 'MARKER', ten: 'Triệt', biDanh: ['triet lo'] },
 ];
 
+/**
+ * Cách cục — loại thực thể thứ sáu, thêm cùng lớp `lib/tuvi/cach-cuc.ts`.
+ *
+ * Vì sao nó đáng nằm trong từ điển: người muốn tra một cách cục LUÔN gõ nguyên
+ * tên nó ("Tử Phủ Vũ Tướng Liêm là gì"), và tên ấy là chuỗi đặc trưng nhất có
+ * thể có trong cả kho — nó chỉ xuất hiện ở những đoạn sách nói đúng về nó.
+ * Nhận ra được thì nhánh từ khoá trỏ thẳng vào đúng đoạn.
+ *
+ * KHÔNG khai là STAR: `sachCau` ở các bề mặt ngắn loại bỏ câu nhắc STAR không
+ * có trong dữ liệu, mà cách cục lại được phép gọi tên. Khai nhầm loại là tự
+ * chặn đúng thứ vừa mở.
+ *
+ * Bí danh viết không dấu vì bảng tra so trên chuỗi đã bỏ dấu.
+ */
+const CACH_CUC_TT: ThucThe[] = [
+  { id: 'FORMATION.TU_PHU_VU_TUONG_LIEM', loai: 'FORMATION', ten: 'Tử Phủ Vũ Tướng Liêm', biDanh: ['tu phu vu tuong', 'bo tu phu'] },
+  { id: 'FORMATION.SAT_PHA_THAM', loai: 'FORMATION', ten: 'Sát Phá Tham', biDanh: ['sat pha tham lang', 'bo sat pha tham'] },
+  { id: 'FORMATION.CO_NGUYET_DONG_LUONG', loai: 'FORMATION', ten: 'Cơ Nguyệt Đồng Lương', biDanh: ['bo co nguyet dong luong'] },
+  { id: 'FORMATION.CU_NHAT', loai: 'FORMATION', ten: 'Cự Nhật', biDanh: ['cu mon thai duong'] },
+  { id: 'FORMATION.VO_CHINH_DIEU', loai: 'FORMATION', ten: 'Vô chính diệu', biDanh: ['khong co chinh tinh', 'menh vo chinh dieu'] },
+  { id: 'FORMATION.NHAT_NGUYET_TINH_MINH', loai: 'FORMATION', ten: 'Nhật Nguyệt tịnh minh', biDanh: ['nhat nguyet sang'] },
+  { id: 'FORMATION.NHAT_NGUYET_HAM', loai: 'FORMATION', ten: 'Nhật Nguyệt hãm', biDanh: ['nhat nguyet ham dia'] },
+  { id: 'FORMATION.HINH_TUONG_AN', loai: 'FORMATION', ten: 'Hình Tướng Ấn', biDanh: ['binh hinh tuong an'] },
+  { id: 'FORMATION.HINH_TU_GIAP_AN', loai: 'FORMATION', ten: 'Hình Tù giáp Ấn', biDanh: ['hinh tu giap an'] },
+  { id: 'FORMATION.KHOI_VIET', loai: 'FORMATION', ten: 'Khôi Việt', biDanh: ['luc quy hoi menh', 'thien khoi thien viet'] },
+  { id: 'FORMATION.XUONG_KHUC', loai: 'FORMATION', ten: 'Xương Khúc', biDanh: ['van xuong van khuc'] },
+  { id: 'FORMATION.TA_HUU', loai: 'FORMATION', ten: 'Tả Hữu', biDanh: ['ta phu huu bat'] },
+  { id: 'FORMATION.SONG_LOC', loai: 'FORMATION', ten: 'Song Lộc', biDanh: ['loc ton hoa loc', 'hai loc'] },
+  { id: 'FORMATION.KHOC_HU', loai: 'FORMATION', ten: 'Khốc Hư', biDanh: ['thien khoc thien hu'] },
+  { id: 'FORMATION.KHONG_KIEP', loai: 'FORMATION', ten: 'Không Kiếp', biDanh: ['dia khong dia kiep'] },
+  { id: 'FORMATION.KINH_DA', loai: 'FORMATION', ten: 'Kình Đà', biDanh: ['kinh duong da la'] },
+  { id: 'FORMATION.HOA_LINH', loai: 'FORMATION', ten: 'Hoả Linh', biDanh: ['hoa tinh linh tinh'] },
+  { id: 'FORMATION.DAO_HONG', loai: 'FORMATION', ten: 'Đào Hồng', biDanh: ['dao hoa hong loan'] },
+  { id: 'FORMATION.LONG_PHUONG', loai: 'FORMATION', ten: 'Long Phượng', biDanh: ['long tri phuong cac'] },
+  { id: 'FORMATION.MA_DAU_DOI_KIEM', loai: 'FORMATION', ten: 'Mã đầu đới kiếm', biDanh: ['ma dau doi kiem'] },
+  { id: 'FORMATION.TANG_TUE_DIEU', loai: 'FORMATION', ten: 'Tang Tuế Điếu', biDanh: ['tang mon thai tue dieu khach'] },
+  { id: 'FORMATION.MA_GAP_TUE_PHA', loai: 'FORMATION', ten: 'Thiên Mã gặp Tuế Phá', biDanh: ['ma gap tue pha'] },
+];
+
 function muc(loai: LoaiThucThe, ten: string, biDanh: string[] = []): ThucThe {
   return { id: ma(loai, ten), loai, ten, biDanh };
 }
@@ -133,6 +172,7 @@ export const TU_DIEN_THUC_THE: ThucThe[] = [
   ...MARKER_KHAC,
   ...TEN_CUNG.map((c) => muc('PALACE', c, BI_DANH_CUNG[c] ?? [])),
   ...HAN_TT,
+  ...CACH_CUC_TT,
 ];
 
 // Mã trùng nhau sẽ làm hỏng cả bảng tra lẫn lệnh upsert xuống database, mà hỏng
@@ -179,11 +219,26 @@ for (const tt of TU_DIEN_THUC_THE) {
   for (const b of tt.biDanh) BANG_TRA.set(boDau(b), tt);
 }
 
-/** Bảng dùng khi quét câu văn — bỏ các chuỗi dễ nhận nhầm */
-const BANG_QUET = new Map([...BANG_TRA].filter(([k]) => !KHONG_QUET_TU_DO.has(k)));
+/**
+ * Bảng dùng khi quét câu văn — bỏ các chuỗi dễ nhận nhầm, và tách CÁCH CỤC ra.
+ *
+ * Cách cục phải quét riêng vì nó CHỒNG LÊN tên sao chứ không thay thế: "Kình
+ * Dương Đà La" vừa là cách cục Kình Đà vừa là hai sao. Vòng quét chính ăn cụm
+ * dài trước rồi nhảy qua — nên để chung một bảng thì nhận ra cách cục là mất
+ * luôn hai sao tạo nên nó. Đo được ngay khi vừa thêm: bộ vàng tụt từ 100% xuống
+ * 89,5% ở mục "đủ thực thể", đúng hai câu "Kình Dương Đà La giáp mệnh" và "Địa
+ * Không Địa Kiếp gặp nhau".
+ */
+const BANG_QUET = new Map(
+  [...BANG_TRA].filter(([k, t]) => !KHONG_QUET_TU_DO.has(k) && t.loai !== 'FORMATION')
+);
+
+const BANG_CACH_CUC = new Map([...BANG_TRA].filter(([, t]) => t.loai === 'FORMATION'));
 
 /** Cụm dài nhất trong bảng quét, để biết cần ghép tối đa mấy từ */
-const SO_TU_TOI_DA = Math.max(...[...BANG_QUET.keys()].map((k) => k.split(' ').length));
+const SO_TU_TOI_DA = Math.max(
+  ...[...BANG_QUET.keys(), ...BANG_CACH_CUC.keys()].map((k) => k.split(' ').length)
+);
 
 /** Tra đúng một tên/bí danh. Không giới hạn như quét câu — gọi thẳng thì là cố ý. */
 export function traThucThe(chuoi: string): ThucThe | undefined {
@@ -200,6 +255,19 @@ export function nhanDangThucThe(cau: string): ThucThe[] {
   const tu = boDau(cau).split(/[^a-z0-9]+/).filter(Boolean);
   const thay = new Map<string, ThucThe>();
 
+  // Lượt một: cách cục. KHÔNG nhảy qua sau khi khớp — cụm ấy vẫn còn là tên sao.
+  for (let i = 0; i < tu.length; i++) {
+    for (let n = Math.min(SO_TU_TOI_DA, tu.length - i); n >= 1; n--) {
+      const cc = BANG_CACH_CUC.get(tu.slice(i, i + n).join(' '));
+      if (cc) {
+        thay.set(cc.id, cc);
+        break;
+      }
+    }
+  }
+
+  // Lượt hai: sao, cung, Tứ Hoá, mốc. Cụm dài trước, và nhảy qua sau khi khớp
+  // để "Hóa Kỵ" không bị đọc thành hai từ rời.
   for (let i = 0; i < tu.length; i++) {
     for (let n = Math.min(SO_TU_TOI_DA, tu.length - i); n >= 1; n--) {
       const tt = BANG_QUET.get(tu.slice(i, i + n).join(' '));

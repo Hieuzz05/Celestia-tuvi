@@ -2,7 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
-import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
@@ -65,7 +65,11 @@ async function dungNen(
   namXem: number,
   thangXem: number
 ): Promise<DuLieuNen> {
-  const keHoachGoc = lapKeHoach({ cauHoi, saoTheoCung: saoChinhTheoCung(laSo) });
+  const keHoachGoc = lapKeHoach({
+    cauHoi,
+    saoTheoCung: saoChinhTheoCung(laSo),
+    tenCachCuc: tenCachCucCho(laSo),
+  });
   const keHoach = chuDeEp ? { ...keHoachGoc, chuDe: chuDeEp } : keHoachGoc;
 
   const { duKien } = chonBoiCanh({ laSo, keHoach, namXem, thangXem });

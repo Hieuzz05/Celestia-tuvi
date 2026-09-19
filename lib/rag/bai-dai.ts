@@ -3,7 +3,7 @@ import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
-import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { docObjectJson } from './doc-json';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -169,8 +169,13 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
   // Planner một người lo phần truy vấn; chủ đề bài dài đã biết trước nên ép
   // cung theo cấu hình chủ đề thay vì để nó đoán từ câu hỏi.
   const cauHoi = vao.cauHoiThem?.trim() || `${cd.nhan} ${cd.moTa}`;
-  const keHoachGoc = lapKeHoach({ cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) });
   const cungChuDe = (cd.cung as readonly string[]).filter((c) => c !== 'Thân');
+  const keHoachGoc = lapKeHoach({
+    cauHoi,
+    saoTheoCung: saoChinhTheoCung(vao.laSo),
+    // Bài dài biết trước cung chủ đề, nên lấy cách cục của đúng cung ấy
+    tenCachCuc: tenCachCucCho(vao.laSo, cungChuDe[0]),
+  });
   const keHoach = {
     ...keHoachGoc,
     chuDe: CHU_DE_PLANNER[vao.chuDe] ?? keHoachGoc.chuDe,

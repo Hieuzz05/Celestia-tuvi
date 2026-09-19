@@ -1,5 +1,6 @@
 import type { GoiBangChung, TraLoiCoCauTruc } from './bang-chung';
-import { nhanDangThucThe } from './thuc-the';
+import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
+import { nhanDangThucThe, boDau } from './thuc-the';
 
 /**
  * Validator tất định — chạy trước, và với phần lớn lỗi là chạy thay cho LLM thứ hai.
@@ -15,7 +16,7 @@ import { nhanDangThucThe } from './thuc-the';
  * so sánh chuỗi.
  */
 
-export const PHIEN_BAN_VALIDATOR = '2026.09.1';
+export const PHIEN_BAN_VALIDATOR = '2026.09.3';
 
 export type MucDo = 'chan' | 'canh-bao';
 
@@ -61,10 +62,39 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
   ].join(' ');
   const thucTheChoPhep = new Set(nhanDangThucThe(chuoiChoPhep).map((t) => t.id));
 
+  /*
+   * Cách cục được phép gọi thẳng tên — nhưng CHỈ những cách cục engine đã phát.
+   *
+   * Cùng loại lỗi với bịa sao, và bắt được bằng đúng một phép so chuỗi. Nguy
+   * hiểm hơn bịa sao một bậc: một tên cách cục nghe rất chuyên môn nên người
+   * đọc tin ngay, mà model thì có sẵn hàng trăm tên cách cục trong trí nhớ để
+   * ghép bừa vào.
+   *
+   * So trên chữ đã bỏ dấu để "Tử Phủ Vũ Tướng Liêm" và "tu phu vu tuong liem"
+   * là một; so theo chuỗi con vì tên cách cục luôn nằm giữa câu.
+   */
+  const cachCucChoPhep = goi.duKien
+    .map((f) => f.tenCachCuc)
+    .filter((x): x is string => !!x);
+  const choPhepKhongDau = cachCucChoPhep.map(boDau);
+
   let soYCoNguon = 0;
 
   for (const y of traLoi.yChinh) {
     const nhan = y.tieuDe || y.noiDung.slice(0, 40);
+
+    const vanKhongDau = boDau(`${y.tieuDe ?? ''} ${y.noiDung} ${y.luongNguoc ?? ''}`);
+    const biaCachCuc = TEN_CACH_CUC.filter(
+      (t) => vanKhongDau.includes(boDau(t)) && !choPhepKhongDau.some((c) => c === boDau(t))
+    );
+    for (const t of biaCachCuc) {
+      loi.push({
+        ma: 'cach-cuc-khong-ton-tai',
+        mucDo: 'chan',
+        moTa: `Nhắc cách cục "${t}" nhưng lá số này không có nó.`,
+        tai: nhan,
+      });
+    }
 
     for (const m of y.maDuKien) {
       if (!maDuKien.has(m)) {

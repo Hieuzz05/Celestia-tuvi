@@ -1,6 +1,7 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
+import { PHIEN_BAN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import {
   chamDoChac,
@@ -10,7 +11,7 @@ import {
   type GoiBangChung,
   type TraLoiCoCauTruc,
 } from './bang-chung';
-import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
@@ -89,7 +90,20 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   // Planner cần biết sao nào đứng ở cung nào để viết lại truy vấn bằng đúng
   // thuật ngữ tài liệu, nên lá số phải được đọc trước khi lập kế hoạch.
-  const dauVaoPlanner = { cauHoi: vao.cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) };
+  /*
+   * Hai lượt lập kế hoạch, đều là hàm thuần nên rẻ.
+   *
+   * Cách cục cần biết CUNG TRỌNG TÂM để chọn đúng bộ, mà cung trọng tâm lại do
+   * planner suy ra — vòng tròn. Gỡ bằng cách chạy luật một lượt để biết cung,
+   * lấy cách cục của cung đó, rồi lập kế hoạch thật với tên cách cục trong tay.
+   */
+  const saoTheoCung = saoChinhTheoCung(vao.laSo);
+  const so = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung });
+  const dauVaoPlanner = {
+    cauHoi: vao.cauHoi,
+    saoTheoCung,
+    tenCachCuc: tenCachCucCho(vao.laSo, so.cungLienQuan[0]),
+  };
   const keHoach =
     vao.dungModelPhanLoai === false
       ? lapKeHoach(dauVaoPlanner)
@@ -172,6 +186,7 @@ export function phienBanHienTai(): Record<string, string> {
     engine: PHUONG_PHAP.id,
     phuongPhap: PHUONG_PHAP.phienBan,
     planner: PHIEN_BAN_PLANNER,
+    cachCuc: PHIEN_BAN_CACH_CUC,
     truyHoi: PHIEN_BAN_TRUY_HOI,
     schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
     validator: PHIEN_BAN_VALIDATOR,

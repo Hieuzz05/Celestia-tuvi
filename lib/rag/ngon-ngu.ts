@@ -1,3 +1,4 @@
+import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
 import { boDau } from './thuc-the';
 
 /**
@@ -14,7 +15,7 @@ import { boDau } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.2';
+export const PHIEN_BAN_NGON_NGU = '2026.09.3';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -198,8 +199,58 @@ export interface KetQuaNgonNgu {
  * `doanMoDau` là danh sách câu mở của từng ý; tách riêng vì luật lặp chỉ có
  * nghĩa khi nhìn cả bài, không nhìn từng đoạn.
  */
+/**
+ * Động từ / cụm chỉ HÀNH VI ĐỜI SỐNG.
+ *
+ * Dùng để kiểm cách cục đã được dịch chưa. Không cần đầy đủ — chỉ cần đủ dày để
+ * một câu thật sự nói về đời sống thì gần như chắc chắn chạm ít nhất một cụm.
+ * Thiếu sót ở đây chỉ làm cảnh báo thừa, không chặn bài.
+ */
+const DONG_TU_DOI_SONG = [
+  'lam', 'song', 'noi', 'nghi', 'chon', 'quyet', 'doi', 'giu', 'mat', 'duoc',
+  'thay', 'can', 'muon', 'tranh', 'chiu', 'gap', 'di', 've', 'o lai', 'bo',
+  'day', 'keo', 'dung', 'xay', 'hop', 'thich', 'ngai', 'de', 'kho', 'met',
+  'vui', 'buon', 'tien', 'viec', 'nguoi', 'quan he', 'gia dinh', 'suc khoe',
+  'ban', 'sep', 'dong nghiep', 'con', 'cha', 'me', 'nha', 'thoi gian',
+];
+
+/** Một câu có nói bằng lời đời sống không */
+function coLoiDoiSong(cau: string): boolean {
+  const cum = cumTu(boDau(cau));
+  return DONG_TU_DOI_SONG.some((t) => cum.has(t));
+}
+
 export function soatNgonNgu(van: string, doanMoDau: string[]): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
+
+  /*
+   * Cách cục nêu tên mà không dịch.
+   *
+   * Chuẩn ngôn ngữ cho phép gọi thẳng tên cách cục — đó là ngoại lệ duy nhất
+   * với luật cấm thuật ngữ. Ngoại lệ ấy đi kèm điều kiện: phải có một mệnh đề
+   * đời sống trong phạm vi ±1 câu. Không có điều kiện đó thì "ngoại lệ" biến
+   * thành đường cho thuật ngữ tràn về.
+   *
+   * Mức CẢNH BÁO chứ không chặn: câu vẫn đúng, chỉ là khó đọc. Chặn một bài
+   * đúng vì nó quên dịch một cái tên là phản ứng quá tay — cùng lý do với các
+   * lỗi giọng khác.
+   */
+  const cau = van.split(/(?<=[.!?])\s+/).filter((c) => c.trim());
+  const chuaDich: string[] = [];
+  for (let i = 0; i < cau.length; i++) {
+    const co = TEN_CACH_CUC.filter((t) => boDau(cau[i]).includes(boDau(t)));
+    if (!co.length) continue;
+    const quanh = [cau[i - 1], cau[i], cau[i + 1]].filter(Boolean).join(' ');
+    if (!coLoiDoiSong(quanh)) chuaDich.push(...co);
+  }
+  if (chuaDich.length) {
+    loi.push({
+      ma: 'cach-cuc-khong-dich',
+      mucDo: 'canh-bao',
+      moTa: 'Nêu tên cách cục nhưng không có mệnh đề đời sống đi kèm trong phạm vi một câu.',
+      viDu: [...new Set(chuaDich)].join(', '),
+    });
+  }
   // Gỡ nhãn phương pháp trước khi soát: nó chứa tên hệ phái nhưng được phép hiện.
   const khongDau = boDau(van).replace(/celestia[- ][a-z- ]+phai/g, 'phuong-phap');
   const cum = cumTu(khongDau);

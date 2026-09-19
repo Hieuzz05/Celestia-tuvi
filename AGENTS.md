@@ -258,6 +258,7 @@ npm run lint              # ĐANG có sẵn 7 lỗi set-state-in-effect — đ�
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
+npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google

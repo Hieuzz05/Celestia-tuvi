@@ -3,7 +3,7 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import type { LinhVucId } from '@/lib/tuvi/luan-giai-sau';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
-import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
@@ -85,7 +85,11 @@ export async function sinhBangLinhVuc(vao: {
   phienBan: Record<string, string>;
 } | null> {
   const cauHoi = 'Đọc toàn bộ lá số theo tám lĩnh vực đời sống';
-  const keHoachGoc = lapKeHoach({ cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) });
+  const keHoachGoc = lapKeHoach({
+    cauHoi,
+    saoTheoCung: saoChinhTheoCung(vao.laSo),
+    tenCachCuc: tenCachCucCho(vao.laSo),
+  });
   const keHoach = {
     ...keHoachGoc,
     chuDe: 'tong-quan' as const,

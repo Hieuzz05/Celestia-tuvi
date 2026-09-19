@@ -6,7 +6,7 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 
-import { chonBoiCanh, saoChinhTheoCung } from './boi-canh-la-so';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 
 import { CAU_RA_LENH, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 
@@ -173,7 +173,11 @@ export async function sinhMocHanhTrinh(vao: {
 
   const cauHoi = `Dòng thời gian: ${NHAN_LOAI[vao.loai]}`;
 
-  const keHoachGoc = lapKeHoach({ cauHoi, saoTheoCung: saoChinhTheoCung(vao.laSo) });
+  const keHoachGoc = lapKeHoach({
+    cauHoi,
+    saoTheoCung: saoChinhTheoCung(vao.laSo),
+    tenCachCuc: tenCachCucCho(vao.laSo),
+  });
 
   const keHoach = {
 

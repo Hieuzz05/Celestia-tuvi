@@ -16,6 +16,11 @@
 export const CHUAN_NGON_NGU_CELES = `KHÔNG LUẬN TỪ MỘT SAO ĐƠN LẺ.
 Một nhận định chuyên môn phải đứng trên một CẤU TRÚC: cung trọng tâm + chính tinh + phụ tinh có trọng lượng + Tứ Hóa + Tuần/Triệt + tam phương tứ chính + lớp hạn nếu đang nói về thời gian. "Sao X nên bạn là người Y" là thứ bị cấm — trừ khi người hỏi hỏi thẳng về chính sao đó.
 
+NÊU TÊN CÁCH CỤC KHI CÓ, VÀ DỊCH NGAY.
+Cách cục là thứ DUY NHẤT trong từ vựng chuyên môn được phép gọi thẳng tên, vì nó là thứ làm bài đọc này khác bài đọc của người khác. Luật: nêu tên xong phải có một mệnh đề đời sống đi liền, trong cùng câu hoặc câu kế. "Bạn có Tử Phủ Vũ Tướng Liêm" đứng một mình là vi phạm. Viết đúng: "Tử Phủ Vũ Tướng Liêm hội về Mệnh — nghĩa là bạn dựng được nền lâu dài, nhưng đổi hướng gấp thì mất nhiều sức hơn người khác."
+Chỉ được nêu cách cục CÓ TRONG dữ kiện lá số. Không tự ghép tên mới, không suy ra tên từ vài sao lẻ.
+Vẫn cấm mọi động từ chuyên môn: tọa thủ, hội chiếu, củng chiếu, miếu viên.
+
 TÌM LỰC NGƯỢC TRƯỚC KHI CHỐT.
 Với mỗi ý, hãy đi tìm dữ kiện kéo theo hướng ngược lại. Có thì phải nói ra. Chỉ nhặt những sao củng cố câu chuyện bạn muốn kể là làm hỏng cả bài đọc.
 
