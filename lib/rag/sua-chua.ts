@@ -373,3 +373,32 @@ export function doiTenCung(van: string): string {
    */
   return ra === van ? van : donChuThua(ra);
 }
+
+/**
+ * Gỡ ký hiệu Markdown khỏi chữ đi tới bề mặt KHÔNG dịch Markdown.
+ *
+ * Bảng Bức tranh đầy đủ vẽ từng đoạn bằng một thẻ <p> trần, không qua
+ * `MarkdownLuanGiai`. Nên khi prompt dặn model in đậm tên cách cục, người đọc
+ * nhận về đúng chữ "**Tham Lang**" kèm bốn dấu sao.
+ *
+ * Đã bỏ lời dặn ấy khỏi prompt, nhưng lời dặn không phải bảo đảm: model đời mới
+ * tự in đậm tên riêng theo thói quen, kể cả khi không ai bảo. Nên phải có một
+ * lượt gỡ tất định ở tầng sinh chữ.
+ *
+ * Gỡ, KHÔNG phải dịch sang thẻ đậm. Chủ dự án muốn chữ trơn, và nhấn mạnh phải
+ * nằm ở cách đặt câu chứ không ở ký hiệu.
+ */
+export function boMarkdown(van: string): string {
+  return van
+    // **đậm** và __đậm__ -> chữ trơn
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    // *nghiêng* -> chữ trơn, nhưng KHÔNG đụng dấu sao đứng một mình hay đầu dòng
+    .replace(/(?<![\p{L}\d*])\*([^*\n]+)\*(?![\p{L}\d*])/gu, '$1')
+    // Dấu thăng mở đầu dòng
+    .replace(/^#{1,6}\s+/gm, '')
+    // Dấu sao còn sót lẻ loi giữa câu
+    .replace(/\*/g, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}

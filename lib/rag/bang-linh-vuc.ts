@@ -11,7 +11,7 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
-import { doiTenCung, suaCauKeSao, suaCauTiengLong } from './sua-chua';
+import { boMarkdown, doiTenCung, suaCauKeSao, suaCauTiengLong } from './sua-chua';
 import { lapKeHoach } from './planner';
 import { boDau, nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
@@ -196,18 +196,23 @@ CÁCH VIẾT — ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT CỦA CẢ BẢN HƯỚNG 
 
 Mỗi lĩnh vực viết theo đúng nhịp ba bước, LẶP LẠI cho từng ý:
   (1) NÊU TÊN cấu trúc — tên cách cục ở trên, hoặc Thân cư, hoặc một tên sao.
-      Viết in đậm bằng dấu sao đôi: **Tử Phủ Vũ Tướng Liêm**.
   (2) DỊCH NGAY ra con người — "Điều này cho thấy…", "tạo nên…", "khiến…".
   (3) HẠ XUỐNG ĐỜI SỐNG — nó lộ ra thành hành vi nào, trong tình huống nào.
 
+TUYỆT ĐỐI KHÔNG DÙNG MARKDOWN: không dấu sao, không dấu thăng, không gạch dưới,
+không ngoặc kép quanh tên. Chữ bạn viết đi THẲNG ra màn hình, không qua bộ dịch
+Markdown nào — nên mọi ký hiệu đều hiện nguyên xi trước mặt người đọc, và một
+dòng "**Tham Lang**" là dấu hiệu lộ liễu nhất của chữ máy sinh chưa qua khâu nào.
+Tên viết trơn: Tử Phủ Vũ Tướng Liêm. Nhấn mạnh bằng CÁCH ĐẶT CÂU, không bằng ký hiệu.
+
 Đây là hình mẫu bắt buộc, đọc kỹ nhịp của nó:
-  "Bạn sở hữu bộ cách **Tử Phủ Vũ Tướng Liêm** kết hợp cùng **Binh Hình Tướng
-   Ấn**. Điều này cho thấy bạn mang cốt cách của một người làm chủ, quản lý
-   hoặc chỉ huy — thông minh, tầm nhìn sắc bén, toát lên sự uy dũng. Đáng chú
-   ý, với đặc điểm **Thân cư Tài Bạch**, bạn là người cực kỳ thực tế: bạn coi
-   trọng vật chất và xem đó là thước đo của thành công. Phong cách của bạn là
-   'nói ít làm nhiều', hành động quyết liệt, đôi khi theo bản năng nhưng luôn
-   hướng thẳng tới mục tiêu."
+  "Bạn sở hữu bộ cách Tử Phủ Vũ Tướng Liêm kết hợp cùng Binh Hình Tướng Ấn.
+   Điều này cho thấy bạn mang cốt cách của một người làm chủ, quản lý hoặc chỉ
+   huy — thông minh, tầm nhìn sắc bén, toát lên sự uy dũng. Đáng chú ý, với đặc
+   điểm Thân cư Tài Bạch, bạn là người cực kỳ thực tế: bạn coi trọng vật chất
+   và xem đó là thước đo của thành công. Phong cách của bạn là 'nói ít làm
+   nhiều', hành động quyết liệt, đôi khi theo bản năng nhưng luôn hướng thẳng
+   tới mục tiêu."
 
 Ba điều làm đoạn trên khác hẳn một bài luận tầm thường, và bạn phải giữ đủ cả ba:
   · Nó GỌI TÊN. Không có tên thì người đọc không có lý do nào để tin.
@@ -271,7 +276,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       "id": "menh",
       "ketLuan": "1 câu nói thẳng điều đáng chú ý nhất ở phần đời này, cụ thể cho lá số này",
       "doan": [
-        "Đoạn 1 — 3-5 câu văn CHẢY, theo nhịp ba bước: nêu tên cấu trúc in đậm, dịch ngay ra con người, rồi hạ xuống một hành vi cụ thể.",
+        "Đoạn 1 — 3-5 câu văn CHẢY, theo nhịp ba bước: nêu tên cấu trúc, dịch ngay ra con người, rồi hạ xuống một hành vi cụ thể. Không dùng dấu sao hay bất kỳ ký hiệu Markdown nào.",
         "Đoạn 2 — 3-5 câu: cấu trúc thứ hai, hoặc lực kéo ngược lại. Phải nói rõ nó bổ trợ cho ý nào ở đoạn trên.",
         "Đoạn 3 — 2-4 câu: chỗ dễ mắc và điều kiện để nét trên bền. Bỏ hẳn đoạn này nếu phần đời này lá số nói mỏng."
       ],
@@ -459,9 +464,15 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     * model phải viết.
     */
   const daSua = await suaCauKeSao(phang, { boQua: cachCuc.map((c) => c.ten) });
+  /*
+   * `boMarkdown` chạy CUỐI, sau mọi lớp sửa.
+   *
+   * Hai lớp trên đều gọi model, và model sửa chữ cũng tự in đậm theo thói quen.
+   * Gỡ trước chúng là gỡ nhầm lượt.
+   */
   ra.forEach((k, i) => {
-    k.ketLuan = doiTenCung(daSua[`k${i}|c`] ?? k.ketLuan);
-    k.doan = k.doan.map((d, j) => doiTenCung(daSua[`k${i}|d${j}`] ?? d));
+    k.ketLuan = boMarkdown(doiTenCung(daSua[`k${i}|c`] ?? k.ketLuan));
+    k.doan = k.doan.map((d, j) => boMarkdown(doiTenCung(daSua[`k${i}|d${j}`] ?? d)));
   });
 
   /*

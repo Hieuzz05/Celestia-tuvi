@@ -26,6 +26,9 @@ export type TenSuKien =
   | 'timeline_year_opened'
   | 'ask_submitted'
   | 'relationship_started'
+  // Nút sang bài luận giải sâu. Có `viTri` để đo đúng câu hỏi đã dẫn tới việc
+  // dời nó lên đầu trang: chỗ đặt nút đổi thì tỉ lệ bấm đổi bao nhiêu.
+  | 'deep_read_cta'
   // Phễu Kết nối — spec Relationship Intent mục 35
   | 'connection_intent_selected'
   | 'connection_compare_started'

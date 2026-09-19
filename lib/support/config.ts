@@ -23,6 +23,15 @@ function bat(ten: string, macDinh: boolean): boolean {
 export const CAU_HINH_UNG_HO = {
   /** Số câu Hỏi Celes miễn phí mỗi ngày cho tài khoản thường */
   freeAskDailyLimit: so('FREE_ASK_DAILY_LIMIT', 5),
+  /**
+   * Số BÀI LUẬN GIẢI SÂU miễn phí mỗi ngày.
+   *
+   * Một, không phải năm như Hỏi Celes. Một bài sâu tốn 25–45 giây máy chủ và
+   * gấp nhiều lần token của một câu chat, nên nó là thứ đắt nhất sản phẩm cho
+   * không. Mở rộng tay thì hoặc cạn tiền, hoặc phải hạ chất lượng — cả hai đều
+   * tệ hơn là nói thẳng rằng mỗi ngày một bài.
+   */
+  freeDeepReadDailyLimit: so('FREE_DEEP_READ_DAILY_LIMIT', 1),
   /** Mỗi lần ủng hộ mở quyền trong bao lâu */
   supporterDurationHours: so('SUPPORTER_DURATION_HOURS', 24),
   supporterAskQuotaPerPayment: so('SUPPORTER_ASK_QUOTA_PER_PAYMENT', 30),

@@ -199,6 +199,11 @@ export const vi = {
     dangDoc: 'Celes đang ghép các phần trong bản đồ của bạn thành một bức tranh dễ hiểu…',
     hoiThang: 'Hỏi Celes',
     khamPhaSau: 'Khám phá sâu hơn',
+    // Khối nổi bật ở ĐẦU trang, không phải thẻ cuối trang
+    sauNoiBatTieuDe: 'Đọc sâu một chủ đề bạn đang bận tâm',
+    sauNoiBatMo: 'Một bài dài khoảng 1.500–2.000 chữ, viết liền mạch cho riêng lá số này — công việc, tiền bạc, tình cảm, gia đình hay sức khoẻ.',
+    sauNoiBatCta: 'Đọc bài luận giải sâu',
+    sauNoiBatHanMuc: 'Mỗi ngày một bài miễn phí.',
     theoChuDeTieuDe: 'Đi thẳng vào điều bạn đang băn khoăn',
     theoChuDeMo: 'Công việc, tiền bạc, tình cảm, gia đình, sức khoẻ — hoặc hỏi Celes một câu của riêng bạn.',
 

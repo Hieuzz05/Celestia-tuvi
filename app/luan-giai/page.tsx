@@ -11,6 +11,7 @@ import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 import { Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 
@@ -38,6 +39,8 @@ function TrangLuanGiai() {
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
+  // Mở cổng ủng hộ khi hết lượt bài sâu trong ngày
+  const [moCong, setMoCong] = useState(false);
 
   useEffect(() => {
     danhSachHoSo()
@@ -100,8 +103,21 @@ function TrangLuanGiai() {
           cauHoi: cauHoi || undefined,
         })
       );
-    } catch {
-      setLoi('Phần diễn giải đang tạm gián đoạn. Lá số của bạn vẫn được giữ nguyên — thử lại sau một chút.');
+    } catch (e) {
+      /*
+       * Hết lượt trong ngày KHÁC hẳn hỏng hạ tầng.
+       *
+       * Gộp hai thứ vào một dòng "đang tạm gián đoạn" là nói sai với người
+       * dùng: không có gì gián đoạn cả, họ chỉ đã dùng hết lượt hôm nay. Và nó
+       * giấu mất đường đi tiếp duy nhất — ủng hộ để mở thêm.
+       */
+      const loiQuota = e as Error & { canUngHo?: boolean };
+      if (loiQuota?.canUngHo) {
+        setLoi(loiQuota.message);
+        setMoCong(true);
+      } else {
+        setLoi('Phần diễn giải đang tạm gián đoạn. Lá số của bạn vẫn được giữ nguyên — thử lại sau một chút.');
+      }
     } finally {
       setDangChay(false);
     }
@@ -270,6 +286,15 @@ function TrangLuanGiai() {
           </div>
         </div>
       </section>
+
+      {/* Hết lượt trong ngày: mở thẳng cổng ủng hộ, vì đó là đường đi tiếp duy nhất */}
+      {moCong && (
+        <CongUngHo
+          lyDo="long_report"
+          onDong={() => setMoCong(false)}
+          quayLai={{ path: '/luan-giai' }}
+        />
+      )}
     </Shell>
   );
 }

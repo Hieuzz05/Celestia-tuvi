@@ -428,6 +428,40 @@ function TrangLaSo() {
             />
           )}
 
+          {/*
+            LUẬN GIẢI SÂU — đặt ngay sau thẻ đầu, không để cuối trang.
+
+            Trước đây khối này nằm dưới cùng, sau cả bảng mười hai phần, dưới
+            dạng một nút viền nhạt cạnh một nút khác. Người dùng đọc hết trang
+            mà không nhận ra đây là phần sâu nhất sản phẩm có — nút ở cuối một
+            trang dài thì gần như không tồn tại.
+
+            Nút CHÍNH, không phải nút viền: trang này chỉ có đúng một việc đáng
+            làm tiếp, và nó phải trông như vậy.
+          */}
+          <div
+            className="card flex flex-col gap-[10px]"
+            style={{ borderColor: 'var(--accent)' }}
+          >
+            <Eyebrow>{t.nav.khamPha}</Eyebrow>
+            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+              {t.quickRead.sauNoiBatTieuDe}
+            </h2>
+            <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
+              {t.quickRead.sauNoiBatMo}
+            </p>
+            <div className="mt-[4px] flex flex-wrap items-center gap-[14px]">
+              <Link
+                href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                className="btn-primary"
+                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang' })}
+              >
+                {t.quickRead.sauNoiBatCta}
+              </Link>
+              <span className="caption">{t.quickRead.sauNoiBatHanMuc}</span>
+            </div>
+          </div>
+
           <div className="grid gap-[16px] md:grid-cols-2">
             {gocNhin.slice(1, 3).map((g) => (
               <GocNhinCard key={g.id} gocNhin={g} nho />
@@ -508,8 +542,15 @@ function TrangLaSo() {
             )}
           </div>
 
+          {/*
+            Thẻ cuối trang giờ CHỈ còn Hỏi Celes.
+
+            Nút "Khám phá sâu hơn" đã lên đầu trang. Để nguyên ở cả hai chỗ là
+            hiện cùng một lời mời hai lần trong một màn — người đọc không hiểu
+            hai nút khác nhau chỗ nào, và cái ở đầu mất đi phần sức nặng.
+          */}
           <div className="card flex flex-col gap-[12px]">
-            <span className="eyebrow">{t.nav.khamPha}</span>
+            <span className="eyebrow">{t.nav.hoiCeles}</span>
             <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
               {t.quickRead.theoChuDeTieuDe}
             </h2>
@@ -517,12 +558,6 @@ function TrangLaSo() {
               {t.quickRead.theoChuDeMo}
             </p>
             <div className="mt-auto flex flex-wrap gap-[12px]">
-              <Link
-                href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
-                className="btn-outline btn-sm"
-              >
-                {t.quickRead.khamPhaSau}
-              </Link>
               <Link
                 href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
                 className="btn-outline btn-sm"

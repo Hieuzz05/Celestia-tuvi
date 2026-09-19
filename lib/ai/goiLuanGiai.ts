@@ -31,6 +31,21 @@ export async function goiLuanGiai(yeuCau: YeuCauLuanGiai): Promise<KetQuaLuanGia
     body: JSON.stringify(yeuCau),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.loi ?? 'Luận giải thất bại');
+  if (!res.ok) {
+    /*
+     * Hết lượt trong ngày là một TRẠNG THÁI, không phải một lỗi.
+     *
+     * Ném Error trần thì trang chỉ hiện được một dòng chữ đỏ, và người dùng
+     * không có đường nào đi tiếp. Gắn cờ để trang mở cổng ủng hộ — đó mới là
+     * việc cần làm tiếp, và là lý do hạn mức tồn tại.
+     */
+    const loi = new Error(data.loi ?? 'Luận giải thất bại') as Error & {
+      canUngHo?: boolean;
+      lyDo?: string;
+    };
+    loi.canUngHo = Boolean(data.canUngHo);
+    loi.lyDo = typeof data.lyDo === 'string' ? data.lyDo : undefined;
+    throw loi;
+  }
   return data as KetQuaLuanGiai;
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
+import { chotBaiSau, datChoBaiSau, hoanBaiSau } from '@/lib/support/quota-bai-sau';
 import { randomUUID } from 'node:crypto';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
@@ -71,8 +72,18 @@ export async function POST(req: Request) {
 
   const cauHoi = typeof body.cauHoi === 'string' ? body.cauHoi.slice(0, 500) : undefined;
 
+  /*
+   * Đặt chỗ TRƯỚC khi gọi model, không phải sau.
+   *
+   * Một bài sâu mất 25–45 giây. Trừ sau khi có bài thì trong khoảng ấy người
+   * dùng mở thêm tab là qua được cổng. Trừ trước mà không hoàn thì họ mất lượt
+   * duy nhất của ngày vì lỗi của mình — nên phải có cả hai chiều.
+   */
+  const requestId = randomUUID();
+  const datCho = await datChoBaiSau(requestId);
+  if (!datCho.duocPhep) return datCho.chan!;
+
   try {
-    const requestId = randomUUID();
     const kq = await luanBaiDai({
       laSo,
       chuDe,
@@ -106,9 +117,29 @@ export async function POST(req: Request) {
         : undefined,
     });
 
+    /*
+     * Bài rỗng nghĩa là lớp dưới đã bỏ chữ (JSON gãy chẳng hạn). Lượt ấy phải
+     * hoàn, vì người dùng không nhận được gì.
+     */
+    if (!kq.van.trim()) {
+      await hoanBaiSau(datCho.nguon, requestId);
+      return NextResponse.json(
+        { loi: 'Celes chưa viết được bài này. Bạn thử lại giúp — lượt hôm nay chưa bị trừ.' },
+        { status: 502 }
+      );
+    }
+
+    await chotBaiSau(requestId, `${kq.provider}/${kq.model}`);
+
     return NextResponse.json({
       noiDung: kq.van,
       model: `${kq.provider}/${kq.model}`,
+      hanMuc: {
+        nguon: datCho.nguon,
+        daDung: datCho.daDung,
+        hanMuc: datCho.hanMuc,
+        soDuConLai: datCho.soDuConLai,
+      },
       daThuHong: kq.daThuHong,
       // "Muốn biết vì sao không?" — chỉ dữ kiện lá số và mạch suy luận. Không tên
       // tài liệu, không điểm liên quan — xem ghi chú ở components/CanCu.tsx.
@@ -133,6 +164,8 @@ export async function POST(req: Request) {
       },
     });
   } catch (e) {
+    // Hỏng ở phía mình thì trả lại lượt — người dùng chỉ có một bài mỗi ngày
+    await hoanBaiSau(datCho.nguon, requestId);
     if (e instanceof KhongCoModelError) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
     }
