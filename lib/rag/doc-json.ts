@@ -54,3 +54,31 @@ export function docObjectJson(text: string): Record<string, unknown> | null {
 
   return null;
 }
+
+/**
+ * Chuỗi này có phải JSON (hoặc JSON gãy) không.
+ *
+ * ---------------------------------------------------------------------------
+ * VÌ SAO CẦN, VÀ VÌ SAO NÓ Ở ĐÂY
+ *
+ * Mọi bề mặt AI đều theo cùng một hình: gọi model → `docObjectJson` → không đọc
+ * được thì có một đường lùi. Đường lùi của màn chat là trả thẳng `kq.text` cho
+ * người đọc, với lý lẽ "thà có chữ còn hơn không có gì".
+ *
+ * Lý lẽ ấy đúng khi model trả về VĂN XUÔI không đúng khuôn. Nó sai hoàn toàn
+ * khi model trả về JSON bị cắt giữa chừng — và người dùng nhận về nguyên màn
+ * hình `{ "ketLuan": "…", "tomTat": "…", "yChinh": [` với dấu ngoặc và dấu
+ * phẩy. Đó không phải "có chữ", đó là sản phẩm trông như vỡ ở tầng sâu.
+ *
+ * Đặt ở đây, cạnh `docObjectJson`, vì hai hàm này là hai nửa của cùng một câu
+ * hỏi: đọc được không, và nếu không thì thứ đọc không được ấy là cái gì. Để
+ * mỗi bề mặt tự viết lấy thì bề mặt viết sau sẽ quên, như đã quên một lần.
+ *
+ * Nhận diện bằng hai dấu hiệu, chỉ cần một là đủ:
+ *   - mở đầu bằng `{` hoặc `[`, kể cả sau rào ```json
+ *   - có khoá dạng `"tên":` ở phần đầu chuỗi
+ */
+export function laChuoiJson(text: string): boolean {
+  const s = text.trim().replace(/^```(?:json)?\s*/i, '');
+  return /^[{[]/.test(s) || /"[a-zA-Z_][\w-]*"\s*:/.test(s.slice(0, 400));
+}

@@ -4,7 +4,7 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { docObjectJson } from './doc-json';
+import { docObjectJson, laChuoiJson } from './doc-json';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
@@ -243,7 +243,7 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
    * Nhìn thấy dấu hiệu JSON thì thà không trả gì và để lớp gọi lùi về bản tất
    * định — lớp đó đã có sẵn và vẫn đọc được.
    */
-  const trongNhuJson = /^\s*[{[]/.test(kq.text) || /"[a-zA-Z]+"\s*:/.test(kq.text.slice(0, 400));
+  const trongNhuJson = laChuoiJson(kq.text);
   if (!tho || typeof tho.cauTruc?.noiDung !== 'string') {
     return {
       van: trongNhuJson ? '' : kq.text,

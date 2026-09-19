@@ -12,6 +12,7 @@ import {
   type TraLoiCoCauTruc,
 } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
+import { laChuoiJson } from './doc-json';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
@@ -298,17 +299,36 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   );
 
   const truocModel = Date.now();
-  const kq = await goiVoiFallback({ system, user, maxTokens: 3000 });
+  /*
+   * Ngân sách 6000, không phải 3000.
+   *
+   * Một lượt chat trả về ketLuan, tomTat, cachNoi, danh sách yChinh kèm
+   * luongNguoc và neuThi cho từng ý, rồi hoiLai, tuKiem, goiYTiep. Tiếng Việt
+   * tốn token hơn tiếng Anh, nên 3000 vốn đã sát. Với dòng gpt-5 thì token nghĩ
+   * nội bộ còn trừ vào CÙNG ngân sách ấy — mức cũ thành thiếu hẳn.
+   *
+   * Hết chỗ giữa chừng thì JSON gãy, `docTraLoi` trả null, và đường lùi đổ
+   * nguyên chuỗi JSON dở dang ra trước mặt người đọc.
+   */
+  const kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
   const doTreModel = Date.now() - truocModel;
 
   const coCauTruc = docTraLoi(kq.text);
 
-  // Model không trả về JSON đọc được: không bỏ cả câu trả lời, nhưng cũng không
-  // giả vờ đã kiểm duyệt. Người dùng vẫn nhận được chữ, còn trace ghi rõ lượt
-  // này không qua validator.
+  /*
+   * Model không trả về JSON đọc được: vẫn trả chữ, nhưng KHÔNG trả chữ là JSON.
+   *
+   * Lý lẽ cũ — "thà có chữ còn hơn không có gì" — đúng khi model viết văn xuôi
+   * lệch khuôn. Nó sai hẳn khi model bị cắt giữa chừng, vì lúc đó "chữ" là một
+   * chuỗi JSON dở dang đầy ngoặc và dấu phẩy. Người dùng đã chụp đúng màn hình
+   * ấy gửi về.
+   *
+   * Trả chuỗi rỗng thì giao diện hiện phần lỗi và người ta biết để hỏi lại —
+   * hơn hẳn việc đọc một màn dữ liệu thô rồi mất lòng tin vào cả sản phẩm.
+   */
   if (!coCauTruc) {
     return {
-      van: kq.text,
+      van: laChuoiJson(kq.text) ? '' : kq.text,
       loiDi: [],
       coCauTruc: null,
       goi,

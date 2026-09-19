@@ -25,6 +25,8 @@
  *      → chặn đường lỗi cũ đi lại lần nữa bằng bất kỳ lối nào.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { lapLaSo, type GioiTinh } from '../lib/tuvi/ansao';
 import { khoiNghiengVe, tinhNghiengVe } from '../lib/rag/nghieng-ve';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
@@ -249,6 +251,27 @@ const gay = PHAI_DOI.map(doiTenCung).filter(
   (t) => /của bạn của bạn|phần phần|ở ở/u.test(t)
 );
 kiem('Câu sau khi đổi không gãy', gay.length === 0, gay);
+
+console.log('\n== CẤP ĐỀ MỤC PHẢI NẰM TRONG THỨ BỘ VẼ BIẾT ==\n');
+
+/*
+ * `MarkdownLuanGiai` chỉ biết `#`, `##`, `###`. Cấp nào ngoài ba mức đó sẽ hiện
+ * nguyên dấu thăng trước mặt người đọc — dấu hiệu lộ liễu nhất của chữ máy sinh
+ * chưa qua khâu nào, và đúng lỗi người dùng bắt được.
+ *
+ * Đây là một HỢP ĐỒNG giữa bên sinh chữ và bên vẽ chữ, mà hợp đồng không ai
+ * kiểm thì sớm muộn một bên đổi. Quét mã nguồn thay vì quét đầu ra: chuỗi khuôn
+ * nằm trong mã, nên bắt được kể cả khi nhánh ấy chưa lần nào chạy.
+ */
+const CAP_BO_VE_BIET = new Set(['#', '##', '###']);
+const capLa: string[] = [];
+for (const tep of ['lib/rag/bai-dai.ts', 'lib/rag/tra-loi.ts']) {
+  const ma = readFileSync(tep, 'utf-8');
+  for (const m of ma.matchAll(/`(#{1,6})\s/g)) {
+    if (!CAP_BO_VE_BIET.has(m[1])) capLa.push(`${tep}: ${m[1]}`);
+  }
+}
+kiem('Không nơi nào sinh cấp đề mục bộ vẽ không biết', capLa.length === 0, capLa);
 
 console.log('\n== MỘT KHỐI THẬT, ĐỂ ĐỌC BẰNG MẮT ==\n');
 const mau = tinhNghiengVe({ laSo: ls, chuDe: 'tinh-cam', lopHan: THEO_NAM, namXem: 2026, thangXem: 6 });
