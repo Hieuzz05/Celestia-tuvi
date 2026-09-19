@@ -29,6 +29,19 @@ export interface ChatRequest {
    * đó vừa thừa vừa tốn quota.
    */
   tatSuyNghi?: boolean;
+  /**
+   * Mức suy nghĩ nội bộ cho dòng model suy luận (gpt-5.x, o-series).
+   *
+   * Tách khỏi `tatSuyNghi` vì hai thứ khác nhau: `tatSuyNghi` nghĩa là "đừng
+   * nghĩ, đây chỉ là lệnh test kết nối"; trường này nói "nghĩ bao nhiêu cho
+   * việc thật".
+   *
+   * Đây là đòn bẩy quan trọng nhất với dòng gpt-5, vì nó quyết định cùng lúc ba
+   * thứ: chất lượng, độ trễ, và tiền — token nghĩ nội bộ tính tiền y như token
+   * ra. Nghĩ ở mức 'high' có thể vượt trần 55 giây của tầng gọi, và lúc đó nó
+   * hỏng theo cách không phân biệt được với một model chết.
+   */
+  mucSuyNghi?: 'low' | 'medium' | 'high';
 }
 
 export interface ChatResult {

@@ -4,7 +4,11 @@ import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { luanGiaiSau } from '@/lib/tuvi/luan-giai-sau';
 import type { NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
-import { sinhBangLinhVuc, type KhoiAi } from '@/lib/rag/bang-linh-vuc';
+import {
+  PHIEN_BAN_BANG_LINH_VUC,
+  sinhBangLinhVuc,
+  type KhoiAi,
+} from '@/lib/rag/bang-linh-vuc';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -89,7 +93,18 @@ export async function POST(req: Request) {
           body.gioiTinh as GioiTinh
         ),
         beMat: 'bang-linh-vuc',
-        khoaKy: `nam:${namXem}`,
+        /*
+         * Khoá đệm PHẢI mang phiên bản prompt.
+         *
+         * Khoá cũ là (lá số, bề mặt, năm, ngôn ngữ) — không có chỗ nào nói bài
+         * này được viết bằng bộ luật nào. Hệ quả: sửa prompt xong, người đã
+         * sinh bài vẫn đọc bản cũ mãi mãi, và người sửa thì tưởng đã xong.
+         *
+         * Đúng thứ vừa xảy ra: cả loạt sửa cách viết hôm nay không tới được
+         * người dùng nào đã mở trang trước đó. Đổi `PHIEN_BAN_BANG_LINH_VUC`
+         * giờ tự làm mất hiệu lực bản cũ, không phải đi xoá bảng bằng tay.
+         */
+        khoaKy: `nam:${namXem}|v:${PHIEN_BAN_BANG_LINH_VUC}`,
         ngonNgu,
       },
       async () => {

@@ -1,4 +1,6 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
+import { goiModel } from '@/lib/ai/providers';
+import type { ProviderId } from '@/lib/ai/types';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
@@ -36,7 +38,14 @@ import { truyHoi } from './truy-hoi';
  * định dựng từ cung và sao. Model viết nhận định, luật giữ phần chứng minh.
  */
 
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.1';
+/**
+ * Bản của bộ luật viết bài.
+ *
+ * ĐỔI SỐ NÀY mỗi khi sửa prompt, schema đầu ra, hay lớp lọc — nó nằm trong khoá
+ * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
+ * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
+ */
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.2';
 
 /** Cung cần có mặt trong dữ kiện để tám lĩnh vực đều có cái mà đọc */
 const CUNG_CAN_CO = [
@@ -88,6 +97,14 @@ export async function sinhBangLinhVuc(vao: {
   laSo: LaSo;
   namXem: number;
   thangXem: number;
+  /**
+   * Ép đúng một model, bỏ qua chuỗi fallback.
+   *
+   * CHỈ dùng cho bộ so model chạy tay. Đường chạy thật không truyền tham số
+   * này: ép một model ở production là bỏ luôn lưới an toàn, và lúc model ấy
+   * hỏng thì bảng luận giải chết hẳn thay vì lùi sang model kế tiếp.
+   */
+  epModel?: { provider: ProviderId; model: string; apiKey: string; mucSuyNghi?: 'low' | 'medium' | 'high' };
 }): Promise<{
   noiDung: KhoiAi[];
   provider: string;
@@ -277,7 +294,10 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
       : '\nLƯU Ý: không có nguồn tham chiếu nào. Chỉ mô tả điều dữ kiện lá số nói, và nêu rõ phần học thuyết chưa có căn cứ.',
   ].join('\n');
 
-  const kq = await goiVoiFallback({ system, user, maxTokens: 8000 });
+  const yeuCau = { system, user, maxTokens: 8000, mucSuyNghi: vao.epModel?.mucSuyNghi };
+  const kq = vao.epModel
+    ? { ...(await goiModel(vao.epModel.provider, vao.epModel.model, vao.epModel.apiKey, yeuCau)), provider: vao.epModel.provider, model: vao.epModel.model }
+    : await goiVoiFallback(yeuCau);
   const tho = docObjectJson(kq.text);
   const mang = Array.isArray((tho as { linhVuc?: unknown } | null)?.linhVuc)
     ? ((tho as { linhVuc: unknown[] }).linhVuc as ThoKhoi[])
@@ -345,9 +365,41 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     }
     if (ra.some((x) => x.id === id)) continue;
 
-    const doan = (Array.isArray(k.doan) ? k.doan : [])
-      .map(sach)
-      .filter((x): x is string => Boolean(x));
+    /*
+     * `doan` có thể về dưới hai hình, và phải nhận cả hai.
+     *
+     * Bộ so model bắt được: các model Gemini trả `doan` là MỘT chuỗi dài hoặc
+     * một mảng một phần tử, trong khi OpenAI trả đúng mảng ba đoạn. Luật "ít
+     * nhất hai đoạn" ở dưới loại sạch phần của Gemini — và con số so sánh biến
+     * thành phép đo mức độ BÁM SCHEMA, không phải mức độ viết hay.
+     *
+     * Đo sai kiểu này nguy hơn không đo: nó cho một câu trả lời có vẻ khách
+     * quan cho một câu hỏi mà nó chưa từng hỏi.
+     */
+    const thoDoan: unknown[] = Array.isArray(k.doan)
+      ? k.doan
+      : typeof k.doan === 'string'
+        ? k.doan.split(/\n{2,}/)
+        : [];
+    let doan = thoDoan.map(sach).filter((x): x is string => Boolean(x));
+
+    /*
+     * Một đoạn dài: tách theo câu thành hai khối gần bằng nhau, giữ nguyên chữ.
+     *
+     * Ngưỡng BA câu, không phải bốn. Bộ so model đo được: với ngưỡng bốn, mọi
+     * model đều rụng 2–6 phần chỉ vì viết đúng một đoạn ba câu. Mất hẳn một
+     * phần đời tệ hơn nhiều so với một phần chỉ có hai đoạn ngắn.
+     *
+     * Đây là chỗ luật hình thức nhường cho nội dung: "ít nhất hai đoạn" sinh ra
+     * để ép bài có lực kéo ngược, không sinh ra để vứt bài.
+     */
+    if (doan.length === 1) {
+      const cau = doan[0].split(/(?<=[.!?])\s+/).filter((c) => c.trim());
+      if (cau.length >= 3) {
+        const giua = Math.ceil(cau.length / 2);
+        doan = [cau.slice(0, giua).join(' '), cau.slice(giua).join(' ')];
+      }
+    }
 
     /*
      * Ít nhất hai đoạn, và tối thiểu ấy là một luật nội dung chứ không phải một

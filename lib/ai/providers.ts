@@ -134,6 +134,7 @@ async function chatOpenAiCompat(
     // 'minimal' không còn được nhận ở gpt-5.5; 'low' là mức thấp nhất mà cả
     // dòng cũ lẫn dòng mới đều hiểu.
     if (req.tatSuyNghi) than.reasoning_effort = 'low';
+    else if (req.mucSuyNghi) than.reasoning_effort = req.mucSuyNghi;
   } else {
     than.temperature = req.temperature ?? 0.7;
     than.max_tokens = req.maxTokens ?? 2048;
