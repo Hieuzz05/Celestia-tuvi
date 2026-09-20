@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ChuyenNgonNgu } from '@/components/ChuyenNgonNgu';
 import { Logo } from '@/components/Logo';
-import { IconNguoiDung, Shell } from '@/components/ui';
+import { IconDong, IconMenu, IconNguoiDung, Shell } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
 import { useQuyen } from '@/lib/support/useQuyen';
 import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
@@ -30,6 +30,20 @@ export function SiteNav() {
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   const [daCauHinhAuth, setDaCauHinhAuth] = useState(false);
   const [moMenu, setMoMenu] = useState(false);
+  /*
+   * Menu điều hướng cho màn hẹp — TÁCH RIÊNG khỏi `moMenu` của tài khoản.
+   *
+   * Thanh này trước đây không có một lớp breakpoint nào: cùng một hàng ngang ở
+   * 1440px và ở 390px, chỉ dựa vào `flex-wrap`. Đo thử: logo + năm liên kết +
+   * đổi ngôn ngữ + đổi nền + chip tài khoản cần khoảng 770px, mà cột nội dung
+   * trên máy 390px chỉ có 342px — nên nó xuống ba hàng. Và vì header `sticky`,
+   * ba hàng ấy DÍNH LẠI, ăn mất khoảng một phần bảy màn hình suốt lúc cuộn.
+   *
+   * Hai menu là hai việc khác nhau nên để rời: điều hướng là "đi đâu", tài
+   * khoản là "tôi là ai". Gộp vào một nút thì người dùng phải mở một thứ để
+   * tìm thứ kia.
+   */
+  const [moNav, setMoNav] = useState(false);
   // Vai trò admin do MÁY CHỦ quyết. Không bao giờ so email ở trình duyệt:
   // email nằm trong tay người dùng, danh sách admin thì chỉ máy chủ mới biết.
   const { quyen } = useQuyen();
@@ -125,7 +139,7 @@ export function SiteNav() {
       style={{ background: 'var(--bg)', borderColor: 'var(--line)' }}
     >
       <Shell>
-        <nav className="flex flex-wrap items-center justify-between gap-[16px] py-[16px]">
+        <nav className="flex items-center justify-between gap-[16px] py-[16px]">
           <Link
             href={daDangNhap ? '/home' : '/'}
             aria-label="Celestia"
@@ -134,7 +148,8 @@ export function SiteNav() {
             <Logo />
           </Link>
 
-          <div className="flex flex-wrap items-center gap-[20px]">
+          {/* Hàng liên kết chỉ nằm trên thanh từ md trở lên; hẹp hơn thì vào panel */}
+          <div className="hidden items-center gap-[20px] md:flex">
             {lienKet.map((l) => (
               <Link
                 key={l.href}
@@ -147,9 +162,11 @@ export function SiteNav() {
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-[12px]">
-            <ChuyenNgonNgu />
-            <ThemeToggle />
+          <div className="flex items-center gap-[12px]">
+            <div className="hidden items-center gap-[12px] md:flex">
+              <ChuyenNgonNgu />
+              <ThemeToggle />
+            </div>
 
             {taiKhoan ? (
               <div className="relative" ref={menuRef}>
@@ -221,8 +238,59 @@ export function SiteNav() {
                 )}
               </>
             )}
+
+            {/*
+              Nút mở menu chỉ hiện dưới md. 44px mỗi chiều: đây là nút điều
+              hướng chính trên điện thoại, không phải chỗ để tiết kiệm chỗ.
+            */}
+            <button
+              type="button"
+              onClick={() => setMoNav((v) => !v)}
+              className="flex h-[44px] w-[44px] items-center justify-center md:hidden"
+              style={{ color: 'var(--fg)' }}
+              aria-expanded={moNav}
+              aria-controls="menu-dieu-huong"
+              aria-label={moNav ? t.chung.dongMenu : t.chung.menu}
+            >
+              {moNav ? <IconDong size={22} /> : <IconMenu size={22} />}
+            </button>
           </div>
         </nav>
+
+        {/*
+          Panel điều hướng cho màn hẹp.
+          Đặt NGOÀI <nav> hàng ngang để nó chiếm trọn chiều ngang, và chỉ dựng
+          khi mở — một panel ẩn bằng CSS vẫn nằm trong luồng Tab và vẫn được
+          trình đọc màn hình đọc ra.
+        */}
+        {moNav && (
+          <div
+            id="menu-dieu-huong"
+            className="flex flex-col gap-[4px] border-t pb-[16px] md:hidden"
+            style={{ borderColor: 'var(--line)' }}
+          >
+            {lienKet.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="nav-link flex min-h-[44px] items-center"
+                data-active={pathname === l.href}
+                /* Đóng ngay ở cú bấm, không chờ hiệu ứng theo pathname: panel
+                   còn mở sau điều hướng là nó che đúng trang vừa mở ra. */
+                onClick={() => setMoNav(false)}
+              >
+                {l.nhan}
+              </Link>
+            ))}
+            <div
+              className="mt-[8px] flex items-center gap-[12px] border-t pt-[12px]"
+              style={{ borderColor: 'var(--line)' }}
+            >
+              <ChuyenNgonNgu />
+              <ThemeToggle />
+            </div>
+          </div>
+        )}
       </Shell>
     </header>
   );

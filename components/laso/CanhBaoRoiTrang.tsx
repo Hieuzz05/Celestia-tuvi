@@ -84,11 +84,17 @@ export function CanhBaoRoiTrang({
     <div
       role="dialog"
       aria-modal
-      className="fixed inset-0 z-50 flex items-center justify-center p-[24px]"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-[24px]"
       style={{ background: 'rgba(36, 0, 41, 0.55)' }}
     >
       <div
-        className="flex w-full max-w-[460px] flex-col gap-[16px] rounded-[var(--radius-cards)] p-[28px]"
+        /*
+          `my-auto` + cho phép co lại: hộp căn giữa mà không cuộn được thì ở
+          màn NGANG (chiều cao khoảng 375px) nội dung bị cắt mất phần dưới —
+          tức là cắt mất đúng hai cái nút, và người dùng kẹt lại không có lối
+          ra nào. Cùng lỗi ấy xảy ra khi người dùng đặt cỡ chữ hệ thống lớn.
+        */
+        className="my-auto flex w-full max-w-[460px] flex-col gap-[16px] rounded-[var(--radius-cards)] p-[28px]"
         style={{ background: 'var(--surface-card)', boxShadow: 'var(--shadow-elevated)' }}
       >
         <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>

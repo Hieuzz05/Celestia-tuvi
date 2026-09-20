@@ -19,6 +19,8 @@ export const en: TuDien = {
     tiepTuc: 'Continue',
     dongY: 'Done',
     huy: 'Cancel',
+    menu: 'Menu',
+    dongMenu: 'Close menu',
     dangMo: 'Opening…',
   },
 

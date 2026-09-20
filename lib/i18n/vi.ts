@@ -17,6 +17,8 @@ export const vi = {
     tiepTuc: 'Tiếp tục',
     dongY: 'Xong',
     huy: 'Huỷ',
+    menu: 'Menu',
+    dongMenu: 'Đóng menu',
     dangMo: 'Đang mở…',
   },
 

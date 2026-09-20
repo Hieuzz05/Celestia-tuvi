@@ -101,6 +101,18 @@ export const IconMatTrang = (p: IconProps) => (
   </Khung>
 );
 
+export const IconMenu = (p: IconProps) => (
+  <Khung {...p}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Khung>
+);
+
+export const IconDong = (p: IconProps) => (
+  <Khung {...p}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Khung>
+);
+
 export const IconMuiTenPhai = (p: IconProps) => (
   <Khung {...p}>
     <path d="M4.5 12h15M13.5 6l6 6-6 6" />
