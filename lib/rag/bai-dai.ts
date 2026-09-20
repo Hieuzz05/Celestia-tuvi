@@ -28,7 +28,7 @@ import { mucChacChan, type MucChacChan } from './uu-tien-nguon';
  * ý bằng luật trước khi dựng thành chữ.
  */
 
-export const PHIEN_BAN_BAI_DAI = '2026.09.1';
+export const PHIEN_BAN_BAI_DAI = '2026.09.2';
 
 /** Ánh xạ chủ đề bài dài → chủ đề planner, để bối cảnh và truy hồi đúng cung */
 const CHU_DE_PLANNER: Record<ChuDeId, ChuDe> = {

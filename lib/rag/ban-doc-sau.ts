@@ -18,8 +18,6 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { TIEU_CHI_SAU } from '@/lib/tuvi/tieu-chi-sau';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
-import { KHOI_CAU_CANH } from './cau-canh';
-import { KHOI_CHU_TRUU_TUONG } from './chu-truu-tuong';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { boCauPhanQuyet, boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson, laChuoiJson } from './doc-json';
@@ -56,7 +54,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.4';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.5';
 
 export interface TieuChiRa {
   nhan: string;
@@ -303,15 +301,6 @@ Nếu không nói thêm được gì mới về nó, hãy dùng dữ kiện khá
     : '';
 
   // Thụt vào cho khớp khối luật trong prompt — xem KHOI_CAU_CANH
-  const thut = (x: string) =>
-    x.split('\n')
-      .map((d) => (d.trim() ? `   ${d}` : d))
-      .join('\n');
-  const khoiChuTruuTuong = thut(KHOI_CHU_TRUU_TUONG);
-  const khoiCauCanh = KHOI_CAU_CANH.split('\n')
-    .map((d) => (d.trim() ? `   ${d}` : d))
-    .join('\n');
-
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, giọng bình tĩnh, nói với người đối diện chứ không giảng bài.
 
 Đây là BẢN ĐỌC SÂU — tầng sâu nhất sản phẩm có. Bạn đang viết CHẶNG "${cauHinh.tieuDe}": ${cauHinh.subtitle}
@@ -380,10 +369,9 @@ NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l
    chính cái đang kéo ngược: "Khi lịch dày lên thì...", "Nếu người bên cạnh...".
 
 5. VIẾT BẰNG CHỮ NGƯỜI ĐỌC HÌNH DUNG RA ĐƯỢC.
-   MỖI TIÊU CHÍ phải có ít nhất một câu cảnh.
-${khoiCauCanh}
-
-${khoiChuTruuTuong}
+   Bảng chữ cấm và định nghĩa CÂU CẢNH nằm ở chuẩn ngôn ngữ bên dưới. Ở bản
+   đọc sâu luật chặt hơn một bậc: câu cảnh tính theo TỪNG TIÊU CHÍ, không phải
+   theo đoạn. Tiêu chí nào cũng phải có một câu người đọc hình dung ra được.
 
 KHỐI GƯƠNG — tiêu chí đánh dấu [KHỐI GƯƠNG] của mỗi phần:
 Đọc phần này QUA cung đối diện, tức là nhìn từ phía ngược lại. Đây là chỗ bài

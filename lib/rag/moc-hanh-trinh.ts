@@ -62,7 +62,7 @@ import { truyHoi } from './truy-hoi';
 
 
 
-export const PHIEN_BAN_MOC = '2026.09.1';
+export const PHIEN_BAN_MOC = '2026.09.2';
 
 
 

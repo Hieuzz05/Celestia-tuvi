@@ -28,6 +28,18 @@ import { boDau } from './thuc-the';
  * một câu đã viết xong thì câu hỏng ngữ pháp. Nó là luật cho lúc viết, và là
  * phép đếm cho lúc kiểm.
  */
+/*
+ * KHÔNG CÓ "xu hướng" và "khuynh hướng" TRONG BẢNG NÀY, và đó là cố ý.
+ *
+ * Bản đầu có. Bộ kiểm hợp đồng bắt ngay một mâu thuẫn ngay trong cùng một
+ * prompt: chuẩn ngôn ngữ KÊ ĐƠN đúng chữ ấy ("Bạn luôn…" đổi thành "Bạn có xu
+ * hướng…"), và câu miễn trừ của chính sản phẩm mở bằng "Đây là xu hướng của
+ * giai đoạn". Cấm nó là bảo model vừa phải dùng vừa không được dùng.
+ *
+ * Xét lại thì chữ ấy không thuộc về đây. Bảng này bắt những chữ người đọc
+ * KHÔNG HÌNH DUNG RA GÌ. "Xu hướng" thì ai cũng hiểu, và nó làm đúng một việc
+ * sản phẩm này cần: nói rằng đây là nghiêng về, không phải chắc chắn.
+ */
 export const CHU_TRUU_TUONG: readonly (readonly [string, string])[] = [
   ['năng lực', 'làm được việc gì'],
   ['nguồn lực', 'tiền, người và thời gian'],
@@ -56,8 +68,6 @@ export const CHU_TRUU_TUONG: readonly (readonly [string, string])[] = [
   ['phạm vi', 'tới đâu'],
   ['khía cạnh', 'mặt'],
   ['yếu tố', 'điều gì'],
-  ['xu hướng', 'thường hay'],
-  ['khuynh hướng', 'thường hay'],
   ['tối đa hóa', 'làm nhiều nhất có thể'],
 ];
 

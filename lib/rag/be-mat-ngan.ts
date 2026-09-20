@@ -31,7 +31,7 @@ import { truyHoi } from './truy-hoi';
  * hạn mức model không được phép làm trắng trang chủ.
  */
 
-export const PHIEN_BAN_BE_MAT_NGAN = '2026.09.1';
+export const PHIEN_BAN_BE_MAT_NGAN = '2026.09.2';
 
 function nenChung(): string {
   return `BỐN NGUỒN SỰ THẬT, THEO THỨ TỰ:

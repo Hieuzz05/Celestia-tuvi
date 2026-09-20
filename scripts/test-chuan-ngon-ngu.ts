@@ -13,6 +13,9 @@ import { lapLaSo } from '../lib/tuvi/ansao';
 import { docNhanh } from '../lib/tuvi/quick-read';
 import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
 import { luanHan } from '../lib/tuvi/luan-han';
+import { CHUAN_NGON_NGU_CELES } from '../lib/rag/chuan-ngon-ngu';
+import { CHU_TRUU_TUONG } from '../lib/rag/chu-truu-tuong';
+import { boDau } from '../lib/rag/thuc-the';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
 const MAU: [number, number, number, number, 'nam' | 'nu'][] = [
@@ -152,6 +155,26 @@ console.log('\n== CÙNG MỘT LÁ SỐ ĐỌC LẠI PHẢI RA ĐÚNG BÀI CŨ ==
 
 console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
 {
+  /*
+   * CHUẨN KHÔNG ĐƯỢC KÊ ĐƠN MỘT CHỮ MÀ CHÍNH NÓ CẤM.
+   *
+   * Bắt được ngay lần đầu chạy: bảng chữ trừu tượng cấm "xu hướng", trong khi
+   * ba dòng phía trên cùng prompt lại dạy model viết "Bạn có xu hướng…". Model
+   * nhận hai lệnh ngược nhau trong một lần đọc, và không có cách nào tuân cả
+   * hai. Kiểu mâu thuẫn này không gây lỗi ở đâu cả — nó chỉ làm đầu ra tệ đi
+   * một cách không giải thích được.
+   *
+   * Chỉ soi VẾ PHẢI của mũi tên, tức phần chuẩn bảo PHẢI viết thế nào. Chữ cấm
+   * nằm trong ví dụ xấu được trích dẫn là chuyện đúng, không phải va chạm.
+   */
+  const keDon = CHUAN_NGON_NGU_CELES.split('\n')
+    .filter((d: string) => d.includes('→') || d.includes(' -> '))
+    .map((d: string) => d.split(/→| -> /).slice(1).join(' '));
+  const vaCham = CHU_TRUU_TUONG.filter(([c]) =>
+    keDon.some((d) => boDau(d).includes(boDau(c)))
+  ).map(([c]) => c);
+  kiem('Chuẩn ngôn ngữ không kê đơn chữ mà chính nó cấm', vaCham.length === 0, vaCham);
+
   const khongBat = (van: string, vi: string) => {
     const kq = soatNgonNgu(van, [van]);
     kiem(vi, kq.dat && kq.loi.length === 0, kq.loi.map((l) => l.ma));

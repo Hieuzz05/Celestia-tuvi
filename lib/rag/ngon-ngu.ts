@@ -1,6 +1,7 @@
 import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
 import { BAC_CHAC_CHAN, mucNguYCuaCum } from './hinh-dang-tra-loi';
 import type { MucChacChan } from './uu-tien-nguon';
+import { demChuTruuTuong } from './chu-truu-tuong';
 import { boDau, tenBiaChan } from './thuc-the';
 
 /**
@@ -17,7 +18,7 @@ import { boDau, tenBiaChan } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.5';
+export const PHIEN_BAN_NGON_NGU = '2026.09.6';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -245,6 +246,17 @@ function dem(cum: Set<string>, canTim: string[]): string[] {
 const PHU_DINH = [
   'khong phai', 'chua chac', 'khong han', 'chua han', 'khong the noi',
   'dieu gi', 'chuyen gi', 'lieu',
+  /*
+   * "không có nghĩa" — thêm sau khi cổng chặn chính CÂU MIỄN TRỪ của sản phẩm.
+   *
+   * Câu ấy đổi từ "không phải một sự việc chắc chắn sẽ xảy ra" sang "không có
+   * nghĩa một sự việc cụ thể chắc chắn sẽ xảy ra". Nghĩa y hệt, nhưng chữ phủ
+   * định mới không nằm trong bảng, nên cổng đọc phần đuôi như một lời hứa và
+   * chặn. Ba lần trong dự án này cổng đã bắt nhầm đúng câu làm sản phẩm an
+   * toàn hơn — và bắt nhầm kiểu ấy đẩy người sửa đi GỠ lời miễn trừ cho máy
+   * hài lòng.
+   */
+  'khong co nghia', 'khong dong nghia', 'khong hua',
 ];
 
 /**
@@ -447,6 +459,28 @@ export function soatNgonNgu(
    * chuyên môn thì càng dễ tin. Chữ dở sửa được ở lượt sau; một người mang cái
    * tên ấy đi hỏi thầy thì không sửa được nữa.
    */
+  /*
+   * CHỮ TRỪU TƯỢNG — cảnh báo, không chặn.
+   *
+   * Chặn thì một chữ "năng lực" đủ vứt cả bài, đúng cái tỉ lệ trừng phạt đã
+   * sai ba lần trong dự án này. Nhưng phải ĐẾM được: bản đọc sâu đo trên một
+   * bài 11.767 từ thấy riêng bốn chữ "nền", "năng lực", "nhịp", "cấu trúc" đã
+   * hơn một trăm lần, mà không lớp nào báo gì — vì chưa có lớp nào đếm.
+   */
+  const truu = demChuTruuTuong(van);
+  const soTruu = truu.reduce((a, [, d]) => a + d, 0);
+  if (soTruu) {
+    loi.push({
+      ma: 'chu-truu-tuong',
+      mucDo: 'canh-bao',
+      moTa: 'Dùng chữ trừu tượng người đọc không hình dung ra được.',
+      viDu: truu
+        .slice(0, 6)
+        .map(([c, d]) => `${c}:${d}`)
+        .join(', '),
+    });
+  }
+
   const bia = tenBiaChan(van);
   if (bia.length) {
     loi.push({
