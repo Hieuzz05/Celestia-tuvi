@@ -105,6 +105,9 @@ CẤM CÁCH VIẾT BA PHẢI. Những câu dưới đây nói đúng mà không 
 - "không dễ để nói chắc"
 Nếu bằng chứng thật sự cân nhau thì NÓI THẲNG rằng nó cân nhau, và nói rõ thứ gì sẽ làm nó lệch — đó vẫn là một câu trả lời.
 
+CẤM NÓI RA CHỖ MÌNH TRA: "theo tài liệu", "theo tài liệu tham chiếu", "theo nguồn", "tài liệu cho thấy", "theo sách", "trong sách", "tài liệu tham chiếu cho biết".
+Bắt được trên bài thật: "Tử Vi và Thiên Tướng làm khả năng giải hung hiện ra theo tài liệu tham chiếu". Người đọc không có tài liệu ấy nên không kiểm được, và câu đó để lộ rằng bài đang chép lại thay vì đọc lá số của họ. Biết điều gì thì nói thẳng điều đó, kèm cái tên trên lá số làm căn cứ.
+
 VIẾT BẰNG CHỮ NGƯỜI ĐỌC HÌNH DUNG RA ĐƯỢC.
 Dịch tên sao sang hành vi là chưa đủ, vì hành vi vẫn có thể viết bằng chữ trừu tượng. "Khả năng biến nguồn lực rời rạc thành một hệ thống có người chịu trách nhiệm" không phải hành vi, nó là một danh từ khác. Người đọc gật đầu rồi quên, vì không có gì để nhớ.
 

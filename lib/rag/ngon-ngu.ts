@@ -257,6 +257,14 @@ const PHU_DINH = [
    * hài lòng.
    */
   'khong co nghia', 'khong dong nghia', 'khong hua',
+  /*
+   * "chưa có đủ căn cứ" — cùng một hố, bắt được trên bài dài thật.
+   *
+   * Câu bị chặn: "Celes chưa có đủ căn cứ để nói cụ thể sự việc nào sẽ xảy
+   * ra." Đó là câu sản phẩm TỰ NHẬN giới hạn của mình, tức là đúng thứ chuẩn
+   * ngôn ngữ đòi phải có. Cổng đọc mỗi đuôi "sẽ xảy ra" rồi gọi nó là lời hứa.
+   */
+  'chua co du can cu', 'chua du can cu', 'khong the noi truoc',
 ];
 
 /**

@@ -178,58 +178,128 @@ const NET_EN: Record<string, NetSao> = {
   'Tử Vi': {
     manh: 'you tend to end up as the one who has to decide, even when you never asked for it',
     can: 'enough room to arrange things your own way',
+    manhCau:
+      'You often end up the one who has to decide, even when you never asked for it.',
+    canCau:
+      'You need enough room to arrange things your own way. Being managed too closely is what drains you fastest.',
+    tieuDeCan: 'What lets you work at your best',
   },
   'Thiên Cơ': {
     manh: 'you think fast, enjoy untangling problems, and often see a route others have not spotted',
     can: 'work that keeps changing so you do not go stale, and someone who hears your reasoning out',
+    manhCau:
+      'You think fast, enjoy untangling problems, and often see a route others have not spotted.',
+    canCau:
+      'You need work that keeps changing so you do not go stale. You also need someone who hears your reasoning out before deciding.',
+    tieuDeCan: 'What keeps you interested',
   },
   'Thái Dương': {
     manh: 'you easily become the one pulling the group along, giving first and counting your share later',
     can: 'to be acknowledged plainly, because you rarely claim credit for yourself',
+    manhCau:
+      'You usually take the lead and help the whole group move forward, giving before you count your own share.',
+    canCau:
+      'You need your contribution named plainly, because you rarely bring up your own effort or ask for credit.',
+    tieuDeCan: 'What makes you feel valued',
   },
   'Vũ Khúc': {
     manh: 'you get things actually done, decide cleanly, and measure everything by concrete results',
     can: 'a clear target and real authority over resources, instead of having to please everyone',
+    manhCau:
+      'You decide cleanly and measure everything by concrete results rather than promises.',
+    canCau:
+      'You need a clear target and real say over money and people. Having to please several sides at once is what wears you down.',
+    tieuDeCan: 'What helps you work effectively',
   },
   'Thiên Đồng': {
     manh: 'you are easy to be around, find your own enjoyment, and rarely push your stress onto others',
     can: 'just enough outside pressure, because you tend to postpone whatever has no deadline',
+    manhCau:
+      'You are easy to be around, find your own enjoyment, and rarely push your stress onto others.',
+    canCau:
+      'You get going more easily with a clear deadline or a little push from outside. Without a fixed date, you tend to leave things for later.',
+    tieuDeCan: 'What makes things easier for you',
   },
   'Liêm Trinh': {
     manh: 'you hold a firm set of personal principles and keep to them even when it costs you',
     can: 'a fair environment, because you react strongly when the rules get bent',
+    manhCau:
+      'You hold a firm set of personal principles and keep to them even when it costs you.',
+    canCau:
+      'You need a fair environment. When the rules get bent you find it hard to look away, even when it is not your business.',
+    tieuDeCan: 'What lets you commit for the long run',
   },
   'Thiên Phủ': {
     manh: 'you keep a group steady and become the person others come to when things get messy',
     can: 'a baseline of security, so you can afford to try the riskier thing',
+    manhCau:
+      'You keep a group steady and are usually the person others come to when things get messy.',
+    canCau:
+      'You need a sense of safety before you are ready to try something new or take a risk. Knowing you have something to fall back on makes you surer of your choices.',
+    tieuDeCan: 'What helps you move forward with confidence',
   },
   'Thái Âm': {
     manh: 'you notice a lot, remember detail, and look after people without making noise about it',
     can: 'time alone to refill, and someone who asks after you first',
+    manhCau:
+      'You notice a lot, remember detail, and look after people quietly, without saying so.',
+    canCau:
+      'You need time alone to refill. You also hope someone asks after you first, rather than having to raise it yourself.',
+    tieuDeCan: 'What helps you get your energy back',
   },
   'Tham Lang': {
     manh: 'you pick up new things eagerly, connect widely, and adapt very quickly',
     can: 'variety — but also one centre of gravity so you do not spread too thin',
+    manhCau:
+      'You pick up new things eagerly, connect widely, and adapt to new settings very quickly.',
+    canCau:
+      'You need variety so you do not feel boxed in. But you also need one centre of gravity, or things spread thin and go nowhere.',
+    tieuDeCan: 'What helps you go the distance',
   },
   'Cự Môn': {
     manh: 'what you say carries weight, and you tend to ask the question everyone else avoids',
     can: 'to be able to say things straight, because holding it in is what wears you down',
+    manhCau:
+      'What you say carries weight, and you tend to ask the question everyone else avoids.',
+    canCau:
+      'You need to be able to say what you think, because holding it in too long is what wears you down.',
+    tieuDeCan: 'What takes the weight off you',
   },
   'Thiên Tướng': {
     manh: 'you are dependable, you keep your word, and you often end up mediating',
     can: 'to know clearly which side you are on, because ambiguity sits badly with you',
+    manhCau:
+      'You are dependable, you keep your word, and you often end up mediating when there is friction.',
+    canCau:
+      'You need to know clearly which side you are on. Sitting in ambiguity too long is what unsettles you most.',
+    tieuDeCan: 'What keeps you at ease',
   },
   'Thiên Lương': {
     manh: 'you stay level when things get tangled and often become the steady one for those younger',
     can: 'meaning in the work itself — a well-paid but hollow role will not hold you long',
+    manhCau:
+      'When things get tangled you stay level and help everyone find a way through. You are also the person younger people come to for advice or a hand.',
+    canCau:
+      'You need to see the point of what you are doing. A well-paid but hollow role will not hold you for long.',
+    tieuDeCan: 'What keeps you committed to your work',
   },
   'Thất Sát': {
     manh: 'you decide quickly, carry the consequences, and are not afraid to start over',
     can: 'a fight worth having, because things that are too smooth drain your drive',
+    manhCau:
+      'You decide quickly, carry the consequences, and are not afraid to start over.',
+    canCau:
+      'You need a target hard enough and worth enough to see through. Things that run too smoothly drain your drive.',
+    tieuDeCan: 'What keeps your drive up',
   },
   'Phá Quân': {
     manh: 'you are willing to tear down the old arrangement and rebuild it the way you believe in',
     can: 'people who trust you mid-way through, because that is when you are most easily misread',
+    manhCau:
+      'When an approach stops convincing you, you are willing to start again rather than keep it out of habit.',
+    canCau:
+      'You need people who trust you mid-way through, because that is when you are most easily misread.',
+    tieuDeCan: 'What carries you through a hard stretch',
   },
 };
 
@@ -250,18 +320,18 @@ const CHU_DE_VI: Record<string, string> = {
 };
 
 const CHU_DE_EN: Record<string, string> = {
-  Mệnh: 'how you see yourself and how you want to be seen',
+  Mệnh: 'understanding yourself, how you want to live, and how you want to be seen',
   'Phụ Mẫu': 'the generation above you and the people who shaped you',
-  'Phúc Đức': 'inner ease, and what you consider worth it',
-  'Điền Trạch': 'home, workplace, and whatever forms your long-term footing',
+  'Phúc Đức': 'inner quiet and what genuinely matters to you',
+  'Điền Trạch': 'home, workplace, and building a settled life for the long run',
   'Quan Lộc': 'work, the role you hold, and where it is heading',
   'Nô Bộc': 'friends, colleagues, and the circle around you',
-  'Thiên Di': 'going out into the world, moving, and what arrives from outside',
+  'Thiên Di': 'going out, travelling, and the chances that arrive from outside',
   'Tật Ách': 'health, daily rhythm, and what quietly wears you down',
-  'Tài Bạch': 'money, and how you build stability',
-  'Tử Tức': 'children, what comes after you, and what you build to hand on',
-  'Phu Thê': 'partnership, and how you are alongside another person',
-  'Huynh Đệ': 'siblings and the peers walking beside you',
+  'Tài Bạch': 'money and how you build steadiness for yourself',
+  'Tử Tức': 'children, the generation after you, or what you want to keep and hand on',
+  'Phu Thê': 'your relationship and how you build it with a partner',
+  'Huynh Đệ': 'siblings, people your own age, or those walking a stretch of road with you',
 };
 
 const DO_SANG_VI: Record<string, string> = {
@@ -932,30 +1002,38 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     netTrangSinh: TRANG_SINH_EN,
     chuDeCung: CHU_DE_EN,
     doSang: DO_SANG_EN,
-    noiVaiVe: ', ',
-    noiVeCuoi: ' — and at the same time ',
-    noiVeCuoiKhongGach: '; and at the same time ',
+    netLaCau: true,
+    noiVaiVe: ' ',
+    noiVeCuoi: ' ',
+    noiVeCuoiKhongGach: ' ',
     diemNoiBat: {
       nhom: 'What stands out',
-      tieuDe: 'What you tend to do better than most',
-      tieuDeTrong: 'You don’t fit one mould',
+      tieuDe: 'What you are good at',
+      tieuDeTrong: 'You adapt to wherever you are',
       trong:
-        'No major star sits in your Self house, so your character is drawn from the house opposite. Charts like this usually make you more adaptable — and also more likely to feel like a different person depending on where you are.',
+        'No major star sits in your Self house — a chart without a governing star. Reading it means looking at the stars in the house opposite to understand your character. Read that way, you adapt easily to circumstances and show different sides of yourself in different settings.',
     },
     dieuThuongCan: {
       nhom: 'What you tend to need',
-      tieuDe: 'Where you feel short, even when things are fine',
-      mo: 'You tend to need {net}.',
-      moTrong:
-        'Most of your energy goes toward {chuDe} — usually the place you invest in most without weighing the cost.',
-      dong: ' Most of your energy goes toward {chuDe}.',
+      tieuDe: 'What makes things easier for you',
+      mo: '{net}',
+      /*
+       * "— that is where…" chứ không phải "… is where…".
+       *
+       * Chủ đề cung khi thì số ít ("money and how you build steadiness"), khi
+       * thì số nhiều ("work, the role you hold, and where it is heading"). Một
+       * khuôn dùng thẳng động từ to be sẽ sai hợp số ở đúng một nửa số lá số.
+       */
+      moTrong: '{chuDe} — that is where most of your care goes.',
+      dong: ' {chuDe} — that is where most of your care goes.',
     },
     giaiDoan: {
       nhom: 'This season',
-      tieuDe: 'What {nam} is pushing to the front',
-      daiVan: 'You are in a longer stretch whose centre of gravity leans toward {chuDe}.',
-      nam: 'In {nam} specifically, the theme most likely to surface is {chuDe}.',
-      nhacXuHuong: 'This is where the season leans, not something certain to happen.',
+      tieuDe: 'Worth noticing in {nam}',
+      daiVan: 'In this stretch, you are paying more attention to {chuDe}.',
+      nam: 'In {nam} specifically, your attention may turn more toward {chuDe}.',
+      nhacXuHuong:
+        'These are themes you may care about more; it does not mean any particular thing will happen.',
     },
     linhVuc: {
       congViecNhom: 'About work',
