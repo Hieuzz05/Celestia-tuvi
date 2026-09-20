@@ -9,6 +9,7 @@ import { sinhNhipHanhTrinh, type NhipHanhTrinh } from '@/lib/rag/be-mat-ngan';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
+import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 
 /**
  * Luận hạn chi tiết cho một quãng / năm / tháng.
@@ -76,12 +77,13 @@ export async function POST(req: Request) {
    * Không có nó thì trang vẫn đủ dùng — các lớp tất định bên dưới vẫn nguyên.
    */
   const giaiDoan = cungDaiVan(laSo, tuoiAmTaiNam(laSo, namXem));
-  const khoaKy =
+  const khoaKy = kyCoPhienBan(
     cap === 'giai-doan'
       ? `giai-doan:${giaiDoan?.daiVan?.tuTuoi ?? '?'}-${giaiDoan?.daiVan?.denTuoi ?? '?'}`
       : cap === 'nam'
         ? `nam:${namXem}`
-        : `thang:${namXem}-${String(thangXem).padStart(2, '0')}`;
+        : `thang:${namXem}-${String(thangXem).padStart(2, '0')}`
+  );
 
   const ai = day
     ? await layHoacSinh<NhipHanhTrinh>(

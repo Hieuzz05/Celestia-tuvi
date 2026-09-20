@@ -7,6 +7,7 @@ import { cungDaiVan, lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
 import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
 import type { NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
+import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 
 /**
  * "Điều đang chuyển động" — phần chữ của Hành trình, do model viết.
@@ -75,12 +76,13 @@ export async function POST(req: Request) {
    * là mười bài nói về cùng một thứ.
    */
   const giaiDoan = cungDaiVan(laSo, tuoiAmTaiNam(laSo, namXem));
-  const khoaKy =
+  const khoaKy = kyCoPhienBan(
     cap === 'giai-doan'
       ? `giai-doan:${giaiDoan?.daiVan?.tuTuoi ?? '?'}-${giaiDoan?.daiVan?.denTuoi ?? '?'}`
       : cap === 'nam'
         ? `nam:${namXem}`
-        : `thang:${namXem}-${String(thangXem).padStart(2, '0')}`;
+        : `thang:${namXem}-${String(thangXem).padStart(2, '0')}`
+  );
 
   const ra = await layHoacSinh<NhipHanhTrinh>(
     { chartHash: bamLaSo(ngay, thang, nam, gio, gioiTinh), beMat: 'nhip-hien-tai', khoaKy, ngonNgu },

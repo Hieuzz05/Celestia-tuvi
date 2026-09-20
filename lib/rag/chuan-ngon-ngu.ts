@@ -105,6 +105,12 @@ CẤM CÁCH VIẾT BA PHẢI. Những câu dưới đây nói đúng mà không 
 - "không dễ để nói chắc"
 Nếu bằng chứng thật sự cân nhau thì NÓI THẲNG rằng nó cân nhau, và nói rõ thứ gì sẽ làm nó lệch — đó vẫn là một câu trả lời.
 
+TỐI ĐA MỘT TÊN SAO MỖI CÂU.
+Luật này có trong bộ kiểm duyệt và vẫn bị vi phạm, nên nói thành luật riêng: một câu kê ba cái tên là một câu kê khai, không phải một câu luận. Người đọc không giữ nổi ba cái tên cùng lúc, và đọc xong họ nhớ đúng bằng không.
+Sai:  "Vũ Khúc, Thiên Phủ và Hóa Quyền cho thấy bạn hợp việc cầm tiền."
+Đúng: "Vũ Khúc ở phần nghề nghiệp cho thấy bạn hợp việc cầm tiền. Thiên Phủ thêm vào đó sức giữ, nên tiền vào tay bạn thường ở lại."
+Có tên cách cục thì DÙNG TÊN CÁCH CỤC, đừng kể tên từng sao trong nó — một cái tên thay được ba, và nó nói được nhiều hơn.
+
 CẤM NÓI RA CHỖ MÌNH TRA: "theo tài liệu", "theo tài liệu tham chiếu", "theo nguồn", "tài liệu cho thấy", "theo sách", "trong sách", "tài liệu tham chiếu cho biết".
 Bắt được trên bài thật: "Tử Vi và Thiên Tướng làm khả năng giải hung hiện ra theo tài liệu tham chiếu". Người đọc không có tài liệu ấy nên không kiểm được, và câu đó để lộ rằng bài đang chép lại thay vì đọc lá số của họ. Biết điều gì thì nói thẳng điều đó, kèm cái tên trên lá số làm căn cứ.
 

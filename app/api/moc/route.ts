@@ -8,6 +8,7 @@ import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { CHI, CHINH_TINH } from '@/lib/tuvi/constants';
 import { cacGiaiDoan, cacNam, cacThang, type MocHanhTrinh } from '@/lib/tuvi/hanh-trinh';
 import { KHUON, type NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
+import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 
 /**
  * Chữ cho các mốc trên dòng thời gian, sinh theo NHÓM chứ không theo từng mốc.
@@ -102,12 +103,13 @@ export async function POST(req: Request) {
    * Giai đoạn không phụ thuộc năm đang xem — các quãng mười năm của một lá số là
    * cố định cả đời — nên khoá là 'tat-ca' và sinh đúng một lần cho mỗi lá số.
    */
-  const khoaKy =
+  const khoaKy = kyCoPhienBan(
     loai === 'giai-doan'
       ? 'tat-ca'
       : loai === 'nam'
         ? `cua-so:${danhSach[0]?.nhan ?? namXem}-${danhSach[danhSach.length - 1]?.nhan ?? namXem}`
-        : `nam:${namXem}`;
+        : `nam:${namXem}`
+  );
 
   const beMat = loai === 'giai-doan' ? 'moc-giai-doan' : loai === 'nam' ? 'moc-nam' : 'moc-thang';
 

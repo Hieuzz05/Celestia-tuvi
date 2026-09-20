@@ -209,10 +209,12 @@ async function ketLuanBaiTongQuan(chartHash: string | undefined, namXem: number)
   if (!chartHash) return [];
   try {
     const { docNoiDung } = await import('./noi-dung-ai');
+    const { khoaBangLinhVuc } = await import('./phien-ban-chu');
+    const { PHIEN_BAN_BANG_LINH_VUC } = await import('./bang-linh-vuc');
     const ban = await docNoiDung<{ id: string; ketLuan: string }[]>({
       chartHash,
       beMat: 'bang-linh-vuc',
-      khoaKy: `nam:${namXem}`,
+      khoaKy: khoaBangLinhVuc(namXem, PHIEN_BAN_BANG_LINH_VUC),
       ngonNgu: 'vi',
     });
     if (!ban) return [];

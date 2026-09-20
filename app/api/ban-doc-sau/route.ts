@@ -14,6 +14,7 @@ import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { THU_TU_CHANG, type ChangId } from '@/lib/tuvi/chang-cung';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 import {
   chotBaiSau,
   datChoBaiSau,
@@ -102,7 +103,7 @@ export async function POST(req: Request) {
   const khoa = {
     chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
     beMat: 'ban-doc-sau' as const,
-    khoaKy: `nam:${namXem}|chang:${chang}|v:${PHIEN_BAN_BAN_DOC_SAU}`,
+    khoaKy: kyCoPhienBan(`nam:${namXem}|chang:${chang}|s:${PHIEN_BAN_BAN_DOC_SAU}`),
     ngonNgu: 'vi',
   };
 
@@ -141,7 +142,7 @@ export async function POST(req: Request) {
       for (const truoc of THU_TU_CHANG.slice(0, THU_TU_CHANG.indexOf(chang))) {
         const cu = await docNoiDung<ChangSau>({
           ...khoa,
-          khoaKy: `nam:${namXem}|chang:${truoc}|v:${PHIEN_BAN_BAN_DOC_SAU}`,
+          khoaKy: kyCoPhienBan(`nam:${namXem}|chang:${truoc}|s:${PHIEN_BAN_BAN_DOC_SAU}`),
         });
         if (cu?.noiDung) daNoiTruoc.push(...tomTatChang(cu.noiDung));
       }

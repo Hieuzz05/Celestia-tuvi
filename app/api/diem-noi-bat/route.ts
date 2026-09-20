@@ -5,6 +5,7 @@ import { kyTheoNgay, layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 
 /**
  * Điểm nổi bật của hôm nay — một thẻ, sinh một lần mỗi ngày cho mỗi lá số.
@@ -58,7 +59,8 @@ export async function POST(req: Request) {
     {
       chartHash: bamLaSo(ngay, thang, nam, gio, gioiTinh),
       beMat: 'diem-noi-bat',
-      khoaKy: kyTheoNgay(),
+      // Khoá theo ngày TỰ hết hạn, nhưng bản sửa prompt không nên chờ hết ngày
+      khoaKy: kyCoPhienBan(kyTheoNgay()),
       ngonNgu,
     },
     async () => {

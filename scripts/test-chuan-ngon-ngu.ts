@@ -9,6 +9,7 @@
  * đọc liền tám khối.
  */
 
+import { readdirSync, readFileSync } from 'node:fs';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { docNhanh } from '../lib/tuvi/quick-read';
 import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
@@ -174,6 +175,30 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
     keDon.some((d) => boDau(d).includes(boDau(c)))
   ).map(([c]) => c);
   kiem('Chuẩn ngôn ngữ không kê đơn chữ mà chính nó cấm', vaCham.length === 0, vaCham);
+
+  /*
+   * MỌI KHOÁ ĐỆM PHẢI MANG PHIÊN BẢN CHỮ.
+   *
+   * Quét mã nguồn chứ không chạy thử, vì thứ cần chặn là một dòng ai đó viết
+   * SAU NÀY. Đếm được lúc thêm phép kiểm này: chỉ 2 trên 7 bề mặt có phiên bản
+   * prompt trong khoá, nên tám lần bump phiên bản trong một phiên làm việc
+   * không tới được người dùng nào đang có đệm.
+   *
+   * Hỏng kiểu này im lặng tuyệt đối: đệm trả về bài cũ, và bài cũ vẫn là một
+   * bài hợp lệ. Không có lỗi nào để thấy.
+   */
+  const thieuPhienBan: string[] = [];
+  for (const f of readdirSync('app/api', { recursive: true, encoding: 'utf-8' })) {
+    if (!String(f).endsWith('route.ts')) continue;
+    const ma = readFileSync(`app/api/${f}`, 'utf-8');
+    for (const d of ma.split('\n')) {
+      if (!/khoaKy\s*[:=]/.test(d)) continue;
+      if (d.includes('kyCoPhienBan') || d.includes('khoaBangLinhVuc')) continue;
+      if (/khoaKy,\s*$/.test(d.trim())) continue; // chỉ truyền biến đã dựng ở trên
+      thieuPhienBan.push(`${f}: ${d.trim().slice(0, 70)}`);
+    }
+  }
+  kiem('Mọi khoá đệm đi qua hàm gắn phiên bản chữ', thieuPhienBan.length === 0, thieuPhienBan);
 
   const khongBat = (van: string, vi: string) => {
     const kq = soatNgonNgu(van, [van]);
