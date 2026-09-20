@@ -13,68 +13,164 @@
 export type NgonNguDoc = 'vi' | 'en';
 
 export interface NetSao {
-  /** Điều người này thường làm tốt */
+  /**
+   * Điều người này thường làm tốt, dạng MẢNH CÂU.
+   *
+   * Mảnh vì bốn bề mặt luận giải khác nhét nó vào GIỮA một câu của chúng:
+   * hanh-trinh cắt chủ ngữ rồi ghép vào khuôn, luan-han bọc nó trong câu "sao
+   * X tại cung Y", luan-giai-sau và nghieng-ve cũng vậy. Đổi mảnh này thành
+   * câu hoàn chỉnh là làm gãy cả bốn nơi ấy cùng lúc, và gãy im lặng.
+   */
   manh: string;
-  /** Điều người này thường cần để thấy đủ */
+  /** Điều người này thường cần để thấy đủ — cũng là mảnh câu */
   can: string;
+  /**
+   * Cùng ý với `manh`, nhưng viết thành CÂU HOÀN CHỈNH.
+   *
+   * Thẻ trên trang giới thiệu ghép hai ba nét của hai ba ngôi sao. Ghép mảnh
+   * thì phải có chỗ nối, và mọi chỗ nối đều lộ — bản cũ nối bằng "— đồng thời"
+   * và đọc lên như bị chắp, đúng chỗ chủ dự án chỉ ra. Câu hoàn chỉnh thì chỉ
+   * cần đặt cạnh nhau, không cần chỗ nối nào.
+   *
+   * Có, đây là hai bản của cùng một ý và chúng có thể lệch nhau theo thời
+   * gian. Đổi hết bốn bề mặt kia sang câu hoàn chỉnh là việc nên làm, nhưng là
+   * một việc riêng, có bộ đo riêng — không phải thứ gài kèm vào một lần sửa
+   * chữ cho trang giới thiệu.
+   */
+  manhCau?: string;
+  /** Cùng ý với `can`, dạng câu hoàn chỉnh — xem `manhCau` */
+  canCau?: string;
+  /**
+   * Tiêu đề thẻ "Điều bạn thường cần", lấy theo ngôi sao đứng đầu.
+   *
+   * Một tiêu đề cố định cho mọi lá số thì nói được rất ít: người cần được ghi
+   * nhận và người cần hạn chót không cần cùng một thứ. Tiêu đề đi theo nét thì
+   * người đọc biết ngay thẻ này nói về chuyện gì của riêng mình.
+   */
+  tieuDeCan?: string;
 }
 
 const NET_VI: Record<string, NetSao> = {
   'Tử Vi': {
     manh: 'bạn thường được đặt vào vị trí phải đứng ra quyết định, kể cả khi không chủ động nhận',
     can: 'một không gian đủ rộng để tự sắp xếp mọi thứ theo cách của mình',
+    manhCau:
+      'Bạn thường được đặt vào vị trí phải đứng ra quyết định, kể cả khi bạn không chủ động nhận việc đó.',
+    canCau:
+      'Bạn cần một khoảng đủ rộng để tự sắp xếp mọi việc theo cách của mình. Khi bị cầm tay chỉ việc quá sát, bạn dễ mất hứng.',
+    tieuDeCan: 'Điều giúp bạn làm việc thoải mái nhất',
   },
   'Thiên Cơ': {
     manh: 'bạn nghĩ nhanh, thích gỡ rối và hay thấy đường đi mà người khác chưa thấy',
     can: 'việc có thay đổi liên tục để không bị chán, và người chịu nghe hết lập luận của bạn',
+    manhCau: 'Bạn nghĩ nhanh, thích gỡ rối và thường nhìn ra hướng đi mà người khác chưa thấy.',
+    canCau:
+      'Bạn cần công việc có sự thay đổi để không thấy chán. Bạn cũng cần một người chịu nghe hết lập luận của mình trước khi kết luận.',
+    tieuDeCan: 'Điều giúp bạn giữ được hứng thú',
   },
   'Thái Dương': {
     manh: 'bạn dễ trở thành người kéo nhóm đi, cho đi trước rồi mới tính tới phần mình',
     can: 'được ghi nhận rõ ràng, vì bạn ít khi tự đòi phần công của mình',
+    manhCau:
+      'Bạn thường chủ động dẫn dắt nhóm và sẵn lòng giúp đỡ trước khi nghĩ đến phần mình.',
+    canCau:
+      'Bạn cần những đóng góp của mình được nhìn nhận rõ ràng, bởi bạn ít khi chủ động nhắc đến công sức hoặc đòi hỏi sự ghi nhận.',
+    tieuDeCan: 'Điều giúp bạn cảm thấy được trân trọng',
   },
   'Vũ Khúc': {
     manh: 'bạn làm thật, dứt khoát, và đo mọi thứ bằng kết quả cụ thể',
     can: 'mục tiêu rõ ràng và quyền tự quyết về nguồn lực, thay vì phải chiều lòng nhiều bên',
+    manhCau: 'Bạn làm việc dứt khoát và đo mọi thứ bằng kết quả cụ thể chứ không bằng lời hứa.',
+    canCau:
+      'Bạn cần mục tiêu rõ ràng và được tự quyết về tiền bạc, con người. Phải chiều lòng nhiều bên cùng lúc là điều khiến bạn nản nhất.',
+    tieuDeCan: 'Điều giúp bạn làm việc hiệu quả hơn',
   },
   'Thiên Đồng': {
     manh: 'bạn dễ chịu, biết tự tìm niềm vui và ít khi đẩy căng thẳng lên người khác',
     can: 'một áp lực vừa đủ từ bên ngoài, vì bạn thường hoãn việc khi không có hạn chót',
+    manhCau:
+      'Bạn dễ chịu, biết tự tìm niềm vui và ít khi đẩy căng thẳng của mình sang người khác.',
+    canCau:
+      'Bạn làm việc dễ vào guồng hơn khi có thời hạn rõ ràng hoặc một chút thúc đẩy từ bên ngoài. Nếu không có mốc cụ thể, bạn dễ để việc lại sau.',
+    tieuDeCan: 'Điều giúp bạn cảm thấy thoải mái hơn',
   },
   'Liêm Trinh': {
     manh: 'bạn có nguyên tắc riêng khá chắc và giữ được nó ngay cả khi bất lợi',
     can: 'môi trường công bằng, vì bạn phản ứng mạnh khi thấy luật chơi bị bẻ cong',
+    manhCau:
+      'Bạn có nguyên tắc riêng khá chắc và giữ được nó ngay cả khi điều đó gây bất lợi cho mình.',
+    canCau:
+      'Bạn cần một môi trường công bằng. Khi thấy luật chơi bị bẻ cong, bạn khó làm ngơ dù việc đó không liên quan trực tiếp đến mình.',
+    tieuDeCan: 'Điều giúp bạn yên tâm gắn bó lâu dài',
   },
   'Thiên Phủ': {
     manh: 'bạn giữ được sự ổn định cho cả nhóm và là chỗ người khác tìm đến khi rối',
     can: 'sự an toàn ở mức nền, để dám thử những thứ rủi ro hơn',
+    manhCau:
+      'Bạn giữ được sự ổn định cho cả nhóm và thường là người được tìm đến khi mọi thứ rối lên.',
+    canCau:
+      'Bạn thường cần cảm giác an toàn và ổn định trước khi sẵn sàng thử điều mới hoặc chấp nhận rủi ro. Khi biết mình có điều để dựa vào, bạn sẽ yên tâm hơn với lựa chọn của mình.',
+    tieuDeCan: 'Điều giúp bạn tự tin bước tiếp',
   },
   'Thái Âm': {
     manh: 'bạn tinh ý, nhớ chi tiết và chăm sóc người khác theo cách không ồn ào',
     can: 'thời gian ở một mình để nạp lại, và người chủ động hỏi han bạn trước',
+    manhCau:
+      'Bạn tinh ý, nhớ chi tiết và chăm sóc người khác theo cách lặng lẽ, ít khi nói ra.',
+    canCau:
+      'Bạn cần thời gian ở một mình để lấy lại sức. Bạn cũng mong có người chủ động hỏi han mình trước, thay vì phải tự lên tiếng.',
+    tieuDeCan: 'Điều giúp bạn lấy lại năng lượng',
   },
   'Tham Lang': {
     manh: 'bạn ham học cái mới, giao tiếp rộng và thích nghi rất nhanh',
     can: 'sự đa dạng, nhưng cũng cần một trọng tâm để không dàn trải',
+    manhCau: 'Bạn ham học cái mới, giao tiếp rộng và thích nghi với hoàn cảnh mới rất nhanh.',
+    canCau:
+      'Bạn cần sự đa dạng để không thấy tù túng. Nhưng bạn cũng cần một trọng tâm, nếu không mọi thứ dễ dàn trải mà không đi tới đâu.',
+    tieuDeCan: 'Điều giúp bạn đi được đường dài',
   },
   'Cự Môn': {
     manh: 'bạn nói có sức nặng, hay đặt đúng câu hỏi mà người khác né',
     can: 'được nói thẳng, vì phải giữ trong lòng lâu là thứ làm bạn mệt nhất',
+    manhCau: 'Bạn nói có sức nặng và thường đặt đúng câu hỏi mà người khác né tránh.',
+    canCau:
+      'Bạn cần được nói ra suy nghĩ của mình, vì giữ trong lòng quá lâu thường khiến bạn mệt mỏi.',
+    tieuDeCan: 'Điều giúp bạn thấy nhẹ lòng hơn',
   },
   'Thiên Tướng': {
     manh: 'bạn đáng tin, giữ lời và thường là người đứng giữa hoà giải',
     can: 'biết rõ mình đang đứng về phía nào, vì bạn khó chịu khi phải mập mờ',
+    manhCau:
+      'Bạn đáng tin, giữ lời và thường là người đứng giữa để hoà giải khi có mâu thuẫn.',
+    canCau:
+      'Bạn cần biết rõ mình đang đứng về phía nào. Ở trong thế mập mờ quá lâu là điều khiến bạn khó chịu nhất.',
+    tieuDeCan: 'Điều giúp bạn giữ được sự thoải mái',
   },
   'Thiên Lương': {
     manh: 'bạn điềm tĩnh khi việc rối và hay là chỗ dựa cho người trẻ hơn',
     can: 'ý nghĩa trong việc đang làm, vì lương cao mà rỗng thì bạn không trụ lâu',
+    manhCau:
+      'Khi mọi việc trở nên rối ren, bạn vẫn giữ được bình tĩnh để cùng mọi người tìm cách giải quyết. Bạn cũng thường là người mà những người trẻ hơn tìm đến để xin lời khuyên hoặc nhờ hỗ trợ.',
+    canCau:
+      'Bạn cần thấy ý nghĩa trong việc mình đang làm. Một công việc trả lương cao nhưng trống rỗng thường không giữ được bạn lâu.',
+    tieuDeCan: 'Điều giúp bạn gắn bó với công việc',
   },
   'Thất Sát': {
     manh: 'bạn quyết nhanh, dám chịu và không ngại bắt đầu lại từ đầu',
     can: 'một mục tiêu đủ khó và đủ có ý nghĩa để theo đến cùng, vì việc quá êm làm bạn mất lửa',
+    manhCau: 'Bạn quyết nhanh, dám chịu trách nhiệm và không ngại bắt đầu lại từ đầu.',
+    canCau:
+      'Bạn cần một mục tiêu đủ khó và đủ đáng để theo đến cùng. Việc quá êm đềm thường làm bạn mất dần động lực.',
+    tieuDeCan: 'Điều giúp bạn giữ được động lực',
   },
   'Phá Quân': {
     manh: 'khi một cách làm không còn thuyết phục, bạn khá sẵn sàng bắt đầu lại thay vì cố duy trì chỉ vì đã quen',
     can: 'người tin bạn ở giai đoạn dang dở, vì đó là lúc bạn dễ bị hiểu lầm nhất',
+    manhCau:
+      'Khi một cách làm không còn thuyết phục, bạn sẵn sàng bắt đầu lại thay vì giữ nó chỉ vì đã quen.',
+    canCau:
+      'Bạn cần người tin mình ở giai đoạn còn dang dở, vì đó là lúc bạn dễ bị hiểu lầm nhất.',
+    tieuDeCan: 'Điều giúp bạn đi qua giai đoạn khó',
   },
 };
 
@@ -139,18 +235,18 @@ const NET_EN: Record<string, NetSao> = {
 
 /** Nét chủ đạo của từng cung chức năng */
 const CHU_DE_VI: Record<string, string> = {
-  Mệnh: 'nhìn lại chính mình và cách bạn muốn được nhìn nhận',
+  Mệnh: 'việc hiểu chính mình, biết mình muốn sống ra sao và mong người khác nhìn nhận mình thế nào',
   'Phụ Mẫu': 'quan hệ với thế hệ trên và những người có ảnh hưởng tới bạn',
-  'Phúc Đức': 'sự yên trong lòng và điều bạn thấy là đáng',
-  'Điền Trạch': 'chỗ ở, nơi làm việc và những gì thuộc về nền tảng lâu dài',
-  'Quan Lộc': 'công việc, vai trò và hướng phát triển',
+  'Phúc Đức': 'sự bình yên trong lòng và những điều thực sự có ý nghĩa với mình',
+  'Điền Trạch': 'chỗ ở, nơi làm việc và việc xây dựng cuộc sống ổn định lâu dài',
+  'Quan Lộc': 'công việc, vai trò bạn đảm nhận và hướng phát triển lâu dài',
   'Nô Bộc': 'bạn bè, đồng nghiệp và những mối quan hệ quanh bạn',
-  'Thiên Di': 'việc ra ngoài, dịch chuyển và cơ hội đến từ bên ngoài',
-  'Tật Ách': 'sức khoẻ, nhịp sinh hoạt và những thứ bào mòn bạn âm thầm',
-  'Tài Bạch': 'tiền bạc và cách bạn tạo ra sự ổn định',
-  'Tử Tức': 'con cái, thế hệ sau và những gì bạn gây dựng rồi trao lại',
-  'Phu Thê': 'chuyện đôi lứa và cách bạn ở cạnh một người',
-  'Huynh Đệ': 'anh chị em và những người ngang hàng đi cùng bạn',
+  'Thiên Di': 'việc ra ngoài, đi lại và những cơ hội đến từ bên ngoài',
+  'Tật Ách': 'sức khoẻ, nhịp sinh hoạt và những thứ bào mòn bạn một cách âm thầm',
+  'Tài Bạch': 'tiền bạc và cách bạn tạo dựng sự ổn định cho mình',
+  'Tử Tức': 'con cái, thế hệ sau hoặc những thành quả bạn muốn gìn giữ và trao lại',
+  'Phu Thê': 'chuyện tình cảm và cách vun đắp mối quan hệ với người bạn đời',
+  'Huynh Đệ': 'anh chị em, bạn bè đồng trang lứa hoặc những người đang cùng bạn đi qua một chặng đường',
 };
 
 const CHU_DE_EN: Record<string, string> = {
@@ -195,6 +291,15 @@ export interface KhuonChu {
   netTrangSinh: Record<string, string>;
   chuDeCung: Record<string, string>;
   doSang: Record<string, string>;
+
+  /**
+   * Nét sao đã là CÂU HOÀN CHỈNH chưa.
+   *
+   * Tiếng Việt đã chuyển sang câu hoàn chỉnh; tiếng Anh còn là mảnh và vẫn nối
+   * theo lối cũ. Một cờ ở đây rẻ hơn nhiều so với việc dịch lại cả kho chữ chỉ
+   * để hai ngôn ngữ cùng dùng một lối ghép.
+   */
+  netLaCau?: boolean;
 
   noiVaiVe: string;
   noiVeCuoi: string;
@@ -488,30 +593,31 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     netTrangSinh: TRANG_SINH_VI,
     chuDeCung: CHU_DE_VI,
     doSang: DO_SANG_VI,
-    noiVaiVe: ', ',
-    noiVeCuoi: ' — đồng thời ',
-    noiVeCuoiKhongGach: '; đồng thời ',
+    netLaCau: true,
+    noiVaiVe: ' ',
+    noiVeCuoi: ' ',
+    noiVeCuoiKhongGach: ' ',
     diemNoiBat: {
       nhom: 'Điểm nổi bật',
-      tieuDe: 'Thứ bạn thường làm tốt hơn người khác',
-      tieuDeTrong: 'Bạn khó bị đóng khung',
+      tieuDe: 'Điểm mạnh của bạn',
+      tieuDeTrong: 'Bạn linh hoạt trong cách thể hiện bản thân',
       trong:
-        'Cung Mệnh của bạn không có chính tinh nào đóng, nên nét cá nhân được mượn từ cung đối diện. Kiểu lá số này thường khiến bạn linh hoạt hơn, nhưng cũng dễ thấy mình khác đi tuỳ môi trường đang ở.',
+        'Cung Mệnh của bạn không có chính tinh tọa thủ, còn gọi là Mệnh vô chính diệu. Khi luận giải, cần xét thêm các chính tinh ở cung đối diện để hiểu rõ hơn về tính cách. Theo cách đọc này, bạn có thể dễ thích nghi với hoàn cảnh và bộc lộ những nét khác nhau khi ở trong những môi trường khác nhau.',
     },
     dieuThuongCan: {
       nhom: 'Điều bạn thường cần',
-      tieuDe: 'Chỗ bạn thấy thiếu, kể cả khi mọi thứ đang ổn',
-      mo: 'Bạn thường cần {net}.',
-      moTrong:
-        'Phần lớn năng lượng của bạn dồn về {chuDe} — đó thường là nơi bạn đầu tư nhiều nhất mà không tính toán thiệt hơn.',
-      dong: ' Phần lớn năng lượng của bạn dồn về {chuDe}.',
+      tieuDe: 'Điều giúp bạn thấy dễ chịu hơn',
+      mo: '{net}',
+      moTrong: '{chuDe} là những điều bạn dành nhiều tâm sức.',
+      dong: ' {chuDe} là những điều bạn dành nhiều tâm sức.',
     },
     giaiDoan: {
       nhom: 'Giai đoạn hiện tại',
-      tieuDe: 'Thứ năm {nam} đang đẩy lên trước',
-      daiVan: 'Bạn đang ở trong một giai đoạn dài mà trọng tâm nghiêng về {chuDe}.',
-      nam: 'Riêng năm {nam}, chủ đề dễ nổi lên là {chuDe}.',
-      nhacXuHuong: 'Đây là xu hướng của giai đoạn, không phải một sự việc chắc chắn sẽ xảy ra.',
+      tieuDe: 'Điều đáng chú ý trong năm {nam}',
+      daiVan: 'Trong giai đoạn này, bạn quan tâm nhiều hơn đến {chuDe}.',
+      nam: 'Riêng năm {nam}, sự chú ý có thể hướng nhiều hơn đến {chuDe}.',
+      nhacXuHuong:
+        'Đây là những chủ đề có thể được bạn quan tâm hơn, không có nghĩa một sự việc cụ thể chắc chắn sẽ xảy ra.',
     },
     linhVuc: {
       congViecNhom: 'Về công việc',

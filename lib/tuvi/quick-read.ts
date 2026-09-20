@@ -56,6 +56,14 @@ function haiChinhTinhDau(cung: Cung) {
  * cùng một câu, đọc lên rất máy.
  */
 function noiLietKe(items: string[], k: KhuonChu, ngonNgu: NgonNguDoc) {
+  /*
+   * Nét đã là câu hoàn chỉnh thì chỉ việc đặt cạnh nhau.
+   *
+   * Không cắt chủ ngữ, không nối bằng gạch ngang, không thêm liên từ. Mọi thủ
+   * thuật bên dưới sinh ra để giấu chỗ nối giữa các MẢNH câu; khi không còn
+   * mảnh thì cũng không còn chỗ nối nào để giấu.
+   */
+  if (k.netLaCau) return items.join(' ');
   const boChuNgu = ngonNgu === 'vi' ? /^bạn\s+/ : /^you\s+/;
   const sach = items.map((v, i) => (i === 0 ? v : v.replace(boChuNgu, '')));
   if (sach.length <= 1) return sach[0] ?? '';
@@ -165,30 +173,48 @@ export function docNhanh(
   const ra: GocNhin[] = [];
 
   // --- 1. Điểm nổi bật: đọc từ chính tinh thủ Mệnh ---
+  // Thẻ dùng bản CÂU HOÀN CHỈNH; bề mặt nào chưa có thì rơi về bản mảnh
   const netManh = haiChinhTinhDau(cungMenh)
-    .map((s) => k.netSao[s.ten]?.manh)
+    .map((s) => k.netSao[s.ten]?.manhCau ?? k.netSao[s.ten]?.manh)
     .filter(Boolean) as string[];
   ra.push({
     id: 'diem-noi-bat',
     nhomChu: k.diemNoiBat.nhom,
     tieuDe: netManh.length ? k.diemNoiBat.tieuDe : k.diemNoiBat.tieuDeTrong,
-    noiDung: netManh.length ? `${capHoaDau(noiLietKe(netManh, k, ngonNgu))}.` : k.diemNoiBat.trong,
+    noiDung: netManh.length
+      ? k.netLaCau
+        ? noiLietKe(netManh, k, ngonNgu)
+        : `${capHoaDau(noiLietKe(netManh, k, ngonNgu))}.`
+      : k.diemNoiBat.trong,
     canCu: canCuCung(cungMenh, tenCung('Mệnh'), k),
   });
 
   // --- 2. Điều thường cần: đọc từ cung an Thân ---
   const netCan = haiChinhTinhDau(cungThan)
-    .map((s) => k.netSao[s.ten]?.can)
+    .map((s) => k.netSao[s.ten]?.canCau ?? k.netSao[s.ten]?.can)
     .filter(Boolean) as string[];
   const chuDeThan = k.chuDeCung[laSo.thanCuCung];
+  /*
+   * Tiêu đề thẻ lấy theo ngôi sao ĐẦU TIÊN có tiêu đề riêng.
+   *
+   * Một tiêu đề cố định cho mọi lá số nói được rất ít: người cần được ghi nhận
+   * và người cần một hạn chót không cần cùng một thứ. Lá số không có sao nào
+   * mang tiêu đề riêng thì rơi về câu chung, chứ không để trống.
+   */
+  const tieuDeCan =
+    haiChinhTinhDau(cungThan)
+      .map((sao) => k.netSao[sao.ten]?.tieuDeCan)
+      .find(Boolean) ?? k.dieuThuongCan.tieuDe;
+  // Chủ đề cung đứng đầu câu ở khuôn tiếng Việt, nên phải viết hoa chữ đầu
+  const chuDeThanHoa = chuDeThan && k.netLaCau ? capHoaDau(chuDeThan) : (chuDeThan ?? '');
   ra.push({
     id: 'dieu-thuong-can',
     nhomChu: k.dieuThuongCan.nhom,
-    tieuDe: k.dieuThuongCan.tieuDe,
+    tieuDe: tieuDeCan,
     noiDung: netCan.length
       ? dien(k.dieuThuongCan.mo, { net: noiLietKe(netCan, k, ngonNgu) }) +
-        (chuDeThan ? dien(k.dieuThuongCan.dong, { chuDe: chuDeThan }) : '')
-      : dien(k.dieuThuongCan.moTrong, { chuDe: chuDeThan ?? '' }),
+        (chuDeThan ? dien(k.dieuThuongCan.dong, { chuDe: chuDeThanHoa }) : '')
+      : dien(k.dieuThuongCan.moTrong, { chuDe: chuDeThanHoa }),
     canCu: [
       {
         nhan: dien(k.canCu.thanCu, { cung: tenCung(laSo.thanCuCung) }),
