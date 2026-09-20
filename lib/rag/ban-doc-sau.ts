@@ -148,12 +148,26 @@ interface ThoMuc {
  * chặng còn lại: mất một chặng còn hơn mất cả bài, và spec mục 7.4 nói rõ phần
  * nào hỏng thì ship phần còn lại chứ không bịa cho đủ.
  */
+/*
+ * KHÔNG CÓ `banKhoan` Ở ĐÂY, và đó là cố ý.
+ *
+ * Spec mục 10.18 muốn chương mở trả lời đúng điều người đọc đang bận tâm. Tham
+ * số `banKhoan` từng được khai báo sẵn cho việc ấy, nhưng nó chưa bao giờ vào
+ * prompt và chưa route nào truyền xuống — onboarding không hỏi câu đó, nên
+ * không có chỗ nào sinh ra dữ liệu để truyền.
+ *
+ * Một tham số đứng đó mà không làm gì tệ hơn là không có: người đọc mã thấy
+ * `dungChang({ banKhoan })` sẽ tin rằng bài đã đọc mối bận tâm ấy. Gỡ đi thì
+ * khoảng trống hiện ra đúng như nó vốn có.
+ *
+ * Muốn làm thật thì phải có trước một chỗ hỏi và lưu mối bận tâm — đó là việc
+ * của onboarding, không phải của tầng sinh bài.
+ */
 export async function dungChang(vao: {
   laSo: LaSo;
   chang: ChangId;
   namXem: number;
   thangXem: number;
-  banKhoan?: string;
   /**
    * Những gì các chặng TRƯỚC đã nói.
    *
@@ -670,7 +684,6 @@ export async function sinhBanDocSau(vao: {
   laSo: LaSo;
   namXem: number;
   thangXem: number;
-  banKhoan?: string;
   /** Gọi sau mỗi chặng, để lớp trên phát dần ra giao diện */
   khiXongChang?: (chang: ChangSau) => void;
 }): Promise<BaiDocSau | null> {
@@ -683,7 +696,6 @@ export async function sinhBanDocSau(vao: {
       chang: id,
       namXem: vao.namXem,
       thangXem: vao.thangXem,
-      banKhoan: vao.banKhoan,
       daNoiTruoc,
     });
     if (!c) continue;
