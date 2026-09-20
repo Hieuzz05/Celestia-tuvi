@@ -12,11 +12,12 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { docNhanh } from '../lib/tuvi/quick-read';
+import { KHUON } from '../lib/tuvi/quick-read-noi-dung';
 import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
 import { luanHan } from '../lib/tuvi/luan-han';
 import { CHUAN_NGON_NGU_CELES } from '../lib/rag/chuan-ngon-ngu';
-import { CHU_TRUU_TUONG } from '../lib/rag/chu-truu-tuong';
-import { boDau } from '../lib/rag/thuc-the';
+import { CHU_TRUU_TUONG, demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
+import { boDau, TU_DIEN_THUC_THE } from '../lib/rag/thuc-the';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
 const MAU: [number, number, number, number, 'nam' | 'nu'][] = [
@@ -187,6 +188,33 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
    * Hỏng kiểu này im lặng tuyệt đối: đệm trả về bài cũ, và bài cũ vẫn là một
    * bài hợp lệ. Không có lỗi nào để thấy.
    */
+  /*
+   * MỌI SAO TRONG TỪ ĐIỂN PHẢI CÓ NÉT ĐỜI SỐNG.
+   *
+   * Engine bỏ qua sao không có nét — luật đúng, vì đưa một cái tên không giải
+   * nghĩa được vào prompt là mở đường cho model tự nghĩ nghĩa. Nhưng hệ quả
+   * không ai thấy: sao CÓ trên lá số mà chưa bao giờ được đọc tới. Trước lần
+   * bổ sung này có 48 ngôi như vậy, trong đó cả mười hai sao vòng Thái Tuế —
+   * tức là nền của mọi câu luận theo năm đều trống.
+   *
+   * Không có phép đếm thì chuyện đó im lặng mãi: bài vẫn ra, vẫn đúng ngữ
+   * pháp, chỉ là mỏng hơn mức lá số cho phép.
+   */
+  const CHINH_TINH_TEN = new Set([
+    'Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ',
+    'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân',
+  ]);
+  const thieuNet = TU_DIEN_THUC_THE.filter(
+    (t) =>
+      t.loai === 'STAR' && !CHINH_TINH_TEN.has(t.ten) && !KHUON.vi.netPhuTinh[t.ten]
+  ).map((t) => t.ten);
+  kiem('Mọi phụ tinh đều có nét đời sống (tiếng Việt)', thieuNet.length === 0, thieuNet);
+
+  const netXau = Object.entries(KHUON.vi.netPhuTinh)
+    .filter(([, v]) => demChuTruuTuong(v).length)
+    .map(([k]) => k);
+  kiem('Nét phụ tinh không dùng chữ trừu tượng', netXau.length === 0, netXau);
+
   const thieuPhienBan: string[] = [];
   for (const f of readdirSync('app/api', { recursive: true, encoding: 'utf-8' })) {
     if (!String(f).endsWith('route.ts')) continue;

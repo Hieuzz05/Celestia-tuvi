@@ -585,6 +585,67 @@ const PHU_TINH_VI: Record<string, string> = {
   'Hóa Quyền': 'phần này bạn nắm được quyền quyết, đổi lại là gánh trách nhiệm nặng hơn',
   'Hóa Khoa': 'phần này được người ngoài công nhận, tiếng tốt đến trước kết quả',
   'Hóa Kỵ': 'phần này hay vướng và hay phải làm lại, nhưng cũng là chỗ bạn học được nhiều nhất',
+
+  /*
+   * BỔ SUNG 20/09/2026 — 48 phụ tinh trước đây engine KHÔNG ĐỌC ĐƯỢC.
+   *
+   * Engine bỏ qua mọi sao không có nét viết sẵn, và đó là luật đúng: đưa một
+   * cái tên không giải nghĩa được vào prompt là mở đường cho model tự nghĩ
+   * nghĩa. Nhưng hệ quả không ai thấy là gần năm chục ngôi sao CÓ trên lá số
+   * mà chưa bao giờ được đọc tới — engine không giấu chúng, nó chưa từng đọc
+   * được chúng.
+   *
+   * Nặng nhất là vòng Thái Tuế: đó là nền của mọi câu luận theo NĂM, mà cả
+   * mười hai sao của vòng ấy đều trống.
+   */
+  'Thái Tuế': 'năm nay có việc phải đứng ra nói, ký hoặc chịu trách nhiệm trước nhiều người hơn thường lệ',
+  'Thiếu Dương': 'có tin vui hoặc lời mời đến sớm hơn bạn kịp chuẩn bị, thường qua một người quen',
+  'Tang Môn': 'dễ gặp chuyện phải chia tay, tiễn đi hoặc khép lại một thứ đã theo mình lâu',
+  'Thiếu Âm': 'chuyện được giải quyết âm thầm, ít người biết, và bạn cũng không muốn kể ra',
+  'Quan Phù': 'dễ vướng giấy tờ, hợp đồng hoặc một lần phải giải thích rõ ràng với bên thứ ba',
+  'Tử Phù': 'một việc đang chạy bị dừng hẳn, và phần khó là chấp nhận rằng nó không quay lại',
+  'Tuế Phá': 'kế hoạch đã xếp dễ bị cắt ngang giữa chừng, thường do phía ngoài chứ không do bạn',
+  'Long Đức': 'gặp người đứng ra nói giúp đúng lúc căng nhất, và chuyện dịu đi nhanh hơn bạn nghĩ',
+  'Bạch Hổ': 'chuyện đến gấp và ồn, hay phải xử lý ngay trong ngày thay vì để mai tính',
+  'Phúc Đức': 'có chỗ dựa từ người nhà hoặc người trên, thường hiện ra lúc bạn không kịp xoay',
+  'Điếu Khách': 'bị kéo vào chuyện của người khác, phải đi lại, thăm hỏi hoặc đứng ra đáp lời',
+  'Trực Phù': 'việc phải làm đúng ngày, đúng giờ, không hoãn được, dù bạn đang bận thứ khác',
+  'Bác Sĩ': 'hay được nhờ gỡ rối cho người khác, kể cả việc không thuộc phần mình',
+  'Lực Sĩ': 'làm được nhiều việc nặng cùng lúc, nhưng ít khi nói ra là mình đang gánh',
+  'Thanh Long': 'có quãng mọi thứ trôi hẳn: việc xong nhanh, người đúng, tiền về đúng hẹn',
+  'Tiểu Hao': 'tiền ra lắt nhắt nhiều lần nhỏ, cuối tháng nhìn lại mới thấy hụt',
+  'Tướng Quân': 'vào việc là dứt khoát, nhưng dễ nóng với người làm chậm hơn mình',
+  'Tấu Thư': 'nói và viết có trọng lượng, hay là người được chọn để trình bày thay cả nhóm',
+  'Phi Liêm': 'dễ bị nói sau lưng hoặc bị hiểu sai qua lời kể của người thứ ba',
+  'Hỷ Thần': 'có chuyện vui nhỏ đến đúng lúc mệt, thường từ người thân chứ không từ công việc',
+  'Bệnh Phù': 'mệt kéo dài hơn mức đáng có, và hay bỏ qua cho tới khi phải nghỉ hẳn',
+  'Đại Hao': 'một khoản lớn ra khỏi tay trong thời gian ngắn, thường vì việc không lùi được',
+  'Phục Binh': 'có người giữ ý không nói thẳng, nên chuyện lộ ra muộn hơn bạn cần biết',
+  'Quan Phủ': 'dễ phải làm rõ đúng sai với bên có thẩm quyền, từ giấy tờ tới lời hứa cũ',
+  'Tam Thai': 'được xếp vào nhóm có vai vế, dù bạn không chủ động xin chỗ đó',
+  'Bát Tọa': 'chỗ ngồi của bạn trong nhóm ổn định, ít bị thay dù có xáo trộn quanh mình',
+  'Thai Phụ': 'hay được người có chức trách để mắt tới, nhất là trong việc học và thi cử',
+  'Phong Cáo': 'công của bạn được ghi lại bằng giấy trắng mực đen chứ không chỉ bằng lời',
+  'Thiên Quan': 'hợp với việc có chức trách rõ, có người trên duyệt và có quy tắc để dựa',
+  'Thiên Phúc': 'lúc khó thường có đường lui, và người giúp đến từ chỗ bạn không ngờ',
+  'Hoa Cái': 'thích làm một mình theo cách riêng, nên dễ bị nhìn là khó gần dù không cố ý',
+  'Thiên Tài': 'học nhanh nhiều thứ khác nhau, nhưng dễ dừng lại ngay khi vừa đủ dùng',
+  'Thiên Thọ': 'giữ nhịp sống đều được lâu, và hồi lại nhanh hơn người cùng tuổi',
+  'Thiên Trù': 'không thiếu ăn thiếu chỗ ở, và hay được mời, được đãi trong lúc khó',
+  'Thiên Y': 'biết cách tự chăm mình và hay được chỉ đúng người, đúng thuốc khi cần',
+  'Giải Thần': 'chuyện tưởng lớn thường được gỡ vào phút cuối, đôi khi chỉ nhờ một lời nói đúng chỗ',
+  'Thiên Giải': 'có người đứng ra nhận giúp phần khó nhất, và bạn nhẹ đi mà không phải nhờ vả',
+  'Địa Giải': 'việc rối tự hạ nhiệt sau ít ngày, miễn là bạn không cố xử lý ngay trong lúc nóng',
+  'Thiên Đức': 'được người khác nể và nhường, thường vì bạn từng giữ lời trong một việc nhỏ',
+  'Nguyệt Đức': 'có người phụ nữ trong nhà hoặc trong nhóm đứng ra đỡ đúng lúc bạn đuối',
+  'Đường Phù': 'có quãng được nâng đỡ rõ, việc và người cùng thuận trong một khoảng ngắn',
+  'Thiên La': 'thấy mình bị giữ lại một chỗ, muốn đi mà chưa đi được, thường vì ràng buộc cũ',
+  'Địa Võng': 'nhiều việc nhỏ trói chân cùng lúc, gỡ được cái này thì cái kia lại níu',
+  'Thiên Thương': 'dễ mất một khoản hoặc một người ở chỗ bạn đã đặt nhiều công sức',
+  'Thiên Sứ': 'chuyện bất ngờ đến rất nhanh, thường đúng lúc bạn vừa thấy mọi thứ đã ổn',
+  'Lưu Hà': 'dễ vướng chuyện liên quan tới nước, đi xa hoặc một lần chậm trễ ngoài ý muốn',
+  'Đẩu Quân': 'có một mốc trong năm mà mọi việc dồn lại, làm xong quãng ấy thì phần còn lại nhẹ',
+  'LN Văn Tinh': 'năm nay chuyện học, thi hoặc viết lách có kết quả rõ hơn các mặt khác',
 };
 
 const PHU_TINH_EN: Record<string, string> = {
