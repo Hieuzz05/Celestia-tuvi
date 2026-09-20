@@ -18,6 +18,8 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { TIEU_CHI_SAU } from '@/lib/tuvi/tieu-chi-sau';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
+import { KHOI_CAU_CANH } from './cau-canh';
+import { KHOI_CHU_TRUU_TUONG } from './chu-truu-tuong';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { boCauPhanQuyet, boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson, laChuoiJson } from './doc-json';
@@ -54,7 +56,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.2';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.3';
 
 export interface TieuChiRa {
   nhan: string;
@@ -300,6 +302,16 @@ Nếu không nói thêm được gì mới về nó, hãy dùng dữ kiện khá
 `
     : '';
 
+  // Thụt vào cho khớp khối luật trong prompt — xem KHOI_CAU_CANH
+  const thut = (x: string) =>
+    x.split('\n')
+      .map((d) => (d.trim() ? `   ${d}` : d))
+      .join('\n');
+  const khoiChuTruuTuong = thut(KHOI_CHU_TRUU_TUONG);
+  const khoiCauCanh = KHOI_CAU_CANH.split('\n')
+    .map((d) => (d.trim() ? `   ${d}` : d))
+    .join('\n');
+
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, giọng bình tĩnh, nói với người đối diện chứ không giảng bài.
 
 Đây là BẢN ĐỌC SÂU — tầng sâu nhất sản phẩm có. Bạn đang viết CHẶNG "${cauHinh.tieuDe}": ${cauHinh.subtitle}
@@ -324,7 +336,7 @@ LUỚNG NGƯỢC LÀ BẮT BUỘC, không phải tuỳ chọn.
 Tiêu chí nào đi tới L3 trở lên đều phải có trường "luongNguoc" khác rỗng. Một
 phần chỉ khen là một phần không dùng được, dù đọc dễ chịu.
 
-BA LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải lời khuyên về giọng.
+NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải lời khuyên về giọng.
 
 1. MỖI TIÊU CHÍ CHỈ ĐƯỢC NÊU TÊN SAO Ở ĐÚNG MỘT CÂU.
    Câu ấy nêu tên rồi dịch ngay sang hành vi. Mọi câu còn lại trong cùng tiêu
@@ -356,6 +368,22 @@ BA LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l�
 
    Vì sao: bài đo được câu trung bình 21,7 từ, chỉ 9% số câu dưới 12 từ. Văn
    đều một nhịp thì không sai chỗ nào mà cũng không đọng lại chỗ nào.
+
+   CÂU NGẮN VÀ CÂU CẢNH Ở LUẬT 5 NÊN LÀ MỘT CÂU. Một tiêu chí chỉ có chừng
+   tám chục từ, mà cảnh thì vốn ngắn: "Chín giờ tối, bạn vẫn mở điện thoại
+   xem lại tin nhắn." Câu ấy vừa là cảnh vừa là chỗ thở. Tách làm hai câu
+   riêng là tiêu hai phần ngân sách cho một việc.
+
+4. CÂU LỰC NGƯỢC KHÔNG ĐƯỢC MỞ ĐẦU BẰNG TÊN SAO.
+   Bài cũ có 76 câu lực ngược và phần lớn mở bằng một cái tên, nên chúng xếp
+   thành một cột đều đặn thay vì là một cú vặn ý. Mở bằng điều kiện hoặc bằng
+   chính cái đang kéo ngược: "Khi lịch dày lên thì...", "Nếu người bên cạnh...".
+
+5. VIẾT BẰNG CHỮ NGƯỜI ĐỌC HÌNH DUNG RA ĐƯỢC.
+   MỖI TIÊU CHÍ phải có ít nhất một câu cảnh.
+${khoiCauCanh}
+
+${khoiChuTruuTuong}
 
 KHỐI GƯƠNG — tiêu chí đánh dấu [KHỐI GƯƠNG] của mỗi phần:
 Đọc phần này QUA cung đối diện, tức là nhìn từ phía ngược lại. Đây là chỗ bài
@@ -401,7 +429,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       "tieuChi": [
         {
           "nhan": "chép đúng nhãn tiêu chí ở trên, không tự đổi",
-          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có ít nhất một câu dưới mười từ, đặt sau một câu dài. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
+          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có ít nhất một câu cảnh NGẮN, dưới mười hai từ, đặt sau một câu dài: hai trong ba thứ người / việc nhìn thấy được / lúc đời thường. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
           "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có. KHÔNG mở đầu bằng tên sao",
           "maDuKien": ["F002"]
         }

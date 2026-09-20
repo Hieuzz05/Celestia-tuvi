@@ -28,6 +28,8 @@ import {
 } from '../lib/tuvi/chang-cung';
 import { TIEU_CHI_SAU, TONG_TIEU_CHI_SAU } from '../lib/tuvi/tieu-chi-sau';
 import { nhanDangThucThe, tenBiaChan } from '../lib/rag/thuc-the';
+import { laCauCanh } from '../lib/rag/cau-canh';
+import { demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
 import { boCauTenBia } from '../lib/rag/chuan-ngon-ngu';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
@@ -417,6 +419,77 @@ async function do_() {
   const tyLeCoNgan = coCauNgan.length / tatCaTieuChi.length;
   const cauCaBai = vanCacPhan.split(/(?<=[.!?;])\s+/).filter((c) => c.trim().length > 10);
   const tyLeNgan = cauCaBai.filter(ngan).length / cauCaBai.length;
+  /*
+   * CÂU LỰC NGƯỢC KHÔNG MỞ ĐẦU BẰNG TÊN SAO.
+   *
+   * Bài cũ có 76 câu lực ngược, phần lớn mở bằng một cái tên. Từng câu một thì
+   * không sai gì; xếp cạnh nhau thì chúng thành một cột đều đặn, và cú vặn ý
+   * biến thành một mục trong danh sách.
+   *
+   * Chỉ đo CHỮ MỞ ĐẦU, không đo cả câu: nêu tên trong thân câu lực ngược là
+   * chuyện bình thường và đúng.
+   */
+  const luongNguoc = tatCaTieuChi.map((t) => t.luongNguoc ?? '').filter((x) => x.trim());
+  const moBangTen = luongNguoc.filter((x) => {
+    const dau = x.trim().split(/\s+/).slice(0, 4).join(' ');
+    return nhanDangThucThe(dau).some(
+      (e) => e.loai === 'STAR' || e.loai === 'TRANSFORMATION' || e.loai === 'FORMATION'
+    );
+  });
+  const tyLeMoTen = moBangTen.length / Math.max(1, luongNguoc.length);
+  kiem(
+    'Dưới 20% câu lực ngược mở đầu bằng tên sao',
+    tyLeMoTen < 0.2,
+    `${Math.round(tyLeMoTen * 100)}% (${moBangTen.length}/${luongNguoc.length})`
+  );
+
+  /*
+   * MỖI PHẦN CÓ ÍT NHẤT MỘT CÂU CẢNH.
+   *
+   * Đây là mục khác biệt thật so với sản phẩm đối chiếu: bài của ta đã dịch
+   * tên sao sang hành vi, nhưng dịch sang hành vi TRỪU TƯỢNG rồi dừng. Xem
+   * ghi chú đầu `cau-canh.ts` để biết phép đo này xấp xỉ ở chỗ nào.
+   *
+   * Đo theo PHẦN chứ không theo tiêu chí: bắt mọi tiêu chí đều có cảnh là ép
+   * bài thành một chuỗi tiểu phẩm. Một cảnh cho mỗi phần đời là đủ để người
+   * đọc có chỗ đặt mình vào.
+   */
+  const tieuChiCoCanh = tatCaTieuChi.filter((t) =>
+    [t.noiDung, t.luongNguoc ?? '']
+      .join(' ')
+      .split(/(?<=[.!?;])\s+/)
+      .some(laCauCanh)
+  );
+  const tyLeCanh = tieuChiCoCanh.length / tatCaTieuChi.length;
+  kiem(
+    'Từ 70% tiêu chí trở lên có câu cảnh cụ thể',
+    tyLeCanh >= 0.7,
+    `${Math.round(tyLeCanh * 100)}% (${tieuChiCoCanh.length}/${tatCaTieuChi.length})`
+  );
+
+  /*
+   * CHỮ TRỪU TƯỢNG.
+   *
+   * Chủ dự án nói thẳng: không được có chữ nào trừu tượng, khó hiểu cho người
+   * đọc. Nên đây là phép ĐẾM TUYỆT ĐỐI, không phải tỉ lệ — mỗi lần dùng là một
+   * chỗ người đọc trượt qua mà không đọng lại gì.
+   *
+   * Ngưỡng 12 = trung bình một lần mỗi phần. Không đặt 0: vài chữ trong bảng
+   * có lúc là chữ đúng và không có chữ thay nào gọn hơn. Nhưng 12 đã là mức
+   * rất chặt so với nền đo được — bài cũ riêng "nền", "năng lực", "nhịp",
+   * "cấu trúc" đã hơn một trăm lần.
+   */
+  const chuTruu = demChuTruuTuong(vanCacPhan);
+  const tongChuTruu = chuTruu.reduce((a, [, d]) => a + d, 0);
+  kiem(
+    'Chữ trừu tượng dưới 12 lần trong cả bài',
+    tongChuTruu < 12,
+    `${tongChuTruu} lần — ${chuTruu
+      .slice(0, 6)
+      .map(([c, d]) => `${c}:${d}`)
+      .join(', ')}`
+  );
+
   // Ngưỡng 70%: cùng lý do với phép đo trên, xem ghi chú ở đó
   kiem(
     'Từ 70% tiêu chí trở lên có ít nhất một câu ngắn',
