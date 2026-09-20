@@ -210,6 +210,11 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
   ).map((t) => t.ten);
   kiem('Mọi phụ tinh đều có nét đời sống (tiếng Việt)', thieuNet.length === 0, thieuNet);
 
+  const thieuNetEn = TU_DIEN_THUC_THE.filter(
+    (t) => t.loai === 'STAR' && !CHINH_TINH_TEN.has(t.ten) && !KHUON.en.netPhuTinh[t.ten]
+  ).map((t) => t.ten);
+  kiem('Mọi phụ tinh đều có nét đời sống (tiếng Anh)', thieuNetEn.length === 0, thieuNetEn);
+
   const netXau = Object.entries(KHUON.vi.netPhuTinh)
     .filter(([, v]) => demChuTruuTuong(v).length)
     .map(([k]) => k);
