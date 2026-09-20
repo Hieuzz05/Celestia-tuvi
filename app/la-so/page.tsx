@@ -21,6 +21,7 @@ import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { LuotBaiSau } from '@/components/support/LuotBaiSau';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -469,7 +470,7 @@ function TrangLaSo() {
               >
                 Hoặc đọc cả mười hai phần →
               </Link>
-              <span className="caption">{t.quickRead.sauNoiBatHanMuc}</span>
+              <LuotBaiSau macDinh={t.quickRead.sauNoiBatHanMuc} />
             </div>
           </div>
 

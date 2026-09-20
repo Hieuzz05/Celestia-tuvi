@@ -201,3 +201,59 @@ export async function chotBaiSau(requestId: string, model?: string) {
     .update({ status: 'success', completed_at: new Date().toISOString(), model_name: model })
     .eq('request_id', requestId);
 }
+
+/** Bậc quyền của một tài khoản với bài đọc sâu, ở dạng đọc được cho giao diện */
+export type LuotBaiSau =
+  | { bac: 'chua-ro' }
+  | { bac: 'admin' }
+  | { bac: 'supporter'; soDu: number }
+  | { bac: 'thuong'; conLai: number; hanMuc: number };
+
+/**
+ * Đếm lượt CÒN LẠI mà KHÔNG đặt chỗ.
+ *
+ * Tách hẳn khỏi `datChoBaiSau` dù hai bên đếm cùng một thứ, vì hàm kia GHI một
+ * dòng trước khi đếm — đó là cách nó chống mở hai tab. Gọi nó để hiển thị thì
+ * mỗi lần mở trang là tiêu mất một lượt.
+ *
+ * Hàm này chỉ đọc, nên nó KHÔNG chống được đua. Điều đó chấp nhận được: con số
+ * ở đây để người dùng biết mình đang còn gì trước khi bấm, còn việc chặn thật
+ * vẫn do `datChoBaiSau` làm lúc bấm.
+ */
+export async function luotBaiSauConLai(): Promise<LuotBaiSau> {
+  if (!supabaseDaCauHinh) return { bac: 'chua-ro' };
+
+  const user = await nguoiDungHienTai();
+  if (!user) return { bac: 'chua-ro' };
+  if (laAdmin(user.email)) return { bac: 'admin' };
+
+  const db = taoSupabaseAdmin();
+  if (!db) return { bac: 'chua-ro' };
+
+  const { data: quyen } = await db
+    .from('user_entitlements')
+    .select('supporter_expires_at, supporter_long_report_balance')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  const conSupporter = Boolean(
+    quyen?.supporter_expires_at && new Date(quyen.supporter_expires_at).getTime() > Date.now()
+  );
+  const soDu = quyen?.supporter_long_report_balance ?? 0;
+  if (conSupporter && soDu > 0) return { bac: 'supporter', soDu };
+
+  const hanMuc = CAU_HINH_UNG_HO.freeDeepReadDailyLimit;
+  const { count, error } = await db
+    .from('usage_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('feature', 'long_report')
+    .in('status', ['reserved', 'success'])
+    .gte('created_at', dauNgayVN());
+
+  // Đếm hỏng thì nói "chưa rõ" chứ KHÔNG nói "còn 1". Hứa một lượt rồi chặn ở
+  // bước sau là tệ hơn hẳn so với không hứa gì.
+  if (error) return { bac: 'chua-ro' };
+
+  return { bac: 'thuong', conLai: Math.max(0, hanMuc - (count ?? 0)), hanMuc };
+}
