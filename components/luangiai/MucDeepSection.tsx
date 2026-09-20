@@ -7,6 +7,7 @@ import type { MucSau } from '@/lib/rag/ban-doc-sau';
 import { CHANG, CHANG_CUA_MUC, MUC_CUA_CUNG } from '@/lib/tuvi/chang-cung';
 import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
 import { NGUONG_NOI } from '@/lib/tuvi/do-noi-bat';
+import { ChuSao } from './ChuSao';
 import { KhoiGuong } from './KhoiGuong';
 
 /**
@@ -28,12 +29,15 @@ export function MucDeepSection({
   soPhan,
   onThuLai,
   duongHoi,
+  tenCoThat = [],
 }: {
   muc: MucSau;
   soChang: number;
   soPhan: number;
   onThuLai?: () => void;
   duongHoi: (cauHoi: string) => string;
+  /** Tên sao và cách cục CÓ THẬT trên lá số — chỉ tô màu những tên này */
+  tenCoThat?: readonly string[];
 }) {
   const [moCanCu, setMoCanCu] = useState(false);
 
@@ -99,9 +103,12 @@ export function MucDeepSection({
         </p>
       </div>
 
-      <p className="text-[21px] font-semibold" style={{ color: 'var(--fg)', lineHeight: 1.45 }}>
-        {muc.ketLuan}
-      </p>
+      <ChuSao
+        van={muc.ketLuan}
+        ten={tenCoThat}
+        className="text-[21px] font-semibold"
+        style={{ color: 'var(--fg)', lineHeight: 1.45 }}
+      />
 
       {tieuChiThuong.map((t) => (
         <div key={t.nhan} className="flex flex-col gap-[6px]">
@@ -109,13 +116,19 @@ export function MucDeepSection({
           <p className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
             {t.nhan}
           </p>
-          <p className="body-text" style={{ color: 'var(--fg-body)', lineHeight: 1.7 }}>
-            {t.noiDung}
-          </p>
+          <ChuSao
+            van={t.noiDung}
+            ten={tenCoThat}
+            className="body-text"
+            style={{ color: 'var(--fg-body)', lineHeight: 1.7 }}
+          />
           {t.luongNguoc && (
-            <p className="body-sm" style={{ color: 'var(--fg-muted)', lineHeight: 1.65 }}>
-              {t.luongNguoc}
-            </p>
+            <ChuSao
+              van={t.luongNguoc}
+              ten={tenCoThat}
+              className="body-sm"
+              style={{ color: 'var(--fg-muted)', lineHeight: 1.65 }}
+            />
           )}
         </div>
       ))}
@@ -126,6 +139,7 @@ export function MucDeepSection({
           nhan={guong.nhan}
           noiDung={guong.noiDung}
           luongNguoc={guong.luongNguoc}
+          tenCoThat={tenCoThat}
           tenPhanGuong={tenPhanGuong}
           tenChangGuong={tenChangGuong}
           onNhay={

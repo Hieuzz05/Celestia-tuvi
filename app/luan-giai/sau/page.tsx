@@ -41,6 +41,8 @@ function TrangSau() {
   const [loi, setLoi] = useState<string | null>(null);
   const [moCong, setMoCong] = useState(false);
   const [dangXem, setDangXem] = useState<MucId | null>(null);
+  // Tên sao và cách cục CÓ THẬT trên lá số — dùng để tô màu, xem ChuSao.tsx
+  const [tenCoThat, setTenCoThat] = useState<string[]>([]);
   const daChay = useRef(false);
 
   const ngay = Number(params.get('ngay'));
@@ -67,6 +69,7 @@ function TrangSau() {
         }
         return null;
       }
+      if (Array.isArray(d.tenCoThat)) setTenCoThat(d.tenCoThat as string[]);
       return d.chang as ChangSau;
     },
     [ngay, thang, nam, gio, gioiTinh]
@@ -198,6 +201,7 @@ function TrangSau() {
                   soChang={c.thuTu}
                   soPhan={i + 1}
                   duongHoi={duongHoi}
+                  tenCoThat={tenCoThat}
                 />
               ))}
 

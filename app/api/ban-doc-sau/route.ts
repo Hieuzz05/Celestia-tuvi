@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { canDangNhap } from '@/lib/auth/cong';
 import { KhongCoModelError } from '@/lib/ai/fallback';
-import { dungChang, PHIEN_BAN_BAN_DOC_SAU } from '@/lib/rag/ban-doc-sau';
-import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
+import {
+  dungChang,
+  tomTatChang,
+  PHIEN_BAN_BAN_DOC_SAU,
+  type ChangSau,
+} from '@/lib/rag/ban-doc-sau';
+import { docNoiDung, layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
+import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { THU_TU_CHANG, type ChangId } from '@/lib/tuvi/chang-cung';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -121,7 +127,32 @@ export async function POST(req: Request) {
         if (!datCho.duocPhep) throw new LoiHetLuot();
         nguonDaTru = datCho.nguon;
       }
-      const c = await dungChang({ laSo, chang, namXem, thangXem: thangAmHienTai() });
+      /*
+       * Đọc lại các chặng TRƯỚC từ đệm để chặng này biết chúng đã nói gì.
+       *
+       * Mỗi chặng là một request riêng, nên không có bộ nhớ nào nối chúng lại
+       * ngoài chính cái đệm. Không đọc lại thì mỗi chặng viết như thể nó là
+       * chặng đầu tiên — và cùng một cách cục được dịch nghĩa lại bốn lần.
+       *
+       * Đệm hỏng hoặc chưa có thì bỏ qua: thiếu bối cảnh làm bài lặp hơn,
+       * nhưng chặn cả chặng vì chuyện đó là phản ứng quá tay.
+       */
+      const daNoiTruoc: string[] = [];
+      for (const truoc of THU_TU_CHANG.slice(0, THU_TU_CHANG.indexOf(chang))) {
+        const cu = await docNoiDung<ChangSau>({
+          ...khoa,
+          khoaKy: `nam:${namXem}|chang:${truoc}|v:${PHIEN_BAN_BAN_DOC_SAU}`,
+        });
+        if (cu?.noiDung) daNoiTruoc.push(...tomTatChang(cu.noiDung));
+      }
+
+      const c = await dungChang({
+        laSo,
+        chang,
+        namXem,
+        thangXem: thangAmHienTai(),
+        daNoiTruoc,
+      });
       return c ? { noiDung: c, phienBan: { banDocSau: PHIEN_BAN_BAN_DOC_SAU } } : null;
     });
 
@@ -135,9 +166,22 @@ export async function POST(req: Request) {
 
     if (nguonDaTru) await chotBaiSau(requestId);
 
+    /*
+     * Tên có thật trên lá số, để giao diện tô màu.
+     *
+     * Gửi từ máy chủ chứ không để giao diện tự quét bằng từ điển đầy đủ: quét
+     * mù thì một ngôi sao KHÔNG có trên lá số cũng được tô đẹp như thật, và
+     * màu sắc biến thành lời bảo đảm cho một thứ chưa được kiểm.
+     */
+    const tenCoThat = [
+      ...nhanDangCachCuc(laSo).map((c) => c.ten),
+      ...new Set(laSo.cungs.flatMap((c) => c.sao.map((x) => x.ten))),
+    ];
+
     const i = THU_TU_CHANG.indexOf(chang);
     return NextResponse.json({
       chang: ra.noiDung,
+      tenCoThat,
       tuDem: ra.tuDem,
       // Giao diện dùng cái này để biết còn phải gọi tiếp chặng nào
       changTiep: THU_TU_CHANG[i + 1] ?? null,

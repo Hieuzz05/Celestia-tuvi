@@ -193,6 +193,8 @@ async function do_() {
   kiem('12/12 phần có khối gương', so.soGuong === 12, so.soGuong);
 
   const muc = bai.chang.flatMap((c) => c.muc).filter((m) => !m.thieuCanCu);
+  const { nhanDangCachCuc } = await import('../lib/tuvi/cach-cuc');
+  const tenCachCuc = nhanDangCachCuc(laSo).map((c) => c.ten);
 
   // Ngân sách từ: spec 420–560, +20% khi nổi bật, −20% khi mờ. Cho biên 15%
   // vì model không đếm từ chính xác được — nhưng lệch xa thì là lỗi prompt.
@@ -221,6 +223,58 @@ async function do_() {
     gate.loi.every((l) => l.mucDo !== 'chan'),
     gate.loi.filter((l) => l.mucDo === 'chan')
   );
+
+  /*
+   * CÂU BẮC CẦU PHẢI TRỎ ĐÚNG CHẶNG SAU.
+   *
+   * Lỗi thật đọc được trên bài: cuối chặng 2 viết "chặng sau sẽ đi sâu vào
+   * phần bên trong", trong khi chặng 3 là "Những người sát cánh". Model bịa ra
+   * đích đến vì prompt chỉ bảo "viết một câu dẫn sang chặng sau" mà không nói
+   * chặng sau là gì — cái giá của việc sinh từng chặng một.
+   *
+   * Câu bắc cầu sai đích tệ hơn không có câu bắc cầu: nó hứa một thứ rồi đưa
+   * người đọc sang thứ khác.
+   *
+   * Đo thô bằng từ khoá của chặng kế tiếp. Thô nhưng bắt đúng loại lỗi này:
+   * câu dẫn khi sai thì nói về một chủ đề hoàn toàn khác.
+   */
+  const TU_KHOA_CHANG: Record<string, RegExp> = {
+    'ben-trong': /bên trong|nội tâm|thấy yên|an yên|chính mình/iu,
+    'con-duong': /công việc|sự nghiệp|tiền|gây dựng|vị trí|bước ra ngoài/iu,
+    'sat-canh': /người|quan hệ|bạn đời|cộng sự|sát cánh|đồng hành/iu,
+    'de-lai': /gốc|cha mẹ|nhà|để lại|thế hệ|nơi bạn đến/iu,
+  };
+  const bacCauSai = bai.chang.filter((c) => {
+    const sau = THU_TU_CHANG[THU_TU_CHANG.indexOf(c.id) + 1];
+    if (!sau || !c.cauBacCau) return false;
+    return !TU_KHOA_CHANG[sau].test(c.cauBacCau);
+  });
+  kiem(
+    'Câu bắc cầu trỏ đúng chặng kế tiếp',
+    bacCauSai.length === 0,
+    bacCauSai.map((c) => `${c.id}: ${c.cauBacCau?.slice(0, 90)}`)
+  );
+
+  /*
+   * Một cách cục không được chiếm cả bài.
+   *
+   * Đo trên bài thật: "Tử Phủ Vũ Tướng Liêm" có mặt ở gần như mười hai phần.
+   * Mỗi chặng là một lượt gọi riêng và không lượt nào biết lượt khác đã viết
+   * gì, nên cả bốn cùng bám vào cách cục lớn nhất.
+   *
+   * KHÔNG cấm lặp: một cách cục lớn có mặt ở nhiều phần đời là chuyện đúng về
+   * Tử Vi. Ngưỡng 9/12 bắt trường hợp nó chiếm gần hết bài — lúc ấy một lá số
+   * hơn hai chục dữ kiện bị thu lại còn một.
+   */
+  const demTen = new Map<string, number>();
+  for (const m of muc) {
+    const van = [m.ketLuan, ...m.tieuChi.map((t) => t.noiDung)].join(' ');
+    for (const ten of new Set(tenCachCuc)) {
+      if (van.includes(ten)) demTen.set(ten, (demTen.get(ten) ?? 0) + 1);
+    }
+  }
+  const chiemBai = [...demTen.entries()].filter(([, d]) => d > 9);
+  kiem('Không cách cục nào xuất hiện ở hơn 9/12 phần', chiemBai.length === 0, chiemBai);
 
   console.log('\n== AN TOÀN NỘI DUNG ==\n');
 

@@ -154,6 +154,16 @@ export async function dungChang(vao: {
   namXem: number;
   thangXem: number;
   banKhoan?: string;
+  /**
+   * Những gì các chặng TRƯỚC đã nói.
+   *
+   * Mỗi chặng là một lượt gọi riêng, nên không lượt nào biết lượt khác viết gì.
+   * Hậu quả đo được trên bài thật: "Tử Phủ Vũ Tướng Liêm" xuất hiện ở gần như
+   * mười hai phần, mỗi lần dịch nghĩa gần giống nhau. Người đọc gặp lại cùng
+   * một cái tên lần thứ tám thì hiểu là bài đang xoay quanh một dữ kiện duy
+   * nhất — trong khi lá số có hơn hai chục dữ kiện đáng nói.
+   */
+  daNoiTruoc?: string[];
 }): Promise<ChangSau | null> {
   const k = KHUON.vi;
   const cauHinh = CHANG[vao.chang];
@@ -189,11 +199,30 @@ export async function dungChang(vao: {
   const goi = dungGoiBangChung(keHoach.truyVan, keHoach, duKien, kqTruyHoi.daChon);
 
   const cachCuc = nhanDangCachCuc(vao.laSo).filter((c) => c.loai !== 'han');
+  /*
+   * Sao nào model được phép nhắc — lấy từ CHÍNH LÁ SỐ, không từ gói bằng chứng.
+   *
+   * Bản đầu chỉ cho phép sao có mặt trong `duKien` và `bangChung`. Lọc như vậy
+   * đo sai thứ cần đo: nó hỏi "sao này có trong mười đoạn vừa truy hồi không",
+   * trong khi câu cần hỏi là "sao này có trên lá số không".
+   *
+   * Hậu quả đo được: phần `tat-ach` mất đúng khối gương, phần `huynh-de` mất
+   * câu kết luận — cả hai vì nhắc một ngôi sao CÓ THẬT trên lá số mà tình cờ
+   * không nằm trong gói bằng chứng của lượt ấy. Mất khối gương thì cả phần bị
+   * loại, nên một bộ lọc quá tay đã xoá hai phần đời hoàn chỉnh.
+   *
+   * Thứ bộ lọc này sinh ra để chặn là BỊA: model gọi tên một ngôi sao không hề
+   * có trên lá số. Dựng tập từ chính lá số thì nó chặn đúng cái đó và thôi
+   * chặn những thứ khác.
+   */
   const saoChoPhep = new Set([
+    ...nhanDangThucThe(
+      vao.laSo.cungs.flatMap((c) => c.sao.map((s) => s.ten)).join(' ')
+    ).map((t) => t.id),
+    ...nhanDangThucThe(cachCuc.flatMap((c) => [c.ten, ...c.sao]).join(' ')).map((t) => t.id),
     ...nhanDangThucThe(
       [...duKien.map((f) => f.noiDung), ...goi.bangChung.map((e) => e.noiDung)].join(' ')
     ).map((t) => t.id),
-    ...nhanDangThucThe(cachCuc.flatMap((c) => [c.ten, ...c.sao]).join(' ')).map((t) => t.id),
   ]);
 
   /*
@@ -233,6 +262,44 @@ export async function dungChang(vao: {
 
   const laTatAch = mucIds.includes('tat-ach');
 
+  /*
+   * Chặng kế tiếp — phải đưa vào prompt, không để model tự đoán.
+   *
+   * Bản đầu chỉ ghi "1 câu dẫn sang chặng sau" mà không nói chặng sau là gì.
+   * Model bịa ra đích đến, và bài thật ra thế này: cuối chặng 2 viết "chặng sau
+   * sẽ đi sâu vào phần bên trong", trong khi chặng 3 là "Những người sát cánh".
+   * Câu bắc cầu sai đích còn tệ hơn không có câu bắc cầu — nó hứa một thứ rồi
+   * đưa người đọc sang thứ khác.
+   *
+   * Đây là cái giá của việc sinh theo từng chặng: mỗi lượt không biết lượt sau.
+   * Trả giá bằng một câu trong prompt thì rẻ hơn nhiều so với gộp lại một lượt.
+   */
+  const iChang = THU_TU_CHANG.indexOf(vao.chang);
+  const changSau = iChang >= 0 && iChang < THU_TU_CHANG.length - 1
+    ? CHANG[THU_TU_CHANG[iChang + 1]]
+    : null;
+
+  /*
+   * Nhắc model những gì đã nói ở chặng trước, để nó đừng nhắc lại.
+   *
+   * Không CẤM nhắc lại: một cách cục lớn có mặt ở nhiều phần đời là chuyện
+   * đúng về mặt Tử Vi. Cấm là bắt model nói sai. Thứ phải tránh là dịch nghĩa
+   * y như cũ — cùng một cái tên phải soi ra một mặt khác ở mỗi phần.
+   */
+  const khoiDaNoi = vao.daNoiTruoc?.length
+    ? `
+NHỮNG CÂU CÁC CHẶNG TRƯỚC ĐÃ VIẾT — đọc rồi hãy viết tiếp, đừng viết lại:
+${vao.daNoiTruoc
+        .slice(-9)
+        .map((x) => `- ${x}`)
+        .join('\n')}
+
+Một cách cục lớn CÓ THỂ xuất hiện lại ở chặng này — đó là chuyện đúng về
+Tử Vi. Nhưng nó phải soi ra một MẶT KHÁC, không được dịch nghĩa y như trên.
+Nếu không nói thêm được gì mới về nó, hãy dùng dữ kiện khác của lá số.
+`
+    : '';
+
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, giọng bình tĩnh, nói với người đối diện chứ không giảng bài.
 
 Đây là BẢN ĐỌC SÂU — tầng sâu nhất sản phẩm có. Bạn đang viết CHẶNG "${cauHinh.tieuDe}": ${cauHinh.subtitle}
@@ -243,6 +310,7 @@ ${khoiMuc}
 
 CÁCH CỤC đọc được trên lá số này — gọi thẳng tên, đây là ngoại lệ được phép:
 ${khoiCachCuc}
+${khoiDaNoi}
 
 VIẾT THEO THANG L1→L5. Đây là thứ phân biệt bản đọc sâu với bản tóm tắt:
   L1 KẾT LUẬN     điều đáng nói nhất là gì
@@ -308,7 +376,11 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
     }
   ],
   "doanKhau": "60-90 từ: BA PHẦN NÀY NÓI CÙNG ĐIỀU GÌ. Không nhắc lại từng phần, nói cái xuyên qua cả ba.",
-  "cauBacCau": ${cauHinh.thuTu === 4 ? 'null' : '"1 câu dẫn sang chặng sau"'}
+  "cauBacCau": ${
+    changSau
+      ? `"1 câu dẫn sang chặng sau. Chặng sau tên là ${JSON.stringify(changSau.tieuDe)} và nói về: ${changSau.subtitle} — câu dẫn PHẢI trỏ đúng tới nội dung đó, không được tự nghĩ ra một đích khác."`
+      : 'null'
+  }
 }
 
 Đủ ba phần, đủ tiêu chí của từng phần, theo đúng thứ tự đã liệt kê ở trên.`;
@@ -461,6 +533,19 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 }
 
 /**
+ * Tóm tắt một chặng thành vài dòng để chặng sau đọc.
+ *
+ * Chỉ lấy câu KẾT LUẬN của từng phần, không lấy cả thân bài: mục đích là cho
+ * chặng sau biết ĐÃ NÓI GÌ, không phải cho nó thêm chất liệu để chép. Đưa cả
+ * thân bài vào thì prompt phình ra và model có xu hướng nhại giọng đoạn trước.
+ */
+export function tomTatChang(c: ChangSau): string[] {
+  return c.muc
+    .filter((m) => !m.thieuCanCu)
+    .map((m) => `${m.tieuDe}: ${m.ketLuan}`);
+}
+
+/**
  * Dựng cả bốn chặng.
  *
  * Chạy TUẦN TỰ, không song song. Bốn lượt song song thì cả bốn cùng đập vào
@@ -477,6 +562,7 @@ export async function sinhBanDocSau(vao: {
 }): Promise<BaiDocSau | null> {
   const chang: ChangSau[] = [];
 
+  const daNoiTruoc: string[] = [];
   for (const id of THU_TU_CHANG) {
     const c = await dungChang({
       laSo: vao.laSo,
@@ -484,9 +570,11 @@ export async function sinhBanDocSau(vao: {
       namXem: vao.namXem,
       thangXem: vao.thangXem,
       banKhoan: vao.banKhoan,
+      daNoiTruoc,
     });
     if (!c) continue;
     chang.push(c);
+    daNoiTruoc.push(...tomTatChang(c));
     vao.khiXongChang?.(c);
   }
 

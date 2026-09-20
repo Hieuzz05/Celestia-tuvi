@@ -1,6 +1,7 @@
 'use client';
 
 import type { MucSau } from '@/lib/rag/ban-doc-sau';
+import { ChuSao } from './ChuSao';
 
 /**
  * KHỐI GƯƠNG — đọc một phần QUA cung đối diện.
@@ -30,6 +31,7 @@ export function KhoiGuong({
   tenPhanGuong,
   tenChangGuong,
   onNhay,
+  tenCoThat = [],
 }: {
   muc: MucSau;
   nhan: string;
@@ -40,6 +42,8 @@ export function KhoiGuong({
   /** Tên chặng của phần gương — dùng cho gương bắc cầu */
   tenChangGuong?: string;
   onNhay?: () => void;
+  /** Tên sao và cách cục có thật trên lá số — chỉ tô màu những tên này */
+  tenCoThat?: readonly string[];
 }) {
   const chan = muc.guongNoiBo
     ? tenPhanGuong && `↔ cặp với: ${tenPhanGuong}`
@@ -61,14 +65,26 @@ export function KhoiGuong({
         {nhan}
       </h3>
 
-      <p className="text-[16px]" style={{ color: '#F0E6F0', lineHeight: 1.65 }}>
-        {noiDung}
-      </p>
+      {/*
+        Trong khối đảo màu, tên sao dùng fuchsia nhạt hơn nền tối chứ không dùng
+        `--accent`: cùng một màu đọc rất khác trên nền tím đậm và trên nền kem.
+      */}
+      <ChuSao
+        van={noiDung}
+        ten={tenCoThat}
+        mauTen="#F58FD0"
+        className="text-[16px]"
+        style={{ color: '#F0E6F0', lineHeight: 1.65 }}
+      />
 
       {luongNguoc && (
-        <p className="text-[15px]" style={{ color: '#C9B6C9', lineHeight: 1.6 }}>
-          {luongNguoc}
-        </p>
+        <ChuSao
+          van={luongNguoc}
+          ten={tenCoThat}
+          mauTen="#F58FD0"
+          className="text-[15px]"
+          style={{ color: '#C9B6C9', lineHeight: 1.6 }}
+        />
       )}
 
       {chan &&
