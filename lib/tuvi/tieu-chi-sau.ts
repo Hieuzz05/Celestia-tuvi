@@ -125,7 +125,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Năng lực lõi bạn thực sự bán được',
+      nhan: 'Thứ người khác sẵn sàng trả tiền cho bạn',
       moTa: 'phân biệt với thứ bạn giỏi nhưng không tạo giá trị trao đổi',
     },
     {
@@ -133,7 +133,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'làm công / làm chủ / làm nghề tự do, kèm điều kiện, không phán quyết',
     },
     {
-      nhan: 'Cơ chế thăng tiến của riêng bạn',
+      nhan: 'Bạn thường đi lên bằng đường nào',
       moTa: 'tam hợp Mệnh + Tài Bạch: lên bằng chuyên môn, bằng quan hệ, hay bằng việc mở địa bàn mới',
     },
     {
@@ -152,7 +152,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
   ],
   'tai-bach': [
     {
-      nhan: 'Tiềm năng khai thác thu nhập và các nguồn tài lộc bền vững',
+      nhan: 'Tiền của bạn có thể đến từ đâu',
       moTa: 'nguồn chính / nguồn phụ / nguồn chỉ nên thử trong giai đoạn nhất định. L1→L5',
     },
     {
@@ -200,7 +200,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'xu hướng và điều kiện',
     },
     {
-      nhan: 'Bối cảnh bạn thể hiện tốt nhất',
+      nhan: 'Chỗ nào bạn làm tốt nhất',
       moTa: 'tam hợp Phu Thê + Phúc Đức: một–một, nhóm nhỏ, hay đám đông',
     },
     {
@@ -217,7 +217,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Chân dung người bạn đời theo cấu trúc lá số',
+      nhan: 'Người bạn đời của bạn có thể là ai',
       moTa: 'mô tả xu hướng tính cách. Cấm đoán tuổi / mệnh / nghề nghiệp cụ thể',
     },
     {
@@ -270,7 +270,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
   ],
   'no-boc': [
     {
-      nhan: 'Cấu trúc mạng lưới',
+      nhan: 'Bạn quen biết theo kiểu gì',
       moTa: 'L1→L4',
     },
     {
@@ -331,7 +331,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'mua sớm hay muộn, tự tạo hay thừa hưởng, giữ được hay hay đổi',
     },
     {
-      nhan: 'Không gian sống tác động tới trạng thái',
+      nhan: 'Chỗ ở làm bạn ra sao',
       moTa: 'tam hợp Tật Ách: môi trường và sức khỏe',
     },
     {

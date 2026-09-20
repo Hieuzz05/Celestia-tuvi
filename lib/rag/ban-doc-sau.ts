@@ -56,7 +56,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.3';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.4';
 
 export interface TieuChiRa {
   nhan: string;
