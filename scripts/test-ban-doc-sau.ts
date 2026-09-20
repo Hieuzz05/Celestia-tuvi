@@ -27,7 +27,7 @@ import {
   type MucId,
 } from '../lib/tuvi/chang-cung';
 import { TIEU_CHI_SAU, TONG_TIEU_CHI_SAU } from '../lib/tuvi/tieu-chi-sau';
-import { tenBiaChan } from '../lib/rag/thuc-the';
+import { nhanDangThucThe, tenBiaChan } from '../lib/rag/thuc-the';
 import { boCauTenBia } from '../lib/rag/chuan-ngon-ngu';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
@@ -190,7 +190,8 @@ const DINH_BENH =
  * bắt nhầm kiểu ấy thì người sửa sẽ đi GỠ BỎ lời miễn trừ để làm hài lòng cái
  * máy — tức là bộ đo tự tay làm sản phẩm kém an toàn đi.
  */
-const PHU_DINH_TRUOC = /(?:không phải|không phải là|chứ không phải|không nhằm|không thay thế)\s*$/iu;
+const PHU_DINH_TRUOC =
+  /(?:không phải|không phải là|chứ không phải|không nhằm|không thay thế|không nên hiểu thành(?: một)?|chứ không|không phải một)\s*$/iu;
 
 /** Câu có thật sự định bệnh không, hay chỉ đang nói rằng mình KHÔNG định bệnh */
 function laCauDinhBenh(cau: string): boolean {
@@ -323,6 +324,105 @@ async function do_() {
   }
   const chiemBai = [...demTen.entries()].filter(([, d]) => d > 9);
   kiem('Không cách cục nào xuất hiện ở hơn 9/12 phần', chiemBai.length === 0, chiemBai);
+
+  /*
+   * ... và phép đo trên KHÔNG ĐỦ, nên có thêm phép đo dưới.
+   *
+   * Phép trên hỏi "có mặt ở mấy phần" — một câu hỏi nhị phân. Bài đo được
+   * "Tử Phủ Vũ Tướng Liêm" 31 lần và "Khốc Hư" 25 lần trên mười hai phần, mà
+   * vẫn qua, vì có mặt ở tám phần thì tám vẫn nhỏ hơn chín. Một cái tên nhắc
+   * ba lần trong cùng một phần và nhắc một lần đều đếm ra đúng con số 1.
+   *
+   * Ngân sách: trung bình một lần mỗi phần cho cả bài. Prompt đòi chặt hơn
+   * (một lần mỗi phần VÀ không có mặt ở cả ba phần của chặng), nên ngưỡng ở
+   * đây là mức sàn để bắt lỗi, không phải mức mong muốn.
+   */
+  const demLan = new Map<string, number>();
+  const vanCacPhan = muc
+    .map((m) => [m.ketLuan, ...m.tieuChi.flatMap((t) => [t.noiDung, t.luongNguoc ?? ''])].join(' '))
+    .join(' ');
+  for (const ten of new Set(tenCachCuc)) {
+    const d = vanCacPhan.split(ten).length - 1;
+    if (d) demLan.set(ten, d);
+  }
+  const lapNhieu = [...demLan.entries()].filter(([, d]) => d > muc.length);
+  kiem(
+    `Không tên nào nhắc quá ${muc.length} lần trong cả bài`,
+    lapNhieu.length === 0,
+    lapNhieu.sort((a, b) => b[1] - a[1])
+  );
+
+  /*
+   * MỖI TIÊU CHÍ CHỈ NÊU TÊN SAO Ở MỘT CÂU.
+   *
+   * Đây là luật chống cái khuôn [tên sao] + động từ + [danh từ trừu tượng].
+   * Đo tỉ lệ chứ không đo tuyệt đối: một tiêu chí lỡ nêu tên ở hai câu không
+   * làm hỏng bài, cả bài cùng làm vậy mới hỏng.
+   */
+  const tatCaTieuChi = muc.flatMap((m) => m.tieuChi);
+  const quaMotCau = tatCaTieuChi.filter((t) => {
+    const cau = [t.noiDung, t.luongNguoc ?? '']
+      .join(' ')
+      .split(/(?<=[.!?;])\s+/)
+      .filter((c) => c.trim().length > 10);
+    const coTen = cau.filter((c) =>
+      nhanDangThucThe(c).some((x) => x.loai === 'STAR' || x.loai === 'TRANSFORMATION' || x.loai === 'FORMATION')
+    );
+    return coTen.length > 1;
+  });
+  const tyLeMotCau = 1 - quaMotCau.length / tatCaTieuChi.length;
+  /*
+   * NGƯỠNG 70% LÀ SÀN CHỐNG TỤT, KHÔNG PHẢI MỨC MONG MUỐN.
+   *
+   * Đây là phép đo trên một bộ sinh ngẫu nhiên, nên nó có phương sai. Đo được
+   * qua các lượt: khuôn câu 80%+ rồi 75%; nhịp 60% (trước khi đổi cách ra
+   * luật) rồi 80%+ rồi 77%. Dải thật nằm khoảng 75–85%.
+   *
+   * Đặt ngưỡng 80% là đặt nó giữa dải ấy, và một cái cổng bật tắt theo nhiễu
+   * thì chỉ dạy người đọc log thói quen chạy lại cho tới khi xanh — lúc đó nó
+   * thôi đo được gì. Ngưỡng ở đây thấp hơn sàn quan sát được, để nó chỉ đỏ khi
+   * có thứ THẬT SỰ tụt. Mức muốn đạt vẫn là 80%+ và vẫn phải sửa bằng prompt,
+   * không phải bằng cách hạ con số này thêm lần nữa.
+   */
+  kiem(
+    'Từ 70% tiêu chí trở lên chỉ nêu tên sao ở một câu',
+    tyLeMotCau >= 0.7,
+    `${Math.round(tyLeMotCau * 100)}% — ${quaMotCau.length}/${tatCaTieuChi.length} tiêu chí nêu tên ở nhiều câu`
+  );
+
+  /*
+   * NHỊP CÂU.
+   *
+   * Bài đo được câu trung bình 21,7 từ, chỉ 9% số câu dưới 12 từ. Văn đều một
+   * nhịp thì không sai chỗ nào mà đọc không đọng lại chỗ nào.
+   *
+   * Đếm câu ngắn chứ không đếm độ dài trung bình: trung bình che mất chuyện
+   * cần biết. Một bài toàn câu 21 từ và một bài xen câu 6 từ với câu 35 từ cho
+   * cùng một số trung bình, mà đọc khác hẳn nhau.
+   *
+   * Đo THEO TIÊU CHÍ chứ không đo tỉ lệ cả bài, vì luật trong prompt viết theo
+   * tiêu chí. Bản đầu ra luật bằng tỉ lệ cả bài ("cứ năm câu có một câu ngắn")
+   * và model không nhúc nhích: 9% lên 10%. Nó viết từng tiêu chí một, không có
+   * cách nào tự đếm một tỉ lệ nó không nhìn thấy. Tỉ lệ cả bài vẫn in ra để
+   * đọc, nhưng thứ quyết định đạt hay không là luật model thật sự làm được.
+   */
+  const ngan = (c: string) => c.trim().split(/\s+/).length < 12;
+  const coCauNgan = tatCaTieuChi.filter((t) =>
+    [t.noiDung, t.luongNguoc ?? '']
+      .join(' ')
+      .split(/(?<=[.!?;])\s+/)
+      .filter((c) => c.trim().length > 10)
+      .some(ngan)
+  );
+  const tyLeCoNgan = coCauNgan.length / tatCaTieuChi.length;
+  const cauCaBai = vanCacPhan.split(/(?<=[.!?;])\s+/).filter((c) => c.trim().length > 10);
+  const tyLeNgan = cauCaBai.filter(ngan).length / cauCaBai.length;
+  // Ngưỡng 70%: cùng lý do với phép đo trên, xem ghi chú ở đó
+  kiem(
+    'Từ 70% tiêu chí trở lên có ít nhất một câu ngắn',
+    tyLeCoNgan >= 0.7,
+    `${Math.round(tyLeCoNgan * 100)}% tiêu chí — cả bài ${Math.round(tyLeNgan * 100)}% câu dưới 12 từ`
+  );
   const vanCaBai = bai.chang
     .flatMap((c) => c.muc)
     .flatMap((m) => [m.ketLuan, ...m.tieuChi.flatMap((t) => [t.noiDung, t.luongNguoc ?? ''])])

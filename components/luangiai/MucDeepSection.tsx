@@ -103,12 +103,19 @@ export function MucDeepSection({
         </p>
       </div>
 
-      <ChuSao
-        van={muc.ketLuan}
-        ten={tenCoThat}
-        className="text-[21px] font-semibold"
-        style={{ color: 'var(--fg)', lineHeight: 1.45 }}
-      />
+      {/*
+        Câu kết luận CÓ THỂ rỗng: lớp lọc gạt được nó mà vẫn giữ phần — xem
+        ghi chú trong ban-doc-sau.ts. Rỗng thì không vẽ, đừng vẽ một thẻ trống
+        để lại một khoảng hở không ai hiểu vì sao có.
+      */}
+      {muc.ketLuan && (
+        <ChuSao
+          van={muc.ketLuan}
+          ten={tenCoThat}
+          className="text-[21px] font-semibold"
+          style={{ color: 'var(--fg)', lineHeight: 1.45 }}
+        />
+      )}
 
       {tieuChiThuong.map((t) => (
         <div key={t.nhan} className="flex flex-col gap-[6px]">

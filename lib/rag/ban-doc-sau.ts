@@ -24,7 +24,7 @@ import { docObjectJson, laChuoiJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { lapKeHoach } from './planner';
 import { boMarkdown, doiTenCung, suaCauTiengLong } from './sua-chua';
-import { nhanDangThucThe } from './thuc-the';
+import { boDau, nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
 
 /**
@@ -54,7 +54,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.1';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.2';
 
 export interface TieuChiRa {
   nhan: string;
@@ -324,6 +324,39 @@ LUỚNG NGƯỢC LÀ BẮT BUỘC, không phải tuỳ chọn.
 Tiêu chí nào đi tới L3 trở lên đều phải có trường "luongNguoc" khác rỗng. Một
 phần chỉ khen là một phần không dùng được, dù đọc dễ chịu.
 
+BA LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải lời khuyên về giọng.
+
+1. MỖI TIÊU CHÍ CHỈ ĐƯỢC NÊU TÊN SAO Ở ĐÚNG MỘT CÂU.
+   Câu ấy nêu tên rồi dịch ngay sang hành vi. Mọi câu còn lại trong cùng tiêu
+   chí — kể cả câu lực ngược — viết hành vi trần, không nhắc tên nào nữa.
+   Câu không nêu tên thì nói THẲNG HÀNH VI, không nói về lá số nữa. Cấm thay
+   cái tên bằng một chữ chung chung: "các yếu tố", "những yếu tố", "cấu trúc
+   này", "tổ hợp này", "điều này" — người đọc không tra được chúng, nên câu ấy
+   vừa mất cái tên vừa mất luôn thông tin.
+
+   Vì sao: đo trên một bài đã sinh, 100 câu dùng "làm", 68 câu "khiến", 45 câu
+   "cho thấy", gần như câu nào cũng đúng một khuôn [tên sao] + động từ + [danh
+   từ trừu tượng]. Đọc ba đoạn thì hay; đọc mười hai phần thì người đọc bắt
+   được cái khuôn, và khi đã thấy cái khuôn thì họ thôi tin.
+
+2. MỖI CÁCH CỤC HOẶC BỘ SAO CHỈ ĐƯỢC NHẮC MỘT LẦN TRONG MỘT PHẦN,
+   và KHÔNG ĐƯỢC có mặt ở cả ba phần của chặng này.
+   Vì sao: cùng bài đó, một bộ sao xuất hiện 31 lần trên 12 phần và một bộ
+   khác 25 lần. Bài đọc ra như thể người này chỉ có hai bộ sao. Lá số nào cũng
+   còn nhiều dữ kiện khác — dùng chúng, đừng quay lại cái tên to nhất.
+
+3. NHỊP: MỖI TIÊU CHÍ PHẢI CÓ ÍT NHẤT MỘT CÂU DƯỚI MƯỜI TỪ.
+   Câu ngắn ấy đặt sau một câu dài, và nó nói điều vừa rồi đọng lại thành cái
+   gì. Không phải câu chuyển ý, không phải câu tóm tắt.
+
+   Ví dụ nhịp đúng:
+   "Bạn nhận việc nhanh hơn mức mình kịp thu xếp, rồi bù bằng cách cắt giờ ngủ
+   và hoãn những thứ không ai thúc. Chuyện đó chạy được vài tháng. Sau đó thì
+   người quanh bạn bắt đầu mặc định là bạn luôn nhận."
+
+   Vì sao: bài đo được câu trung bình 21,7 từ, chỉ 9% số câu dưới 12 từ. Văn
+   đều một nhịp thì không sai chỗ nào mà cũng không đọng lại chỗ nào.
+
 KHỐI GƯƠNG — tiêu chí đánh dấu [KHỐI GƯƠNG] của mỗi phần:
 Đọc phần này QUA cung đối diện, tức là nhìn từ phía ngược lại. Đây là chỗ bài
 đọc thôi nói về một phần đời và bắt đầu nói về quan hệ giữa hai phần. Viết nó
@@ -364,12 +397,12 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   "muc": [
     {
       "id": "${thuTuMuc[0]}",
-      "ketLuan": "1 câu, tối đa 28 từ, là KẾT LUẬN VỀ NGƯỜI ĐỌC — không phải tên chủ đề, không chứa tên cung",
+      "ketLuan": "1 câu, tối đa 28 từ, là KẾT LUẬN VỀ NGƯỜI ĐỌC — không phải tên chủ đề, không chứa tên cung. KHÔNG PHẢI LỜI KHUYÊN: cấm mở bằng Bạn nên, Bạn hãy, Bạn cần. Nói người này VỐN thế nào, không nói họ phải làm gì",
       "tieuChi": [
         {
           "nhan": "chép đúng nhãn tiêu chí ở trên, không tự đổi",
-          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi",
-          "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có",
+          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có ít nhất một câu dưới mười từ, đặt sau một câu dài. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
+          "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có. KHÔNG mở đầu bằng tên sao",
           "maDuKien": ["F002"]
         }
       ]
@@ -397,16 +430,23 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
     return null;
   }
 
-  /** Bóc mã, bỏ câu ra lệnh, chặn sao không có trong dữ liệu */
-  const sach = (x: unknown): string | null => {
-    if (typeof x !== 'string') return null;
+  /**
+   * Bóc mã, bỏ câu ra lệnh, chặn sao không có trong dữ liệu — KÈM LÝ DO.
+   *
+   * Phải nói được lý do vì lớp lọc này có quyền xoá cả một phần đời: mất câu
+   * kết luận là mất luôn sáu tiêu chí đã viết xong ở dưới. Một dòng log ghi
+   * "câu kết luận bị lọc" mà không nói lọc vì cái gì thì lần sau vẫn phải ngồi
+   * đoán lại từ đầu.
+   */
+  const sachCoLyDo = (x: unknown): { van: string | null; lyDo: string } => {
+    if (typeof x !== 'string') return { van: null, lyDo: 'model không trả chuỗi' };
     const s = boMarkdown(
       x
         .replace(/\s*[([](?:\s*[FE]\d{3}\s*,?)+\s*[)\]]/g, '')
         .replace(/\b[FE]\d{3}\b/g, '')
         .replace(/\s+([.,;])/g, '$1')
     );
-    if (s.length < 15) return null;
+    if (s.length < 15) return { van: null, lyDo: 'quá ngắn sau khi bóc mã' };
     /*
      * Bỏ câu ra lệnh VÀ câu phán quyết, giữ phần còn lại.
      *
@@ -415,7 +455,9 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
      * đúng để trừng phạt một thứ sai — cùng lý lẽ đã dùng cho câu ra lệnh.
      */
     const khongLenh = boCauPhanQuyet(boCauRaLenh(s));
-    if (khongLenh.length < 15) return null;
+    if (khongLenh.length < 15) {
+      return { van: null, lyDo: `rỗng sau khi bỏ câu ra lệnh / phán quyết: ${s.slice(0, 120)}` };
+    }
     /*
      * Câu dựng ra tên sao không có thật thì bỏ hẳn câu ấy — xem boCauTenBia.
      * Lớp `saoChoPhep` ngay bên dưới KHÔNG bắt được dạng này: nó hỏi "ngôi sao
@@ -423,12 +465,18 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
      * mốc có thật — nên đi qua sạch sẽ.
      */
     const khongBia = boCauTenBia(khongLenh);
-    if (khongBia.length < 15) return null;
+    if (khongBia.length < 15) {
+      return { van: null, lyDo: `rỗng sau khi bỏ câu có tên sao bịa: ${khongLenh.slice(0, 120)}` };
+    }
     const bia = nhanDangThucThe(khongBia).filter(
       (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !saoChoPhep.has(t.id)
     );
-    return bia.length ? null : khongBia;
+    if (bia.length) {
+      return { van: null, lyDo: `nhắc sao không có trên lá số: ${bia.map((t) => t.ten).join(', ')}` };
+    }
+    return { van: khongBia, lyDo: '' };
   };
+  const sach = (x: unknown): string | null => sachCoLyDo(x).van;
 
   const theoId = new Map(
     tho.muc
@@ -455,15 +503,31 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       cauHoiGoiY: chu?.cauHoi ?? '',
     };
 
-    const ketLuan = sach(t?.ketLuan);
-    if (!t || !ketLuan) {
-      console.warn(
-        `[ban-doc-sau] ${id}: ${!t ? 'model không trả phần này' : 'câu kết luận bị lọc'}`
-      );
+    if (!t) {
+      console.warn(`[ban-doc-sau] ${id}: model không trả phần này`);
       // Không bịa cho đủ. Giao diện hiện câu thành thật + nút thử lại.
       muc.push({ ...nen, tieuDe: chu?.nhan ?? id, ketLuan: '', tieuChi: [], thieuCanCu: true });
       continue;
     }
+
+    /*
+     * MẤT CÂU KẾT LUẬN THÌ KHÔNG MẤT CẢ PHẦN.
+     *
+     * Trước đây câu kết luận bị lọc là phần bị vứt luôn. Cái giá của tỉ lệ ấy
+     * đo được: câu "Bạn nên có cộng sự trong việc lớn, nhưng chỉ hợp tác khi
+     * tiền, quyền và trách nhiệm được nói rõ từ đầu" là một câu ra lệnh, bị
+     * gạt đúng luật; kết luận chỉ có một câu nên gạt xong là rỗng, và sáu tiêu
+     * chí đã viết xong ở dưới chết theo.
+     *
+     * Đây đúng là lỗi đã sửa hai lần ở chỗ khác — vứt nhiều thứ đúng để trừng
+     * phạt một thứ sai. Phần thiếu câu kết luận vẫn là một phần đọc được; phần
+     * không có tiêu chí thì không.
+     */
+    const kqKetLuan = sachCoLyDo(t.ketLuan);
+    if (!kqKetLuan.van) {
+      console.warn(`[ban-doc-sau] ${id}: câu kết luận bị lọc — ${kqKetLuan.lyDo}`);
+    }
+    const ketLuan = kqKetLuan.van ?? '';
 
     /*
      * Ghép theo NHÃN CHUẨN, không theo thứ tự model trả về.
@@ -529,14 +593,40 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   const doanKhau = sach(tho.doanKhau) ?? '';
   const cauBacCau = cauHinh.thuTu === 4 ? null : sach(tho.cauBacCau);
 
+  /*
+   * DỌN Ở ĐÂY, KHÔNG DỌN Ở `sinhBanDocSau`.
+   *
+   * Vòng dọn này trước nằm ở `sinhBanDocSau`. Nhưng API chỉ gọi `dungChang` —
+   * một chặng mỗi lượt, vì trần một request là 60 giây — nên toàn bộ khâu dọn
+   * CHƯA BAO GIỜ chạy ở prod. Thứ duy nhất gọi `sinhBanDocSau` là bộ nghiệm
+   * thu, tức là bộ đo đang đo một đường người dùng không đi qua.
+   *
+   * Đó là dạng lỗi tệ hơn một lỗi thường: nó làm mọi số đo xanh đẹp mà sản
+   * phẩm thật vẫn hỏng, và hỏng im lặng.
+   */
+  const tenChoSua = nhanDangCachCuc(vao.laSo).map((c) => c.ten);
+  const doiCa = async (van: string) => boMarkdown(doiTenCung(await suaCauTiengLong(van, tenChoSua)));
+
+  const doanKhauSach = await doiCa(doanKhau);
+  const cauBacCauSach = cauBacCau ? await doiCa(cauBacCau) : null;
+  for (const m of muc) {
+    if (m.thieuCanCu) continue;
+    m.ketLuan = await doiCa(m.ketLuan);
+    for (const t of m.tieuChi) {
+      t.noiDung = await doiCa(t.noiDung);
+      if (t.luongNguoc) t.luongNguoc = await doiCa(t.luongNguoc);
+    }
+    if (m.id === 'tat-ach') datMienTruYTe(m);
+  }
+
   return {
     id: vao.chang,
     thuTu: cauHinh.thuTu,
     tieuDe: cauHinh.tieuDe,
     subtitle: cauHinh.subtitle,
     muc,
-    doanKhau,
-    cauBacCau,
+    doanKhau: doanKhauSach,
+    cauBacCau: cauBacCauSach,
   };
 }
 
@@ -549,7 +639,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
  */
 export function tomTatChang(c: ChangSau): string[] {
   return c.muc
-    .filter((m) => !m.thieuCanCu)
+    .filter((m) => !m.thieuCanCu && m.ketLuan)
     .map((m) => `${m.tieuDe}: ${m.ketLuan}`);
 }
 
@@ -589,22 +679,7 @@ export async function sinhBanDocSau(vao: {
   // Mất quá nửa số chặng thì bài không còn là một bài — để lớp gọi quyết
   if (chang.length < 2) return null;
 
-  // Dọn tên cung và tiếng lóng một lượt cuối, như mọi bề mặt khác
-  const tenChoSua = [...nhanDangCachCuc(vao.laSo).map((c) => c.ten)];
-  for (const c of chang) {
-    c.doanKhau = boMarkdown(doiTenCung(await suaCauTiengLong(c.doanKhau, tenChoSua)));
-    if (c.cauBacCau) {
-      c.cauBacCau = boMarkdown(doiTenCung(await suaCauTiengLong(c.cauBacCau, tenChoSua)));
-    }
-    for (const m of c.muc) {
-      if (m.thieuCanCu) continue;
-      m.ketLuan = boMarkdown(doiTenCung(m.ketLuan));
-      for (const t of m.tieuChi) {
-        t.noiDung = boMarkdown(doiTenCung(t.noiDung));
-        if (t.luongNguoc) t.luongNguoc = boMarkdown(doiTenCung(t.luongNguoc));
-      }
-    }
-  }
+  // Khâu dọn nằm trong dungChang — xem ghi chú ở đó, prod chỉ đi qua đường ấy
 
   return {
     mode: 'deep_read',
@@ -657,4 +732,55 @@ export function soatBanDocSau(bai: BaiDocSau) {
     van,
     bai.chang.flatMap((c) => c.muc.map((m) => m.ketLuan)).filter(Boolean)
   );
+}
+
+/* ========================================================================== */
+/* LỜI MIỄN TRỪ Y TẾ — bảo đảm bằng mã, không bằng cách dặn model              */
+/* ========================================================================== */
+
+/**
+ * Câu miễn trừ cố định cho phần sức khoẻ.
+ *
+ * Trước đây prompt dặn model tự viết, và nó viết — nhưng mỗi lượt một kiểu.
+ * Một lượt ra "đây không phải chẩn đoán", lượt sau ra "chứ không nên hiểu
+ * thành một chẩn đoán". Hai bộ đo của chính dự án này liền cãi nhau về đúng
+ * một câu: bộ cấm định bệnh thấy chữ "chẩn đoán" và bắt, bộ đòi miễn trừ
+ * không khớp cụm nào nên báo thiếu.
+ *
+ * Cái sai không nằm ở hai biểu thức ấy. Nó nằm ở chỗ một RÀNG BUỘC AN TOÀN bị
+ * đặt vào tay thứ không tất định, rồi đi đo lại bằng phép dò chữ. Đuổi theo
+ * cách diễn đạt của model là cuộc đuổi không có đích: sửa xong lượt này thì
+ * lượt sau nó viết kiểu khác.
+ *
+ * Nên câu này do mã đặt. Model vẫn được nói về giới hạn theo lời của nó; câu
+ * dưới đây chỉ bảo đảm rằng dù model nói gì thì lời miễn trừ VẪN CÓ.
+ */
+const MIEN_TRU_Y_TE =
+  'Phần này là xu hướng để tham khảo, không phải chẩn đoán y tế; cơ thể bạn cần người có chuyên môn xem, không phải một lá số.';
+
+/** Đã có sẵn lời miễn trừ chưa — nhận cả những cách nói khác nhau của model */
+function daCoMienTru(van: string): boolean {
+  const s = boDau(van);
+  return (
+    s.includes('tham khao') ||
+    s.includes('chan doan') ||
+    s.includes('khong thay the') ||
+    s.includes('chuyen mon')
+  );
+}
+
+/**
+ * Gắn lời miễn trừ vào tiêu chí CUỐI của phần sức khoẻ, nếu chưa có.
+ *
+ * Gắn vào tiêu chí cuối chứ không gắn vào câu kết luận: câu kết luận hiện ở
+ * đầu phần bằng cỡ chữ lớn, nhét một câu rào vào đó là mở đầu bằng lời chối
+ * trách nhiệm. Người đọc mở phần sức khoẻ để biết về mình, không phải để đọc
+ * điều khoản.
+ */
+function datMienTruYTe(m: MucSau): void {
+  const van = [m.ketLuan, ...m.tieuChi.flatMap((t) => [t.noiDung, t.luongNguoc ?? ''])].join(' ');
+  if (daCoMienTru(van)) return;
+  const cuoi = m.tieuChi[m.tieuChi.length - 1];
+  if (!cuoi) return;
+  cuoi.noiDung = `${cuoi.noiDung.trim()} ${MIEN_TRU_Y_TE}`;
 }
