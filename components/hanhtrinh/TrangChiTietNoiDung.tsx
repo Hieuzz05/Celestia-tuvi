@@ -150,7 +150,7 @@ export function TrangChiTietNoiDung() {
         {/* A. Header — breadcrumb, lá số đang xem, tiêu đề đời thường */}
         <div className="flex flex-col gap-[12px]">
           <nav className="flex flex-wrap items-center gap-[8px] text-[13px]">
-            <Link href="/hanh-trinh" className="link-text">
+            <Link href="/hanh-trinh" className="link-text link-action">
               {t.chiTietHan.quayLai}
             </Link>
             <span style={{ color: 'var(--fg-subtle)' }}>›</span>

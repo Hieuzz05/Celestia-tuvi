@@ -131,7 +131,7 @@ export function KetQuaKetNoi({
         </div>
       </details>
 
-      <Link href={`/hoi-dap?q=${encodeURIComponent(cauHoiTiep)}`} className="link-text">
+      <Link href={`/hoi-dap?q=${encodeURIComponent(cauHoiTiep)}`} className="link-text link-action">
         Hỏi Celes thêm về hai người →
       </Link>
 

@@ -164,12 +164,12 @@ export function MucDeepSection({
             setMoCanCu(moi);
             if (moi) ghiSuKien('why_opened', { khoi: muc.id });
           }}
-          className="link-text"
+          className="link-text link-action"
           aria-expanded={moCanCu}
         >
           {moCanCu ? 'Thu gọn' : 'Vì sao Celes nói vậy?'}
         </button>
-        <Link href={duongHoi(muc.cauHoiGoiY)} className="link-text">
+        <Link href={duongHoi(muc.cauHoiGoiY)} className="link-text link-action">
           Hỏi Celes về phần này
         </Link>
       </div>

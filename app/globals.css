@@ -23,6 +23,18 @@
   /* ---------- Palette gốc ---------- */
   --color-aubergine: #240029;
   --color-fuchsia-signal: #df37a7;
+  /*
+   * Hồng đậm hơn một bậc, DÀNH RIÊNG cho nền nút.
+   *
+   * Đo bằng công thức WCAG: chữ trắng trên #df37a7 cho tỉ lệ 4.01, mà chữ
+   * thường cần 4.5. Nút chính là thứ được bấm nhiều nhất sản phẩm, nên đó là
+   * chỗ sai đắt nhất. #d32298 cho 4.72 — cùng sắc, tối hơn đúng một nấc mà mắt
+   * gần như không phân biệt được.
+   *
+   * KHÔNG đổi #df37a7: nó vẫn là màu nhấn cho chữ, viền và tên sao, nơi nó
+   * đứng trên nền sáng và không phải gánh chữ trắng.
+   */
+  --color-fuchsia-deep: #d32298;
   --color-heather: #6d526d;
   --color-glowstick: #ffcc11;
   --color-plum-tinted: #d4ccd4;
@@ -78,11 +90,17 @@
   --fg-body: var(--color-aubergine);
   --fg-soft: var(--color-heather);
   --fg-muted: var(--color-heather);
-  --fg-subtle: var(--color-smoke);
+  /*
+   * #bbadbb trên nền trắng chỉ cho 2.14, mà nó đang dùng cho chữ 11–12px ở
+   * màn đăng nhập và Kết nối — gần như không đọc được. #8c698c cho 4.65, đạt
+   * chuẩn, và vẫn nhạt hơn `--fg-muted` (6.82) nên bậc "nhạt nhất" giữ được ý
+   * nghĩa thay vì trùng với bậc trên.
+   */
+  --fg-subtle: #8c698c;
 
   /* Hành động: hồng nóng, duy nhất trên mỗi khung nhìn */
   --accent: var(--color-fuchsia-signal);
-  --action-bg: var(--color-fuchsia-signal);
+  --action-bg: var(--color-fuchsia-deep);
   --action-fg: var(--color-canvas);
 
   /* Trạng thái thành công: bộ ba viền / nền / chữ, không rò sang chỗ khác */
@@ -118,7 +136,7 @@
   --fg-subtle: var(--color-smoke);
 
   --accent: var(--color-fuchsia-signal);
-  --action-bg: var(--color-fuchsia-signal);
+  --action-bg: var(--color-fuchsia-deep);
   --action-fg: var(--color-canvas);
 
   --ok-fg: var(--color-mint);
@@ -277,6 +295,26 @@ body {
 /* ---------- Nút ---------- */
 
 /* Nút chuyển đổi duy nhất — chỉ một cái trên mỗi khung nhìn */
+/*
+ * TRẠNG THÁI FOCUS BÀN PHÍM — trước đây toàn bộ sản phẩm không có dòng nào.
+ *
+ * Người dùng bàn phím và trình đọc màn hình di chuyển bằng Tab. Không có vòng
+ * focus thì họ không biết mình đang đứng ở đâu, và sản phẩm thành không dùng
+ * được bằng bàn phím — không phải khó dùng, mà là không dùng được.
+ *
+ * Dùng `:focus-visible` chứ không phải `:focus`: `:focus` bật cả khi bấm chuột,
+ * nên mọi cú click đều để lại một vòng viền mà người dùng chuột không cần.
+ *
+ * Vòng viền nằm NGOÀI phần tử (`outline-offset`) nên không làm xê dịch bố cục,
+ * và dùng màu chữ chứ không dùng màu nhấn: nút chính vốn đã là nền hồng, vòng
+ * hồng trên nền hồng thì không thấy gì.
+ */
+:where(a, button, [role='button'], [role='menuitem'], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  border-radius: var(--radius-buttons);
+}
+
 .btn-primary {
   background: var(--action-bg);
   color: var(--action-fg);
@@ -398,17 +436,49 @@ body {
   }
 }
 
+/*
+ * LIÊN KẾT VĂN BẢN — kiểu bấm được nhiều nhất sản phẩm: 56 chỗ, so với 30 chỗ
+ * dùng nút chính.
+ *
+ * Bản cũ để màu mờ, không gạch chân, và chỉ đổi màu khi rê chuột. Trên điện
+ * thoại KHÔNG CÓ rê chuột, nên 56 chỗ bấm được ấy không còn một dấu hiệu nào
+ * cho thấy chúng bấm được — người dùng cảm ứng đọc chúng như chữ phụ màu xám.
+ *
+ * Nay gạch chân ngay ở trạng thái nghỉ. Gạch chân là dấu hiệu duy nhất của
+ * liên kết không cần màu, không cần hover và không phụ thuộc thiết bị.
+ */
 .link-text {
   color: var(--fg-muted);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.14px;
-  transition: color 0.15s ease;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 3px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
 .link-text:hover,
+.link-text:focus-visible,
 .link-text[data-active="true"] {
   color: var(--fg);
+  text-decoration-color: currentColor;
+}
+
+/*
+ * Liên kết đứng RIÊNG làm một hành động thì cần vùng chạm rộng hơn.
+ *
+ * Nói cho đúng chuẩn: WCAG 2.2 mức AA đòi 24x24 CSS px, nên bản cũ (~33px)
+ * KHÔNG vi phạm. Nhưng 24 là mức sàn để không bị tính là lỗi, không phải mức
+ * dễ bấm — ngón cái trên điện thoại cần khoảng 44.
+ *
+ * Chỉ áp cho liên kết đứng riêng. Liên kết nằm giữa câu văn vẫn phải ôm sát
+ * dòng chữ, nếu không nó phá mất nhịp dòng.
+ */
+.link-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 /* ---------- Ô nhập: bo 3px, sắc hơn card/nút để thấy rõ là "vật liệu" khác ---------- */
@@ -430,7 +500,6 @@ body {
 }
 
 .field-input:focus {
-  outline: none;
   border-color: var(--fg);
   box-shadow: 0 0 0 1px var(--fg);
 }
@@ -494,7 +563,7 @@ body {
   --fg-body: var(--color-aubergine);
   --fg-soft: var(--color-heather);
   --fg-muted: var(--color-heather);
-  --fg-subtle: var(--color-smoke);
+  --fg-subtle: #8c698c; /* nền sáng: #bbadbb chỉ cho 2.14 — xem ghi chú ở :root */
   --ok-fg: var(--color-forest);
   --ok-bg: var(--color-honeydew);
   --ok-line: var(--color-mint);

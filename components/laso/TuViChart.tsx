@@ -158,11 +158,11 @@ export function TuViChart({
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             {t.banDo.namXem}
           </span>
-          <button className="link-text" onClick={() => onNamXemChange(namXem - 1)} aria-label={t.banDo.namTruoc}>
+          <button className="link-text link-action" onClick={() => onNamXemChange(namXem - 1)} aria-label={t.banDo.namTruoc}>
             ‹
           </button>
           <span className="text-[15px] tabular-nums">{namXem}</span>
-          <button className="link-text" onClick={() => onNamXemChange(namXem + 1)} aria-label={t.banDo.namSau}>
+          <button className="link-text link-action" onClick={() => onNamXemChange(namXem + 1)} aria-label={t.banDo.namSau}>
             ›
           </button>
         </div>
@@ -170,13 +170,13 @@ export function TuViChart({
         <div className="ml-auto flex items-center gap-[16px]">
           {/* Bật tắt từng lớp là việc của người đã quen mệnh bàn — chỉ mở ở
               chế độ Chuyên sâu, bằng không nó phá luôn ý nghĩa của hai chế độ kia. */}
-          <button className="link-text" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
+          <button className="link-text link-action" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
             {t.banDo.lopHienThi}
           </button>
-          <button className="link-text" onClick={xuatPng}>
+          <button className="link-text link-action" onClick={xuatPng}>
             {t.banDo.xuatAnh}
           </button>
-          <button className="link-text" onClick={() => window.print()}>
+          <button className="link-text link-action" onClick={() => window.print()}>
             {t.banDo.inRa}
           </button>
         </div>

@@ -228,13 +228,13 @@ function KhoiCard({
 
       <div className="flex flex-wrap items-center gap-[18px]">
         {day && (
-          <button onClick={doiTrangThai} className="link-text" aria-expanded={moCanCu}>
+          <button onClick={doiTrangThai} className="link-text link-action" aria-expanded={moCanCu}>
             {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
           </button>
         )}
         <Link
           href={duongHoi(khoi.cauHoiGoiY)}
-          className="link-text"
+          className="link-text link-action"
           onClick={() => ghiSuKien('ask_submitted', { nguon: `luan_sau:${khoi.id}` })}
         >
           {t.luanSau.hoiVePhanNay}

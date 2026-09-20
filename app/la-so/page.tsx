@@ -465,7 +465,7 @@ function TrangLaSo() {
                     ? `/luan-giai/sau?${boiCanhUrl}`
                     : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`
                 }
-                className="link-text"
+                className="link-text link-action"
                 onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-doc-sau' })}
               >
                 Hoặc đọc cả mười hai phần →
