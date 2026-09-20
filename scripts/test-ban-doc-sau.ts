@@ -27,6 +27,9 @@ import {
   type MucId,
 } from '../lib/tuvi/chang-cung';
 import { TIEU_CHI_SAU, TONG_TIEU_CHI_SAU } from '../lib/tuvi/tieu-chi-sau';
+import { tenBiaChan } from '../lib/rag/thuc-the';
+import { boCauTenBia } from '../lib/rag/chuan-ngon-ngu';
+import { soatNgonNgu } from '../lib/rag/ngon-ngu';
 
 const sinh = process.argv.includes('--sinh');
 
@@ -108,6 +111,51 @@ const lechGuong = mucIds.filter((m) => {
   return !doi || MUC_CUA_CUNG[GUONG[CUNG_CUA_MUC[doi]]] !== m;
 });
 kiem('Quan hệ gương đối xứng hai chiều', lechGuong.length === 0, lechGuong);
+
+/* -------------------------------------------------------------------------- */
+console.log('\n== NHẬN DẠNG TÊN SAO BỊA ==\n');
+
+/*
+ * Bộ ca này có cả ca ÂM — những câu PHẢI đi qua sạch.
+ *
+ * Phép đo chỉ cấm thì rất dễ làm cho "đúng": cấm hết thì không còn lỗi nào, và
+ * bài cũng không còn gì. Bốn ca âm dưới đây là bốn chỗ một phép đo cẩu thả sẽ
+ * bắt nhầm — "Hỏa Tinh" và "Hoa Cái" rụng xuống thành "hoa" nếu bỏ dấu trước
+ * khi so, còn "Văn Xương Văn Khúc" là hai tên thật đứng liền nhau.
+ */
+const caBia: [string, string | null][] = [
+  ['Hóa Triệt đứng ở đó.', 'Hóa Triệt'],
+  ['Hoá Tuần chiếu về.', 'Hoá Tuần'],
+  ['Hóa Kỵ và Triệt cùng một chỗ.', null],
+  ['Hỏa Tinh với Hoa Cái ngồi cạnh Đào Hoa.', null],
+  ['Văn Xương Văn Khúc giáp mệnh.', null],
+  ['Kình Dương Đà La ép hai bên.', null],
+  ['Bạn Thấy Rằng Mọi Thứ Đều Ổn.', null],
+  // Hai ca bịa BẮT ĐƯỢC TRÊN BÀI THẬT, không phải ca nghĩ ra
+  ['Thiên Âm Hóa Khoa từ cha mẹ.', 'Thiên Âm'],
+  ['Tài Vi gặp Triệt cho thấy nguồn tiền đến chậm.', 'Tài Vi'],
+  // Hai ca âm cũng bắt được trên bài thật — phép đo cũ tự dựng ra rồi tự báo
+  ['bộ Tử Phủ Vũ Tướng Liêm tạo nhu cầu dựng nền.', null],
+  ['Thân\nCái có sẵn là khí chất.', null],
+];
+const lechBia = caBia.filter(([cau, mong]) => {
+  const ra = tenBiaChan(cau);
+  return mong === null ? ra.length > 0 : !ra.includes(mong);
+});
+kiem('Bắt đúng tên bịa, không bắt nhầm tên thật', lechBia.length === 0, lechBia);
+
+kiem(
+  'Câu có tên bịa bị bỏ, câu sạch giữ nguyên',
+  boCauTenBia('Hóa Triệt đứng ở đó. Tử Vi ở cung kia.') === 'Tử Vi ở cung kia.' &&
+    boCauTenBia('Tử Vi ở cung kia.') === 'Tử Vi ở cung kia.'
+);
+
+kiem(
+  'Cổng ngôn ngữ đặt tên bịa ở mức CHẶN',
+  soatNgonNgu('Hóa Triệt đứng ở đó và bạn nên để ý điều này.', []).loi.some(
+    (l) => l.ma === 'ten-sao-bia' && l.mucDo === 'chan'
+  )
+);
 
 if (!sinh) {
   console.log(
@@ -275,6 +323,13 @@ async function do_() {
   }
   const chiemBai = [...demTen.entries()].filter(([, d]) => d > 9);
   kiem('Không cách cục nào xuất hiện ở hơn 9/12 phần', chiemBai.length === 0, chiemBai);
+  const vanCaBai = bai.chang
+    .flatMap((c) => c.muc)
+    .flatMap((m) => [m.ketLuan, ...m.tieuChi.flatMap((t) => [t.noiDung, t.luongNguoc ?? ''])])
+    .join(' ');
+  const biaTrongBai = tenBiaChan(vanCaBai);
+  kiem('Không tên sao bịa trong cả bài', biaTrongBai.length === 0, biaTrongBai);
+
 
   console.log('\n== AN TOÀN NỘI DUNG ==\n');
 

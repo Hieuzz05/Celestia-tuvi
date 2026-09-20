@@ -1,7 +1,7 @@
 import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
 import { BAC_CHAC_CHAN, mucNguYCuaCum } from './hinh-dang-tra-loi';
 import type { MucChacChan } from './uu-tien-nguon';
-import { boDau } from './thuc-the';
+import { boDau, tenBiaChan } from './thuc-the';
 
 /**
  * Cổng ngôn ngữ — bắt những cách viết mà framework cấm.
@@ -17,7 +17,7 @@ import { boDau } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.4';
+export const PHIEN_BAN_NGON_NGU = '2026.09.5';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -430,6 +430,30 @@ export function soatNgonNgu(
       mucDo: 'canh-bao',
       moTa: 'Gọi thẳng tên cung thay vì phần đời mà nó nói tới — người đọc không tra được.',
       viDu: [...new Set(cungLo)].join(', '),
+    });
+  }
+
+  /*
+   * TÊN SAO BỊA — dán hai cái tên có thật thành một cái không có thật.
+   *
+   * Bắt được trên bài thật: "Hóa Triệt". Lá số có Hóa Kỵ, lá số có Triệt, và
+   * model gộp chúng thành một ngôi sao chưa từng tồn tại. Mọi lớp kiểm trước
+   * đó đều cho qua, vì chúng hỏi "ngôi sao này có trên lá số không" chứ không
+   * hỏi "cái tên này có thật không".
+   *
+   * Đây là lỗi duy nhất ở bảng này được đặt mức CHẶN. Các lỗi còn lại là lỗi
+   * giọng: đọc lên thấy dở, nhưng không nói sai điều gì. Cái tên bịa thì nói
+   * sai một điều người đọc không có cách nào tự kiểm, và nghe càng đúng giọng
+   * chuyên môn thì càng dễ tin. Chữ dở sửa được ở lượt sau; một người mang cái
+   * tên ấy đi hỏi thầy thì không sửa được nữa.
+   */
+  const bia = tenBiaChan(van);
+  if (bia.length) {
+    loi.push({
+      ma: 'ten-sao-bia',
+      mucDo: 'chan',
+      moTa: 'Dựng ra một tên sao không có thật bằng cách ghép hai tên thật.',
+      viDu: bia.join(', '),
     });
   }
 

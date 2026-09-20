@@ -5,7 +5,7 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { docObjectJson, laChuoiJson } from './doc-json';
-import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauTenBia, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { ghiLanTruyHoi } from './nhat-ky';
@@ -386,13 +386,25 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
    * người đọc nhận ra ngay cả khi không gọi tên được vấn đề.
    */
   const vanTho = dungVanBaiDai(coCauTruc);
-  const van = doiTenCung(
-    await suaCauTiengLong(vanTho, [
-      ...tenCachCucCho(vao.laSo),
-      ...nhanDangThucThe(vanTho)
-        .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
-        .map((t) => t.ten),
-    ])
+  /*
+   * Bỏ CÂU có tên sao bịa trước khi vào cổng — xem CEL-097.
+   *
+   * Cổng đặt "tên sao bịa" ở mức chặn, mà chặn ở đây nghĩa là trả null và
+   * người đọc không nhận được gì. Với bài dài thì mất một câu rẻ hơn mất cả
+   * bài rất nhiều lần.
+   *
+   * Chat CỐ Ý không làm thế: câu trả lời bên ấy chỉ vài câu, khoét đi một câu
+   * là thấy ngay, nên để cổng chặn rồi sinh lại.
+   */
+  const van = boCauTenBia(
+    doiTenCung(
+      await suaCauTiengLong(vanTho, [
+        ...tenCachCucCho(vao.laSo),
+        ...nhanDangThucThe(vanTho)
+          .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
+          .map((t) => t.ten),
+      ])
+    )
   );
   const ngonNgu = soatNgonNgu(
     van,

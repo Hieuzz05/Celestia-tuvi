@@ -288,3 +288,174 @@ export const TEN_SAO_TRONG_TU_DIEN = new Set(
     (t) => t.ten
   )
 );
+
+/* ========================================================================== */
+/* TÊN SAO BỊA — chặn việc dán hai cái tên có thật thành một cái không có thật */
+/* ========================================================================== */
+
+/**
+ * Tìm những cái TÊN KHÔNG CÓ THẬT sinh ra từ việc dán hai tên thật lại.
+ *
+ * Ca đã gặp: "Hóa Triệt". Lá số có Hóa Kỵ, lá số có Triệt, và model gộp hai
+ * thứ ấy thành một ngôi sao chưa từng tồn tại trong bất kỳ sách nào. Lớp lọc
+ * sao-có-thật không thấy gì sai: nó quét thực thể, nhận ra "Triệt" — một mốc
+ * CÓ trên lá số — nên câu đi qua sạch sẽ.
+ *
+ * Đây là dạng bịa nguy hiểm nhất sản phẩm này có thể mắc. Một câu luận sai thì
+ * người đọc thấy không giống mình rồi bỏ qua. Một cái TÊN bịa thì người đọc
+ * tin, vì nó nghe đúng như mọi tên sao khác; và nếu họ mang đi hỏi người biết
+ * tử vi thì thứ mất không phải một câu, mà là chỗ đứng của cả sản phẩm.
+ *
+ * ---------------------------------------------------------------------------
+ * HAI PHÉP ĐO, HAI MỨC KHÁC NHAU — CỐ Ý KHÔNG GỘP
+ *
+ * (1) "Hóa X" — CHẮC. Tứ Hóa là tập đóng đúng bốn phần tử: Lộc, Quyền, Khoa,
+ *     Kỵ. Không có phần tử thứ năm, không tùy trường phái, không tùy lá số.
+ *     Nên "Hóa" đi với bất kỳ tên riêng nào khác đều là bịa, không phải chuyện
+ *     để cân nhắc. Đây là luật CHẶN.
+ *
+ * (2) Cụm dán còn lại — NGỜ. Sau khi ăn hết những tên có thật theo lối cụm dài
+ *     trước, phần dư từ hai chữ trở lên mà chữ nào cũng rút từ kho chữ của tên
+ *     sao thật thì rất giống hàng dán. Nhưng "rất giống" không đủ để chặn: tử
+ *     vi có lối gọi tắt truyền thống ("Liêm Tướng" cho Liêm Trinh với Thiên
+ *     Tướng) mà phép đo này không tách được khỏi hàng bịa. Nên nó chỉ CẢNH
+ *     BÁO — đo trên bài thật trước đã, đủ số liệu rồi hãy bàn chuyện nâng mức.
+ *
+ * Chặn nhầm ở đây đắt hơn chỗ khác: mỗi lần chặn là một tiêu chí biến mất khỏi
+ * bài mà người đọc không biết là đã có gì ở đó.
+ */
+
+const TU_HOA_DUOI = new Set(['Lộc', 'Quyền', 'Khoa', 'Kỵ']);
+
+/** Kho chữ của mọi tên sao / Tứ Hoá / mốc có thật — dùng cho phép đo (2) */
+const CHU_TEN_SAO = new Set<string>();
+for (const t of TU_DIEN_THUC_THE) {
+  if (t.loai === 'STAR' || t.loai === 'TRANSFORMATION' || t.loai === 'MARKER') {
+    for (const c of boDau(t.ten).split(' ')) CHU_TEN_SAO.add(c);
+  }
+}
+
+/**
+ * Một dải từ hai chữ hoa liền nhau trở lên. `\p{Lu}` chứ không phải `[A-Z]`:
+ * tên sao mở đầu bằng Đ (Đào Hoa, Đà La) và `[A-Z]` không bắt được chữ Đ.
+ *
+ * QUÉT TỪNG DÒNG MỘT, vì `\s` ăn cả dấu xuống dòng. Đo trên bài thật: chữ cuối
+ * một dòng dính vào chữ đầu dòng sau thành "Thân Cái" — một cái tên không có ở
+ * đâu trong bài, do chính phép đo dựng ra rồi tự báo là bịa.
+ */
+const CUM_CHU_HOA = /\p{Lu}\p{L}*(?:\s+\p{Lu}\p{L}*)+/gu;
+
+export interface TenBia {
+  /** Đúng cụm chữ xuất hiện trong bài, để nói được sai ở đâu */
+  ten: string;
+  /** true = luật Tứ Hóa, không có chỗ bàn. false = dạng ngờ, chỉ cảnh báo. */
+  chac: boolean;
+}
+
+/**
+ * Mọi ĐOẠN CHỮ LIỀN NHAU cắt ra từ một cái tên có thật, dài từ hai chữ.
+ *
+ * Cần bảng này vì lối ăn cụm dài trước vẫn hụt khi một BÍ DANH ngắn chèn lên
+ * đầu tên đầy đủ. Đo trên bài thật: "bộ Tử Phủ Vũ Tướng Liêm" — bí danh "bo tu
+ * phu" ăn ba chữ đầu, chừa lại "Vũ Tướng Liêm" trông y như hàng dán, trong khi
+ * cả cụm là một cách cục có thật viết đúng từng chữ.
+ */
+const DOAN_TRONG_TEN_THAT = new Set<string>();
+for (const t of TU_DIEN_THUC_THE) {
+  for (const ten of [t.ten, ...t.biDanh]) {
+    const w = boDau(ten).split(' ');
+    for (let i = 0; i < w.length; i++) {
+      for (let j = i + 2; j <= w.length; j++) DOAN_TRONG_TEN_THAT.add(w.slice(i, j).join(' '));
+    }
+  }
+}
+
+/**
+ * Trả về những cái tên trong `van` mà từ điển không có và trông như hàng dán.
+ * Thuần hàm, không phụ thuộc lá số — một cái tên bịa thì bịa với mọi lá số.
+ */
+export function timTenBia(van: string): TenBia[] {
+  const ra = new Map<string, TenBia>();
+
+  for (const dong of van.split('\n'))
+  for (const m of dong.matchAll(CUM_CHU_HOA)) {
+    const tu = m[0].split(/\s+/);
+
+    /*
+     * (1) Chỉ nhận đúng mặt chữ "Hóa"/"Hoá", KHÔNG bỏ dấu trước khi so.
+     * Bỏ dấu thì "Hỏa Tinh" và "Hoa Cái" — hai sao có thật — cùng rụng xuống
+     * thành "hoa" và bị báo bịa. Đã suýt mắc đúng lỗi mà hàm này sinh ra để
+     * bắt.
+     */
+    for (let i = 0; i < tu.length - 1; i++) {
+      if (tu[i] !== 'Hóa' && tu[i] !== 'Hoá') continue;
+      if (TU_HOA_DUOI.has(tu[i + 1])) continue;
+      const cap = `${tu[i]} ${tu[i + 1]}`;
+      if (BANG_TRA.has(boDau(cap))) continue;
+      ra.set(cap, { ten: cap, chac: true });
+    }
+
+    // (2) Ăn tên thật, cụm dài trước — phần dư liền nhau mới là thứ đáng ngờ
+    const du: string[][] = [];
+    let dang: string[] = [];
+    for (let i = 0; i < tu.length; i++) {
+      let khop = 0;
+      for (let n = Math.min(SO_TU_TOI_DA, tu.length - i); n >= 1; n--) {
+        if (BANG_TRA.has(boDau(tu.slice(i, i + n).join(' ')))) {
+          khop = n;
+          break;
+        }
+      }
+      if (khop) {
+        if (dang.length) du.push(dang);
+        dang = [];
+        i += khop - 1;
+      } else {
+        dang.push(tu[i]);
+      }
+    }
+    if (dang.length) du.push(dang);
+
+    for (const d of du) {
+      if (d.length < 2) continue;
+      if (!d.every((c) => CHU_TEN_SAO.has(boDau(c)))) continue;
+      const ten = d.join(' ');
+      if (DOAN_TRONG_TEN_THAT.has(boDau(ten))) continue;
+      if (!ra.has(ten)) ra.set(ten, { ten, chac: false });
+    }
+  }
+
+  return [...ra.values()];
+}
+
+/**
+ * Lối gọi tắt truyền thống được tha — chỗ để hạ hỏa nếu phép đo bắt nhầm.
+ *
+ * Đang rỗng, và rỗng là có chủ ý: đo trên một bài 11.767 từ thì phép đo (2)
+ * bắt đúng hai cụm, sai không cụm nào. Chưa có gì để tha. Viết sẵn cái bảng
+ * này vì cái giá của hai phía không bằng nhau — để lọt một tên bịa thì người
+ * đọc tin một thứ không có thật, còn bắt nhầm một lối gọi tắt thì chỉ mất một
+ * câu, và sửa bằng đúng một dòng ở đây.
+ *
+ * Ghi theo dạng đã bỏ dấu, chữ thường.
+ */
+const GOI_TAT_TRUYEN_THONG = new Set<string>([]);
+
+/**
+ * Những tên bịa đủ căn cứ để CHẶN.
+ *
+ * Ban đầu chỉ luật Tứ Hóa mới chặn, còn cụm dán để im mà ghi ra — lý do là sợ
+ * bắt nhầm lối gọi tắt. Số đo lật lại đúng chỗ đó: trong một bài sinh bằng
+ * chính bản có luật mới, hai cái tên bịa vẫn đi thẳng ra mặt trước — "Thiên
+ * Âm" (đúng là Thái Âm) và "Tài Vi" (đúng là Tử Vi ở phần tiền bạc). Cả hai
+ * đều là cụm dán. Luật Tứ Hóa một mình bắt được KHÔNG cái nào.
+ *
+ * Nên mức "ghi ra thôi" là mức không bảo vệ được gì. `chac` vẫn giữ trong dữ
+ * liệu để còn phân biệt được hai kiểu lỗi khi đọc log, nhưng chính sách thì
+ * chặn cả hai.
+ */
+export function tenBiaChan(van: string): string[] {
+  return timTenBia(van)
+    .filter((t) => !GOI_TAT_TRUYEN_THONG.has(boDau(t.ten)))
+    .map((t) => t.ten);
+}

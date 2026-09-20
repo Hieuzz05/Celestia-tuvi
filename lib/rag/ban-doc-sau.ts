@@ -19,7 +19,7 @@ import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { TIEU_CHI_SAU } from '@/lib/tuvi/tieu-chi-sau';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauPhanQuyet, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauPhanQuyet, boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson, laChuoiJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { lapKeHoach } from './planner';
@@ -416,10 +416,18 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
      */
     const khongLenh = boCauPhanQuyet(boCauRaLenh(s));
     if (khongLenh.length < 15) return null;
-    const bia = nhanDangThucThe(khongLenh).filter(
+    /*
+     * Câu dựng ra tên sao không có thật thì bỏ hẳn câu ấy — xem boCauTenBia.
+     * Lớp `saoChoPhep` ngay bên dưới KHÔNG bắt được dạng này: nó hỏi "ngôi sao
+     * được nhắc có trên lá số không", mà "Hóa Triệt" thì quét ra "Triệt" — một
+     * mốc có thật — nên đi qua sạch sẽ.
+     */
+    const khongBia = boCauTenBia(khongLenh);
+    if (khongBia.length < 15) return null;
+    const bia = nhanDangThucThe(khongBia).filter(
       (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !saoChoPhep.has(t.id)
     );
-    return bia.length ? null : khongLenh;
+    return bia.length ? null : khongBia;
   };
 
   const theoId = new Map(

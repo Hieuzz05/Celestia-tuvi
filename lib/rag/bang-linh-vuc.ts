@@ -8,7 +8,7 @@ import type { MucId } from '@/lib/tuvi/chang-cung';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { boMarkdown, doiTenCung, suaCauKeSao, suaCauTiengLong } from './sua-chua';
@@ -470,9 +470,21 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
    * Hai lớp trên đều gọi model, và model sửa chữ cũng tự in đậm theo thói quen.
    * Gỡ trước chúng là gỡ nhầm lượt.
    */
+  /*
+   * Bỏ CÂU có tên sao bịa trước khi vào cổng — xem CEL-097.
+   *
+   * Cổng đặt "tên sao bịa" ở mức chặn, mà chặn ở đây nghĩa là trả null và
+   * người đọc không nhận được gì. Với bài dài thì mất một câu rẻ hơn mất cả
+   * bài rất nhiều lần.
+   *
+   * Chat CỐ Ý không làm thế: câu trả lời bên ấy chỉ vài câu, khoét đi một câu
+   * là thấy ngay, nên để cổng chặn rồi sinh lại.
+   */
   ra.forEach((k, i) => {
-    k.ketLuan = boMarkdown(doiTenCung(daSua[`k${i}|c`] ?? k.ketLuan));
-    k.doan = k.doan.map((d, j) => boMarkdown(doiTenCung(daSua[`k${i}|d${j}`] ?? d)));
+    k.ketLuan = boCauTenBia(boMarkdown(doiTenCung(daSua[`k${i}|c`] ?? k.ketLuan)));
+    k.doan = k.doan.map((d, j) =>
+      boCauTenBia(boMarkdown(doiTenCung(daSua[`k${i}|d${j}`] ?? d)))
+    );
   });
 
   /*

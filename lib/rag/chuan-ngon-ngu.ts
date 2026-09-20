@@ -1,3 +1,4 @@
+import { tenBiaChan } from './thuc-the';
 /**
  * Chuẩn ngôn ngữ Celes — một nguồn duy nhất cho mọi bề mặt có AI viết chữ.
  *
@@ -154,6 +155,26 @@ export function boCauPhanQuyet(doan: string): string {
   return doan
     .split(/(?<=[.!?])\s+/)
     .filter((c) => c.trim() && !CAU_PHAN_QUYET.test(c))
+    .join(' ')
+    .trim();
+}
+
+/**
+ * Bỏ những CÂU dựng ra tên sao không có thật, giữ nguyên phần còn lại.
+ *
+ * Cùng lối xử lý với `boCauPhanQuyet`, và vì cùng một lý do đã trả giá: một
+ * bài gần bảy nghìn từ từng bị vứt sạch vì đúng một câu hỏng. Vứt cả bài là
+ * trừng phạt rất nhiều thứ đúng để xử một thứ sai.
+ *
+ * Nhưng ở đây KHÔNG sửa, chỉ bỏ. "Hóa Triệt" có thể là Hóa Kỵ, có thể là
+ * Triệt, cũng có thể là cả hai — không có cách nào biết model định nói gì.
+ * Đoán một trong hai rồi viết lại là thay một cái bịa nhìn thấy được bằng một
+ * cái bịa không nhìn thấy được nữa.
+ */
+export function boCauTenBia(doan: string): string {
+  return doan
+    .split(/(?<=[.!?])\s+/)
+    .filter((c) => c.trim() && tenBiaChan(c).length === 0)
     .join(' ')
     .trim();
 }
