@@ -44,3 +44,4 @@ next-env.d.ts
 # Tệp khoá Excel tạo ra khi mở PRODUCT-BACKLOG.xlsx. Không phải nội dung,
 # và nó xuất hiện/biến mất theo việc có ai đang mở file hay không.
 ~$*.xlsx
+scripts/_*.ts
