@@ -24,7 +24,16 @@ export type BeMat =
   | 'moc-nam'
   | 'moc-thang'
   | 'luan-han-chi-tiet'
-  | 'bang-linh-vuc';
+  | 'bang-linh-vuc'
+  /*
+   * Bản đọc sâu, đệm THEO TỪNG CHẶNG chứ không theo cả bài.
+   *
+   * Cả bài mất 153 giây — gấp hai lần rưỡi trần 60 giây của route trên Vercel.
+   * Chia theo chặng thì mỗi lượt khoảng 40 giây, nằm gọn trong trần, và người
+   * đọc thấy chặng một trong khi chặng hai đang viết. Đó đúng là trải nghiệm
+   * spec mô tả, chỉ khác cách thực hiện: nhiều lượt gọi thay vì một dòng SSE.
+   */
+  | 'ban-doc-sau';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

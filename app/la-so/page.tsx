@@ -458,6 +458,17 @@ function TrangLaSo() {
               >
                 {t.quickRead.sauNoiBatCta}
               </Link>
+              <Link
+                href={
+                  duocVao
+                    ? `/luan-giai/sau?${boiCanhUrl}`
+                    : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`
+                }
+                className="link-text"
+                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-doc-sau' })}
+              >
+                Hoặc đọc cả mười hai phần →
+              </Link>
               <span className="caption">{t.quickRead.sauNoiBatHanMuc}</span>
             </div>
           </div>

@@ -134,3 +134,26 @@ export function boCauRaLenh(doan: string): string {
     .join(' ')
     .trim();
 }
+
+/**
+ * Câu PHÁN QUYẾT — nói chắc chắn về một sự việc chưa xảy ra.
+ *
+ * Cùng hình dạng với `CAU_RA_LENH` và cùng cách xử: bỏ đúng CÂU sai, giữ phần
+ * còn lại. Bản đọc sâu là gần bảy nghìn từ; vứt cả bài vì một câu là mất rất
+ * nhiều thứ đúng để trừng phạt một thứ sai.
+ *
+ * Khớp CÓ DẤU. Bỏ dấu thì "chắc chắn" và "chắc chắc" và vài chữ khác trộn vào
+ * nhau, mà đây là luật CHẶN — bắt nhầm ở mức chặn thì người sửa sẽ học cách
+ * bỏ qua cả bộ soát.
+ */
+export const CAU_PHAN_QUYET =
+  /bạn chắc chắn|chắc chắn sẽ|nhất định sẽ|sẽ xảy ra|không hợp nhau|nên nghỉ việc|nên cưới|không nên cưới/iu;
+
+/** Bỏ những CÂU phán quyết trong một đoạn, giữ phần còn lại */
+export function boCauPhanQuyet(doan: string): string {
+  return doan
+    .split(/(?<=[.!?])\s+/)
+    .filter((c) => c.trim() && !CAU_PHAN_QUYET.test(c))
+    .join(' ')
+    .trim();
+}
