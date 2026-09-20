@@ -22,8 +22,30 @@ import {
 } from './types';
 
 const CHART_WIDTH = 920;
-/** Dưới mức này chữ trong ô cung không còn đọc được */
-const ZOOM_TOI_THIEU = 0.5;
+
+/**
+ * Sàn thu nhỏ — ĐÃ HẠ TỪ 0.5 XUỐNG 0.3, và đây là một lần đảo quyết định.
+ *
+ * Bản trước chốt 0.5 với lý lẽ "dưới mức này chữ không đọc nổi, thà vuốt ngang
+ * còn hơn". Lý lẽ ấy đúng về chữ nhưng sai về thứ người dùng gặp: 920 × 0.5 =
+ * 460px nằm trong cột 342px của máy 390px, nên trên điện thoại mệnh bàn bị
+ * CẮT MẤT GẦN MỘT NỬA và người mới không biết là còn phần bên phải để vuốt.
+ * Chủ dự án mở bằng điện thoại và thấy đúng như vậy.
+ *
+ * Mất nửa bản đồ tệ hơn chữ nhỏ. Ở bề ngang điện thoại thì KHÔNG có cách nào
+ * hiện mười hai cung với chữ đọc được — bốn cột trên 342px là mỗi ô 85px, chỗ
+ * ấy không đủ cho một tên sao ở cỡ chữ bình thường. Nên phải chọn, và chọn
+ * đúng là: cho thấy TOÀN BỘ hình, rồi đưa chữ sang chỗ khác.
+ *
+ * "Chỗ khác" đã có sẵn: chạm vào một cung là mở PalaceDrawer chiếm trọn bề
+ * ngang, chữ cỡ thật. Mệnh bàn trên điện thoại vì thế làm đúng việc của một
+ * TẤM BẢN ĐỒ — cho thấy cái gì nằm ở đâu — còn việc đọc thì thuộc về ngăn chi
+ * tiết.
+ */
+const ZOOM_TOI_THIEU = 0.3;
+
+/** Dưới bề ngang này thì coi như điện thoại: bớt lớp thông tin, thêm lời nhắc chạm */
+const BE_NGANG_HEP = 520;
 /**
  * Bỏ qua thay đổi tỉ lệ nhỏ hơn ngưỡng này.
  * Thanh cuộn dọc xuất hiện/biến mất làm bề ngang đổi vài pixel; nếu tỉ lệ bám
@@ -61,6 +83,8 @@ export function TuViChart({
   const [zoomThucTe, setZoomThucTe] = useState(1);
   const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
+  const [hep, setHep] = useState(false);
+  const daTuDoi = useRef(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Chỉ đo BỀ NGANG của khung chứa, tuyệt đối không đo lại mệnh bàn.
@@ -71,8 +95,27 @@ export function TuViChart({
     if (!khung) return;
 
     const doLai = () => {
-      const moi = Math.max(ZOOM_TOI_THIEU, Math.min(1, khung.clientWidth / CHART_WIDTH));
+      const rong = khung.clientWidth;
+      const moi = Math.max(ZOOM_TOI_THIEU, Math.min(1, rong / CHART_WIDTH));
       setZoomThucTe((cu) => (Math.abs(moi - cu) < NGUONG_DOI_TI_LE ? cu : moi));
+      setHep(rong > 0 && rong < BE_NGANG_HEP);
+
+      /*
+       * Màn hẹp thì hạ về chế độ dễ nhìn — MỘT LẦN DUY NHẤT.
+       *
+       * Ở tỉ lệ 0.37 mà vẫn bày đủ phụ tinh, độ sáng, vòng sao và lưu tinh thì
+       * mỗi ô thành một mảng chữ xám không đọc được và cũng không nhìn ra hình.
+       * Bớt lớp đi thì cái còn lại — chính tinh và cung hạn — vẫn nhận ra được
+       * bằng mắt ở cỡ ấy.
+       *
+       * `daTuDoi` chặn việc ghi đè lựa chọn của người dùng: họ bật lại lớp nào
+       * thì lần đo sau không được tắt đi, nếu không thì nút bật/tắt thành ra
+       * không bấm được.
+       */
+      if (rong > 0 && rong < BE_NGANG_HEP && !daTuDoi.current) {
+        daTuDoi.current = true;
+        setSettings(SETTINGS_THEO_CHE_DO['de-hieu']);
+      }
     };
 
     doLai();
@@ -136,10 +179,18 @@ export function TuViChart({
   }, [laSo, zoomThucTe]);
 
   return (
-    // `min-h-0` + `flex-1`: khi nằm trong cột dính ở /la-so thì nhận đúng phần
-    // cao còn lại và cho phép khung cuộn bên trong co lại. Ở mọi chỗ khác cha
-    // không phải flex nên hai lớp này không có tác dụng gì.
-    <div className="flex min-h-0 flex-1 flex-col gap-[18px]">
+    /*
+      `min-h-0` + `flex-1`: khi nằm trong cột dính ở /la-so thì nhận đúng phần
+      cao còn lại và cho phép khung cuộn bên trong co lại.
+
+      `min-w-0` là thứ THIẾU suốt và là nguyên nhân thật của lỗi mệnh bàn tràn
+      trên điện thoại. Con của flex/grid mặc định `min-width: auto`, nghĩa là
+      nó KHÔNG co xuống dưới bề ngang nội dung — nên khung `overflow-x-auto`
+      bên trong nở ra đúng 920px thay vì nhận 342px của màn. Phép đo tỉ lệ đọc
+      được 920/920 rồi kết luận "không cần thu nhỏ", và cả TRANG bị đẩy rộng
+      945px. Sàn thu nhỏ chưa bao giờ là vấn đề: nó không có cơ hội chạy.
+    */
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[18px]">
       {/*
         Thanh công cụ đứng yên cùng mệnh bàn.
 
@@ -250,6 +301,17 @@ export function TuViChart({
           {settings.tuanTriet && <VoidMarkers markers={markers} />}
         </div>
       </div>
+
+      {/*
+        Lời nhắc CHẠM, chỉ hiện ở màn hẹp.
+        Ở tỉ lệ thu nhỏ của điện thoại, chữ trong ô cung là để nhận dạng chứ
+        không phải để đọc. Ngăn chi tiết mới là chỗ đọc — nhưng người dùng
+        không đoán được điều đó nếu không có ai nói, và một mệnh bàn chữ li ti
+        trông như một lỗi hiển thị chứ không như một tấm bản đồ bấm được.
+      */}
+      {hep && !chiBanDo && (
+        <p className="caption px-[2px] pt-[8px]">{t.banDo.chamDeXem}</p>
+      )}
 
       <PalaceDrawer
         laSo={laSo}

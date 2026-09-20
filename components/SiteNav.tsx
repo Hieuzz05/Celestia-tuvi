@@ -42,6 +42,13 @@ export function SiteNav() {
    * Hai menu là hai việc khác nhau nên để rời: điều hướng là "đi đâu", tài
    * khoản là "tôi là ai". Gộp vào một nút thì người dùng phải mở một thứ để
    * tìm thứ kia.
+   *
+   * NGƯỠNG LÀ `lg` (1024px) CHỨ KHÔNG PHẢI `md`, và con số này đo ra chứ
+   * không chọn theo thói quen. Nav của người ĐÃ ĐĂNG NHẬP cần đúng 772px
+   * (logo 155 + năm liên kết 402 + nhóm phải 183 + hai khoảng cách 32), mà ở
+   * iPad dọc 820px thì nav rộng đúng 772px. Biên bằng KHÔNG: một tên tài
+   * khoản dài hơn, hoặc nhãn tiếng Anh vốn dài hơn tiếng Việt, là xuống hàng
+   * ngay. Ở `lg` thì nav có 976px cho 772px cần dùng.
    */
   const [moNav, setMoNav] = useState(false);
   // Vai trò admin do MÁY CHỦ quyết. Không bao giờ so email ở trình duyệt:
@@ -149,7 +156,7 @@ export function SiteNav() {
           </Link>
 
           {/* Hàng liên kết chỉ nằm trên thanh từ md trở lên; hẹp hơn thì vào panel */}
-          <div className="hidden items-center gap-[20px] md:flex">
+          <div className="hidden items-center gap-[20px] lg:flex">
             {lienKet.map((l) => (
               <Link
                 key={l.href}
@@ -163,7 +170,7 @@ export function SiteNav() {
           </div>
 
           <div className="flex items-center gap-[12px]">
-            <div className="hidden items-center gap-[12px] md:flex">
+            <div className="hidden items-center gap-[12px] lg:flex">
               <ChuyenNgonNgu />
               <ThemeToggle />
             </div>
@@ -240,19 +247,25 @@ export function SiteNav() {
             )}
 
             {/*
-              Nút mở menu chỉ hiện dưới md. 44px mỗi chiều: đây là nút điều
-              hướng chính trên điện thoại, không phải chỗ để tiết kiệm chỗ.
+              Nút mở menu chỉ hiện dưới md. Cao 44px: đây là nút điều hướng
+              chính trên điện thoại, không phải chỗ để tiết kiệm không gian.
+
+              CÓ CHỮ chứ không để mỗi icon. Ba gạch ngang là quy ước quen với
+              người làm sản phẩm, không quen với mọi người dùng — chủ dự án mở
+              bản chỉ-icon trên điện thoại và ghi thẳng vào ảnh: "user ko biết
+              để bấm vào". Một chữ "Menu" tốn chừng bốn mươi pixel và bỏ hẳn
+              câu hỏi ấy.
             */}
             <button
               type="button"
               onClick={() => setMoNav((v) => !v)}
-              className="flex h-[44px] w-[44px] items-center justify-center md:hidden"
-              style={{ color: 'var(--fg)' }}
+              className="flex h-[44px] items-center gap-[6px] rounded-[var(--radius-buttons)] border px-[12px] text-[14px] font-medium lg:hidden"
+              style={{ color: 'var(--fg)', borderColor: 'var(--line-strong)' }}
               aria-expanded={moNav}
               aria-controls="menu-dieu-huong"
-              aria-label={moNav ? t.chung.dongMenu : t.chung.menu}
             >
-              {moNav ? <IconDong size={22} /> : <IconMenu size={22} />}
+              {moNav ? <IconDong size={18} /> : <IconMenu size={18} />}
+              {moNav ? t.chung.dongMenu : t.chung.menu}
             </button>
           </div>
         </nav>
@@ -266,7 +279,7 @@ export function SiteNav() {
         {moNav && (
           <div
             id="menu-dieu-huong"
-            className="flex flex-col gap-[4px] border-t pb-[16px] md:hidden"
+            className="flex flex-col gap-[4px] border-t pb-[16px] lg:hidden"
             style={{ borderColor: 'var(--line)' }}
           >
             {lienKet.map((l) => (

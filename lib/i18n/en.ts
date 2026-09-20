@@ -329,6 +329,7 @@ export const en: TuDien = {
     cheDoChuyenSau: 'In depth',
     cheDoChuyenSauMo: 'Adds the stars that travel with the year in view, and unlocks each display layer to toggle yourself.',
     namXem: 'Year in view',
+      chamDeXem: 'Tap a house to read the detail.',
     namTruoc: 'Previous year',
     namSau: 'Next year',
     lopHienThi: 'Layers',

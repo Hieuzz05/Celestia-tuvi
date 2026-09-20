@@ -10,7 +10,7 @@ import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
-import { Eyebrow, HuyHieuOk, NutVien, Shell } from '@/components/ui';
+import { Eyebrow, NutVien, Shell } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
@@ -603,20 +603,40 @@ function TrangLaSo() {
             <p className="body-sm mt-[6px]" style={{ color: 'var(--fg-muted)' }}>
               {t.quickRead.moTa}
             </p>
+            {/*
+              "Đã giữ lại" là TRẠNG THÁI, không phải hành động, nên nó không
+              thuộc hàng nút. Đặt nó cạnh một cái nút là để hai thứ khác bản
+              chất cùng một độ nổi — và ở đây còn lệch cả chiều cao: chip 26px
+              đứng cạnh nút 39px. Hạ xuống thành một dòng nhỏ dưới phụ đề thì
+              hàng bên phải còn đúng một việc để làm.
+            */}
+            {duocVao && (daCoTrongDanhSach || daLuu) && (
+              <p className="caption mt-[8px] inline-flex items-center gap-[6px]">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  aria-hidden
+                >
+                  <path d="M4 12.5l5.5 5.5L20 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t.quickRead.daGiu}
+              </p>
+            )}
           </div>
 
           {/* Khách chưa đăng nhập không thấy nút "Giữ lại" ở đây: việc lưu đã
               nằm trong khối chuyển đổi duy nhất bên dưới. Hai chỗ cùng mời một
               hành động chính là kiểu phân tán mà bản audit chỉ ra. */}
           <div className="flex items-center gap-[12px]">
-            {duocVao &&
-              (daCoTrongDanhSach || daLuu ? (
-                <HuyHieuOk>{t.quickRead.daGiu}</HuyHieuOk>
-              ) : (
-                <NutVien nho onClick={luu}>
-                  {t.quickRead.giuLai}
-                </NutVien>
-              ))}
+            {duocVao && !daCoTrongDanhSach && !daLuu && (
+              <NutVien nho onClick={luu}>
+                {t.quickRead.giuLai}
+              </NutVien>
+            )}
             <NutVien nho onClick={doiLaSo}>
               {t.danhSach.xemLaSoKhac}
             </NutVien>
@@ -680,7 +700,7 @@ function TrangLaSo() {
             `lg:flex` + `lg:max-h`: cao tối đa một màn trừ hai mép 24px, và là
             cột dọc để con bên trong chia được phần cao còn lại.
           */}
-          <aside className="flex flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]">
+          <aside className="flex min-w-0 flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]">
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 

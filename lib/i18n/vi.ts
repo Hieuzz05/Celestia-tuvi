@@ -328,6 +328,7 @@ export const vi = {
     cheDoChuyenSau: 'Chuyên sâu',
     cheDoChuyenSauMo: 'Thêm lưu tinh theo năm xem, và mở khoá từng lớp hiển thị để tự bật tắt.',
     namXem: 'Năm xem',
+      chamDeXem: 'Chạm vào một cung để đọc chi tiết.',
     namTruoc: 'Năm trước',
     namSau: 'Năm sau',
     lopHienThi: 'Hiển thị',
