@@ -52,15 +52,25 @@ function SaoText({
     sao.tinhChat === 'hung' ? 'var(--chart-hung)' : trongYeu ? 'var(--fg-body)' : 'var(--fg-muted)';
   return (
     <span
-      className={
-        hep
-          ? trongYeu
-            ? 'text-[8px] font-semibold'
-            : 'text-[8px] font-normal'
-          : trongYeu
-            ? 'text-[13px] font-semibold'
-            : 'text-[12px] font-normal'
-      }
+      /*
+        Dấu để bộ kiểm giữ BA NHÓM SAO NHỎ luôn cùng một cỡ chữ: phụ tinh,
+        vòng Thái Tuế/Lộc Tồn, và lưu tinh theo năm. Ba nhóm này trước dùng ba
+        cỡ rời nhau (12 / 11 / 11), nên trên điện thoại nhóm ít quan trọng
+        nhất lại hiện to hơn nhóm quan trọng hơn nó — mà cỡ chữ chính là cách
+        người đọc đoán thứ bậc.
+      */
+      data-sao="phu"
+      /*
+        MỘT CỠ CHỮ CHO MỌI SAO NHỎ; phần nhấn để cho NÉT ĐẬM lo.
+
+        Bản cũ cho sao trọng yếu thêm 1px (13 thay 12). Một pixel không đủ để
+        mắt nhận ra là "quan trọng hơn", nhưng đủ để hàng chữ trông so le —
+        và nó phá luôn nguyên tắc vừa đặt ra là mọi sao nhỏ cùng một cỡ. Nét
+        đậm với màu đã nói được thứ bậc rồi.
+      */
+      className={`${hep ? 'text-[8px]' : 'text-[12px]'} ${
+        trongYeu ? 'font-semibold' : 'font-normal'
+      }`}
       style={{ color: mau, lineHeight: hep ? 1.5 : 1.45 }}
     >
       {sao.ten}
@@ -316,11 +326,29 @@ export function PalaceCell({
         </div>
       )}
 
-      {/* Vòng Thái Tuế / Lộc Tồn */}
+      {/*
+        Vòng Thái Tuế / Lộc Tồn.
+
+        CỠ CHỮ BẰNG PHỤ TINH, không to hơn. Khối này trước dùng 11px cứng
+        trong khi phụ tinh quanh nó là 12px ở màn rộng và 8px ở màn hẹp — nên
+        trên điện thoại nhóm sao ÍT quan trọng nhất lại hiện to hơn nhóm quan
+        trọng hơn nó. Cỡ chữ là cách người đọc đoán thứ bậc, nên để lệch là
+        nói sai thứ bậc.
+
+        MÀU LẤY TỪ TOKEN, không hard-code. Bản cũ dùng rgba(154,154,154,0.65),
+        đo ra tương phản 1,88 trên nền sáng — cần 4,5. Nó cũng đứng yên khi
+        đổi sang nền tối, nơi một màu xám nhạt lại quá chói. `--fg-subtle` là
+        bậc nhạt nhất của hệ, 4,65 ở nền sáng và 8,86 ở nền tối.
+      */}
       {settings.vongSao && vongSao.length > 0 && (
         <div className="mt-[4px] flex flex-wrap gap-x-[6px]">
           {vongSao.map((s) => (
-            <span key={s.ten} className="text-[11px]" style={{ color: 'rgba(154,154,154,0.65)' }}>
+            <span
+              key={s.ten}
+              data-sao="phu"
+              className={hep ? 'text-[8px]' : 'text-[12px]'}
+              style={{ color: 'var(--fg-subtle)', lineHeight: hep ? 1.5 : 1.45 }}
+            >
               {s.ten}
             </span>
           ))}
@@ -333,8 +361,12 @@ export function PalaceCell({
           {luuTinh.map((s) => (
             <span
               key={s.ten}
-              className="text-[11px] italic"
-              style={{ color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--chart-tot)' }}
+              data-sao="phu"
+              className={`italic ${hep ? 'text-[8px]' : 'text-[12px]'}`}
+              style={{
+                color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--chart-tot)',
+                lineHeight: hep ? 1.5 : 1.45,
+              }}
             >
               {s.ten.replace('Lưu ', 'L.')}
             </span>
@@ -346,7 +378,9 @@ export function PalaceCell({
       {/* `flex-wrap`: hai nhãn không đủ chỗ trên một dòng thì xuống dòng,
           chứ không cắt đôi chữ — xem ghi chú ở phần phụ tinh. */}
       <div
-        className="mt-auto flex flex-wrap items-baseline justify-between gap-x-1 whitespace-nowrap pt-[8px] text-[11px] font-medium"
+        className={`mt-auto flex flex-wrap items-baseline justify-between gap-x-1 whitespace-nowrap font-medium ${
+          hep ? 'pt-[5px] text-[9px]' : 'pt-[8px] text-[11px]'
+        }`}
         style={{ color: 'var(--fg-muted)' }}
       >
         <span style={{ color: laTieuHan ? 'var(--chart-tot)' : undefined }}>

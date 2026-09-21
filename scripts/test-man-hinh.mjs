@@ -105,6 +105,20 @@ const DO = `(() => {
   const oCung = ban ? [...ban.children].filter((e) => e.className.includes('cursor-pointer')) : [];
   r.soOCung = oCung.length;
   r.oTran = oCung.filter((e) => e.scrollWidth > e.clientWidth + 1).length;
+  /*
+   * Ba nhóm sao nhỏ phải CÙNG MỘT CỠ CHỮ.
+   *
+   * Phụ tinh, vòng Thái Tuế/Lộc Tồn và lưu tinh trước dùng ba cỡ rời nhau
+   * (12 / 11 / 11). Trên điện thoại phụ tinh xuống 8px còn hai nhóm kia vẫn
+   * 11px, nên nhóm ít quan trọng nhất lại hiện TO HƠN nhóm quan trọng hơn nó.
+   * Cỡ chữ là cách người đọc đoán thứ bậc, nên để lệch là nói sai thứ bậc.
+   */
+  const coSaoNho = new Set(
+    [...document.querySelectorAll('[data-sao="phu"]')].map((e) => window.getComputedStyle(e).fontSize)
+  );
+  r.soCoSaoNho = coSaoNho.size;
+  r.coSaoNho = [...coSaoNho].join(', ');
+
   r.tenGay = 0;
   for (const o of oCung) {
     for (const sp of o.querySelectorAll('span')) {
@@ -177,6 +191,7 @@ for (const m of MAY) {
       kiem('Đủ 12 cung', d.soOCung === 12, d.soOCung);
       kiem('Không ô cung nào bị tràn chữ', d.oTran === 0, `${d.oTran}/12 ô`);
       kiem('Không tên sao nào bị cắt làm hai dòng', d.tenGay === 0, `${d.tenGay} tên`);
+      kiem('Mọi sao nhỏ cùng một cỡ chữ', d.soCoSaoNho === 1, d.coSaoNho);
     }
   }
 }
