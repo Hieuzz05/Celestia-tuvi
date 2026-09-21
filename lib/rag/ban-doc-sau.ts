@@ -25,6 +25,7 @@ import { soatNgonNgu } from './ngon-ngu';
 import { lapKeHoach } from './planner';
 import { boMarkdown, doiTenCung, suaCauTiengLong } from './sua-chua';
 import { boDau, nhanDangThucThe } from './thuc-the';
+import { VAN_PHONG_CELES } from './van-phong';
 import { truyHoi } from './truy-hoi';
 
 /**
@@ -54,7 +55,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.09.5';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.1';
 
 export interface TieuChiRa {
   nhan: string;
@@ -78,6 +79,23 @@ export interface MucSau {
   tieuChi: TieuChiRa[];
   doNoiBat: number;
   cauHoiGoiY: string;
+  /**
+   * Câu GIỮ LẠI — thứ đáng mang theo sau khi đọc xong phần này.
+   *
+   * Một phần dài năm sáu trăm từ. Không có câu này thì người đọc gấp lại với
+   * một mớ nhận định rời, và thứ họ nhớ là ngẫu nhiên. Xem van-phong.ts.
+   */
+  giuLai: string;
+  /**
+   * CÂU HỎI SOI — câu chính người đọc đang tự hỏi ở phần đời này.
+   *
+   * Là MỘT TRƯỜNG chứ không phải một câu dặn trong prompt, và đó là điểm quan
+   * trọng. Cùng một luật, viết thành lời dặn thì model làm được 3/12 phần;
+   * viết thành trường bắt buộc trả về thì 12/12 ngay lần đầu — đúng như đã
+   * xảy ra với `giuLai`. Prompt của bản đọc sâu đã rất dài, và thêm một câu
+   * dặn nữa chỉ lấy mất chỗ của câu dặn khác.
+   */
+  cauHoiSoi: string;
   /** Phần nào không dựng được thì nói thẳng, KHÔNG bịa cho đủ — spec mục 7.4 */
   thieuCanCu?: boolean;
 }
@@ -137,6 +155,8 @@ function chuanNhan(x: string): string {
 
 interface ThoMuc {
   id?: unknown;
+  cauHoiSoi?: unknown;
+  giuLai?: unknown;
   ketLuan?: unknown;
   tieuChi?: { nhan?: unknown; noiDung?: unknown; luongNguoc?: unknown; maDuKien?: unknown }[];
 }
@@ -372,10 +392,11 @@ NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l
    Vì sao: bài đo được câu trung bình 21,7 từ, chỉ 9% số câu dưới 12 từ. Văn
    đều một nhịp thì không sai chỗ nào mà cũng không đọng lại chỗ nào.
 
-   CÂU NGẮN VÀ CÂU CẢNH Ở LUẬT 5 NÊN LÀ MỘT CÂU. Một tiêu chí chỉ có chừng
-   tám chục từ, mà cảnh thì vốn ngắn: "Chín giờ tối, bạn vẫn mở điện thoại
-   xem lại tin nhắn." Câu ấy vừa là cảnh vừa là chỗ thở. Tách làm hai câu
-   riêng là tiêu hai phần ngân sách cho một việc.
+   CÂU NGẮN VÀ CÂU CẢNH LÀ HAI CÂU KHÁC NHAU. Bản trước gộp chúng làm một để
+   tiết kiệm ngân sách, và đo ra là hỏng cả hai: một cảnh cần hai trong ba
+   dấu hiệu người / việc / lúc, ép nó xuống dưới mười từ thì gần như không
+   viết nổi. Mỗi thứ một câu, cộng lại khoảng hai chục từ trong ngân sách bảy
+   lăm — thừa chỗ.
 
 4. CÂU LỰC NGƯỢC KHÔNG ĐƯỢC MỞ ĐẦU BẰNG TÊN SAO.
    Bài cũ có 76 câu lực ngược và phần lớn mở bằng một cái tên, nên chúng xếp
@@ -386,6 +407,8 @@ NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l
    Bảng chữ cấm và định nghĩa CÂU CẢNH nằm ở chuẩn ngôn ngữ bên dưới. Ở bản
    đọc sâu luật chặt hơn một bậc: câu cảnh tính theo TỪNG TIÊU CHÍ, không phải
    theo đoạn. Tiêu chí nào cũng phải có một câu người đọc hình dung ra được.
+
+${VAN_PHONG_CELES}
 
 KHỐI GƯƠNG — tiêu chí đánh dấu [KHỐI GƯƠNG] của mỗi phần:
 Đọc phần này QUA cung đối diện, tức là nhìn từ phía ngược lại. Đây là chỗ bài
@@ -427,11 +450,13 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   "muc": [
     {
       "id": "${thuTuMuc[0]}",
+      "cauHoiSoi": "ĐÚNG MỘT câu hỏi, viết ở ngôi của người đọc và kết bằng dấu hỏi. Là câu họ đang tự hỏi về chính mình ở phần đời này, không phải câu hỏi tu từ. Ví dụ: Bao nhiêu là đủ để mình thấy an toàn mà vẫn được sống?",
+      "giuLai": "1-2 câu KHÉP phần này: thứ đáng mang theo. Không tóm tắt, không lời khuyên, không mở bằng hãy/nên/cần",
       "ketLuan": "1 câu, tối đa 28 từ, là KẾT LUẬN VỀ NGƯỜI ĐỌC — không phải tên chủ đề, không chứa tên cung. KHÔNG PHẢI LỜI KHUYÊN: cấm mở bằng Bạn nên, Bạn hãy, Bạn cần. Nói người này VỐN thế nào, không nói họ phải làm gì",
       "tieuChi": [
         {
           "nhan": "chép đúng nhãn tiêu chí ở trên, không tự đổi",
-          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có ít nhất một câu cảnh NGẮN, dưới mười hai từ, đặt sau một câu dài: hai trong ba thứ người / việc nhìn thấy được / lúc đời thường. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
+          "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có HAI câu riêng: (a) một CÂU CẢNH — hai trong ba thứ người / việc nhìn thấy được / lúc đời thường, dài bao nhiêu cũng được; (b) một CÂU NGẮN dưới mười từ đặt sau một câu dài. Đừng gộp hai câu này làm một: một cảnh đủ chi tiết thì khó dưới mười từ. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
           "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có. KHÔNG mở đầu bằng tên sao",
           "maDuKien": ["F002"]
         }
@@ -531,6 +556,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       guongNoiBo: laGuongNoiBo(id),
       doNoiBat: d,
       cauHoiGoiY: chu?.cauHoi ?? '',
+      giuLai: '',
+      cauHoiSoi: '',
     };
 
     if (!t) {
@@ -553,6 +580,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
      * phạt một thứ sai. Phần thiếu câu kết luận vẫn là một phần đọc được; phần
      * không có tiêu chí thì không.
      */
+    const giuLai = sach(t.giuLai) ?? '';
+    const cauHoiSoi = sach(t.cauHoiSoi) ?? '';
     const kqKetLuan = sachCoLyDo(t.ketLuan);
     if (!kqKetLuan.van) {
       console.warn(`[ban-doc-sau] ${id}: câu kết luận bị lọc — ${kqKetLuan.lyDo}`);
@@ -617,7 +646,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       continue;
     }
 
-    muc.push({ ...nen, tieuDe: chu?.nhan ?? id, ketLuan, tieuChi });
+    muc.push({ ...nen, tieuDe: chu?.nhan ?? id, ketLuan, giuLai, cauHoiSoi, tieuChi });
   }
 
   const doanKhau = sach(tho.doanKhau) ?? '';
@@ -646,6 +675,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       t.noiDung = await doiCa(t.noiDung);
       if (t.luongNguoc) t.luongNguoc = await doiCa(t.luongNguoc);
     }
+    if (m.giuLai) m.giuLai = await doiCa(m.giuLai);
     if (m.id === 'tat-ach') datMienTruYTe(m);
   }
 

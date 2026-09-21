@@ -29,6 +29,8 @@ import {
 import { TIEU_CHI_SAU, TONG_TIEU_CHI_SAU } from '../lib/tuvi/tieu-chi-sau';
 import { nhanDangThucThe, tenBiaChan } from '../lib/rag/thuc-the';
 import { laCauCanh } from '../lib/rag/cau-canh';
+import { coCapPhanBiet, soCauHoi } from '../lib/rag/van-phong';
+import { CAU_RA_LENH } from '../lib/rag/chuan-ngon-ngu';
 import { demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
 import { boCauTenBia } from '../lib/rag/chuan-ngon-ngu';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
@@ -502,6 +504,36 @@ async function do_() {
     .join(' ');
   const biaTrongBai = tenBiaChan(vanCaBai);
   kiem('Không tên sao bịa trong cả bài', biaTrongBai.length === 0, biaTrongBai);
+
+  /*
+   * BỐN THÓI QUEN VIẾT — xem lib/rag/van-phong.ts.
+   *
+   * Chúng rút từ một bản CON NGƯỜI viết lại: chủ dự án giữ nguyên mọi nhận
+   * định của máy, chỉ đổi cách nói, và bản ấy đọc hay hơn hẳn. Cái hay không
+   * nằm ở chữ đẹp mà ở vài thói quen lặp đi lặp lại — nên đếm được.
+   *
+   * Đo theo TỈ LỆ PHẦN, không đo tuyệt đối: một phần thiếu cặp phân biệt
+   * không làm hỏng bài, cả mười hai phần cùng thiếu mới hỏng.
+   */
+  const vanMoiPhan = muc.map((m) =>
+    [m.ketLuan, m.giuLai, m.cauHoiSoi, ...m.tieuChi.flatMap((t) => [t.noiDung, t.luongNguoc ?? ''])].join(' ')
+  );
+  const coCap = vanMoiPhan.filter(coCapPhanBiet).length;
+  kiem(
+    'Từ 70% phần trở lên có cặp phân biệt',
+    coCap / muc.length >= 0.7,
+    `${coCap}/${muc.length}`
+  );
+  const coHoi = muc.filter((m) => soCauHoi(m.cauHoiSoi) > 0).length;
+  kiem('Mọi phần có câu hỏi của người đọc', coHoi === muc.length, `${coHoi}/${muc.length}`);
+  const coGiu = muc.filter((m) => m.giuLai.trim().length > 20).length;
+  kiem('Mọi phần có câu giữ lại', coGiu === muc.length, `${coGiu}/${muc.length}`);
+  /*
+   * Câu giữ lại KHÔNG được là lời khuyên. Nó là điều đáng mang theo, không
+   * phải việc phải làm — xem QUY_TAC_GIU_LAI.
+   */
+  const giuLaiKhuyen = muc.filter((m) => CAU_RA_LENH.test(m.giuLai)).map((m) => m.id);
+  kiem('Câu giữ lại không phải lời khuyên', giuLaiKhuyen.length === 0, giuLaiKhuyen.join(', '));
 
 
   console.log('\n== AN TOÀN NỘI DUNG ==\n');

@@ -36,50 +36,50 @@ export interface TieuChiSau {
 export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
   'menh': [
     {
-      nhan: 'Cốt cách chủ đạo',
+      nhan: 'Nét chủ đạo trong cách bạn sống',
       moTa: 'L1→L4; nêu cách cục nếu thành cách',
     },
     {
-      nhan: 'Mệnh và Thân',
+      nhan: 'Từ điều bạn coi trọng đến khả năng tự đứng vững',
       moTa: 'cái sẵn có từ đầu đối với cái hình thành sau; Thân cư cung nào thì trọng tâm đời dịch về đâu',
     },
     {
-      nhan: 'Cục và chính tinh',
+      nhan: 'Thành quả của bạn thường đến theo cách nào',
       moTa: 'hợp hay khắc, quyết định đời phát sớm hay muộn',
     },
     {
-      nhan: 'Cách bạn ra quyết định',
+      nhan: 'Bạn ra quyết định như thế nào',
       moTa: 'nhanh/chậm, dựa dữ kiện hay cảm nhận, điều gì khiến bạn đổi ý',
     },
     {
-      nhan: 'Thứ tự ưu tiên giá trị',
+      nhan: 'Điều gì thường quan trọng với bạn trước tiên',
       moTa: 'tam hợp Tài Bạch + Quan Lộc: bạn hy sinh cái nào trước khi buộc phải chọn',
     },
     {
-      nhan: 'Điều người khác hay hiểu nhầm về bạn',
+      nhan: 'Điều người khác dễ hiểu nhầm về bạn',
       moTa: 'khoảng cách giữa bản chất và hình ảnh',
       laGuong: true,
     },
     {
-      nhan: 'Điều kiện để cốt cách này thành lợi thế',
+      nhan: 'Khi nào con người này phát huy tốt nhất',
       moTa: '+ lực ngược nếu thiếu điều kiện',
     },
   ],
   'phuc-duc': [
     {
-      nhan: 'Nguồn an yên',
+      nhan: 'Điều gì thật sự làm bạn thấy yên',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Phúc phần từ gốc',
+      nhan: 'Phần bạn được trao từ trước',
       moTa: 'nền tinh thần thừa hưởng; điều gì được cho sẵn, điều gì phải tự gây dựng',
     },
     {
-      nhan: 'Ngưỡng chịu đựng và cách bạn tự làm khổ mình',
+      nhan: 'Nỗi bất an khó nhận ra',
       moTa: 'dạng lo âu đặc trưng của cấu trúc này',
     },
     {
-      nhan: 'Đời sống tinh thần',
+      nhan: 'Bạn tìm chỗ dựa tinh thần ở đâu',
       moTa: 'thứ bạn tin vào khi mọi thứ khó; tam hợp Phu Thê: bạn cần ai ở cạnh để thấy yên',
     },
     {
@@ -88,25 +88,25 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       laGuong: true,
     },
     {
-      nhan: 'Chất lượng hậu vận',
+      nhan: 'Càng về sau, bình yên của bạn đổi thế nào',
       moTa: 'và điều kiện để "yên thật" thay vì "yên tạm"',
     },
   ],
   'tat-ach': [
     {
-      nhan: 'Nhịp năng lượng',
+      nhan: 'Nhịp năng lượng tự nhiên của bạn',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Kiểu quá tải đặc trưng',
+      nhan: 'Bạn thường quá tải theo kiểu nào',
       moTa: 'thể chất trước hay tinh thần trước, và chuỗi dẫn tới nó',
     },
     {
-      nhan: 'Vùng cơ thể dễ phản ứng trước',
+      nhan: 'Cơ thể thường lên tiếng theo cách nào',
       moTa: 'theo ngũ hành cung và chính tinh — mô tả xu hướng, không định bệnh',
     },
     {
-      nhan: 'Môi trường và chỗ dựa',
+      nhan: 'Không gian ảnh hưởng tới bạn nhiều hơn bạn nghĩ',
       moTa: 'tam hợp Điền Trạch (không gian sống) + Huynh Đệ (người san sẻ)',
     },
     {
@@ -115,173 +115,173 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       laGuong: true,
     },
     {
-      nhan: 'Nhịp hồi phục và giai đoạn cần giữ nhịp kỹ hơn',
+      nhan: 'Giai đoạn cần đặc biệt giữ nhịp',
       moTa: 'lời khuyên về thói quen, không về thuốc',
     },
   ],
   'quan-loc': [
     {
-      nhan: 'Phong cách làm việc',
+      nhan: 'Cách bạn làm việc',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Thứ người khác sẵn sàng trả tiền cho bạn',
+      nhan: 'Người khác thật sự trả tiền cho điều gì ở bạn',
       moTa: 'phân biệt với thứ bạn giỏi nhưng không tạo giá trị trao đổi',
     },
     {
-      nhan: 'Dạng tổ chức và dạng người quản lý phù hợp',
+      nhan: 'Môi trường nào giúp bạn phát huy tốt',
       moTa: 'làm công / làm chủ / làm nghề tự do, kèm điều kiện, không phán quyết',
     },
     {
-      nhan: 'Bạn thường đi lên bằng đường nào',
+      nhan: 'Bạn thường đi lên bằng con đường nào',
       moTa: 'tam hợp Mệnh + Tài Bạch: lên bằng chuyên môn, bằng quan hệ, hay bằng việc mở địa bàn mới',
     },
     {
-      nhan: 'Mô thức thất bại lặp lại',
+      nhan: 'Cách bạn dễ bị mắc kẹt',
       moTa: 'kiểu vấp có xu hướng lặp và dấu hiệu nhận ra sớm',
     },
     {
-      nhan: 'Cái giá của sự nghiệp',
+      nhan: 'Cái giá sự nghiệp có thể lấy',
       moTa: 'sự nghiệp lấy đi gì của đời sống riêng',
       laGuong: true,
     },
     {
-      nhan: 'Giai đoạn nghề nghiệp',
+      nhan: 'Giai đoạn nghề nghiệp hiện tại',
       moTa: 'đại vận nào mở, đại vận nào nên tích lũy + điều đáng cân nhắc',
     },
   ],
   'tai-bach': [
     {
-      nhan: 'Tiền của bạn có thể đến từ đâu',
+      nhan: 'Tiền thường đến từ đâu',
       moTa: 'nguồn chính / nguồn phụ / nguồn chỉ nên thử trong giai đoạn nhất định. L1→L5',
     },
     {
-      nhan: 'Quy luật dòng tiền của riêng bạn',
+      nhan: 'Dòng tiền của bạn có đặc điểm gì',
       moTa: 'vào đều hay vào theo đợt; điểm rò rỉ thật sự nằm ở đâu',
     },
     {
-      nhan: 'Cách quản lý tiền bạc',
+      nhan: 'Cách quản lý tiền hợp với bạn',
       moTa: 'cơ chế hợp với tính cách (tự động hóa hay kiểm soát thủ công), và vì sao cách còn lại sẽ thất bại với bạn',
     },
     {
-      nhan: 'Tâm thế đầu tư',
+      nhan: 'Tâm lý của bạn khi đầu tư',
       moTa: 'chịu rủi ro tới đâu, phản ứng điển hình khi thị trường ngược chiều, sai lầm tâm lý đặc trưng',
     },
     {
-      nhan: 'Con đường xây và tích góp tài sản',
+      nhan: 'Tài sản được xây lên tốt nhất bằng cách nào',
       moTa: 'tam hợp Mệnh + Quan Lộc cho biết tiền sinh từ năng lực nào',
     },
     {
-      nhan: 'Tiền và sự an yên',
+      nhan: 'Tiền và cảm giác đủ',
       moTa: 'vì sao ngưỡng "đủ" co giãn; vì sao tăng thu nhập chưa chắc hết lo',
       laGuong: true,
     },
     {
-      nhan: 'Rủi ro cần tránh + lời khuyên',
+      nhan: 'Những kiểu rủi ro đáng nhận ra sớm',
       moTa: '2–3 rủi ro cụ thể, mỗi rủi ro kèm dấu hiệu nhận biết sớm',
     },
   ],
   'thien-di': [
     {
-      nhan: 'Hình ảnh đối ngoại',
+      nhan: 'Người khác thường nhìn thấy gì ở bạn',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Khoảng cách giữa con người thật và hình ảnh',
+      nhan: 'Khoảng cách giữa vẻ ngoài và con người thật',
       moTa: 'một trong những insight "dính" nhất toàn bài',
       laGuong: true,
     },
     {
-      nhan: 'Cơ hội đến qua kênh nào',
+      nhan: 'Cơ hội thường đến từ đâu',
       moTa: 'người giới thiệu, môi trường mới, hay tự tìm',
     },
     {
-      nhan: 'Xuất ngoại / chuyển vùng / đổi môi trường',
+      nhan: 'Chuyển vùng, đổi môi trường, làm với nơi xa',
       moTa: 'xu hướng và điều kiện',
     },
     {
-      nhan: 'Chỗ nào bạn làm tốt nhất',
+      nhan: 'Bạn làm tốt nhất trong kiểu tiếp xúc nào',
       moTa: 'tam hợp Phu Thê + Phúc Đức: một–một, nhóm nhỏ, hay đám đông',
     },
     {
-      nhan: 'Rủi ro khi ra ngoài',
+      nhan: 'Rủi ro khi bước vào một môi trường mới',
       moTa: 'dạng va chạm đặc trưng ở môi trường lạ',
     },
     {
-      nhan: 'Giai đoạn nên mở rộng / nên thu về',
+      nhan: 'Lúc nào nên mở rộng, lúc nào nên thu về',
     },
   ],
   'phu-the': [
     {
-      nhan: 'Kiểu gắn bó của bạn',
+      nhan: 'Cách bạn gắn bó',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Người bạn đời của bạn có thể là ai',
+      nhan: 'Người bên cạnh bạn thường cần có gì',
       moTa: 'mô tả xu hướng tính cách. Cấm đoán tuổi / mệnh / nghề nghiệp cụ thể',
     },
     {
-      nhan: 'Mô thức lặp lại trong các mối quan hệ',
+      nhan: 'Điều dễ lặp lại trong tình yêu',
       moTa: 'vòng lặp thường thấy và chỗ nó hay gãy',
     },
     {
-      nhan: 'Cách bạn xử lý xung đột',
+      nhan: 'Bạn xử lý mâu thuẫn thế nào',
       moTa: 'rút lui, đối đầu, hay im lặng tích tụ',
     },
     {
-      nhan: 'Điều kiện để mối quan hệ bền',
+      nhan: 'Điều gì giúp một tình yêu bền',
       moTa: 'tam hợp Phúc Đức: bạn cần thấy đủ ở đâu thì mới ở lại được',
     },
     {
-      nhan: 'Sự nghiệp và đời sống riêng',
+      nhan: 'Khi công việc bước vào tình yêu',
       moTa: 'hai thứ này tranh nhau nguồn lực nào ở bạn',
       laGuong: true,
     },
     {
-      nhan: 'Nhịp thời gian của tình cảm',
+      nhan: 'Nhịp tình cảm trong giai đoạn này',
       moTa: 'giai đoạn dễ khởi sự, giai đoạn dễ căng + điều đáng cân nhắc',
     },
   ],
   'huynh-de': [
     {
-      nhan: 'Quan hệ đồng đẳng',
+      nhan: 'Quan hệ với người ngang hàng',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Bạn nên hợp tác hay nên đi một mình',
+      nhan: 'Hợp tác hay đi một mình',
       moTa: 'nêu điều kiện cụ thể, không kết luận tuyệt đối',
     },
     {
-      nhan: 'Kiểu cộng sự hợp và kiểu dễ vỡ',
+      nhan: 'Kiểu cộng sự hợp với bạn',
     },
     {
-      nhan: 'Chuyện tiền bạc với người ngang hàng',
+      nhan: 'Tiền bạc giữa những người ngang hàng',
       moTa: 'vay mượn, góp vốn, chia phần',
     },
     {
-      nhan: 'Chỗ dựa khi khó',
+      nhan: 'Khi bạn thực sự cần chỗ dựa',
       moTa: 'tam hợp Điền Trạch + Tật Ách: ai và nơi nào đỡ bạn khi đuối',
     },
     {
-      nhan: 'Thân thiết và rộng rãi',
+      nhan: 'Rộng hay sâu',
       moTa: 'chất lượng đối với số lượng quan hệ *(gương nội bộ chặng 3 — viết như một cặp với phần 3.3)*',
       laGuong: true,
     },
   ],
   'no-boc': [
     {
-      nhan: 'Bạn quen biết theo kiểu gì',
+      nhan: 'Bạn kết nối với người khác theo cách nào',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Bạn là người cho hay người nhận trong mạng lưới',
+      nhan: 'Bạn thường là người cho hay người nhận',
     },
     {
-      nhan: 'Dạng người hợp và dạng người nên giữ khoảng cách',
+      nhan: 'Người nào hợp để ở gần bạn',
       moTa: 'mô tả hành vi, cấm gắn tuổi / mệnh',
     },
     {
-      nhan: 'Cấp dưới và đội ngũ',
+      nhan: 'Khi bạn ở vị trí dẫn dắt',
       moTa: 'tam hợp Tử Tức + Phụ Mẫu: bạn dẫn dắt kiểu gì, và ai đỡ đầu bạn',
     },
     {
@@ -290,29 +290,29 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       laGuong: true,
     },
     {
-      nhan: 'Rủi ro từ quan hệ',
+      nhan: 'Rủi ro trong quan hệ',
       moTa: 'thị phi, bị lợi dụng, gánh hộ; nêu dấu hiệu sớm',
     },
   ],
   'phu-mau': [
     {
-      nhan: 'Quan hệ với cha mẹ',
+      nhan: 'Bạn và cha mẹ thường ở thế nào với nhau',
       moTa: 'L1→L4, mô tả động lực quan hệ',
     },
     {
-      nhan: 'Nền giáo dưỡng đã cài gì vào bạn',
+      nhan: 'Điều gia đình đã cài sẵn vào bạn',
       moTa: 'niềm tin nền, chuẩn "được công nhận" bạn mang theo',
     },
     {
-      nhan: 'Quan hệ với thẩm quyền',
+      nhan: 'Bạn đứng thế nào trước người có quyền',
       moTa: 'sếp, thầy, thể chế: bạn tìm sự công nhận hay né sự kiểm soát',
     },
     {
-      nhan: 'Quý nhân và người đỡ đầu',
+      nhan: 'Ai thường đứng ra giúp bạn',
       moTa: 'tam hợp Nô Bộc: dạng người có xu hướng nâng bạn lên',
     },
     {
-      nhan: 'Giấy tờ, học vấn, danh phận',
+      nhan: 'Chuyện học hành và danh phận trong đời bạn',
       moTa: 'Phụ Mẫu như cung văn thư',
     },
     {
@@ -323,11 +323,11 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
   ],
   'dien-trach': [
     {
-      nhan: 'Ý nghĩa của "chỗ thuộc về" với bạn',
+      nhan: 'Thế nào là một nơi thuộc về bạn',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Tài sản cố định',
+      nhan: 'Nhà cửa và những thứ bạn giữ lâu',
       moTa: 'mua sớm hay muộn, tự tạo hay thừa hưởng, giữ được hay hay đổi',
     },
     {
@@ -335,11 +335,11 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
       moTa: 'tam hợp Tật Ách: môi trường và sức khỏe',
     },
     {
-      nhan: 'Kho của cải',
+      nhan: 'Bạn giữ của bằng cách nào',
       moTa: 'Điền Trạch là nơi tiền dừng lại; vì sao tiền của bạn ở lại hay đi tiếp',
     },
     {
-      nhan: 'Gia đạo và nếp nhà',
+      nhan: 'Nếp sống trong nhà bạn',
       moTa: 'bầu không khí bạn tạo ra hoặc bị đặt vào',
     },
     {
@@ -350,19 +350,19 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
   ],
   'tu-tuc': [
     {
-      nhan: 'Quan hệ với thế hệ sau',
+      nhan: 'Bạn ở thế nào với người đi sau',
       moTa: 'L1→L4',
     },
     {
-      nhan: 'Phong cách nuôi dạy / dẫn dắt người non hơn',
+      nhan: 'Bạn dạy và dẫn người khác ra sao',
       moTa: 'bảo bọc, thả, hay đòi hỏi',
     },
     {
-      nhan: '"Đứa con tinh thần"',
+      nhan: 'Thứ bạn tạo ra và coi như con mình',
       moTa: 'dạng sản phẩm / tác phẩm / đội nhóm bạn có duyên tạo ra',
     },
     {
-      nhan: 'Cách bạn nuôi một thứ từ 0 tới 1',
+      nhan: 'Bạn nuôi một thứ từ con số không thế nào',
       moTa: 'tam hợp Nô Bộc + Phụ Mẫu: ai giúp bạn ở đoạn nào',
     },
     {

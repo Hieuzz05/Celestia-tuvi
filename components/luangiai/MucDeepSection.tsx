@@ -117,6 +117,22 @@ export function MucDeepSection({
         />
       )}
 
+      {/*
+        CÂU HỎI SOI — đặt ngay dưới câu kết luận, trước thân bài.
+
+        Ở đây nó làm việc của một cái khung: người đọc biết phần sắp tới đang
+        trả lời câu gì của họ. Đặt ở cuối thì nó thành một lời bỏ ngỏ, mà phần
+        này vốn đã có câu giữ lại để khép rồi.
+      */}
+      {muc.cauHoiSoi && (
+        <p
+          className="body-text italic"
+          style={{ color: 'var(--fg-muted)', lineHeight: 1.6 }}
+        >
+          {muc.cauHoiSoi}
+        </p>
+      )}
+
       {tieuChiThuong.map((t) => (
         <div key={t.nhan} className="flex flex-col gap-[8px]">
           {/* body-lg 18/600 — KHÔNG phải h3, xem ghi chú đầu tệp */}
@@ -155,6 +171,31 @@ export function MucDeepSection({
               : undefined
           }
         />
+      )}
+
+      {/*
+        CÂU GIỮ LẠI — khép phần, đặt sau khối gương.
+
+        Một phần dài năm sáu trăm từ; không có câu này thì người đọc gấp lại
+        với một mớ nhận định rời và thứ họ nhớ là ngẫu nhiên. Xem van-phong.ts.
+
+        Vạch dọc thay cho khung: nó nói "đây là lời của Celes, không phải một
+        đoạn nữa của bài" mà không cần thêm một cái hộp vào trang vốn đã nhiều
+        hộp.
+      */}
+      {muc.giuLai && (
+        <div
+          className="flex flex-col gap-[4px] pl-[12px]"
+          style={{ borderLeft: '2px solid var(--accent)' }}
+        >
+          <p className="eyebrow">Điều Celes muốn bạn giữ lại</p>
+          <ChuSao
+            van={muc.giuLai}
+            ten={tenCoThat}
+            className="body-text"
+            style={{ color: 'var(--fg)', lineHeight: 1.7 }}
+          />
+        </div>
       )}
 
       <div className="flex flex-wrap items-center gap-[16px]">

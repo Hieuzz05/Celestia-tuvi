@@ -95,8 +95,17 @@ for (const [ngay, thang, nam, gio, gioiTinh] of MAU) {
       loSo.push(`${chuDe}: có con số đếm`);
     }
 
-    // Tên cung — luật cấm ở mọi dạng, và `phanDoi` đã thay được
-    if (/\b(?:Phu Thê|Quan Lộc|Tài Bạch|Điền Trạch|Tật Ách|Phụ Mẫu|Phúc Đức)\b/u.test(phanDuLieu)) {
+    /*
+     * Tên cung — luật cấm ở mọi dạng, và `phanDoi` đã thay được.
+     *
+     * TRỪ "Phúc Đức", vì nó là HAI thứ cùng tên: một cung, và sao thứ mười của
+     * vòng Thái Tuế. Bản trước bắt tên trần nên mọi lá số có sao ấy đều đỏ —
+     * khối chỉ đang liệt kê một dữ kiện đúng chỗ của nó. Với nó thì phải có
+     * chữ chỉ cung đứng trước mới tính là lọt.
+     */
+    const TEN_CUNG_RIENG = /\b(?:Phu Thê|Quan Lộc|Tài Bạch|Điền Trạch|Tật Ách|Phụ Mẫu)\b/u;
+    const PHUC_DUC_LA_CUNG = /(?:cung|phần|vào|ở|tại)\s+Phúc Đức\b/u;
+    if (TEN_CUNG_RIENG.test(phanDuLieu) || PHUC_DUC_LA_CUNG.test(phanDuLieu)) {
       loTenCung.push(`${chuDe}: lọt tên cung`);
     }
   }
