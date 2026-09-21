@@ -41,15 +41,23 @@ function SaoText({
   hienDoSang,
   trongYeu,
   hep = false,
+  mo = false,
 }: {
   sao: Sao;
   hienDoSang: boolean;
   trongYeu: boolean;
+  /** Tầng thấp hơn — vòng Thái Tuế / Lộc Tồn. Nhạt hơn nhưng vẫn đúng cột cát/hung. */
+  mo?: boolean;
   /** Bố cục hẹp: chữ nhỏ hơn để hai cột phụ tinh vừa ô 110px — xem ghi chú ở phần phụ tinh */
   hep?: boolean;
 }) {
-  const mau =
-    sao.tinhChat === 'hung' ? 'var(--chart-hung)' : trongYeu ? 'var(--fg-body)' : 'var(--fg-muted)';
+  const mau = mo
+    ? 'var(--fg-subtle)'
+    : sao.tinhChat === 'hung'
+      ? 'var(--chart-hung)'
+      : trongYeu
+        ? 'var(--fg-body)'
+        : 'var(--fg-muted)';
   return (
     <span
       /*
@@ -121,8 +129,27 @@ export function PalaceCell({
   const phuTinh = cung.sao.filter((s) => s.loai === 'phu-tinh');
   const vongSao = cung.sao.filter((s) => s.loai === 'vong-sao');
 
-  const cot1 = phuTinh.filter((s) => s.tinhChat !== 'hung');
-  const cot2 = phuTinh.filter((s) => s.tinhChat === 'hung');
+  /*
+   * VÒNG THÁI TUẾ / LỘC TỒN NẰM CHUNG HAI CỘT VỚI PHỤ TINH.
+   *
+   * Trước đây nhóm này được vẽ thành một DẢI NGANG riêng bên dưới lưới, nên
+   * nó tách hẳn ra và nằm ngang trong khi mọi sao khác xếp dọc theo cột. Chủ
+   * dự án nhìn ảnh và hỏi ngay vì sao chúng khác mọi thứ xung quanh.
+   *
+   * Không có lý do nào để tách: chúng cũng là sao trên cung ấy, cũng chia
+   * được cát/hung như phụ tinh. Cột trái phải là "mọi sao cát của cung này",
+   * không phải "một số sao cát". Tầng thấp hơn của chúng đã được nói bằng
+   * MÀU nhạt rồi — nói thêm một lần nữa bằng bố cục là thừa, và cái giá là
+   * phá vỡ luật hai cột.
+   *
+   * Xếp sau phụ tinh trong cùng cột để thứ quan trọng hơn đọc trước.
+   */
+  const nhomSao = [
+    ...(settings.phuTinh ? phuTinh : []),
+    ...(settings.vongSao ? vongSao : []),
+  ];
+  const cot1 = nhomSao.filter((s) => s.tinhChat !== 'hung');
+  const cot2 = nhomSao.filter((s) => s.tinhChat === 'hung');
 
   const vienMau =
     trangThai === 'chon'
@@ -299,7 +326,7 @@ export function PalaceCell({
         hung. Dồn một cột là mất luôn phép phân loại ấy, và người đọc phải dựa
         hoàn toàn vào màu.
       */}
-      {settings.phuTinh && (
+      {nhomSao.length > 0 && (
         <div className={`mt-[6px] grid grid-cols-2 ${hep ? 'gap-x-[3px]' : 'gap-x-2'}`}>
           <div className="flex flex-col items-start">
             {cot1.map((s) => (
@@ -307,6 +334,7 @@ export function PalaceCell({
                 key={s.ten}
                 sao={s}
                 hep={hep}
+                mo={s.loai === 'vong-sao'}
                 hienDoSang={settings.doSang}
                 trongYeu={PHU_TINH_TRONG_YEU.has(s.ten)}
               />
@@ -318,40 +346,12 @@ export function PalaceCell({
                 key={s.ten}
                 sao={s}
                 hep={hep}
+                mo={s.loai === 'vong-sao'}
                 hienDoSang={settings.doSang}
                 trongYeu={PHU_TINH_TRONG_YEU.has(s.ten)}
               />
             ))}
           </div>
-        </div>
-      )}
-
-      {/*
-        Vòng Thái Tuế / Lộc Tồn.
-
-        CỠ CHỮ BẰNG PHỤ TINH, không to hơn. Khối này trước dùng 11px cứng
-        trong khi phụ tinh quanh nó là 12px ở màn rộng và 8px ở màn hẹp — nên
-        trên điện thoại nhóm sao ÍT quan trọng nhất lại hiện to hơn nhóm quan
-        trọng hơn nó. Cỡ chữ là cách người đọc đoán thứ bậc, nên để lệch là
-        nói sai thứ bậc.
-
-        MÀU LẤY TỪ TOKEN, không hard-code. Bản cũ dùng rgba(154,154,154,0.65),
-        đo ra tương phản 1,88 trên nền sáng — cần 4,5. Nó cũng đứng yên khi
-        đổi sang nền tối, nơi một màu xám nhạt lại quá chói. `--fg-subtle` là
-        bậc nhạt nhất của hệ, 4,65 ở nền sáng và 8,86 ở nền tối.
-      */}
-      {settings.vongSao && vongSao.length > 0 && (
-        <div className="mt-[4px] flex flex-wrap gap-x-[6px]">
-          {vongSao.map((s) => (
-            <span
-              key={s.ten}
-              data-sao="phu"
-              className={hep ? 'text-[8px]' : 'text-[12px]'}
-              style={{ color: 'var(--fg-subtle)', lineHeight: hep ? 1.5 : 1.45 }}
-            >
-              {s.ten}
-            </span>
-          ))}
         </div>
       )}
 
