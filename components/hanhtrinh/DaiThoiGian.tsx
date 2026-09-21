@@ -43,7 +43,7 @@ export function DaiThoiGian({
 
   return (
     <div ref={khungRef} className="-mx-[24px] overflow-x-auto px-[24px] pb-[4px]">
-      <div className="flex min-w-max gap-[10px]">
+      <div className="flex min-w-max gap-[12px]">
         {moc.map((m) => {
           const chon = m.id === idDangChon;
           return (

@@ -140,7 +140,7 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
           {/* Cột trái: mình đang trả cho cái gì */}
           <The className="flex flex-col gap-[12px]">
             <span className="eyebrow">{t.ungHo.banNhanDuoc}</span>
-            <ul className="flex flex-col gap-[6px]">
+            <ul className="flex flex-col gap-[8px]">
               {t.ungHo.nhan.map((n) => (
                 <li key={n} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                   · {n}

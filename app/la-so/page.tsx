@@ -441,7 +441,7 @@ function TrangLaSo() {
             làm tiếp, và nó phải trông như vậy.
           */}
           <div
-            className="card flex flex-col gap-[10px]"
+            className="card flex flex-col gap-[12px]"
             style={{ borderColor: 'var(--accent)' }}
           >
             <Eyebrow>{t.nav.khamPha}</Eyebrow>
@@ -451,7 +451,7 @@ function TrangLaSo() {
             <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
               {t.quickRead.sauNoiBatMo}
             </p>
-            <div className="mt-[4px] flex flex-wrap items-center gap-[14px]">
+            <div className="mt-[4px] flex flex-wrap items-center gap-[12px]">
               <Link
                 href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
                 className="btn-primary"
@@ -488,7 +488,7 @@ function TrangLaSo() {
 
         {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
         {duocVao && dangDocSau && !baiSau && (
-          <section className="flex flex-col gap-[10px]">
+          <section className="flex flex-col gap-[12px]">
             <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
             <p className="body-text" style={{ color: 'var(--fg)' }}>
               {t.luanSau.dangDoc}
@@ -611,7 +611,7 @@ function TrangLaSo() {
               hàng bên phải còn đúng một việc để làm.
             */}
             {duocVao && (daCoTrongDanhSach || daLuu) && (
-              <p className="caption mt-[8px] inline-flex items-center gap-[6px]">
+              <p className="caption mt-[8px] inline-flex items-center gap-[8px]">
                 <svg
                   width="12"
                   height="12"

@@ -208,8 +208,8 @@ export default function TrangModel() {
         {d?.dong.map((x, i) => {
           const kq = ketQuaThu[x.id];
           return (
-            <The key={x.id || `${x.provider}-${x.model}`} className="flex flex-col gap-[10px]">
-              <div className="flex flex-wrap items-start justify-between gap-[10px]">
+            <The key={x.id || `${x.provider}-${x.model}`} className="flex flex-col gap-[12px]">
+              <div className="flex flex-wrap items-start justify-between gap-[12px]">
                 <div className="flex items-start gap-[12px]">
                   <span
                     className="mt-[2px] text-[13px] tabular-nums"
@@ -234,7 +234,7 @@ export default function TrangModel() {
                 </div>
 
                 {x.id && (
-                  <div className="flex flex-wrap items-center gap-[10px]">
+                  <div className="flex flex-wrap items-center gap-[12px]">
                     <button onClick={() => lenDau(i)} disabled={i === 0} className="caption underline">
                       Lên đầu
                     </button>
@@ -343,7 +343,7 @@ function DoiKey({
 }) {
   const [key, setKey] = useState('');
   return (
-    <div className="flex flex-col gap-[10px] border-t pt-[12px]" style={{ borderColor: 'var(--line)' }}>
+    <div className="flex flex-col gap-[12px] border-t pt-[12px]" style={{ borderColor: 'var(--line)' }}>
       <Field label="API key mới">
         <input
           type="password"
@@ -386,10 +386,10 @@ function ThemModel({
   const [ghiChu, setGhiChu] = useState('');
 
   return (
-    <The className="flex flex-col gap-[14px]">
+    <The className="flex flex-col gap-[12px]">
       <Eyebrow>Thêm model</Eyebrow>
 
-      <div className="grid gap-[14px] md:grid-cols-2">
+      <div className="grid gap-[12px] md:grid-cols-2">
         <Field label="Nhà cung cấp">
           <select value={p} onChange={(e) => setP(e.target.value)} className="field-input">
             {provider.map((x) => (

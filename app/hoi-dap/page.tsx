@@ -267,7 +267,7 @@ function TrangHoiDap() {
     );
 
   return (
-    <Shell className="flex flex-col gap-[20px] py-[20px]">
+    <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
         <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
         <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
@@ -275,9 +275,9 @@ function TrangHoiDap() {
 
       <section className="grid gap-[24px] lg:grid-cols-[320px_minmax(0,1fr)]">
         {/* Cột trái: đang nói về lá số nào, và lối sang bản đồ 12 cung */}
-        <div className="flex flex-col gap-[14px]">
+        <div className="flex flex-col gap-[12px]">
           {boiCanh.hoSos.length > 0 && (
-            <label className="flex flex-col gap-[6px]">
+            <label className="flex flex-col gap-[8px]">
               <span className="field-label">{t.hoiCeles.dangNoiVe}</span>
               <select
                 className="field-input"
@@ -317,7 +317,7 @@ function TrangHoiDap() {
 
           {laSo && (
             <div
-              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pt-[12px] text-[13px]"
+              className="flex flex-wrap gap-x-[12px] gap-y-[4px] pt-[12px] text-[13px]"
               style={{ color: 'var(--fg-muted)', borderTop: '1px solid var(--line)' }}
             >
               <span>
@@ -331,7 +331,7 @@ function TrangHoiDap() {
           )}
 
           {/* Bản đồ 12 cung là lối phụ, không tranh chỗ với việc hỏi */}
-          <div className="card flex flex-col gap-[10px]">
+          <div className="card flex flex-col gap-[12px]">
             <span className="text-[16px] font-semibold" style={{ color: 'var(--fg)' }}>
               {t.hoiCeles.tuXemTieuDe}
             </span>
@@ -347,7 +347,7 @@ function TrangHoiDap() {
         {/* Cột phải: hội thoại — chỉ mở khi đã biết đang nói về lá số nào */}
         {!daChonLaSo ? (
           <div
-            className="flex min-h-[320px] flex-col items-center justify-center gap-[10px] rounded-[var(--radius-cards)] border p-[24px] text-center"
+            className="flex min-h-[320px] flex-col items-center justify-center gap-[12px] rounded-[var(--radius-cards)] border p-[24px] text-center"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
             <h2 className="subheading">{t.hoiCeles.canBietAi}</h2>
@@ -356,7 +356,7 @@ function TrangHoiDap() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-[14px]">
+          <div className="flex flex-col gap-[12px]">
             <div
               className="flex min-h-[380px] flex-col gap-[16px] overflow-y-auto rounded-[var(--radius-cards)] border p-[18px]"
               style={{
@@ -366,8 +366,8 @@ function TrangHoiDap() {
               }}
             >
               {tinNhan.length === 0 && !dangChay && (
-                <div className="flex flex-col gap-[18px]">
-                  <div className="flex flex-col gap-[10px]">
+                <div className="flex flex-col gap-[16px]">
+                  <div className="flex flex-col gap-[12px]">
                     <p className="eyebrow">{t.hoiCeles.khamPhaNhanhTieuDe}</p>
                     <div className="flex flex-wrap gap-[8px]">
                       {t.hoiCeles.khamPhaNhanh.map((c) => (
@@ -382,9 +382,9 @@ function TrangHoiDap() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-[10px]">
+                  <div className="flex flex-col gap-[12px]">
                     <p className="eyebrow">{t.hoiCeles.goiYTieuDe}</p>
-                    <div className="flex flex-col items-start gap-[6px]">
+                    <div className="flex flex-col items-start gap-[8px]">
                       {t.hoiCeles.goiY.map((g) => (
                         <button key={g} onClick={() => hoi(g)} className="link-text text-left">
                           {g}
@@ -408,7 +408,7 @@ function TrangHoiDap() {
                 ) : (
                   /* Không in tên model ra đây: người dùng nói chuyện với Celes,
                      nhà cung cấp phía sau là chuyện của trang quản trị. */
-                  <div key={i} className="flex flex-col gap-[6px]">
+                  <div key={i} className="flex flex-col gap-[8px]">
                     <MarkdownLuanGiai noiDung={m.noiDung} nho />
 
                     {/*
@@ -434,7 +434,7 @@ function TrangHoiDap() {
                       Hai việc khác nhau nên không trộn vào cùng một hàng.
                     */}
                     {i === tinNhan.length - 1 && !dangChay && !!m.loiDi?.length && (
-                      <div className="flex flex-wrap gap-x-[16px] gap-y-[6px] pt-[2px]">
+                      <div className="flex flex-wrap gap-x-[16px] gap-y-[8px] pt-[2px]">
                         {m.loiDi.map((l) => (
                           <Link key={l.duong} href={l.duong} className="link-text text-[13px]">
                             {l.nhan}
@@ -468,7 +468,7 @@ function TrangHoiDap() {
                 e.preventDefault();
                 hoi(cauHoi);
               }}
-              className="flex gap-[10px]"
+              className="flex gap-[12px]"
             >
               <input
                 value={cauHoi}

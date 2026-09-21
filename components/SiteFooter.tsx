@@ -24,7 +24,7 @@ export function SiteFooter() {
 
         <p className="caption max-w-[440px]">{t.chan.mienTru}</p>
 
-        <div className="flex flex-wrap items-center gap-[20px]">
+        <div className="flex flex-wrap items-center gap-[24px]">
           <Link href="/la-so" className="link-text">
             {t.chung.ctaChinh}
           </Link>

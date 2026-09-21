@@ -61,6 +61,30 @@
   --radius-full: 999px;
 
   /* ---------- Layout ---------- */
+  /*
+   * THANG KHOẢNG CÁCH — SÁU BẬC, không có bậc thứ bảy.
+   *
+   * Trước đây mã dùng 20 giá trị rời nhau: 1 2 3 4 5 6 7 8 10 12 14 16 18 20
+   * 22 24 28 32 36 40. Mắt không gọi tên được chuyện đó, nhưng cảm nhận được:
+   * hai khối lẽ ra cùng một nhịp lại lệch nhau 2px, và cả trang đọc như hơi
+   * rung. Không lỗi nào báo, không ai sửa, và mỗi lần thêm màn mới là thêm
+   * một giá trị nữa.
+   *
+   * Sáu bậc đủ cho mọi việc: 4 dính, 8 sát, 12 thường, 16 rời, 24 khối, 32
+   * chương. Cần một khoảng không có trong thang thì gần như luôn là dấu hiệu
+   * bố cục đang sai chỗ khác.
+   *
+   * MỆNH BÀN ĐƯỢC MIỄN TRỪ và đó là ngoại lệ DUY NHẤT: nó là sơ đồ hình học
+   * có tỉ lệ riêng, thu nhỏ theo bề ngang màn, nơi 1-3px là khoảng cách thật
+   * sự cần thiết giữa các dòng sao. Luật này dành cho bố cục trang.
+   */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
   --page-max-width: 1200px;
   --section-gap: 80px;
   --card-padding: 24px;

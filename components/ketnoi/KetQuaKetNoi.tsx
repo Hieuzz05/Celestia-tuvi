@@ -47,7 +47,7 @@ export function KetQuaKetNoi({
   const cauHoiTiep = `Nếu hai người ${tenA} và ${tenB} đi tiếp với nhau, điều gì dễ gây khó khăn nhất?`;
 
   return (
-    <section className="flex flex-col gap-[28px]">
+    <section className="flex flex-col gap-[24px]">
       <div>
         <p className="eyebrow">
           {tenA} &amp; {tenB} · {cauHinh.nhan.toUpperCase()}
@@ -58,7 +58,7 @@ export function KetQuaKetNoi({
         </p>
       </div>
 
-      <div className="flex flex-col gap-[22px]">
+      <div className="flex flex-col gap-[24px]">
         {duLieu.muc
           .filter((m) => m.noiDung)
           .map((m) => (
@@ -97,8 +97,8 @@ export function KetQuaKetNoi({
         <summary className="cursor-pointer text-[13px]" style={{ color: 'var(--fg-muted)' }}>
           Muốn biết vì sao không?
         </summary>
-        <div className="mt-[12px] flex flex-col gap-[14px]">
-          <div className="flex flex-col gap-[5px]">
+        <div className="mt-[12px] flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-[4px]">
             <span className="eyebrow">CELES DỰA VÀO ĐÂU</span>
             {duLieu.canCu.duKien.map((d) => (
               <span key={d.id} className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
@@ -108,7 +108,7 @@ export function KetQuaKetNoi({
           </div>
 
           {duLieu.canCu.cachNoi && (
-            <div className="flex flex-col gap-[5px]">
+            <div className="flex flex-col gap-[4px]">
               <span className="eyebrow">KHI ĐẶT CẠNH NHAU</span>
               <span className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
                 {duLieu.canCu.cachNoi}
@@ -116,7 +116,7 @@ export function KetQuaKetNoi({
             </div>
           )}
 
-          <div className="flex flex-col gap-[5px]">
+          <div className="flex flex-col gap-[4px]">
             <span className="eyebrow">PHƯƠNG PHÁP</span>
             <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
               {duLieu.canCu.phuongPhap}

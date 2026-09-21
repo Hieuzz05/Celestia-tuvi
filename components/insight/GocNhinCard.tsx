@@ -58,13 +58,13 @@ export function GocNhinCard({
 
       {moCanCu && (
         <div
-          className="flex flex-col gap-[10px] pt-[12px]"
+          className="flex flex-col gap-[12px] pt-[12px]"
           style={{ borderTop: '1px solid var(--line)' }}
         >
           <p className="eyebrow">{t.quickRead.viSaoTieuDe}</p>
           <p className="caption">{t.quickRead.viSaoMo}</p>
 
-          <div className="flex flex-wrap gap-[6px]">
+          <div className="flex flex-wrap gap-[8px]">
             {gocNhin.canCu.map((c) => (
               <NhanPill key={c.nhan}>{c.nhan}</NhanPill>
             ))}

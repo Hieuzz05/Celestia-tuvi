@@ -75,7 +75,7 @@ export function SoDoBonChang({
   const mucGuong = dangDoc ? MUC_CUA_CUNG[GUONG[CUNG_CUA_MUC[dangDoc]]] : null;
 
   return (
-    <figure className="flex flex-col gap-[10px]">
+    <figure className="flex flex-col gap-[12px]">
       <figcaption className="eyebrow">Bốn chặng, mười hai tấm gương</figcaption>
 
       <svg

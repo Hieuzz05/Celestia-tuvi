@@ -102,7 +102,7 @@ export default function TrangRetrievalLab() {
   const so = (n: number | null, chuSo = 3) => (n === null ? '—' : n.toFixed(chuSo));
 
   return (
-    <Shell className="flex flex-col gap-[28px] py-[36px]">
+    <Shell className="flex flex-col gap-[24px] py-[36px]">
       <div>
         <Eyebrow className="mb-[10px]">QUẢN TRỊ · AI &amp; TRI THỨC</Eyebrow>
         <h1 className="heading-sm">Retrieval Lab</h1>
@@ -116,7 +116,7 @@ export default function TrangRetrievalLab() {
         </p>
       </div>
 
-      <The className="flex flex-col gap-[14px]">
+      <The className="flex flex-col gap-[12px]">
         <Field label="Câu hỏi">
           <input
             value={cauHoi}
@@ -142,7 +142,7 @@ export default function TrangRetrievalLab() {
           ))}
         </div>
 
-        <div className="grid gap-[14px] md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid gap-[12px] md:grid-cols-3 lg:grid-cols-5">
           <Field label="Hệ phái">
             <select value={hePhai} onChange={(e) => setHePhai(e.target.value)} className="field-input">
               <option value="tat-ca">Tất cả</option>
@@ -216,7 +216,7 @@ export default function TrangRetrievalLab() {
 
       {kq && (
         <>
-          <The className="flex flex-col gap-[10px]">
+          <The className="flex flex-col gap-[12px]">
             <Eyebrow>Bộ lập kế hoạch · v{kq.keHoach.phienBan}</Eyebrow>
             <Hang nhan="Chủ đề" gt={`${kq.keHoach.chuDe}${kq.keHoach.chacChan ? '' : ' (đoán mặc định, câu hỏi không có tín hiệu rõ)'}`} />
             <Hang nhan="Cung liên quan" gt={kq.keHoach.cungLienQuan.join(', ')} />
@@ -237,8 +237,8 @@ export default function TrangRetrievalLab() {
             </div>
           </The>
 
-          <section className="flex flex-col gap-[10px]">
-            <div className="flex flex-wrap items-baseline justify-between gap-[10px]">
+          <section className="flex flex-col gap-[12px]">
+            <div className="flex flex-wrap items-baseline justify-between gap-[12px]">
               <Eyebrow>
                 Kết quả · {kq.ketQua.length} ứng viên · {kq.doTreMs}ms · truy hồi v{kq.phienBan}
               </Eyebrow>
@@ -329,7 +329,7 @@ export default function TrangRetrievalLab() {
 
 function Hang({ nhan, gt }: { nhan: string; gt: string }) {
   return (
-    <div className="flex flex-wrap gap-[10px] body-sm">
+    <div className="flex flex-wrap gap-[12px] body-sm">
       <span style={{ color: 'var(--fg-muted)', minWidth: 140 }}>{nhan}</span>
       <span style={{ color: 'var(--fg)' }}>{gt}</span>
     </div>

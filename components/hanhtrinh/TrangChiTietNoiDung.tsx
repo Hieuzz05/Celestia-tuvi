@@ -166,7 +166,7 @@ export function TrangChiTietNoiDung() {
           </nav>
 
           {/* Breadcrumb ngay trên đã nói "Hành trình" — không lặp lại ở eyebrow */}
-          <div className="flex flex-wrap items-center gap-[10px]">
+          <div className="flex flex-wrap items-center gap-[12px]">
             {hoSo && (
               <NhanPill>
                 {hoSo.hoTen?.trim() || `${hoSo.ngay}/${hoSo.thang}/${hoSo.nam}`}
@@ -223,7 +223,7 @@ export function TrangChiTietNoiDung() {
                 [t.hanhTrinh.canCho, ai.canCho],
               ] as const
             ).map(([nhan, cd]) => (
-              <The key={nhan} className="flex flex-col gap-[6px]">
+              <The key={nhan} className="flex flex-col gap-[8px]">
                 <Eyebrow>{nhan}</Eyebrow>
                 {cd.tieuDe && (
                   <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
@@ -235,7 +235,7 @@ export function TrangChiTietNoiDung() {
                 </p>
               </The>
             ))}
-            <The className="flex flex-col gap-[6px]">
+            <The className="flex flex-col gap-[8px]">
               <Eyebrow>{k.nhomTongHop}</Eyebrow>
               <p className="body-text" style={{ color: 'var(--fg)' }}>
                 {ai.ghepLai}
@@ -264,7 +264,7 @@ export function TrangChiTietNoiDung() {
             </p>
           </The>
 
-          <The className="flex flex-col gap-[10px]">
+          <The className="flex flex-col gap-[12px]">
             <Eyebrow>{k.tanDung}</Eyebrow>
             {bai.tanDung.length ? (
               <ul className="flex flex-col gap-[8px]">
@@ -281,7 +281,7 @@ export function TrangChiTietNoiDung() {
             )}
           </The>
 
-          <The className="flex flex-col gap-[10px]">
+          <The className="flex flex-col gap-[12px]">
             <Eyebrow>{k.luuY}</Eyebrow>
             {bai.luuY.length ? (
               <ul className="flex flex-col gap-[8px]">
@@ -308,7 +308,7 @@ export function TrangChiTietNoiDung() {
           </h2>
           <div className="grid gap-[12px] md:grid-cols-2">
             {bai.linhVuc.map((lv) => (
-              <The key={lv.id} className="flex flex-col gap-[6px]">
+              <The key={lv.id} className="flex flex-col gap-[8px]">
                 <span className="text-[16px] font-semibold" style={{ color: 'var(--fg)' }}>
                   {lv.nhan}
                 </span>
@@ -341,7 +341,7 @@ export function TrangChiTietNoiDung() {
           {moCanCu && (
             <The className="flex flex-col gap-[16px]">
               {bai.canCu.map((nhom) => (
-                <div key={nhom.nhan} className="flex flex-col gap-[6px]">
+                <div key={nhom.nhan} className="flex flex-col gap-[8px]">
                   <Eyebrow>{nhom.nhan}</Eyebrow>
                   <ul className="flex flex-col gap-[4px]">
                     {nhom.dong.map((d, i) => (

@@ -95,7 +95,7 @@ export function DauCelestia({
 /** Dấu + chữ CELESTIA, áp đúng tỉ lệ 1.2 lần chiều cao chữ */
 export function Logo({ size = 20 }: { size?: number }) {
   return (
-    <span className="flex items-center gap-[10px]">
+    <span className="flex items-center gap-[12px]">
       <DauCelestia size={size * TI_LE_DAU} />
       <span
         style={{

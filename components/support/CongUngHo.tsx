@@ -111,7 +111,7 @@ export function CongUngHo({
               })}
             </p>
 
-            <ul className="flex flex-col gap-[6px]">
+            <ul className="flex flex-col gap-[8px]">
               {t.ungHo.loiIch.map((l) => (
                 <li key={l} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                   · {l}
@@ -137,7 +137,7 @@ export function CongUngHo({
               {t.ungHo.soTienMoTa}
             </p>
 
-            <div className="flex flex-wrap gap-[10px]">
+            <div className="flex flex-wrap gap-[12px]">
               {goiY.map((m) => (
                 <PillTag
                   key={m}
@@ -153,7 +153,7 @@ export function CongUngHo({
               ))}
             </div>
 
-            <label className="flex flex-col gap-[6px]">
+            <label className="flex flex-col gap-[8px]">
               <span className="field-label">{t.ungHo.soKhac}</span>
               <O
                 inputMode="numeric"
@@ -167,7 +167,7 @@ export function CongUngHo({
               />
             </label>
 
-            <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-col gap-[8px]">
               <span className="eyebrow">{t.ungHo.banNhanDuoc}</span>
               <ul className="flex flex-col gap-[4px]">
                 {t.ungHo.nhan.map((n) => (

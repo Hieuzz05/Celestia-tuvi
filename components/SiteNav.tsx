@@ -156,7 +156,7 @@ export function SiteNav() {
           </Link>
 
           {/* Hàng liên kết chỉ nằm trên thanh từ md trở lên; hẹp hơn thì vào panel */}
-          <div className="hidden items-center gap-[20px] lg:flex">
+          <div className="hidden items-center gap-[24px] lg:flex">
             {lienKet.map((l) => (
               <Link
                 key={l.href}
@@ -179,7 +179,7 @@ export function SiteNav() {
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setMoMenu((v) => !v)}
-                  className="pill-tag flex items-center gap-[6px]"
+                  className="pill-tag flex items-center gap-[8px]"
                   aria-expanded={moMenu}
                   aria-haspopup="menu"
                   title={taiKhoan.email ?? undefined}
@@ -259,7 +259,7 @@ export function SiteNav() {
             <button
               type="button"
               onClick={() => setMoNav((v) => !v)}
-              className="flex h-[44px] items-center gap-[6px] rounded-[var(--radius-buttons)] border px-[12px] text-[14px] font-medium lg:hidden"
+              className="flex h-[44px] items-center gap-[8px] rounded-[var(--radius-buttons)] border px-[12px] text-[14px] font-medium lg:hidden"
               style={{ color: 'var(--fg)', borderColor: 'var(--line-strong)' }}
               aria-expanded={moNav}
               aria-controls="menu-dieu-huong"

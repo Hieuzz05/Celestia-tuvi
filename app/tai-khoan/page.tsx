@@ -75,7 +75,7 @@ export default function TaiKhoanPage() {
       </div>
 
       <div
-        className="flex flex-col gap-[6px] rounded-[var(--radius-cards)] border p-[18px]"
+        className="flex flex-col gap-[8px] rounded-[var(--radius-cards)] border p-[18px]"
         style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
       >
         <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
@@ -84,7 +84,7 @@ export default function TaiKhoanPage() {
         <span className="text-[15px]">{taiKhoan?.email ?? '—'}</span>
       </div>
 
-      <form onSubmit={luu} className="flex flex-col gap-[18px]">
+      <form onSubmit={luu} className="flex flex-col gap-[16px]">
         <Field label="Tên hiển thị">
           <input
             value={ten}
@@ -113,7 +113,7 @@ export default function TaiKhoanPage() {
           chứ không chỉ hiện khi hết lượt. */}
       <TheSupporter />
 
-      <div className="flex flex-col gap-[10px]">
+      <div className="flex flex-col gap-[12px]">
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
           {t.ungHo.cong.voluntary.moTa}
         </p>

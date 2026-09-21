@@ -133,8 +133,8 @@ export default function TrangDanhSachLaSo() {
 
           return (
             <div key={h.id} className="card flex flex-wrap items-center justify-between gap-[16px]">
-              <div className="flex flex-col gap-[6px]">
-                <span className="flex flex-wrap items-center gap-[10px]">
+              <div className="flex flex-col gap-[8px]">
+                <span className="flex flex-wrap items-center gap-[12px]">
                   <span className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
                     {h.hoTen || t.danhSach.khongTen}
                   </span>
@@ -153,7 +153,7 @@ export default function TrangDanhSachLaSo() {
                 "Xem lá số" là việc hay làm nhất nên để dạng đặc, hai việc kia
                 dạng viền; "Xoá" tô màu cảnh báo vì nó không hoàn tác được.
               */}
-              <div className="flex flex-wrap items-center gap-[10px]">
+              <div className="flex flex-wrap items-center gap-[12px]">
                 {!laMacDinh && (
                   <NutVien nho onClick={() => datMacDinh(h.id)} disabled={dangDat === h.id}>
                     {dangDat === h.id ? t.danhSach.dangDat : t.danhSach.datLamCuaToi}

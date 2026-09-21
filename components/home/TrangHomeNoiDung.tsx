@@ -195,7 +195,7 @@ export function TrangHomeNoiDung() {
 
   return (
     <Section gon>
-      <Shell className="flex flex-col gap-[40px]">
+      <Shell className="flex flex-col gap-[32px]">
         <div>
           <Eyebrow className="mb-[12px]">{t.nav.homNay}</Eyebrow>
           <h1 className="heading-sm">
@@ -319,7 +319,7 @@ export function TrangHomeNoiDung() {
             <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
               {t.home.chuDeTieuDe}
             </p>
-            <div className="flex flex-wrap gap-[10px]">
+            <div className="flex flex-wrap gap-[12px]">
               {chuDes.map((c) => (
                 <Link key={c.nhan} href={c.href} className="btn-outline btn-sm">
                   {c.nhan}

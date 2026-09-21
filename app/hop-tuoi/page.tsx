@@ -143,7 +143,7 @@ export default function KetNoiPage() {
             <span style={{ color: 'var(--fg-muted)' }}>{ketQua.soSanh.tenB}: </span>
             {t.giaTriB}
           </span>
-          <span className="flex flex-col gap-[2px]">
+          <span className="flex flex-col gap-[4px]">
             <span className="text-[13px] font-medium" style={{ color: MAU_MUC_DO[t.mucDo] }}>
               {t.ketQua}
             </span>
@@ -176,7 +176,7 @@ export default function KetNoiPage() {
         ].map(({ nhan, giaTri, dat }) => (
           <div
             key={nhan}
-            className="flex flex-col gap-[14px] rounded-[var(--radius-cards)] border p-[18px]"
+            className="flex flex-col gap-[12px] rounded-[var(--radius-cards)] border p-[18px]"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
             <h2 className="subheading">{nhan}</h2>
@@ -202,7 +202,7 @@ export default function KetNoiPage() {
         ))}
       </section>
 
-      <section className="flex flex-col gap-[14px]">
+      <section className="flex flex-col gap-[12px]">
         <h2 className="subheading">Bạn muốn hiểu điều gì giữa hai người?</h2>
         <ChonYDinh
           giaTri={yDinh}

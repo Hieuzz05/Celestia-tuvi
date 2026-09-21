@@ -37,7 +37,7 @@ export function NhatKySuDung() {
 
   return (
     <section className="flex flex-col gap-[16px]">
-      <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-col gap-[8px]">
         <h2 className="heading-sm">Mức sử dụng hôm nay</h2>
         <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
           Model dùng gần hết hạn mức miễn phí sẽ bị bỏ qua trước khi gọi, thay vì tiêu một lượt chỉ
@@ -102,7 +102,7 @@ export function NhatKySuDung() {
         <div className="flex flex-col">
           <h3 className="subheading mb-[8px]">7 ngày gần đây</h3>
           <div
-            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-[16px] gap-y-[6px] text-[13px]"
+            className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-x-[16px] gap-y-[8px] text-[13px]"
             style={{ color: 'var(--fg-muted)' }}
           >
             <span>Ngày</span>

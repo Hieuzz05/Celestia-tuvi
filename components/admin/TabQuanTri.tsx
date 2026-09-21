@@ -28,7 +28,7 @@ export function TabQuanTri() {
 
   return (
     <nav
-      className="no-print mb-[24px] flex flex-wrap gap-[6px] border-b pb-[12px]"
+      className="no-print mb-[24px] flex flex-wrap gap-[8px] border-b pb-[12px]"
       style={{ borderColor: 'var(--line)' }}
       aria-label="Khu quản trị"
     >

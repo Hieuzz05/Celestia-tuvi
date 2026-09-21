@@ -51,7 +51,7 @@ export function KhoiGuong({
 
   return (
     <aside
-      className="flex flex-col gap-[10px] rounded-[18px] px-[20px] py-[18px]"
+      className="flex flex-col gap-[12px] rounded-[18px] px-[20px] py-[18px]"
       style={{ background: '#2D0334', color: '#FFFDF9' }}
     >
       <p

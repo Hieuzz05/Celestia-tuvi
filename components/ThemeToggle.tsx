@@ -36,7 +36,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={doi}
-      className="pill-tag flex items-center gap-[6px]"
+      className="pill-tag flex items-center gap-[8px]"
       aria-label={theme === 'night' ? t.nav.cheDoSang : t.nav.cheDoToi}
       title={theme === 'night' ? t.nav.cheDoSang : t.nav.cheDoToi}
     >

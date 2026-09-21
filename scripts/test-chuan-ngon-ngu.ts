@@ -220,6 +220,43 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
     .map(([k]) => k);
   kiem('Nét phụ tinh không dùng chữ trừu tượng', netXau.length === 0, netXau);
 
+  /*
+   * THANG KHOẢNG CÁCH SÁU BẬC.
+   *
+   * Quét mã nguồn vì thứ cần chặn là một dòng ai đó viết sau này. Mã từng có
+   * 20 giá trị rời nhau, và không có phép đếm nào thì nó cứ thế dài ra: mỗi
+   * màn mới thêm một con số, không ai thấy gì sai vì từng chỗ đều hợp lý.
+   *
+   * Mệnh bàn (components/laso) miễn trừ — sơ đồ hình học, xem ghi chú trong
+   * globals.css.
+   */
+  const BAC = new Set([4, 8, 12, 16, 24, 32]);
+  const ngoaiThang: string[] = [];
+  const quet = (thuMuc: string) => {
+    for (const f of readdirSync(thuMuc, { recursive: true, encoding: 'utf-8' })) {
+      // Windows trả về dấu gạch ngược; dựng ký tự bằng mã để khỏi vướng thoát chuỗi
+      const duong = `${thuMuc}/${String(f).split(String.fromCharCode(92)).join('/')}`;
+      if (duong.includes('components/laso/')) continue;
+      if (!/\.tsx?$/.test(duong)) continue;
+      let ma: string;
+      try {
+        ma = readFileSync(duong, 'utf-8');
+      } catch {
+        continue; // thư mục
+      }
+      for (const m of ma.matchAll(/\bgap(?:-x|-y)?-\[(\d+)px\]/g)) {
+        if (!BAC.has(Number(m[1]))) ngoaiThang.push(`${duong}: ${m[0]}`);
+      }
+    }
+  };
+  quet('app');
+  quet('components');
+  kiem(
+    'Mọi khoảng cách nằm trong thang sáu bậc',
+    ngoaiThang.length === 0,
+    [...new Set(ngoaiThang)].slice(0, 6).join(' | ')
+  );
+
   const thieuPhienBan: string[] = [];
   for (const f of readdirSync('app/api', { recursive: true, encoding: 'utf-8' })) {
     if (!String(f).endsWith('route.ts')) continue;

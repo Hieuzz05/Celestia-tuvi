@@ -70,7 +70,7 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
         {t.hoiCeles.canCuMo}
       </summary>
 
-      <div className="mt-[12px] flex flex-col gap-[14px]">
+      <div className="mt-[12px] flex flex-col gap-[12px]">
         <Nhom tieuDe={t.hoiCeles.canCuLaSo}>
           {canCu.duKien.map((d) => (
             <Dong key={d.id}>{d.noiDung}</Dong>
@@ -113,7 +113,7 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
             {canCu.nguon.map((n) => (
               <div
                 key={n.ma}
-                className="flex flex-col gap-[3px] rounded-[8px] p-[8px]"
+                className="flex flex-col gap-[4px] rounded-[8px] p-[8px]"
                 style={{ background: 'var(--surface-sunken, rgba(127,127,127,0.07))' }}
               >
                 <Dong>
@@ -149,7 +149,7 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
 
 function Nhom({ tieuDe, children }: { tieuDe: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-[5px]">
+    <div className="flex flex-col gap-[4px]">
       <span className="eyebrow">{tieuDe}</span>
       {children}
     </div>

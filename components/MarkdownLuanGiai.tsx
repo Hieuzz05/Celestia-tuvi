@@ -17,7 +17,7 @@ export function MarkdownLuanGiai({ noiDung, nho }: { noiDung: string; nho?: bool
     );
 
   return (
-    <div className="flex flex-col gap-[10px]">
+    <div className="flex flex-col gap-[12px]">
       {dong.map((d, i) => {
         /*
          * `###` phải xét TRƯỚC `##`, và phải có mặt ở đây.

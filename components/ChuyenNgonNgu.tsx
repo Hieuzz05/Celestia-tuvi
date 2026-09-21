@@ -30,7 +30,7 @@ export function ChuyenNgonNgu() {
     <div className="relative" ref={boc}>
       <button
         onClick={() => setMo((v) => !v)}
-        className="pill-tag flex items-center gap-[6px]"
+        className="pill-tag flex items-center gap-[8px]"
         aria-label={t.nav.ngonNgu}
         aria-expanded={mo}
         aria-haspopup="menu"
@@ -53,7 +53,7 @@ export function ChuyenNgonNgu() {
       {mo && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-40 flex min-w-[160px] flex-col gap-[2px] rounded-[var(--radius-cards)] p-[8px]"
+          className="absolute right-0 top-[calc(100%+8px)] z-40 flex min-w-[160px] flex-col gap-[4px] rounded-[var(--radius-cards)] p-[8px]"
           style={{ background: 'var(--surface-card)', boxShadow: 'var(--shadow-elevated)' }}
         >
           {(['vi', 'en'] as NgonNgu[]).map((n) => (

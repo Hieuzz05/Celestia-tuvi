@@ -68,7 +68,7 @@ export function QuanLyNguoiDung() {
 
   return (
     <section className="flex flex-col gap-[16px]">
-      <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-col gap-[8px]">
         <h2 className="heading-sm">Tài khoản {ds.length > 0 && `(${ds.length})`}</h2>
         <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
           Danh sách người dùng và lá số họ đã lưu. Đây là dữ liệu cá nhân — ngày giờ sinh của người
@@ -98,7 +98,7 @@ export function QuanLyNguoiDung() {
               onClick={() => setMoRong(moRong === u.id ? null : u.id)}
               className="flex w-full flex-wrap items-baseline justify-between gap-[12px] py-[14px] text-left"
             >
-              <div className="flex flex-col gap-[3px]">
+              <div className="flex flex-col gap-[4px]">
                 <span className="flex items-baseline gap-[8px]">
                   <span className="text-[15px]" style={{ color: 'var(--fg)' }}>
                     {u.tenHienThi || u.email?.split('@')[0] || 'Không tên'}
@@ -128,10 +128,10 @@ export function QuanLyNguoiDung() {
                   u.laSo.map((l) => (
                     <div
                       key={l.id}
-                      className="flex flex-wrap items-baseline justify-between gap-[10px] rounded-[var(--radius-cards)] border p-[12px]"
+                      className="flex flex-wrap items-baseline justify-between gap-[12px] rounded-[var(--radius-cards)] border p-[12px]"
                       style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
                     >
-                      <div className="flex flex-col gap-[2px]">
+                      <div className="flex flex-col gap-[4px]">
                         <span className="text-[14px]" style={{ color: 'var(--fg)' }}>
                           {l.hoTen || 'Không tên'}
                         </span>

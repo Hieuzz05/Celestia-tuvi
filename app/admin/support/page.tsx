@@ -48,7 +48,7 @@ export default function TrangQuanTriUngHo() {
   const o = (n: number) => n.toLocaleString('vi-VN');
 
   return (
-    <Shell className="flex flex-col gap-[28px] py-[36px]">
+    <Shell className="flex flex-col gap-[24px] py-[36px]">
       <div>
         <Eyebrow className="mb-[10px]">QUẢN TRỊ · ỦNG HỘ</Eyebrow>
         <h1 className="heading-sm">Tình hình Support Celes</h1>
@@ -64,7 +64,7 @@ export default function TrangQuanTriUngHo() {
           { nhan: 'Đang là Supporter', gt: o(d.soNguoiDangLaSupporter) },
           { nhan: 'Đơn cần soát tay', gt: o(d.canSoat) },
         ].map((x) => (
-          <The key={x.nhan} className="flex flex-col gap-[6px]">
+          <The key={x.nhan} className="flex flex-col gap-[8px]">
             <Eyebrow>{x.nhan}</Eyebrow>
             <span className="text-[26px] font-semibold tabular-nums" style={{ color: 'var(--fg)' }}>
               {x.gt}
@@ -99,7 +99,7 @@ export default function TrangQuanTriUngHo() {
         </The>
       </div>
 
-      <section className="flex flex-col gap-[10px]">
+      <section className="flex flex-col gap-[12px]">
         <Eyebrow>20 đơn gần nhất</Eyebrow>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] border-collapse text-left">

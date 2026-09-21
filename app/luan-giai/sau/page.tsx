@@ -140,11 +140,11 @@ function TrangSau() {
 
   return (
     <Shell className="py-[32px]">
-      <div className="flex flex-col gap-[28px] lg:flex-row lg:items-start lg:gap-[36px]">
+      <div className="flex flex-col gap-[24px] lg:flex-row lg:items-start lg:gap-[32px]">
         {/* ---------- Cột trái: mục lục ---------- */}
         <nav className="hidden shrink-0 lg:block lg:w-[230px] lg:sticky lg:top-[80px]">
           <Eyebrow className="mb-[10px]">Mục lục</Eyebrow>
-          <ol className="flex flex-col gap-[14px]">
+          <ol className="flex flex-col gap-[12px]">
             {chang.map((c) => (
               <li key={c.id} className="flex flex-col gap-[4px]">
                 <span className="text-[13px] font-semibold" style={{ color: 'var(--fg)' }}>
@@ -167,7 +167,7 @@ function TrangSau() {
         </nav>
 
         {/* ---------- Cột giữa: bài ---------- */}
-        <main className="flex min-w-0 flex-1 flex-col gap-[36px] lg:max-w-[680px]">
+        <main className="flex min-w-0 flex-1 flex-col gap-[32px] lg:max-w-[680px]">
           <header className="flex flex-col gap-[8px]">
             <Eyebrow>Bản đọc sâu</Eyebrow>
             <h1 className="heading-lg">Mười hai phần, mỗi phần soi bằng một phần khác</h1>
@@ -183,7 +183,7 @@ function TrangSau() {
           </div>
 
           {chang.map((c) => (
-            <section key={c.id} className="flex flex-col gap-[28px]">
+            <section key={c.id} className="flex flex-col gap-[24px]">
               <div className="flex flex-col gap-[4px]">
                 <span className="eyebrow">Chặng {c.thuTu}</span>
                 <h2 className="text-[24px] font-semibold" style={{ color: 'var(--fg)' }}>

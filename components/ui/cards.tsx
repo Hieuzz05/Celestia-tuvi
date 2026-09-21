@@ -80,7 +80,7 @@ export function BuocSo({
   return (
     <div className={`flex gap-[12px] ${className}`}>
       <span className="step-num mt-[2px]">{so}</span>
-      <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-col gap-[8px]">
         <span className="text-[16px] font-medium" style={{ color: 'var(--fg)' }}>
           {tieuDe}
         </span>

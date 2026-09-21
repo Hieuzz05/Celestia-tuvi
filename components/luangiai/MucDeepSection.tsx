@@ -50,7 +50,7 @@ export function MucDeepSection({
    */
   if (muc.thieuCanCu) {
     return (
-      <section id={muc.id} className="flex flex-col gap-[10px] scroll-mt-[90px]">
+      <section id={muc.id} className="flex flex-col gap-[12px] scroll-mt-[90px]">
         <p className="eyebrow">
           Chặng {soChang} · Phần {soPhan}
         </p>
@@ -77,8 +77,8 @@ export function MucDeepSection({
 
   return (
     <section id={muc.id} className="flex flex-col gap-[16px] scroll-mt-[90px]">
-      <div className="flex flex-col gap-[6px]">
-        <div className="flex flex-wrap items-center gap-[10px]">
+      <div className="flex flex-col gap-[8px]">
+        <div className="flex flex-wrap items-center gap-[12px]">
           <span className="eyebrow">
             Chặng {soChang} · Phần {soPhan}
           </span>
@@ -118,7 +118,7 @@ export function MucDeepSection({
       )}
 
       {tieuChiThuong.map((t) => (
-        <div key={t.nhan} className="flex flex-col gap-[6px]">
+        <div key={t.nhan} className="flex flex-col gap-[8px]">
           {/* body-lg 18/600 — KHÔNG phải h3, xem ghi chú đầu tệp */}
           <p className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
             {t.nhan}
@@ -157,7 +157,7 @@ export function MucDeepSection({
         />
       )}
 
-      <div className="flex flex-wrap items-center gap-[18px]">
+      <div className="flex flex-wrap items-center gap-[16px]">
         <button
           onClick={() => {
             const moi = !moCanCu;
@@ -181,7 +181,7 @@ export function MucDeepSection({
       */}
       {moCanCu && (
         <div
-          className="flex flex-col gap-[10px] rounded-[14px] px-[16px] py-[14px]"
+          className="flex flex-col gap-[12px] rounded-[14px] px-[16px] py-[14px]"
           style={{ background: 'var(--bg-soft, rgba(0,0,0,0.03))' }}
         >
           <p className="eyebrow">Celes dựa vào đâu</p>

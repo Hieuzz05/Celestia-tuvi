@@ -79,7 +79,7 @@ export function Truong({
   className?: string;
 }) {
   return (
-    <label className={`flex flex-col gap-[6px] ${className}`}>
+    <label className={`flex flex-col gap-[8px] ${className}`}>
       <span className="field-label">{nhan}</span>
       {children}
       {goiY && <span className="caption">{goiY}</span>}

@@ -246,7 +246,7 @@ export default function TrangKhoTriThuc() {
     taiLieu?.filter((t) => t.knowledge_document_versions.some((v) => v.trang_thai === 'that_bai')).length ?? 0;
 
   return (
-    <Shell className="flex flex-col gap-[28px] py-[36px]">
+    <Shell className="flex flex-col gap-[24px] py-[36px]">
       <div>
         <Eyebrow className="mb-[10px]">QUẢN TRỊ · AI &amp; TRI THỨC</Eyebrow>
         <h1 className="heading-sm">Kho tri thức</h1>
@@ -271,7 +271,7 @@ export default function TrangKhoTriThuc() {
           { nhan: 'Chờ duyệt', gt: soCanDuyet },
           { nhan: 'Xử lý lỗi', gt: soHong },
         ].map((x) => (
-          <The key={x.nhan} className="flex flex-col gap-[6px]">
+          <The key={x.nhan} className="flex flex-col gap-[8px]">
             <Eyebrow>{x.nhan}</Eyebrow>
             <span className="text-[26px] font-semibold tabular-nums" style={{ color: 'var(--fg)' }}>
               {x.gt}
@@ -317,10 +317,10 @@ export default function TrangKhoTriThuc() {
             khi bạn thêm và xuất bản tài liệu.
           </p>
         ) : (
-          <div className="flex flex-col gap-[14px]">
+          <div className="flex flex-col gap-[12px]">
             {taiLieu.map((t) => (
               <The key={t.id} className="flex flex-col gap-[12px]">
-                <div className="flex flex-wrap items-start justify-between gap-[10px]">
+                <div className="flex flex-wrap items-start justify-between gap-[12px]">
                   <div>
                     <h2 className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
                       {t.tieu_de}
@@ -535,10 +535,10 @@ function DangNap({
   const duLieuDu = tieuDe.trim().length > 0 && noiDung.trim().length >= 100;
 
   return (
-    <The className="flex flex-col gap-[14px]">
+    <The className="flex flex-col gap-[12px]">
       <Eyebrow>Thêm nguồn</Eyebrow>
 
-      <div className="grid gap-[14px] md:grid-cols-2">
+      <div className="grid gap-[12px] md:grid-cols-2">
         <Field label="Tiêu đề nguồn">
           <input value={tieuDe} onChange={(e) => setTieuDe(e.target.value)} className="field-input" />
         </Field>

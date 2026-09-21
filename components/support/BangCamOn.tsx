@@ -64,7 +64,7 @@ export function BangCamOn() {
       aria-live="polite"
       style={{ background: 'var(--surface-wash)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center gap-x-[16px] gap-y-[6px] px-[24px] py-[12px]">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-wrap items-center gap-x-[16px] gap-y-[8px] px-[24px] py-[12px]">
         <span className="text-[15px] font-semibold" style={{ color: 'var(--fg)' }}>
           {t.ungHo.camOn}
         </span>

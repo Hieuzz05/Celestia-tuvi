@@ -47,9 +47,9 @@ export function CachHoatDongNoiDung() {
       <Section className="pt-0">
         <Shell rong="hep">
           <SectionHeader eyebrow={t.cachHoatDong.tinEyebrow} tieuDe={t.cachHoatDong.tinTieuDe} />
-          <div className="mt-[32px] flex flex-col gap-[20px]">
+          <div className="mt-[32px] flex flex-col gap-[24px]">
             {t.cachHoatDong.tin.map((v) => (
-              <div key={v.ten} className="flex flex-col gap-[6px]">
+              <div key={v.ten} className="flex flex-col gap-[8px]">
                 <h3 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
                   {v.ten}
                 </h3>

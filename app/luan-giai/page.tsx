@@ -142,8 +142,8 @@ function TrangLuanGiai() {
         <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì?</h1>
       </div>
 
-      <section className="grid gap-[28px] lg:grid-cols-[340px_minmax(0,1fr)]">
-        <div className="flex flex-col gap-[18px]">
+      <section className="grid gap-[24px] lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="flex flex-col gap-[16px]">
           {hoSos.length > 0 && (
             <Field label="Chọn một người đã lưu">
               <select
@@ -172,7 +172,7 @@ function TrangLuanGiai() {
 
           <FormSinh giaTri={form} onChange={setForm} />
 
-          <div className="grid grid-cols-2 gap-[14px]">
+          <div className="grid grid-cols-2 gap-[12px]">
             <Field label="Năm xem hạn">
               <input
                 type="number"
@@ -207,7 +207,7 @@ function TrangLuanGiai() {
 
           {laSo && (
             <div
-              className="flex flex-wrap gap-x-[14px] gap-y-[4px] pt-[14px] text-[13px]"
+              className="flex flex-wrap gap-x-[12px] gap-y-[4px] pt-[14px] text-[13px]"
               style={{ color: 'var(--fg-muted)', borderTop: '1px solid var(--line)' }}
             >
               <span>
@@ -222,7 +222,7 @@ function TrangLuanGiai() {
 
         </div>
 
-        <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-[16px]">
           <div className="grid gap-[12px] sm:grid-cols-2">
             {(Object.entries(CHU_DE) as [ChuDeId, (typeof CHU_DE)[ChuDeId]][]).map(([id, cd]) => (
               <button
@@ -263,7 +263,7 @@ function TrangLuanGiai() {
             )}
 
             {ketQua && !dangChay && (
-              <article className="flex flex-col gap-[10px]">
+              <article className="flex flex-col gap-[12px]">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="subheading">{CHU_DE[chuDe].nhan}</h2>
                   <span className="caption">

@@ -246,7 +246,7 @@ export function TrangHanhTrinhNoiDung() {
 
   return (
     <Section gon>
-      <Shell className="flex flex-col gap-[40px]">
+      <Shell className="flex flex-col gap-[32px]">
         <div className="flex flex-wrap items-end justify-between gap-[16px]">
           <TieuDeTrang />
           {hoSos.length > 1 && (
@@ -280,7 +280,7 @@ export function TrangHanhTrinhNoiDung() {
                     [t.hanhTrinh.canCho, nhipAi.canCho],
                   ] as const
                 ).map(([nhan, cd]) => (
-                  <The key={nhan} className="flex flex-col gap-[6px]">
+                  <The key={nhan} className="flex flex-col gap-[8px]">
                     <span className="eyebrow">{nhan}</span>
                     {cd.tieuDe && (
                       <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
@@ -428,7 +428,7 @@ function Lop({
       <DaiThoiGian moc={moc} idDangChon={idChon} onChon={onChon} />
 
       {chiTiet && (
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-[12px]">
           <GocNhinCard gocNhin={mocThanhGocNhin(chiTiet, nhomChu)} nho />
           {/* Tầng hai: tổng quan ở trên đọc trong 10-20 giây, chi tiết nằm sau
               một cú bấm — spec v4 tách hẳn hai độ sâu này. */}

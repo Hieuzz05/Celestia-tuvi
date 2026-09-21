@@ -157,7 +157,7 @@ export default function DangNhapPage() {
     <Shell className="py-[40px]">
       {/* Hai cột: form bên trái, panel nhắc lại thứ người dùng sắp giữ lại bên phải.
           Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
-      <div className="mx-auto grid w-full max-w-[940px] gap-[40px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-[940px] gap-[32px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <div className="w-full">
       <h1 className="heading-sm">{che === 'dang-nhap' ? t.auth.tieuDe : t.auth.tieuDeDangKy}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
@@ -169,7 +169,7 @@ export default function DangNhapPage() {
       </p>
 
       {ssoDangBat.length > 0 && (
-        <div className="mt-[28px] flex flex-col gap-[10px]">
+        <div className="mt-[28px] flex flex-col gap-[12px]">
           {ssoDangBat.map((id) => (
             <button
               key={id}
@@ -190,9 +190,9 @@ export default function DangNhapPage() {
         </div>
       )}
 
-      <form onSubmit={guiForm} className="mt-[20px] flex flex-col gap-[18px]">
+      <form onSubmit={guiForm} className="mt-[20px] flex flex-col gap-[16px]">
         {che === 'dang-ky' && (
-          <label className="flex flex-col gap-[6px]">
+          <label className="flex flex-col gap-[8px]">
             <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
               {t.auth.tenHienThi}
             </span>
@@ -207,7 +207,7 @@ export default function DangNhapPage() {
           </label>
         )}
 
-        <label className="flex flex-col gap-[6px]">
+        <label className="flex flex-col gap-[8px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             {t.auth.email}
           </span>
@@ -221,7 +221,7 @@ export default function DangNhapPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-[6px]">
+        <label className="flex flex-col gap-[8px]">
           <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
             {t.auth.matKhau}
           </span>
@@ -272,7 +272,7 @@ export default function DangNhapPage() {
         <p className="text-[24px] font-semibold leading-[1.25]" style={{ color: 'var(--fg)' }}>
           {t.auth.panelTieuDe}
         </p>
-        <ul className="flex flex-col gap-[10px]">
+        <ul className="flex flex-col gap-[12px]">
           {t.auth.panelY.map((d) => (
             <li key={d} className="body-sm flex gap-[8px]" style={{ color: 'var(--fg)' }}>
               <span aria-hidden>·</span>

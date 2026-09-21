@@ -21,7 +21,7 @@ export function TrangUngHo() {
 
   return (
     <Section gon>
-      <Shell className="flex flex-col gap-[28px]">
+      <Shell className="flex flex-col gap-[24px]">
         <div>
           <Eyebrow className="mb-[12px]">{t.ungHo.ten}</Eyebrow>
           <h1 className="heading-sm">{t.ungHo.moiLyCaPhe}</h1>
@@ -34,7 +34,7 @@ export function TrangUngHo() {
 
         <The className="flex flex-col gap-[12px]">
           <span className="eyebrow">{t.ungHo.banNhanDuoc}</span>
-          <ul className="flex flex-col gap-[6px]">
+          <ul className="flex flex-col gap-[8px]">
             {t.ungHo.nhan.map((n) => (
               <li key={n} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 · {n}
