@@ -128,49 +128,84 @@ export function PalaceCell({
       }}
     >
       {/*
-        Header: Can.Chi — Tên cung [THÂN] — Đại hạn
+        HEADER — một dòng ở màn rộng, HAI DÒNG CÓ CHỦ Ý ở màn hẹp.
 
-        `flex-wrap` là bắt buộc, không phải cho đẹp. Ở bố cục hẹp của điện
-        thoại ô chỉ rộng 117px, mà hàng này khi đủ cả ba phần cộng nhãn THÂN
-        cần tới 137px — đo được trên ba ô. Không cho xuống dòng thì chữ tràn ra
-        ngoài viền ô và đè lên ô bên cạnh.
+        Đo ra: ba phần (can.chi + tên cung + số đại hạn, có ô còn thêm nhãn
+        THÂN) cần 132px, mà ô ở bố cục hẹp chỉ có 99px. Không có cỡ chữ nào
+        vừa cả ba mà còn đọc được — hạ tiếp thì tên cung xuống dưới 9px.
 
-        `min-w-0` trên các con: chữ trong flex mặc định không co dưới bề rộng
-        nội dung, nên thiếu nó thì `flex-wrap` cũng không cứu được.
+        Nên thay vì để flex tự vỡ dòng ở chỗ nó muốn — kết quả là số đại hạn
+        rơi xuống một mình, nhìn như lỗi — ta CHỌN chỗ ngắt: dòng trên là hai
+        mẩu phụ (can.chi trái, số đại hạn phải), dòng dưới là tên cung đứng
+        giữa. Mắt đọc được ngay thứ tự: đây là cung gì, rồi mới tới chi tiết.
+
+        Ở màn rộng ô có 212px nên vẫn một dòng như lá số giấy.
       */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-1">
-        <span className="text-[11px] font-medium" style={{ color: 'var(--fg-muted)' }}>
-          {cung.can}.{cung.chi}
-        </span>
-        <span className="flex min-w-0 items-baseline gap-1">
-          <span
-            className="whitespace-nowrap text-[15px] font-bold tracking-tight"
-            style={{ color: cung.laCungMenh ? 'var(--fg)' : 'var(--fg-body)' }}
-          >
-            {cung.tenCung}
-          </span>
-          {cung.laCungThan && (
+      {hep ? (
+        <div className="flex flex-col gap-[1px]">
+          <div className="flex items-baseline justify-between gap-x-1">
+            <span className="text-[9px] font-medium" style={{ color: 'var(--fg-muted)' }}>
+              {cung.can.slice(0, 1)}.{cung.chi}
+            </span>
             <span
-              className="rounded-full px-[6px] text-[9px] font-semibold uppercase"
+              className="text-[9px] font-medium tabular-nums"
               style={{
-                color: 'var(--chart-tot)',
-                border: '1px solid var(--chart-tot)',
+                color: laDaiHanHienTai ? 'var(--chart-tot)' : 'var(--fg-muted)',
+                visibility: settings.daiHan && cung.daiVan ? 'visible' : 'hidden',
               }}
             >
-              Thân
+              {cung.daiVan?.tuTuoi}
             </span>
-          )}
-        </span>
-        <span
-          className="text-[11px] font-medium tabular-nums"
-          style={{
-            color: laDaiHanHienTai ? 'var(--chart-tot)' : 'var(--fg-muted)',
-            visibility: settings.daiHan && cung.daiVan ? 'visible' : 'hidden',
-          }}
-        >
-          {cung.daiVan?.tuTuoi}
-        </span>
-      </div>
+          </div>
+          <div className="flex items-baseline justify-center gap-1">
+            <span
+              className="whitespace-nowrap text-[13px] font-bold tracking-tight"
+              style={{ color: cung.laCungMenh ? 'var(--fg)' : 'var(--fg-body)' }}
+            >
+              {cung.tenCung}
+            </span>
+            {cung.laCungThan && (
+              <span
+                className="rounded-full px-[4px] text-[8px] font-semibold uppercase"
+                style={{ color: 'var(--chart-tot)', border: '1px solid var(--chart-tot)' }}
+              >
+                Thân
+              </span>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-baseline justify-between gap-x-1">
+          <span className="text-[11px] font-medium" style={{ color: 'var(--fg-muted)' }}>
+            {cung.can}.{cung.chi}
+          </span>
+          <span className="flex min-w-0 items-baseline gap-1">
+            <span
+              className="whitespace-nowrap text-[15px] font-bold tracking-tight"
+              style={{ color: cung.laCungMenh ? 'var(--fg)' : 'var(--fg-body)' }}
+            >
+              {cung.tenCung}
+            </span>
+            {cung.laCungThan && (
+              <span
+                className="rounded-full px-[6px] text-[9px] font-semibold uppercase"
+                style={{ color: 'var(--chart-tot)', border: '1px solid var(--chart-tot)' }}
+              >
+                Thân
+              </span>
+            )}
+          </span>
+          <span
+            className="text-[11px] font-medium tabular-nums"
+            style={{
+              color: laDaiHanHienTai ? 'var(--chart-tot)' : 'var(--fg-muted)',
+              visibility: settings.daiHan && cung.daiVan ? 'visible' : 'hidden',
+            }}
+          >
+            {cung.daiVan?.tuTuoi}
+          </span>
+        </div>
+      )}
 
       {/* Chính tinh */}
       {settings.chinhTinh && (
@@ -230,7 +265,9 @@ export function PalaceCell({
         tách làm hai dòng thì không còn là cái tên.
       */}
       {settings.phuTinh && (
-        <div className={`mt-[6px] grid gap-x-2 ${hep ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        <div
+          className={`mt-[6px] grid gap-x-2 ${hep ? 'grid-cols-1 gap-y-[3px]' : 'grid-cols-2'}`}
+        >
           <div className="flex flex-col items-start">
             {cot1.map((s) => (
               <SaoText
@@ -241,7 +278,16 @@ export function PalaceCell({
               />
             ))}
           </div>
-          <div className="flex flex-col items-end text-right">
+          {/*
+            Cột hai căn PHẢI khi có hai cột, căn TRÁI khi chỉ còn một.
+
+            Ở một cột mà vẫn căn phải thì hai nhóm sao so le nhau thành hình
+            răng cưa — chủ dự án nhìn ảnh và gọi đúng tên: "chữ bị ríu rít vào
+            nhau". Hai cột thì lề phải là ranh giới giữa hai nhóm; một cột thì
+            nó chỉ còn là nhiễu. Cùng một lề trái, hai nhóm vẫn phân biệt được
+            bằng màu như cũ.
+          */}
+          <div className={`flex flex-col ${hep ? 'items-start' : 'items-end text-right'}`}>
             {cot2.map((s) => (
               <SaoText
                 key={s.ten}
