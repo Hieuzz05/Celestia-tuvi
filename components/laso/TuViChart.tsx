@@ -21,7 +21,21 @@ import {
   type DisplaySettings,
 } from './types';
 
+/**
+ * Bề ngang GỐC của mệnh bàn, trước khi nhân tỉ lệ.
+ *
+ * Có hai con số vì điện thoại cần một bố cục khác, không phải cùng một bố cục
+ * thu nhỏ. Đây là chỗ bản trước làm sai và chủ dự án bắt được: giữ nguyên gốc
+ * 920 rồi ép tỉ lệ xuống 0.37 thì chữ còn ~4px, nên tôi đã tắt bớt phụ tinh
+ * cho đỡ rối — tức là tự ý cắt mất thông tin của người ta.
+ *
+ * Hạ GỐC thay vì hạ tỉ lệ thì mọi thứ đổi khác: ô hẹp hơn nên chữ xuống dòng
+ * nhiều hơn và bàn cao hơn, nhưng tỉ lệ lên khoảng 0.7 nên chữ to gần gấp đôi.
+ * Bàn dài ra thì cuộn dọc — việc người ta vẫn làm; chữ 4px thì không đọc được
+ * bằng cách nào cả.
+ */
 const CHART_WIDTH = 920;
+const CHART_WIDTH_HEP = 480;
 
 /**
  * Sàn thu nhỏ — ĐÃ HẠ TỪ 0.5 XUỐNG 0.3, và đây là một lần đảo quyết định.
@@ -44,7 +58,7 @@ const CHART_WIDTH = 920;
  */
 const ZOOM_TOI_THIEU = 0.3;
 
-/** Dưới bề ngang này thì coi như điện thoại: bớt lớp thông tin, thêm lời nhắc chạm */
+/** Dưới bề ngang này thì dùng bố cục hẹp: gốc 480 thay vì 920, thêm lời nhắc chạm */
 const BE_NGANG_HEP = 520;
 /**
  * Bỏ qua thay đổi tỉ lệ nhỏ hơn ngưỡng này.
@@ -84,7 +98,6 @@ export function TuViChart({
   const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
   const [hep, setHep] = useState(false);
-  const daTuDoi = useRef(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Chỉ đo BỀ NGANG của khung chứa, tuyệt đối không đo lại mệnh bàn.
@@ -96,26 +109,20 @@ export function TuViChart({
 
     const doLai = () => {
       const rong = khung.clientWidth;
-      const moi = Math.max(ZOOM_TOI_THIEU, Math.min(1, rong / CHART_WIDTH));
-      setZoomThucTe((cu) => (Math.abs(moi - cu) < NGUONG_DOI_TI_LE ? cu : moi));
-      setHep(rong > 0 && rong < BE_NGANG_HEP);
-
+      const laHep = rong > 0 && rong < BE_NGANG_HEP;
       /*
-       * Màn hẹp thì hạ về chế độ dễ nhìn — MỘT LẦN DUY NHẤT.
+       * KHÔNG tắt bớt lớp thông tin nữa.
        *
-       * Ở tỉ lệ 0.37 mà vẫn bày đủ phụ tinh, độ sáng, vòng sao và lưu tinh thì
-       * mỗi ô thành một mảng chữ xám không đọc được và cũng không nhìn ra hình.
-       * Bớt lớp đi thì cái còn lại — chính tinh và cung hạn — vẫn nhận ra được
-       * bằng mắt ở cỡ ấy.
-       *
-       * `daTuDoi` chặn việc ghi đè lựa chọn của người dùng: họ bật lại lớp nào
-       * thì lần đo sau không được tắt đi, nếu không thì nút bật/tắt thành ra
-       * không bấm được.
+       * Bản trước tự hạ về chế độ "dễ hiểu" khi màn hẹp, và chủ dự án chỉ ra
+       * ngay: lá số mất sạch phụ tinh. Người mở lá số trên điện thoại vẫn cần
+       * đủ sao như trên máy tính — họ chỉ có ít chỗ hơn để bày, chứ không cần
+       * ít thông tin hơn. Chỗ ít thì giải bằng bố cục hẹp và cuộn dọc, không
+       * giải bằng cách giấu bớt đi.
        */
-      if (rong > 0 && rong < BE_NGANG_HEP && !daTuDoi.current) {
-        daTuDoi.current = true;
-        setSettings(SETTINGS_THEO_CHE_DO['de-hieu']);
-      }
+      const goc = laHep ? CHART_WIDTH_HEP : CHART_WIDTH;
+      const moi = Math.max(ZOOM_TOI_THIEU, Math.min(1, rong / goc));
+      setZoomThucTe((cu) => (Math.abs(moi - cu) < NGUONG_DOI_TI_LE ? cu : moi));
+      setHep(laHep);
     };
 
     doLai();
@@ -268,7 +275,7 @@ export function TuViChart({
           ref={chartRef}
           className="relative grid grid-cols-4"
           style={{
-            width: CHART_WIDTH,
+            width: hep ? CHART_WIDTH_HEP : CHART_WIDTH,
             gridTemplateRows: 'repeat(4, auto)',
             background: 'var(--bg)',
             // Dùng CSS `zoom` chứ không phải transform: zoom có tác động tới
@@ -285,6 +292,7 @@ export function TuViChart({
                 key={cung.chiIndex}
                 cung={cung}
                 settings={settings}
+                hep={hep}
                 trangThai={trangThaiCung(cung.chiIndex)}
                 laTieuHan={settings.tieuHan && cungTieuHanIndex === cung.chiIndex}
                 laDaiHanHienTai={daiVanHienTai?.chiIndex === cung.chiIndex}

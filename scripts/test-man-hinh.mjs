@@ -90,6 +90,31 @@ const DO = `(() => {
     r.traiMenhBan = Math.round(b.left);
     r.phaiMenhBan = Math.round(b.right);
   }
+  /*
+   * Hai phép đo về CHỮ TRONG Ô CUNG.
+   *
+   * Mệnh bàn vừa màn chưa có nghĩa là đọc được. Bản trước vừa màn nhờ ép tỉ lệ
+   * xuống 0.37, và cái giá là tôi tự tắt bớt phụ tinh — chủ dự án mở lên thấy
+   * lá số mất sạch sao phụ. Nên phải đo cả ba thứ cùng lúc: vừa màn, đủ sao,
+   * và chữ không bị cắt.
+   *
+   * "oTran": nội dung rộng hơn ô, tức là chữ tràn ra ngoài viền.
+   * "tenGay": một tên hai chữ bị cắt làm hai dòng — "Tham" một dòng, "Lang"
+   * dòng dưới. Nhận ra bằng chiều cao lớn hơn 1,7 lần cỡ chữ.
+   */
+  const oCung = ban ? [...ban.children].filter((e) => e.className.includes('cursor-pointer')) : [];
+  r.soOCung = oCung.length;
+  r.oTran = oCung.filter((e) => e.scrollWidth > e.clientWidth + 1).length;
+  r.tenGay = 0;
+  for (const o of oCung) {
+    for (const sp of o.querySelectorAll('span')) {
+      const txt = sp.textContent.trim();
+      if (!txt.includes(' ') || txt.length > 16) continue;
+      const cs = window.getComputedStyle(sp);
+      if (sp.getBoundingClientRect().height > parseFloat(cs.fontSize) * 1.7) r.tenGay += 1;
+    }
+  }
+
   // Mọi phần tử thò ra khỏi mép phải khung nhìn
   r.thoRa = [...document.querySelectorAll('body *')]
     .filter((e) => {
@@ -149,6 +174,9 @@ for (const m of MAY) {
     if (d.rongMenhBan !== undefined) {
       // Cũng so với bề ngang máy, không so với innerWidth — cùng lý do ở trên
       kiem('Mệnh bàn nằm trọn trong khung nhìn', d.phaiMenhBan <= m.rong + 1, `mép phải ${d.phaiMenhBan} / ${m.rong}`);
+      kiem('Đủ 12 cung', d.soOCung === 12, d.soOCung);
+      kiem('Không ô cung nào bị tràn chữ', d.oTran === 0, `${d.oTran}/12 ô`);
+      kiem('Không tên sao nào bị cắt làm hai dòng', d.tenGay === 0, `${d.tenGay} tên`);
     }
   }
 }

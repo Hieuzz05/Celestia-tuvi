@@ -72,10 +72,18 @@ export function PalaceCell({
   luuTinh,
   onHover,
   onSelect,
+  hep = false,
 }: {
   cung: Cung;
   settings: DisplaySettings;
   trangThai: TrangThai;
+  /**
+   * Bố cục hẹp của điện thoại.
+   *
+   * Ô chỉ rộng khoảng 102px thay vì 212px, nên vài chỗ xếp ngang phải chuyển
+   * thành xếp dọc — nếu không thì chữ gãy giữa tên sao.
+   */
+  hep?: boolean;
   laTieuHan: boolean;
   laDaiHanHienTai: boolean;
   nguyetHanThang?: number;
@@ -119,14 +127,24 @@ export function PalaceCell({
         opacity: trangThai === 'mo' ? 0.28 : 1,
       }}
     >
-      {/* Header: Can.Chi — Tên cung [THÂN] — Đại hạn */}
-      <div className="flex items-baseline justify-between gap-1">
+      {/*
+        Header: Can.Chi — Tên cung [THÂN] — Đại hạn
+
+        `flex-wrap` là bắt buộc, không phải cho đẹp. Ở bố cục hẹp của điện
+        thoại ô chỉ rộng 117px, mà hàng này khi đủ cả ba phần cộng nhãn THÂN
+        cần tới 137px — đo được trên ba ô. Không cho xuống dòng thì chữ tràn ra
+        ngoài viền ô và đè lên ô bên cạnh.
+
+        `min-w-0` trên các con: chữ trong flex mặc định không co dưới bề rộng
+        nội dung, nên thiếu nó thì `flex-wrap` cũng không cứu được.
+      */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-1">
         <span className="text-[11px] font-medium" style={{ color: 'var(--fg-muted)' }}>
           {cung.can}.{cung.chi}
         </span>
-        <span className="flex items-baseline gap-1">
+        <span className="flex min-w-0 items-baseline gap-1">
           <span
-            className="text-[15px] font-bold tracking-tight"
+            className="whitespace-nowrap text-[15px] font-bold tracking-tight"
             style={{ color: cung.laCungMenh ? 'var(--fg)' : 'var(--fg-body)' }}
           >
             {cung.tenCung}
@@ -159,12 +177,23 @@ export function PalaceCell({
         <div className="mt-[6px] flex flex-col items-center">
           {chinhTinh.length ? (
             chinhTinh.map((s) => (
+              /*
+                TÊN SAO KHÔNG BAO GIỜ ĐƯỢC GÃY GIỮA CHỪNG.
+
+                Ở bố cục hẹp, ô rộng 102px còn tên dài nhất ("Thiên Tướng") là
+                94px — vừa. Nhưng nhãn độ sáng bám sau tên đẩy cả cụm quá mép,
+                và trình duyệt cắt ở khoảng trắng GIỮA TÊN: "Tham" xuống một
+                dòng, "Lang" xuống dòng sau. Đo được 56 chỗ gãy như vậy.
+
+                Một cái tên bị tách làm đôi không còn là cái tên. Nhãn độ sáng
+                thì xuống dòng được — nó là chú thích, không phải danh từ.
+              */
               <span
                 key={s.ten}
                 className="text-[16px] font-semibold leading-tight tracking-tight"
                 style={{ color: 'var(--fg)' }}
               >
-                {s.ten}
+                <span className="whitespace-nowrap">{s.ten}</span>
                 {settings.doSang && s.doSang && (
                   <span style={{ color: MAU_DO_SANG[s.doSang] }} className="ml-1 text-[12px]">
                     ({s.doSang})
@@ -192,9 +221,16 @@ export function PalaceCell({
         </div>
       )}
 
-      {/* Phụ tinh — 2 cột: cát/trung tính trái, hung/sát phải */}
+      {/*
+        Phụ tinh — 2 cột: cát/trung tính trái, hung/sát phải.
+
+        Ở bố cục hẹp thì MỘT cột. Hai cột trong ô 102px là mỗi cột 47px, mà
+        "Thiên Đức" đã 60px — đo được 48 chỗ tên bị cắt làm đôi. Một cột thì ô
+        cao hơn và mệnh bàn dài ra, nhưng trang vốn cuộn dọc; còn một cái tên
+        tách làm hai dòng thì không còn là cái tên.
+      */}
       {settings.phuTinh && (
-        <div className="mt-[6px] grid grid-cols-2 gap-x-2">
+        <div className={`mt-[6px] grid gap-x-2 ${hep ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <div className="flex flex-col items-start">
             {cot1.map((s) => (
               <SaoText
@@ -245,8 +281,10 @@ export function PalaceCell({
       )}
 
       {/* Footer: Tiểu hạn — Tràng Sinh — Nguyệt hạn */}
+      {/* `flex-wrap`: hai nhãn không đủ chỗ trên một dòng thì xuống dòng,
+          chứ không cắt đôi chữ — xem ghi chú ở phần phụ tinh. */}
       <div
-        className="mt-auto flex items-baseline justify-between gap-1 pt-[8px] text-[11px] font-medium"
+        className="mt-auto flex flex-wrap items-baseline justify-between gap-x-1 whitespace-nowrap pt-[8px] text-[11px] font-medium"
         style={{ color: 'var(--fg-muted)' }}
       >
         <span style={{ color: laTieuHan ? 'var(--chart-tot)' : undefined }}>
