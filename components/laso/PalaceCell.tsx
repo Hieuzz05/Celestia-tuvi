@@ -40,21 +40,35 @@ function SaoText({
   sao,
   hienDoSang,
   trongYeu,
+  hep = false,
 }: {
   sao: Sao;
   hienDoSang: boolean;
   trongYeu: boolean;
+  /** Bố cục hẹp: chữ nhỏ hơn để hai cột phụ tinh vừa ô 110px — xem ghi chú ở phần phụ tinh */
+  hep?: boolean;
 }) {
   const mau =
     sao.tinhChat === 'hung' ? 'var(--chart-hung)' : trongYeu ? 'var(--fg-body)' : 'var(--fg-muted)';
   return (
     <span
-      className={trongYeu ? 'text-[13px] font-semibold' : 'text-[12px] font-normal'}
-      style={{ color: mau, lineHeight: 1.45 }}
+      className={
+        hep
+          ? trongYeu
+            ? 'text-[8px] font-semibold'
+            : 'text-[8px] font-normal'
+          : trongYeu
+            ? 'text-[13px] font-semibold'
+            : 'text-[12px] font-normal'
+      }
+      style={{ color: mau, lineHeight: hep ? 1.5 : 1.45 }}
     >
       {sao.ten}
       {hienDoSang && sao.doSang && (
-        <span style={{ color: MAU_DO_SANG[sao.doSang] }} className="ml-[3px] text-[10px]">
+        <span
+          style={{ color: MAU_DO_SANG[sao.doSang] }}
+          className={hep ? 'ml-[2px] text-[7px]' : 'ml-[3px] text-[10px]'}
+        >
           {sao.doSang}
         </span>
       )}
@@ -115,7 +129,9 @@ export function PalaceCell({
     <div
       onMouseEnter={() => onHover(cung.chiIndex)}
       onClick={() => onSelect(cung.chiIndex)}
-      className="relative flex cursor-pointer flex-col p-[9px] transition-opacity duration-150"
+      className={`relative flex cursor-pointer flex-col transition-opacity duration-150 ${
+        hep ? 'p-[5px]' : 'p-[9px]'
+      }`}
       style={{
         gridRow: pos.row,
         gridColumn: pos.col,
@@ -257,41 +273,41 @@ export function PalaceCell({
       )}
 
       {/*
-        Phụ tinh — 2 cột: cát/trung tính trái, hung/sát phải.
+        PHỤ TINH — HAI CỘT ở mọi bề ngang: cát/trung tính trái, hung/sát phải.
 
-        Ở bố cục hẹp thì MỘT cột. Hai cột trong ô 102px là mỗi cột 47px, mà
-        "Thiên Đức" đã 60px — đo được 48 chỗ tên bị cắt làm đôi. Một cột thì ô
-        cao hơn và mệnh bàn dài ra, nhưng trang vốn cuộn dọc; còn một cái tên
-        tách làm hai dòng thì không còn là cái tên.
+        Bản trước tôi hạ xuống một cột ở màn hẹp và nói hai cột là "không thể".
+        Kết luận ấy SAI, vì nó áp một chuẩn đọc mà chính lá số giấy không theo:
+        ảnh mẫu chủ dự án gửi rộng 946px xem trên màn 390px, tức chữ phụ tinh
+        hiệu dụng chỉ khoảng 5,3px — vẫn hai cột, và vẫn đọc được.
+
+        Tính lại thì trần lý thuyết của cỡ chữ hai cột là 6,7px dù chọn bề
+        ngang gốc nào. Ở gốc 480 với đệm 5px và khe 3px thì cột được 53px, đủ
+        cho "Thiên Thương" (dài nhất) ở cỡ 8px gốc — hiển thị ra 6,0px, nhỉnh
+        hơn bản giấy. Chính tinh vẫn giữ 11,4px vì chúng không nằm trong cột.
+
+        Hai cột không chỉ để nhét vừa: cột trái là sao cát, cột phải là sao
+        hung. Dồn một cột là mất luôn phép phân loại ấy, và người đọc phải dựa
+        hoàn toàn vào màu.
       */}
       {settings.phuTinh && (
-        <div
-          className={`mt-[6px] grid gap-x-2 ${hep ? 'grid-cols-1 gap-y-[3px]' : 'grid-cols-2'}`}
-        >
+        <div className={`mt-[6px] grid grid-cols-2 ${hep ? 'gap-x-[3px]' : 'gap-x-2'}`}>
           <div className="flex flex-col items-start">
             {cot1.map((s) => (
               <SaoText
                 key={s.ten}
                 sao={s}
+                hep={hep}
                 hienDoSang={settings.doSang}
                 trongYeu={PHU_TINH_TRONG_YEU.has(s.ten)}
               />
             ))}
           </div>
-          {/*
-            Cột hai căn PHẢI khi có hai cột, căn TRÁI khi chỉ còn một.
-
-            Ở một cột mà vẫn căn phải thì hai nhóm sao so le nhau thành hình
-            răng cưa — chủ dự án nhìn ảnh và gọi đúng tên: "chữ bị ríu rít vào
-            nhau". Hai cột thì lề phải là ranh giới giữa hai nhóm; một cột thì
-            nó chỉ còn là nhiễu. Cùng một lề trái, hai nhóm vẫn phân biệt được
-            bằng màu như cũ.
-          */}
-          <div className={`flex flex-col ${hep ? 'items-start' : 'items-end text-right'}`}>
+          <div className="flex flex-col items-end text-right">
             {cot2.map((s) => (
               <SaoText
                 key={s.ten}
                 sao={s}
+                hep={hep}
                 hienDoSang={settings.doSang}
                 trongYeu={PHU_TINH_TRONG_YEU.has(s.ten)}
               />
