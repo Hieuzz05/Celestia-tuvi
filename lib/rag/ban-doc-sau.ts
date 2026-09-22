@@ -55,7 +55,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.1';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.2';
 
 export interface TieuChiRa {
   nhan: string;
@@ -339,13 +339,8 @@ Nếu không nói thêm được gì mới về nó, hãy dùng dữ kiện khá
 
 Đây là BẢN ĐỌC SÂU — tầng sâu nhất sản phẩm có. Bạn đang viết CHẶNG "${cauHinh.tieuDe}": ${cauHinh.subtitle}
 
-BA PHẦN CỦA CHẶNG NÀY, kèm tiêu chí bắt buộc và ngân sách từ:
-
-${khoiMuc}
-
-CÁCH CỤC đọc được trên lá số này — gọi thẳng tên, đây là ngoại lệ được phép:
-${khoiCachCuc}
-${khoiDaNoi}
+Ba phần của chặng này, tiêu chí bắt buộc, ngân sách từ và cách cục của lá số
+nằm ở khối BA PHẦN CỦA CHẶNG NÀY trong phần dữ kiện bên dưới.
 
 VIẾT THEO THANG L1→L5. Đây là thứ phân biệt bản đọc sâu với bản tóm tắt:
   L1 KẾT LUẬN     điều đáng nói nhất là gì
@@ -449,13 +444,13 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 {
   "muc": [
     {
-      "id": "${thuTuMuc[0]}",
+      "id": "id của phần, chép đúng một trong ba id ở khối BA PHẦN CỦA CHẶNG NÀY",
       "cauHoiSoi": "ĐÚNG MỘT câu hỏi, viết ở ngôi của người đọc và kết bằng dấu hỏi. Là câu họ đang tự hỏi về chính mình ở phần đời này, không phải câu hỏi tu từ. Ví dụ: Bao nhiêu là đủ để mình thấy an toàn mà vẫn được sống?",
       "giuLai": "1-2 câu KHÉP phần này: thứ đáng mang theo. Không tóm tắt, không lời khuyên, không mở bằng hãy/nên/cần",
       "ketLuan": "1 câu, tối đa 28 từ, là KẾT LUẬN VỀ NGƯỜI ĐỌC — không phải tên chủ đề, không chứa tên cung. KHÔNG PHẢI LỜI KHUYÊN: cấm mở bằng Bạn nên, Bạn hãy, Bạn cần. Nói người này VỐN thế nào, không nói họ phải làm gì",
       "tieuChi": [
         {
-          "nhan": "chép đúng nhãn tiêu chí ở trên, không tự đổi",
+          "nhan": "chép đúng nhãn tiêu chí ở khối BA PHẦN CỦA CHẶNG NÀY, không tự đổi",
           "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có HAI câu riêng: (a) một CÂU CẢNH — hai trong ba thứ người / việc nhìn thấy được / lúc đời thường, dài bao nhiêu cũng được; (b) một CÂU NGẮN dưới mười từ đặt sau một câu dài. Đừng gộp hai câu này làm một: một cảnh đủ chi tiết thì khó dưới mười từ. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
           "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có. KHÔNG mở đầu bằng tên sao",
           "maDuKien": ["F002"]
@@ -473,7 +468,28 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 
 Đủ ba phần, đủ tiêu chí của từng phần, theo đúng thứ tự đã liệt kê ở trên.`;
 
-  const user = dungKhoiChoPrompt(goi);
+  /*
+   * DỮ KIỆN CỦA LÁ SỐ NÀY nằm ở khối `user`, KHÔNG nằm trong `system`.
+   *
+   * Nhà cung cấp đệm prompt theo TIỀN TỐ: hai lượt gọi có cùng chuỗi đầu thì
+   * lượt sau gần như không phải trả tiền cho phần chung ấy. Bản đọc sâu gọi
+   * BỐN lượt cho mỗi lá số và phần luật chiếm khoảng sáu bảy nghìn token —
+   * nhưng trước đây bảng tiêu chí (có độ nổi bật tính từ lá số) và khối cách
+   * cục nằm NGAY TRÊN phần luật ấy, nên tiền tố chung chỉ dài vài trăm ký tự
+   * và toàn bộ phần luật bị trả tiền lại từ đầu, cho từng lá số, từng chặng.
+   *
+   * Đo được trên bảng mười hai lĩnh vực sau khi đổi chỗ: lượt gọi thứ hai với
+   * cùng tiền tố cho `đệm 25.561 / vào 25.567`. Cơ chế có thật, chỉ cần xếp
+   * đúng thứ tự: luật trước, dữ kiện sau.
+   */
+  const user = [
+    `BA PHẦN CỦA CHẶNG NÀY, kèm tiêu chí bắt buộc và ngân sách từ:
+
+${khoiMuc}`,
+    `CÁCH CỤC đọc được trên lá số này — gọi thẳng tên, đây là ngoại lệ được phép:
+${khoiCachCuc}${khoiDaNoi}`,
+    dungKhoiChoPrompt(goi),
+  ].join('\n\n');
   const kq = await goiVoiFallback({ system, user, maxTokens: 10000 });
 
   const tho = docObjectJson(kq.text) as { muc?: ThoMuc[]; doanKhau?: unknown; cauBacCau?: unknown } | null;

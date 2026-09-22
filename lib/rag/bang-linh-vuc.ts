@@ -127,6 +127,13 @@ function chinhTinhNoiBat(laSo: LaSo): string[] {
   return [...ra];
 }
 
+export interface TokenMotLuot {
+  vao: number;
+  ra: number;
+  /** Phần đầu vào nhà cung cấp lấy từ bộ đệm của họ — xem ChatResult.tokensDem */
+  dem: number;
+}
+
 export async function sinhBangLinhVuc(vao: {
   laSo: LaSo;
   namXem: number;
@@ -144,6 +151,14 @@ export async function sinhBangLinhVuc(vao: {
   provider: string;
   model: string;
   phienBan: Record<string, string>;
+  /**
+   * Token của hai lượt cộng lại.
+   *
+   * Trả ra ngoài vì `dem` là thứ duy nhất cho biết phần luật trong `system` có
+   * đang được nhà cung cấp đệm hay không, và đó là khoản tiết kiệm chạy mỗi
+   * ngày. Một con số không ai nhìn thấy là một con số sẽ trôi.
+   */
+  tokens: TokenMotLuot;
 } | null> {
   const cauHoi = 'Đọc toàn bộ lá số theo mười hai phần đời';
   const keHoachGoc = lapKeHoach({
@@ -237,17 +252,13 @@ SÁU PHẦN CÒN LẠI (${idsKia.join(', ')}) do một lượt viết khác lo. 
 chúng, đừng luận sang chúng, và đừng nhắc rằng bài còn phần khác — người đọc
 nhận cả mười hai phần liền một mạch và không thấy chỗ nối.
 
-CÁCH CỤC ĐỌC ĐƯỢC TRÊN LÁ SỐ NÀY — gọi thẳng tên, đây là ngoại lệ được phép:
-${khoiCachCuc}
-${thanCu}
-
 CÁCH VIẾT — ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT CỦA CẢ BẢN HƯỚNG DẪN.
 
 Mỗi lĩnh vực viết theo đúng nhịp ba bước, LẶP LẠI cho từng ý:
   (1) NÓI VỀ NGƯỜI ĐỌC — điều họ làm, điều họ gặp, chỗ họ hay vướng. Câu đầu
       của mỗi phần không được mở bằng một cái tên họ chưa biết.
-  (2) RỒI MỚI NÊU TÊN cấu trúc sinh ra điều đó — tên cách cục ở trên, hoặc
-      Thân cư, hoặc một tên sao — và dịch nó ngay: "cho thấy chỗ ấy…", "là
+  (2) RỒI MỚI NÊU TÊN cấu trúc sinh ra điều đó — tên cách cục trong khối CÁCH
+      CỤC ở phần dữ kiện, hoặc Thân cư, hoặc một tên sao — và dịch nó ngay: "cho thấy chỗ ấy…", "là
       chỗ điều đó đến từ…".
   (3) HẠ XUỐNG ĐỜI SỐNG — nó lộ ra thành hành vi nào, trong tình huống nào.
 
@@ -360,7 +371,24 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
 
 Đủ cả SÁU id trong danh sách trên, theo thứ tự phần nào nổi bật nhất ở lá số này thì đứng trước. Id nào không có trong danh sách sẽ bị loại bỏ cùng toàn bộ phần đó.`;
 
+  /*
+   * DỮ KIỆN CỦA LÁ SỐ NÀY nằm ở khối `user`, KHÔNG nằm trong `system`.
+   *
+   * Không phải chuyện gọn gàng. Mọi nhà cung cấp lớn đều đệm prompt theo TIỀN
+   * TỐ: hai lượt gọi có cùng chuỗi đầu thì lượt sau chỉ trả tiền cho phần
+   * khác. Trước đây khối cách cục và Thân cư nằm ngay sau đoạn mở của
+   * `system`, tức dữ kiện riêng của MỘT người nằm trên bảy nghìn ký tự luật
+   * dùng chung — nên tiền tố chung chỉ dài vài trăm ký tự và toàn bộ phần luật
+   * phía sau bị trả tiền lại từ đầu, cho từng lá số, từng lượt, mãi mãi.
+   *
+   * Giờ `system` là luật thuần: cùng một chuỗi cho mọi người dùng và cho cả
+   * hai nửa của cùng một bảng. `ChatResult.tokensDem` là chỗ kiểm lại rằng
+   * nhà cung cấp có thật sự đệm hay không — đừng tin suông.
+   */
   const user = [
+    `CÁCH CỤC ĐỌC ĐƯỢC TRÊN LÁ SỐ NÀY — gọi thẳng tên, đây là ngoại lệ được phép:
+${khoiCachCuc}
+${thanCu}`,
     dungKhoiChoPrompt(goi),
     kqTruyHoi.daChon.length
       ? ''
@@ -422,6 +450,11 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
   }
 
   const kq = (a ?? b)!.r;
+  const tokens: TokenMotLuot = {
+    vao: (a?.r.tokensIn ?? 0) + (b?.r.tokensIn ?? 0),
+    ra: (a?.r.tokensOut ?? 0) + (b?.r.tokensOut ?? 0),
+    dem: (a?.r.tokensDem ?? 0) + (b?.r.tokensDem ?? 0),
+  };
   const mang = [...(a?.m ?? []), ...(b?.m ?? [])];
   if (mang.length === 0) {
     console.warn('[bang-linh-vuc] không nửa nào trả về mảng linhVuc');
@@ -686,6 +719,7 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     noiDung: ra,
     provider: kq.provider,
     model: kq.model,
+    tokens,
     phienBan: {
       bangLinhVuc: PHIEN_BAN_BANG_LINH_VUC,
       planner: keHoach.phienBan,

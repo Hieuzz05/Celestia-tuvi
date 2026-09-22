@@ -85,6 +85,12 @@ async function main() {
   if (bang) {
     const dai = bang.noiDung.map((x) => [x.ketLuan, ...x.doan].join(' ').split(/\s+/).length);
     console.log(`  ${bang.provider}/${bang.model} · ${bang.noiDung.length}/8 lĩnh vực`);
+    // Token của cả hai lượt. `đệm` là phần nhà cung cấp không tính tiền đầy đủ —
+    // bằng 0 nghĩa là tiền tố tĩnh của system đang KHÔNG được đệm, và đó là lỗi
+    // cần sửa chứ không phải một con số vô hại.
+    console.log(
+      `  token: vào ${bang.tokens.vao} (đệm ${bang.tokens.dem}) · ra ${bang.tokens.ra}`
+    );
     console.log(`  độ dài: ${dai.join(', ')}`);
     kiem('Đủ ít nhất 6 lĩnh vực', bang.noiDung.length >= 6, bang.noiDung.length);
     // §11.2: "Thứ tự và độ dài có thể khác dựa trên mức độ nổi bật của domain."
