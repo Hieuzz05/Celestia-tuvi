@@ -46,9 +46,12 @@ import { VAN_PHONG_CELES } from './van-phong';
  *
  * Hai lượt song song thì mỗi lượt viết một nửa, xong trong khoảng nửa thời
  * gian, và mỗi lượt có ngân sách fallback riêng. Cái giá: hai nửa không nhìn
- * thấy nhau, nên chúng có thể cùng bám vào một cách cục. Luật "mỗi cách cục
- * chỉ nhắc một lần" vì thế chỉ còn hiệu lực TRONG một nửa. Đổi lấy việc bảng
- * không còn sống nhờ may thì đáng.
+ * thấy nhau, nên chúng có thể cùng bám vào một cách cục. Đo ngay sau khi tách:
+ * cái tên to nhất của lá số bám 7/12 phần, so với 5/12 ở bản một-lượt. Vì thế
+ * prompt của MỖI NỬA mang một luật đếm được riêng: không cách cục nào có mặt
+ * quá ba trong sáu phần của lượt ấy — hai nửa cộng lại thì trần là sáu, tức
+ * bằng bản cũ. `scripts/test-be-mat-ai.ts` đếm lại con số này sau mỗi lần sinh,
+ * vì một cái giá chỉ nằm trong ghi chú thì không bao giờ đỏ lên.
  *
  * Căn cứ ("Muốn biết vì sao không?") KHÔNG lấy từ model: nó vẫn do engine tất
  * định dựng từ cung và sao. Model viết nhận định, luật giữ phần chứng minh.
@@ -61,7 +64,7 @@ import { VAN_PHONG_CELES } from './van-phong';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.5';
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.6';
 
 /** Cung cần có mặt trong dữ kiện để tám lĩnh vực đều có cái mà đọc */
 const CUNG_CAN_CO = [
@@ -282,6 +285,14 @@ Người đọc không có chuyên môn. Nêu một cấu trúc rồi không nó
   ĐƯỢC: "Chỗ này đối diện thẳng với phần tiền bạc, nơi có Tử Vi — nghĩa là
          sự yên trong lòng bạn buộc phải đi qua chuyện tiền nong. Khi tài chính
          chông chênh, bạn mất yên nhanh hơn hẳn người khác."
+
+MỘT CÁCH CỤC KHÔNG ĐƯỢC CÓ MẶT Ở QUÁ BA TRONG SÁU PHẦN CỦA LƯỢT NÀY.
+Luật đếm được, không phải lời khuyên về giọng. Đo trên bài thật: khi không có
+luật này, cái tên to nhất của lá số bám tới bảy trên mười hai phần, và bài đọc
+ra như thể người này chỉ có một bộ sao. Lá số nào cũng còn nhiều dữ kiện khác —
+sao lẻ, Tứ Hoá, Tuần Triệt, lớp hạn — dùng chúng, đừng quay lại cái tên to nhất.
+Phần nào thật sự không đọc được gì ngoài cái tên ấy thì viết NGẮN và nói thẳng
+là chỗ này lá số nói ít, hơn là nhắc lại nó lần thứ tư.
 
 ĐIỀU QUAN TRỌNG NHẤT: SÁU PHẦN NÀY KHÔNG ĐƯỢC GIỐNG NHAU VỀ HÌNH.
 - Lĩnh vực nào lá số nói mạnh thì viết dài và cụ thể. Lĩnh vực nào dữ kiện mỏng thì viết NGẮN, bỏ bớt trường, và nói thẳng là chỗ này lá số nói ít.

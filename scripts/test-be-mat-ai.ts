@@ -131,6 +131,55 @@ async function main() {
     // Câu giữ lại nói thứ đáng mang theo, không giao việc — QUY_TAC_GIU_LAI
     const giuLaiKhuyen = bang.noiDung.filter((x) => RA_LENH.test(x.giuLai ?? '')).map((x) => x.id);
     kiem('Câu giữ lại không phải lời khuyên', giuLaiKhuyen.length === 0, giuLaiKhuyen);
+
+    /*
+     * MỘT CÁCH CỤC BÁM BAO NHIÊU PHẦN — phép đếm sinh ra cùng lúc với việc
+     * tách bảng làm hai lượt.
+     *
+     * Prompt cấm nhắc lại một cách cục trong cùng một phần, nhưng hai nửa chạy
+     * song song thì không nửa nào biết nửa kia đang dùng tên gì. Nguy cơ có
+     * thật và cụ thể: cả hai cùng bám cái tên to nhất của lá số, và bài đọc ra
+     * như thể người này chỉ có một bộ sao — đúng lỗi mà bản đọc sâu đã đo được
+     * (một bộ xuất hiện 31 lần trên 12 phần) và đã phải đặt luật để chặn.
+     *
+     * Không có phép đếm này thì cái giá của việc tách nằm trong ghi chú chứ
+     * không nằm ở đâu nhìn thấy được, và ghi chú thì không đỏ lên bao giờ.
+     */
+    const { nhanDangCachCuc } = await import('../lib/tuvi/cach-cuc');
+    const { boDau } = await import('../lib/rag/thuc-the');
+    const demPhan = new Map<string, number>();
+    for (const cc of nhanDangCachCuc(laSo).filter((c) => c.loai !== 'han')) {
+      const soPhan = bang.noiDung.filter((x) =>
+        boDau([x.ketLuan, ...x.doan, x.giuLai ?? ''].join(' ')).includes(boDau(cc.ten))
+      ).length;
+      if (soPhan) demPhan.set(cc.ten, soPhan);
+    }
+    const bamNhat = [...demPhan.entries()].sort((a, b) => b[1] - a[1]);
+    console.log(
+      `  cách cục bám nhiều phần nhất: ${bamNhat.slice(0, 3).map(([t, d]) => `${t}:${d}`).join(' · ') || '(không tên nào)'}`
+    );
+    /*
+     * Ngưỡng NỬA SỐ PHẦN, không phải một con số tuyệt đối.
+     *
+     * Một cách cục lớn có mặt ở nhiều phần đời là chuyện đúng về Tử Vi — Thân
+     * cư hay Tử Phủ Vũ Tướng Liêm vốn chạm nhiều chỗ. Cái sai là khi nó thành
+     * thứ DUY NHẤT bài có để nói. Quá nửa số phần là mốc đó, và nó cũng đúng
+     * bằng trần của luật trong prompt: mỗi nửa được nhắc một cách cục ở tối đa
+     * ba trong sáu phần.
+     *
+     * Ba lần đo trên cùng lá số mẫu, mỗi lần một bản:
+     *   một lượt, chưa có luật   — cao nhất 5/12
+     *   hai nửa, chưa có luật    — cao nhất 7/12   (tách làm nặng thêm)
+     *   hai nửa, có luật         — cao nhất 4/12
+     * Mỗi con số là MỘT lần chạy nên có nhiễu, nhưng hướng thì khớp với cơ chế:
+     * hai nửa không thấy nhau, nên phải nói riêng cho từng nửa.
+     */
+    const tranBam = Math.ceil(bang.noiDung.length / 2);
+    kiem(
+      `Không cách cục nào bám quá ${tranBam} phần`,
+      (bamNhat[0]?.[1] ?? 0) <= tranBam,
+      bamNhat.slice(0, 3)
+    );
     console.log(`  câu hỏi soi: ${bang.noiDung[0]?.cauHoiSoi ?? '(không có)'}`);
     console.log(`  giữ lại    : ${bang.noiDung[0]?.giuLai ?? '(không có)'}`);
   }
