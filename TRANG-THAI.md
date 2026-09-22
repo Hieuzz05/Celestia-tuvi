@@ -28,6 +28,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-112 — bản adaptive cho điện thoại (nhánh `viec/mobile-adaptive`) | `36ac30d` | 22/09/2026 |
+| CEL-111 — xếp luật trước, dữ kiện sau để nhà cung cấp đệm được prompt | `b941869` | 22/09/2026 |
 | CEL-110 — đếm và chặn một cách cục bám quá nhiều phần (7/12 → 4/12) | `9e11ac8` | 22/09/2026 |
 | CEL-110 — văn phong Celes cho chat và bảng 12 lĩnh vực; bảng tách hai lượt gọi song song (52,3s → 43,3s) | `b041f2e` | 22/09/2026 |
 | CEL-088 — trí nhớ hội thoại xuyên phiên (KHÔNG cần SQL mới) | `(bản này)` | 19/09/2026 |
