@@ -22,12 +22,13 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
-| — | — | — |
+| Bản đọc sâu, mỗi chặng một lượt gọi | Sát trần 55 giây: đo 23/09 có chặng mất 52s, chặng sau chạm trần và cả bài hỏng. Hỏng NGẪU NHIÊN — hai lượt khác trong ngày vẫn qua. Xem CEL-117 | Claude (máy 1) |
 
 ## Vừa xong
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| A5 nhát cắt đầu + cắm mẫu vàng cho sáu bề mặt (nhánh `viec/kien-truc-phase-a`) | `57934ca` | 23/09/2026 |
 | Phase A của `KIEN-TRUC-LUAN-GIAI.md`: A1 (ngân sách từ thành trần) + A3 (chỗ cắm mẫu vàng) + chia ba nhóm luật cho A5 — nhánh `viec/kien-truc-phase-a` | `10b7dc5` | 22/09/2026 |
 | CEL-112 — bản adaptive cho điện thoại (nhánh `viec/mobile-adaptive`) | `36ac30d` | 22/09/2026 |
 | CEL-111 — xếp luật trước, dữ kiện sau để nhà cung cấp đệm được prompt | `b941869` | 22/09/2026 |
