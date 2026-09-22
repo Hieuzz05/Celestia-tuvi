@@ -11,7 +11,7 @@ import { useBoiCanh } from '@/lib/store/boi-canh';
 import type { HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
-import { Eyebrow, NutVien, Shell } from '@/components/ui';
+import { Eyebrow, NutVien, Shell, KhoiGap } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
@@ -274,7 +274,18 @@ function TrangHoiDap() {
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[320px_minmax(0,1fr)]">
-        {/* Cột trái: đang nói về lá số nào, và lối sang bản đồ 12 cung */}
+        {/* Cột trái: đang nói về lá số nào, và lối sang bản đồ 12 cung.
+            Trên điện thoại nó gập lại sau một dòng tóm tắt — xem KhoiGap. */}
+        <KhoiGap
+          moSan={!daChonLaSo}
+          nhanMo={t.hoiCeles.hoiVeNguoiKhac}
+          tomTat={
+            <>
+              {t.hoiCeles.dangNoiVe}{' '}
+              <b style={{ color: 'var(--fg)' }}>{form.hoTen || t.hoiCeles.nguoiVuaNhap}</b>
+            </>
+          }
+        >
         <div className="flex flex-col gap-[12px]">
           {boiCanh.hoSos.length > 0 && (
             <label className="flex flex-col gap-[8px]">
@@ -343,6 +354,7 @@ function TrangHoiDap() {
             </Link>
           </div>
         </div>
+        </KhoiGap>
 
         {/* Cột phải: hội thoại — chỉ mở khi đã biết đang nói về lá số nào */}
         {!daChonLaSo ? (
@@ -356,13 +368,21 @@ function TrangHoiDap() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-[12px] max-lg:order-2">
+            {/*
+              KHÔNG CUỘN LỒNG TRÊN ĐIỆN THOẠI.
+
+              Khung cuộn cao 58vh nằm trong một trang cũng cuộn được là hai vùng
+              cuộn chồng nhau: ngón tay không biết mình đang kéo cái nào, và kéo
+              tới đáy khung thì trang mới bắt đầu chạy. Trên máy tính khung ấy có
+              ích vì nó giữ ô nhập luôn nhìn thấy được; trên điện thoại ô nhập đã
+              dính đáy màn rồi nên khung không còn việc gì để làm.
+            */}
             <div
-              className="flex min-h-[380px] flex-col gap-[16px] overflow-y-auto rounded-[var(--radius-cards)] border p-[18px]"
+              className="flex flex-col gap-[16px] rounded-[var(--radius-cards)] border p-[18px] lg:max-h-[58vh] lg:min-h-[380px] lg:overflow-y-auto"
               style={{
                 borderColor: 'var(--line)',
                 background: 'var(--surface-card)',
-                maxHeight: '58vh',
               }}
             >
               {tinNhan.length === 0 && !dangChay && (
@@ -463,12 +483,25 @@ function TrangHoiDap() {
               <div ref={cuoiRef} />
             </div>
 
+            {/*
+              Ô NHẬP DÍNH ĐÁY MÀN TRÊN ĐIỆN THOẠI.
+
+              Trên máy tính ô nhập nằm ngay dưới khung hội thoại và luôn nhìn
+              thấy được vì khung ấy có trần chiều cao. Trên điện thoại thì
+              không: đọc xong một câu trả lời dài là ô nhập đã trôi khỏi màn,
+              muốn hỏi tiếp phải cuộn ngược xuống đáy trang.
+
+              `sticky bottom-0` giữ nó ở mép dưới khung nhìn, `padding-bottom`
+              cộng thêm `safe-area-inset-bottom` để nó không nằm dưới thanh
+              vuốt của iPhone. Nền đặc là bắt buộc — nền trong suốt thì chữ của
+              tin nhắn chạy qua phía sau ô nhập và cả hai cùng không đọc được.
+            */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 hoi(cauHoi);
               }}
-              className="flex gap-[12px]"
+              className="flex gap-[12px] max-lg:sticky max-lg:bottom-0 max-lg:z-10 max-lg:border-t max-lg:pt-[10px] max-lg:[background:var(--bg)] max-lg:[border-color:var(--line)] max-lg:[padding-bottom:calc(10px+env(safe-area-inset-bottom))]"
             >
               <input
                 value={cauHoi}

@@ -234,7 +234,15 @@ export function TuViChart({
           <button className="link-text link-action" onClick={xuatPng}>
             {t.banDo.xuatAnh}
           </button>
-          <button className="link-text link-action" onClick={() => window.print()}>
+          {/*
+            In ra: ẩn trên màn hẹp.
+
+            Không phải vì điện thoại không in được — vì trên thanh công cụ chỉ
+            vừa ba bốn mục, mà "in" là mục ít ai chạm nhất ở đó. Giữ nó là đẩy
+            "Lớp hiển thị" và "Xuất ảnh" — hai việc người dùng điện thoại thật
+            sự làm — xuống hàng thứ hai của thanh.
+          */}
+          <button className="link-text link-action max-sm:hidden" onClick={() => window.print()}>
             {t.banDo.inRa}
           </button>
         </div>

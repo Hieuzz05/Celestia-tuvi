@@ -20,6 +20,7 @@ export const en: TuDien = {
     dongY: 'Done',
     huy: 'Cancel',
     menu: 'Menu',
+    dong: 'Close',
     dongMenu: 'Close menu',
     dangMo: 'Opening…',
   },
