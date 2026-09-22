@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Máy Claude Code (it-ba) | Áp bộ quy tắc văn phong cho chat và bảng mười hai lĩnh vực — hai bề mặt còn lại đang nói khác giọng với bản đọc sâu | `viec/van-phong-chat-linh-vuc` | `lib/rag/van-phong.ts`, `lib/rag/bang-linh-vuc.ts`, `lib/rag/prompt-co-can-cu.ts`, `lib/tuvi/luan-giai-sau.ts` (vùng chung, thêm hai trường tuỳ chọn), `components/laso/BangLuanGiai.tsx` + `lib/i18n/*` (vùng B, thêm chỗ hiện hai trường mới), `app/api/luan-giai-sau/route.ts`, `scripts/test-be-mat-ai.ts`, `scripts/eval-chat-quyet-dinh.ts` | 22/09/2026 |
+| — | (chưa có việc nào đang chạy) | — | — | — |
 
 ## Đang vướng — đừng đụng vào
 
@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-110 — văn phong Celes cho chat và bảng 12 lĩnh vực; bảng tách hai lượt gọi song song (52,3s → 43,3s) | `b041f2e` | 22/09/2026 |
 | CEL-088 — trí nhớ hội thoại xuyên phiên (KHÔNG cần SQL mới) | `(bản này)` | 19/09/2026 |
 | Spec Chat Quality v1: P1-6b — chat biết bài tổng quan đã nói gì | `261dde7` | 19/09/2026 |
 | Spec Chat Quality v1: P1-5/7/8 — giọng chắc chắn, lối đi tiếp, lớp tự kiểm | `492fe16` | 19/09/2026 |
