@@ -26,6 +26,7 @@ import { lapKeHoach } from './planner';
 import { boMarkdown, doiTenCung, suaCauTiengLong } from './sua-chua';
 import { boDau, nhanDangThucThe } from './thuc-the';
 import { VAN_PHONG_CELES } from './van-phong';
+import { chonMauVang, khoiMauVang, type LoaiMau } from './mau-vang';
 import { truyHoi } from './truy-hoi';
 
 /**
@@ -55,11 +56,22 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.2';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.3';
 
 export interface TieuChiRa {
   nhan: string;
   noiDung: string;
+  /**
+   * Lá số không nói được gì ở tiêu chí này.
+   *
+   * Khác hẳn "model quên trả về": đây là model ĐÃ ĐỌC dữ kiện và nói rằng chỗ
+   * này im lặng. Giữ lại chứ không vứt, vì hai lý do:
+   *   - Nó là một thông tin thật. Người đọc biết chỗ này lá số nói ít, thay vì
+   *     đọc một đoạn viết cho đủ rồi tự hỏi sao nó nhạt.
+   *   - Nó giữ cho cửa chặn "thiếu quá nửa tiêu chí" phân biệt được hai chuyện
+   *     khác hẳn nhau: model bị cắt giữa chừng, và lá số vốn im lặng.
+   */
+  thieuCanCu?: boolean;
   laGuong: boolean;
   /** Bắt buộc khác null với tiêu chí đi tới L3 trở lên — spec mục 10.17 */
   luongNguoc: string | null;
@@ -123,12 +135,28 @@ function cungCuaMuc(muc: MucId): string[] {
 }
 
 /**
- * Ngân sách từ cho một tiêu chí.
+ * TRẦN từ cho một tiêu chí — không phải đích phải đạt.
  *
  * Spec mục 10.12: mỗi phần 420–560 từ, `doNoiBat >= 70` được +20%, `<= 30` bị
  * −20%. Chia đều cho số tiêu chí của phần ấy thay vì đặt một con số cứng: phần
  * bảy tiêu chí mà dùng cùng ngân sách với phần sáu tiêu chí thì hoặc phần này
  * lê thê, hoặc phần kia cụt.
+ *
+ * ---------------------------------------------------------------------------
+ * VÌ SAO PHẢI NÓI RÕ "TRẦN" — ĐÂY LÀ SỬA MỘT LỖI, KHÔNG PHẢI ĐỔI CÁCH DIỄN ĐẠT
+ *
+ * Con số này đi vào prompt kèm chữ "khoảng", và prompt chốt lại bằng câu "đủ ba
+ * phần, đủ tiêu chí của từng phần". Hai thứ cộng lại là một CHỈ TIÊU SẢN LƯỢNG
+ * phát cho mọi tiêu chí, bất kể lá số có gì để nói ở đó. Model không còn đường
+ * nào ngoài viết cho đủ — mà viết cho đủ khi hết dữ kiện thì chỉ có một cách:
+ * nói lại ý cũ bằng chữ khác.
+ *
+ * Đó là nguyên nhân CƠ HỌC của chứng lan man chủ dự án phàn nàn, mạnh hơn mọi
+ * luật văn phong cộng lại — xem KIEN-TRUC-LUAN-GIAI.md mục 1. Không luật nào
+ * về CÁCH VIẾT chữa được một chỉ tiêu về SỐ LƯỢNG.
+ *
+ * Giờ nó là TRẦN: hết điều đáng nói thì dừng, và tiêu chí nào lá số im lặng thì
+ * được nói thẳng là im lặng — `thieuCanCu` cấp tiêu chí.
  */
 function nganSachTu(diem: number, soTieuChi: number): number {
   const goc = 490;
@@ -158,7 +186,13 @@ interface ThoMuc {
   cauHoiSoi?: unknown;
   giuLai?: unknown;
   ketLuan?: unknown;
-  tieuChi?: { nhan?: unknown; noiDung?: unknown; luongNguoc?: unknown; maDuKien?: unknown }[];
+  tieuChi?: {
+    nhan?: unknown;
+    noiDung?: unknown;
+    luongNguoc?: unknown;
+    maDuKien?: unknown;
+    thieuCanCu?: unknown;
+  }[];
 }
 
 /**
@@ -277,7 +311,7 @@ export async function dungChang(vao: {
           (t, i) =>
             `    ${i + 1}. ${t.nhan}${t.laGuong ? '  [KHỐI GƯƠNG]' : ''}` +
             `${t.moTa ? `\n       → ${t.moTa}` : ''}` +
-            `\n       → khoảng ${nganSach} từ`
+            `\n       → TỐI ĐA ${nganSach} từ (trần, không phải đích — hết điều đáng nói thì dừng)`
         )
         .join('\n');
       return (
@@ -466,7 +500,16 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   }
 }
 
-Đủ ba phần, đủ tiêu chí của từng phần, theo đúng thứ tự đã liệt kê ở trên.`;
+ĐỦ BA PHẦN, theo đúng thứ tự đã liệt kê. Còn tiêu chí thì KHÔNG phải viết cho đủ.
+
+Tiêu chí nào dữ kiện của lá số này không nói được gì thì trả về đúng như sau:
+  { "nhan": "<chép đúng nhãn>", "thieuCanCu": true, "noiDung": "" }
+Không đoán, không mượn ý của tiêu chí khác, không viết lại ý đã nói ở trên bằng
+chữ khác cho dài ra. Một tiêu chí bỏ trống vì lá số im lặng là một thông tin
+thật; một tiêu chí viết cho đủ là một câu không ai kiểm được.
+
+Ngân sách từ ở trên là TRẦN. Bài ngắn hơn trần mà câu nào cũng có chỗ dựa thì
+tốt hơn bài chạm trần bằng cách nói lại ý cũ.`;
 
   /*
    * DỮ KIỆN CỦA LÁ SỐ NÀY nằm ở khối `user`, KHÔNG nằm trong `system`.
@@ -482,6 +525,22 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
    * cùng tiền tố cho `đệm 25.561 / vào 25.567`. Cơ chế có thật, chỉ cần xếp
    * đúng thứ tự: luật trước, dữ kiện sau.
    */
+  /*
+   * MẪU VÀNG đứng CUỐI khối `user`, tức gần điểm sinh chữ nhất.
+   *
+   * Chọn theo TÌNH HUỐNG VIẾT của chặng này, không chọn theo "mẫu nào hay
+   * nhất": khi việc đang làm là viết một phần lá số nói ít, một mẫu viết cho
+   * đúng cảnh ấy dạy được nhiều hơn hẳn một mẫu hay nhưng viết cho phần dữ
+   * kiện dày.
+   *
+   * Kho rỗng thì `khoiMauVang` trả chuỗi rỗng và prompt không đổi một chữ —
+   * xem `mau-vang.ts`. Nội dung kho do chủ dự án đổ vào (A2).
+   */
+  const loaiMau: LoaiMau[] = ['khoi-guong', 'cau-khep'];
+  if (mucIds.some((m) => (diem.get(m) ?? 0) <= NGUONG_MO)) loaiMau.push('thua-du-kien');
+  if (mucIds.some((m) => (diem.get(m) ?? 0) >= NGUONG_NOI)) loaiMau.push('day-du-kien');
+  if (laTatAch) loaiMau.push('mien-rui-ro');
+
   const user = [
     `BA PHẦN CỦA CHẶNG NÀY, kèm tiêu chí bắt buộc và ngân sách từ:
 
@@ -489,7 +548,10 @@ ${khoiMuc}`,
     `CÁCH CỤC đọc được trên lá số này — gọi thẳng tên, đây là ngoại lệ được phép:
 ${khoiCachCuc}${khoiDaNoi}`,
     dungKhoiChoPrompt(goi),
-  ].join('\n\n');
+    khoiMauVang(chonMauVang({ beMat: 'ban-doc-sau', loai: loaiMau, muc: mucIds })),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
   const kq = await goiVoiFallback({ system, user, maxTokens: 10000 });
 
   const tho = docObjectJson(kq.text) as { muc?: ThoMuc[]; doanKhau?: unknown; cauBacCau?: unknown } | null;
@@ -633,6 +695,24 @@ ${khoiCachCuc}${khoiDaNoi}`,
     for (const [i, c] of chuan.entries()) {
       const x = traVe.get(chuanNhan(c.nhan)) ?? (duSo ? daTraVe[i] : undefined);
       const noiDung = sach(x?.noiDung);
+      /*
+       * Model nói thẳng "chỗ này lá số im lặng" thì GHI NHẬN, đừng coi là mất.
+       *
+       * Khối gương là ngoại lệ: nó là điều kiện ship theo spec mục 10.14, nên
+       * một khối gương bỏ trống vẫn tính là phần chưa dựng được.
+       */
+      if (!noiDung && x?.thieuCanCu === true && !c.laGuong) {
+        tieuChi.push({
+          nhan: c.nhan,
+          noiDung: '',
+          laGuong: false,
+          luongNguoc: null,
+          maDuKien: [],
+          soTu: 0,
+          thieuCanCu: true,
+        });
+        continue;
+      }
       if (!noiDung) continue;
       const luongNguoc = sach(x?.luongNguoc);
       tieuChi.push({
@@ -652,9 +732,26 @@ ${khoiCachCuc}${khoiDaNoi}`,
      * được. Khối gương là điều kiện ship theo spec mục 10.14 — một phần không
      * có nó thì nó là bản tóm tắt viết dài, không phải bản đọc sâu.
      */
-    if (tieuChi.length < Math.ceil(chuan.length / 2) || !tieuChi.some((x) => x.laGuong)) {
+    /*
+     * Hai phép đếm khác nhau, và đó là điểm của A1.
+     *
+     * `coChu` là tiêu chí thật sự viết ra được. `tieuChi.length` gồm cả những
+     * tiêu chí model nói thẳng là lá số im lặng. Trước A1 hai thứ này là một,
+     * nên một phần đời mà lá số nói ít bị coi như một phần DỰNG HỎNG và bị vứt
+     * — đúng cái áp lực đẩy model viết cho đủ để khỏi bị vứt.
+     *
+     * Ngưỡng nửa vẫn giữ nguyên, nhưng đo trên số tiêu chí ĐƯỢC TRẢ VỀ. Thêm
+     * một sàn tuyệt đối cho phần chữ: dưới hai tiêu chí có chữ thì phần ấy
+     * không còn là một bài đọc, dù model có đánh dấu im lặng hợp lệ đến đâu.
+     */
+    const coChu = tieuChi.filter((x) => !x.thieuCanCu);
+    if (
+      tieuChi.length < Math.ceil(chuan.length / 2) ||
+      coChu.length < 2 ||
+      !tieuChi.some((x) => x.laGuong)
+    ) {
       console.warn(
-        `[ban-doc-sau] ${id}: còn ${tieuChi.length}/${chuan.length} tiêu chí` +
+        `[ban-doc-sau] ${id}: còn ${coChu.length} tiêu chí có chữ / ${tieuChi.length} trả về / ${chuan.length} yêu cầu` +
           `${tieuChi.some((x) => x.laGuong) ? '' : ', MẤT KHỐI GƯƠNG'}` +
           ` — nhãn model trả: ${[...traVe.keys()].join(' | ')}`
       );

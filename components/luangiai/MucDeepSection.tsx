@@ -67,7 +67,12 @@ export function MucDeepSection({
     );
   }
 
-  const tieuChiThuong = muc.tieuChi.filter((t) => !t.laGuong);
+  /*
+    Tiêu chí model đánh dấu "lá số im lặng" (A1) không vẽ ra: nó không có chữ,
+    và một nhãn đứng một mình không nói gì với người đọc ngoài việc trang bị
+    thiếu. Phần đời vẫn đủ, chỉ ngắn hơn — đúng ý của việc bỏ chỉ tiêu sản lượng.
+  */
+  const tieuChiThuong = muc.tieuChi.filter((t) => !t.laGuong && !t.thieuCanCu);
   const guong = muc.tieuChi.find((t) => t.laGuong);
 
   // Phần mà cung gương ứng vào — để chân khối gương nói được đang nối đi đâu
