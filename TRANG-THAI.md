@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| Phase A của `KIEN-TRUC-LUAN-GIAI.md`: A1 (ngân sách từ thành trần) + A3 (chỗ cắm mẫu vàng) + chia ba nhóm luật cho A5 — nhánh `viec/kien-truc-phase-a` | `10b7dc5` | 22/09/2026 |
 | CEL-112 — bản adaptive cho điện thoại (nhánh `viec/mobile-adaptive`) | `36ac30d` | 22/09/2026 |
 | CEL-111 — xếp luật trước, dữ kiện sau để nhà cung cấp đệm được prompt | `b941869` | 22/09/2026 |
 | CEL-110 — đếm và chặn một cách cục bám quá nhiều phần (7/12 → 4/12) | `9e11ac8` | 22/09/2026 |
@@ -65,6 +66,11 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
   - Các kiểu quan hệ gia đình chi tiết — cần quyết định phạm vi trước.
   - **Streaming cho chat (CEL-089)** — bẫy đã lường: validator chạy SAU khi có
     JSON đầy đủ, nên chỉ được stream `tomTat` trước rồi mới đổ các ý ĐÃ LỌC.
+- **Kho mẫu vàng đang RỖNG và đó là việc của chủ dự án** (A2 trong
+  `KIEN-TRUC-LUAN-GIAI.md`): sáu loại × hai bản, mỗi mẫu kèm một câu nói rõ bản
+  ấy đáng học ở chỗ nào. Đổ vào `KHO_VANG` trong `lib/rag/mau-vang.ts` là chạy,
+  không phải sửa chỗ nào khác. Chưa có mẫu thì KHÔNG được cắt nhóm luật
+  `mau-day-duoc` — cắt trước là bỏ luật mà chưa có thứ thay thế.
 - **Trần chất lượng hiện tại là model.** Chuỗi model để `gpt-4o-mini` đứng đầu
   theo yêu cầu của chủ dự án. Đo được: `gpt-5.4-mini` cho bài sâu hơn hẳn với
   cùng hạng giá. Đừng tự đổi; muốn đổi thì hỏi chủ dự án.
