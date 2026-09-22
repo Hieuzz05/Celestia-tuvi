@@ -207,6 +207,8 @@ function laCauDinhBenh(cau: string): boolean {
 async function do_() {
   const { lapLaSo } = await import('../lib/tuvi/ansao');
   const { sinhBanDocSau, soBaoPhu, soatBanDocSau } = await import('../lib/rag/ban-doc-sau');
+  const { DEM_SUA, datLaiDemSua } = await import('../lib/rag/sua-chua');
+  datLaiDemSua();
   const { namAmHienTai, thangAmHienTai } = await import('../lib/tuvi/bay-gio');
 
   console.log('\n== SINH BÀI THẬT ==\n');
@@ -613,6 +615,10 @@ async function do_() {
   );
   console.log(
     `  Tiêu chí lá số im lặng (A1): ${soImLang}/${muc.flatMap((m) => m.tieuChi).length}`
+  );
+  console.log(
+    `  Lớp sửa đã chạy: kê sao ${DEM_SUA.keSao.soLuotGoi} lượt/${DEM_SUA.keSao.soCauPham} câu · `
+      + `tiếng lóng ${DEM_SUA.tiengLong.soLuotGoi} lượt/${DEM_SUA.tiengLong.soCauPham} câu`
   );
   console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} MỤC SAI\n`);
   process.exit(sai === 0 ? 0 : 1);

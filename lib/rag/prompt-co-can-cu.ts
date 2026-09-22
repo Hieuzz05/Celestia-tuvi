@@ -3,6 +3,7 @@ import { chonBoiCanhHoiThoai } from './tiep-noi';
 import { dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { VAN_PHONG_CELES_CHAT } from './van-phong';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 /**
  * Prompt cho luồng có căn cứ.
@@ -301,9 +302,20 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
 Được phép viết "như đã nói trong bài tổng quan của bạn…" rồi NÓI THÊM điều bài đó chưa nói: nó lộ ra ở tình huống nào, nó đổi gì khi gặp đúng câu hỏi đang hỏi, chỗ nào nó quay ra làm khó.`
     : '';
 
+  /*
+   * Mẫu vàng cho chat: chỉ xin loại 'cau-khep'.
+   *
+   * Một lượt chat ngắn hơn hẳn bài dài, nên chỗ nó dễ lệch giọng nhất là câu
+   * mở và câu khép chứ không phải mạch giữa bài. Xin đúng loại ấy thay vì xin
+   * mẫu dài — mẫu dài ở đây chiếm chỗ của dữ kiện mà không dạy thêm gì.
+   */
+  const mauChat = khoiMauVang(chonMauVang({ beMat: 'chat', loai: ['cau-khep'], soLuong: 1 }));
+
   return {
     system: SYSTEM,
-    user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}
+    user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}${
+      mauChat ? `\n\n${mauChat}` : ''
+    }
 
 CÂU HỎI HIỆN TẠI
 ${goi.cauHoi}`,

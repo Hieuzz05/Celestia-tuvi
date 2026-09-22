@@ -49,6 +49,9 @@ async function main() {
   const { namAmHienTai, thangAmHienTai, khoangDuongCuaThangAm } = await import('../lib/tuvi/bay-gio');
   const { sinhDiemNoiBat, sinhNhipHanhTrinh } = await import('../lib/rag/be-mat-ngan');
   const { sinhBangLinhVuc } = await import('../lib/rag/bang-linh-vuc');
+  // Đếm lớp sửa — phép đo bắt buộc cho A5, xem DEM_SUA trong sua-chua.ts
+  const { DEM_SUA, datLaiDemSua } = await import('../lib/rag/sua-chua');
+  datLaiDemSua();
   const { sinhMocHanhTrinh } = await import('../lib/rag/moc-hanh-trinh');
 
   if (uuTien) process.env.AI_UU_TIEN_TEST = uuTien;
@@ -242,6 +245,10 @@ async function main() {
     kiem(`[${loai}] dưới ${tranTrung} mốc mở giống nhau`, trung < tranTrung, trung);
   }
 
+  console.log(
+    `\n  Lớp sửa đã chạy: kê sao ${DEM_SUA.keSao.soLuotGoi} lượt/${DEM_SUA.keSao.soCauPham} câu · `
+      + `tiếng lóng ${DEM_SUA.tiengLong.soLuotGoi} lượt/${DEM_SUA.tiengLong.soCauPham} câu`
+  );
   console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
   process.exit(sai === 0 ? 0 : 1);
 }

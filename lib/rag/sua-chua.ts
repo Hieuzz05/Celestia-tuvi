@@ -73,6 +73,32 @@ function tachCau(doan: string): string[] {
  * Nhận vào một bảng khoá → đoạn, trả về bảng đã sửa. Không có câu nào phạm thì
  * trả lại nguyên bảng cũ và KHÔNG gọi model.
  */
+/**
+ * ĐẾM SỐ LẦN LỚP SỬA PHẢI CHẠY — phép đo bắt buộc cho A5.
+ *
+ * KIEN-TRUC-LUAN-GIAI.md mục 7.2 cho phép bỏ khỏi prompt những luật mà code đã
+ * cưỡng chế. Nhưng "code cưỡng chế" ở đây phần lớn là LỚP SỬA, mà lớp sửa gọi
+ * model. Bỏ một luật khỏi prompt để tiết kiệm vài trăm token đầu vào, rồi đổi
+ * lại lớp sửa chạy thêm vài lượt mỗi bài, là lỗ — và không ai thấy nếu không
+ * đếm.
+ *
+ * Đếm ở đây chứ không đếm ở chỗ gọi: một bộ đếm nằm cạnh chính hàm sửa thì
+ * không có đường nào quên cập nhật khi thêm bề mặt mới.
+ *
+ * `soCauPham` là số CÂU phải viết lại, `soLuotGoi` là số lượt gọi model. Hai
+ * con số khác nhau: `suaCauKeSao` gom cả bài thành một lượt.
+ */
+export const DEM_SUA = {
+  keSao: { soLuotGoi: 0, soCauPham: 0 },
+  tiengLong: { soLuotGoi: 0, soCauPham: 0 },
+};
+
+/** Đặt lại bộ đếm — bộ đo gọi trước mỗi lần sinh để số không cộng dồn */
+export function datLaiDemSua(): void {
+  DEM_SUA.keSao = { soLuotGoi: 0, soCauPham: 0 };
+  DEM_SUA.tiengLong = { soLuotGoi: 0, soCauPham: 0 };
+}
+
 export async function suaCauKeSao(
   van: Record<string, string>,
   tuyChon: { tran?: number; toiDa?: number; boQua?: readonly string[] } = {}
@@ -92,6 +118,9 @@ export async function suaCauKeSao(
     });
   }
   if (!viPham.length) return van;
+
+  DEM_SUA.keSao.soLuotGoi += 1;
+  DEM_SUA.keSao.soCauPham += viPham.length;
 
   const danhSach = viPham.map((p, i) => `C${i + 1}. ${p.cau}`).join('\n');
 
@@ -173,6 +202,9 @@ export async function suaCauTiengLong(
     .map((c, i) => ({ c, i }))
     .filter(({ c }) => TIENG_LONG_MOT_CAU.test(c));
   if (!pham.length) return van;
+
+  DEM_SUA.tiengLong.soLuotGoi += 1;
+  DEM_SUA.tiengLong.soCauPham += pham.length;
 
   const system = `Bạn là biên tập viên của Celestia. Việc duy nhất: viết lại từng câu cho bỏ hết tiếng lóng nội bộ.
 

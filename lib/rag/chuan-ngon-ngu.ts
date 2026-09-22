@@ -268,14 +268,32 @@ Câu sai ở trên không sai về nghĩa. Nó chỉ không phải một cảnh,
 ];
 
 /**
- * Dựng chuẩn ngôn ngữ, có thể bỏ một hoặc nhiều nhóm.
+ * Dựng chuẩn ngôn ngữ, bỏ theo NHÓM hoặc theo TÊN KHỐI.
  *
- * Bỏ nhóm nào thì phải đo lại nhóm ấy — xem mục 7.2 và mục 9 (A5) của
- * KIEN-TRUC-LUAN-GIAI.md. Tiêu chí duy nhất để một dòng được ở lại: bỏ nó gây
- * regression đo được.
+ * ---------------------------------------------------------------------------
+ * VÌ SAO PHẢI CẮT ĐƯỢC THEO TỪNG KHỐI, KHÔNG CHỈ THEO NHÓM
+ *
+ * Bảng ba nhóm ở mục 7.2 giả định "code đã cưỡng chế" là một thuộc tính của
+ * LUẬT. Đọc lại mã thì nó là thuộc tính của CẶP (luật, bề mặt):
+ *
+ *   cổng ngôn ngữ  soatNgonNgu()      — đủ cả sáu bề mặt
+ *   sửa tiếng lóng suaCauTiengLong()  — bốn: bản đọc sâu, bài dài, bảng, chat
+ *   sửa kê sao     suaCauKeSao()      — HAI: bảng mười hai lĩnh vực, bề mặt ngắn
+ *
+ * Nên bỏ cả nhóm 'ma-cuong-che' ở mọi bề mặt là bỏ luật "tối đa một tên sao mỗi
+ * câu" ở bốn bề mặt KHÔNG có lớp sửa nào đỡ. Cắt phải đi theo bề mặt, và mỗi
+ * bề mặt tự khai mình được cắt gì.
+ *
+ * Tiêu chí duy nhất để một dòng ở lại: bỏ nó gây regression ĐO ĐƯỢC. Và nhớ
+ * đếm cả `DEM_SUA` (sua-chua.ts): tiết kiệm token đầu vào mà lớp sửa chạy thêm
+ * vài lượt thì là lỗ.
  */
-export function dungChuanNgonNgu(boNhom: NhomLuat[] = []): string {
-  return KHOI_CHUAN.filter((k) => !boNhom.includes(k.nhom))
+export function dungChuanNgonNgu(
+  bo: NhomLuat[] | { nhom?: NhomLuat[]; khoi?: string[] } = []
+): string {
+  const nhom = Array.isArray(bo) ? bo : (bo.nhom ?? []);
+  const khoi = Array.isArray(bo) ? [] : (bo.khoi ?? []);
+  return KHOI_CHUAN.filter((k) => !nhom.includes(k.nhom) && !khoi.includes(k.ten))
     .map((k) => k.van)
     .join('\n\n');
 }

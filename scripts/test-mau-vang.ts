@@ -15,6 +15,7 @@
  *      rất trôi chảy, kiểu sai đắt nhất ở đây.
  */
 
+import { readFileSync } from 'node:fs';
 import { chonMauVang, khoiMauVang, KHO_VANG, SO_MAU_MOI_LUOT, type MauVang } from '../lib/rag/mau-vang';
 
 let sai = 0;
@@ -71,6 +72,29 @@ kiem('Có cảnh báo mẫu KHÔNG phải dữ kiện', /KHÔNG phải dữ ki�
 kiem('Cấm mượn tên sao trong mẫu', /không mượn tên sao/iu.test(khoi));
 kiem('Mỗi mẫu đi kèm lý do đáng học', khoi.includes('dữ kiện dày mà vẫn gọn'));
 kiem('Có mốc đóng khối', khoi.includes('--- HẾT MẪU'));
+
+/*
+ * SÁU BỀ MẶT PHẢI CÙNG CÓ CHỖ CẮM — mục 11 của KIEN-TRUC-LUAN-GIAI.md.
+ *
+ * "Xây cho một bề mặt là lặp lại đúng sai lầm mà van-phong.ts sinh ra để
+ * chống: sản phẩm nói bằng hai giọng." Kiểm bằng cách đọc mã: bề mặt nào quên
+ * cắm thì lúc chủ dự án đổ mẫu vào, năm màn học còn một màn không.
+ */
+console.log('\n== SÁU BỀ MẶT ĐỀU CÓ CHỖ CẮM ==\n');
+{
+  const TEP: [string, string][] = [
+    ['ban-doc-sau', 'lib/rag/ban-doc-sau.ts'],
+    ['bai-dai', 'lib/rag/bai-dai.ts'],
+    ['bang-linh-vuc', 'lib/rag/bang-linh-vuc.ts'],
+    ['be-mat-ngan', 'lib/rag/be-mat-ngan.ts'],
+    ['moc-hanh-trinh', 'lib/rag/moc-hanh-trinh.ts'],
+    ['chat', 'lib/rag/prompt-co-can-cu.ts'],
+  ];
+  for (const [ten, tep] of TEP) {
+    const ma = readFileSync(tep, 'utf-8');
+    kiem(`${ten} có gọi khoiMauVang`, ma.includes('khoiMauVang('), tep);
+  }
+}
 
 KHO_VANG.length = 0;
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} MỤC SAI\n`);

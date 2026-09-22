@@ -8,7 +8,12 @@ import { CHANG_CUA_MUC, THU_TU_CHANG, type MucId } from '@/lib/tuvi/chang-cung';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauPhanQuyet, boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import {
+  boCauPhanQuyet,
+  boCauTenBia,
+  boCauRaLenh,
+  dungChuanNgonNgu,
+} from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { boMarkdown, doiTenCung, suaCauKeSao, suaCauTiengLong } from './sua-chua';
@@ -16,6 +21,7 @@ import { lapKeHoach } from './planner';
 import { boDau, nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
 import { VAN_PHONG_CELES } from './van-phong';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 /**
  * Bảng luận giải 8 lĩnh vực của trang Lá số, do model viết.
@@ -64,7 +70,29 @@ import { VAN_PHONG_CELES } from './van-phong';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.6';
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.7';
+
+/**
+ * A5 — NHÁT CẮT ĐẦU TIÊN, và vì sao đúng hai khối này.
+ *
+ * KIEN-TRUC-LUAN-GIAI.md mục 7.2: luật nào code đã cưỡng chế thì bỏ khỏi
+ * prompt. Nhưng "code đã cưỡng chế" là thuộc tính của CẶP (luật, bề mặt), không
+ * phải của riêng luật — xem ghi chú ở `dungChuanNgonNgu`. Bảng mười hai lĩnh
+ * vực là bề mặt DUY NHẤT có đủ cả hai lớp sửa:
+ *
+ *   'cam-tieng-long'       — suaCauTiengLong() chạy trên từng trường, và cổng
+ *                            ngôn ngữ CHẶN mã 'tieng-long-engine'
+ *   'mot-ten-sao-moi-cau'  — suaCauKeSao() gom cả bảng sửa một lượt
+ *
+ * `cam-lo-nguon` KHÔNG cắt dù cổng cũng chặn: chặn ở đó nghĩa là trả null và
+ * cả bảng lùi về bản tất định, mà không có lớp sửa nào đỡ trước. Cổng chặn
+ * không phải lưới an toàn, nó là cái bẫy sập.
+ *
+ * Số đo đi kèm nhát cắt này nằm ở CEL-116 trong PRODUCT-BACKLOG.xlsx.
+ */
+const CHUAN_NGON_NGU_BANG = dungChuanNgonNgu({
+  khoi: ['cam-tieng-long', 'mot-ten-sao-moi-cau'],
+});
 
 /** Cung cần có mặt trong dữ kiện để tám lĩnh vực đều có cái mà đọc */
 const CUNG_CAN_CO = [
@@ -342,7 +370,7 @@ thì không, vì người đọc không tra được nó.
 
 ${VAN_PHONG_CELES}
 
-${CHUAN_NGON_NGU_CELES}
+${CHUAN_NGON_NGU_BANG}
 
 KHÔNG ĐƯỢC: nhắc tên sách, tên hệ phái, số phần trăm; phán chắc chắn về sức khoẻ, tiền bạc, pháp lý; lặp lại nguyên văn dữ kiện.
 
@@ -393,7 +421,12 @@ ${thanCu}`,
     kqTruyHoi.daChon.length
       ? ''
       : '\nLƯU Ý: không có nguồn tham chiếu nào. Chỉ mô tả điều dữ kiện lá số nói, và nêu rõ phần học thuyết chưa có căn cứ.',
-  ].join('\n');
+    // Mẫu vàng đứng cuối, gần điểm sinh chữ nhất — xem `mau-vang.ts`. Kho rỗng
+    // thì trả chuỗi rỗng và prompt không đổi một chữ.
+    khoiMauVang(chonMauVang({ beMat: 'bang-linh-vuc', loai: ['day-du-kien', 'thua-du-kien'] })),
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   /*
    * Ngân sách 5.000 token cho mỗi nửa, không phải 8.000 cho cả bài.
