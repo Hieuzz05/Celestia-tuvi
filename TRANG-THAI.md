@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| — | (chưa có việc nào đang chạy) | — | — | — |
+| Máy Claude Code (it-ba) | Áp bộ quy tắc văn phong cho chat và bảng mười hai lĩnh vực — hai bề mặt còn lại đang nói khác giọng với bản đọc sâu | `viec/van-phong-chat-linh-vuc` | `lib/rag/van-phong.ts`, `lib/rag/bang-linh-vuc.ts`, `lib/rag/prompt-co-can-cu.ts`, `lib/tuvi/luan-giai-sau.ts` (vùng chung, thêm hai trường tuỳ chọn), `components/laso/BangLuanGiai.tsx` + `lib/i18n/*` (vùng B, thêm chỗ hiện hai trường mới), `app/api/luan-giai-sau/route.ts`, `scripts/test-be-mat-ai.ts`, `scripts/eval-chat-quyet-dinh.ts` | 22/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
