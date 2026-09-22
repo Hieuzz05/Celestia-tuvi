@@ -97,6 +97,42 @@ async function main() {
     kiem('Không câu nào ra lệnh', !bang.noiDung.some((x) => RA_LENH.test([x.ketLuan, ...x.doan].join(' '))));
     const trung = soMoTrung(bang.noiDung.map((x) => x.ketLuan));
     kiem('Không quá 2 kết luận mở giống nhau', trung <= 2, trung);
+
+    /*
+     * BỐN THÓI QUEN VIẾT — cùng bộ luật với bản đọc sâu, xem lib/rag/van-phong.ts.
+     *
+     * Đo theo TỈ LỆ PHẦN chứ không tuyệt đối, giống bên bản đọc sâu: một phần
+     * thiếu cặp phân biệt không làm hỏng bảng, cả mười hai phần cùng thiếu mới
+     * hỏng. Riêng hai câu khép thì đo mức có mặt, vì chúng là TRƯỜNG model buộc
+     * phải trả — thiếu ở nhiều phần nghĩa là schema không ăn, không phải giọng
+     * văn hôm nay kém.
+     */
+    const { coCapPhanBiet, soCauHoi } = await import('../lib/rag/van-phong');
+    const coCap = bang.noiDung.filter((x) =>
+      coCapPhanBiet([x.ketLuan, ...x.doan, x.giuLai ?? ''].join(' '))
+    ).length;
+    kiem(
+      'Từ 70% phần trở lên có cặp phân biệt',
+      coCap / bang.noiDung.length >= 0.7,
+      `${coCap}/${bang.noiDung.length}`
+    );
+    const coHoi = bang.noiDung.filter((x) => soCauHoi(x.cauHoiSoi ?? '') > 0).length;
+    kiem(
+      'Từ 80% phần trở lên có câu hỏi của người đọc',
+      coHoi / bang.noiDung.length >= 0.8,
+      `${coHoi}/${bang.noiDung.length}`
+    );
+    const coGiu = bang.noiDung.filter((x) => (x.giuLai ?? '').trim().length > 20).length;
+    kiem(
+      'Từ 80% phần trở lên có câu giữ lại',
+      coGiu / bang.noiDung.length >= 0.8,
+      `${coGiu}/${bang.noiDung.length}`
+    );
+    // Câu giữ lại nói thứ đáng mang theo, không giao việc — QUY_TAC_GIU_LAI
+    const giuLaiKhuyen = bang.noiDung.filter((x) => RA_LENH.test(x.giuLai ?? '')).map((x) => x.id);
+    kiem('Câu giữ lại không phải lời khuyên', giuLaiKhuyen.length === 0, giuLaiKhuyen);
+    console.log(`  câu hỏi soi: ${bang.noiDung[0]?.cauHoiSoi ?? '(không có)'}`);
+    console.log(`  giữ lại    : ${bang.noiDung[0]?.giuLai ?? '(không có)'}`);
   }
 
   // ---------------------------------------------------------- Nhịp Hành trình

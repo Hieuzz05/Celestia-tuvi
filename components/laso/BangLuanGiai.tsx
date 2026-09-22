@@ -220,11 +220,45 @@ function KhoiCard({
         {khoi.ketLuan}
       </p>
 
+      {/*
+        CÂU HỎI SOI — đứng ngay dưới kết luận, trước thân bài.
+
+        Ở đây nó làm việc của một cái khung: người đọc biết phần sắp tới đang
+        trả lời câu gì của họ. Đặt ở cuối thì nó thành một lời bỏ ngỏ, mà phần
+        này đã có câu giữ lại để khép rồi. Cùng chỗ đứng với bản đọc sâu — hai
+        màn cùng một sản phẩm thì hai câu ấy phải nằm cùng một chỗ.
+
+        Chỉ có khi phần chữ do model viết; bản tất định không dựng nó.
+      */}
+      {khoi.cauHoiSoi && (
+        <p className="body-sm italic" style={{ color: 'var(--fg-muted)' }}>
+          {khoi.cauHoiSoi}
+        </p>
+      )}
+
       {khoi.doan.map((d, i) => (
         <p key={i} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
           {d}
         </p>
       ))}
+
+      {/*
+        CÂU GIỮ LẠI — khép phần.
+
+        Vạch dọc thay cho khung: nó nói "đây là lời của Celes, không phải một
+        đoạn nữa của bài" mà không thêm một cái hộp vào trang vốn đã nhiều hộp.
+      */}
+      {khoi.giuLai && (
+        <div
+          className="flex flex-col gap-[4px] pl-[12px]"
+          style={{ borderLeft: '2px solid var(--accent)' }}
+        >
+          <p className="eyebrow">{t.luanSau.giuLai}</p>
+          <p className="body-text" style={{ color: 'var(--fg)' }}>
+            {khoi.giuLai}
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-[18px]">
         {day && (

@@ -53,6 +53,18 @@ export interface KhoiLuanGiai {
   ketLuan: string;
   /** 2-4 đoạn giải thích cụ thể */
   doan: string[];
+  /**
+   * CÂU HỎI SOI và CÂU GIỮ LẠI — chỉ có khi phần chữ do model viết.
+   *
+   * Bản tất định không dựng hai câu này. Câu hỏi thì nó vốn đã có một câu
+   * phản chiếu đứng cuối `doan`; câu giữ lại thì không dựng nổi bằng luật —
+   * nó phải nói một điều mà cả phần vừa rồi dẫn tới nhưng chưa nói thẳng, và
+   * đó đúng là thứ ghép chữ theo khuôn không làm được.
+   *
+   * Tuỳ chọn, nên giao diện phải vẽ được khi thiếu. Xem `van-phong.ts`.
+   */
+  cauHoiSoi?: string;
+  giuLai?: string;
   canCu: CanCu[];
   /** Câu mở sẵn khi bấm "Hỏi Celes về phần này" */
   cauHoiGoiY: string;

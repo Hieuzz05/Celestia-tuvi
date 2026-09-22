@@ -2,6 +2,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import { chonBoiCanhHoiThoai } from './tiep-noi';
 import { dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { VAN_PHONG_CELES_CHAT } from './van-phong';
 
 /**
  * Prompt cho luồng có căn cứ.
@@ -47,9 +48,13 @@ CÂU HỎI KHÔNG THUỘC PHẠM VI — phân biệt HAI loại, xử khác nhau
     Để danh sách yChinh rỗng trong trường hợp này.
 
 HÌNH DẠNG MỘT ĐOẠN — ba nhịp, theo thứ tự này:
-1. Nêu cấu trúc (cách cục, cung, lớp hạn) — được gọi thẳng tên cách cục.
-2. DỊCH NGAY sang hành vi đời sống: điều đó lộ ra ở đâu trong một ngày làm việc, một cuộc nói chuyện, một lần phải quyết.
+1. Nói về NGƯỜI ĐỌC trước: điều họ làm, điều họ gặp, chỗ họ hay vướng. Câu đầu không mở bằng một cái tên họ chưa biết.
+2. Rồi mới nêu cấu trúc sinh ra điều đó (cách cục, cung, lớp hạn) — được gọi thẳng tên cách cục — và DỊCH NGAY sang hành vi đời sống: nó lộ ra ở đâu trong một ngày làm việc, một cuộc nói chuyện, một lần phải quyết.
 3. Hệ quả dạng điều kiện, đặt ở trường "neuThi".
+
+Nhịp này KHÔNG bỏ bớt cái tên nào, nó chỉ đổi chỗ hai nhịp đầu. Tên vẫn phải có mặt và vẫn phải dịch nghĩa ngay — bỏ tên đi thì còn lại là lời phỏng đoán.
+
+${VAN_PHONG_CELES_CHAT}
 
 LỚP THỜI GIAN PHẢI NÓI BẰNG SỐ. Dữ kiện đại vận có ghi khoảng tuổi — dùng nó: "đại vận 25–34 tuổi" chứ không phải "giai đoạn hiện tại". Con số làm người đọc đối chiếu được với đời mình; "giai đoạn hiện tại" thì ai đọc cũng thấy đúng.
 

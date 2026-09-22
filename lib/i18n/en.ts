@@ -381,6 +381,7 @@ export const en: TuDien = {
     cung: 'with',
     soiQua: 'mirrored by',
     doanKhau: 'WHAT THESE THREE SAY TOGETHER',
+    giuLai: 'What Celes wants you to keep',
     moChang: 'View 3 parts',
     dongChang: 'Collapse',
     dangDoc: 'Celes is reading your chart',

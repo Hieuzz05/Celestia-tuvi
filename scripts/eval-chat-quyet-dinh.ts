@@ -10,9 +10,15 @@
  * GỌI MODEL THẬT. Không nằm trong checklist offline; chạy khi vừa sửa prompt,
  * schema đầu ra, hoặc lớp cách cục.
  *
- * Tám tiêu chí, tất cả chấm BẰNG LUẬT. Không có tiêu chí nào cần người đọc phán
- * xét — bộ đo phải chạy lại được và so được với lần trước, mà cảm nhận của người
- * thì không so được.
+ * Mười tiêu chí, tất cả chấm BẰNG LUẬT. Không có tiêu chí nào cần người đọc
+ * phán xét — bộ đo phải chạy lại được và so được với lần trước, mà cảm nhận của
+ * người thì không so được.
+ *
+ * Tiêu chí 9 và 10 thêm khi bộ quy tắc văn phong của bản đọc sâu được áp sang
+ * chat. Chúng đo đúng hai thói quen viết mà chat nhận: nói về người đọc trước
+ * rồi mới nêu tên, và nói rõ điều này KHÔNG phải là gì trước khi nói nó là gì.
+ * Hai thói quen còn lại cố ý không áp cho chat — lý do nằm ở `van-phong.ts`,
+ * ngay trên `VAN_PHONG_CELES_CHAT`.
  *
  * Tiêu chí 7 và 8 thêm sau khi một bài lọt ra người dùng thật với câu:
  *
@@ -98,6 +104,15 @@ const NGUONG = {
    * chủ đề đang hỏi, và ép 100% là ép model bịa tên sao vào đúng những bài ấy.
    */
   neuTenDuKien: 0.8,
+  /**
+   * Hai thói quen viết áp từ bản đọc sâu sang — xem `lib/rag/van-phong.ts`.
+   *
+   * Ngưỡng đặt SAU khi đo, không đặt trước: con số dưới đây là mức đo được
+   * ngay sau khi áp bộ quy tắc, trừ đi biên nhiễu của bộ này (một bài đáng
+   * khoảng 4 điểm phần trăm, và bốn lần chạy liên tiếp từng lệch tới 16 điểm).
+   */
+  capPhanBiet: 0.7,
+  moBangNguoi: 0.8,
 };
 
 // ---------------------------------------------------------------- tiện ích
@@ -197,6 +212,10 @@ interface DiemMotBai {
   tenDuKien: string[];
   /** Tên cung lọt ra mặt trước — cảnh báo, không chặn */
   cungLo: string[];
+  /** Quy tắc 2: bài có nói rõ điều này KHÔNG phải là gì trước khi nói nó là gì */
+  capPhanBiet: boolean;
+  /** Quy tắc 1: bài mở bằng người đọc, không mở bằng một cái tên họ chưa biết */
+  moBangNguoi: boolean;
 }
 
 async function main() {
@@ -206,6 +225,7 @@ async function main() {
   const { TEN_CACH_CUC } = await import('../lib/tuvi/cach-cuc');
   const { BO_VANG_QUYET_DINH, LA_SO_DO } = await import('../lib/rag/bo-vang-quyet-dinh');
   const { nhanDangThucThe } = await import('../lib/rag/thuc-the');
+  const { coCapPhanBiet } = await import('../lib/rag/van-phong');
 
   const namXem = namAmHienTai();
   const thangXem = thangAmHienTai();
@@ -283,6 +303,20 @@ async function main() {
     const lop = dau.match(new RegExp(CHU_LOP_HAN, 'gu'));
     if (lop) for (const l of lop) ten.add(l.trim());
 
+    /*
+     * 10. Bài mở bằng NGƯỜI ĐỌC, không mở bằng lá số — quy tắc 1, van-phong.ts.
+     *
+     * Đo trên SÁU TỪ ĐẦU chứ không trên cả câu đầu, và đó là chỗ phép đo này
+     * khớp với tiêu chí 8 thay vì đánh nhau với nó. Tiêu chí 8 đòi tên dữ kiện
+     * có mặt trong ba câu đầu, nên "Năm 2026 nghiêng về giữ hơn là chuyển:
+     * tiểu hạn năm nay…" phải tính là ĐẠT cả hai. Thứ bị bắt ở đây là mở
+     * MIỆNG bằng một cái tên người đọc chưa biết, chứ không phải việc có tên.
+     */
+    const sauTuDau = van.split(/\s+/).slice(0, 6).join(' ');
+    const moBangNguoi =
+      !nhanDangThucThe(sauTuDau).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION') &&
+      !TEN_CACH_CUC.some((t) => boDau(sauTuDau).includes(boDau(t)));
+
     return {
       cauHoi: c.cauHoi,
       chuDe: kq.goi.chuDe,
@@ -299,6 +333,8 @@ async function main() {
       soTenDuKien: ten.size,
       tenDuKien: [...ten],
       cungLo,
+      capPhanBiet: coCapPhanBiet(van),
+      moBangNguoi,
     } satisfies DiemMotBai;
   }
 
@@ -334,6 +370,8 @@ async function main() {
   const soLoiChan = diem.reduce((t, d) => t + d.loiChan.length, 0);
   const soSachTiengLong = diem.filter((d) => d.tiengLong.length === 0).length;
   const soNeuTen = diem.filter((d) => d.soTenDuKien >= 2).length;
+  const soCapPhanBiet = diem.filter((d) => d.capPhanBiet).length;
+  const soMoBangNguoi = diem.filter((d) => d.moBangNguoi).length;
 
   // ------------------------------------------------ tiêu chí 6: hoán lá số
   console.log('Đo hoán lá số (cùng câu hỏi, ba lá số khác nhau)…');
@@ -366,7 +404,7 @@ async function main() {
     );
   };
 
-  console.log('TÁM TIÊU CHÍ\n');
+  console.log('MƯỜI TIÊU CHÍ\n');
   dong('1. Có cách cục có tên, đã dịch nghĩa', soCachCuc / n, NGUONG.cachCuc);
   dong('2. Có mốc thời gian bằng số', soMoc / n, NGUONG.thoiGian);
   dong('3. Lời khuyên dạng điều kiện', tongKhuyen ? tongNeuThi / tongKhuyen : 0, NGUONG.neuThi);
@@ -379,6 +417,8 @@ async function main() {
   dong('6. Trùng lặp 5-gram giữa ba lá số', trungTB, NGUONG.trungLapToiDa, true);
   dong('7. Không tiếng lóng nội bộ engine', soSachTiengLong / n, NGUONG.khongTiengLong);
   dong('8. Nêu ≥2 dữ kiện có tên ở 3 câu đầu', soNeuTen / n, NGUONG.neuTenDuKien);
+  dong('9. Có cặp phân biệt', soCapPhanBiet / n, NGUONG.capPhanBiet);
+  dong('10. Mở bằng người đọc, không bằng lá số', soMoBangNguoi / n, NGUONG.moBangNguoi);
 
   console.log(`\n  Phụ: ${soCachCuc}/${n} có cách cục · ${soMoc}/${n} có mốc số · ${soHoiLai}/${n} có hỏi ngược`);
   console.log(
@@ -437,7 +477,7 @@ async function main() {
     console.log(`\n  Đã ghi dữ liệu thô: ${xuat}`);
   }
 
-  console.log(sai === 0 ? '\nTÁM TIÊU CHÍ ĐỀU ĐẠT\n' : `\n${sai}/8 TIÊU CHÍ CHƯA ĐẠT\n`);
+  console.log(sai === 0 ? '\nMƯỜI TIÊU CHÍ ĐỀU ĐẠT\n' : `\n${sai}/10 TIÊU CHÍ CHƯA ĐẠT\n`);
   process.exit(sai === 0 ? 0 : 1);
 }
 

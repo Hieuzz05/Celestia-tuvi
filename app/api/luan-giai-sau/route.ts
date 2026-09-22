@@ -135,7 +135,9 @@ export async function POST(req: Request) {
           ...c,
           muc: c.muc.map((m) => {
             const x = theoId.get(m.id);
-            return x ? { ...m, ketLuan: x.ketLuan, doan: x.doan } : m;
+            return x
+              ? { ...m, ketLuan: x.ketLuan, doan: x.doan, cauHoiSoi: x.cauHoiSoi, giuLai: x.giuLai }
+              : m;
           }),
         })),
       };

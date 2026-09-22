@@ -41,12 +41,14 @@
  * bị đọc lệch. Nói "bạn cần ổn định" thì họ nghe thành "đừng thay đổi". Phải
  * chặn nghĩa sai trước, nghĩa đúng mới có chỗ.
  */
-export const QUY_TAC_CAP_PHAN_BIET = `CẶP PHÂN BIỆT — mỗi phần ít nhất một lần.
-Nói rõ điều này KHÔNG phải là gì, rồi mới nói nó là gì.
+const THAN_CAP_PHAN_BIET = `Nói rõ điều này KHÔNG phải là gì, rồi mới nói nó là gì.
   "Thứ bạn cần không phải luôn luôn thay đổi, cũng không phải giữ mọi thứ nguyên như cũ. Bạn cần một cuộc sống đủ ổn để mình vẫn có thể tiếp tục phát triển."
   "Điều làm bạn mệt không phải lúc nào cũng là số giờ làm. Nhiều khi đó là số việc vẫn còn nằm trong đầu mà chưa có điểm kết thúc."
 Người đọc bước vào với một cách hiểu sẵn. Không gỡ cách hiểu ấy ra trước thì
 câu đúng đi vào cũng bị đọc lệch.`;
+
+export const QUY_TAC_CAP_PHAN_BIET = `CẶP PHÂN BIỆT — mỗi phần ít nhất một lần.
+${THAN_CAP_PHAN_BIET}`;
 
 /**
  * Quy tắc 2 — CÂU HỎI CỦA CHÍNH NGƯỜI ĐỌC.
@@ -101,13 +103,14 @@ KHÔNG phải lời khuyên. Không mở bằng "hãy", "nên", "cần phải".`
  * Người đọc mở bài lên để đọc về mình. Câu đầu tiên mà là một cái tên họ không
  * biết thì họ đã phải trả một khoản phí trước khi nhận được gì.
  */
-export const QUY_TAC_MO_BANG_NGUOI = `MỞ BẰNG NGƯỜI ĐỌC, KHÔNG MỞ BẰNG LÁ SỐ.
-Câu đầu của mỗi tiêu chí nói về HỌ. Tên sao xuất hiện ở câu sau, như phần giải
-thích cho điều vừa nói.
+const THAN_MO_BANG_NGUOI = `Tên sao xuất hiện ở câu sau, như phần giải thích cho điều vừa nói.
   Sai:  "Sát Phá Tham kéo phần bên trong về phía thay đổi, nên bạn khó ngồi yên."
   Đúng: "Bạn khó ở mãi trong một nhịp sống chỉ vì nó an toàn. Sát Phá Tham ở phần đời sống bên trong cho thấy điều đó."
 Người đọc mở bài lên để đọc về mình. Câu đầu mà là một cái tên họ không biết
 thì họ đã phải trả một khoản phí trước khi nhận được gì.`;
+
+export const QUY_TAC_MO_BANG_NGUOI = `MỞ BẰNG NGƯỜI ĐỌC, KHÔNG MỞ BẰNG LÁ SỐ.
+Câu đầu của mỗi tiêu chí nói về HỌ. ${THAN_MO_BANG_NGUOI}`;
 
 /** Khối gộp, dán vào prompt của mọi bề mặt luận giải dài */
 export const VAN_PHONG_CELES = [
@@ -120,6 +123,43 @@ export const VAN_PHONG_CELES = [
   QUY_TAC_CAU_HOI,
   '',
   QUY_TAC_GIU_LAI,
+].join('\n');
+
+/**
+ * KHỐI CHO CHAT — hai trong bốn quy tắc, và đó là một lựa chọn, không phải bản
+ * rút gọn cho đỡ tốn chỗ.
+ *
+ * Chat khác bài dài ở HÌNH, không ở giọng. Một lượt chat là vài trăm từ trả lời
+ * đúng câu vừa hỏi; bản đọc sâu là năm sáu trăm từ cho mỗi phần đời. Hai quy
+ * tắc còn lại đã có chỗ đứng sẵn trong hình của chat, và đưa vào lần nữa thì
+ * chúng đánh nhau với thứ đang chạy tốt:
+ *
+ *   - CÂU HỎI CỦA CHÍNH NGƯỜI ĐỌC. Bài chat đã khép bằng `hoiLai` — câu hỏi
+ *     ngược, hỏi thứ người dùng biết mà lá số không biết. Prompt chat có sẵn
+ *     một luật đo được: đúng MỘT câu hỏi, vì hai câu hỏi cùng lúc thì người ta
+ *     trả lời một câu rồi bỏ câu kia. Thêm một câu tự vấn nữa là tự phá luật
+ *     ấy, và thứ mất đi là câu lấy được dữ kiện đời thực cho lượt sau.
+ *   - CÂU GIỮ LẠI. Nó sinh ra để khép một phần dài. Chat đặt kết luận ở ĐẦU
+ *     bài — người hỏi "có nên nhận offer" cần câu trả lời ở dòng đầu chứ không
+ *     phải ở đoạn cuối — rồi khép bằng `tuKiem` và `hoiLai`. Một câu khép thứ
+ *     ba chỉ làm loãng hai câu kia.
+ *
+ * Hai quy tắc giữ lại thì không vướng gì: chúng nói về CÁCH ĐẶT CÂU bên trong
+ * mỗi ý, nên bề mặt nào cũng dùng được.
+ */
+const QUY_TAC_MO_BANG_NGUOI_CHAT = `MỞ BẰNG NGƯỜI ĐỌC, KHÔNG MỞ BẰNG LÁ SỐ.
+Câu đầu của mỗi ý nói về HỌ. ${THAN_MO_BANG_NGUOI}`;
+
+const QUY_TAC_CAP_PHAN_BIET_CHAT = `CẶP PHÂN BIỆT — ít nhất một lần trong cả bài trả lời.
+${THAN_CAP_PHAN_BIET}`;
+
+/** Khối gộp cho chat — xem ghi chú ngay trên về việc vì sao chỉ có hai quy tắc */
+export const VAN_PHONG_CELES_CHAT = [
+  'HAI THÓI QUEN VIẾT — cùng bộ luật với bài dài, để hai bề mặt của một sản phẩm không nói bằng hai giọng.',
+  '',
+  QUY_TAC_MO_BANG_NGUOI_CHAT,
+  '',
+  QUY_TAC_CAP_PHAN_BIET_CHAT,
 ].join('\n');
 
 /* -------------------------------------------------------------------------- */
