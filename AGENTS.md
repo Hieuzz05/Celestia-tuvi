@@ -71,8 +71,14 @@ họ còn nguyên và nên làm gì tiếp.
   trong mệnh bàn dùng token riêng `--chart-tot` / `--chart-hung`.
 - **Vàng kim `#D4AF37` là màu của RIÊNG dấu thương hiệu**, không phải màu hành động. Nền Midnight
   Indigo `#0F172A` chỉ dùng cho biểu tượng ứng dụng và favicon.
-- **Mệnh bàn đầy đủ nằm sau cổng đăng nhập.** Kiểm tra bằng trình duyệt thì chạy dev server với
-  `NEXT_PUBLIC_SUPABASE_*` để trống, bằng không phiên sạch chỉ thấy bản xem trước mờ.
+- **Phần TỔNG QUAN mở cho khách, chỉ LUẬN GIẢI CHUYÊN SÂU cần tài khoản** (từ 23/09/2026).
+  Mệnh bàn đầy đủ và bảng mười hai lĩnh vực hiện cho cả khách; bản đọc sâu, bài dài, luận hạn chi
+  tiết, hỏi Celes, lưu lá số vẫn giữ cổng. Khách đọc bảng ở bậc xem trước tất định — `deepMap` của
+  bậc `anonymous` là false nên không có lượt gọi model nào cho khách.
+- **Đo giao diện cho khách thì chạy với Supabase BẬT và một hồ sơ Chrome sạch.** Mẹo cũ "để trống
+  `NEXT_PUBLIC_SUPABASE_*`" biến mọi người thành admin — nó che mất đúng những gì khách thấy. Đã
+  trả giá: thanh điều hướng tràn 404px trên iPhone với khách (thêm nút "Đăng nhập") nằm im suốt vì
+  mọi lần đo trước đều chạy với Supabase tắt.
 - **Không màn nào được tự gọi `danhSachHoSo()` rồi lấy `hoSos[0]`.** Lá số đang xem nằm ở
   `useBoiCanh()`; làm khác đi là đổi lá số ở màn này xong sang màn kia lại thấy người khác.
 - **`default_profile_id` và `active_profile_id` là hai thứ khác nhau.** Xem tạm một lá số khác
