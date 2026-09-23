@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
+import { TongQuanV3 } from '@/components/luangiai/TongQuanV3';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
@@ -239,12 +240,24 @@ function TrangLaSo() {
   const [khoaSauXong, setKhoaSauXong] = useState<string | null>(null);
   const dangDocSau = Boolean(khoaSau && khoaSauXong !== khoaSau);
 
+  /*
+   * LUẬN GIẢI TỔNG QUAN v3 (CEL-119) thay bảng lĩnh vực ở chỗ này.
+   *
+   * Bảng lĩnh vực cũ KHÔNG bị gỡ: nó là đường lùi. Nó chỉ được tải khi v3 báo
+   * hỏng cho đúng lá số + năm + ngôn ngữ đang xem, hoặc khi giao diện không phải
+   * tiếng Việt (v3 chỉ viết tiếng Việt). Tải cả hai thì người đã đăng nhập tốn
+   * gấp đôi lượt gọi model cho cùng một chỗ trên trang.
+   */
+  const [v3HongKhoa, setV3HongKhoa] = useState<string | null>(null);
+  const dungV3 = ngonNgu === 'vi';
+  const canBangCu = !dungV3 || (khoaSau !== null && v3HongKhoa === khoaSau);
+
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
     // vòng vẽ lại thừa. Kết quả cũ bị thay khi câu trả lời mới về.
     // Phần TỔNG QUAN mở cho cả khách — chỉ luận giải chuyên sâu mới cần tài
     // khoản. Tuyến /api/luan-giai-sau tự quyết khách được thấy tới đâu.
-    if (!laSo) return;
+    if (!laSo || !canBangCu) return;
     let huy = false;
     fetch('/api/luan-giai-sau', {
       method: 'POST',
@@ -273,7 +286,7 @@ function TrangLaSo() {
     return () => {
       huy = true;
     };
-  }, [laSo, namXem, ngonNgu, khoaSau]);
+  }, [laSo, namXem, ngonNgu, khoaSau, canBangCu]);
 
   useEffect(() => {
     if (!laSo) return;
@@ -469,7 +482,7 @@ function TrangLaSo() {
                 className="link-text link-action"
                 onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-doc-sau' })}
               >
-                Hoặc đọc cả mười hai phần →
+                Đọc luận giải chuyên sâu theo từng chủ đề →
               </Link>
               <LuotBaiSau macDinh={t.quickRead.sauNoiBatHanMuc} />
             </div>
@@ -488,7 +501,21 @@ function TrangLaSo() {
           )}
 
         {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
-        {dangDocSau && !baiSau && (
+        {dungV3 && laSo && !canBangCu && (
+          <TongQuanV3
+            laSo={{
+              ngay: laSo.thongTin.ngay,
+              thang: laSo.thongTin.thang,
+              nam: laSo.thongTin.nam,
+              gio: laSo.thongTin.gio,
+              gioiTinh: laSo.thongTin.gioiTinh,
+              namXem,
+            }}
+            onHong={() => setV3HongKhoa(khoaSau)}
+          />
+        )}
+
+        {canBangCu && dangDocSau && !baiSau && (
           <section className="flex flex-col gap-[12px]">
             <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
             <p className="body-text" style={{ color: 'var(--fg)' }}>
@@ -502,7 +529,7 @@ function TrangLaSo() {
         )}
 
         {/* Bảng luận giải theo lĩnh vực — phần tổng quan, mở cho cả khách */}
-        {baiSau && baiSau.chang.length > 0 && (
+        {canBangCu && baiSau && baiSau.chang.length > 0 && (
           <BangLuanGiai
             bai={baiSau}
             duongHoi={duongHoi}

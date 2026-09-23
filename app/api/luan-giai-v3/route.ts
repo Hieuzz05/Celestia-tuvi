@@ -18,11 +18,11 @@ export const maxDuration = 60;
  * không có nhánh riêng cho sản phẩm. Đó là điều kiện để con số đo được ở bộ
  * thử là con số người dùng nhận.
  *
- * CHƯA LÀM (chờ chủ dự án quyết, xem báo cáo bàn giao):
- *   - Hạn mức: chưa trừ lượt nào. Bản đọc sâu cũ trừ một lượt cho cả bài; v3
- *     có 14 nhóm chuyên sâu, trừ theo nhóm là người dùng cạn lượt rất nhanh.
- *   - Khách chưa đăng nhập: CEL-118 mở tổng quan cho khách nhưng không gọi
- *     model; tổng quan v3 thì gọi model. Tạm thời route đòi đăng nhập.
+ * QUYỀN — chủ dự án chốt 23/09/2026:
+ *   - Tổng quan mở cho cả khách chưa đăng nhập (kể cả khi phải gọi model).
+ *   - Chuyên sâu cần đăng nhập.
+ *   - KHÔNG trừ hạn mức ở cả hai. Bài đã đệm theo lá số + năm + nhóm, nên mở
+ *     lại không tốn thêm lượt gọi nào.
  */
 
 interface Body {
@@ -46,9 +46,8 @@ export interface CauTraRaV3 {
 }
 
 export async function POST(req: Request) {
-  const cong = await canDangNhap('luan_giai_v3');
-  if (!cong.duocPhep) return cong.chan!;
-
+  // Trần 60 giây của Vercel, chừa 8 giây cho đệm và trả lời
+  const hanChot = Date.now() + 52_000;
   let body: Body;
   try {
     body = await req.json();
@@ -69,6 +68,10 @@ export async function POST(req: Request) {
   }
 
   const nhom = body.nhom ?? 'tong-quan';
+  if (nhom !== 'tong-quan') {
+    const cong = await canDangNhap('deep_read');
+    if (!cong.duocPhep) return cong.chan!;
+  }
   const ids = CAU_HOI_V3.filter((q) =>
     nhom === 'tong-quan' ? q.loai === 'tong-quan' : q.loai === 'chuyen-sau' && q.chuDe === nhom
   ).map((q) => q.id);
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
         ngonNgu: 'vi',
       },
       async () => {
-        const kq = await luanNhieuCau({ laSo, ids, namXem, songSong: ids.length });
+        const kq = await luanNhieuCau({ laSo, ids, namXem, songSong: ids.length, hanChot });
         const cau: CauTraRaV3[] = kq.map((k) => ({
           id: k.id,
           cauHoi: k.cauHoi,

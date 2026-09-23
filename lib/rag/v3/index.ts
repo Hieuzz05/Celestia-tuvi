@@ -112,6 +112,13 @@ export async function luanMotCau(vao: {
   namXem: number;
   nho: BoNhoTruyHoi;
   nganSachMs?: number;
+  /**
+   * Mốc (Date.now()) mà cả request phải xong trước. Route trên Vercel sống tối
+   * đa 60 giây; đo trên máy: nhóm tổng quan 11 câu xong ở giây 47 lần đầu. Còn
+   * ít hơn 20 giây thì bỏ vòng sửa, giữ bản đầu — bản đầu lệch luật nhẹ vẫn hơn
+   * cả nhóm chết vì quá trần.
+   */
+  hanChot?: number;
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
@@ -152,7 +159,8 @@ export async function luanMotCau(vao: {
   let model = '';
   const goi = async (u: string) => {
     soLanGoi += 1;
-    const kq = await goiVoiFallback({ system: SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, vao.nganSachMs ?? 55_000);
+    const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
+    const kq = await goiVoiFallback({ system: SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     return docBai(kq.text);
   };
@@ -175,7 +183,8 @@ export async function luanMotCau(vao: {
    * lại tung xúc xắc với toàn bộ bài, trong khi chỉ một hai chỗ hỏng.
    */
   let loi = loiBanDau;
-  if (loi.some((l) => l.chan)) {
+  const conLai = (vao.hanChot ?? Infinity) - Date.now();
+  if (loi.some((l) => l.chan) && conLai > 20_000) {
     const sua = await goi(
       `${user}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
         .filter((l) => l.chan)
@@ -220,6 +229,7 @@ export async function luanNhieuCau(vao: {
   ids: string[];
   namXem: number;
   songSong?: number;
+  hanChot?: number;
   khiXong?: (k: KetQuaCauV3) => void;
 }): Promise<KetQuaCauV3[]> {
   const nho: BoNhoTruyHoi = new Map();
@@ -230,7 +240,7 @@ export async function luanNhieuCau(vao: {
     while (i < ds.length) {
       const j = i++;
       try {
-        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho });
+        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot });
       } catch (e) {
         ra[j] = {
           id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', doRo: 'Gợi ý', danY: [],
