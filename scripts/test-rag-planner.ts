@@ -12,6 +12,9 @@ import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
 import { chonBoiCanhHoiThoai, gomDieuTuKe, laCauNoiTiep } from '../lib/rag/tiep-noi';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
+import { cumVietHoa, tachTuKhoa } from '../lib/rag/cum-tu-khoa';
+import { chonDaDang, doTrung, mucChacChan, NGUONG_TRUNG } from '../lib/rag/uu-tien-nguon';
+import type { DoanUngVien } from '../lib/rag/truy-hoi';
 import { nhanDangThucThe, TEN_SAO_TRONG_TU_DIEN, TU_DIEN_THUC_THE, traThucThe } from '../lib/rag/thuc-the';
 import { lapLaSo } from '../lib/tuvi/ansao';
 
@@ -279,6 +282,95 @@ console.log('\n== TRÍ NHỚ HỘI THOẠI ==\n');
   const bcMoi = chonBoiCanhHoiThoai('Tình duyên của tôi năm nay thế nào?', ls);
   kiem('Câu mở chủ đề mới thì KHÔNG kéo mạch cũ sang', bcMoi.machDangNoi.length === 0);
   kiem('Nhưng vẫn giữ điều người dùng tự kể', bcMoi.dieuTuKe.length > 0);
+}
+
+console.log('\n== CỤM TỪ KHOÁ ==');
+{
+  kiem(
+    'Cụm viết hoa: tên cách cục',
+    cumVietHoa('Linh Xương Đà Vũ là cách gì?').includes('Linh Xương Đà Vũ'),
+    cumVietHoa('Linh Xương Đà Vũ là cách gì?')
+  );
+  kiem(
+    'Cụm viết hoa: bỏ chữ "Sao" đầu câu',
+    cumVietHoa('Sao Thiên Cơ ở Mệnh nói gì?').includes('Thiên Cơ'),
+    cumVietHoa('Sao Thiên Cơ ở Mệnh nói gì?')
+  );
+  kiem(
+    'Dấu câu cắt cụm',
+    !cumVietHoa('Thiên Cơ, Thái Âm').some((c) => c.includes(',') || c === 'Thiên Cơ Thái Âm'),
+    cumVietHoa('Thiên Cơ, Thái Âm')
+  );
+  kiem('Gõ toàn chữ thường thì không bịa ra cụm', cumVietHoa('thiên cơ ở mệnh').length === 0);
+
+  const t = tachTuKhoa('Thiên Cơ dị bào Mệnh', ['Thiên Cơ']);
+  kiem('Âm tiết đã vào cụm không đứng lẻ nữa', !/thiên|cơ/i.test(t.tuLe), t);
+  kiem('Từ lẻ còn lại được giữ', t.tuLe.includes('dị') && t.tuLe.includes('Mệnh'), t);
+  kiem('Cụm một âm tiết không tính là cụm', tachTuKhoa('Mệnh', ['Mệnh']).cum.length === 0);
+  const tg = tachTuKhoa('Linh Xương Đà Vũ Thiên Cơ', ['Linh Xương Đà Vũ', 'Thiên Cơ'], ['Thiên Cơ']);
+  kiem(
+    'Cụm người dùng gõ vẫn giữ âm tiết lẻ làm lưới đỡ, tên trong từ điển thì bỏ',
+    tg.cum.length === 2 && /Xương/.test(tg.tuLe) && !/Thiên|Cơ/.test(tg.tuLe),
+    tg
+  );
+
+  const kh = lapKeHoach({ cauHoi: 'Thiên La Địa Võng nằm ở cung nào?' });
+  kiem(
+    'Planner đưa cụm viết hoa vào cumTuKhoa',
+    kh.cumTuKhoa?.includes('Thiên La Địa Võng') ?? false,
+    kh.cumTuKhoa
+  );
+  const khCc = lapKeHoach({ cauHoi: 'công việc của tôi thế nào', tenCachCuc: ['Cơ Nguyệt Đồng Lương'] });
+  kiem('Planner đưa tên cách cục vào cumTuKhoa', khCc.cumTuKhoa?.includes('Cơ Nguyệt Đồng Lương') ?? false, khCc.cumTuKhoa);
+}
+
+console.log('\n== ĐOẠN TRÙNG GIỮA CÁC TÀI LIỆU ==');
+{
+  const PHU =
+    'Cự Cơ đồng cung tại Mão Dậu, người có tài ăn nói, lý luận sắc bén, anh chị em dị bào, thường cùng mẹ khác cha.';
+  const doan = (id: string, doc: string, noiDung: string, muc = 'tham-khao', diem = 0.03): DoanUngVien => ({
+    chunkId: id,
+    documentId: doc,
+    versionId: `v-${doc}`,
+    noiDung,
+    duongDeMuc: null,
+    tieuDe: doc,
+    hePhai: 'chung',
+    mucTinCay: muc,
+    phienBanTaiLieu: '1',
+    diemRRF: diem,
+    duocChon: false,
+  });
+
+  kiem('Cùng câu phú, khác chỗ cắt đoạn → trùng', doTrung(PHU, `Cung Huynh Đệ. ${PHU} Xét thêm Hoá Kỵ.`) >= NGUONG_TRUNG);
+  kiem(
+    'Chồng lấn 150 ký tự giữa hai đoạn liền nhau → KHÔNG trùng',
+    doTrung(
+      'Tử Vi là đế tinh, chủ về quyền uy và khả năng lãnh đạo. Gặp Tả Hữu thì được người phò tá, làm việc lớn dễ thành. ' +
+        'Gặp Kình Đà thì quyền bị cản, người dưới khó theo. ' +
+        PHU.slice(0, 60),
+      PHU.slice(0, 60) +
+        ' Thái Dương miếu vượng ở Ngọ thì sáng sủa rộng rãi, làm việc công khai, được tiếng tốt. Hãm ở Tý thì vất vả, hay lo cho người khác.'
+    ) < NGUONG_TRUNG
+  );
+  kiem('Đoạn quá ngắn không so được thì không coi là trùng', doTrung('Tử Vi', 'Tử Vi') === 0);
+
+  const ds = [
+    doan('a1', 'sach-A', PHU, 'tham-khao', 0.033),
+    doan('b1', 'sach-B', `Phú rằng: ${PHU}`, 'tham-khao', 0.032),
+    doan('c1', 'sach-C', `${PHU} Nên xét thêm cung Phụ Mẫu.`, 'tham-khao', 0.031),
+    doan('d1', 'sach-D', 'Thiên Đồng ở Huynh Đệ thì anh em hoà thuận, ít tranh chấp, hay giúp đỡ nhau.', 'tham-khao', 0.03),
+  ];
+  const chon = chonDaDang(ds, 6);
+  kiem('Ba bản chép chỉ giữ một', chon.filter((u) => u.noiDung.includes('dị bào')).length === 1, chon.map((u) => u.chunkId));
+  kiem('Bản giữ lại là bản đứng trước', chon[0].chunkId === 'a1');
+  kiem('Bản bị bỏ ghi rõ trùng với ai', ds[1].trungVoi === 'a1' && ds[2].trungVoi === 'a1');
+  kiem('Đoạn khác nội dung vẫn vào gói', chon.some((u) => u.chunkId === 'd1'));
+  kiem('Kho ít đoạn cũng không lấp bản chép vào', chon.length === 2, chon.length);
+  kiem(
+    'Đồng thuận giả không còn: ba cuốn chép một câu là MỘT tiếng nói',
+    mucChacChan(chon.filter((u) => u.noiDung.includes('dị bào'))) === 'yeu'
+  );
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);

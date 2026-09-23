@@ -26,6 +26,7 @@ Nó là nguồn đáng tin hơn bảng dưới, vì bảng dưới do người g
 | `schema-rag-v2.sql` | Từ điển thực thể, nhật ký truy hồi, `ai_requests`, `admin_audit_log`, bộ eval | rồi |
 | `schema-rag-v3.sql` | Cho phép `embedding` rỗng, `tim_kien_thuc`, `tim_kien_thuc_vector`, `xoa_lien_ket_thuc_the` | rồi |
 | `va-rag-tu-khoa.sql` | `tsquery_hoac`, `tim_kien_thuc_tu_khoa` — tìm theo từ khoá với ngữ nghĩa HOẶC | rồi |
+| `va-rag-chat-luong.sql` | Chỉ mục vector ivfflat → hnsw (xoá CHỈ MỤC, không xoá dữ liệu); `tsquery_cum`, `tim_kien_thuc_tu_khoa_cum` — tìm nguyên cụm cho tên riêng. Hàm cũ giữ nguyên, mã mới tự lùi về hàm cũ khi tệp này chưa chạy | **chưa** |
 | `schema-support.sql` | Quyền, thanh toán, hạn mức: `user_entitlements`, `support_payments`, `usage_events` | rồi |
 | `schema-ai-models.sql` | `ai_model_configs` — chuỗi model quản lý được từ `/admin/models` | rồi |
 | `schema-noi-dung-ai.sql` | `noi_dung_ai` — bộ nhớ đệm nội dung do AI sinh | rồi |

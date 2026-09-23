@@ -33,7 +33,9 @@ export type BeMat =
    * đọc thấy chặng một trong khi chặng hai đang viết. Đó đúng là trải nghiệm
    * spec mô tả, chỉ khác cách thực hiện: nhiều lượt gọi thay vì một dòng SSE.
    */
-  | 'ban-doc-sau';
+  | 'ban-doc-sau'
+  /** Luận giải v3 — đệm theo NHÓM câu hỏi (tổng quan / từng chủ đề chuyên sâu) */
+  | 'luan-giai-v3';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

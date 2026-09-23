@@ -106,6 +106,7 @@ export async function POST(req: Request) {
       diemTuKhoa: u.diemTuKhoa ?? null,
       diemRRF: u.diemRRF,
       duocChon: u.duocChon,
+      trungVoi: u.trungVoi ?? null,
       trich: u.noiDung.slice(0, 400),
     })),
   });

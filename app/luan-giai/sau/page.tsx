@@ -1,102 +1,79 @@
 'use client';
 
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { CongUngHo } from '@/components/support/CongUngHo';
-import { MucDeepSection } from '@/components/luangiai/MucDeepSection';
-import { SoDoBonChang } from '@/components/luangiai/SoDoBonChang';
+import { Suspense, useEffect, useState } from 'react';
+import { CauTraLoiV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
-import type { ChangSau } from '@/lib/rag/ban-doc-sau';
-import { THU_TU_CHANG, type ChangId, type MucId } from '@/lib/tuvi/chang-cung';
+import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
 
 /**
- * BẢN ĐỌC SÂU — reader ba cột.
+ * LUẬN GIẢI CHUYÊN SÂU v3 (CEL-119) — 14 chủ đề, 61 câu hỏi.
  *
- * ---------------------------------------------------------------------------
- * GỌI BỐN LƯỢT, KHÔNG GỌI MỘT LƯỢT
+ * Thay bản đọc sâu bốn chặng. Mỗi chủ đề là MỘT lượt gọi (các câu trong chủ
+ * đề chạy song song ở máy chủ), và chỉ gọi khi người đọc mở tới chủ đề ấy: đọc
+ * hết 14 chủ đề ngay khi vào trang là bắt người đọc chờ cho những thứ họ có thể
+ * không bao giờ mở.
  *
- * Cả bài mất 153 giây để viết, mà trần một request trên Vercel là 60. Nên
- * trang này gọi từng chặng một và vẽ ngay khi chặng ấy về — người đọc bắt đầu
- * đọc chặng một trong khi chặng hai đang được viết.
- *
- * Đó cũng là lý do KHÔNG có màn chờ toàn trang: chờ 153 giây trước một màn
- * trắng là thứ không ai chịu được, còn đọc dần thì thời gian ấy biến mất.
+ * Cần đăng nhập, không trừ hạn mức (chủ dự án chốt 23/09/2026). Bài đã đệm theo
+ * lá số + năm + chủ đề, nên mở lại là tức thì.
  */
 
-const TEN_CHANG_CHO: Record<ChangId, string> = {
-  'ben-trong': 'Thế giới bên trong bạn',
-  'con-duong': 'Con đường bạn gây dựng',
-  'sat-canh': 'Những người sát cánh cùng bạn',
-  'de-lai': 'Từ nơi bạn đến, đến điều bạn để lại',
-};
+const SO_CAU = new Map(
+  CHU_DE_V3.map((c) => [c.id, CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === c.id).length])
+);
+
+type TrangThai = { dang: true } | { dang: false; cau: CauV3[] | null; loi?: string };
 
 function TrangSau() {
   const { duocVao, dangDoc } = useTaiKhoan();
   const params = useSearchParams();
-
-  const [chang, setChang] = useState<ChangSau[]>([]);
-  const [dangViet, setDangViet] = useState<ChangId | null>(null);
-  const [loi, setLoi] = useState<string | null>(null);
-  const [moCong, setMoCong] = useState(false);
-  const [dangXem, setDangXem] = useState<MucId | null>(null);
-  // Tên sao và cách cục CÓ THẬT trên lá số — dùng để tô màu, xem ChuSao.tsx
-  const [tenCoThat, setTenCoThat] = useState<string[]>([]);
-  const daChay = useRef(false);
 
   const ngay = Number(params.get('ngay'));
   const thang = Number(params.get('thang'));
   const nam = Number(params.get('nam'));
   const gio = Number(params.get('gio'));
   const gioiTinh = params.get('gt') === 'nu' ? 'nu' : 'nam';
+  const namXem = Number(params.get('namXem')) || new Date().getFullYear();
   const coLaSo = Boolean(ngay && thang && nam && !Number.isNaN(gio));
 
-  const goiMotChang = useCallback(
-    async (id: ChangId): Promise<ChangSau | null> => {
-      const res = await fetch('/api/ban-doc-sau', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, chang: id }),
-      });
-      const d = await res.json();
-      if (!res.ok) {
-        if (d?.canUngHo) {
-          setLoi(d.loi);
-          setMoCong(true);
-        } else {
-          setLoi(d?.loi ?? 'Celes chưa viết được phần này.');
-        }
-        return null;
-      }
-      if (Array.isArray(d.tenCoThat)) setTenCoThat(d.tenCoThat as string[]);
-      return d.chang as ChangSau;
-    },
-    [ngay, thang, nam, gio, gioiTinh]
-  );
+  const [chon, setChon] = useState<string>(CHU_DE_V3[0].id);
+  const [bai, setBai] = useState<Record<string, TrangThai>>({});
 
+  /*
+   * Chủ đề đang mở chưa có gì và chưa gửi yêu cầu → gửi. Mọi setState nằm trong
+   * callback bất đồng bộ của fetch, không trong thân effect (luật lint kho này
+   * đang giữ ở mốc bảy lỗi cũ). "Đã gửi" giữ bằng một tập riêng.
+   */
+  const [daGui] = useState(() => new Set<string>());
   useEffect(() => {
-    if (!duocVao || !coLaSo || daChay.current) return;
-    daChay.current = true;
-    let huy = false;
-
-    (async () => {
-      ghiSuKien('deep_read_cta', { viTri: 'ban-doc-sau' });
-      for (const id of THU_TU_CHANG) {
-        if (huy) return;
-        setDangViet(id);
-        const c = await goiMotChang(id);
-        if (huy) return;
-        if (!c) break;
-        setChang((cu) => [...cu, c]);
-      }
-      if (!huy) setDangViet(null);
-    })();
-
-    return () => {
-      huy = true;
-    };
-  }, [duocVao, coLaSo, goiMotChang]);
+    if (!duocVao || !coLaSo || bai[chon] || daGui.has(chon)) return;
+    daGui.add(chon);
+    const chuDe = chon;
+    ghiSuKien('deep_read_cta', { viTri: 'chuyen-sau-v3', chuDe });
+    fetch('/api/luan-giai-v3', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe }),
+    })
+      .then(async (res) => {
+        const d = await res.json();
+        setBai((cu) => ({
+          ...cu,
+          [chuDe]: res.ok
+            ? { dang: false, cau: d.cau as CauV3[] }
+            : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
+        }));
+      })
+      .catch(() => {
+        setBai((cu) => ({
+          ...cu,
+          [chuDe]: { dang: false, cau: null, loi: 'Không kết nối được. Thử lại sau ít phút.' },
+        }));
+      });
+  }, [duocVao, coLaSo, chon, bai, daGui, ngay, thang, nam, gio, gioiTinh, namXem]);
 
   if (dangDoc) {
     return (
@@ -110,10 +87,17 @@ function TrangSau() {
     return (
       <Shell className="py-[48px]">
         <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
-          <h1 className="heading-sm">Bản đọc sâu cần tài khoản</h1>
+          <h1 className="heading-sm">Luận giải chuyên sâu cần tài khoản</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Đăng nhập để Celes giữ bài đọc này lại cho bạn.
+            Phần tổng quan mở cho mọi người. Đăng nhập để đọc sâu từng chủ đề và để Celes giữ bài
+            đọc lại cho bạn.
           </p>
+          <Link
+            href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(`/luan-giai/sau?${params.toString()}`)}`}
+            className="btn-primary self-start"
+          >
+            Đăng nhập
+          </Link>
         </div>
       </Shell>
     );
@@ -125,148 +109,110 @@ function TrangSau() {
         <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
           <h1 className="heading-sm">Chưa có lá số</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Tạo lá số trước rồi quay lại — bản đọc sâu đọc từ chính lá số đó.
+            Tạo lá số trước rồi quay lại — phần chuyên sâu đọc từ chính lá số đó.
           </p>
         </div>
       </Shell>
     );
   }
 
-  const duongHoi = (cauHoi: string) => `/hoi-dap?q=${encodeURIComponent(cauHoi)}`;
-  const nhay = (m: MucId) => {
-    setDangXem(m);
-    document.getElementById(m)?.scrollIntoView({ behavior: 'smooth' });
+  const iChon = CHU_DE_V3.findIndex((c) => c.id === chon);
+  const chuDe = CHU_DE_V3[iChon];
+  const tiep = CHU_DE_V3[iChon + 1];
+  const trangThai = bai[chon];
+  const moChuDe = (id: string) => {
+    setChon(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const thuLai = () => {
+    daGui.delete(chon);
+    setBai((cu) => {
+      const moi = { ...cu };
+      delete moi[chon];
+      return moi;
+    });
   };
 
   return (
     <Shell className="py-[32px]">
       <div className="flex flex-col gap-[24px] lg:flex-row lg:items-start lg:gap-[32px]">
-        {/* ---------- Cột trái: mục lục ---------- */}
-        <nav className="hidden shrink-0 lg:block lg:w-[230px] lg:sticky lg:top-[80px]">
-          <Eyebrow className="mb-[10px]">Mục lục</Eyebrow>
-          <ol className="flex flex-col gap-[12px]">
-            {chang.map((c) => (
-              <li key={c.id} className="flex flex-col gap-[4px]">
-                <span className="text-[13px] font-semibold" style={{ color: 'var(--fg)' }}>
-                  {c.thuTu}. {c.tieuDe}
-                </span>
-                {c.muc.map((m) => (
+        {/* ---------- Mục lục chủ đề ---------- */}
+        <nav className="shrink-0 lg:sticky lg:top-[80px] lg:w-[240px]">
+          <Eyebrow className="mb-[10px]">Chủ đề</Eyebrow>
+          <ol className="flex flex-wrap gap-x-[16px] gap-y-[8px] lg:flex-col lg:gap-[8px]">
+            {CHU_DE_V3.map((c) => {
+              const tt = bai[c.id];
+              const daDoc = Boolean(tt && !tt.dang && tt.cau);
+              return (
+                <li key={c.id}>
                   <button
-                    key={m.id}
-                    onClick={() => nhay(m.id)}
-                    className="text-left text-[13px]"
-                    style={{ color: dangXem === m.id ? 'var(--accent)' : 'var(--fg-muted)' }}
+                    type="button"
+                    onClick={() => moChuDe(c.id)}
+                    className="text-left text-[14px]"
+                    style={{
+                      color: chon === c.id ? 'var(--accent)' : 'var(--fg-muted)',
+                      fontWeight: chon === c.id ? 600 : 400,
+                    }}
                   >
-                    {m.doNoiBat >= 70 ? '● ' : m.doNoiBat >= 40 ? '◐ ' : '○ '}
-                    {m.tieuDe}
+                    {daDoc ? '● ' : '○ '}
+                    {c.ten}
                   </button>
-                ))}
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ol>
         </nav>
 
-        {/* ---------- Cột giữa: bài ---------- */}
-        <main className="flex min-w-0 flex-1 flex-col gap-[32px] lg:max-w-[680px]">
+        {/* ---------- Bài của chủ đề đang mở ---------- */}
+        <main className="flex min-w-0 flex-1 flex-col gap-[24px] lg:max-w-[700px]">
           <header className="flex flex-col gap-[8px]">
-            <Eyebrow>Bản đọc sâu</Eyebrow>
-            <h1 className="heading-lg">Mười hai phần, mỗi phần soi bằng một phần khác</h1>
+            <Eyebrow>Luận giải chuyên sâu · năm xem {namXem}</Eyebrow>
+            <h1 className="heading-lg">{chuDe.ten}</h1>
             <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              Celes đọc từng phần qua cung gốc, hai cung cùng tam hợp và cung đối diện — rồi nối
-              chúng lại thành bốn chặng.
+              {SO_CAU.get(chuDe.id)} câu hỏi. Mỗi câu được luận từ nhiều cung cùng lúc — cung chính,
+              các cung soi vào nó và những cung hỗ trợ — kèm phần căn cứ để bạn kiểm.
             </p>
           </header>
 
-          {/* Sơ đồ chèn sau phần mở đầu ở mobile — spec mục 7.2 */}
-          <div className="lg:hidden">
-            <SoDoBonChang dangDoc={dangXem} onChon={nhay} />
-          </div>
-
-          {chang.map((c) => (
-            <section key={c.id} className="flex flex-col gap-[24px]">
-              <div className="flex flex-col gap-[4px]">
-                <span className="eyebrow">Chặng {c.thuTu}</span>
-                <h2 className="text-[24px] font-semibold" style={{ color: 'var(--fg)' }}>
-                  {c.tieuDe}
-                </h2>
-                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  {c.subtitle}
-                </p>
-              </div>
-
-              {c.muc.map((m, i) => (
-                <MucDeepSection
-                  key={m.id}
-                  muc={m}
-                  soChang={c.thuTu}
-                  soPhan={i + 1}
-                  duongHoi={duongHoi}
-                  tenCoThat={tenCoThat}
-                />
-              ))}
-
-              {c.doanKhau && (
-                <div
-                  className="flex flex-col gap-[8px] pl-[14px]"
-                  style={{ borderLeft: '2px solid var(--line)' }}
-                >
-                  <p className="eyebrow">Ba phần này nói cùng điều gì</p>
-                  <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                    {c.doanKhau}
-                  </p>
-                  {c.cauBacCau && (
-                    <p className="body-text" style={{ color: 'var(--fg)' }}>
-                      {c.cauBacCau}
-                    </p>
-                  )}
-                </div>
-              )}
-            </section>
-          ))}
-
-          {/*
-            Khung chờ mang TÊN THẬT của chặng đang viết, không phải "đang tải".
-            Spec mục 7.4: skeleton hiện tên + subtitle chặng thật, và dòng trạng
-            thái nói bằng lời đời thường — cấm nhắc "AI" hay "model".
-          */}
-          {dangViet && (
-            <section className="flex flex-col gap-[8px]">
-              <span className="eyebrow">Chặng {THU_TU_CHANG.indexOf(dangViet) + 1}</span>
-              <h2 className="text-[24px] font-semibold" style={{ color: 'var(--fg-muted)' }}>
-                {TEN_CHANG_CHO[dangViet]}
-              </h2>
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          {!trangThai || trangThai.dang ? (
+            <div className="flex flex-col gap-[8px]">
+              <p className="body-text" style={{ color: 'var(--fg)' }}>
                 Celes đang đọc phần này
                 <span className="dot-dang-doc" aria-hidden />
               </p>
-            </section>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                Lần đầu mất khoảng nửa phút. Các lần mở sau sẽ hiện ngay.
+              </p>
+            </div>
+          ) : trangThai.cau ? (
+            <div className="flex flex-col gap-[32px]">
+              {trangThai.cau.map((c) => (
+                <CauTraLoiV3 key={c.id} cau={c} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-[12px]">
+              <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
+                {trangThai.loi}
+              </p>
+              <button type="button" className="btn-outline btn-sm self-start" onClick={thuLai}>
+                Thử lại
+              </button>
+            </div>
           )}
 
-          {loi && !moCong && (
-            <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
-              {loi}
-            </p>
+          {tiep && trangThai && !trangThai.dang && (
+            <button type="button" className="btn-outline self-start" onClick={() => moChuDe(tiep.id)}>
+              Đọc tiếp: {tiep.ten} →
+            </button>
           )}
         </main>
-
-        {/* ---------- Cột phải: sơ đồ ---------- */}
-        <aside className="hidden shrink-0 xl:block xl:w-[250px] xl:sticky xl:top-[80px]">
-          <SoDoBonChang dangDoc={dangXem} onChon={nhay} />
-        </aside>
       </div>
-
-      {moCong && (
-        <CongUngHo
-          lyDo="long_report"
-          onDong={() => setMoCong(false)}
-          quayLai={{ path: '/luan-giai/sau' }}
-        />
-      )}
     </Shell>
   );
 }
 
-export default function TrangBanDocSau() {
+export default function TrangLuanGiaiChuyenSau() {
   return (
     <Suspense fallback={<Shell className="py-[40px]">Đang mở bài đọc…</Shell>}>
       <TrangSau />

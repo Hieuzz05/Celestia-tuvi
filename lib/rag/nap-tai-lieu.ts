@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { catThanhDoan } from '@/lib/ai/chunk';
-import { embedLoTaiLieu, SO_CHIEU_VECTOR } from '@/lib/ai/embedding';
+import { embedLoTaiLieu, SO_CHIEU_VECTOR, TEN_MODEL_EMBEDDING } from '@/lib/ai/embedding';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { nhanDangThucThe, TU_DIEN_THUC_THE } from './thuc-the';
 
@@ -221,7 +221,9 @@ export async function napTaiLieu(vao: DauVaoNap): Promise<KetQuaNap> {
       checksum,
       so_ky_tu: noiDung.length,
       so_chunk: doans.length,
-      model_embedding: `gemini-embedding-001@${SO_CHIEU_VECTOR}`,
+      // Ghi đúng model đang chạy. Bản cũ ghi cứng tên Gemini, nên cả kho sinh
+      // bằng OpenAI vẫn mang nhãn Gemini — đúng thứ nhãn này sinh ra để phát hiện.
+      model_embedding: `${TEN_MODEL_EMBEDDING}@${SO_CHIEU_VECTOR}`,
     })
     .select('id')
     .single();

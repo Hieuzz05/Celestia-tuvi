@@ -1,5 +1,6 @@
 import { embedTruyVan } from '@/lib/ai/embedding';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { tachTuKhoa } from './cum-tu-khoa';
 import type { ThucThe } from './thuc-the';
 import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
 
@@ -17,7 +18,7 @@ import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
  * với chuyện đó.
  */
 
-export const PHIEN_BAN_TRUY_HOI = '2026.09.3';
+export const PHIEN_BAN_TRUY_HOI = '2026.09.4';
 
 /**
  * Phần kế hoạch mà truy hồi thật sự cần.
@@ -30,6 +31,8 @@ export const PHIEN_BAN_TRUY_HOI = '2026.09.3';
 export interface KeHoachChoTruyHoi {
   truyVan: string;
   truyVanTuKhoa: string;
+  /** Tên riêng phải tìm nguyên cụm. Thiếu thì lấy tên thực thể thay vào. */
+  cumTuKhoa?: string[];
   thucThe: ThucThe[];
 }
 
@@ -76,6 +79,12 @@ export interface DoanUngVien {
   diemTuKhoa?: number;
   diemRRF: number;
   duocChon: boolean;
+  /**
+   * Đoạn này gần như chép lại một đoạn đã được chọn (thường là cùng câu phú
+   * trong hai cuốn sách khác nhau) — mang mã đoạn kia, và không vào gói bằng
+   * chứng. Xem `chonDaDang`.
+   */
+  trungVoi?: string;
 }
 
 export interface KetQuaTruyHoi {
@@ -118,6 +127,43 @@ function veUngVien(d: DongSql): DoanUngVien {
   };
 }
 
+/**
+ * Nhánh từ khoá: tìm nguyên cụm cho tên riêng, từ lẻ cho phần còn lại.
+ *
+ * Hàm SQL mới (`tim_kien_thuc_tu_khoa_cum`, trong supabase/va-rag-chat-luong.sql)
+ * có thể chưa chạy trên database đang dùng — hai máy dùng chung một Supabase và
+ * SQL do người chạy tay. Thiếu hàm thì lùi về hàm cũ, để bản mã này lên trước
+ * SQL cũng không làm chết nhánh từ khoá.
+ */
+async function timTheoTuKhoa(
+  supabase: NonNullable<ReturnType<typeof taoSupabaseAdmin>>,
+  keHoach: KeHoachChoTruyHoi,
+  cauHinh: CauHinhTruyHoi,
+  locThucThe: string[] | null
+) {
+  const cauGoc = keHoach.truyVanTuKhoa || keHoach.truyVan;
+  const tenThucThe = keHoach.thucThe.map((t) => t.ten);
+  const { cum, tuLe } = tachTuKhoa(cauGoc, [...(keHoach.cumTuKhoa ?? []), ...tenThucThe], tenThucThe);
+
+  const moi = await supabase.rpc('tim_kien_thuc_tu_khoa_cum', {
+    cau_tu_le: tuLe,
+    cum_tu: cum,
+    so_luong: cauHinh.soUngVienTuKhoa,
+    loc_he_phai: cauHinh.hePhai ?? null,
+    loc_thuc_the: locThucThe,
+  });
+  const thieuHam =
+    moi.error && (moi.error.code === 'PGRST202' || /could not find the function/i.test(moi.error.message));
+  if (!thieuHam) return moi;
+
+  return supabase.rpc('tim_kien_thuc_tu_khoa', {
+    cau_truy_van: cauGoc,
+    so_luong: cauHinh.soUngVienTuKhoa,
+    loc_he_phai: cauHinh.hePhai ?? null,
+    loc_thuc_the: locThucThe,
+  });
+}
+
 export async function truyHoi(
   keHoach: KeHoachChoTruyHoi,
   cauHinhVao: Partial<CauHinhTruyHoi> = {}
@@ -158,12 +204,7 @@ export async function truyHoi(
       loc_he_phai: cauHinh.hePhai ?? null,
       loc_thuc_the: locThucThe,
     }),
-    supabase.rpc('tim_kien_thuc_tu_khoa', {
-      cau_truy_van: keHoach.truyVanTuKhoa || keHoach.truyVan,
-      so_luong: cauHinh.soUngVienTuKhoa,
-      loc_he_phai: cauHinh.hePhai ?? null,
-      loc_thuc_the: locThucThe,
-    }),
+    timTheoTuKhoa(supabase, keHoach, cauHinh, locThucThe),
   ]);
 
   if (kqVector.error) {
@@ -207,8 +248,8 @@ export async function truyHoi(
   }
 
   // Xếp theo độ liên quan; mức tin cậy chỉ phân xử khi hai đoạn ngang ngửa. Rồi
-  // giới hạn số đoạn mỗi tài liệu để gói bằng chứng có nhiều tiếng nói —
-  // xem lib/rag/uu-tien-nguon.ts.
+  // bỏ đoạn chép lại đoạn đã chọn, và giới hạn số đoạn mỗi tài liệu để gói bằng
+  // chứng có nhiều tiếng nói — xem lib/rag/uu-tien-nguon.ts.
   const ungVien = xepTheoUuTien([...gop.values()]);
   const daChon = chonDaDang(ungVien, cauHinh.soCuoi);
   for (const u of daChon) u.duocChon = true;

@@ -1,4 +1,5 @@
 import { docObjectJson } from './doc-json';
+import { cumVietHoa } from './cum-tu-khoa';
 import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
 
 /**
@@ -16,7 +17,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.6';
+export const PHIEN_BAN_PLANNER = '2026.09.7';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -57,6 +58,11 @@ export interface KeHoachTruyVan {
    * ("của", "thế nào") lấn át tên sao, mà tên sao mới là thứ nó giỏi hơn vector.
    */
   truyVanTuKhoa: string;
+  /**
+   * Những tên riêng trong `truyVanTuKhoa` phải tìm NGUYÊN CỤM — tên cách cục,
+   * cụm viết hoa người dùng gõ, tên cung khi có dùng. Xem lib/rag/cum-tu-khoa.ts.
+   */
+  cumTuKhoa?: string[];
   phienBan: string;
 }
 
@@ -535,6 +541,23 @@ function dungTruyVanTuKhoa(
   return (rieng.length >= 3 ? rieng : [...new Set([...rieng, ...cungLienQuan])]).join(' ');
 }
 
+/**
+ * Cụm phải tìm nguyên văn, đi kèm `dungTruyVanTuKhoa` và theo đúng luật thêm
+ * tên cung của nó — tên cung chỉ thành cụm khi nó có mặt trong truy vấn.
+ */
+function dungCumTuKhoa(
+  cauHoi: string,
+  thucThe: ThucThe[],
+  cungLienQuan: string[],
+  tenCachCuc?: string[]
+): string[] {
+  const rieng = [
+    ...new Set([...(tenCachCuc ?? []), ...thucThe.map((t) => t.ten), ...tuDacTrung(cauHoi)]),
+  ];
+  const cung = rieng.length >= 3 ? [] : cungLienQuan;
+  return [...new Set([...(tenCachCuc ?? []), ...cumVietHoa(cauHoi), ...thucThe.map((t) => t.ten), ...cung])];
+}
+
 /** Dựng kế hoạch từ một cặp (chủ đề, ý định) đã chốt — dùng chung cho luật và cho nhánh LLM */
 function dungKeHoach(
   cauHoi: string,
@@ -560,6 +583,7 @@ function dungKeHoach(
     thucThe,
     truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung, tenCachCuc),
     truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),
+    cumTuKhoa: dungCumTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),
     phienBan: PHIEN_BAN_PLANNER,
   };
 }

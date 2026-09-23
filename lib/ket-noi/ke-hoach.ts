@@ -13,7 +13,7 @@ import { CAU_HINH_Y_DINH, PHIEN_BAN_Y_DINH, type YDinhKetNoi } from './y-dinh';
  * nên câu hỏi trở thành nguồn duy nhất và planner một người làm phần suy chủ đề.
  */
 
-export const PHIEN_BAN_KE_HOACH_KET_NOI = '2026.09.1';
+export const PHIEN_BAN_KE_HOACH_KET_NOI = '2026.09.2';
 
 export interface KeHoachKetNoi {
   yDinh: YDinhKetNoi;
@@ -21,6 +21,8 @@ export interface KeHoachKetNoi {
   thucThe: ThucThe[];
   truyVan: string;
   truyVanTuKhoa: string;
+  /** Tên cung và tên sao phải tìm nguyên cụm — xem lib/rag/cum-tu-khoa.ts */
+  cumTuKhoa: string[];
   /** Mục bắt buộc trong kết quả, lấy từ cấu hình ý định */
   muc: { id: string; tieuDe: string; huong: string }[];
   phienBan: string;
@@ -86,6 +88,7 @@ export function lapKeHoachKetNoi(vao: DauVaoKeHoach): KeHoachKetNoi {
     // Nhánh từ khoá chỉ nhận thuật ngữ: tên cung và từ khoá chủ đề. Ném cả câu
     // vào đó thì từ nối lấn át tên cung — xem ghi chú ở lib/rag/truy-hoi.ts.
     truyVanTuKhoa: [...cung, TU_KHOA_CHU_DE[vao.yDinh], ...thucThe.map((t) => t.ten)].join(' '),
+    cumTuKhoa: [...cung, ...thucThe.map((t) => t.ten)],
     muc: cauHinh.muc,
     phienBan: `${PHIEN_BAN_KE_HOACH_KET_NOI}/${PHIEN_BAN_Y_DINH}`,
   };

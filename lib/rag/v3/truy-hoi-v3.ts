@@ -1,0 +1,260 @@
+import { boDau, nhanDangThucThe } from '../thuc-the';
+import { truyHoi, type DoanUngVien } from '../truy-hoi';
+import { doTrung, NGUONG_TRUNG } from '../uu-tien-nguon';
+import type { DuKienV3 } from './du-kien';
+
+/**
+ * TRUY HỒI THEO CUNG cho luồng v3.
+ *
+ * Truy hồi cũ nhận MỘT truy vấn cho cả một chặng. Với câu hỏi đọc năm cung,
+ * một truy vấn như thế chỉ kéo về đoạn của cung nổi nhất, bốn cung còn lại
+ * trắng nguồn — và model lấp chỗ trống bằng trí nhớ, đúng điều AGENTS.md cấm.
+ *
+ * Nên mỗi cung một truy vấn (sao của cung + tên cung + từ khoá chủ đề), rồi
+ * xếp lại theo MỨC KHỚP: đoạn nói đúng sao VÀ đúng cung được ưu tiên. Dò kho
+ * ngày 23/09 cho thấy vì sao cần bước này: truy vấn "Thiên Cơ cung Tật Ách"
+ * trả về một đoạn "Thiên Đồng ... đàn bà thủ mệnh" và một bảng tên sao trần —
+ * có điểm RRF cao mà chẳng dùng được.
+ */
+
+export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.4';
+
+/**
+ * Tên tắt sách cổ hay dùng: "Vũ, Tướng: làm ra song khó nhọc". Không nhận tắt
+ * thì đúng những câu phú quý nhất của kho bị chấm là "không nhắc sao nào".
+ * Chỉ lấy tên tắt ít trùng lời thường; "Cơ", "Đồng", "Cự" để ngoài.
+ */
+const TEN_TAT: Record<string, string[]> = {
+  'Vũ Khúc': ['vu'], 'Thiên Tướng': ['tuong'], 'Liêm Trinh': ['liem'], 'Tham Lang': ['tham'],
+  'Phá Quân': ['pha'], 'Thiên Lương': ['luong'], 'Thái Âm': ['nguyet'], 'Thái Dương': ['nhat'],
+  'Thất Sát': ['that sat'], 'Thiên Phủ': ['phu'], 'Tử Vi': ['tu vi'], 'Thiên Cơ': ['thien co'],
+};
+
+/** Đoạn không phải lời luận: bảng tên sao, lá số mẫu, lịch sử môn học, rác chuyển PDF */
+const CHINH_TINH_TEN = new Set([
+  'Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ',
+  'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân',
+]);
+
+const TIEU_DE_RAC = /(la so|lich su|chu tinh|thuat ngu|pdf|muc luc|loi noi dau|an sao|cach an|bang tra|dieu thuyen)/;
+function laDoanRac(d: { tieuDe: string; duongDeMuc: string | null; noiDung: string }): boolean {
+  const td = boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''}`);
+  if (TIEU_DE_RAC.test(td)) return true;
+  const tu = boDau(d.noiDung).split(/[^a-z0-9]+/).filter(Boolean);
+  if (tu.length < 25) return true;
+  // Mật độ tên sao: bảng liệt kê có quá nửa số chữ là tên sao
+  const soTen = nhanDangThucThe(d.noiDung).length;
+  if (soTen / (tu.length / 2) > 0.5) return true;
+  // Bảng lá số: gần như toàn chữ viết hoa đầu, gần như không có dấu chấm câu
+  const tho = d.noiDung.split(/\s+/).filter(Boolean);
+  const hoa = tho.filter((w) => /^[A-ZÀ-ỸĐ]/.test(w)).length / tho.length;
+  const cham = (d.noiDung.match(/[.;:?!]/g) ?? []).length / (tho.length / 100);
+  return hoa > 0.5 && cham < 2;
+}
+
+const BI_DANH_CUNG: Record<string, string[]> = {
+  'Mệnh': ['menh', 'mang'],
+  'Phụ Mẫu': ['phu mau'],
+  'Phúc Đức': ['phuc duc', 'phuc'],
+  'Điền Trạch': ['dien trach', 'dien'],
+  'Quan Lộc': ['quan loc', 'quan'],
+  'Nô Bộc': ['no boc', 'no'],
+  'Thiên Di': ['thien di', 'di'],
+  'Tật Ách': ['tat ach', 'tat', 'ach'],
+  'Tài Bạch': ['tai bach', 'tai'],
+  'Tử Tức': ['tu tuc'],
+  'Phu Thê': ['phu the', 'the', 'phu'],
+  'Huynh Đệ': ['huynh de', 'bao', 'huynh'],
+};
+
+const TU_KHOA_CHU_DE: Record<string, string> = {
+  'tong-quan': 'tính tình công danh tiền tài',
+  'tinh-cach': 'tính tình',
+  'su-nghiep': 'công danh nghề nghiệp',
+  'tien-bac': 'tiền tài của cải',
+  'tinh-duyen': 'vợ chồng hôn nhân',
+  'con-cai': 'con cái',
+  'gia-dinh': 'cha mẹ',
+  'anh-em': 'anh em',
+  'quy-nhan': 'bạn bè quý nhân',
+  'phuc-duc': 'phúc đức họ hàng',
+  'suc-khoe': 'bệnh tật sức khỏe',
+  'nha-cua': 'nhà đất điền sản',
+  'ra-ngoai': 'xuất ngoại đi xa',
+  'hoc-van': 'học hành thi cử',
+  'van-han': 'vận hạn',
+};
+
+export interface DoanV3 {
+  id: string;
+  tieuDe: string;
+  duongDeMuc: string | null;
+  noiDung: string;
+  documentId: string;
+  chunkId: string;
+  diem: number;
+  /** Đoạn này khớp đúng sao + đúng cung của truy vấn nào */
+  khopCung: string;
+  khopSao: string[];
+}
+
+export type BoNhoTruyHoi = Map<string, Promise<DoanUngVien[]>>;
+
+function coTu(s: string, tu: string): boolean {
+  return new RegExp(`(^|[^a-z0-9])${tu.replace(/ /g, '[^a-z0-9]+')}($|[^a-z0-9])`).test(s);
+}
+
+async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi): Promise<DoanUngVien[]> {
+  const khoa = `${q}|${tuKhoa}`;
+  const co = nho.get(khoa);
+  if (co) return co;
+  /*
+   * Nhánh từ khoá nhận chuỗi NGẮN (tên sao + tên cung). Chuỗi dài kèm từ khoá chủ
+   * đề thành một phép OR rộng trên 7.559 đoạn, và Postgres cắt ngang vì quá thời
+   * gian — đo được 5 lần trong lượt chạy đầu. Vector vẫn nhận chuỗi đủ nghĩa.
+   */
+  /*
+   * Thực thể lấy từ chuỗi từ khoá NGẮN, không từ truy vấn vector. Từ bản truy hồi
+   * 2026.09.4, mỗi tên thực thể thành một cụm tìm nguyên văn với điểm gấp đôi;
+   * lấy từ truy vấn dài thì cụm "Tử Vi" quay lại và khớp tên môn học ở đầu gần
+   * như mọi đoạn — đúng lỗi mà chuỗi từ khoá ngắn sinh ra để tránh.
+   */
+  const p = truyHoi(
+    { truyVan: q, truyVanTuKhoa: tuKhoa, thucThe: nhanDangThucThe(tuKhoa) },
+    { soCuoi: 8, soUngVienVector: 15, soUngVienTuKhoa: 15 }
+  )
+    .then((k) => k.daChon)
+    .catch(() => [] as DoanUngVien[]);
+  nho.set(khoa, p);
+  return p;
+}
+
+/** Cắt đoạn quanh chỗ nhắc sao đầu tiên — sách cổ hay dồn nhiều sao vào một khối dài */
+function catQuanh(noiDung: string, sao: string[], dai = 650): string {
+  const s = noiDung.replace(/\s+/g, ' ').trim();
+  if (s.length <= dai) return s;
+  const bd = boDau(s);
+  let vt = -1;
+  for (const x of sao) {
+    const i = bd.indexOf(boDau(x));
+    if (i >= 0 && (vt < 0 || i < vt)) vt = i;
+  }
+  const dau = Math.max(0, (vt < 0 ? 0 : vt) - 120);
+  return (dau > 0 ? '… ' : '') + s.slice(dau, dau + dai) + (dau + dai < s.length ? ' …' : '');
+}
+
+export async function truyHoiChoCau(vao: {
+  chuDe: string;
+  /** Câu tổng quan mượn từ khoá của chủ đề nó thật sự hỏi (TQ05 → sự nghiệp) */
+  chuDeTuKhoa?: string;
+  cauHoi: string;
+  duKien: DuKienV3[];
+  nho: BoNhoTruyHoi;
+  soDoan?: number;
+}): Promise<DoanV3[]> {
+  const tuKhoa = TU_KHOA_CHU_DE[vao.chuDeTuKhoa ?? vao.chuDe] ?? '';
+  const cungDoc = vao.duKien.filter((d) => d.cung && d.noiDung.startsWith('Cung ')).slice(0, 5);
+
+  /*
+   * Mỗi cung một truy vấn. Truy vấn chỉ mang chính tinh + tứ hóa (cung không có
+   * chính tinh thì mượn ba phụ tinh đầu): nhồi năm sáu phụ tinh vào làm loãng
+   * nghĩa, và lượt 3 đo được đúng hậu quả — "Tử Vi … Tài Bạch" không kéo về câu
+   * "cùng Tử Vi có của ăn của để" của mục TỨ TÀI BẠCH CUNG. Phụ tinh vẫn dùng
+   * để CHẤM khớp, chỉ không dùng để HỎI.
+   */
+  const truyVan = cungDoc.map((d) => {
+    const cungCo = d.sao.filter((s) =>
+      nhanDangThucThe(s).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
+    );
+    const chinhHoa = cungCo.filter((s) => CHINH_TINH_TEN.has(s) || s.startsWith('Hóa '));
+    const hoi = (chinhHoa.length ? chinhHoa : cungCo).slice(0, 3);
+    return {
+      cung: d.cung!,
+      sao: cungCo.slice(0, 6),
+      q: `${hoi.join(' ')} cung ${d.cung} ${tuKhoa}`.trim(),
+      // "Tử Vi" còn là tên môn học, đứng ở tiêu đề của gần như mọi đoạn trong kho:
+      // đưa nó vào nhánh từ khoá là xếp hạng theo tên sách. Nhánh từ khoá hỏi bằng
+      // tên cung + các sao khác; bước chấm khớp vẫn đòi đoạn phải nhắc Tử Vi.
+      k: `${hoi.filter((x) => x !== 'Tử Vi').slice(0, 2).join(' ')} ${d.cung}`.trim(),
+      laCung: true,
+    };
+  });
+  const cachCuc = vao.duKien.filter((d) => d.vaiTro === 'cách cục').slice(0, 2);
+  for (const c of cachCuc) {
+    const ten = c.noiDung.match(/^Cách cục (.+?) \(/)?.[1];
+    if (ten) truyVan.push({ cung: c.cung ?? '', sao: c.sao.slice(0, 4), q: `${ten} ${tuKhoa}`, k: ten, laCung: false });
+  }
+  // Vận năm: nghĩa của từng lưu tứ hóa ở đúng cung nó rơi vào
+  for (const d of vao.duKien.filter((x) => x.vaiTro.startsWith('vận năm')).slice(0, 1)) {
+    for (const m of d.noiDung.matchAll(/(Hóa (?:Lộc|Quyền|Khoa|Kỵ)) vào ([^(]+?) \(([^)]+)\)/g)) {
+      const [, hoa, sao, cung] = m;
+      truyVan.push({ cung, sao: [sao.trim(), hoa], q: `${sao.trim()} ${hoa} cung ${cung} vận hạn`, k: `${sao.trim()} ${hoa}`, laCung: false });
+    }
+  }
+
+  const ketQua = await Promise.all(truyVan.map((t) => motTruyVan(t.q, t.k, vao.nho)));
+
+  /*
+   * Chấm từng đoạn theo truy vấn đã kéo nó về, rồi CHỌN XOAY VÒNG giữa các truy
+   * vấn. Lượt chạy đầu chọn theo điểm tổng, và đoạn của cách cục (khớp bốn năm
+   * sao cùng lúc) lấn hết chỗ: ba câu tổng quan khác hẳn nhau nhận đúng tám đoạn
+   * y hệt nhau, kể cả câu về năm nay.
+   */
+  const theoTruyVan: DoanV3[][] = ketQua.map((ds, i) => {
+    const t = truyVan[i];
+    return ds
+      .map((d) => {
+        const bd = boDau(d.noiDung);
+        const khopSao = t.sao.filter((s) => coTu(bd, boDau(s)) || (TEN_TAT[s] ?? []).some((x) => coTu(bd, x)));
+        const biDanh = BI_DANH_CUNG[t.cung] ?? [];
+        const khopCung = biDanh.some((b) => coTu(bd, b));
+        // Mục sách đặt tên theo cung ("TỨ TÀI BẠCH CUNG", "CUNG PHU-THÊ") là nguồn đắt nhất
+        const deMucCung = coTu(boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''}`), biDanh[0] ?? '§');
+        let diem =
+          d.diemRRF +
+          0.012 * Math.min(khopSao.length, 3) +
+          (khopCung && khopSao.length ? 0.02 : 0) +
+          (deMucCung ? 0.03 : 0);
+        if (laDoanRac(d)) diem = -1;
+        return {
+          id: '',
+          tieuDe: d.tieuDe,
+          duongDeMuc: d.duongDeMuc,
+          noiDung: catQuanh(d.noiDung, khopSao.length ? khopSao : t.sao),
+          documentId: d.documentId,
+          chunkId: d.chunkId,
+          diem,
+          khopCung: khopCung || deMucCung ? t.cung : '',
+          khopSao,
+        };
+      })
+      // Truy vấn theo cung chỉ nhận đoạn nói đúng cung ấy; truy vấn cách cục /
+      // lưu tứ hóa chỉ cần khớp sao
+      .filter((d) => d.diem > -1 && d.khopSao.length && (!t.laCung || d.khopCung))
+      .sort((a, b) => b.diem - a.diem);
+  });
+
+  const soDoan = vao.soDoan ?? 8;
+  const chon: DoanV3[] = [];
+  const daLay = new Set<string>();
+  const demTaiLieu = new Map<string, number>();
+  for (let vong = 0; chon.length < soDoan && vong < 4; vong++) {
+    for (const ds of theoTruyVan) {
+      if (chon.length >= soDoan) break;
+      // Bỏ trùng CẢ GIỮA các truy vấn: truy hồi chỉ bỏ bản chép trong một truy vấn,
+      // còn cùng câu phú do hai truy vấn kéo về thì vẫn chiếm hai chỗ
+      const d = ds.find(
+        (x) =>
+          !daLay.has(x.chunkId) &&
+          (demTaiLieu.get(x.documentId) ?? 0) < 2 &&
+          !chon.some((c) => doTrung(x.noiDung, c.noiDung) >= NGUONG_TRUNG)
+      );
+      if (!d) continue;
+      daLay.add(d.chunkId);
+      demTaiLieu.set(d.documentId, (demTaiLieu.get(d.documentId) ?? 0) + 1);
+      chon.push({ ...d });
+    }
+  }
+  chon.forEach((d, i) => (d.id = `E${String(i + 1).padStart(3, '0')}`));
+  return chon;
+}
