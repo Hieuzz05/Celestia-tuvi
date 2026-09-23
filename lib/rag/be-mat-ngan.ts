@@ -3,13 +3,21 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import { boCauRaLenh, dungChuanNgonNgu } from './chuan-ngon-ngu';
+
+/*
+ * A5: bề mặt này có suaCauKeSao() nhưng KHÔNG có suaCauTiengLong(), nên chỉ
+ * cắt được luật về tên sao. Bỏ thêm 'cam-tieng-long' ở đây là bỏ luật mà chỉ
+ * còn cổng chặn đỡ — và cổng chặn ở bề mặt này nghĩa là thẻ không hiện ra.
+ */
+const CHUAN_NGON_NGU_NGAN = dungChuanNgonNgu({ khoi: ['mot-ten-sao-moi-cau'] });
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { suaCauKeSao } from './sua-chua';
 import { lapKeHoach, type ChuDe } from './planner';
 import { nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 /**
  * Hai bề mặt ngắn của Celes, sinh bằng model thay vì ghép từ khuôn câu.
@@ -31,7 +39,7 @@ import { truyHoi } from './truy-hoi';
  * hạn mức model không được phép làm trắng trang chủ.
  */
 
-export const PHIEN_BAN_BE_MAT_NGAN = '2026.09.2';
+export const PHIEN_BAN_BE_MAT_NGAN = '2026.09.4';
 
 function nenChung(): string {
   return `BỐN NGUỒN SỰ THẬT, THEO THỨ TỰ:
@@ -45,7 +53,7 @@ BỐN LUẬT CỨNG:
 - KHÔNG viết tên cung vào câu văn: Mệnh, Phụ Mẫu, Phúc Đức, Điền Trạch, Quan Lộc, Nô Bộc, Thiên Di, Tật Ách, Tài Bạch, Tử Tức, Phu Thê, Huynh Đệ. Nói thẳng phần đời mà cung đó nói tới. Sai: "yếu tố tích cực trong cung Phúc Đức". Đúng: "phần bên trong bạn thường tự xoay xở được".
 - Mã F###/E### CHỈ nằm trong trường "maDuKien"/"maNguon". Tuyệt đối không viết vào câu văn.
 
-${CHUAN_NGON_NGU_CELES}
+${CHUAN_NGON_NGU_NGAN}
 
 KHÔNG ĐƯỢC: nhắc tên sách, tên hệ phái, số phần trăm; phán chắc chắn về sức khoẻ, tiền bạc, pháp lý.`;
 }
@@ -188,7 +196,12 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   "maNguon": []
 }`;
 
-  const kq = await goiVoiFallback({ system, user: nen.khoi, maxTokens: 1200 });
+  // Mẫu vàng đứng sau khối dữ kiện — xem `mau-vang.ts`
+  const userNoiBat = [nen.khoi, khoiMauVang(chonMauVang({ beMat: 'be-mat-ngan', loai: ['cau-khep'] }))]
+    .filter(Boolean)
+    .join('\n\n');
+
+  const kq = await goiVoiFallback({ system, user: userNoiBat, maxTokens: 1200 });
   const tho = docObjectJson(kq.text);
   if (!tho) return null;
 
@@ -348,12 +361,12 @@ LUẬT CHO SÁU Ô NÀY:
 
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, bình tĩnh, nói với người đối diện.
 
-Đây là phần ĐIỀU ĐANG CHUYỂN ĐỘNG của ${NHAN_CAP[vao.cap] ?? 'một quãng'}. Ba chuyển động, mỗi cái 2-3 câu.
+Đây là phần ĐIỀU ĐANG CHUYỂN ĐỘNG của một quãng. Ba chuyển động, mỗi cái 2-3 câu.
 
 LUẬT RIÊNG CỦA PHẦN VẬN HẠN:
 - KHÔNG kết luận "năm nay sẽ xảy ra chuyện X" chỉ vì hạn đi vào cung X. Cung hạn là MỘT lớp, không phải nguyên nhân.
 - Nói xu hướng và điều đáng cân nhắc, không nói sự kiện.
-- Nhịp hành động của quãng này đã được tính sẵn là "${vao.nhip}". Viết sao cho ba chuyển động nhất quán với nhịp đó. Không tự đổi nhịp, không nhắc lại chữ đó như một nhãn.
+- Nhịp hành động của quãng đã được tính sẵn và ghi ở khối dữ kiện. Viết sao cho ba chuyển động nhất quán với nhịp đó. Không tự đổi nhịp, không nhắc lại chữ đó như một nhãn.
 
 ${nenChung()}
 
@@ -374,7 +387,21 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   // 4800 chứ không 3600: đo được ở lượt chạy thật là JSON bị cắt giữa ô thứ
   // năm, ô còn lại rỗng nên rơi về khuôn. Cắt token ở đây không tiết kiệm được
   // gì — bài cụt vẫn phải trả tiền, mà lại không dùng được.
-  const kq = await goiVoiFallback({ system, user: nen.khoi, maxTokens: coLinhVuc ? 4800 : 2000 });
+  /*
+   * CẤP QUÃNG và NHỊP đi xuống khối `user`, không nằm trong `system`.
+   *
+   * Hai dòng ấy trước đây đứng NGAY TRÊN khối luật hơn ba nghìn token, mà nhà
+   * cung cấp đệm prompt theo tiền tố — nên chỉ cần `nhịp` đổi (Giữ / Đẩy /
+   * Chờ) là toàn bộ phần luật phía sau bị trả tiền lại từ đầu, cho mọi lượt.
+   * Đây là chỗ sót của CEL-111: bảng mười hai lĩnh vực và bản đọc sâu đã dọn,
+   * bề mặt này thì chưa.
+   */
+  const userNhip = `QUÃNG ĐANG NÓI: ${NHAN_CAP[vao.cap] ?? 'một quãng'}
+NHỊP HÀNH ĐỘNG đã tính sẵn cho quãng này: "${vao.nhip}"
+
+${nen.khoi}${khoiMauVang(chonMauVang({ beMat: 'be-mat-ngan', loai: ['day-du-kien'] }))}`;
+
+  const kq = await goiVoiFallback({ system, user: userNhip, maxTokens: coLinhVuc ? 4800 : 2000 });
   const tho = docObjectJson(kq.text);
   if (!tho) return null;
 

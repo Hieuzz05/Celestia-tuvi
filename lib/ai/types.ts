@@ -50,6 +50,18 @@ export interface ChatResult {
   model: string;
   tokensIn?: number;
   tokensOut?: number;
+  /**
+   * Phần token ĐẦU VÀO được nhà cung cấp lấy từ bộ đệm của chính họ.
+   *
+   * Không phải một con số để ngắm: nó là cách DUY NHẤT biết prompt có đang
+   * được đệm hay không. Mọi nhà cung cấp lớn đều đệm theo TIỀN TỐ — cùng một
+   * chuỗi đầu thì lần gọi sau rẻ hơn — nên chỉ cần một dữ kiện của người dùng
+   * lọt lên đầu prompt là toàn bộ phần luật phía sau mất quyền đệm, và không
+   * có gì báo cho ai biết. Con số này là thứ báo.
+   *
+   * Rỗng nghĩa là nhà cung cấp không nói, không phải bằng 0.
+   */
+  tokensDem?: number;
 }
 
 /** Lỗi khiến orchestrator chuyển sang model kế tiếp thay vì dừng hẳn */

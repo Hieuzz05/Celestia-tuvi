@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { canDangNhap } from '@/lib/auth/cong';
 import { moDuoc, quyenHienTai } from '@/lib/support/entitlements';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { luanGiaiSau } from '@/lib/tuvi/luan-giai-sau';
@@ -23,6 +22,18 @@ import { khoaBangLinhVuc } from '@/lib/rag/phien-ban-chu';
  *
  * Người chưa mở quyền vẫn nhận được câu kết luận của từng khối để thấy bên
  * trong có gì; phần thân và căn cứ thì không gửi đi.
+ *
+ * ---------------------------------------------------------------------------
+ * KHÁCH CHƯA ĐĂNG NHẬP CŨNG VÀO ĐƯỢC — từ 23/09/2026, theo quyết định của chủ
+ * dự án: phần TỔNG QUAN mở cho mọi người, chỉ LUẬN GIẢI CHUYÊN SÂU mới cần tài
+ * khoản (bản đọc sâu, bài dài, luận hạn chi tiết — các tuyến ấy vẫn giữ cổng).
+ *
+ * Mở cửa này KHÔNG tốn thêm một lượt gọi model nào, và đó là điều kiện để mở
+ * được: khách mang quyền `anonymous`, mà `deepMap` của bậc ấy là false, nên
+ * nhánh gọi model ở dưới không bao giờ chạy cho khách. Khách nhận đúng bản xem
+ * trước tất định mà tài khoản miễn phí đang nhận. Ai sau này định cho khách
+ * thấy bản do AI viết thì phải cân lại chuyện này trước — lúc ấy mỗi ngày sinh
+ * gõ bừa là hai lượt gọi model, và không có tài khoản nào để đặt hạn mức.
  */
 export const dynamic = 'force-dynamic';
 // Tuyến này giờ có thể phải chờ model viết bài. Không đặt thì hàm bị cắt ở mức
@@ -33,9 +44,6 @@ const soHopLe = (v: unknown, min: number, max: number) =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
 
 export async function POST(req: Request) {
-  const cong = await canDangNhap('deep_map');
-  if (!cong.duocPhep) return cong.chan!;
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -135,7 +143,9 @@ export async function POST(req: Request) {
           ...c,
           muc: c.muc.map((m) => {
             const x = theoId.get(m.id);
-            return x ? { ...m, ketLuan: x.ketLuan, doan: x.doan } : m;
+            return x
+              ? { ...m, ketLuan: x.ketLuan, doan: x.doan, cauHoiSoi: x.cauHoiSoi, giuLai: x.giuLai }
+              : m;
           }),
         })),
       };

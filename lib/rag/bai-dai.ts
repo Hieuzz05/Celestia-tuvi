@@ -13,6 +13,7 @@ import { lapKeHoach, type ChuDe } from './planner';
 import { nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
 import { mucChacChan, type MucChacChan } from './uu-tien-nguon';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 /**
  * Bài luận giải dài — dựng lại trên cùng đường đi với chat và Kết nối.
@@ -209,7 +210,11 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
     kqTruyHoi.daChon.length
       ? ''
       : '\nLƯU Ý: không có nguồn tham chiếu nào. Chỉ được mô tả những gì dữ kiện lá số nói, và nêu rõ phần học thuyết chưa có căn cứ.',
-  ].join('\n');
+    // Mẫu vàng đứng cuối khối dữ kiện — xem `mau-vang.ts`
+    khoiMauVang(chonMauVang({ beMat: 'bai-dai', loai: ['day-du-kien', 'mau-thuan'] })),
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   /*
    * Ngân sách 8000, không phải 6000.

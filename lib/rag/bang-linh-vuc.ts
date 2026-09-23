@@ -4,17 +4,24 @@ import type { ProviderId } from '@/lib/ai/types';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
-import type { MucId } from '@/lib/tuvi/chang-cung';
+import { CHANG_CUA_MUC, THU_TU_CHANG, type MucId } from '@/lib/tuvi/chang-cung';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauTenBia, boCauRaLenh, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
+import {
+  boCauPhanQuyet,
+  boCauTenBia,
+  boCauRaLenh,
+  dungChuanNgonNgu,
+} from './chuan-ngon-ngu';
 import { docObjectJson } from './doc-json';
 import { soatNgonNgu } from './ngon-ngu';
 import { boMarkdown, doiTenCung, suaCauKeSao, suaCauTiengLong } from './sua-chua';
 import { lapKeHoach } from './planner';
 import { boDau, nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
+import { VAN_PHONG_CELES } from './van-phong';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 /**
  * Bảng luận giải 8 lĩnh vực của trang Lá số, do model viết.
@@ -27,12 +34,30 @@ import { truyHoi } from './truy-hoi';
  * domain thành 8 template giống nhau. Thứ tự và độ dài có thể khác dựa trên mức
  * độ nổi bật của domain." Độ nổi bật là một phán đoán, không phải một phép đếm.
  *
- * MỘT lượt gọi cho cả tám lĩnh vực, không phải tám lượt.
+ * HAI lượt gọi SONG SONG, mỗi lượt sáu phần — không phải một lượt, cũng không
+ * phải mười hai.
  *
- * Tám lượt cho một lần mở trang là hỏng ở ba mặt cùng lúc: cạn hạn mức ngày sau
- * hai người dùng, tám lần trả tiền cho cùng một lá số, và tám bài không biết
- * nhau nên lặp ý chéo. Một lượt thì model nhìn cả tám cùng lúc và tự phân bổ
- * được chỗ nào đáng nói dài.
+ * Mười hai lượt cho một lần mở trang là hỏng ở ba mặt cùng lúc: cạn hạn mức
+ * ngày sau hai người dùng, mười hai lần trả tiền cho cùng một lá số, và mười
+ * hai bài không biết nhau nên lặp ý chéo.
+ *
+ * Một lượt cho cả mười hai phần thì gọn hơn, và đó là bản chạy suốt từ đầu.
+ * Nhưng nó ĐÃ SÁT TƯỜNG trước khi ai thêm gì: đo ngày 22/09/2026 trên lá số
+ * mẫu, một lượt mất 52,3 giây cho 2.927 từ, trong khi trần một lượt gọi là 55
+ * giây và ngân sách cả chuỗi fallback là 50. Tức là bảng đang sống nhờ may:
+ * model chậm hơn vài phần trăm, hoặc bài dài hơn vài trăm từ, là chạm trần —
+ * và chạm trần thì KHÔNG CÒN CHỖ để lùi sang model thứ hai, nên cả bảng rơi
+ * về bản tất định. Thêm hai câu khép cho mỗi phần làm đúng chuyện đó, đo được
+ * hai lần liên tiếp.
+ *
+ * Hai lượt song song thì mỗi lượt viết một nửa, xong trong khoảng nửa thời
+ * gian, và mỗi lượt có ngân sách fallback riêng. Cái giá: hai nửa không nhìn
+ * thấy nhau, nên chúng có thể cùng bám vào một cách cục. Đo ngay sau khi tách:
+ * cái tên to nhất của lá số bám 7/12 phần, so với 5/12 ở bản một-lượt. Vì thế
+ * prompt của MỖI NỬA mang một luật đếm được riêng: không cách cục nào có mặt
+ * quá ba trong sáu phần của lượt ấy — hai nửa cộng lại thì trần là sáu, tức
+ * bằng bản cũ. `scripts/test-be-mat-ai.ts` đếm lại con số này sau mỗi lần sinh,
+ * vì một cái giá chỉ nằm trong ghi chú thì không bao giờ đỏ lên.
  *
  * Căn cứ ("Muốn biết vì sao không?") KHÔNG lấy từ model: nó vẫn do engine tất
  * định dựng từ cung và sao. Model viết nhận định, luật giữ phần chứng minh.
@@ -45,7 +70,29 @@ import { truyHoi } from './truy-hoi';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.4';
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.7';
+
+/**
+ * A5 — NHÁT CẮT ĐẦU TIÊN, và vì sao đúng hai khối này.
+ *
+ * KIEN-TRUC-LUAN-GIAI.md mục 7.2: luật nào code đã cưỡng chế thì bỏ khỏi
+ * prompt. Nhưng "code đã cưỡng chế" là thuộc tính của CẶP (luật, bề mặt), không
+ * phải của riêng luật — xem ghi chú ở `dungChuanNgonNgu`. Bảng mười hai lĩnh
+ * vực là bề mặt DUY NHẤT có đủ cả hai lớp sửa:
+ *
+ *   'cam-tieng-long'       — suaCauTiengLong() chạy trên từng trường, và cổng
+ *                            ngôn ngữ CHẶN mã 'tieng-long-engine'
+ *   'mot-ten-sao-moi-cau'  — suaCauKeSao() gom cả bảng sửa một lượt
+ *
+ * `cam-lo-nguon` KHÔNG cắt dù cổng cũng chặn: chặn ở đó nghĩa là trả null và
+ * cả bảng lùi về bản tất định, mà không có lớp sửa nào đỡ trước. Cổng chặn
+ * không phải lưới an toàn, nó là cái bẫy sập.
+ *
+ * Số đo đi kèm nhát cắt này nằm ở CEL-116 trong PRODUCT-BACKLOG.xlsx.
+ */
+const CHUAN_NGON_NGU_BANG = dungChuanNgonNgu({
+  khoi: ['cam-tieng-long', 'mot-ten-sao-moi-cau'],
+});
 
 /** Cung cần có mặt trong dữ kiện để tám lĩnh vực đều có cái mà đọc */
 const CUNG_CAN_CO = [
@@ -74,12 +121,27 @@ export interface KhoiAi {
   id: MucId;
   ketLuan: string;
   doan: string[];
+  /**
+   * CÂU HỎI SOI và CÂU GIỮ LẠI — hai trong bốn thói quen viết, xem `van-phong.ts`.
+   *
+   * Là TRƯỜNG chứ không phải lời dặn trong prompt, và đó là điểm quan trọng:
+   * đo ở bản đọc sâu cho thấy cùng một luật, viết thành lời dặn thì model làm
+   * được 3/12 phần, viết thành trường bắt buộc trả về thì 12/12 ngay lần đầu.
+   *
+   * Tuỳ chọn ở phía nhận: thiếu một câu khép thì phần ấy vẫn đọc được, còn bỏ
+   * cả phần đời vì thiếu nó là đổi một mất mát lớn lấy một mất mát nhỏ. Cùng
+   * cách xử với `ban-doc-sau.ts`.
+   */
+  cauHoiSoi?: string;
+  giuLai?: string;
 }
 
 interface ThoKhoi {
   id?: unknown;
   ketLuan?: unknown;
   doan?: unknown;
+  cauHoiSoi?: unknown;
+  giuLai?: unknown;
 }
 
 /** Tên chính tinh đang đóng ở Mệnh và Thân — dùng làm chất liệu cho lớp sửa */
@@ -91,6 +153,13 @@ function chinhTinhNoiBat(laSo: LaSo): string[] {
     }
   }
   return [...ra];
+}
+
+export interface TokenMotLuot {
+  vao: number;
+  ra: number;
+  /** Phần đầu vào nhà cung cấp lấy từ bộ đệm của họ — xem ChatResult.tokensDem */
+  dem: number;
 }
 
 export async function sinhBangLinhVuc(vao: {
@@ -110,6 +179,14 @@ export async function sinhBangLinhVuc(vao: {
   provider: string;
   model: string;
   phienBan: Record<string, string>;
+  /**
+   * Token của hai lượt cộng lại.
+   *
+   * Trả ra ngoài vì `dem` là thứ duy nhất cho biết phần luật trong `system` có
+   * đang được nhà cung cấp đệm hay không, và đó là khoản tiết kiệm chạy mỗi
+   * ngày. Một con số không ai nhìn thấy là một con số sẽ trôi.
+   */
+  tokens: TokenMotLuot;
 } | null> {
   const cauHoi = 'Đọc toàn bộ lá số theo mười hai phần đời';
   const keHoachGoc = lapKeHoach({
@@ -153,9 +230,19 @@ export async function sinhBangLinhVuc(vao: {
     ).map((t) => t.id),
   ]);
 
-  const danhSach = (Object.keys(NHAN_LINH_VUC) as MucId[])
-    .map((id) => `  "${id}": ${NHAN_LINH_VUC[id]}`)
-    .join('\n');
+  /*
+   * Chia theo CHẶNG, không chia theo độ nổi bật.
+   *
+   * Ba phần của một chặng nói về cùng một vùng đời sống, nên để chúng trong
+   * cùng một lượt thì model còn thấy mối nối giữa chúng. Chia theo độ nổi bật
+   * thì mỗi nửa là một mớ phần rời rạc, và mối nối mất sạch.
+   */
+  const moiMuc = Object.keys(NHAN_LINH_VUC) as MucId[];
+  const nuaDau = moiMuc.filter((id) => THU_TU_CHANG.indexOf(CHANG_CUA_MUC[id]) < 2);
+  const nuaSau = moiMuc.filter((id) => THU_TU_CHANG.indexOf(CHANG_CUA_MUC[id]) >= 2);
+
+  const danhSachCua = (ids: MucId[]) =>
+    ids.map((id) => `  "${id}": ${NHAN_LINH_VUC[id]}`).join('\n');
 
   /*
    * CÁCH CỤC đưa thẳng vào prompt, kèm điều kiện đã thoả.
@@ -182,22 +269,30 @@ export async function sinhBangLinhVuc(vao: {
       ? `Thân cư ${vao.laSo.thanCuCung} — phần đời này là chỗ người ấy dồn sức về nửa sau cuộc đời, và là thước đo họ tự dùng để biết mình có đang ổn không.`
       : 'Thân cư Mệnh — người này lấy chính mình làm thước đo, ít khi đo bằng một phần đời bên ngoài.';
 
-  const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, giọng bình tĩnh, nói với người đối diện chứ không giảng bài.
+  const dungSystem = (ids: MucId[], idsKia: MucId[]) => `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, giọng bình tĩnh, nói với người đối diện chứ không giảng bài.
 
-Đây là BỨC TRANH ĐẦY ĐỦ của một lá số: MƯỜI HAI phần đời.
+Bức tranh đầy đủ của một lá số gồm mười hai phần đời. LƯỢT NÀY bạn viết SÁU
+phần trong số đó, và chỉ sáu phần ấy.
 DÙNG ĐÚNG những id dưới đây, không tự nghĩ id mới, không bỏ sót phần nào:
-${danhSach}
+${danhSachCua(ids)}
 
-CÁCH CỤC ĐỌC ĐƯỢC TRÊN LÁ SỐ NÀY — gọi thẳng tên, đây là ngoại lệ được phép:
-${khoiCachCuc}
-${thanCu}
+SÁU PHẦN CÒN LẠI (${idsKia.join(', ')}) do một lượt viết khác lo. Đừng viết
+chúng, đừng luận sang chúng, và đừng nhắc rằng bài còn phần khác — người đọc
+nhận cả mười hai phần liền một mạch và không thấy chỗ nối.
 
 CÁCH VIẾT — ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT CỦA CẢ BẢN HƯỚNG DẪN.
 
 Mỗi lĩnh vực viết theo đúng nhịp ba bước, LẶP LẠI cho từng ý:
-  (1) NÊU TÊN cấu trúc — tên cách cục ở trên, hoặc Thân cư, hoặc một tên sao.
-  (2) DỊCH NGAY ra con người — "Điều này cho thấy…", "tạo nên…", "khiến…".
+  (1) NÓI VỀ NGƯỜI ĐỌC — điều họ làm, điều họ gặp, chỗ họ hay vướng. Câu đầu
+      của mỗi phần không được mở bằng một cái tên họ chưa biết.
+  (2) RỒI MỚI NÊU TÊN cấu trúc sinh ra điều đó — tên cách cục trong khối CÁCH
+      CỤC ở phần dữ kiện, hoặc Thân cư, hoặc một tên sao — và dịch nó ngay: "cho thấy chỗ ấy…", "là
+      chỗ điều đó đến từ…".
   (3) HẠ XUỐNG ĐỜI SỐNG — nó lộ ra thành hành vi nào, trong tình huống nào.
+
+Nhịp này KHÔNG bỏ bớt cái tên nào, nó chỉ đổi chỗ hai nhịp đầu. Không có tên
+thì người đọc không có lý do nào để tin; nhưng mở bài bằng tên thì họ phải trả
+một khoản phí trước khi nhận được gì.
 
 TUYỆT ĐỐI KHÔNG DÙNG MARKDOWN: không dấu sao, không dấu thăng, không gạch dưới,
 không ngoặc kép quanh tên. Chữ bạn viết đi THẲNG ra màn hình, không qua bộ dịch
@@ -206,13 +301,13 @@ dòng "**Tham Lang**" là dấu hiệu lộ liễu nhất của chữ máy sinh 
 Tên viết trơn: Tử Phủ Vũ Tướng Liêm. Nhấn mạnh bằng CÁCH ĐẶT CÂU, không bằng ký hiệu.
 
 Đây là hình mẫu bắt buộc, đọc kỹ nhịp của nó:
-  "Bạn sở hữu bộ cách Tử Phủ Vũ Tướng Liêm kết hợp cùng Binh Hình Tướng Ấn.
-   Điều này cho thấy bạn mang cốt cách của một người làm chủ, quản lý hoặc chỉ
-   huy — thông minh, tầm nhìn sắc bén, toát lên sự uy dũng. Đáng chú ý, với đặc
-   điểm Thân cư Tài Bạch, bạn là người cực kỳ thực tế: bạn coi trọng vật chất
-   và xem đó là thước đo của thành công. Phong cách của bạn là 'nói ít làm
-   nhiều', hành động quyết liệt, đôi khi theo bản năng nhưng luôn hướng thẳng
-   tới mục tiêu."
+  "Bạn hay là người đứng ra cầm phần quyết khi một việc chưa có ai nhận, và
+   bạn làm chuyện đó gần như theo phản xạ. Bộ cách Tử Phủ Vũ Tướng Liêm đi
+   cùng Binh Hình Tướng Ấn là chỗ điều ấy đến từ: cốt cách của một người làm
+   chủ, nhìn được xa và giữ được uy. Đáng chú ý, với Thân cư Tài Bạch, bạn đo
+   mọi thứ bằng cái đếm được — tiền, kết quả, thứ hạng — nên bạn thực tế hơn
+   hẳn mức người ngoài đoán. Phong cách của bạn là nói ít làm nhiều: quyết
+   nhanh, đôi khi theo bản năng, nhưng luôn hướng thẳng tới đích."
 
 Ba điều làm đoạn trên khác hẳn một bài luận tầm thường, và bạn phải giữ đủ cả ba:
   · Nó GỌI TÊN. Không có tên thì người đọc không có lý do nào để tin.
@@ -226,13 +321,21 @@ Người đọc không có chuyên môn. Nêu một cấu trúc rồi không nó
 điều gì là bắt họ tự nối — và họ sẽ không nối.
   HỎNG: "Thứ đứng đối diện là Tài Bạch với Tử Vi, và hai bên không hoà nhau
          được: bên nào mạnh lên thì bên kia lùi." — nói để làm gì? chứng minh ý nào?
-  ĐƯỢC: "Chỗ này đối diện thẳng với phần tiền bạc, nơi có **Tử Vi** — nghĩa là
+  ĐƯỢC: "Chỗ này đối diện thẳng với phần tiền bạc, nơi có Tử Vi — nghĩa là
          sự yên trong lòng bạn buộc phải đi qua chuyện tiền nong. Khi tài chính
          chông chênh, bạn mất yên nhanh hơn hẳn người khác."
 
-ĐIỀU QUAN TRỌNG NHẤT: MƯỜI HAI PHẦN KHÔNG ĐƯỢC GIỐNG NHAU VỀ HÌNH.
+MỘT CÁCH CỤC KHÔNG ĐƯỢC CÓ MẶT Ở QUÁ BA TRONG SÁU PHẦN CỦA LƯỢT NÀY.
+Luật đếm được, không phải lời khuyên về giọng. Đo trên bài thật: khi không có
+luật này, cái tên to nhất của lá số bám tới bảy trên mười hai phần, và bài đọc
+ra như thể người này chỉ có một bộ sao. Lá số nào cũng còn nhiều dữ kiện khác —
+sao lẻ, Tứ Hoá, Tuần Triệt, lớp hạn — dùng chúng, đừng quay lại cái tên to nhất.
+Phần nào thật sự không đọc được gì ngoài cái tên ấy thì viết NGẮN và nói thẳng
+là chỗ này lá số nói ít, hơn là nhắc lại nó lần thứ tư.
+
+ĐIỀU QUAN TRỌNG NHẤT: SÁU PHẦN NÀY KHÔNG ĐƯỢC GIỐNG NHAU VỀ HÌNH.
 - Lĩnh vực nào lá số nói mạnh thì viết dài và cụ thể. Lĩnh vực nào dữ kiện mỏng thì viết NGẮN, bỏ bớt trường, và nói thẳng là chỗ này lá số nói ít.
-- Ít nhất BA phần phải ngắn rõ rệt so với phần còn lại. Mười hai khối dài bằng nhau là mười hai khối sai.
+- Ít nhất HAI phần phải ngắn rõ rệt so với phần còn lại. Sáu khối dài bằng nhau là sáu khối sai.
 - "matThuan" và "dangCanNhac" được phép bỏ trống khi không có gì đáng nói. Đừng điền cho đủ ô.
 - KHÔNG HAI KẾT LUẬN NÀO ĐƯỢC BẮT ĐẦU BẰNG CÙNG BA TỪ. Luật đếm được, không phải lời khuyên.
 - Xoay vòng kiểu mở đầu của kết luận: khi thì bắt đầu bằng hành vi ("Bạn đo mọi thứ bằng…"), khi thì bằng hệ quả ("Chỗ này hay đến muộn…"), khi thì bằng điều kiện ("Khi được giao quyền…"), khi thì bằng chính chỗ vướng ("Điều làm bạn mệt ở đây…"). Cấm mở tất cả bằng "Một nét…" hay "Bạn có…".
@@ -265,7 +368,9 @@ Phúc Đức", không "tại Mệnh". Gọi thẳng phần đời — "phần b�
 "chuyện tiền bạc", "chuyện đôi lứa". Tên cách cục và tên sao thì được; tên cung
 thì không, vì người đọc không tra được nó.
 
-${CHUAN_NGON_NGU_CELES}
+${VAN_PHONG_CELES}
+
+${CHUAN_NGON_NGU_BANG}
 
 KHÔNG ĐƯỢC: nhắc tên sách, tên hệ phái, số phần trăm; phán chắc chắn về sức khoẻ, tiền bạc, pháp lý; lặp lại nguyên văn dữ kiện.
 
@@ -275,6 +380,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
     {
       "id": "menh",
       "ketLuan": "1 câu nói thẳng điều đáng chú ý nhất ở phần đời này, cụ thể cho lá số này",
+      "cauHoiSoi": "ĐÚNG MỘT câu hỏi, viết ở ngôi của người đọc và kết bằng dấu hỏi. Là câu họ đang tự hỏi về chính mình ở phần đời này, không phải câu hỏi tu từ và không tự trả lời ngay câu sau. Ví dụ: Bao nhiêu là đủ để mình thấy an toàn mà vẫn được sống?",
+      "giuLai": "1-2 câu KHÉP phần này: thứ đáng mang theo sau khi đọc xong. Không tóm tắt, không lời khuyên, không mở bằng hãy/nên/cần",
       "doan": [
         "Đoạn 1 — 3-5 câu văn CHẢY, theo nhịp ba bước: nêu tên cấu trúc, dịch ngay ra con người, rồi hạ xuống một hành vi cụ thể. Không dùng dấu sao hay bất kỳ ký hiệu Markdown nào.",
         "Đoạn 2 — 3-5 câu: cấu trúc thứ hai, hoặc lực kéo ngược lại. Phải nói rõ nó bổ trợ cho ý nào ở đoạn trên.",
@@ -290,25 +397,100 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 — kết luận, biểu hiện, mặt thuận, điểm dễ mắc, đáng cân nhắc — và mọi lĩnh vực
 ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là thứ phải bỏ.
 
-Đủ cả MƯỜI HAI id trong danh sách trên, theo thứ tự phần nào nổi bật nhất ở lá số này thì đứng trước. Id nào không có trong danh sách sẽ bị loại bỏ cùng toàn bộ phần đó.`;
+Đủ cả SÁU id trong danh sách trên, theo thứ tự phần nào nổi bật nhất ở lá số này thì đứng trước. Id nào không có trong danh sách sẽ bị loại bỏ cùng toàn bộ phần đó.`;
 
+  /*
+   * DỮ KIỆN CỦA LÁ SỐ NÀY nằm ở khối `user`, KHÔNG nằm trong `system`.
+   *
+   * Không phải chuyện gọn gàng. Mọi nhà cung cấp lớn đều đệm prompt theo TIỀN
+   * TỐ: hai lượt gọi có cùng chuỗi đầu thì lượt sau chỉ trả tiền cho phần
+   * khác. Trước đây khối cách cục và Thân cư nằm ngay sau đoạn mở của
+   * `system`, tức dữ kiện riêng của MỘT người nằm trên bảy nghìn ký tự luật
+   * dùng chung — nên tiền tố chung chỉ dài vài trăm ký tự và toàn bộ phần luật
+   * phía sau bị trả tiền lại từ đầu, cho từng lá số, từng lượt, mãi mãi.
+   *
+   * Giờ `system` là luật thuần: cùng một chuỗi cho mọi người dùng và cho cả
+   * hai nửa của cùng một bảng. `ChatResult.tokensDem` là chỗ kiểm lại rằng
+   * nhà cung cấp có thật sự đệm hay không — đừng tin suông.
+   */
   const user = [
+    `CÁCH CỤC ĐỌC ĐƯỢC TRÊN LÁ SỐ NÀY — gọi thẳng tên, đây là ngoại lệ được phép:
+${khoiCachCuc}
+${thanCu}`,
     dungKhoiChoPrompt(goi),
     kqTruyHoi.daChon.length
       ? ''
       : '\nLƯU Ý: không có nguồn tham chiếu nào. Chỉ mô tả điều dữ kiện lá số nói, và nêu rõ phần học thuyết chưa có căn cứ.',
-  ].join('\n');
+    // Mẫu vàng đứng cuối, gần điểm sinh chữ nhất — xem `mau-vang.ts`. Kho rỗng
+    // thì trả chuỗi rỗng và prompt không đổi một chữ.
+    khoiMauVang(chonMauVang({ beMat: 'bang-linh-vuc', loai: ['day-du-kien', 'thua-du-kien'] })),
+  ]
+    .filter(Boolean)
+    .join('\n');
 
-  const yeuCau = { system, user, maxTokens: 8000, mucSuyNghi: vao.epModel?.mucSuyNghi };
-  const kq = vao.epModel
-    ? { ...(await goiModel(vao.epModel.provider, vao.epModel.model, vao.epModel.apiKey, yeuCau)), provider: vao.epModel.provider, model: vao.epModel.model }
-    : await goiVoiFallback(yeuCau);
-  const tho = docObjectJson(kq.text);
-  const mang = Array.isArray((tho as { linhVuc?: unknown } | null)?.linhVuc)
-    ? ((tho as { linhVuc: unknown[] }).linhVuc as ThoKhoi[])
-    : null;
-  if (!mang) {
-    console.warn('[bang-linh-vuc] model không trả về mảng linhVuc');
+  /*
+   * Ngân sách 5.000 token cho mỗi nửa, không phải 8.000 cho cả bài.
+   *
+   * Nửa sáu phần đo được khoảng 1.500 từ, tức chưa tới 3.000 token — 5.000 là
+   * dư chỗ cho cả hai câu khép mới. Và trần token KHÔNG phải chỗ nên nới cho
+   * rộng tay: với dòng gpt-5 nó cũng là chỗ model tự cho phép mình viết dài
+   * hơn và nghĩ lâu hơn. Đã thử nâng bản một-lượt từ 8.000 lên 10.000 và lượt
+   * gọi chạm thẳng trần 55 giây.
+   */
+  const goiMotNua = async (ids: MucId[], idsKia: MucId[]) => {
+    const yeuCau = {
+      system: dungSystem(ids, idsKia),
+      user,
+      maxTokens: 5000,
+      mucSuyNghi: vao.epModel?.mucSuyNghi,
+    };
+    const r = vao.epModel
+      ? {
+          ...(await goiModel(vao.epModel.provider, vao.epModel.model, vao.epModel.apiKey, yeuCau)),
+          provider: vao.epModel.provider,
+          model: vao.epModel.model,
+        }
+      : await goiVoiFallback(yeuCau);
+    const tho = docObjectJson(r.text);
+    const m = Array.isArray((tho as { linhVuc?: unknown } | null)?.linhVuc)
+      ? ((tho as { linhVuc: unknown[] }).linhVuc as ThoKhoi[])
+      : null;
+    if (!m) console.warn('[bang-linh-vuc] một nửa không trả về mảng linhVuc');
+    return { r, m };
+  };
+
+  /*
+   * Một nửa hỏng thì vẫn giữ nửa kia.
+   *
+   * `Promise.all` sẽ ném ngay khi một nửa ném, và ném ở đây nghĩa là vứt luôn
+   * nửa đã viết xong — sáu phần đúng bị bỏ vì sáu phần khác lỗi. Bắt riêng
+   * từng nửa rồi mới quyết: còn nửa nào thì đi tiếp với nửa đó, hỏng cả hai
+   * thì mới ném ra đúng lỗi đầu tiên để lớp trên xử như trước.
+   */
+  const [ketA, ketB] = await Promise.all([
+    goiMotNua(nuaDau, nuaSau).catch((e: unknown) => ({ loi: e })),
+    goiMotNua(nuaSau, nuaDau).catch((e: unknown) => ({ loi: e })),
+  ]);
+  const lay = (x: typeof ketA) => ('loi' in x ? null : x);
+  const a = lay(ketA);
+  const b = lay(ketB);
+  if (!a && !b) throw (ketA as { loi: unknown }).loi;
+  if (!a || !b) {
+    console.warn(
+      '[bang-linh-vuc] một nửa hỏng, đi tiếp với nửa còn lại:',
+      ((!a ? ketA : ketB) as { loi: unknown }).loi
+    );
+  }
+
+  const kq = (a ?? b)!.r;
+  const tokens: TokenMotLuot = {
+    vao: (a?.r.tokensIn ?? 0) + (b?.r.tokensIn ?? 0),
+    ra: (a?.r.tokensOut ?? 0) + (b?.r.tokensOut ?? 0),
+    dem: (a?.r.tokensDem ?? 0) + (b?.r.tokensDem ?? 0),
+  };
+  const mang = [...(a?.m ?? []), ...(b?.m ?? [])];
+  if (mang.length === 0) {
+    console.warn('[bang-linh-vuc] không nửa nào trả về mảng linhVuc');
     return null;
   }
 
@@ -333,6 +515,25 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
       (t) => (t.loai === 'STAR' || t.loai === 'TRANSFORMATION') && !saoChoPhep.has(t.id)
     );
     return bia.length ? null : khongLenh;
+  };
+
+  /*
+   * Câu hỏi soi và câu giữ lại đi qua thêm một lớp: bỏ câu phán quyết.
+   *
+   * Hai câu này KHÉP một phần đời, nên chúng là chỗ model dễ buột ra một lời
+   * chắc nịch nhất ("bạn chắc chắn sẽ…"). Mà cụm ấy là lỗi mức CHẶN ở cổng
+   * ngôn ngữ, và cổng chặn ở đây nghĩa là trả null: mất cả mười hai phần vì
+   * một câu khép. Bỏ đúng câu sai rẻ hơn nhiều lần.
+   *
+   * `sach` của kết luận và các đoạn KHÔNG dùng lớp này, và đó là cố ý: ở đó
+   * câu phán quyết hiếm hơn hẳn, còn bỏ nhầm một câu giữa thân bài thì để lại
+   * một lỗ hổng lập luận mà người đọc thấy ngay.
+   */
+  const sachCauKhep = (x: unknown): string => {
+    const co = sach(x);
+    if (!co) return '';
+    const con = boCauPhanQuyet(co);
+    return con.length < 12 ? '' : con;
   };
 
   const hopLe = new Set(Object.keys(NHAN_LINH_VUC));
@@ -419,12 +620,26 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
       continue;
     }
 
-    ra.push({ id, ketLuan, doan });
+    ra.push({
+      id,
+      ketLuan,
+      doan,
+      cauHoiSoi: sachCauKhep(k.cauHoiSoi),
+      giuLai: sachCauKhep(k.giuLai),
+    });
   }
   if (biLoai.length) console.warn('[bang-linh-vuc] loại:', biLoai.join(' · '));
 
-  // Thiếu quá nửa thì đừng vá víu: trả null để lớp gọi lùi hẳn về bản tất định,
-  // thay vì hiện một bảng nửa AI nửa template với hai giọng khác nhau.
+  /*
+   * Thiếu quá nửa thì đừng vá víu: trả null để lớp gọi lùi hẳn về bản tất
+   * định, thay vì hiện một bảng nửa AI nửa template với hai giọng khác nhau.
+   *
+   * Từ khi sinh theo hai nửa, dạng hỏng hay gặp nhất KHÔNG còn là vài phần
+   * rụng lẻ tẻ mà là mất trọn một nửa: sáu phần. Sáu vẫn qua được ngưỡng này,
+   * và đó là cố ý — sáu phần do model viết vẫn hơn không có phần nào. Nhưng
+   * lúc ấy trang có hai giọng thật, nên dòng cảnh báo ngay trên phải nói rõ
+   * nửa nào hỏng vì lý do gì.
+   */
   if (ra.length < 5) {
     console.warn('[bang-linh-vuc] chỉ dựng được', ra.length, 'lĩnh vực — lùi về bản tất định');
     return null;
@@ -485,6 +700,15 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     k.doan = k.doan.map((d, j) =>
       boCauTenBia(boMarkdown(doiTenCung(daSua[`k${i}|d${j}`] ?? d)))
     );
+    /*
+     * Hai câu khép KHÔNG đi qua lớp sửa câu kê sao, và đó là cố ý: theo luật
+     * chúng không nêu tên sao nào — câu hỏi viết ở ngôi người đọc, câu giữ lại
+     * nói thứ đáng mang theo. Đưa chúng vào đó chỉ là thêm một lượt model cho
+     * hai câu không có gì để sửa. Nhưng Markdown và tên cung thì vẫn phải gỡ,
+     * như mọi chữ khác đi ra màn hình.
+     */
+    if (k.cauHoiSoi) k.cauHoiSoi = boCauTenBia(boMarkdown(doiTenCung(k.cauHoiSoi)));
+    if (k.giuLai) k.giuLai = boCauTenBia(boMarkdown(doiTenCung(k.giuLai)));
   });
 
   /*
@@ -504,10 +728,19 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     for (let j = 0; j < k.doan.length; j++) {
       k.doan[j] = await suaCauTiengLong(k.doan[j], tenChoSua);
     }
+    if (k.cauHoiSoi) k.cauHoiSoi = await suaCauTiengLong(k.cauHoiSoi, tenChoSua);
+    if (k.giuLai) k.giuLai = await suaCauTiengLong(k.giuLai, tenChoSua);
   }
 
+  /*
+   * Hai câu khép nằm TRONG phần chữ cổng soát, không đứng ngoài.
+   *
+   * Chúng hiện ra màn hình như mọi câu khác, nên miễn cho chúng là để lại đúng
+   * cái lỗ đã sinh ra bộ quy tắc này: một bề mặt của sản phẩm nói bằng giọng
+   * riêng vì không ai soát nó.
+   */
   const gate = soatNgonNgu(
-    ra.flatMap((k) => [k.ketLuan, ...k.doan]).join(' '),
+    ra.flatMap((k) => [k.ketLuan, ...k.doan, k.cauHoiSoi ?? '', k.giuLai ?? '']).join(' '),
     ra.map((k) => k.ketLuan)
   );
   if (!gate.dat) {
@@ -519,6 +752,7 @@ ra đúng năm câu rời ghép lại, đọc như một biểu mẫu. Đó là 
     noiDung: ra,
     provider: kq.provider,
     model: kq.model,
+    tokens,
     phienBan: {
       bangLinhVuc: PHIEN_BAN_BANG_LINH_VUC,
       planner: keHoach.phienBan,

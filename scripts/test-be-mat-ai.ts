@@ -49,6 +49,9 @@ async function main() {
   const { namAmHienTai, thangAmHienTai, khoangDuongCuaThangAm } = await import('../lib/tuvi/bay-gio');
   const { sinhDiemNoiBat, sinhNhipHanhTrinh } = await import('../lib/rag/be-mat-ngan');
   const { sinhBangLinhVuc } = await import('../lib/rag/bang-linh-vuc');
+  // Đếm lớp sửa — phép đo bắt buộc cho A5, xem DEM_SUA trong sua-chua.ts
+  const { DEM_SUA, datLaiDemSua } = await import('../lib/rag/sua-chua');
+  datLaiDemSua();
   const { sinhMocHanhTrinh } = await import('../lib/rag/moc-hanh-trinh');
 
   if (uuTien) process.env.AI_UU_TIEN_TEST = uuTien;
@@ -85,6 +88,12 @@ async function main() {
   if (bang) {
     const dai = bang.noiDung.map((x) => [x.ketLuan, ...x.doan].join(' ').split(/\s+/).length);
     console.log(`  ${bang.provider}/${bang.model} · ${bang.noiDung.length}/8 lĩnh vực`);
+    // Token của cả hai lượt. `đệm` là phần nhà cung cấp không tính tiền đầy đủ —
+    // bằng 0 nghĩa là tiền tố tĩnh của system đang KHÔNG được đệm, và đó là lỗi
+    // cần sửa chứ không phải một con số vô hại.
+    console.log(
+      `  token: vào ${bang.tokens.vao} (đệm ${bang.tokens.dem}) · ra ${bang.tokens.ra}`
+    );
     console.log(`  độ dài: ${dai.join(', ')}`);
     kiem('Đủ ít nhất 6 lĩnh vực', bang.noiDung.length >= 6, bang.noiDung.length);
     // §11.2: "Thứ tự và độ dài có thể khác dựa trên mức độ nổi bật của domain."
@@ -97,6 +106,91 @@ async function main() {
     kiem('Không câu nào ra lệnh', !bang.noiDung.some((x) => RA_LENH.test([x.ketLuan, ...x.doan].join(' '))));
     const trung = soMoTrung(bang.noiDung.map((x) => x.ketLuan));
     kiem('Không quá 2 kết luận mở giống nhau', trung <= 2, trung);
+
+    /*
+     * BỐN THÓI QUEN VIẾT — cùng bộ luật với bản đọc sâu, xem lib/rag/van-phong.ts.
+     *
+     * Đo theo TỈ LỆ PHẦN chứ không tuyệt đối, giống bên bản đọc sâu: một phần
+     * thiếu cặp phân biệt không làm hỏng bảng, cả mười hai phần cùng thiếu mới
+     * hỏng. Riêng hai câu khép thì đo mức có mặt, vì chúng là TRƯỜNG model buộc
+     * phải trả — thiếu ở nhiều phần nghĩa là schema không ăn, không phải giọng
+     * văn hôm nay kém.
+     */
+    const { coCapPhanBiet, soCauHoi } = await import('../lib/rag/van-phong');
+    const coCap = bang.noiDung.filter((x) =>
+      coCapPhanBiet([x.ketLuan, ...x.doan, x.giuLai ?? ''].join(' '))
+    ).length;
+    kiem(
+      'Từ 70% phần trở lên có cặp phân biệt',
+      coCap / bang.noiDung.length >= 0.7,
+      `${coCap}/${bang.noiDung.length}`
+    );
+    const coHoi = bang.noiDung.filter((x) => soCauHoi(x.cauHoiSoi ?? '') > 0).length;
+    kiem(
+      'Từ 80% phần trở lên có câu hỏi của người đọc',
+      coHoi / bang.noiDung.length >= 0.8,
+      `${coHoi}/${bang.noiDung.length}`
+    );
+    const coGiu = bang.noiDung.filter((x) => (x.giuLai ?? '').trim().length > 20).length;
+    kiem(
+      'Từ 80% phần trở lên có câu giữ lại',
+      coGiu / bang.noiDung.length >= 0.8,
+      `${coGiu}/${bang.noiDung.length}`
+    );
+    // Câu giữ lại nói thứ đáng mang theo, không giao việc — QUY_TAC_GIU_LAI
+    const giuLaiKhuyen = bang.noiDung.filter((x) => RA_LENH.test(x.giuLai ?? '')).map((x) => x.id);
+    kiem('Câu giữ lại không phải lời khuyên', giuLaiKhuyen.length === 0, giuLaiKhuyen);
+
+    /*
+     * MỘT CÁCH CỤC BÁM BAO NHIÊU PHẦN — phép đếm sinh ra cùng lúc với việc
+     * tách bảng làm hai lượt.
+     *
+     * Prompt cấm nhắc lại một cách cục trong cùng một phần, nhưng hai nửa chạy
+     * song song thì không nửa nào biết nửa kia đang dùng tên gì. Nguy cơ có
+     * thật và cụ thể: cả hai cùng bám cái tên to nhất của lá số, và bài đọc ra
+     * như thể người này chỉ có một bộ sao — đúng lỗi mà bản đọc sâu đã đo được
+     * (một bộ xuất hiện 31 lần trên 12 phần) và đã phải đặt luật để chặn.
+     *
+     * Không có phép đếm này thì cái giá của việc tách nằm trong ghi chú chứ
+     * không nằm ở đâu nhìn thấy được, và ghi chú thì không đỏ lên bao giờ.
+     */
+    const { nhanDangCachCuc } = await import('../lib/tuvi/cach-cuc');
+    const { boDau } = await import('../lib/rag/thuc-the');
+    const demPhan = new Map<string, number>();
+    for (const cc of nhanDangCachCuc(laSo).filter((c) => c.loai !== 'han')) {
+      const soPhan = bang.noiDung.filter((x) =>
+        boDau([x.ketLuan, ...x.doan, x.giuLai ?? ''].join(' ')).includes(boDau(cc.ten))
+      ).length;
+      if (soPhan) demPhan.set(cc.ten, soPhan);
+    }
+    const bamNhat = [...demPhan.entries()].sort((a, b) => b[1] - a[1]);
+    console.log(
+      `  cách cục bám nhiều phần nhất: ${bamNhat.slice(0, 3).map(([t, d]) => `${t}:${d}`).join(' · ') || '(không tên nào)'}`
+    );
+    /*
+     * Ngưỡng NỬA SỐ PHẦN, không phải một con số tuyệt đối.
+     *
+     * Một cách cục lớn có mặt ở nhiều phần đời là chuyện đúng về Tử Vi — Thân
+     * cư hay Tử Phủ Vũ Tướng Liêm vốn chạm nhiều chỗ. Cái sai là khi nó thành
+     * thứ DUY NHẤT bài có để nói. Quá nửa số phần là mốc đó, và nó cũng đúng
+     * bằng trần của luật trong prompt: mỗi nửa được nhắc một cách cục ở tối đa
+     * ba trong sáu phần.
+     *
+     * Ba lần đo trên cùng lá số mẫu, mỗi lần một bản:
+     *   một lượt, chưa có luật   — cao nhất 5/12
+     *   hai nửa, chưa có luật    — cao nhất 7/12   (tách làm nặng thêm)
+     *   hai nửa, có luật         — cao nhất 4/12
+     * Mỗi con số là MỘT lần chạy nên có nhiễu, nhưng hướng thì khớp với cơ chế:
+     * hai nửa không thấy nhau, nên phải nói riêng cho từng nửa.
+     */
+    const tranBam = Math.ceil(bang.noiDung.length / 2);
+    kiem(
+      `Không cách cục nào bám quá ${tranBam} phần`,
+      (bamNhat[0]?.[1] ?? 0) <= tranBam,
+      bamNhat.slice(0, 3)
+    );
+    console.log(`  câu hỏi soi: ${bang.noiDung[0]?.cauHoiSoi ?? '(không có)'}`);
+    console.log(`  giữ lại    : ${bang.noiDung[0]?.giuLai ?? '(không có)'}`);
   }
 
   // ---------------------------------------------------------- Nhịp Hành trình
@@ -151,6 +245,10 @@ async function main() {
     kiem(`[${loai}] dưới ${tranTrung} mốc mở giống nhau`, trung < tranTrung, trung);
   }
 
+  console.log(
+    `\n  Lớp sửa đã chạy: kê sao ${DEM_SUA.keSao.soLuotGoi} lượt/${DEM_SUA.keSao.soCauPham} câu · `
+      + `tiếng lóng ${DEM_SUA.tiengLong.soLuotGoi} lượt/${DEM_SUA.tiengLong.soCauPham} câu`
+  );
   console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
   process.exit(sai === 0 ? 0 : 1);
 }

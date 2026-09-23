@@ -84,6 +84,7 @@ async function chatGemini(
     model,
     tokensIn: data.usageMetadata?.promptTokenCount,
     tokensOut: data.usageMetadata?.candidatesTokenCount,
+    tokensDem: data.usageMetadata?.cachedContentTokenCount,
   };
 }
 
@@ -186,6 +187,7 @@ async function chatOpenAiCompat(
     model,
     tokensIn: data.usage?.prompt_tokens,
     tokensOut: data.usage?.completion_tokens,
+    tokensDem: data.usage?.prompt_tokens_details?.cached_tokens,
   };
 }
 
@@ -221,6 +223,7 @@ async function chatAnthropic(
     model,
     tokensIn: data.usage?.input_tokens,
     tokensOut: data.usage?.output_tokens,
+    tokensDem: data.usage?.cache_read_input_tokens,
   };
 }
 

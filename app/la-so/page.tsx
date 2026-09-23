@@ -7,7 +7,6 @@ import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
-import { KhoiChuyenDoi } from '@/components/laso/KhoiChuyenDoi';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { Eyebrow, NutVien, Shell } from '@/components/ui';
@@ -234,7 +233,7 @@ function TrangLaSo() {
    * ngôn ngữ là đổi khoá, nên trạng thái chờ tự bật lại mà không cần dọn tay.
    */
   const khoaSau =
-    laSo && duocVao
+    laSo
       ? `${laSo.thongTin.ngay}-${laSo.thongTin.thang}-${laSo.thongTin.nam}-${laSo.thongTin.gio}-${laSo.thongTin.gioiTinh}|${namXem}|${ngonNgu}`
       : null;
   const [khoaSauXong, setKhoaSauXong] = useState<string | null>(null);
@@ -243,7 +242,9 @@ function TrangLaSo() {
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
     // vòng vẽ lại thừa. Kết quả cũ bị thay khi câu trả lời mới về.
-    if (!laSo || !duocVao) return;
+    // Phần TỔNG QUAN mở cho cả khách — chỉ luận giải chuyên sâu mới cần tài
+    // khoản. Tuyến /api/luan-giai-sau tự quyết khách được thấy tới đâu.
+    if (!laSo) return;
     let huy = false;
     fetch('/api/luan-giai-sau', {
       method: 'POST',
@@ -272,7 +273,7 @@ function TrangLaSo() {
     return () => {
       huy = true;
     };
-  }, [laSo, duocVao, namXem, ngonNgu, khoaSau]);
+  }, [laSo, namXem, ngonNgu, khoaSau]);
 
   useEffect(() => {
     if (!laSo) return;
@@ -487,7 +488,7 @@ function TrangLaSo() {
           )}
 
         {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
-        {duocVao && dangDocSau && !baiSau && (
+        {dangDocSau && !baiSau && (
           <section className="flex flex-col gap-[12px]">
             <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
             <p className="body-text" style={{ color: 'var(--fg)' }}>
@@ -500,8 +501,8 @@ function TrangLaSo() {
           </section>
         )}
 
-        {/* Bảng luận giải theo lĩnh vực — phần mở ra sau khi đăng nhập */}
-        {duocVao && baiSau && baiSau.chang.length > 0 && (
+        {/* Bảng luận giải theo lĩnh vực — phần tổng quan, mở cho cả khách */}
+        {baiSau && baiSau.chang.length > 0 && (
           <BangLuanGiai
             bai={baiSau}
             duongHoi={duongHoi}
@@ -644,25 +645,12 @@ function TrangLaSo() {
         </div>
       </section>
 
-      {/* Khách gặp lời mời mở bức tranh đầy đủ ngay sau phần tổng quan */}
-      {!duocVao && (
-        <KhoiChuyenDoi
-          duongVe={duongVe}
-          tieuDe={t.quickRead.moBucTranhTieuDe}
-          moTa={t.quickRead.moBucTranhMo}
-          nhanCta={t.quickRead.moLuanGiaiDayDu}
-          chu={t.quickRead.chuMoBucTranh}
-          xemTruoc={
-            <TuViChart
-              laSo={laSo}
-              namXem={namXem}
-              thangXem={thangXem}
-              onNamXemChange={setNamXem}
-              chiBanDo
-            />
-          }
-        />
-      )}
+      {/*
+        Khối "mở bức tranh đầy đủ" — mệnh bàn mờ kèm lời mời đăng nhập — đã bỏ
+        từ 23/09/2026: phần tổng quan giờ mở cho cả khách nên mệnh bàn thật
+        hiện ngay bên dưới. Lời mời tài khoản chỉ còn ở những chỗ thật sự cần
+        nó: luận giải chuyên sâu, lưu lá số, hỏi Celes.
+      */}
 
       </Shell>
 
@@ -691,7 +679,7 @@ function TrangLaSo() {
         khác để chúng vẫn thẳng hàng với thanh điều hướng.
       */}
       <div className="mx-auto w-full max-w-[1400px] px-[24px]">
-      {duocVao ? (
+      {laSo ? (
         <div className="grid items-start gap-[24px] lg:grid-cols-12">
           {/*
             Cột này CHỈ dính, không tự cuộn. Khung cuộn nằm bên trong
@@ -707,8 +695,8 @@ function TrangLaSo() {
           <div className="flex flex-col gap-[32px] lg:col-span-6">{phanDoc}</div>
         </div>
       ) : (
-        // Khách chỉ có một cột, nên giữ lại bề ngang 1200px của cả trang: một
-        // cột chữ trải hết 1352px thì mỗi dòng dài quá tầm mắt.
+        // Chưa có lá số thì chỉ có một cột chữ, nên giữ lại bề ngang 1200px của
+        // cả trang: một cột chữ trải hết 1352px thì mỗi dòng dài quá tầm mắt.
         <div className="mx-auto flex max-w-[1200px] flex-col gap-[32px]">{phanDoc}</div>
       )}
       </div>

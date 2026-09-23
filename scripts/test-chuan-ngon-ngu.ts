@@ -15,7 +15,7 @@ import { docNhanh } from '../lib/tuvi/quick-read';
 import { KHUON } from '../lib/tuvi/quick-read-noi-dung';
 import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
 import { luanHan } from '../lib/tuvi/luan-han';
-import { CHUAN_NGON_NGU_CELES } from '../lib/rag/chuan-ngon-ngu';
+import { CHUAN_NGON_NGU_CELES, KHOI_CHUAN, dungChuanNgonNgu } from '../lib/rag/chuan-ngon-ngu';
 import { CHU_TRUU_TUONG, demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
 import { boDau, TU_DIEN_THUC_THE } from '../lib/rag/thuc-the';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
@@ -309,6 +309,41 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
   coBat('Theo tài liệu Tử Vi Đẩu Số, sao này chủ về tiền bạc.', 'lo-nguon-rag', 'Vẫn bắt được rò rỉ nguồn');
   coBat('Bạn là người sâu sắc, nhạy cảm, mạnh mẽ.', 'tinh-tu-barnum', 'Vẫn bắt được tính từ chung chung');
 }
+
+/*
+ * BA NHÓM LUẬT — chuẩn bị cho A5 (KIEN-TRUC-LUAN-GIAI.md mục 7.2).
+ *
+ * Chia khối là để CẮT ĐƯỢC VÀ ĐO ĐƯỢC, không phải để đổi prompt. Bốn phép kiểm
+ * dưới đây giữ đúng ranh giới ấy: ghép lại phải bằng đúng bản đang chạy, bỏ
+ * nhóm thì phải ngắn đi thật, và mỗi khối xếp vào nhóm "code đã cưỡng chế"
+ * phải nói được code nào đang cưỡng chế nó — bằng không nhóm ấy chỉ là một
+ * cái nhãn dán cho tiện tay, và nhát cắt dựa trên nó sẽ bỏ mất một luật không
+ * ai đỡ.
+ */
+console.log('\n== BA NHÓM LUẬT (A5) ==\n');
+kiem('Bản mặc định đúng bằng mười chín khối ghép lại', dungChuanNgonNgu() === CHUAN_NGON_NGU_CELES);
+kiem(
+  'Mọi khối có tên riêng',
+  new Set(KHOI_CHUAN.map((k) => k.ten)).size === KHOI_CHUAN.length,
+  KHOI_CHUAN.length
+);
+kiem(
+  'Khối nhóm code-cưỡng-chế phải chỉ ra code nào ép',
+  KHOI_CHUAN.filter((k) => k.nhom === 'ma-cuong-che').every((k) => Boolean(k.coSo)),
+  KHOI_CHUAN.filter((k) => k.nhom === 'ma-cuong-che' && !k.coSo).map((k) => k.ten)
+);
+kiem(
+  'Bỏ một nhóm thì prompt ngắn đi thật',
+  dungChuanNgonNgu(['ma-cuong-che']).length < CHUAN_NGON_NGU_CELES.length &&
+    dungChuanNgonNgu(['mau-day-duoc']).length < CHUAN_NGON_NGU_CELES.length
+);
+console.log(
+  `  Cỡ từng nhóm (ký tự): ${(['ma-cuong-che', 'mau-day-duoc', 'phai-giu'] as const)
+    .map(
+      (n) => `${n} ${KHOI_CHUAN.filter((k) => k.nhom === n).reduce((t, k) => t + k.van.length, 0)}`
+    )
+    .join(' · ')}`
+);
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
 process.exit(sai === 0 ? 0 : 1);

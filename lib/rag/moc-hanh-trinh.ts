@@ -1,4 +1,5 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
+import { chonMauVang, khoiMauVang } from './mau-vang';
 
 import type { LaSo } from '@/lib/tuvi/ansao';
 
@@ -308,13 +309,14 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
 
 
 
+  const mauMoc = khoiMauVang(chonMauVang({ beMat: 'moc-hanh-trinh', loai: ['thua-du-kien'] }));
   const user = `${dungKhoiChoPrompt(goi)}
 
 
 
 DÒNG THỜI GIAN CẦN VIẾT (id | nhãn | cung | chính tinh | vòng):
 
-${bang}`;
+${bang}${mauMoc ? `\n\n${mauMoc}` : ''}`;
 
 
 

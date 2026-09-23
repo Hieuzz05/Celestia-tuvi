@@ -231,8 +231,20 @@ export function SiteNav() {
               </div>
             ) : (
               <>
+                {/*
+                  "Đăng nhập" chỉ nằm trên thanh từ lg trở lên; hẹp hơn thì nó
+                  vào panel menu.
+
+                  Trên iPhone 390px, khách gặp cùng lúc logo + "Đăng nhập" +
+                  "Bắt đầu miễn phí" + "Menu" — bốn thứ không vừa một hàng, hàng
+                  nở thành 404px và trình duyệt bóp nhỏ cả trang. Lỗi này nằm im
+                  suốt vì mọi lần đo trước đều chạy với Supabase tắt, mà Supabase
+                  tắt thì không có nút "Đăng nhập" nào để tràn. Nó chỉ lộ ra khi
+                  phần tổng quan mở cho khách (23/09/2026) và phải đo đúng như một
+                  khách thật.
+                */}
                 {daCauHinhAuth && (
-                  <Link href="/dang-nhap" className="link-text">
+                  <Link href="/dang-nhap" className="link-text hidden lg:inline">
                     {t.nav.dangNhap}
                   </Link>
                 )}
@@ -295,6 +307,16 @@ export function SiteNav() {
                 {l.nhan}
               </Link>
             ))}
+            {/* Khách trên màn hẹp tìm "Đăng nhập" ở đây — xem ghi chú ở hàng trên */}
+            {!taiKhoan && daCauHinhAuth && (
+              <Link
+                href="/dang-nhap"
+                className="nav-link flex min-h-[44px] items-center"
+                onClick={() => setMoNav(false)}
+              >
+                {t.nav.dangNhap}
+              </Link>
+            )}
             <div
               className="mt-[8px] flex items-center gap-[12px] border-t pt-[12px]"
               style={{ borderColor: 'var(--line)' }}

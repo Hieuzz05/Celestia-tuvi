@@ -381,6 +381,7 @@ export const vi = {
     cung: 'cùng',
     soiQua: 'soi qua',
     doanKhau: 'BA PHẦN NÀY NÓI CÙNG ĐIỀU GÌ',
+    giuLai: 'Điều Celes muốn bạn giữ lại',
     theoNoiBat: 'Đọc theo điều đang khiến bạn nghĩ nhiều ⇅',
     theoChang: 'Quay lại bốn chặng ⇅',
     // Chỉ dẫn mở chặng. Bốn tiêu đề đóng mà không có dấu hiệu bấm được thì

@@ -207,6 +207,8 @@ function laCauDinhBenh(cau: string): boolean {
 async function do_() {
   const { lapLaSo } = await import('../lib/tuvi/ansao');
   const { sinhBanDocSau, soBaoPhu, soatBanDocSau } = await import('../lib/rag/ban-doc-sau');
+  const { DEM_SUA, datLaiDemSua } = await import('../lib/rag/sua-chua');
+  datLaiDemSua();
   const { namAmHienTai, thangAmHienTai } = await import('../lib/tuvi/bay-gio');
 
   console.log('\n== SINH BÀI THẬT ==\n');
@@ -261,10 +263,19 @@ async function do_() {
     daiLoi.map((m) => [m.id, m.tieuChi.reduce((t, x) => t + x.soTu, 0)])
   );
 
+  /*
+   * Mọi tỉ lệ dưới đây đo trên tiêu chí CÓ CHỮ, không trên tiêu chí được trả về.
+   *
+   * Từ A1 (KIEN-TRUC-LUAN-GIAI.md), model được phép đánh dấu một tiêu chí là
+   * lá số im lặng và để trống. Đếm những tiêu chí ấy vào mẫu số là phạt bài vì
+   * đã thành thật — và đó đúng là áp lực đẩy nó quay lại viết cho đủ.
+   */
+  const tieuChiCoChu = muc.flatMap((m) => m.tieuChi).filter((t) => !t.thieuCanCu);
+  const soImLang = muc.flatMap((m) => m.tieuChi).filter((t) => t.thieuCanCu).length;
+
   // Spec mục 10.17: tiêu chí sâu phải có lực ngược
   const tiLucNguoc =
-    muc.flatMap((m) => m.tieuChi).filter((t) => t.luongNguoc).length /
-    Math.max(muc.flatMap((m) => m.tieuChi).length, 1);
+    tieuChiCoChu.filter((t) => t.luongNguoc).length / Math.max(tieuChiCoChu.length, 1);
   kiem(
     `≥70% tiêu chí có lực ngược (đo ${(tiLucNguoc * 100).toFixed(0)}%)`,
     tiLucNguoc >= 0.7
@@ -363,7 +374,7 @@ async function do_() {
    * Đo tỉ lệ chứ không đo tuyệt đối: một tiêu chí lỡ nêu tên ở hai câu không
    * làm hỏng bài, cả bài cùng làm vậy mới hỏng.
    */
-  const tatCaTieuChi = muc.flatMap((m) => m.tieuChi);
+  const tatCaTieuChi = tieuChiCoChu;
   const quaMotCau = tatCaTieuChi.filter((t) => {
     const cau = [t.noiDung, t.luongNguoc ?? '']
       .join(' ')
@@ -588,6 +599,26 @@ async function do_() {
   console.log(`\n  Tổng thời gian: ${((Date.now() - t0) / 1000).toFixed(0)}s`);
   console.log(
     `  Số từ mỗi phần: ${muc.map((m) => m.tieuChi.reduce((t, x) => t + x.soTu, 0)).join(', ')}`
+  );
+  /*
+   * ĐỘ NỔI BẬT ↔ SỐ TỪ — tiêu chí nghiệm thu của A1.
+   *
+   * A1 đổi ngân sách từ ĐÍCH thành TRẦN. Nghiệm thu không phải "bài ngắn đi"
+   * mà là "phần lá số nói ít thì ngắn đi, phần nói nhiều thì không". Một con
+   * số tổng không phân biệt được hai chuyện đó — in từng cặp thì phân biệt
+   * được bằng mắt trong ba giây.
+   */
+  console.log(
+    `  Độ nổi bật → số từ: ${muc
+      .map((m) => `${m.id} ${m.doNoiBat}→${m.tieuChi.reduce((t, x) => t + x.soTu, 0)}`)
+      .join(' · ')}`
+  );
+  console.log(
+    `  Tiêu chí lá số im lặng (A1): ${soImLang}/${muc.flatMap((m) => m.tieuChi).length}`
+  );
+  console.log(
+    `  Lớp sửa đã chạy: kê sao ${DEM_SUA.keSao.soLuotGoi} lượt/${DEM_SUA.keSao.soCauPham} câu · `
+      + `tiếng lóng ${DEM_SUA.tiengLong.soLuotGoi} lượt/${DEM_SUA.tiengLong.soCauPham} câu`
   );
   console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} MỤC SAI\n`);
   process.exit(sai === 0 ? 0 : 1);
