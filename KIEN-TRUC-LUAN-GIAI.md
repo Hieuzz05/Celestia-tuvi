@@ -493,6 +493,7 @@ Celes có **6 bề mặt sinh chữ**. Xây cho một bề mặt là lặp lại
 | Planner gán PRIMARY cho tất cả | Ràng buộc phân bố cưỡng chế bằng code, plan lại nếu vi phạm |
 | Grounding check xoá sạch câu cảnh | **Luật miễn trừ §7.3** — bắt buộc |
 | Mẫu vàng động phá prefix cache | Đặt trong `user`, sau khối luật tĩnh ở `system` |
+| **Model chép nguyên văn mẫu trong prompt** — đo ngày 2026-09-23 trên 8 lá số: câu ví dụ của `cau-canh.ts` ("chín giờ tối") xuất hiện 25 lần; ví dụ của `van-phong.ts` bị chép làm câu hỏi soi, câu mở đoạn, câu giữ lại | (1) Mỗi lượt chỉ chèn 1–3 mẫu, **xoay vòng** trong kho, không cố định; (2) thêm phép đo trùng cụm 6–8 từ giữa bài sinh ra và kho mẫu, vượt ngưỡng thì cờ; (3) rút bớt câu ví dụ cố định trong `cau-canh.ts` / `van-phong.ts` khi đã có kho mẫu thay thế |
 | Chi phí tăng 2-3 lần | Claim batch theo token; grounding có điều kiện; judge offline; editor chỉ khi FAIL |
 | 12 phần thành 5 phần thật + 7 phần trỏ chéo | Trần REFERENCE 20%; vượt thì **giảm số tiêu chí**, không độn |
 | Kiến trúc đúng mà không bao giờ xong | Chốt Phase A bằng mắt trước khi vào Phase B |
