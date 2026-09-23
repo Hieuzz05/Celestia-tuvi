@@ -22,12 +22,15 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
+| SQL `supabase/va-rag-chat-luong.sql` (nhánh `viec/rag-chat-luong-truy-hoi`) | CHƯA CHẠY trên database thật — chờ chủ dự án dán vào SQL Editor. Đổi chỉ mục vector ivfflat → hnsw và thêm hàm tìm theo cụm. Mã trên nhánh tự lùi về hàm cũ khi SQL chưa chạy. Chạy xong thì xoá dòng này | Claude (máy 1) |
 | Bản đọc sâu, mỗi chặng một lượt gọi | Sát trần 55 giây: đo 23/09 có chặng mất 52s, chặng sau chạm trần và cả bài hỏng. Hỏng NGẪU NHIÊN — hai lượt khác trong ngày vẫn qua. Xem CEL-117 | Claude (máy 1) |
 
 ## Vừa xong
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-119 — luận giải v3 (11 câu tổng quan + 61 câu chuyên sâu, đọc nhiều cung, Celes chạy thật từ đầu đến cuối) + route `/api/luan-giai-v3`, CHƯA có giao diện, CHƯA gộp. Nhánh `viec/luan-giai-v3`, dựng TRÊN nhánh RAG bên dưới → gộp RAG trước. Chạm: `lib/rag/v3/*` (mới), `app/api/luan-giai-v3` (mới), `lib/rag/noi-dung-ai.ts` (thêm bề mặt `luan-giai-v3`) | `0bbff65` | 23/09/2026 |
+| Sửa tầng truy hồi: hnsw, tìm nguyên cụm tên riêng, bỏ bản chép giữa các sách, phân cấp nguồn (nhánh `viec/rag-chat-luong-truy-hoi`, CHƯA gộp, cần chạy SQL — xem "Đang vướng"). Chạm: `lib/rag/truy-hoi.ts`, `uu-tien-nguon.ts`, `planner.ts`, `cum-tu-khoa.ts` (mới) | `f717a85` | 23/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: văn phong + Phase A + mở tổng quan cho khách (7 commit, gộp theo quyết định của chủ dự án). `viec/mobile-adaptive` CHƯA gộp | `6020772` | 23/09/2026 |
 | CEL-118 — phần tổng quan mở cho khách, chỉ luận giải chuyên sâu cần đăng nhập; kèm sửa thanh điều hướng tràn trên iPhone (nhánh `viec/mo-tong-quan-cho-khach`) | `a0024db` | 23/09/2026 |
 | A5 nhát cắt đầu + cắm mẫu vàng cho sáu bề mặt (nhánh `viec/kien-truc-phase-a`) | `57934ca` | 23/09/2026 |
