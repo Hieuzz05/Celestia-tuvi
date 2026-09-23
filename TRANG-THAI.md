@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: văn phong + Phase A + mở tổng quan cho khách (7 commit, gộp theo quyết định của chủ dự án). `viec/mobile-adaptive` CHƯA gộp | `6020772` | 23/09/2026 |
 | CEL-118 — phần tổng quan mở cho khách, chỉ luận giải chuyên sâu cần đăng nhập; kèm sửa thanh điều hướng tràn trên iPhone (nhánh `viec/mo-tong-quan-cho-khach`) | `a0024db` | 23/09/2026 |
 | A5 nhát cắt đầu + cắm mẫu vàng cho sáu bề mặt (nhánh `viec/kien-truc-phase-a`) | `57934ca` | 23/09/2026 |
 | Phase A của `KIEN-TRUC-LUAN-GIAI.md`: A1 (ngân sách từ thành trần) + A3 (chỗ cắm mẫu vàng) + chia ba nhóm luật cho A5 — nhánh `viec/kien-truc-phase-a` | `10b7dc5` | 22/09/2026 |
