@@ -32,7 +32,7 @@ export function CauTraLoiV3({ cau, nho = false }: { cau: CauV3; nho?: boolean })
 
   if (cau.chuaViet) {
     return (
-      <article className="flex flex-col gap-[6px]">
+      <article className="flex flex-col gap-[8px]">
         <h3 className={nho ? 'text-[16px] font-semibold' : 'text-[18px] font-semibold'} style={{ color: 'var(--fg)' }}>
           {cau.cauHoi}
         </h3>
@@ -46,7 +46,7 @@ export function CauTraLoiV3({ cau, nho = false }: { cau: CauV3; nho?: boolean })
   const doan = cau.luanGiai.split(/\n\s*\n/).filter((x) => x.trim());
 
   return (
-    <article className="flex flex-col gap-[10px]">
+    <article className="flex flex-col gap-[12px]">
       <h3 className={nho ? 'text-[16px] font-semibold' : 'text-[18px] font-semibold'} style={{ color: 'var(--fg)' }}>
         {cau.cauHoi}
       </h3>
@@ -72,7 +72,7 @@ export function CauTraLoiV3({ cau, nho = false }: { cau: CauV3; nho?: boolean })
         </button>
       </div>
       {mo && (
-        <div className="flex flex-col gap-[6px] pl-[14px]" style={{ borderLeft: '2px solid var(--line)' }}>
+        <div className="flex flex-col gap-[8px] pl-[14px]" style={{ borderLeft: '2px solid var(--line)' }}>
           <p className="eyebrow">Căn cứ trên lá số của bạn</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {cau.viSao}

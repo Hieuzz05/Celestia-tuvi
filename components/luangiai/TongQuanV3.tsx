@@ -57,8 +57,8 @@ export function TongQuanV3({ laSo, onHong }: { laSo: ThongTinLaSoV3; onHong?: ()
   if (!dangDoc && !kq.cau) return null;
 
   return (
-    <section className="flex flex-col gap-[20px]">
-      <div className="flex flex-col gap-[6px]">
+    <section className="flex flex-col gap-[24px]">
+      <div className="flex flex-col gap-[8px]">
         <Eyebrow>Luận giải tổng quan</Eyebrow>
         <h2 className="text-[22px] font-semibold" style={{ color: 'var(--fg)' }}>
           Bức tranh chung của lá số
@@ -81,7 +81,7 @@ export function TongQuanV3({ laSo, onHong }: { laSo: ThongTinLaSoV3; onHong?: ()
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-[28px]">
+        <div className="flex flex-col gap-[24px]">
           {kq.cau!.map((c) => (
             <CauTraLoiV3 key={c.id} cau={c} />
           ))}

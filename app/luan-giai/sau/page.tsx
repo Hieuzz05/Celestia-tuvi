@@ -139,7 +139,7 @@ function TrangSau() {
         {/* ---------- Mục lục chủ đề ---------- */}
         <nav className="shrink-0 lg:sticky lg:top-[80px] lg:w-[240px]">
           <Eyebrow className="mb-[10px]">Chủ đề</Eyebrow>
-          <ol className="flex flex-wrap gap-x-[14px] gap-y-[8px] lg:flex-col lg:gap-[6px]">
+          <ol className="flex flex-wrap gap-x-[16px] gap-y-[8px] lg:flex-col lg:gap-[8px]">
             {CHU_DE_V3.map((c) => {
               const tt = bai[c.id];
               const daDoc = Boolean(tt && !tt.dang && tt.cau);
@@ -164,7 +164,7 @@ function TrangSau() {
         </nav>
 
         {/* ---------- Bài của chủ đề đang mở ---------- */}
-        <main className="flex min-w-0 flex-1 flex-col gap-[28px] lg:max-w-[700px]">
+        <main className="flex min-w-0 flex-1 flex-col gap-[24px] lg:max-w-[700px]">
           <header className="flex flex-col gap-[8px]">
             <Eyebrow>Luận giải chuyên sâu · năm xem {namXem}</Eyebrow>
             <h1 className="heading-lg">{chuDe.ten}</h1>
@@ -185,13 +185,13 @@ function TrangSau() {
               </p>
             </div>
           ) : trangThai.cau ? (
-            <div className="flex flex-col gap-[36px]">
+            <div className="flex flex-col gap-[32px]">
               {trangThai.cau.map((c) => (
                 <CauTraLoiV3 key={c.id} cau={c} />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-[10px]">
+            <div className="flex flex-col gap-[12px]">
               <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
                 {trangThai.loi}
               </p>
