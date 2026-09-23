@@ -99,6 +99,11 @@ const HAM_THEO_TEP: { ten: string; tep: string; tham: Record<string, unknown> }[
     tham: { cau_truy_van: 'tu vi', so_luong: 1, loc_he_phai: null, loc_thuc_the: null },
   },
   {
+    ten: 'tim_kien_thuc_tu_khoa_cum',
+    tep: 'supabase/va-rag-chat-luong.sql',
+    tham: { cau_tu_le: 'tu', cum_tu: ['Tử Vi'], so_luong: 1, loc_he_phai: null, loc_thuc_the: null },
+  },
+  {
     ten: 'xoa_lien_ket_thuc_the',
     tep: 'supabase/schema-rag-v3.sql',
     tham: { p_version_id: '00000000-0000-0000-0000-000000000000' },

@@ -36,7 +36,7 @@ interface Doan {
 }
 
 async function main() {
-  const { embedLoTaiLieu, TEN_MODEL_EMBEDDING, NHA_CUNG_CAP_EMBEDDING } = await import(
+  const { embedLoTaiLieu, TEN_MODEL_EMBEDDING, NHA_CUNG_CAP_EMBEDDING, SO_CHIEU_VECTOR } = await import(
     '../lib/ai/embedding'
   );
 
@@ -160,6 +160,19 @@ async function main() {
 
   const conThieu = await demDong('&embedding=is.null');
   console.log(`\n\nXONG. Còn thiếu: ${conThieu} đoạn.\n`);
+
+  // Sinh lại TOÀN BỘ mà không sót đoạn nào thì mọi phiên bản giờ cùng một model:
+  // ghi lại nhãn cho đúng. Chế độ điền chỗ thiếu thì không đụng — phần cũ có thể
+  // vẫn là model khác, và nhãn sai còn tệ hơn nhãn cũ.
+  if (TAT_CA && conThieu === 0) {
+    await guiLai(`${U}/rest/v1/knowledge_document_versions?id=not.is.null`, {
+      method: 'PATCH',
+      headers: H,
+      body: JSON.stringify({ model_embedding: `${TEN_MODEL_EMBEDDING}@${SO_CHIEU_VECTOR}` }),
+    });
+    console.log(`Đã ghi nhãn model ${TEN_MODEL_EMBEDDING}@${SO_CHIEU_VECTOR} cho mọi phiên bản.\n`);
+  }
+
   process.exit(conThieu === 0 ? 0 : 1);
 }
 

@@ -22,7 +22,7 @@ import type { DoanUngVien } from './truy-hoi';
  * độc lập. Đó vẫn chỉ là một người nói ba lần.
  */
 
-export const PHIEN_BAN_UU_TIEN = '2026.09.1';
+export const PHIEN_BAN_UU_TIEN = '2026.09.2';
 
 /** Thứ bậc tin cậy. Số nhỏ hơn = đứng trên. */
 export const BAC_TIN_CAY: Record<string, number> = {
@@ -80,18 +80,75 @@ export function xepTheoUuTien(ds: DoanUngVien[]): DoanUngVien[] {
 }
 
 /**
- * Chọn danh sách cuối, có giới hạn số đoạn mỗi tài liệu.
+ * Tỉ lệ chữ của đoạn ngắn hơn nằm lại trong đoạn dài hơn, tính trên cụm 3 từ
+ * liên tiếp đã bỏ dấu. Trên ngưỡng này thì coi là chép lại nhau.
+ *
+ * Vì sao đo "độ chứa" chứ không đo Jaccard: hai cuốn sách chép cùng một câu phú
+ * nhưng cắt đoạn ở chỗ khác nhau, nên đoạn này thường là một phần của đoạn kia.
+ * Jaccard chia cho phần hợp, ra số thấp dù phần chung chiếm gần hết đoạn ngắn.
+ *
+ * Vì sao 0,5: đoạn nào mà một nửa chữ đã nằm sẵn trong gói thì nó không còn đủ
+ * điều mới để giữ một chỗ trong sáu chỗ. Phần chồng lấn 150 ký tự giữa hai đoạn
+ * liền nhau của cùng một sách chỉ chiếm ~12% đoạn, còn xa mới chạm ngưỡng.
+ */
+export const NGUONG_TRUNG = 0.5;
+
+function vanTay(s: string): Set<string> {
+  const tu = s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const ra = new Set<string>();
+  for (let i = 0; i + 2 < tu.length; i++) ra.add(`${tu[i]} ${tu[i + 1]} ${tu[i + 2]}`);
+  return ra;
+}
+
+/** Độ chứa giữa hai đoạn, trong [0,1]. Đoạn dưới ba từ thì không so được, trả 0. */
+export function doTrung(a: string, b: string): number {
+  const A = vanTay(a);
+  const B = vanTay(b);
+  const nho = A.size <= B.size ? A : B;
+  const lon = nho === A ? B : A;
+  if (nho.size === 0) return 0;
+  let chung = 0;
+  for (const x of nho) if (lon.has(x)) chung += 1;
+  return chung / nho.size;
+}
+
+/**
+ * Chọn danh sách cuối: bỏ đoạn trùng, giới hạn số đoạn mỗi tài liệu.
+ *
+ * Bỏ trùng đi trước mọi thứ. Sách tử vi chép phú của nhau, nên cùng một câu có
+ * thể về từ ba cuốn. Giữ cả ba thì gói mất ba chỗ cho một ý, và tệ hơn,
+ * `mucChacChan` đếm thành ba nguồn độc lập đồng thuận — một sự đồng thuận giả.
+ * Đoạn được giữ là đoạn đứng trước trong `daXep`, tức đã thắng về độ liên quan
+ * rồi tới mức tin cậy; hạn mức mỗi tài liệu không cứu được chuyện này vì ba
+ * bản chép nằm ở ba tài liệu khác nhau.
  *
  * Vòng một lấy theo hạn mức để gói có nhiều tiếng nói. Nếu chưa đủ số lượng —
  * kho còn ít tài liệu — vòng hai lấp nốt bằng các đoạn tốt nhất còn lại. Thà
- * một gói kém đa dạng còn hơn một gói thiếu bằng chứng.
+ * một gói kém đa dạng còn hơn một gói thiếu bằng chứng. Nhưng đoạn trùng thì
+ * không được lấp vào: nó không thêm bằng chứng nào.
  */
 export function chonDaDang(daXep: DoanUngVien[], soCuoi: number): DoanUngVien[] {
   const dem = new Map<string, number>();
   const chon: DoanUngVien[] = [];
   const dePhong: DoanUngVien[] = [];
+  // Đoạn đã giữ lại làm đại diện, kể cả đoạn đang nằm dự phòng — một đoạn trùng
+  // với đoạn dự phòng cũng không nên lấp vào sau đó
+  const daXet: DoanUngVien[] = [];
 
   for (const u of daXep) {
+    const goc = daXet.find((c) => doTrung(u.noiDung, c.noiDung) >= NGUONG_TRUNG);
+    if (goc) {
+      u.trungVoi = goc.chunkId;
+      continue;
+    }
+    daXet.push(u);
+
     const soDaCo = dem.get(u.documentId) ?? 0;
     if (chon.length < soCuoi && soDaCo < TOI_DA_MOI_TAI_LIEU) {
       chon.push(u);
@@ -116,6 +173,8 @@ export type MucChacChan = 'manh' | 'vua' | 'yeu' | 'trai-chieu' | 'chua-du';
  *
  * Độc lập = khác tài liệu. Ba đoạn trong cùng một cuốn sách vẫn là một người
  * nói ba lần, và nếu đếm chúng thành ba thì mọi nhận định đều trông "mạnh".
+ * Hai cuốn chép cùng một câu cũng vậy — trường hợp đó bị chặn từ `chonDaDang`,
+ * nên nguồn đưa vào đây đã không còn bản chép.
  *
  * Nguồn mức `ho-tro` không tự nó nâng được độ chắc: nó làm dày ngữ cảnh chứ
  * không phải căn cứ.

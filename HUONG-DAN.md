@@ -570,6 +570,33 @@ npx tsx scripts/nap-kho.ts "D:/Tài liệu tử vi/markdown/Tử Vi khảo luậ
 Script bỏ qua tài liệu đã có trong kho. Muốn nạp đè thì thêm `--lai`. Nạp xong
 tài liệu nằm ở trạng thái "cần duyệt"; vào `/admin/knowledge` để xuất bản.
 
+**Phân cấp sách nằm trong `manifest.json`** của thư mục sách. Mỗi dòng ghi thêm
+được `muc_tin_cay`, `he_phai`, `loai_nguon`; thiếu thì lấy `tham-khao` / `chung` /
+`sach` như trước:
+
+```json
+{ "file": "tu-vi-dau-so-toan-thu.md", "title": "Tử Vi Đẩu Số Toàn Thư",
+  "muc_tin_cay": "chuyen-gia-duyet", "he_phai": "nam-phai" }
+```
+
+| Mức | Dành cho |
+|---|---|
+| `cot-loi` | Tài liệu chuẩn chuyên gia soạn cho Celes: định nghĩa sao, luật Tứ Hoá, cách cục theo Nam phái |
+| `chuyen-gia-duyet` | Sách gốc, bản chuẩn, đã có người hiểu tử vi đọc đối chiếu |
+| `tham-khao` | Sách phổ thông, bản chép lại, sách chưa đối chiếu |
+| `ho-tro` | Bài viết, ghi chép, bản quét chất lượng kém — không bao giờ tự làm căn cứ |
+
+Mức tin cậy chỉ phân xử khi hai đoạn ngang nhau về độ liên quan, và quyết định
+nghe ai khi hai nguồn nói ngược nhau (`lib/rag/uu-tien-nguon.ts`). Cả kho cùng một
+mức thì thứ bậc đó không làm được gì.
+
+Tài liệu đã nạp rồi thì không cần nạp lại — sửa manifest rồi chạy:
+
+```bash
+npx tsx scripts/phan-cap-kho.ts          # in ra những gì sẽ đổi, chưa ghi
+npx tsx scripts/phan-cap-kho.ts --ghi    # ghi thật
+```
+
 **Hai điều sai lặng lẽ, phải biết trước:**
 
 1. **Đổi `EMBEDDING_PROVIDER` thì phải sinh lại vector cho TOÀN BỘ kho:**

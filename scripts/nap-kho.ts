@@ -32,10 +32,39 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
 
 const THU_MUC_MAC_DINH = 'D:/Tài liệu tử vi/markdown';
 
+/**
+ * Một dòng của `manifest.json` trong thư mục sách.
+ *
+ * `muc_tin_cay` và `he_phai` quyết định sách này được nghe tới đâu khi hai nguồn
+ * nói ngược nhau (lib/rag/uu-tien-nguon.ts). Bản cũ gán cứng 'tham-khao' và
+ * 'chung' cho mọi cuốn, nên cả kho đứng cùng một bậc: luật "khác mức thì theo
+ * mức cao" không bao giờ chạy, và bộ lọc hệ phái không lọc được gì. Thiếu trường
+ * thì vẫn lùi về hai giá trị đó, để manifest cũ chạy y như trước.
+ *
+ * Tài liệu đã nạp rồi thì sửa mức bằng `scripts/phan-cap-kho.ts`, không cần nạp lại.
+ */
 interface HangManifest {
   file: string;
   title?: string;
   author?: string;
+  muc_tin_cay?: string;
+  he_phai?: string;
+  loai_nguon?: string;
+}
+
+const MUC_TIN_CAY = ['cot-loi', 'chuyen-gia-duyet', 'tham-khao', 'ho-tro'];
+const HE_PHAI = ['chung', 'nam-phai', 'bac-phai'];
+const LOAI_NGUON = ['sach', 'ghi-chu-chuyen-gia', 'quy-tac', 'bai-viet', 'noi-bo'];
+
+/** Giá trị gõ sai trong manifest thì dừng hẳn — lặng lẽ lùi về mặc định là mất phân cấp mà không ai biết */
+function chonGiaTri(hang: HangManifest | undefined, truong: keyof HangManifest, hopLe: string[], macDinh: string) {
+  const v = hang?.[truong];
+  if (v === undefined) return macDinh;
+  if (!hopLe.includes(v)) {
+    console.log(`DỪNG: manifest ghi ${truong} = "${v}" cho ${hang?.file}. Chỉ nhận: ${hopLe.join(', ')}.`);
+    process.exit(1);
+  }
+  return v;
 }
 
 function docManifest(thuMuc: string): Map<string, HangManifest> {
@@ -107,9 +136,9 @@ async function main() {
       const nap = await napTaiLieu({
         tieuDe,
         noiDung,
-        hePhai: 'chung',
-        loaiNguon: 'sach',
-        mucTinCay: 'tham-khao',
+        hePhai: chonGiaTri(hang, 'he_phai', HE_PHAI, 'chung'),
+        loaiNguon: chonGiaTri(hang, 'loai_nguon', LOAI_NGUON, 'sach'),
+        mucTinCay: chonGiaTri(hang, 'muc_tin_cay', MUC_TIN_CAY, 'tham-khao'),
         phienBan: new Date().toISOString().slice(0, 10),
         tacGia: hang?.author,
         tenTep: basename(t),
