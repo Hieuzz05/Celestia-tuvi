@@ -89,7 +89,10 @@ export async function luuNoiDung(
     // Hai tab mở cùng lúc là hai lượt sinh song song. Thua cuộc thì ghi đè bản
     // của người thắng cũng không sao — hai bản đều hợp lệ cho cùng một kỳ, và
     // thà ghi đè còn hơn ném lỗi lên màn hình vì một ràng buộc trùng khoá.
-    await supabase.from('noi_dung_ai').upsert(
+    //
+    // Supabase báo lỗi qua giá trị trả về, KHÔNG ném. Bản trước bỏ qua nó, nên
+    // một lần ghi hỏng là im lặng và lần sau lại sinh lại mà không ai biết vì sao.
+    const { error } = await supabase.from('noi_dung_ai').upsert(
       {
         chart_hash: k.chartHash,
         be_mat: k.beMat,
@@ -103,8 +106,41 @@ export async function luuNoiDung(
       },
       { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' }
     );
-  } catch {
+    if (error) console.warn(`[noi-dung-ai] Không cất được ${k.beMat} ${k.khoaKy}: ${error.message}`);
+  } catch (e) {
     // Không cất được thì lần sau sinh lại — tốn tiền, nhưng không hỏng gì
+    console.warn('[noi-dung-ai] Lỗi khi cất:', e instanceof Error ? e.message : e);
+  }
+}
+
+/**
+ * Bản MỚI NHẤT có khoá bắt đầu bằng `tienTo` — dùng để đọc lại bài đã sinh dưới
+ * khoá kiểu cũ (khoá cũ gắn phiên bản prompt, đổi mỗi lần deploy).
+ *
+ * `tienTo` không được chứa `%` hay `_`: hai ký tự đó là ký tự đại diện của LIKE.
+ */
+export async function docNoiDungMoiNhat<T>(
+  k: Omit<Khoa, 'khoaKy'>,
+  tienTo: string
+): Promise<BanGhiNoiDung<T> | null> {
+  if (/[%_]/.test(tienTo)) return null;
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('noi_dung_ai')
+      .select('noi_dung, provider, model, tao_luc')
+      .eq('chart_hash', k.chartHash)
+      .eq('be_mat', k.beMat)
+      .eq('ngon_ngu', k.ngonNgu)
+      .like('khoa_ky', `${tienTo}%`)
+      .order('tao_luc', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return { noiDung: data.noi_dung as T, provider: data.provider, model: data.model, taoLuc: data.tao_luc };
+  } catch {
+    return null;
   }
 }
 

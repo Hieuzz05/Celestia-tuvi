@@ -1,7 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
+
+/**
+ * Trạng thái chờ của luận giải v3.
+ *
+ * Bài đã đệm về trong khoảng một giây; bản trước vẫn hiện ngay "lần đầu mất
+ * khoảng nửa phút", nên người đọc tưởng mỗi lần mở là một lần sinh lại (chủ dự
+ * án phản ánh 24/09/2026). Chỉ nói tới "lần đầu" khi đã chờ quá 3 giây — lúc
+ * đó mới thật sự là đang viết.
+ */
+export function DangDocV3({ chu = 'Celes đang mở bài' }: { chu?: string }) {
+  const [lau, setLau] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setLau(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="flex flex-col gap-[8px]">
+      <p className="body-text" style={{ color: 'var(--fg)' }}>
+        {lau ? 'Celes đang viết phần này cho lá số của bạn' : chu}
+        <span className="dot-dang-doc" aria-hidden />
+      </p>
+      {lau && (
+        <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
+          Lần đầu mất khoảng nửa phút, vì mỗi câu được luận từ đúng những cung liên quan. Bài được lưu
+          lại, các lần mở sau hiện ngay.
+        </p>
+      )}
+    </div>
+  );
+}
 
 export interface CauV3 {
   id: string;

@@ -265,6 +265,12 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
       if (!/khoaKy\s*[:=]/.test(d)) continue;
       if (d.includes('kyCoPhienBan') || d.includes('khoaBangLinhVuc')) continue;
       if (/khoaKy,\s*$/.test(d.trim())) continue; // chỉ truyền biến đã dựng ở trên
+      /*
+       * Ngoại lệ CÓ CHỦ Ý: luận giải lá số v3 (tổng quan + chuyên sâu) sinh MỘT
+       * lần cho mỗi lá số + năm + nhóm, không sinh lại khi sửa prompt (chủ dự án
+       * chốt 24/09/2026). Làm mới toàn bộ thì tăng THE_HE_DEM trong route.
+       */
+      if (d.includes('THE_HE_DEM')) continue;
       thieuPhienBan.push(`${f}: ${d.trim().slice(0, 70)}`);
     }
   }

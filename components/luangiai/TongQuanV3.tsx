@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Eyebrow } from '@/components/ui';
-import { CauTraLoiV3, type CauV3 } from './CauTraLoiV3';
+import { CauTraLoiV3, DangDocV3, type CauV3 } from './CauTraLoiV3';
 
 export interface ThongTinLaSoV3 {
   ngay: number;
@@ -171,16 +171,7 @@ export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
       </div>
 
       {dangDoc ? (
-        <div className="flex flex-col gap-[8px]">
-          <p className="body-text" style={{ color: 'var(--fg)' }}>
-            Celes đang đọc lá số của bạn
-            <span className="dot-dang-doc" aria-hidden />
-          </p>
-          <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
-            Lần đầu mất khoảng nửa phút, vì mỗi câu được luận từ đúng những cung liên quan. Các lần
-            mở sau sẽ hiện ngay.
-          </p>
-        </div>
+        <DangDocV3 />
       ) : (
         <ol className="flex flex-col gap-[16px]">
           {conLai.map((c, i) => (
