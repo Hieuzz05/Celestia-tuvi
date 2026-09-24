@@ -20,6 +20,7 @@ export const en: TuDien = {
     dongY: 'Done',
     huy: 'Cancel',
     menu: 'Menu',
+    dong: 'Close',
     dongMenu: 'Close menu',
     dangMo: 'Opening…',
   },
@@ -30,6 +31,7 @@ export const en: TuDien = {
     cauChuyen: 'Our story',
     veCelestia: 'About Celestia',
     batDauMienPhi: 'Start free',
+    batDauNgan: 'Start',
     homNay: 'Today',
     banDo: 'Explore the map',
     hanhTrinh: 'Journey',
@@ -51,7 +53,7 @@ export const en: TuDien = {
     moTa: 'When work, a relationship or a decision leaves you without bearings, Celes is here to listen, help you see what is actually going on, and find a direction that fits who you are.',
     ctaPhu: 'See what Celes can help with',
     microcopy: 'A few minutes to start · No account needed yet.',
-    thuNgaySinhKhac: 'Try another birth date:',
+    thuNgaySinhKhac: 'Sample charts — tap to switch:',
 
     theEyebrow: 'QUESTIONS YOU CAN BRING HERE',
     theTieuDe: 'You don’t have to work through every question alone',
@@ -186,6 +188,7 @@ export const en: TuDien = {
 
   quickRead: {
     tieuDeChinh: 'There’s something quite clear about you…',
+    xemBan12Cung: 'See the 12-palace chart ↓',
     tieuDeCoTen: 'There’s something quite clear about {ten}…',
     moTa: 'Celes starts from what stands out most, then two more things worth noticing.',
     viSao: 'Want to know why?',
@@ -343,30 +346,55 @@ export const en: TuDien = {
     eyebrow: 'THIS IS ONLY THE BEGINNING',
     cta: 'Create a free account',
     chu: 'Free, no card needed. The map you just created will be kept.',
+    chuToanTrang: 'Free, no card needed. Sign up with Google or email in under a minute.',
+    daCoTaiKhoan: 'Already have an account?',
+    dangNhap: 'Sign in',
     loiIch: {
       save_chart: {
         tieuDe: 'Keep this map',
         moTa: 'Create a free account so Celes remembers your map — open it next time and it is already there, on any device.',
+        diem: [],
       },
       full_chart: {
         tieuDe: 'See all twelve houses',
         moTa: 'The full version has every house, every star and how strongly each one sits. A free account opens it, and keeps the map.',
+        diem: [],
       },
       ask_celes: {
-        tieuDe: 'Carry on the conversation with Celes',
-        moTa: 'Create a free account so Celes remembers your map and keeps this conversation for next time.',
+        tieuDe: 'Ask Celes about your own chart',
+        moTa: 'Ask in plain words — "should I change jobs this year?", "why do relationships wear me out?" — and Celes answers from your chart, with its reasons.',
+        diem: [
+          'Answers go straight to what you asked, not a generic reading',
+          'Celes remembers your chart and what you told it for next time',
+          'Every point comes with its basis so you can check it yourself',
+        ],
       },
       deep_read: {
         tieuDe: 'Go deeper into what is on your mind',
         moTa: 'Each topic is its own reading, drawn from your map. A free account opens them and saves them.',
+        diem: [
+          'Work, money, love, family, health — pick what is on your mind',
+          'Deep readings across 14 topics, each read from several palaces',
+          'Readings are saved and open instantly next time',
+        ],
       },
       connection: {
-        tieuDe: 'See how two people run alongside each other',
-        moTa: 'Both people have to be saved before they can be compared. Create a free account to start.',
+        tieuDe: 'See where two people fit and where they clash',
+        moTa: 'Put two charts side by side for the relationship you want to understand — partner, spouse, co-founder, friend or family.',
+        diem: [
+          'Where the two of you understand each other, and where you rub',
+          'How to talk and decide big things in a way that works for both',
+          'Both charts are saved to compare again later',
+        ],
       },
       journey: {
         tieuDe: 'See where you are in your own rhythm',
         moTa: 'The journey is read from a saved map: the stretch you are in, where this year leans, what surfaces this month. A free account opens it.',
+        diem: [
+          'The ten-year stretch you are in',
+          'What this year and this month bring up',
+          'When to push, when to hold, when to wait',
+        ],
       },
     },
   },

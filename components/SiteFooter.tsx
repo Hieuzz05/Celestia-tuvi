@@ -25,15 +25,15 @@ export function SiteFooter() {
         <p className="caption max-w-[440px]">{t.chan.mienTru}</p>
 
         <div className="flex flex-wrap items-center gap-[24px]">
-          <Link href="/la-so" className="link-text">
+          <Link href="/la-so" className="link-text inline-flex min-h-[44px] items-center">
             {t.chung.ctaChinh}
           </Link>
-          <Link href="/gioi-thieu" className="link-text">
+          <Link href="/gioi-thieu" className="link-text inline-flex min-h-[44px] items-center">
             {t.nav.cachHoatDong}
           </Link>
           {/* Quyết định #9 gộp Câu chuyện vào trang chủ; giữ liên kết ở đây
               nhưng trỏ vào neo, bằng không chân trang nào cũng có một link 404. */}
-          <Link href="/#cau-chuyen" className="link-text">
+          <Link href="/#cau-chuyen" className="link-text inline-flex min-h-[44px] items-center">
             {t.nav.cauChuyen}
           </Link>
         </div>

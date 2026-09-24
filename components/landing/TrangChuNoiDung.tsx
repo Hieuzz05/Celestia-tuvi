@@ -97,7 +97,7 @@ export function TrangChuNoiDung() {
                 <Link
                   href="/la-so"
                   onClick={bam}
-                  className="link-text mt-auto inline-flex items-center gap-[8px] pt-[8px]"
+                  className="link-text link-action mt-auto gap-[8px] pt-[8px]"
                 >
                   {c.cta}
                   <IconMuiTenPhai size={16} />
@@ -151,7 +151,7 @@ export function TrangChuNoiDung() {
             ))}
           </div>
           <p className="mt-[32px] text-center">
-            <Link href="/gioi-thieu" className="link-text inline-flex items-center gap-[8px]">
+            <Link href="/gioi-thieu" className="link-text link-action gap-[8px]">
               {t.landing.xemCachTinh}
               <IconMuiTenPhai size={16} />
             </Link>

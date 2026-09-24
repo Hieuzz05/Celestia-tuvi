@@ -17,7 +17,7 @@ import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { goiLuanGiai, type KetQuaLuanGiai } from '@/lib/ai/goiLuanGiai';
 import { useBoiCanh, type LaSoNhap } from '@/lib/store/boi-canh';
 import { luuHoSo, type HoSo } from '@/lib/store/hoso';
-import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { lapLaSo } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -34,6 +34,29 @@ const MAU: ThongTinSinhForm = {
 function tachNgay(ngaySinh: string) {
   const [nam, thang, ngay] = ngaySinh.split('-').map(Number);
   return { ngay, thang, nam };
+}
+
+/**
+ * Lá số từ tham số URL (`?ngay=&thang=&nam=&gio=&gt=&ten=` hoặc `?mau=1`).
+ *
+ * Giờ đọc bằng `has` chứ không `|| 9`: bản trước biến giờ 0 (sinh sau nửa đêm,
+ * giờ Tý) thành 9 giờ — giờ Tỵ, tức là một lá số khác hẳn.
+ */
+function formTuUrl(params: URLSearchParams | { get(k: string): string | null }): ThongTinSinhForm | null {
+  if (params.get('mau')) return MAU;
+  const ngay = Number(params.get('ngay'));
+  const thang = Number(params.get('thang'));
+  const nam = Number(params.get('nam'));
+  if (!ngay || !thang || !nam) return null;
+  const gioTho = params.get('gio');
+  const gio = gioTho !== null && gioTho !== '' && Number.isInteger(Number(gioTho)) ? Number(gioTho) : 9;
+  return {
+    hoTen: params.get('ten') ?? '',
+    ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
+    gio: Math.min(23, Math.max(0, gio)),
+    phut: 0,
+    gioiTinh: params.get('gt') === 'nu' ? 'nu' : 'nam',
+  };
 }
 
 function formTuHoSo(h: HoSo): ThongTinSinhForm {
@@ -78,7 +101,17 @@ function TrangLaSo() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const [form, setForm] = useState<ThongTinSinhForm | null>(null);
+  /*
+   * Lá số trên URL được đọc NGAY LÚC KHỞI TẠO, không đợi effect.
+   *
+   * Bản trước đọc trong effect, nên lần vẽ đầu là một màn khác rồi mới nhảy sang
+   * lá số — đo 24/09/2026: CLS 0,65 trên desktop, chân trang nhảy 791px. Các
+   * nguồn còn lại (lá số vừa nhập, lá số đã lưu) vẫn nằm trong effect vì chúng
+   * phải đợi dữ liệu nạp về.
+   */
+  const [formChon, setForm] = useState<ThongTinSinhForm | null>(() =>
+    params.get('moi') === '1' ? null : formTuUrl(params)
+  );
   /*
    * `?moi=1` ép vào màn nhập bốn bước, bỏ qua mọi lá số đã lưu.
    *
@@ -99,40 +132,20 @@ function TrangLaSo() {
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
-  // Chốt lá số sẽ hiển thị, theo đúng thứ tự ưu tiên ở trên
-  useEffect(() => {
-    if (form || batNhapMoi) return;
-
-    if (params.get('mau')) {
-      setForm(MAU);
-      return;
-    }
-
-    const ngay = Number(params.get('ngay'));
-    const thang = Number(params.get('thang'));
-    const nam = Number(params.get('nam'));
-    if (ngay && thang && nam) {
-      setForm({
-        hoTen: params.get('ten') ?? '',
-        ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
-        gio: Number(params.get('gio')) || 9,
-        phut: 0,
-        gioiTinh: (params.get('gt') as GioiTinh) || 'nam',
-      });
-      return;
-    }
-
-    if (boiCanh.dangTai) return;
-
-    if (boiCanh.nhap) {
-      setForm(formTuNhap(boiCanh.nhap));
-      return;
-    }
-
+  /*
+   * Chốt lá số sẽ hiển thị, theo đúng thứ tự ưu tiên ở trên: người dùng đã chọn
+   * (hoặc URL) → lá số vừa nhập chưa lưu → lá số đang xem → "Lá số của tôi".
+   * SUY RA chứ không đặt state trong effect — bản effect cũ vẽ một màn trống
+   * trước rồi mới nhảy sang lá số (xem ghi chú ở `formChon`).
+   */
+  const formMacDinh = useMemo(() => {
+    if (batNhapMoi || boiCanh.dangTai) return null;
+    if (boiCanh.nhap) return formTuNhap(boiCanh.nhap);
     const hoSo =
       boiCanh.hoSoDangXem ?? boiCanh.hoSos.find((h) => h.id === boiCanh.idMacDinh) ?? null;
-    if (hoSo) setForm(formTuHoSo(hoSo));
-  }, [form, batNhapMoi, params, boiCanh]);
+    return hoSo ? formTuHoSo(hoSo) : null;
+  }, [batNhapMoi, boiCanh]);
+  const form = formChon ?? formMacDinh;
 
   const laSo = useMemo(() => {
     if (!form) return null;
@@ -639,6 +652,15 @@ function TrangLaSo() {
             <p className="body-sm mt-[6px]" style={{ color: 'var(--fg-muted)' }}>
               {t.quickRead.moTa}
             </p>
+            {/* Màn hẹp: bài đọc lên trước mệnh bàn — lối tắt xuống mệnh bàn cho người cần nó */}
+            {/* Bọc ngoài để ẩn: `.link-action` đặt display ngoài layer nên thắng `lg:hidden` */}
+            {laSo && (
+              <div className="mt-[4px] lg:hidden">
+                <a href="#ban-12-cung" className="link-text link-action">
+                  {t.quickRead.xemBan12Cung}
+                </a>
+              </div>
+            )}
             {/*
               "Đã giữ lại" là TRẠNG THÁI, không phải hành động, nên nó không
               thuộc hàng nút. Đặt nó cạnh một cái nút là để hai thứ khác bản
@@ -723,11 +745,21 @@ function TrangLaSo() {
             `lg:flex` + `lg:max-h`: cao tối đa một màn trừ hai mép 24px, và là
             cột dọc để con bên trong chia được phần cao còn lại.
           */}
-          <aside className="flex min-w-0 flex-col gap-[12px] lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]">
+          {/*
+            Dưới 1024px: bài đọc TRƯỚC, mệnh bàn SAU (order). Đo 24/09/2026 trên
+            390px: mệnh bàn chiếm gần hai màn đầu với chữ sao 9px, còn tiêu đề
+            "Celes bắt đầu từ điểm nổi lên rõ nhất…" trỏ tới ba thẻ nằm tận màn
+            thứ ba. Người mới tới để đọc về mình; người biết Tử Vi có lối tắt
+            "Xem bàn 12 cung" ngay dưới tiêu đề.
+          */}
+          <aside
+            id="ban-12-cung"
+            className="order-2 flex min-w-0 scroll-mt-[88px] flex-col gap-[12px] lg:order-none lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]"
+          >
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 
-          <div className="flex flex-col gap-[32px] lg:col-span-6">{phanDoc}</div>
+          <div className="order-1 flex flex-col gap-[32px] lg:order-none lg:col-span-6">{phanDoc}</div>
         </div>
       ) : (
         // Chưa có lá số thì chỉ có một cột chữ, nên giữ lại bề ngang 1200px của

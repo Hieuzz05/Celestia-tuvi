@@ -237,7 +237,7 @@ export default function DangNhapPage() {
         </label>
 
         {che === 'dang-nhap' && (
-          <button type="button" onClick={quenMatKhau} className="link-text self-start">
+          <button type="button" onClick={quenMatKhau} className="link-text link-action self-start">
             {t.auth.quenMatKhau}
           </button>
         )}
@@ -261,7 +261,7 @@ export default function DangNhapPage() {
           setChe(che === 'dang-nhap' ? 'dang-ky' : 'dang-nhap');
           setThongBao(null);
         }}
-        className="link-text mt-[24px]"
+        className="link-text link-action mt-[24px]"
       >
         {che === 'dang-nhap' ? t.auth.chuaCoTaiKhoan : t.auth.daCoTaiKhoan}
       </button>

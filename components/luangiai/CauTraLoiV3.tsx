@@ -93,7 +93,7 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
       ))}
       <button
         type="button"
-        className="link-text link-action self-start text-[14px]"
+        className="link-text link-action inline-flex min-h-[44px] items-center self-start text-[14px] sm:min-h-[32px]"
         aria-expanded={mo}
         onClick={() => {
           if (!mo) ghiSuKien('why_opened', { cau: cau.id });

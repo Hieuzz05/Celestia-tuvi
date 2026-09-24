@@ -130,7 +130,7 @@ export function SiteNav() {
             </Link>
             <div className="flex items-center gap-[12px]">
               <ChuyenNgonNgu />
-              <Link href="/" className="link-text">
+              <Link href="/" className="link-text link-action">
                 {t.chung.quayLai}
               </Link>
             </div>
@@ -250,9 +250,20 @@ export function SiteNav() {
                 )}
                 {/* Một CTA duy nhất trên header, và nó biến mất khi đã ở đúng chỗ
                     nó dẫn tới — spec cấm đặt nhiều CTA ngang hàng nhau. */}
+                {/*
+                  Đo 24/09/2026 trên 390px: "Bắt đầu miễn phí" gãy thành BỐN
+                  dòng, header cao 132px — 16% màn hình chỉ để chứa logo và hai
+                  nút. Không bao giờ xuống dòng; màn hẹp dùng nhãn ngắn.
+                  Trang chủ đã có nút chính "Bắt đầu cùng Celes" ở hero, nên nút
+                  trên header chuyển sang viền: một màn một nút hồng.
+                */}
                 {!dangLapLaSo && (
-                  <Link href="/la-so" className="btn-primary btn-sm">
-                    {t.nav.batDauMienPhi}
+                  <Link
+                    href="/la-so"
+                    className={`${pathname === '/' ? 'btn-outline' : 'btn-primary'} btn-sm whitespace-nowrap`}
+                  >
+                    <span className="sm:hidden">{t.nav.batDauNgan}</span>
+                    <span className="max-sm:hidden">{t.nav.batDauMienPhi}</span>
                   </Link>
                 )}
               </>

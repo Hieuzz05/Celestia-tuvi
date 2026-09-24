@@ -27,6 +27,20 @@ export const GIO_OPTIONS = [
   { value: 21, label: '21:00 – 22:59 · giờ Hợi' },
 ];
 
+/**
+ * Đưa giờ thật (0–23) về đúng giá trị của ô chọn khung giờ.
+ *
+ * Luồng nhập từng bước ở /la-so lưu GIỜ THẬT (6, 20…), còn ô chọn ở đây chỉ có
+ * giá trị đầu khung (23, 1, 3, 5…). Không khớp thì trình duyệt hiện dòng đầu
+ * danh sách — đo 24/09/2026: lá số giờ Mão sang Khám phá hiện "23:00 – 00:59 ·
+ * giờ Tý". Bài vẫn tính đúng vì state giữ số thật, nhưng người đọc thấy sai giờ
+ * sinh của chính mình — hoặc tự chọn lại thành sai thật.
+ */
+export function veKhungGio(gio: number): number {
+  if (gio === 0 || gio === 23) return 23;
+  return gio % 2 === 1 ? gio : gio - 1;
+}
+
 export interface ThongTinForm {
   hoTen: string;
   ngaySinh: string;
@@ -64,7 +78,7 @@ export function FormSinh({
         <O type="date" value={giaTri.ngaySinh} onChange={(e) => set('ngaySinh', e.target.value)} />
       </Truong>
       <Truong nhan="Giờ sinh">
-        <OChon value={giaTri.gio} onChange={(e) => set('gio', Number(e.target.value))}>
+        <OChon value={veKhungGio(giaTri.gio)} onChange={(e) => set('gio', Number(e.target.value))}>
           {GIO_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}

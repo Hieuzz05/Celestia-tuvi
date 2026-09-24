@@ -50,7 +50,7 @@ export function GocNhinCard({
 
       <button
         onClick={doiTrangThai}
-        className="link-text self-start"
+        className="link-text link-action self-start"
         aria-expanded={moCanCu}
       >
         {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}

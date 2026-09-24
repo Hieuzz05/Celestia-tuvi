@@ -36,6 +36,7 @@ export function CongDangNhap({
   tieuDe,
   moTa,
   chu,
+  toanTrang = false,
 }: {
   nguon: NguonCong;
   /** Thứ đang chờ phía sau cổng — cho thấy để người dùng biết mình đổi được gì */
@@ -49,10 +50,20 @@ export function CongDangNhap({
   moTa?: string;
   /** Ghi đè dòng chữ nhỏ cuối khối */
   chu?: string;
+  /**
+   * Cổng là NỘI DUNG CHÍNH của cả trang (khách bấm "Khám phá", "Hỏi Celes"…
+   * từ menu). Đo 24/09/2026: trang khi đó không có H1, eyebrow "Đây mới chỉ
+   * là phần đầu" và câu "bản đồ bạn vừa lập sẽ được giữ lại" nói sai với người
+   * chưa lập gì, và người đã có tài khoản không thấy lối đăng nhập trên điện
+   * thoại (nó nằm trong Menu).
+   */
+  toanTrang?: boolean;
 }) {
   const pathname = usePathname();
   const t = useT();
   const loiIch = t.cong.loiIch[nguon];
+  const duongDangNhap = `/dang-nhap?next=${encodeURIComponent(pathname)}`;
+  const TieuDe = toanTrang ? 'h1' : 'h2';
 
   useEffect(() => {
     ghiSuKien('auth_gate_viewed', { nguon });
@@ -63,22 +74,41 @@ export function CongDangNhap({
   const duong = `/dang-nhap?intent=${nguon}&next=${encodeURIComponent(pathname)}`;
 
   return (
-    <The className="flex flex-col gap-[16px]">
-      <Eyebrow>{t.cong.eyebrow}</Eyebrow>
+    <The className={`flex flex-col gap-[16px] ${toanTrang ? 'mx-auto w-full max-w-[640px]' : ''}`}>
+      {!toanTrang && <Eyebrow>{t.cong.eyebrow}</Eyebrow>}
 
       <div className="flex items-start gap-[12px]">
-        <span style={{ color: 'var(--fg)' }}>
-          <IconKhien size={22} />
-        </span>
+        {!toanTrang && (
+          <span style={{ color: 'var(--fg)' }}>
+            <IconKhien size={22} />
+          </span>
+        )}
         <div className="flex flex-col gap-[8px]">
-          <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+          <TieuDe
+            className={toanTrang ? 'heading-sm' : 'text-[20px] font-semibold'}
+            style={{ color: 'var(--fg)' }}
+          >
             {tieuDe ?? loiIch.tieuDe}
-          </h2>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          </TieuDe>
+          <p className={toanTrang ? 'body-text' : 'body-sm'} style={{ color: 'var(--fg-muted)' }}>
             {moTa ?? loiIch.moTa}
           </p>
         </div>
       </div>
+
+      {/* Nói trước người dùng đổi được gì — ba điều cụ thể, không phải "có tài khoản" chung chung */}
+      {toanTrang && loiIch.diem.length > 0 && (
+        <ul className="flex flex-col gap-[8px]">
+          {loiIch.diem.map((d) => (
+            <li key={d} className="body-sm flex items-start gap-[8px]" style={{ color: 'var(--fg)' }}>
+              <span aria-hidden style={{ color: 'var(--accent)' }}>
+                ✓
+              </span>
+              <span>{d}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {xemTruoc && (
         <div className="relative overflow-hidden" style={{ maxHeight: 180 }}>
@@ -103,7 +133,16 @@ export function CongDangNhap({
 
       {duoiNut}
 
-      <p className="caption">{chu ?? t.cong.chu}</p>
+      {toanTrang && (
+        <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          {t.cong.daCoTaiKhoan}{' '}
+          <Link href={duongDangNhap} className="link-text link-action inline-flex min-h-[44px] items-center">
+            {t.cong.dangNhap}
+          </Link>
+        </p>
+      )}
+
+      <p className="caption">{chu ?? (toanTrang ? t.cong.chuToanTrang : t.cong.chu)}</p>
     </The>
   );
 }
