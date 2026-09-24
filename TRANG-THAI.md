@@ -27,6 +27,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-120 — mọi màn luận giải (hỏi Celes, kết nối, khám phá chủ đề, hành trình, điểm nổi bật) dùng chung bộ quy tắc của phần lá số (`lib/rag/quy-tac-luan-giai.ts`, khối đầu của chuẩn ngôn ngữ). Lời khuyên không còn bị cắt sạch — chỉ cắt lời khuyên rỗng. Chuẩn đổi → mọi bài đệm sinh lại lần đầu | `ae2129c` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: chống lặp ý giữa các câu chuyên sâu (không gắn mốc tuổi vào câu không hỏi thời điểm, chia phạm vi theo các câu cùng chủ đề, bắt kết bằng lời khuyên riêng) + chặn chữ không phải tiếng Việt. Phiên bản prompt/dữ kiện đổi → mọi bài đệm sinh lại lần đầu. Đo lá số A: giám khảo 4,06 → 4,15. OpenAI đã được nạp lại credit | `233e0f1` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: giao diện luận giải v3 — ba thẻ đầu `/la-so` lấy từ v3, tổng quan thành thẻ đánh số, nút chính vào `/luan-giai/sau`, bỏ dòng hạn mức; `/luan-giai/sau` mục lục mới + nút "Đọc lại" (nhánh `viec/giao-dien-luan-giai-v3`) | `9a62ddd` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: sửa truy hồi (nhánh `viec/rag-chat-luong-truy-hoi`, SQL `va-rag-chat-luong.sql` ĐÃ CHẠY) + luận giải v3 có giao diện (CEL-119). `/la-so` đọc tổng quan v3 cho cả khách; `/luan-giai/sau` thành 14 chủ đề chuyên sâu, cần đăng nhập; không hạn mức. Bản đọc sâu 4 chặng (CEL-092, CEL-117) tạm dừng ở giao diện — route và thư viện giữ nguyên | `0b80a42` | 23/09/2026 |
