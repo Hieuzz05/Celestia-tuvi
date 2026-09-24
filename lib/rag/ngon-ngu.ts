@@ -18,7 +18,7 @@ import { boDau, tenBiaChan } from './thuc-the';
  * giải thích được.
  */
 
-export const PHIEN_BAN_NGON_NGU = '2026.09.6';
+export const PHIEN_BAN_NGON_NGU = '2026.09.7';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
 
@@ -275,13 +275,25 @@ const PHU_DINH = [
  * câu như vậy thì cổng ngôn ngữ chặn chính phần cẩn trọng nhất của bài — và
  * người sửa sẽ đi gỡ bỏ lời miễn trừ để làm hài lòng cái máy.
  */
+/*
+ * Lời khuyên CÓ ĐIỀU KIỆN không phải phán quyết. Bộ quy tắc chung (24/09/2026)
+ * cho phép "bạn nên / không nên" khi nó đi ra từ phần luận, và bắt được ngay
+ * trên chat thật: "nếu họ chỉ hứa về một cơ hội chưa được phê duyệt, chưa nên
+ * nghỉ việc hiện tại" bị chặn là phán quyết. Chỉ miễn cho cụm LỜI KHUYÊN khi
+ * cùng câu có "nếu" đứng trước; cụm HỨA ("chắc chắn sẽ", "sẽ xảy ra") thì có
+ * điều kiện vẫn là hứa, vẫn chặn.
+ */
+const KHUYEN_CO_DIEU_KIEN = new Set(['nen nghi viec', 'nen cuoi', 'khong nen cuoi']);
+
 function demCoPhuDinh(khongDau: string, cum: Set<string>, canTim: string[]): string[] {
   return canTim.filter((c) => {
     if (!cum.has(c)) return false;
     let i = khongDau.indexOf(c);
     while (i !== -1) {
       const truoc = khongDau.slice(Math.max(0, i - 48), i);
-      if (!PHU_DINH.some((p) => truoc.includes(p))) return true;
+      const dauCau = Math.max(khongDau.lastIndexOf('.', i), khongDau.lastIndexOf('?', i), khongDau.lastIndexOf('!', i));
+      const coDieuKien = KHUYEN_CO_DIEU_KIEN.has(c) && /(^|\s)neu\s/.test(khongDau.slice(dauCau + 1, i));
+      if (!PHU_DINH.some((p) => truoc.includes(p)) && !coDieuKien) return true;
       i = khongDau.indexOf(c, i + c.length);
     }
     return false;
@@ -344,6 +356,21 @@ export function soatNgonNgu(
   daNoiTruoc?: string[]
 ): KetQuaNgonNgu {
   const loi: LoiNgonNgu[] = [];
+
+  /*
+   * Chữ của ngôn ngữ khác chen giữa câu. Production 24/09/2026 có "cách làm cũ
+   * აღარ còn thuyết phục" (chữ Georgia, nghĩa "không còn") ngay thẻ đầu trang
+   * /la-so. Bộ quy tắc chung (luật 9) cấm; ở đây là phép đếm cho mọi bề mặt.
+   */
+  const la = [...new Set(van.match(/[^\s\p{Script=Latin}\p{P}\p{S}\p{N}\p{M}]+/gu) ?? [])];
+  if (la.length) {
+    loi.push({
+      ma: 'ky-tu-la',
+      mucDo: 'chan',
+      moTa: 'Lẫn chữ không phải tiếng Việt vào giữa câu.',
+      viDu: la.slice(0, 6).join(', '),
+    });
+  }
 
   /*
    * Chép lại nguyên văn bài tổng quan.

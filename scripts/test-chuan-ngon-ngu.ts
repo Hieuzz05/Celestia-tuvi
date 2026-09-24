@@ -15,7 +15,7 @@ import { docNhanh } from '../lib/tuvi/quick-read';
 import { KHUON } from '../lib/tuvi/quick-read-noi-dung';
 import { luanGiaiSau, mucPhang } from '../lib/tuvi/luan-giai-sau';
 import { luanHan } from '../lib/tuvi/luan-han';
-import { CHUAN_NGON_NGU_CELES, KHOI_CHUAN, dungChuanNgonNgu } from '../lib/rag/chuan-ngon-ngu';
+import { CAU_RA_LENH, CHUAN_NGON_NGU_CELES, KHOI_CHUAN, dungChuanNgonNgu } from '../lib/rag/chuan-ngon-ngu';
 import { CHU_TRUU_TUONG, demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
 import { boDau, TU_DIEN_THUC_THE } from '../lib/rag/thuc-the';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
@@ -321,7 +321,7 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
  * ai đỡ.
  */
 console.log('\n== BA NHÓM LUẬT (A5) ==\n');
-kiem('Bản mặc định đúng bằng mười chín khối ghép lại', dungChuanNgonNgu() === CHUAN_NGON_NGU_CELES);
+kiem('Bản mặc định đúng bằng mọi khối ghép lại', dungChuanNgonNgu() === CHUAN_NGON_NGU_CELES);
 kiem(
   'Mọi khối có tên riêng',
   new Set(KHOI_CHUAN.map((k) => k.ten)).size === KHOI_CHUAN.length,
@@ -344,6 +344,39 @@ console.log(
     )
     .join(' · ')}`
 );
+
+console.log('\n== BỘ QUY TẮC LUẬN GIẢI CHUNG (24/09/2026) ==\n');
+{
+  /*
+   * Mọi bề mặt dùng chung bộ quy tắc của phần lá số. Ba chỗ bộ cũ từng dạy
+   * ngược nó — cắt mọi câu "bạn nên", cấm chữ bài mẫu của chủ dự án dùng, chặn
+   * lời khuyên có điều kiện như phán quyết — mỗi chỗ một phép kiểm, để lần sau
+   * không ai vô tình đảo lại.
+   */
+  kiem(
+    'Khối đầu của chuẩn là bộ quy tắc luận giải chung',
+    KHOI_CHUAN[0].ten === 'quy-tac-luan-giai-chung' && CHUAN_NGON_NGU_CELES.includes('QUY TẮC VIẾT')
+  );
+  const chan = (s: string) => soatNgonNgu(s, [s]).loi.filter((l) => l.mucDo === 'chan').map((l) => l.ma);
+  kiem(
+    'Lời khuyên có điều kiện không bị chặn như phán quyết',
+    !chan('Nếu họ chỉ hứa về một cơ hội chưa được phê duyệt, chưa nên nghỉ việc hiện tại.').includes('phan-quyet')
+  );
+  kiem('Phán quyết trần vẫn bị chặn', chan('Năm nay bạn nên nghỉ việc.').includes('phan-quyet'));
+  kiem('Lời hứa có điều kiện vẫn bị chặn', chan('Nếu chuyển bây giờ thì chắc chắn sẽ thành công.').includes('phan-quyet'));
+  kiem('Chữ ngôn ngữ khác chen giữa câu bị chặn', chan('Khi cách làm cũ აღარ còn thuyết phục, bạn đổi hướng.').includes('ky-tu-la'));
+  kiem('Dấu câu, số, gạch nối không bị bắt là chữ lạ', !chan('Bạn nghĩ nhanh — “đúng” 25–34 tuổi; 100% ổn…').includes('ky-tu-la'));
+  const rong = ['Bạn nên cố gắng cân bằng hơn.', 'Cần thận trọng khi ra quyết định.', 'Đừng để áp lực ảnh hưởng tới bạn.'];
+  const rieng = ['Vì vậy bạn nên để việc lớn qua một đêm rồi mới chốt.', 'Hôm nay, hãy chọn một việc cần làm lâu dài và nhờ đúng người cùng gánh.'];
+  kiem('Lời khuyên rỗng bị bắt', rong.every((s) => CAU_RA_LENH.test(s)), rong.filter((s) => !CAU_RA_LENH.test(s)));
+  kiem('Lời khuyên đi ra từ phần luận được giữ', rieng.every((s) => !CAU_RA_LENH.test(s)), rieng.filter((s) => CAU_RA_LENH.test(s)));
+  const chuMau = ['tích lũy', 'nền tảng', 'trật tự', 'bản chất', 'biểu hiện'];
+  kiem(
+    'Không cấm chữ mà bài mẫu của chủ dự án dùng',
+    chuMau.every((c) => !CHU_TRUU_TUONG.some(([x]) => x === c)),
+    chuMau.filter((c) => CHU_TRUU_TUONG.some(([x]) => x === c))
+  );
+}
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);
 process.exit(sai === 0 ? 0 : 1);

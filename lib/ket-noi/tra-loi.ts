@@ -2,6 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import { docObjectJson } from '@/lib/rag/doc-json';
 import { mucChacChan, luatUuTienNguon, NHAN_TIN_CAY, type MucChacChan } from '@/lib/rag/uu-tien-nguon';
 import { soatNgonNgu, type KetQuaNgonNgu } from '@/lib/rag/ngon-ngu';
+import { QUY_TAC_LUAN_GIAI } from '@/lib/rag/quy-tac-luan-giai';
 import { truyHoi, type DoanUngVien } from '@/lib/rag/truy-hoi';
 import { nhanDangThucThe } from '@/lib/rag/thuc-the';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
@@ -21,7 +22,8 @@ import { CAU_HINH_Y_DINH, type YDinhKetNoi } from './y-dinh';
  * người dùng vẫn phải nhận được phần đó.
  */
 
-export const PHIEN_BAN_KET_NOI = '2026.09.1';
+// 2026.09.2: dùng bộ quy tắc luận giải chung (chủ dự án yêu cầu 24/09/2026)
+export const PHIEN_BAN_KET_NOI = '2026.09.2';
 
 export interface MucKetQua {
   id: string;
@@ -93,12 +95,15 @@ TUYỆT ĐỐI KHÔNG:
 - Không luận từ một sao đơn lẻ. Nhận định phải đứng trên cấu trúc: cung của cả hai người, sao, Tứ Hóa, Tuần/Triệt, quan hệ chi.
 - Không bịa ra người thứ ba. Chỉ có ${tenA} và ${tenB}.
 
-CÁCH VIẾT:
+${QUY_TAC_LUAN_GIAI}
+
+CÁCH VIẾT RIÊNG CHO PHẦN SO HAI NGƯỜI (theo sau bộ quy tắc chung ở trên):
 - Nói điều quan sát được trước, thuật ngữ sau.
 - Ưu tiên tình huống đời sống: "khi một bên cần bàn kỹ còn bên kia muốn chốt nhanh" thay vì "cung Mệnh cho thấy tính quyết đoán".
-- Mỗi mục một ý chính. Đừng gom mọi thứ vào một câu dài.
+- Mỗi mục một ý chính, viết thành đoạn liền mạch có câu chuyển tiếp. Đừng gom mọi thứ vào một câu dài.
 - Nói cả chỗ hợp lẫn chỗ lệch. Một mối quan hệ chỉ toàn điểm tốt là một bài đọc không đáng tin.
-- Tránh mở đầu bằng "Bạn thường…", "Phần này…", "Nhìn chung…", "Điều này cho thấy rằng…".
+- Lời khuyên cho HAI người, đi ra từ chỗ lệch vừa nói (ví dụ cách hai bên bàn một việc lớn), không phải lời khuyên chung cho mọi cặp. Vẫn không phán nên cưới, nên chia tay, nên hay không nên hợp tác.
+- Tránh "Nhìn chung…", "Điều này cho thấy rằng…", và đừng để nhiều câu liền nhau cùng mở một khuôn.
 - Tránh từ kịch tính và tính từ chung chung kiểu "sâu sắc", "mạnh mẽ" nếu không có hành vi cụ thể đi kèm.
 - Với mỗi mục, nếu có dữ kiện kéo ngược lại nhận định thì phải nói ra ở "luongNguoc".
 
