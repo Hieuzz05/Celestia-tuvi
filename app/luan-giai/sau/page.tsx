@@ -118,8 +118,13 @@ function TrangSau() {
 
   const iChon = CHU_DE_V3.findIndex((c) => c.id === chon);
   const chuDe = CHU_DE_V3[iChon];
+  const truoc = CHU_DE_V3[iChon - 1];
   const tiep = CHU_DE_V3[iChon + 1];
   const trangThai = bai[chon];
+  const soDaDoc = CHU_DE_V3.filter((c) => {
+    const tt = bai[c.id];
+    return Boolean(tt && !tt.dang && tt.cau);
+  }).length;
   const moChuDe = (id: string) => {
     setChon(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -136,26 +141,58 @@ function TrangSau() {
   return (
     <Shell className="py-[32px]">
       <div className="flex flex-col gap-[24px] lg:flex-row lg:items-start lg:gap-[32px]">
-        {/* ---------- Mục lục chủ đề ---------- */}
-        <nav className="shrink-0 lg:sticky lg:top-[80px] lg:w-[240px]">
-          <Eyebrow className="mb-[10px]">Chủ đề</Eyebrow>
-          <ol className="flex flex-wrap gap-x-[16px] gap-y-[8px] lg:flex-col lg:gap-[8px]">
-            {CHU_DE_V3.map((c) => {
+        {/*
+          ---------- Mục lục chủ đề ----------
+          Máy tính: một thẻ dọc dính theo khi cuộn, mỗi dòng có số, tên, số câu
+          và dấu đã đọc. Điện thoại: một hàng chip cuộn ngang — mười bốn dòng
+          dọc đẩy bài đọc xuống dưới cả màn hình đầu.
+        */}
+        <nav
+          aria-label="Chủ đề"
+          className="shrink-0 lg:sticky lg:top-[80px] lg:w-[272px] lg:rounded-[var(--radius-cards)] lg:bg-[var(--surface-card)] lg:p-[16px] lg:shadow-[var(--shadow-card)]"
+        >
+          <div className="mb-[12px] flex items-baseline justify-between gap-[8px] lg:px-[8px]">
+            <Eyebrow>Chủ đề</Eyebrow>
+            <span className="caption" style={{ color: 'var(--fg-muted)' }}>
+              Đã đọc {soDaDoc}/{CHU_DE_V3.length}
+            </span>
+          </div>
+          <ol className="-mx-[16px] flex gap-[8px] overflow-x-auto px-[16px] pb-[4px] lg:mx-0 lg:flex-col lg:gap-[4px] lg:overflow-visible lg:px-0 lg:pb-0">
+            {CHU_DE_V3.map((c, i) => {
               const tt = bai[c.id];
               const daDoc = Boolean(tt && !tt.dang && tt.cau);
+              const dangMo = chon === c.id;
               return (
-                <li key={c.id}>
+                <li key={c.id} className="shrink-0">
                   <button
                     type="button"
                     onClick={() => moChuDe(c.id)}
-                    className="text-left text-[14px]"
+                    aria-current={dangMo ? 'true' : undefined}
+                    className="flex w-full items-center gap-[12px] whitespace-nowrap rounded-full border px-[12px] py-[8px] text-left text-[14px] transition-colors lg:whitespace-normal lg:rounded-[12px] lg:border-0"
                     style={{
-                      color: chon === c.id ? 'var(--accent)' : 'var(--fg-muted)',
-                      fontWeight: chon === c.id ? 600 : 400,
+                      borderColor: dangMo ? 'var(--accent)' : 'var(--line)',
+                      background: dangMo ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+                      color: dangMo ? 'var(--fg)' : 'var(--fg-muted)',
+                      fontWeight: dangMo ? 600 : 400,
                     }}
                   >
-                    {daDoc ? '● ' : '○ '}
-                    {c.ten}
+                    <span
+                      className="inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
+                      style={
+                        dangMo
+                          ? { background: 'var(--accent)', color: 'var(--action-fg)' }
+                          : daDoc
+                            ? { background: 'var(--surface-panel)', color: 'var(--ok-fg)' }
+                            : { border: '1px solid var(--line)', color: 'var(--fg-muted)' }
+                      }
+                      aria-hidden
+                    >
+                      {daDoc && !dangMo ? '✓' : i + 1}
+                    </span>
+                    <span className="flex-1">{c.ten}</span>
+                    <span className="caption hidden lg:inline" style={{ color: 'var(--fg-muted)' }}>
+                      {SO_CAU.get(c.id)} câu
+                    </span>
                   </button>
                 </li>
               );
@@ -165,13 +202,17 @@ function TrangSau() {
 
         {/* ---------- Bài của chủ đề đang mở ---------- */}
         <main className="flex min-w-0 flex-1 flex-col gap-[24px] lg:max-w-[700px]">
-          <header className="flex flex-col gap-[8px]">
-            <Eyebrow>Luận giải chuyên sâu · năm xem {namXem}</Eyebrow>
-            <h1 className="heading-lg">{chuDe.ten}</h1>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {SO_CAU.get(chuDe.id)} câu hỏi. Mỗi câu được luận từ nhiều cung cùng lúc — cung chính,
-              các cung soi vào nó và những cung hỗ trợ — kèm phần căn cứ để bạn kiểm.
-            </p>
+          <header className="flex flex-col items-start gap-[12px]">
+            <span
+              className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold uppercase tracking-[0.08em]"
+              style={{
+                background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
+                color: 'var(--accent)',
+              }}
+            >
+              Luận giải chuyên sâu · Năm xem {namXem}
+            </span>
+            <h1 className="heading">{chuDe.ten}</h1>
           </header>
 
           {!trangThai || trangThai.dang ? (
@@ -186,8 +227,8 @@ function TrangSau() {
             </div>
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
-              {trangThai.cau.map((c) => (
-                <CauTraLoiV3 key={c.id} cau={c} />
+              {trangThai.cau.map((c, i) => (
+                <CauTraLoiV3 key={c.id} cau={c} so={i + 1} />
               ))}
             </div>
           ) : (
@@ -201,10 +242,23 @@ function TrangSau() {
             </div>
           )}
 
-          {tiep && trangThai && !trangThai.dang && (
-            <button type="button" className="btn-outline self-start" onClick={() => moChuDe(tiep.id)}>
-              Đọc tiếp: {tiep.ten} →
-            </button>
+          {/* Cuối bài: lùi về chủ đề trước (viền) và đi tiếp (nút chính duy nhất) */}
+          {trangThai && !trangThai.dang && (truoc || tiep) && (
+            <div
+              className="flex flex-wrap items-center gap-[12px] pt-[24px]"
+              style={{ borderTop: '1px solid var(--line)' }}
+            >
+              {truoc && (
+                <button type="button" className="btn-outline" onClick={() => moChuDe(truoc.id)}>
+                  ← Đọc lại: {truoc.ten}
+                </button>
+              )}
+              {tiep && (
+                <button type="button" className="btn-primary" onClick={() => moChuDe(tiep.id)}>
+                  Đọc tiếp: {tiep.ten} →
+                </button>
+              )}
+            </div>
           )}
         </main>
       </div>
