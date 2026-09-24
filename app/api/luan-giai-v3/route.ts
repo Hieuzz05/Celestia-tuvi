@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
-import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
+import { docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@/lib/rag/noi-dung-ai';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
-import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
 export const maxDuration = 60;
+
+/**
+ * Thế hệ đệm. TĂNG BẰNG TAY chỉ khi muốn MỌI lá số sinh lại (bài cũ thành sai,
+ * không chỉ là "viết hay hơn được"). Sửa prompt thường ngày KHÔNG tăng số này —
+ * bài mới chỉ áp cho lá số chưa có bài.
+ */
+const THE_HE_DEM = 1;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -79,37 +85,72 @@ export async function POST(req: Request) {
 
   const namXem = soHopLe(body.namXem, 1900, 2100) ? (body.namXem as number) : new Date().getFullYear();
   const laSo = lapLaSo({ ngay: ngay!, thang: thang!, nam: nam!, gio: gio!, gioiTinh: gioiTinh as GioiTinh });
-  const phienBan = Object.values(PHIEN_BAN_V3).join('.');
+  /*
+   * ĐỆM: MỖI LÁ SỐ + NĂM XEM + NHÓM CHỈ SINH MỘT LẦN (chủ dự án chốt 24/09/2026).
+   *
+   * Bản trước khoá theo phiên bản của MỌI thứ (prompt, dữ kiện, RAG, chuẩn ngôn
+   * ngữ, planner, validator, phương pháp). Mỗi lần deploy một chỉnh sửa nhỏ là
+   * khoá đổi và mọi lá số sinh lại — đo trong bảng: cùng lá số, chủ đề "Tính
+   * cách" sinh ba lần trong tám tiếng. Người đọc thấy "lần nào vào cũng gen lại".
+   *
+   * Giờ khoá chỉ còn lá số + năm + nhóm. Muốn chủ động làm mới toàn bộ (một thay
+   * đổi đủ lớn để bài cũ thành sai) thì tăng THE_HE_DEM bằng tay.
+   *
+   * Câu nào lần trước chưa viết được (hết giờ) thì lần sau chỉ sinh ĐÚNG câu đó
+   * rồi ghép vào — không sinh lại cả nhóm.
+   */
+  const khoaGoc = `nam:${namXem}|nhom:${nhom}`;
+  const khoa = {
+    chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
+    beMat: 'luan-giai-v3' as const,
+    khoaKy: THE_HE_DEM === 1 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM}`,
+    ngonNgu: 'vi',
+  };
 
   try {
-    const ra = await layHoacSinh(
-      {
-        chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
-        beMat: 'luan-giai-v3',
-        khoaKy: kyCoPhienBan(`nam:${namXem}|nhom:${nhom}|s:${phienBan}`),
-        ngonNgu: 'vi',
-      },
-      async () => {
-        const kq = await luanNhieuCau({ laSo, ids, namXem, songSong: ids.length, hanChot });
-        const cau: CauTraRaV3[] = kq.map((k) => ({
-          id: k.id,
-          cauHoi: k.cauHoi,
-          luanGiai: k.luanGiai,
-          viSao: k.viSao,
-          doRo: k.doRo,
-          chuaViet: !k.luanGiai,
-        }));
-        // Không câu nào viết được thì không đệm — lần sau thử lại được ngay
-        if (cau.every((c) => c.chuaViet)) return null;
-        const mot = kq.find((k) => k.model);
-        const [provider, model] = (mot?.model ?? '/').split('/');
-        return { noiDung: cau, provider, model, phienBan: PHIEN_BAN_V3 };
+    let cu = await docNoiDung<CauTraRaV3[]>(khoa);
+    let chuyenKhoa = false;
+    if (!cu && THE_HE_DEM === 1) {
+      // Bài đã sinh dưới khoá kiểu cũ ("…|s:<phiên bản>|v:<băm>") — dùng lại bản mới nhất
+      cu = await docNoiDungMoiNhat<CauTraRaV3[]>(khoa, `${khoaGoc}|s:`);
+      chuyenKhoa = Boolean(cu);
+    }
+
+    const daCo = new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet).map((c) => [c.id, c]));
+    const thieu = ids.filter((id) => !daCo.has(id));
+
+    if (!thieu.length) {
+      // Chuyển bài cũ sang khoá mới để lần sau đọc thẳng, không phải dò tiền tố
+      if (chuyenKhoa) {
+        await luuNoiDung(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
+      return NextResponse.json({ nhom, cau: ids.map((id) => daCo.get(id)!), tuDem: true });
+    }
+
+    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot });
+    for (const k of kq) {
+      if (!k.luanGiai) continue;
+      daCo.set(k.id, { id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false });
+    }
+    const cau: CauTraRaV3[] = ids.map(
+      (id) =>
+        daCo.get(id) ?? {
+          id,
+          cauHoi: CAU_HOI_V3.find((q) => q.id === id)?.cauHoi ?? '',
+          luanGiai: '',
+          viSao: '',
+          doRo: 'Gợi ý',
+          chuaViet: true,
+        }
     );
-    if (!ra) {
+    // Không câu nào viết được thì không đệm — lần sau thử lại được ngay
+    if (cau.every((c) => c.chuaViet)) {
       return NextResponse.json({ loi: 'Celes chưa viết được phần này. Bạn thử lại giúp.' }, { status: 502 });
     }
-    return NextResponse.json({ nhom, cau: ra.noiDung, tuDem: ra.tuDem });
+    const mot = kq.find((k) => k.model);
+    const [provider, model] = (mot?.model ?? '/').split('/');
+    await luuNoiDung(khoa, cau, { provider, model, phienBan: PHIEN_BAN_V3 });
+    return NextResponse.json({ nhom, cau, tuDem: false });
   } catch (e) {
     if (e instanceof KhongCoModelError) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });

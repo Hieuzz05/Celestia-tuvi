@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-import { CauTraLoiV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
+import { CauTraLoiV3, DangDocV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
@@ -216,15 +216,7 @@ function TrangSau() {
           </header>
 
           {!trangThai || trangThai.dang ? (
-            <div className="flex flex-col gap-[8px]">
-              <p className="body-text" style={{ color: 'var(--fg)' }}>
-                Celes đang đọc phần này
-                <span className="dot-dang-doc" aria-hidden />
-              </p>
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Lần đầu mất khoảng nửa phút. Các lần mở sau sẽ hiện ngay.
-              </p>
-            </div>
+            <DangDocV3 key={chon} />
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
               {trangThai.cau.map((c, i) => (
