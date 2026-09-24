@@ -31,7 +31,8 @@ export interface PhuongPhap {
 
 export const PHUONG_PHAP: PhuongPhap = {
   id: 'celestia-nam-phai',
-  phienBan: '2026.09.1',
+  // 2026.09.2: sửa độ sáng Khốc/Hư, Hóa Kỵ đắc tứ mộ, thêm Lưu Tang Môn/Bạch Hổ
+  phienBan: '2026.09.2',
   bienThe: {
     tyDauCuoi: 'ty-som',
     thangNhuan: 'theo-thang-chinh',

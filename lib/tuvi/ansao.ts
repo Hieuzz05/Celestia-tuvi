@@ -480,5 +480,9 @@ export function luuTinhTheoNam(namXem: number): { ten: string; chiIndex: number;
     { ten: 'Lưu Thiên Mã', chiIndex: VI_TRI_THIEN_MA[nhomTamHop(chiNamXem)], tinhChat: 'cat' },
     { ten: 'Lưu Thiên Khốc', chiIndex: mod12(6 - chiNamXem), tinhChat: 'hung' },
     { ten: 'Lưu Thiên Hư', chiIndex: mod12(6 + chiNamXem), tinhChat: 'hung' },
+    // Thêm 24/09/2026 khi đối chiếu với tuvivietnam.vn: cùng vòng Thái Tuế,
+    // Tang Môn cách Thái Tuế hai cung thuận, Bạch Hổ tám cung thuận.
+    { ten: 'Lưu Tang Môn', chiIndex: mod12(chiNamXem + 2), tinhChat: 'hung' },
+    { ten: 'Lưu Bạch Hổ', chiIndex: mod12(chiNamXem + 8), tinhChat: 'hung' },
   ];
 }

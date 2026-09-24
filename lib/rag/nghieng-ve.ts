@@ -154,6 +154,8 @@ const NET_LUU_VI: Record<string, string> = {
   'Lưu Thiên Mã': 'năm nay phần này có xê dịch: đổi chỗ, đổi người, đổi cách — ít khi đứng yên',
   'Lưu Thiên Khốc': 'năm nay phần này hay chạm vào chuyện cũ chưa xong, và dễ thấy hụt vì nó',
   'Lưu Thiên Hư': 'năm nay phần này dễ thấy trống ngay cả khi bên ngoài không thiếu gì',
+  'Lưu Tang Môn': 'năm nay phần này dễ có chuyện buồn lòng hoặc phải lo cho người thân, và nó làm bạn nặng đầu hơn bình thường',
+  'Lưu Bạch Hổ': 'năm nay phần này dễ va chạm, tranh cãi hoặc phải xử lý việc gấp, nên chỗ này cần đi chậm lại',
 };
 
 const NET_LUU_EN: Record<string, string> = {
@@ -164,6 +166,8 @@ const NET_LUU_EN: Record<string, string> = {
   'Lưu Thiên Mã': 'this year this area moves: a change of place, of people, of method — it rarely stays still',
   'Lưu Thiên Khốc': 'this year this area brushes against unfinished business, and that is where the ache comes from',
   'Lưu Thiên Hư': 'this year this area can feel empty even when nothing is actually missing',
+  'Lưu Tang Môn': 'this year this area can bring worries or care for family, and it weighs on you more than usual',
+  'Lưu Bạch Hổ': 'this year this area is prone to friction, arguments or urgent fixes, so it pays to slow down here',
 };
 
 /**
