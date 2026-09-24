@@ -27,6 +27,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-122 — luận giải lá số (tổng quan + chuyên sâu) chỉ sinh MỘT lần mỗi lá số + năm + nhóm; khoá `/api/luan-giai-v3` không còn phiên bản. ĐỪNG thêm phiên bản lại vào khoá này; muốn làm mới toàn bộ thì tăng `THE_HE_DEM` | `50f0820` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-121 — sửa an sao sau đối chiếu tuvivietnam: độ sáng Thiên Khốc/Thiên Hư, Hóa Kỵ đắc tứ mộ, thêm Lưu Tang Môn/Bạch Hổ; phiên bản phương pháp vào khoá đệm (mọi bài sinh lại). Thiên Khôi/Việt năm Canh CHƯA đổi — chờ chủ dự án chốt | `e7c040b` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-120 — mọi màn luận giải (hỏi Celes, kết nối, khám phá chủ đề, hành trình, điểm nổi bật) dùng chung bộ quy tắc của phần lá số (`lib/rag/quy-tac-luan-giai.ts`, khối đầu của chuẩn ngôn ngữ). Lời khuyên không còn bị cắt sạch — chỉ cắt lời khuyên rỗng. Chuẩn đổi → mọi bài đệm sinh lại lần đầu | `ae2129c` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: chống lặp ý giữa các câu chuyên sâu (không gắn mốc tuổi vào câu không hỏi thời điểm, chia phạm vi theo các câu cùng chủ đề, bắt kết bằng lời khuyên riêng) + chặn chữ không phải tiếng Việt. Phiên bản prompt/dữ kiện đổi → mọi bài đệm sinh lại lần đầu. Đo lá số A: giám khảo 4,06 → 4,15. OpenAI đã được nạp lại credit | `233e0f1` | 24/09/2026 |
