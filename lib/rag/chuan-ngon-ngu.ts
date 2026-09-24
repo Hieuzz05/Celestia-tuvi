@@ -1,3 +1,4 @@
+import { QUY_TAC_LUAN_GIAI } from './quy-tac-luan-giai';
 import { tenBiaChan } from './thuc-the';
 /**
  * Chuẩn ngôn ngữ Celes — một nguồn duy nhất cho mọi bề mặt có AI viết chữ.
@@ -34,8 +35,8 @@ import { tenBiaChan } from './thuc-the';
  * ---------------------------------------------------------------------------
  * MẶC ĐỊNH KHÔNG BỎ GÌ, VÀ ĐÓ LÀ CỐ Ý
  *
- * `CHUAN_NGON_NGU_CELES` vẫn là toàn bộ mười chín khối ghép lại, đúng thứ tự
- * cũ, đúng từng byte — đã đối chiếu bằng sha256 trước và sau khi chia. Chia
+ * `CHUAN_NGON_NGU_CELES` là toàn bộ các khối ghép lại (lúc chia là mười chín
+ * khối, đúng từng byte — đã đối chiếu bằng sha256 trước và sau khi chia). Chia
  * khối là việc dọn chỗ để đo, không phải một thay đổi sản phẩm. Nhát cắt thật
  * sẽ đi kèm số đo của chính nó.
  */
@@ -50,8 +51,27 @@ export interface KhoiLuat {
   van: string;
 }
 
-/** Mười chín khối, ĐÚNG THỨ TỰ bản gốc. Đổi thứ tự là đổi prompt. */
+/**
+ * Hai mươi khối. Khối đầu là bộ quy tắc luận giải chung (thêm 24/09/2026);
+ * mười chín khối sau giữ ĐÚNG THỨ TỰ bản gốc. Đổi thứ tự là đổi prompt.
+ */
 export const KHOI_CHUAN: KhoiLuat[] = [
+  {
+    /*
+     * Bộ quy tắc chủ dự án gửi cho luận giải lá số, nay dùng cho MỌI bề mặt.
+     * Đứng đầu và nói rõ thứ bậc: mười chín khối dưới có trước, và ở ba chỗ
+     * chúng từng dạy ngược bộ này — cấm mở câu "Bạn thường…" (bộ này khuyên
+     * dùng), bắt bỏ hẳn lời khuyên (bộ này bắt lời khuyên đi ra từ phần luận),
+     * cấm "tích lũy / nền tảng / trật tự / bản chất / xu hướng / biểu hiện"
+     * (chính bài mẫu của chủ dự án dùng). Ba chỗ ấy đã sửa bên dưới; câu thứ
+     * bậc là để lần sau có lệch thì model vẫn biết nghe ai.
+     */
+    ten: 'quy-tac-luan-giai-chung',
+    nhom: 'phai-giu',
+    van: `BỘ QUY TẮC LUẬN GIẢI CHUNG CỦA CELES — áp cho mọi bài, mọi màn. Khi bất kỳ luật nào bên dưới lệch với bộ này, theo bộ này. Độ dài và khuôn trình bày thì theo đúng yêu cầu riêng của màn đang viết: câu chuyển tiếp và lời khuyên nằm TRONG số câu, số từ màn đó cho phép — viết lại câu yếu cho có mạch, không cộng thêm câu.
+
+${QUY_TAC_LUAN_GIAI}`,
+  },
   {
     ten: 'khong-luan-tu-mot-sao',
     nhom: 'phai-giu',
@@ -113,7 +133,7 @@ Tiêu chí chọn: điều này có riêng cho cấu trúc này không, hay dùn
     nhom: 'mau-day-duoc',
     coSo: "danh sách cụm mở đoạn — mẫu vàng dạy nhanh hơn một danh sách cấm",
     van: `NHỮNG CÁCH MỞ ĐẦU VÀ CỤM TỪ PHẢI TRÁNH:
-- Mở đoạn bằng "Bạn thường…", "Phần này…", "Ở phần…", "Nét nổi lên là…", "Giai đoạn này…" — nhất là khi nhiều đoạn cùng mở như vậy.
+- Nhiều câu hay nhiều đoạn liền nhau cùng mở một khuôn ("Bạn thường…", "Phần này…", "Ở phần…", "Nét nổi lên là…", "Giai đoạn này…") — một lần thì tự nhiên, lặp thành "Bạn A. Bạn B. Bạn C." thì thành giọng đọc kết quả.
 - "Điều này cho thấy rằng…", "Nhìn chung…", "Có thể nói rằng…", "Không chỉ… mà còn…".
 - Từ kịch tính không cần thiết: "trận đánh", "bốc lên", "đứt gánh", "phá bỏ", "trả giá".
 - Từ huyền bí mơ hồ: "năng lượng vũ trụ", "định mệnh", "vận số đã an bài".
@@ -145,12 +165,12 @@ Tiêu chí chọn: điều này có riêng cho cấu trúc này không, hay dùn
 - "X tọa thủ tại cung Y" → bỏ hẳn tên cung, nói thẳng phần đời đó
 - "hội chiếu / củng chiếu" → "cùng dồn vào", "kéo theo hướng"
 - "miếu viên / đắc địa" → "ở mức mạnh", "hiện ra rõ"
-- Lời khuyên → cái giá. Không đổi vỏ cho mềm đi, mà bỏ hẳn phần ra việc và nói điều gì thật sự xảy ra:
-    "nên lập kế hoạch chi tiêu"      → "tiền ra theo cảm xúc trong tuần là chuyện dễ thấy ở quãng này"
-    "cần thận trọng khi quyết định"  → "quyết lúc đang nóng thường phải làm lại sau vài tuần"
-    "nên chú ý giữ sức khoẻ"         → "sức bền tụt trước khi bạn kịp nhận ra, thường lộ qua giấc ngủ"
-    "đừng để áp lực ảnh hưởng"       → "việc tràn sang giờ nghỉ là chuyện dễ xảy ra"
-  "Điều đáng cân nhắc là…" và "Một cách tiếp cận phù hợp hơn là…" vẫn là lời khuyên mặc áo khác — không dùng.`,
+- Lời khuyên chung chung → lời khuyên đi ra từ phần luận. Trước hết nói điều gì thật sự xảy ra, rồi lời khuyên gắn đúng vào chuyện ấy:
+    "nên lập kế hoạch chi tiêu"      → "tiền ra theo cảm xúc trong tuần là chuyện dễ thấy ở quãng này, nên bạn đặt sẵn một khoản không đụng tới trước khi tiêu"
+    "cần thận trọng khi quyết định"  → "quyết lúc đang nóng thường phải làm lại sau vài tuần, vì vậy việc lớn nên để qua một đêm rồi mới chốt"
+    "nên chú ý giữ sức khoẻ"         → "sức bền tụt trước khi bạn kịp nhận ra, thường lộ qua giấc ngủ — đó là dấu hiệu nên giảm việc, đừng đợi tới lúc kiệt"
+    "đừng để áp lực ảnh hưởng"       → "việc tràn sang giờ nghỉ là chuyện dễ xảy ra, nên đặt một giờ cố định mà sau đó không trả lời việc nữa"
+  "Bạn nên cố gắng cân bằng hơn", "Điều đáng cân nhắc là…", "Một cách tiếp cận phù hợp hơn là…" là lời khuyên rỗng — không dùng.`,
   },
   {
     ten: 'muc-chac-chan',
@@ -218,16 +238,13 @@ Dịch tên sao sang hành vi là chưa đủ, vì hành vi vẫn có thể vi�
     "năng lực" -> làm được việc gì
     "nguồn lực" -> tiền, người và thời gian
     "cấu trúc" -> cách mọi thứ được xếp
-    "nền tảng" -> chỗ dựa sẵn có
     "hệ thống" -> một cách làm cố định
     "cơ chế" -> chuyện đó xảy ra thế nào
     "vận hành" -> làm việc
     "tiềm năng" -> có thể làm được
     "tối ưu" -> gọn nhất, đỡ tốn nhất
-    "trật tự" -> thứ tự rõ ràng
     "tự chủ" -> tự lo được cho mình
     "quyền tự quyết" -> được tự quyết
-    "tích lũy" -> dồn dần, để dành
     "định hình" -> thành hình
     "bứt phá" -> vọt lên
     "đồng hành" -> đi cùng
@@ -235,15 +252,11 @@ Dịch tên sao sang hành vi là chưa đủ, vì hành vi vẫn có thể vi�
     "tương tác" -> qua lại với nhau
     "duy trì" -> giữ
     "thể hiện" -> lộ ra
-    "biểu hiện" -> hiện ra
     "tác động" -> làm cho
-    "bản chất" -> thật ra
     "giá trị cốt lõi" -> điều bạn coi trọng nhất
     "phạm vi" -> tới đâu
     "khía cạnh" -> mặt
     "yếu tố" -> điều gì
-    "xu hướng" -> thường hay
-    "khuynh hướng" -> thường hay
     "tối đa hóa" -> làm nhiều nhất có thể`,
   },
   {
@@ -304,14 +317,20 @@ export const CHUAN_NGON_NGU_CELES = dungChuanNgonNgu();
  * Câu ra lệnh — thứ Celes không được nói.
  *
  * Nó lọt qua cổng ngôn ngữ vì không phải phán quyết, cũng không phải từ thô.
- * Nhưng nó sai vai: người đọc tới đây để hiểu mình, không phải để nhận việc.
- * Tài liệu khung §7.2 xếp giọng kê đơn vào nhóm phải giảm mạnh.
+ *
+ * ĐỔI NGHĨA 24/09/2026: trước đây bắt MỌI câu có "hãy / bạn nên / cần phải",
+ * tức là cắt sạch lời khuyên ở điểm nổi bật và hành trình. Bộ quy tắc chung
+ * (quy-tac-luan-giai.ts) của chủ dự án làm ngược lại: được dùng "bạn nên /
+ * không nên", và lời khuyên phải đi ra từ phần luận. Nên giờ chỉ bắt lời
+ * khuyên RỖNG — loại dán được vào bất cứ bài nào — đúng ví dụ xấu trong bộ
+ * quy tắc ("Bạn nên cố gắng cân bằng hơn").
  *
  * Để ở đây vì cả ba bộ sinh ngắn đều cần, và ba bản sao rời thì sớm muộn lệch
  * nhau. Không dùng ranh giới từ: JavaScript tính ranh giới theo bảng ASCII, mà
  * "hãy" và "nên" đều có dấu.
  */
-export const CAU_RA_LENH = /(?:hãy|bạn nên|cần phải|nên dành|đừng quên|nhớ rằng)/i;
+export const CAU_RA_LENH =
+  /(?:đừng quên|nhớ rằng|hãy nhớ|hãy luôn|cố gắng cân bằng|cân bằng hơn|giữ (?:tinh thần|thái độ) (?:lạc quan|tích cực)|suy nghĩ tích cực|lắng nghe (?:bản thân|chính mình)|đừng để (?:cảm xúc|áp lực)|cần thận trọng (?:hơn|khi (?:ra )?quyết định)|chú ý (?:giữ gìn |giữ |đến )?sức kh[oỏ]e|dồn (?:toàn bộ|hết|tất cả)[^.]{0,30}(?:vào một|một chỗ)|gánh (?:mọi|hết|tất cả)[^.]{0,15}một mình|nhịp sinh hoạt (?:đều|bền))/iu;
 
 /**
  * Bỏ những CÂU ra lệnh trong một đoạn, giữ phần còn lại.

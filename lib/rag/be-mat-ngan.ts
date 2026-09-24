@@ -3,7 +3,7 @@ import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt } from './bang-chung';
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
-import { boCauRaLenh, dungChuanNgonNgu } from './chuan-ngon-ngu';
+import { boCauRaLenh, CAU_RA_LENH, dungChuanNgonNgu } from './chuan-ngon-ngu';
 
 /*
  * A5: bề mặt này có suaCauKeSao() nhưng KHÔNG có suaCauTiengLong(), nên chỉ
@@ -113,9 +113,15 @@ async function dungNen(
  * Bốn lượt siết prompt vẫn ra "Đừng để cảm xúc chi phối…", "Cần thận trọng…".
  * Model tầm này không giữ nổi một lệnh cấm qua một bài mười hai đoạn, nên chỗ
  * nào chặn được bằng luật thì chặn bằng luật.
+ *
+ * 24/09/2026: bộ quy tắc chung cho phép lời khuyên đi ra từ phần luận, nên ô
+ * lĩnh vực chỉ còn cắt lời khuyên RỖNG (cùng mẫu `CAU_RA_LENH`) cộng vài câu
+ * khuôn riêng của ô, không cắt mọi câu có "nên / cần".
  */
-const KHUYEN_BAO =
-  /(?:^|\s)(?:đừng|nên|cần|hãy|tránh|chú ý|lưu ý|cân nhắc|quan trọng là|điều đáng)/iu;
+const KHUYEN_BAO = new RegExp(
+  `${CAU_RA_LENH.source}|(?:^|\\s)(?:quan trọng là|điều đáng cân nhắc)`,
+  'iu'
+);
 
 /** Bỏ câu kê đơn trong một ô lĩnh vực, giữ phần còn lại */
 function boCauKhuyenBao(doan: string): string {
@@ -349,12 +355,12 @@ LUẬT CHO SÁU Ô NÀY:
 - CẤM nhắc tên cung ("đọc từ cung Quan Lộc"). Người đọc không cần biết nó đọc từ đâu.
 - "Quãng này không đi qua cung đó" nghĩa là phần này giữ nhịp cũ — viết ra thành điều có ích, không viết thành "không có gì đáng nói".
 - CẤM nói phần này nằm ngoài quãng: "phần tài chính không nằm trong giai đoạn này", "chưa tới lượt", "không thuộc quãng này". Đó là chuyện nội bộ của cách tính, người đọc không hỏi.
-- Celes MÔ TẢ, không khuyên. Cùng một ý, viết theo cột phải:
+- Không khuyên chung chung. Câu ở cột trái là lời khuyên rỗng; viết theo cột phải — nói điều thật sự xảy ra, và nếu có lời khuyên thì nó phải gắn đúng vào điều ấy:
     "cần thận trọng khi ra quyết định tài chính"  ->  "quyết định tiền bạc lúc này dễ bị cảm xúc của tuần đó kéo đi"
     "nên chú ý giữ sức khoẻ"                       ->  "sức bền tụt xuống trước khi bạn kịp nhận ra, thường là qua giấc ngủ"
     "đừng để áp lực công việc ảnh hưởng"           ->  "việc tràn sang giờ nghỉ là chuyện dễ xảy ra trong quãng này"
     "việc chăm sóc mối quan hệ sẽ hỗ trợ bạn"      ->  "người quanh bạn đang sẵn lòng hơn bình thường, phần đó đỡ được nhiều"
-  Nhận ra mình đang viết "cần", "nên", "đừng", "tránh", "lưu ý", "chú ý" thì viết lại câu đó theo cột phải.
+  Lời khuyên rỗng kiểu "cần thận trọng khi quyết định", "chú ý sức khoẻ", "đừng để áp lực…" sẽ bị cắt khỏi ô.
 - Sáu ô phải khác nhau thật. Đổi một hai chữ trong cùng một câu là hỏng.
 - Riêng suc-khoe: nói nhịp sống và mức năng lượng, không chẩn đoán, không nhắc bệnh.`
     : '';

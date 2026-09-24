@@ -283,7 +283,7 @@ NĂM LUẬT CỨNG:
 
 - CẤM mở đầu bằng "Quãng này", "Giai đoạn này", "Thời gian này", "Thời điểm này", "Tháng này", "Khoảng thời gian này". Mở thẳng bằng chính điều đáng nói.
 
-- CẤM khuyên bảo. Không "hãy", không "bạn nên", không "cần phải". Celes mô tả xu hướng và nêu điều đáng cân nhắc, không ra lệnh cho người đọc.
+- KHÔNG KHUYÊN CHUNG CHUNG. Mốc nào có lời khuyên thì lời khuyên phải đi ra từ chính điều mốc đó vừa nói và cụ thể tới mức người đọc làm được; lời khuyên dán được vào mốc nào cũng đúng ("cần thận trọng hơn", "đừng để áp lực…", "chú ý sức khoẻ") sẽ bị cắt.
 
 - ĐỘ DÀI PHẢI LỆCH NHAU. Ít nhất BA mốc dưới 15 từ. Mốc nào dữ kiện mỏng thì viết ngắn hẳn, đừng thêm thắt cho dài bằng mốc khác.
 
