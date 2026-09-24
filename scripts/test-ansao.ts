@@ -3,7 +3,8 @@
  * In ra lá số dạng text để đối chiếu thủ công với các trang tử vi uy tín.
  */
 
-import { lapLaSo, viTriTuVi, type ThongTinSinh } from '../lib/tuvi/ansao';
+import { lapLaSo, luuTinhTheoNam, viTriTuVi, type ThongTinSinh } from '../lib/tuvi/ansao';
+import { doSangCuaSao } from '../lib/tuvi/dosang';
 import { solarToLunar, lunarToSolar } from '../lib/tuvi/lunar';
 import { CHI } from '../lib/tuvi/constants';
 
@@ -162,3 +163,34 @@ function kiemTraSaoCoDinh() {
 
 console.log('\n### Kiểm tra sao cố định');
 kiemTraSaoCoDinh();
+
+/*
+ * Đối chiếu tuvivietnam.vn ngày 24/09/2026 — ba lỗi đã sửa, giữ để khỏi tái
+ * phát. Gọi thẳng hàm độ sáng / lưu tinh, không dùng ngày sinh của ai.
+ */
+function kiemTraDoiChieu24_09() {
+  const loiDs: string[] = [];
+  const muon = (ten: string, chi: number, kv: string) => {
+    const ra = doSangCuaSao(ten, chi);
+    if (ra !== kv) loiDs.push(`${ten} ở ${CHI[chi]}: ${ra}, kỳ vọng ${kv}`);
+  };
+  // Khốc Hư đắc Tý Ngọ Mão Dậu Mùi, hãm Dần Thìn Tỵ Thân Tuất Hợi
+  for (const ten of ['Thiên Khốc', 'Thiên Hư']) {
+    for (const c of [0, 3, 6, 7, 9]) muon(ten, c, 'D');
+    for (const c of [2, 4, 5, 8, 10, 11]) muon(ten, c, 'H');
+  }
+  // Hóa Kỵ đắc tứ mộ
+  for (const c of [1, 4, 7, 10]) muon('Hóa Kỵ', c, 'D');
+  for (const c of [0, 2, 3, 5, 6, 8, 9, 11]) muon('Hóa Kỵ', c, 'H');
+  // Lưu Tang Môn = Thái Tuế + 2, Lưu Bạch Hổ = Thái Tuế + 8 (2026 Bính Ngọ: Thân, Dần)
+  const luu = luuTinhTheoNam(2026);
+  const o = (ten: string) => luu.find((l) => l.ten === ten)?.chiIndex;
+  if (o('Lưu Tang Môn') !== 8) loiDs.push(`Lưu Tang Môn 2026 ở ${o('Lưu Tang Môn')}, kỳ vọng Thân`);
+  if (o('Lưu Bạch Hổ') !== 2) loiDs.push(`Lưu Bạch Hổ 2026 ở ${o('Lưu Bạch Hổ')}, kỳ vọng Dần`);
+  for (const l of loiDs) console.log(`  SAI: ${l}`);
+  console.log(loiDs.length ? `✗ ${loiDs.length} chỗ lệch` : '✓ Độ sáng Khốc/Hư/Hóa Kỵ và Lưu Tang Môn/Bạch Hổ đúng bảng');
+  if (loiDs.length) process.exitCode = 1;
+}
+
+console.log('\n### Đối chiếu 24/09/2026');
+kiemTraDoiChieu24_09();

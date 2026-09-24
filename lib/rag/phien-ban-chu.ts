@@ -4,6 +4,7 @@ import { CHU_TRUU_TUONG } from './chu-truu-tuong';
 import { PHIEN_BAN_NGON_NGU } from './ngon-ngu';
 import { PHIEN_BAN_VALIDATOR } from './kiem-duyet';
 import { PHIEN_BAN_PLANNER } from './planner';
+import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 
 /**
  * MỘT PHIÊN BẢN CHỮ CHO MỌI BỀ MẶT — dấu vân tay của bộ luật đang viết bài.
@@ -43,6 +44,12 @@ export const PHIEN_BAN_CHU = createHash('sha1')
       PHIEN_BAN_NGON_NGU,
       PHIEN_BAN_VALIDATOR,
       PHIEN_BAN_PLANNER,
+      /*
+       * Phương pháp an sao. Thêm 24/09/2026: sửa độ sáng Khốc/Hư/Hóa Kỵ mà
+       * không đổi khoá thì bài đã đệm vẫn luận theo độ sáng SAI mãi mãi — kể cả
+       * luận giải v3, vốn chỉ khoá theo phiên bản khung/dữ kiện/prompt.
+       */
+      PHUONG_PHAP.phienBan,
     ].join('|')
   )
   .digest('hex')

@@ -52,7 +52,20 @@ const DAC_DIA: Record<string, number[]> = {
   'Đại Hao': [2, 3, 8, 9],
   'Tiểu Hao': [2, 3, 8, 9],
   'Tang Môn': [2, 3, 8, 9],
-  'Thiên Khốc': [0, 2, 6, 8],
+  /*
+   * Khốc Hư đắc ở Tý, Ngọ, Mão, Dậu và Mùi; hãm ở Dần, Thìn, Tỵ, Thân, Tuất,
+   * Hợi. Bản trước ghi [Tý, Dần, Ngọ, Thân] — nhầm Mão/Dậu sang Dần/Thân — và
+   * thiếu hẳn Thiên Hư. Bắt được 24/09/2026 khi chủ dự án đối chiếu với lá số
+   * tuvivietnam.vn: Thiên Khốc ở Dần hiện "Đắc" trong khi phải là Hãm.
+   * Sửu không có trong cả hai danh sách của nguồn; bảng hai mức nên xếp Hãm.
+   */
+  'Thiên Khốc': [0, 3, 6, 7, 9],
+  'Thiên Hư': [0, 3, 6, 7, 9],
+  /*
+   * Hóa Kỵ đắc ở tứ mộ (Thìn, Tuất, Sửu, Mùi — Thổ chế Thủy), hãm ở tám cung
+   * còn lại. Bản trước luôn trả Hãm, nên Kỵ ở tứ mộ bị luận thành xấu.
+   */
+  'Hóa Kỵ': [1, 4, 7, 10],
 };
 
 export function doSangCuaSao(tenSao: string, cungIndex: number): DoSang | null {
@@ -66,6 +79,5 @@ export function doSangCuaSao(tenSao: string, cungIndex: number): DoSang | null {
   }
   const dacDia = DAC_DIA[tenSao];
   if (dacDia) return dacDia.includes(cungIndex) ? 'D' : 'H';
-  if (tenSao === 'Hóa Kỵ') return 'H';
   return null;
 }
