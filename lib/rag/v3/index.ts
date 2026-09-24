@@ -1,8 +1,8 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
-import { CAU_HOI_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
-import { dungDuKien, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
+import { CAU_HOI_V3, CHU_DE_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
+import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
@@ -95,6 +95,35 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
   TQ11: 'Chỉ gợi ý 2–3 phần nên xem sâu trước và lý do ngắn cho từng phần.',
 };
 
+/**
+ * PHẠM VI của một câu chuyên sâu, dựng từ chính khung: các câu cùng chủ đề
+ * sinh song song nên không câu nào biết câu kia nói gì. Đo 24/09/2026 (lá số
+ * A, 19 câu): chữ gần như không trùng (<2% câu) nhưng Ý lặp dày — cùng một
+ * nét tính cách, cùng một mốc tuổi, cùng một lời khuyên đi qua bốn năm câu.
+ * Nói cho mỗi câu biết các câu anh em lo phần nào là cách rẻ nhất để chia ý.
+ */
+function phamViChuyenSau(q: CauHoiV3): string {
+  const anhEm = CAU_HOI_V3.filter((x) => x.loai === 'chuyen-sau' && x.chuDe === q.chuDe && x.id !== q.id);
+  const ten = CHU_DE_V3.find((c) => c.id === q.chuDe)?.ten ?? q.chuDe;
+  const dong = [
+    `Đây là một trong ${anhEm.length + 1} câu của chủ đề "${ten}"; người đọc đọc liền các câu trên cùng một trang. Chỉ đi sâu đúng trọng tâm câu này.`,
+    anhEm.length
+      ? `Những phần sau đã có câu khác trả lời — KHÔNG triển khai lại ở đây; nếu buộc phải chạm tới thì tối đa nửa câu làm cầu nối:\n${anhEm
+          .map((x) => `- ${x.cauHoi} (${x.nhanDuoc})`)
+          .join('\n')}`
+      : '',
+    hoiThoiDiem(q)
+      ? ''
+      : 'Câu này KHÔNG hỏi về thời điểm: không nêu mốc tuổi, giai đoạn mười năm hay năm cụ thể.',
+    q.chuDe === 'tinh-cach'
+      ? ''
+      : 'Không tả lại tính cách chung của người này — phần đó thuộc chủ đề Tính cách. Nét tính cách chỉ được dùng một vế để giải thích một biểu hiện riêng của câu này.',
+    // Lượt 8: chia phạm vi xong thì ba câu kết bài mà không khuyên gì (giám khảo 4 → 1)
+    'Bài vẫn PHẢI kết bằng một lời khuyên hành động cụ thể ("bạn nên…" / "không nên…"), đi ra từ chính phần luận của câu này. Tránh lời khuyên chung là để thay bằng lời khuyên riêng — không phải để bỏ lời khuyên.',
+  ];
+  return dong.filter(Boolean).join('\n');
+}
+
 const AN_TOAN_SUC_KHOE = 'Đây là xu hướng để tham khảo, không phải chẩn đoán; chuyện sức khỏe cụ thể cần người có chuyên môn xem.';
 const AN_TOAN_TAI_CHINH = 'Đây là góc nhìn từ lá số, không phải tư vấn tài chính.';
 
@@ -138,7 +167,12 @@ export async function luanMotCau(vao: {
     khoiDoDai(q.loai),
     `CÂU HỎI CỦA NGƯỜI ĐỌC: ${q.cauHoi}`,
     `NGƯỜI ĐỌC CẦN NHẬN ĐƯỢC: ${q.nhanDuoc}`,
-    PHAM_VI_TONG_QUAN[q.id] ? `PHẠM VI CÂU NÀY: ${PHAM_VI_TONG_QUAN[q.id]}` : '',
+    PHAM_VI_TONG_QUAN[q.id]
+      ? `PHẠM VI CÂU NÀY: ${PHAM_VI_TONG_QUAN[q.id]}`
+      : q.loai === 'chuyen-sau'
+        ? `PHẠM VI CÂU NÀY:
+${phamViChuyenSau(q)}`
+        : '',
     q.yeuToThem ? `YẾU TỐ NÊN XÉT: ${q.yeuToThem}` : '',
     q.khongDuoc ? `KHÔNG ĐƯỢC: ${q.khongDuoc}` : '',
     `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
@@ -153,7 +187,7 @@ export async function luanMotCau(vao: {
 
   const maDuKien = new Set(duKien.map((d) => d.id));
   const maNguon = new Set(nguon.map((n) => n.id));
-  const kiem = (b: BaiV3) => kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep });
+  const kiem = (b: BaiV3) => kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q) });
 
   let soLanGoi = 0;
   let model = '';

@@ -38,6 +38,21 @@ const TU_NOI = [
   'Tuy nhiên', 'Tuy vậy', 'Ngược lại', 'Đặc biệt', 'Khi đi xa hơn', 'Đến giai đoạn', 'Nếu nhìn theo hướng',
 ];
 
+const KY_TU_LA = /[^\s\p{Script=Latin}\p{P}\p{S}\p{N}\p{M}]+/gu;
+
+const MOC_TUOI = /\d{2}\s*[–-]\s*\d{2}\s*tuổi|(trước|sau|từ|quanh|ngoài)\s+(khoảng\s+)?\d{2}\s*tuổi|tuổi\s+\d{2}(?!\d)/iu;
+
+/**
+ * Lời khuyên chung chung đo được ở lượt 7 (lá số A): cùng một câu khuyên xuất
+ * hiện ở bốn, năm câu hỏi khác nhau vì nó đúng với bất cứ ai.
+ */
+const LOI_KHUYEN_CHUNG = [
+  /dồn (toàn bộ|hết|tất cả)[^.]{0,30}(vào một|một chỗ)/iu,
+  /gánh (mọi|hết|tất cả)[^.]{0,15}một mình/iu,
+  /nhịp sinh hoạt (đều|bền)/iu,
+  /(không|đừng) (nên )?quyết (định )?(vội|nóng)/iu,
+];
+
 export const demTu = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 /** Tên riêng trong câu văn: chỉ tính khi viết HOA đúng như tên riêng, để "phúc đức" (lời thường) không bị bắt */
@@ -69,6 +84,8 @@ export function kiemBai(vao: {
   maDuKien: Set<string>;
   maNguon: Set<string>;
   saoDuocPhep: Set<string>;
+  /** Câu có hỏi về thời điểm không — không hỏi thì bài không được gắn mốc tuổi */
+  hoiThoiDiem?: boolean;
 }): LoiV3[] {
   const { bai, loai } = vao;
   const loi: LoiV3[] = [];
@@ -107,6 +124,11 @@ export function kiemBai(vao: {
   const cam = TU_CAM.filter((t) => luan.toLowerCase().includes(t) || vs.toLowerCase().includes(t));
   if (cam.length) loi.push({ ma: 'tu-cam', moTa: `Dùng từ cấm: ${cam.map((x) => `"${x}"`).join(', ')}.`, chan: true });
 
+  // Model lẫn ngôn ngữ giữa câu: production 24/09/2026 có "cách làm cũ აღარ còn
+  // thuyết phục" (chữ Georgia, nghĩa "không còn") nằm ngay thẻ đầu trang /la-so
+  const la = [...new Set((luan + ' ' + vs).match(KY_TU_LA) ?? [])];
+  if (la.length) loi.push({ ma: 'ky-tu-la', moTa: `Lẫn chữ không phải tiếng Việt: "${la.join('", "')}" — viết lại đúng chỗ đó bằng tiếng Việt.`, chan: true });
+
   const ma = [...new Set([...(luan + ' ' + vs).matchAll(/\b[FE]\d{3}\b|\bTQ\d{2}\b|\b[A-Z]{2}\d{2}\b/g)].map((m) => m[0]))];
   if (ma.length) loi.push({ ma: 'lo-ma', moTa: `Lộ mã nội bộ trong văn: ${ma.join(', ')}.`, chan: true });
   const viettat = [...new Set([...(luan + ' ' + vs).matchAll(/\b[A-ZĐ]{3,}\b/g)].map((m) => m[0]))].filter((x) => x !== 'AI');
@@ -131,6 +153,30 @@ export function kiemBai(vao: {
   // Lặp từ nối
   const lap = TU_NOI.map((w) => [w, (luan.match(new RegExp(w, 'g')) ?? []).length] as const).filter(([, k]) => k >= 3);
   if (lap.length) loi.push({ ma: 'lap-noi', moTa: `Lặp từ nối: ${lap.map(([w, k]) => `"${w}" ${k} lần`).join(', ')}.`, chan: true });
+
+  // Mốc tuổi lọt vào câu không hỏi thời điểm — nguồn lặp lớn nhất giữa các câu
+  if (vao.hoiThoiDiem === false) {
+    const moc = luan.match(MOC_TUOI);
+    if (moc) {
+      loi.push({
+        ma: 'moc-tuoi',
+        moTa: `Câu này không hỏi về thời điểm mà bài vẫn gắn mốc tuổi ("${moc[0]}") — bỏ mốc tuổi, giai đoạn; phần thời điểm đã có câu khác trả lời.`,
+        chan: true,
+      });
+    }
+  }
+
+  // Chuyên sâu phải kết bằng lời khuyên: đoạn cuối không có lấy một chữ khuyên
+  if (loai === 'chuyen-sau' && luan) {
+    const cuoi = luan.split(/\n\s*\n/).filter((x) => x.trim()).pop() ?? '';
+    if (!/(^|[^\p{L}])(nên|hãy|đừng|cần|thử|tránh)(?=$|[^\p{L}])/iu.test(cuoi)) {
+      loi.push({ ma: 'khong-loi-khuyen', moTa: 'Đoạn cuối không có lời khuyên — kết bằng một việc cụ thể người đọc nên/không nên làm, đi ra từ phần luận của câu này.', chan: true });
+    }
+  }
+
+  // Lời khuyên dán được vào câu nào cũng đúng — ghi nhận để đo, chưa chặn
+  const chung = LOI_KHUYEN_CHUNG.filter((re) => re.test(luan));
+  if (chung.length) loi.push({ ma: 'khuyen-chung', moTa: `Lời khuyên chung chung, dễ lặp giữa các câu: ${chung.length} chỗ.`, chan: false });
 
   // Dàn ý phải có mã căn cứ thật
   const saiMa = bai.danY.flatMap((y) => y.canCu).filter((m) => !vao.maDuKien.has(m) && !vao.maNguon.has(m));
