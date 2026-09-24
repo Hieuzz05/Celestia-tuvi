@@ -202,9 +202,10 @@ export const vi = {
     hoiThang: 'Hỏi Celes',
     khamPhaSau: 'Khám phá sâu hơn',
     // Khối nổi bật ở ĐẦU trang, không phải thẻ cuối trang
-    sauNoiBatTieuDe: 'Đọc sâu một chủ đề bạn đang bận tâm',
-    sauNoiBatMo: 'Một bài dài khoảng 1.500–2.000 chữ, viết liền mạch cho riêng lá số này — công việc, tiền bạc, tình cảm, gia đình hay sức khoẻ.',
-    sauNoiBatCta: 'Đọc bài luận giải sâu',
+    sauNoiBatTieuDe: 'Luận giải chuyên sâu theo 14 chủ đề',
+    sauNoiBatMo: 'Tính cách, công việc, tiền bạc, tình cảm, gia đình, sức khoẻ… Mỗi chủ đề là vài câu hỏi cụ thể, mỗi câu được luận từ nhiều cung trên lá số của bạn.',
+    sauNoiBatCta: 'Đọc luận giải chuyên sâu',
+    sauNoiBatKhamPha: 'Khám phá từng chủ đề →',
     sauNoiBatHanMuc: 'Mỗi ngày một bài miễn phí.',
     theoChuDeTieuDe: 'Đi thẳng vào điều bạn đang băn khoăn',
     theoChuDeMo: 'Công việc, tiền bạc, tình cảm, gia đình, sức khoẻ — hoặc hỏi Celes một câu của riêng bạn.',

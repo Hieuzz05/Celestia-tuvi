@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
-import { TongQuanV3 } from '@/components/luangiai/TongQuanV3';
+import { BaTheDauV3, TongQuanV3, useTongQuanV3 } from '@/components/luangiai/TongQuanV3';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
@@ -21,7 +21,6 @@ import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
-import { LuotBaiSau } from '@/components/support/LuotBaiSau';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -251,6 +250,19 @@ function TrangLaSo() {
   const [v3HongKhoa, setV3HongKhoa] = useState<string | null>(null);
   const dungV3 = ngonNgu === 'vi';
   const canBangCu = !dungV3 || (khoaSau !== null && v3HongKhoa === khoaSau);
+  const tongQuan = useTongQuanV3(
+    dungV3 && laSo && !canBangCu
+      ? {
+          ngay: laSo.thongTin.ngay,
+          thang: laSo.thongTin.thang,
+          nam: laSo.thongTin.nam,
+          gio: laSo.thongTin.gio,
+          gioiTinh: laSo.thongTin.gioiTinh,
+          namXem,
+        }
+      : null,
+    () => setV3HongKhoa(khoaSau)
+  );
 
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
@@ -429,18 +441,23 @@ function TrangLaSo() {
    */
   const phanDoc = (
     <>
-          {gocNhin[0] && (
-            <GocNhinCard
-              gocNhin={
-                noiBatAi
-                  ? {
-                      ...gocNhin[0],
-                      noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
-                    }
-                  : gocNhin[0]
-              }
-              chinh
-            />
+          {/* Ba thẻ đầu: v3 viết từ lá số; chỉ khi v3 hỏng mới lùi về thẻ khuôn cũ */}
+          {!canBangCu ? (
+            <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
+          ) : (
+            gocNhin[0] && (
+              <GocNhinCard
+                gocNhin={
+                  noiBatAi
+                    ? {
+                        ...gocNhin[0],
+                        noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
+                      }
+                    : gocNhin[0]
+                }
+                chinh
+              />
+            )
           )}
 
           {/*
@@ -467,32 +484,33 @@ function TrangLaSo() {
             </p>
             <div className="mt-[4px] flex flex-wrap items-center gap-[12px]">
               <Link
-                href={duocVao ? lienKetSau : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                href={
+                  duocVao
+                    ? `/luan-giai/sau?${boiCanhUrl}`
+                    : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(`/luan-giai/sau?${boiCanhUrl}`)}`
+                }
                 className="btn-primary"
                 onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang' })}
               >
                 {t.quickRead.sauNoiBatCta}
               </Link>
               <Link
-                href={
-                  duocVao
-                    ? `/luan-giai/sau?${boiCanhUrl}`
-                    : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`
-                }
+                href={lienKetSau}
                 className="link-text link-action"
-                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-doc-sau' })}
+                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-kham-pha' })}
               >
-                Đọc luận giải chuyên sâu theo từng chủ đề →
+                {t.quickRead.sauNoiBatKhamPha}
               </Link>
-              <LuotBaiSau macDinh={t.quickRead.sauNoiBatHanMuc} />
             </div>
           </div>
 
-          <div className="grid gap-[16px] md:grid-cols-2">
-            {gocNhin.slice(1, 3).map((g) => (
-              <GocNhinCard key={g.id} gocNhin={g} nho />
-            ))}
-          </div>
+          {canBangCu && (
+            <div className="grid gap-[16px] md:grid-cols-2">
+              {gocNhin.slice(1, 3).map((g) => (
+                <GocNhinCard key={g.id} gocNhin={g} nho />
+              ))}
+            </div>
+          )}
 
           {loi && (
             <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
@@ -502,17 +520,7 @@ function TrangLaSo() {
 
         {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
         {dungV3 && laSo && !canBangCu && (
-          <TongQuanV3
-            laSo={{
-              ngay: laSo.thongTin.ngay,
-              thang: laSo.thongTin.thang,
-              nam: laSo.thongTin.nam,
-              gio: laSo.thongTin.gio,
-              gioiTinh: laSo.thongTin.gioiTinh,
-              namXem,
-            }}
-            onHong={() => setV3HongKhoa(khoaSau)}
-          />
+          <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
         )}
 
         {canBangCu && dangDocSau && !baiSau && (
