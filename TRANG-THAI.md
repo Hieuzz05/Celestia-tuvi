@@ -22,13 +22,12 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
-| **OpenAI hết credit** (24/09/2026) | "You have no credits remaining": gpt-5.6-luna (đầu chuỗi) và embedding RAG đều hỏng; gemini/groq chỉ đỡ được vài câu rồi chạm hạn mức. Bài đã đệm vẫn hiện; bài mới sẽ lỗi hoặc lùi về bảng cũ. Chủ dự án cần nạp credit — ĐỪNG sửa `ai_model_configs` để lách | Claude (máy 1) |
-| Nhánh `viec/chong-lap-chuyen-sau` (`3973179`) — CHƯA GỘP | Chống lặp ý giữa các câu chuyên sâu + chặn chữ lạ. Tăng phiên bản prompt/dữ kiện → mọi bài đệm phải sinh lại, nên chỉ gộp SAU khi có credit và Celes chạy đo lại (`scripts/test-luan-giai-v3.ts`) | Claude (máy 1) |
 
 ## Vừa xong
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: chống lặp ý giữa các câu chuyên sâu (không gắn mốc tuổi vào câu không hỏi thời điểm, chia phạm vi theo các câu cùng chủ đề, bắt kết bằng lời khuyên riêng) + chặn chữ không phải tiếng Việt. Phiên bản prompt/dữ kiện đổi → mọi bài đệm sinh lại lần đầu. Đo lá số A: giám khảo 4,06 → 4,15. OpenAI đã được nạp lại credit | `233e0f1` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: giao diện luận giải v3 — ba thẻ đầu `/la-so` lấy từ v3, tổng quan thành thẻ đánh số, nút chính vào `/luan-giai/sau`, bỏ dòng hạn mức; `/luan-giai/sau` mục lục mới + nút "Đọc lại" (nhánh `viec/giao-dien-luan-giai-v3`) | `9a62ddd` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: sửa truy hồi (nhánh `viec/rag-chat-luong-truy-hoi`, SQL `va-rag-chat-luong.sql` ĐÃ CHẠY) + luận giải v3 có giao diện (CEL-119). `/la-so` đọc tổng quan v3 cho cả khách; `/luan-giai/sau` thành 14 chủ đề chuyên sâu, cần đăng nhập; không hạn mức. Bản đọc sâu 4 chặng (CEL-092, CEL-117) tạm dừng ở giao diện — route và thư viện giữ nguyên | `0b80a42` | 23/09/2026 |
 | CEL-119 — luận giải v3 (11 câu tổng quan + 61 câu chuyên sâu, đọc nhiều cung, Celes chạy thật từ đầu đến cuối) + route `/api/luan-giai-v3`, CHƯA có giao diện, CHƯA gộp. Nhánh `viec/luan-giai-v3`, dựng TRÊN nhánh RAG bên dưới → gộp RAG trước. Chạm: `lib/rag/v3/*` (mới), `app/api/luan-giai-v3` (mới), `lib/rag/noi-dung-ai.ts` (thêm bề mặt `luan-giai-v3`) | `0bbff65` | 23/09/2026 |
