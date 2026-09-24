@@ -585,9 +585,14 @@ body {
   --line-input: var(--color-frost);
   --fg: var(--color-aubergine);
   --fg-body: var(--color-aubergine);
-  --fg-soft: var(--color-heather);
-  --fg-muted: var(--color-heather);
-  --fg-subtle: #8c698c; /* nền sáng: #bbadbb chỉ cho 2.14 — xem ghi chú ở :root */
+  /*
+   * Heather (#8c698c trở xuống) trên nền pastel của gradient chỉ đạt ~2,8:1 —
+   * đo 24/09/2026, dòng "Chỉ cần vài phút để bắt đầu" và "Thử với một ngày sinh
+   * khác" trượt WCAG 1.4.3. Riêng hero dùng một tông tím đậm hơn (~6:1).
+   */
+  --fg-soft: #5e3b5e;
+  --fg-muted: #5e3b5e;
+  --fg-subtle: #6e4a6e;
   --ok-fg: var(--color-forest);
   --ok-bg: var(--color-honeydew);
   --ok-line: var(--color-mint);

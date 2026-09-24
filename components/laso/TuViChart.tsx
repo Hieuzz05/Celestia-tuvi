@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import {
   cungDaiVan,
@@ -103,7 +103,11 @@ export function TuViChart({
   // Chỉ đo BỀ NGANG của khung chứa, tuyệt đối không đo lại mệnh bàn.
   // Đo mệnh bàn rồi đặt lại chiều cao wrapper sẽ làm thanh cuộn dọc xuất hiện
   // rồi biến mất, kéo theo bề ngang đổi -> tỉ lệ đổi -> lặp vô tận (nhấp nháy).
-  useEffect(() => {
+  //
+  // useLayoutEffect, không phải useEffect: đo TRƯỚC khi vẽ. Bản useEffect vẽ
+  // mệnh bàn ở tỉ lệ 1 một nhịp rồi mới co lại — đo 24/09/2026: chân trang
+  // nhảy 791px, phần lớn điểm CLS của /la-so.
+  useLayoutEffect(() => {
     const khung = khungRef.current;
     if (!khung) return;
 
@@ -212,15 +216,31 @@ export function TuViChart({
       */}
       {!chiBanDo && (
       <div className="no-print flex shrink-0 flex-wrap items-center gap-x-[24px] gap-y-[12px]">
-        <div className="flex items-center gap-[12px]">
-          <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+        {/*
+          Nút đổi năm: đo 24/09/2026 chỉ rộng 5px — chữ "‹" trần, gần như không
+          chạm trúng được trên điện thoại. Giờ là ô 44×44 có viền.
+        */}
+        <div className="flex items-center gap-[8px]">
+          <span className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
             {t.banDo.namXem}
           </span>
-          <button className="link-text link-action" onClick={() => onNamXemChange(namXem - 1)} aria-label={t.banDo.namTruoc}>
+          <button
+            type="button"
+            className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border text-[18px]"
+            style={{ borderColor: 'var(--line-strong)', color: 'var(--fg)' }}
+            onClick={() => onNamXemChange(namXem - 1)}
+            aria-label={t.banDo.namTruoc}
+          >
             ‹
           </button>
-          <span className="text-[15px] tabular-nums">{namXem}</span>
-          <button className="link-text link-action" onClick={() => onNamXemChange(namXem + 1)} aria-label={t.banDo.namSau}>
+          <span className="min-w-[44px] text-center text-[16px] font-semibold tabular-nums">{namXem}</span>
+          <button
+            type="button"
+            className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border text-[18px]"
+            style={{ borderColor: 'var(--line-strong)', color: 'var(--fg)' }}
+            onClick={() => onNamXemChange(namXem + 1)}
+            aria-label={t.banDo.namSau}
+          >
             ›
           </button>
         </div>
@@ -228,15 +248,26 @@ export function TuViChart({
         <div className="ml-auto flex items-center gap-[16px]">
           {/* Bật tắt từng lớp là việc của người đã quen mệnh bàn — chỉ mở ở
               chế độ Chuyên sâu, bằng không nó phá luôn ý nghĩa của hai chế độ kia. */}
-          <button className="link-text link-action" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
+          <button className="link-text link-action inline-flex min-h-[44px] items-center" onClick={() => setHienSettings((v) => !v)} data-active={hienSettings}>
             {t.banDo.lopHienThi}
           </button>
-          <button className="link-text link-action" onClick={xuatPng}>
+          <button className="link-text link-action inline-flex min-h-[44px] items-center" onClick={xuatPng}>
             {t.banDo.xuatAnh}
           </button>
-          <button className="link-text link-action" onClick={() => window.print()}>
-            {t.banDo.inRa}
-          </button>
+          {/*
+            In ra: ẩn trên màn hẹp.
+
+            Không phải vì điện thoại không in được — vì trên thanh công cụ chỉ
+            vừa ba bốn mục, mà "in" là mục ít ai chạm nhất ở đó. Giữ nó là đẩy
+            "Lớp hiển thị" và "Xuất ảnh" — hai việc người dùng điện thoại thật
+            sự làm — xuống hàng thứ hai của thanh (đo 24/09/2026: bị cắt mép phải).
+          */}
+          {/* Bọc ngoài: `.link-action` đặt display ngoài layer nên thắng `max-sm:hidden` gắn thẳng lên nút */}
+          <span className="max-sm:hidden">
+            <button className="link-text link-action" onClick={() => window.print()}>
+              {t.banDo.inRa}
+            </button>
+          </span>
         </div>
       </div>
       )}

@@ -16,9 +16,9 @@ import { docNhanh } from '@/lib/tuvi/quick-read';
  */
 
 const NGUOI_MAU = [
-  { nhan: '1', ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' as const },
-  { nhan: '2', ngay: 12, thang: 3, nam: 1995, gio: 15, gioiTinh: 'nu' as const },
-  { nhan: '3', ngay: 2, thang: 11, nam: 1988, gio: 23, gioiTinh: 'nam' as const },
+  { nhan: 'Nam · 2000', nhanEn: 'Male · 2000', ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' as const },
+  { nhan: 'Nữ · 1995', nhanEn: 'Female · 1995', ngay: 12, thang: 3, nam: 1995, gio: 15, gioiTinh: 'nu' as const },
+  { nhan: 'Nam · 1988', nhanEn: 'Male · 1988', ngay: 2, thang: 11, nam: 1988, gio: 23, gioiTinh: 'nam' as const },
 ];
 
 export function LaSoMau() {
@@ -36,8 +36,15 @@ export function LaSoMau() {
       <div className="flex flex-wrap items-center justify-center gap-[8px]">
         <span className="caption">{t.landing.thuNgaySinhKhac}</span>
         {NGUOI_MAU.map((m, i) => (
-          <PillTag key={m.nhan} dangChon={i === chon} onClick={() => setChon(i)}>
-            {m.nhan}
+          // Nhãn "1 / 2 / 3" (32px) không nói mình đang xem gì — đo 24/09/2026
+          <PillTag
+            key={m.nhan}
+            dangChon={i === chon}
+            aria-pressed={i === chon}
+            className="min-h-[44px]"
+            onClick={() => setChon(i)}
+          >
+            {ngonNgu === 'en' ? m.nhanEn : m.nhan}
           </PillTag>
         ))}
       </div>

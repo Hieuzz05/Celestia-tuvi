@@ -8,4 +8,5 @@ export { Shell, HeroBand, DarkBand, SectionHeader, Section } from './layout';
 export { NutChinh, NutVien, PillTag, NhanPill, HuyHieuOk, Truong, O, OChon } from './controls';
 export { The, TheNoi, TheTrungBay, TheTrichDan, BuocSo, OIcon } from './cards';
 export { Eyebrow, GhiChuTay } from './text';
+export { KhoiGap } from './KhoiGap';
 export * from './icons';

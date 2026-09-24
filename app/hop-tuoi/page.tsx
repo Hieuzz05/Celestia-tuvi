@@ -119,7 +119,7 @@ export default function KetNoiPage() {
     return (
       <Shell className="py-[48px]">
         <div className="mx-auto max-w-[620px]">
-          <CongDangNhap nguon="connection" />
+          <CongDangNhap nguon="connection" toanTrang />
         </div>
       </Shell>
     );

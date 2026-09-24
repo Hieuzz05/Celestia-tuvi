@@ -89,16 +89,33 @@ function TheDau({
 }) {
   const [mo, setMo] = useState(false);
   return (
-    <div className="card flex flex-col gap-[12px]" style={lon ? { borderTop: '3px solid var(--accent)' } : undefined}>
+    /*
+      min-h lúc chờ: đo 24/09/2026 CLS 0,24 trên desktop (ngưỡng "kém" 0,1) — thẻ
+      chờ một dòng rồi nở thành tám dòng, đẩy cả phần dưới xuống. Giữ sẵn chỗ
+      gần bằng bài thật thì bài về không làm trang nhảy.
+    */
+    <div
+      className={`card flex flex-col gap-[12px] ${!cau ? (lon ? 'min-h-[520px] md:min-h-[360px]' : 'min-h-[440px] md:min-h-[400px]') : ''}`}
+      style={lon ? { borderTop: '3px solid var(--accent)' } : undefined}
+    >
       <span className="eyebrow">{nhan}</span>
-      <h3 className={lon ? 'heading-sm' : 'text-[20px] font-semibold'} style={{ color: 'var(--fg)' }}>
+      {/*
+        Thẻ lớn từng dùng heading-sm (36px) — đúng cỡ H1 của trang, nên hai
+        tiêu đề giành nhau. Giờ luôn nhỏ hơn H1 một bậc.
+      */}
+      <h3 className={lon ? 'text-[22px] font-semibold leading-snug md:text-[26px]' : 'text-[19px] font-semibold leading-snug'} style={{ color: 'var(--fg)' }}>
         {tieuDe}
       </h3>
       {!cau ? (
-        <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes đang đọc phần này
-          <span className="dot-dang-doc" aria-hidden />
-        </p>
+        <div className="flex flex-col gap-[12px]" aria-hidden>
+          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+            Celes đang mở bài
+            <span className="dot-dang-doc" />
+          </p>
+          {[92, 100, 84, 96, 60].map((w, i) => (
+            <span key={i} className="block h-[12px] rounded-full" style={{ width: `${w}%`, background: 'var(--line)' }} />
+          ))}
+        </div>
       ) : cau.chuaViet ? (
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
           Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.
@@ -109,11 +126,12 @@ function TheDau({
             .split(/\n\s*\n/)
             .filter((x) => x.trim())
             .map((d, i) => (
-              <p key={i} className={lon ? 'body-lg' : 'body-text'} style={{ color: 'var(--fg)' }}>
+              // Thẻ lớn: 16px trên điện thoại (20px thành 17 dòng, một bức tường chữ), 18px từ md
+              <p key={i} className={lon ? 'body-text md:text-[18px] md:leading-[1.55]' : 'body-text'} style={{ color: 'var(--fg)' }}>
                 {d}
               </p>
             ))}
-          <button type="button" className="link-text self-start" aria-expanded={mo} onClick={() => setMo(!mo)}>
+          <button type="button" className="link-text link-action inline-flex min-h-[44px] items-center self-start sm:min-h-[32px]" aria-expanded={mo} onClick={() => setMo(!mo)}>
             {mo ? 'Thu gọn' : 'Muốn biết vì sao không?'}
           </button>
           {mo && (

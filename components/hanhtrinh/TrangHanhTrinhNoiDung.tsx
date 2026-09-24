@@ -217,7 +217,7 @@ export function TrangHanhTrinhNoiDung() {
       <Section gon>
         <Shell className="flex flex-col gap-[24px]">
           <TieuDeTrang />
-          <CongDangNhap nguon="journey" />
+          <CongDangNhap nguon="journey" toanTrang />
         </Shell>
       </Section>
     );

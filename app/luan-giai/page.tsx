@@ -9,7 +9,7 @@ import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import { danhSachHoSo, type HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
-import { Shell } from '@/components/ui';
+import { Shell, KhoiGap } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
@@ -57,7 +57,8 @@ function TrangLuanGiai() {
     setForm({
       hoTen: params.get('ten') ?? '',
       ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
-      gio: Number(params.get('gio')) || 9,
+      // Không `|| 9`: giờ 0 (sinh sau nửa đêm, giờ Tý) từng bị đổi thành 9 giờ — giờ Tỵ
+      gio: params.get('gio') !== null && Number.isInteger(Number(params.get('gio'))) ? Number(params.get('gio')) : 9,
       gioiTinh: (params.get('gt') as ThongTinForm['gioiTinh']) || 'nam',
     });
   }, [params]);
@@ -130,7 +131,7 @@ function TrangLuanGiai() {
     return (
       <Shell className="py-[48px]">
         <div className="mx-auto max-w-[620px]">
-          <CongDangNhap nguon="deep_read" />
+          <CongDangNhap nguon="deep_read" toanTrang />
         </div>
       </Shell>
     );
@@ -143,6 +144,21 @@ function TrangLuanGiai() {
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[340px_minmax(0,1fr)]">
+        {/*
+          Trên điện thoại: một dòng nói đang hỏi về ai và xem năm nào, các
+          trường nhập gập lại phía sau. Việc chính của màn này là CHỌN CHỦ ĐỀ,
+          nên chủ đề phải là thứ thấy trước — xem ghi chú trong KhoiGap.
+        */}
+        <KhoiGap
+          moSan={!laSo}
+          nhanMo="Đổi người, đổi thời điểm"
+          tomTat={
+            <>
+              {form.hoTen || 'Người vừa nhập'} · {tachNgaySinh(form.ngaySinh).ngay}/
+              {tachNgaySinh(form.ngaySinh).thang}/{tachNgaySinh(form.ngaySinh).nam} · năm {namXem}
+            </>
+          }
+        >
         <div className="flex flex-col gap-[16px]">
           {hoSos.length > 0 && (
             <Field label="Chọn một người đã lưu">
@@ -221,6 +237,7 @@ function TrangLuanGiai() {
           )}
 
         </div>
+        </KhoiGap>
 
         <div className="flex flex-col gap-[16px]">
           <div className="grid gap-[12px] sm:grid-cols-2">

@@ -18,6 +18,7 @@ export const vi = {
     dongY: 'Xong',
     huy: 'Huỷ',
     menu: 'Menu',
+    dong: 'Đóng',
     dongMenu: 'Đóng menu',
     dangMo: 'Đang mở…',
   },
@@ -28,6 +29,7 @@ export const vi = {
     cauChuyen: 'Câu chuyện Celestia',
     veCelestia: 'Về Celestia',
     batDauMienPhi: 'Bắt đầu miễn phí',
+    batDauNgan: 'Bắt đầu',
     homNay: 'Hôm nay',
     banDo: 'Khám phá bản đồ',
     hanhTrinh: 'Hành trình',
@@ -49,7 +51,7 @@ export const vi = {
     moTa: 'Khi công việc, tình cảm hay một quyết định khiến bạn mất phương hướng, Celes ở đây để lắng nghe, giúp bạn nhìn rõ điều đang xảy ra và tìm ra hướng đi phù hợp với chính mình.',
     ctaPhu: 'Xem Celes có thể giúp gì',
     microcopy: 'Chỉ cần vài phút để bắt đầu · Không cần tạo tài khoản ngay.',
-    thuNgaySinhKhac: 'Thử với một ngày sinh khác:',
+    thuNgaySinhKhac: 'Lá số mẫu — bấm để đổi:',
 
     theEyebrow: 'NHỮNG CÂU BẠN CÓ THỂ MANG TỚI',
     theTieuDe: 'Bạn không cần tự mình xoay xở với mọi câu hỏi',
@@ -184,6 +186,7 @@ export const vi = {
 
   quickRead: {
     tieuDeChinh: 'Có một điều khá rõ ở bạn…',
+    xemBan12Cung: 'Xem bàn 12 cung ↓',
     tieuDeCoTen: 'Có một điều khá rõ ở {ten}…',
     moTa: 'Celes bắt đầu từ điểm nổi lên rõ nhất, rồi mới tới hai điều đáng để ý tiếp.',
     viSao: 'Muốn biết vì sao không?',
@@ -342,30 +345,55 @@ export const vi = {
     eyebrow: 'ĐÂY MỚI CHỈ LÀ PHẦN ĐẦU',
     cta: 'Tạo tài khoản miễn phí',
     chu: 'Miễn phí, không cần thẻ. Bản đồ bạn vừa lập sẽ được giữ lại.',
+    chuToanTrang: 'Miễn phí, không cần thẻ. Đăng ký bằng Google hoặc email, mất chưa tới một phút.',
+    daCoTaiKhoan: 'Đã có tài khoản?',
+    dangNhap: 'Đăng nhập',
     loiIch: {
       save_chart: {
         tieuDe: 'Giữ lại bản đồ này',
         moTa: 'Tạo tài khoản miễn phí để Celes nhớ bản đồ của bạn, và lần sau mở lên là có ngay — trên máy nào cũng vậy.',
+        diem: [],
       },
       full_chart: {
         tieuDe: 'Xem toàn bộ 12 cung',
         moTa: 'Bản đầy đủ có tất cả các cung, các sao và độ sáng. Tạo tài khoản miễn phí để mở, và để bản đồ được lưu lại.',
+        diem: [],
       },
       ask_celes: {
-        tieuDe: 'Tiếp tục cuộc trò chuyện với Celes',
-        moTa: 'Tạo tài khoản miễn phí để Celes nhớ bản đồ của bạn và giữ lại cuộc trò chuyện này cho lần sau.',
+        tieuDe: 'Hỏi Celes về chính lá số của bạn',
+        moTa: 'Hỏi bằng lời thường — "năm nay có nên chuyển việc?", "vì sao mình hay mệt với các mối quan hệ?" — Celes trả lời từ lá số của bạn, kèm căn cứ.',
+        diem: [
+          'Câu trả lời đi thẳng vào điều bạn hỏi, không phải bài đọc chung',
+          'Celes nhớ lá số và những gì bạn đã kể cho các lần hỏi sau',
+          'Mỗi nhận định đều có phần căn cứ để bạn tự kiểm',
+        ],
       },
       deep_read: {
         tieuDe: 'Đi sâu vào điều bạn đang bận tâm',
         moTa: 'Mỗi chủ đề là một bài đọc riêng, dựa trên chính bản đồ của bạn. Tạo tài khoản miễn phí để mở và lưu lại.',
+        diem: [
+          'Công việc, tiền bạc, tình cảm, gia đình, sức khoẻ — chọn đúng điều bạn đang nghĩ',
+          'Luận giải chuyên sâu theo 14 chủ đề, mỗi câu đọc từ nhiều cung',
+          'Bài được lưu lại, mở lại là có ngay',
+        ],
       },
       connection: {
-        tieuDe: 'Xem hai người vận hành cùng nhau thế nào',
-        moTa: 'Cần lưu được cả hai người thì mới so được. Tạo tài khoản miễn phí để bắt đầu.',
+        tieuDe: 'Xem hai người hợp và lệch nhau ở đâu',
+        moTa: 'Đặt hai lá số cạnh nhau cho đúng mối quan hệ bạn đang muốn hiểu — người yêu, vợ chồng, cộng sự, bạn bè hay người trong nhà.',
+        diem: [
+          'Chỗ hai người dễ hiểu nhau và chỗ dễ va chạm',
+          'Cách nói chuyện và cách quyết việc lớn cho hợp với cả hai',
+          'Lưu được cả hai lá số để so lại khi cần',
+        ],
       },
       journey: {
         tieuDe: 'Xem bạn đang ở đâu trong nhịp của mình',
         moTa: 'Hành trình đọc ra từ bản đồ đã lưu: quãng dài bạn đang đi qua, năm nay nghiêng về đâu, tháng này nổi lên chuyện gì. Tạo tài khoản miễn phí để mở.',
+        diem: [
+          'Giai đoạn mười năm bạn đang đi qua',
+          'Năm nay và tháng này nổi lên chuyện gì',
+          'Mốc nên tiến, nên giữ, nên chờ',
+        ],
       },
     },
   },

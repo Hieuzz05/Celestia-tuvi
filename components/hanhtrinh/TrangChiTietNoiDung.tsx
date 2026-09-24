@@ -120,7 +120,7 @@ export function TrangChiTietNoiDung() {
     return (
       <Section gon>
         <Shell>
-          <CongDangNhap nguon="journey" />
+          <CongDangNhap nguon="journey" toanTrang />
         </Shell>
       </Section>
     );
