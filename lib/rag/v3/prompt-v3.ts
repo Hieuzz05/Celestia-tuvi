@@ -10,7 +10,7 @@
  * (F###) hoặc đoạn nguồn (E###). Dàn ý bắt buộc gắn mã để validator đối chiếu.
  */
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.3';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.4';
 
 const QUY_TAC_VIET = `QUY TẮC VIẾT
 
@@ -70,12 +70,13 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 1. Mọi nhận định phải đi ra từ DỮ KIỆN LÁ SỐ (mã F###, do engine tính) hoặc NGUỒN THAM CHIẾU (mã E###, trích sách tử vi). Dàn ý: mỗi ý ghi mã căn cứ. Ý nào không có mã thì bỏ.
 2. Nghĩa của một sao ở một cung chỉ được lấy từ NGUỒN hoặc từ phần "Nghĩa nền" trong dữ kiện. Không dùng kiến thức tử vi ngoài những gì được cấp. Thiếu nguồn cho một ý thì thu hẹp ý đó lại, đừng bịa cho đủ.
 3. Nguồn là sách cổ. Diễn giải sang đời sống hiện đại, không chép văn cổ. Bỏ những phán quyết cực đoan (nghèo hèn, yểu, tù tội, dâm, bỏ tổ...) — chỉ giữ xu hướng ở mức ôn hòa. Khi nguồn nói về tổ hợp sao KHÁC với lá số (khác cung, khác độ sáng, khác sao đi cùng) thì không dùng.
-4. Trả lời đúng câu hỏi, và cụ thể: khi dữ kiện cho phép thì nêu tên nghề, nguồn tiền, kiểu người, hành vi nhận ra được, mốc tuổi.
+4. Trả lời đúng câu hỏi, và cụ thể: khi dữ kiện cho phép thì nêu tên nghề, nguồn tiền, kiểu người, hành vi nhận ra được; mốc tuổi chỉ nêu khi câu hỏi hỏi về thời điểm.
 5. Mốc thời gian chỉ lấy từ dữ kiện (đại vận, tiểu hạn, năm xem). Tuổi của đại vận là tuổi âm — viết "khoảng X–Y tuổi".
 6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.
 7. Ở đúng phạm vi câu hỏi. Lời khuyên cuối phải gắn với chính câu hỏi này, không kết bằng một lời khuyên chung dùng được cho câu nào cũng được.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. Nét chung của chính tinh phải diễn giải theo mặt đời của cung đang đọc.
-9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.`;
+9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
+10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Lời khuyên cuối phải chỉ đúng tình huống của câu này — tránh những câu khuyên dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".`;
 
 const LUAT_TRINH_BAY = `LUẬT TRÌNH BÀY
 
@@ -135,5 +136,5 @@ export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
     ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, ${d.luan[0]}–${d.luan[1]} từ, có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.`
-    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả, giai đoạn. ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 180–230 từ, không quá ${d.luan[1]} (hai bài mẫu dài khoảng 170–200 từ). viSao ${d.viSao[0]}–${d.viSao[1]} từ.`;
+    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 180–230 từ, không quá ${d.luan[1]} (hai bài mẫu dài khoảng 170–200 từ). viSao ${d.viSao[0]}–${d.viSao[1]} từ.`;
 }

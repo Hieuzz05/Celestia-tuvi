@@ -24,7 +24,7 @@ import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.3';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.4';
 
 export interface DuKienV3 {
   id: string;
@@ -131,7 +131,23 @@ function tenSao(s: { ten: string; doSang?: string | null }): string {
   return s.doSang ? `${s.ten} (${DO_SANG[s.doSang] ?? s.doSang})` : s.ten;
 }
 
-function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>): { noiDung: string; sao: string[] } {
+/**
+ * Câu hỏi có hỏi về THỜI ĐIỂM không (giai đoạn, tuổi, năm, sớm/muộn).
+ *
+ * Câu không hỏi thời điểm thì dữ kiện không kèm mốc tuổi. Đo 24/09/2026 trên
+ * lá số A: "trước khoảng 30 tuổi dòng tiền dễ bị chặn" lặp ở bảy câu, "giai
+ * đoạn 25–34 tuổi" ở bảy câu khác — vì MỌI cung đều mang nhãn "đại vận X–Y
+ * tuổi" và Triệt luôn kèm "trước 30 tuổi", nên model gắn mốc vào cả câu hỏi
+ * "tôi hợp nghề gì". Người đọc đi hết một chủ đề thấy cùng một mốc năm lần.
+ */
+export function hoiThoiDiem(q: CauHoiV3): boolean {
+  return (
+    q.van.length > 0 ||
+    /khi nào|giai đoạn|sớm hay muộn|năm nào|năm nay|tuổi|đỉnh|lộ trình|mốc|về già|tuổi già/i.test(`${q.cauHoi} ${q.nhanDuoc}`)
+  );
+}
+
+function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true): { noiDung: string; sao: string[] } {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const hoa = c.sao.filter((s) => s.loai === 'tu-hoa');
   const phu = c.sao.filter(
@@ -154,7 +170,7 @@ function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>): { noiDung: string
   if (c.coTuan) phan.push('gặp Tuần');
   if (c.coTriet) phan.push('gặp Triệt');
   if (c.laCungThan && c.tenCung !== 'Mệnh') phan.push('là cung an Thân');
-  const dv = c.daiVan ? `, đại vận ${c.daiVan.tuTuoi}–${c.daiVan.denTuoi} tuổi` : '';
+  const dv = coMoc && c.daiVan ? `, đại vận ${c.daiVan.tuTuoi}–${c.daiVan.denTuoi} tuổi` : '';
   /*
    * Nghĩa nền của chính tinh — câu do engine giữ, không do model nhớ.
    * CHỈ cho Mệnh và Thân: câu nghĩa nền viết cho con người, gắn vào cung khác
@@ -180,8 +196,8 @@ function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>): { noiDung: string
     .map((s) => (KHUON.vi.netPhuTinh[s.ten] ? `${s.ten}: ${KHUON.vi.netPhuTinh[s.ten]}` : ''))
     .filter(Boolean);
   const tuanTriet = [
-    c.coTriet ? 'Triệt: chặn, làm gãy — theo quan niệm phổ biến tác động mạnh ở tiền vận (khoảng trước 30 tuổi)' : '',
-    c.coTuan ? 'Tuần: làm chậm, che bớt — theo quan niệm phổ biến tác động mạnh ở hậu vận' : '',
+    c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở tiền vận (khoảng trước 30 tuổi)' : ''}` : '',
+    c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
   ].filter(Boolean);
   const nghia = [
     netChung.length ? `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.` : '',
@@ -245,7 +261,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     }
   }
   for (const { c, vai } of cungVai) {
-    const m = moTaCung(laSo, c, saoChuDe);
+    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q));
     them(vai, m.noiDung, m.sao, c.tenCung);
   }
 
