@@ -10,7 +10,7 @@
  * (F###) hoặc đoạn nguồn (E###). Dàn ý bắt buộc gắn mã để validator đối chiếu.
  */
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.4';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.5';
 
 const QUY_TAC_VIET = `QUY TẮC VIẾT
 
@@ -76,7 +76,7 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 7. Ở đúng phạm vi câu hỏi. Lời khuyên cuối phải gắn với chính câu hỏi này, không kết bằng một lời khuyên chung dùng được cho câu nào cũng được.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. Nét chung của chính tinh phải diễn giải theo mặt đời của cung đang đọc.
 9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
-10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Lời khuyên cuối phải chỉ đúng tình huống của câu này — tránh những câu khuyên dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".`;
+10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Lời khuyên cuối phải chỉ đúng tình huống của câu này — tránh những câu khuyên dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội". Thay chúng bằng một việc cụ thể người đọc làm được trong đúng tình huống của câu này — không bỏ trống lời khuyên.`;
 
 const LUAT_TRINH_BAY = `LUẬT TRÌNH BÀY
 

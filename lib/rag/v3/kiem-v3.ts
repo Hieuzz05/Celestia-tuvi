@@ -166,6 +166,14 @@ export function kiemBai(vao: {
     }
   }
 
+  // Chuyên sâu phải kết bằng lời khuyên: đoạn cuối không có lấy một chữ khuyên
+  if (loai === 'chuyen-sau' && luan) {
+    const cuoi = luan.split(/\n\s*\n/).filter((x) => x.trim()).pop() ?? '';
+    if (!/(^|[^\p{L}])(nên|hãy|đừng|cần|thử|tránh)(?=$|[^\p{L}])/iu.test(cuoi)) {
+      loi.push({ ma: 'khong-loi-khuyen', moTa: 'Đoạn cuối không có lời khuyên — kết bằng một việc cụ thể người đọc nên/không nên làm, đi ra từ phần luận của câu này.', chan: true });
+    }
+  }
+
   // Lời khuyên dán được vào câu nào cũng đúng — ghi nhận để đo, chưa chặn
   const chung = LOI_KHUYEN_CHUNG.filter((re) => re.test(luan));
   if (chung.length) loi.push({ ma: 'khuyen-chung', moTa: `Lời khuyên chung chung, dễ lặp giữa các câu: ${chung.length} chỗ.`, chan: false });

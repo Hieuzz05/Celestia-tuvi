@@ -118,6 +118,8 @@ function phamViChuyenSau(q: CauHoiV3): string {
     q.chuDe === 'tinh-cach'
       ? ''
       : 'Không tả lại tính cách chung của người này — phần đó thuộc chủ đề Tính cách. Nét tính cách chỉ được dùng một vế để giải thích một biểu hiện riêng của câu này.',
+    // Lượt 8: chia phạm vi xong thì ba câu kết bài mà không khuyên gì (giám khảo 4 → 1)
+    'Bài vẫn PHẢI kết bằng một lời khuyên hành động cụ thể ("bạn nên…" / "không nên…"), đi ra từ chính phần luận của câu này. Tránh lời khuyên chung là để thay bằng lời khuyên riêng — không phải để bỏ lời khuyên.',
   ];
   return dong.filter(Boolean).join('\n');
 }
