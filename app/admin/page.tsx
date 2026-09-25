@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Field } from '@/components/FormSinh';
 import { NhatKySuDung } from '@/components/NhatKySuDung';
+import { SuCoAi } from '@/components/admin/SuCoAi';
 import { QuanLyNguoiDung } from '@/components/QuanLyNguoiDung';
 import { MODEL_GOI_Y, TEN_PROVIDER, type ProviderId } from '@/lib/ai/types';
 import { Shell } from '@/components/ui';
@@ -66,6 +67,8 @@ export default function AdminPage() {
         </p>
         <h1 className="display mt-[18px]">Model AI &amp; kho tri thức.</h1>
       </div>
+
+      <SuCoAi />
 
       <section className="flex flex-col gap-[16px]">
         <h2 className="heading-sm">Chuỗi fallback hiện tại</h2>
