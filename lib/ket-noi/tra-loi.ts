@@ -5,6 +5,7 @@ import { soatNgonNgu, type KetQuaNgonNgu } from '@/lib/rag/ngon-ngu';
 import { QUY_TAC_LUAN_GIAI } from '@/lib/rag/quy-tac-luan-giai';
 import { truyHoi, type DoanUngVien } from '@/lib/rag/truy-hoi';
 import { nhanDangThucThe } from '@/lib/rag/thuc-the';
+import { suaCauTiengLong } from '@/lib/rag/sua-chua';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { dungDuKienCap, type DuKienCap } from './du-kien-cap';
@@ -23,7 +24,8 @@ import { CAU_HINH_Y_DINH, type YDinhKetNoi } from './y-dinh';
  */
 
 // 2026.09.2: dùng bộ quy tắc luận giải chung (chủ dự án yêu cầu 24/09/2026)
-export const PHIEN_BAN_KET_NOI = '2026.09.2';
+// 2026.09.3: thêm lớp sửa tiếng lóng nội bộ (suaCauTiengLong) như bài dài và chat
+export const PHIEN_BAN_KET_NOI = '2026.09.3';
 
 export interface MucKetQua {
   id: string;
@@ -217,6 +219,27 @@ export async function luanKetNoi(vao: DauVaoKetNoi): Promise<KetQuaKetNoi> {
         `Đầu: ${v.slice(0, 120)} … Cuối: ${v.slice(-120)}`
     );
   }
+
+  /*
+   * Sửa câu dùng tiếng lóng nội bộ ("những yếu tố hỗ trợ", "đẩy tới"…) — cùng
+   * lớp sửa bài dài và chat đã có (sua-chua.ts). Kết nối là bề mặt duy nhất còn
+   * thiếu: đo 24/09/2026 bắt được "những yếu tố hỗ trợ" tới thẳng người đọc.
+   * Chỉ gọi model khi thật sự có câu phạm; không có thì trả nguyên văn, 0 lượt gọi.
+   */
+  const tenDuKien = nhanDangThucThe(duKien.map((d) => d.noiDung).join(' '))
+    .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION' || t.loai === 'FORMATION')
+    .map((t) => t.ten);
+  const sua = (s: unknown) => (typeof s === 'string' && s.trim() ? suaCauTiengLong(s, tenDuKien) : Promise.resolve(s));
+  const [dangChuYDaSua, traLoiDaSua, ...mucDaSua] = await Promise.all([
+    sua(tho.dangChuY.noiDung),
+    sua(tho.cauHoiCuaBan?.traLoi),
+    ...(tho.muc ?? []).map((m) => sua(m?.noiDung)),
+  ]);
+  tho.dangChuY.noiDung = dangChuYDaSua as string;
+  if (tho.cauHoiCuaBan && typeof traLoiDaSua === 'string') tho.cauHoiCuaBan.traLoi = traLoiDaSua;
+  (tho.muc ?? []).forEach((m, i) => {
+    if (m && typeof mucDaSua[i] === 'string') m.noiDung = mucDaSua[i] as string;
+  });
 
   const maDuKienCo = new Set(duKien.map((d) => d.id));
   const maNguonCo = new Map(

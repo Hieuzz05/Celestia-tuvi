@@ -39,6 +39,8 @@ interface Body {
   gioiTinh?: string;
   namXem?: number;
   nhom?: string;
+  /** Chỉ lấy / chỉ sinh các câu này trong nhóm — để trang chia một nhóm thành vài lượt song song */
+  chi?: string[];
 }
 
 export interface CauTraRaV3 {
@@ -82,6 +84,14 @@ export async function POST(req: Request) {
     nhom === 'tong-quan' ? q.loai === 'tong-quan' : q.loai === 'chuyen-sau' && q.chuDe === nhom
   ).map((q) => q.id);
   if (!ids.length) return NextResponse.json({ loi: 'Nhóm câu hỏi không hợp lệ' }, { status: 400 });
+  /*
+   * `chi`: trang tổng quan gọi HAI lượt song song — ba câu cho ba thẻ đầu, tám
+   * câu còn lại. Sinh 11 câu một lượt thì người đọc chờ câu CHẬM NHẤT trong 11
+   * (đo 24/09/2026: 35–48 giây lần đầu); tách ra thì ba thẻ đầu chỉ chờ câu chậm
+   * nhất trong ba. Hai lượt KHÔNG chồng câu nào, nên không tốn thêm lượt gọi.
+   */
+  const phamVi = Array.isArray(body.chi) ? ids.filter((id) => body.chi!.includes(id)) : ids;
+  if (!phamVi.length) return NextResponse.json({ loi: 'Không có câu nào khớp' }, { status: 400 });
 
   const namXem = soHopLe(body.namXem, 1900, 2100) ? (body.namXem as number) : new Date().getFullYear();
   const laSo = lapLaSo({ ngay: ngay!, thang: thang!, nam: nam!, gio: gio!, gioiTinh: gioiTinh as GioiTinh });
@@ -117,17 +127,24 @@ export async function POST(req: Request) {
     }
 
     const daCo = new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet).map((c) => [c.id, c]));
-    const thieu = ids.filter((id) => !daCo.has(id));
+    const thieu = phamVi.filter((id) => !daCo.has(id));
 
     if (!thieu.length) {
       // Chuyển bài cũ sang khoá mới để lần sau đọc thẳng, không phải dò tiền tố
       if (chuyenKhoa) {
         await luuNoiDung(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
-      return NextResponse.json({ nhom, cau: ids.map((id) => daCo.get(id)!), tuDem: true });
+      return NextResponse.json({ nhom, cau: phamVi.map((id) => daCo.get(id)!), tuDem: true });
     }
 
     const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot });
+    /*
+     * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
+     * của nó trong lúc lượt này đang viết. Ghi đè bằng bản đọc lúc đầu là xoá
+     * mất bài của lượt kia.
+     */
+    const moiNhat = await docNoiDung<CauTraRaV3[]>(khoa);
+    for (const c of moiNhat?.noiDung ?? []) if (!c.chuaViet && !daCo.has(c.id)) daCo.set(c.id, c);
     for (const k of kq) {
       if (!k.luanGiai) continue;
       daCo.set(k.id, { id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false });
@@ -143,14 +160,15 @@ export async function POST(req: Request) {
           chuaViet: true,
         }
     );
-    // Không câu nào viết được thì không đệm — lần sau thử lại được ngay
-    if (cau.every((c) => c.chuaViet)) {
+    const cauTra = cau.filter((c) => phamVi.includes(c.id));
+    // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
+    if (cauTra.every((c) => c.chuaViet)) {
       return NextResponse.json({ loi: 'Celes chưa viết được phần này. Bạn thử lại giúp.' }, { status: 502 });
     }
     const mot = kq.find((k) => k.model);
     const [provider, model] = (mot?.model ?? '/').split('/');
     await luuNoiDung(khoa, cau, { provider, model, phienBan: PHIEN_BAN_V3 });
-    return NextResponse.json({ nhom, cau, tuDem: false });
+    return NextResponse.json({ nhom, cau: cauTra, tuDem: false });
   } catch (e) {
     if (e instanceof KhongCoModelError) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });

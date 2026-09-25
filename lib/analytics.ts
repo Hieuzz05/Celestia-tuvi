@@ -3,58 +3,39 @@
 /**
  * Ghi sự kiện phễu kích hoạt.
  *
- * Chưa nối dịch vụ analytics nào — dự án chạy ngân sách 0 và chưa chốt nhà cung
- * cấp. Lớp này tồn tại để chỗ gọi nằm sẵn đúng vị trí trong luồng: khi nối GA4,
- * Plausible hay PostHog thì chỉ sửa một hàm này, không phải đi rải lại khắp app.
+ * TỰ GHI VÀO DB (25/09/2026). Dự án ngân sách 0 và chưa chốt nhà cung cấp, nên
+ * thay vì chờ GA4/Plausible/PostHog, sự kiện gửi thẳng về /api/su-kien → bảng
+ * `su_kien`, xem phễu ở trang quản trị. Chọn được nhà cung cấp thì vẫn chỉ sửa
+ * một hàm này.
  *
- * Trong lúc chưa nối, sự kiện được giữ ở sessionStorage để tự kiểm luồng khi phát
- * triển, và in ra console khi chạy dev.
+ * KHÔNG gửi dữ liệu cá nhân: thuộc tính chỉ là mã khối, nguồn, ý định — đã rà
+ * mọi chỗ gọi. Người dùng nhận diện bằng một mã khách NGẪU NHIÊN trong trình
+ * duyệt (`khach`), không gắn email hay tài khoản.
+ *
+ * Bản sao trong sessionStorage giữ lại để tự kiểm luồng khi phát triển.
  */
 
-export type TenSuKien =
-  | 'landing_cta_click'
-  | 'birth_flow_started'
-  | 'chart_generated'
-  | 'quick_read_viewed'
-  | 'why_opened'
-  | 'auth_gate_viewed'
-  | 'signup_started'
-  | 'signup_completed'
-  | 'post_signup_feature_resumed'
-  | 'signup_after_result'
-  | 'home_returned'
-  | 'timeline_year_opened'
-  | 'ask_submitted'
-  | 'relationship_started'
-  // Nút sang bài luận giải sâu. Có `viTri` để đo đúng câu hỏi đã dẫn tới việc
-  // dời nó lên đầu trang: chỗ đặt nút đổi thì tỉ lệ bấm đổi bao nhiêu.
-  | 'deep_read_cta'
-  // Phễu Kết nối — spec Relationship Intent mục 35
-  | 'connection_intent_selected'
-  | 'connection_compare_started'
-  | 'connection_compare_completed'
-  | 'connection_compare_failed'
-  | 'paywall_viewed'
-  | 'purchase_started'
-  | 'purchase_success'
-  // Phễu ủng hộ — spec Support Celes mục 35 liệt kê đủ bộ này
-  | 'support_gate_viewed'
-  | 'support_gate_closed'
-  | 'support_amount_selected'
-  | 'support_custom_amount_entered'
-  | 'support_payment_create_started'
-  | 'support_payment_created'
-  | 'support_checkout_opened'
-  | 'support_payment_pending'
-  | 'support_payment_cancelled'
-  | 'support_payment_expired'
-  | 'support_payment_success_client'
-  | 'support_entitlement_granted'
-  | 'support_resume_action'
-  | 'supporter_expired';
+import { type TenSuKien } from './su-kien-ten';
+
+export type { TenSuKien };
 
 const KHOA = 'tuvi-ai:su-kien';
+const KHOA_KHACH = 'tuvi-ai:khach';
 const TOI_DA = 100;
+
+/** Mã khách ẩn danh, ngẫu nhiên, sống trong trình duyệt này — để đếm phễu theo người chứ không theo lượt */
+function maKhach(): string {
+  try {
+    let m = window.localStorage.getItem(KHOA_KHACH);
+    if (!m) {
+      m = crypto.randomUUID();
+      window.localStorage.setItem(KHOA_KHACH, m);
+    }
+    return m;
+  } catch {
+    return 'khong-luu-duoc';
+  }
+}
 
 export function ghiSuKien(ten: TenSuKien, thuocTinh?: Record<string, unknown>) {
   if (typeof window === 'undefined') return;
@@ -71,6 +52,17 @@ export function ghiSuKien(ten: TenSuKien, thuocTinh?: Record<string, unknown>) {
     window.sessionStorage.setItem(KHOA, JSON.stringify(cu.slice(-TOI_DA)));
   } catch {
     // Chế độ riêng tư chặn sessionStorage — bỏ qua, không được làm hỏng luồng chính
+  }
+
+  // sendBeacon: không chặn giao diện, và vẫn gửi được khi người dùng vừa bấm sang trang khác
+  try {
+    const goi = JSON.stringify({ ten, thuocTinh: thuocTinh ?? {}, khach: maKhach(), trang: window.location.pathname });
+    const blob = new Blob([goi], { type: 'application/json' });
+    if (!navigator.sendBeacon?.('/api/su-kien', blob)) {
+      void fetch('/api/su-kien', { method: 'POST', body: goi, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+    }
+  } catch {
+    // Không gửi được sự kiện thì thôi — tuyệt đối không làm hỏng việc người dùng đang làm
   }
 }
 

@@ -1,0 +1,44 @@
+/**
+ * Danh sách tên sự kiện phễu — MỘT nguồn cho cả trình duyệt (lib/analytics.ts)
+ * lẫn máy chủ (/api/su-kien chỉ nhận tên có trong danh sách này).
+ */
+export const TEN_SU_KIEN = [
+  'landing_cta_click',
+  'birth_flow_started',
+  'chart_generated',
+  'quick_read_viewed',
+  'why_opened',
+  'auth_gate_viewed',
+  'signup_started',
+  'signup_completed',
+  'post_signup_feature_resumed',
+  'signup_after_result',
+  'home_returned',
+  'timeline_year_opened',
+  'ask_submitted',
+  'relationship_started',
+  'deep_read_cta',
+  'connection_intent_selected',
+  'connection_compare_started',
+  'connection_compare_completed',
+  'connection_compare_failed',
+  'paywall_viewed',
+  'purchase_started',
+  'purchase_success',
+  'support_gate_viewed',
+  'support_gate_closed',
+  'support_amount_selected',
+  'support_custom_amount_entered',
+  'support_payment_create_started',
+  'support_payment_created',
+  'support_checkout_opened',
+  'support_payment_pending',
+  'support_payment_cancelled',
+  'support_payment_expired',
+  'support_payment_success_client',
+  'support_entitlement_granted',
+  'support_resume_action',
+  'supporter_expired',
+] as const;
+
+export type TenSuKien = (typeof TEN_SU_KIEN)[number];

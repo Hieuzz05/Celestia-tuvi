@@ -104,10 +104,30 @@ function coTu(s: string, tu: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${tu.replace(/ /g, '[^a-z0-9]+')}($|[^a-z0-9])`).test(s);
 }
 
+/*
+ * Đệm truy hồi TRONG TIẾN TRÌNH, dùng chung giữa các request (25/09/2026).
+ *
+ * `nho` chỉ sống trong một request. Nhưng tổ hợp "sao + cung" lặp lại rất nhiều
+ * giữa các lá số và giữa tổng quan với chuyên sâu, trong khi một truy vấn RAG
+ * tốn 2,7–4,3 giây và các truy vấn đồng thời tranh nhau ở nhánh từ khoá (15 cái
+ * cùng lúc mất 15 giây). Instance serverless còn ấm thì dùng lại được.
+ * Chỉ giữ kết quả CÓ đoạn: kết quả rỗng có thể do lỗi tạm thời (hết credit
+ * embedding, DB chậm) — giữ lại là khoá luôn cái lỗi ấy suốt 30 phút.
+ */
+const DEM_CHUNG = new Map<string, { luc: number; ds: DoanUngVien[] }>();
+const HAN_DEM_MS = 30 * 60 * 1000;
+const TRAN_DEM = 600;
+
 async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi): Promise<DoanUngVien[]> {
   const khoa = `${q}|${tuKhoa}`;
   const co = nho.get(khoa);
   if (co) return co;
+  const chung = DEM_CHUNG.get(khoa);
+  if (chung && Date.now() - chung.luc < HAN_DEM_MS) {
+    const p = Promise.resolve(chung.ds);
+    nho.set(khoa, p);
+    return p;
+  }
   /*
    * Nhánh từ khoá nhận chuỗi NGẮN (tên sao + tên cung). Chuỗi dài kèm từ khoá chủ
    * đề thành một phép OR rộng trên 7.559 đoạn, và Postgres cắt ngang vì quá thời
@@ -123,7 +143,16 @@ async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi): Promise
     { truyVan: q, truyVanTuKhoa: tuKhoa, thucThe: nhanDangThucThe(tuKhoa) },
     { soCuoi: 8, soUngVienVector: 15, soUngVienTuKhoa: 15 }
   )
-    .then((k) => k.daChon)
+    .then((k) => {
+      if (k.daChon.length) {
+        if (DEM_CHUNG.size >= TRAN_DEM) {
+          const cu = DEM_CHUNG.keys().next().value;
+          if (cu) DEM_CHUNG.delete(cu);
+        }
+        DEM_CHUNG.set(khoa, { luc: Date.now(), ds: k.daChon });
+      }
+      return k.daChon;
+    })
     .catch(() => [] as DoanUngVien[]);
   nho.set(khoa, p);
   return p;

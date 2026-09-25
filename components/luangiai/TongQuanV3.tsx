@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Eyebrow } from '@/components/ui';
+import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from './CauTraLoiV3';
 
 export interface ThongTinLaSoV3 {
@@ -38,7 +39,20 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) 
   const khoa = laSo
     ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}`
     : null;
-  const [kq, setKq] = useState<{ khoa: string; cau: CauV3[] | null } | null>(null);
+  /*
+   * HAI LƯỢT NỐI TIẾP, không chồng câu (25/09/2026): ba câu của ba thẻ đầu, rồi
+   * tám câu còn lại. Một lượt 11 câu thì ba thẻ đầu phải chờ câu chậm nhất trong
+   * cả 11 (đo 35–48 giây lần đầu). Route đọc lại bản mới nhất trước khi ghi nên
+   * hai lượt không xoá bài của nhau.
+   *
+   * NỐI TIẾP chứ không song song — đo 25/09/2026 trên lá số chưa có bài: chạy
+   * song song thì ba câu đầu mất 33 giây (11 câu cùng truy hồi, cùng gọi model
+   * thì tranh nhau); nối tiếp thì ba thẻ đầu hiện sau ~20 giây, cả trang xong
+   * sau ~50 giây. Danh sách nằm dưới ba thẻ và nút đọc chuyên sâu — người đọc
+   * còn đang đọc ba thẻ, không ngồi chờ nó.
+   */
+  const [dau, setDau] = useState<{ khoa: string; cau: CauV3[] | null } | null>(null);
+  const [sau, setSau] = useState<{ khoa: string; cau: CauV3[] | null } | null>(null);
   const hong = useRef(onHong);
   useEffect(() => {
     hong.current = onHong;
@@ -47,23 +61,33 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) 
   useEffect(() => {
     if (!laSo || !khoa) return;
     let huy = false;
-    fetch('/api/luan-giai-v3', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...laSo, nhom: 'tong-quan' }),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (huy) return;
-        const cau = Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null;
-        setKq({ khoa, cau });
-        if (!cau || cau.every((c) => c.chuaViet)) hong.current?.();
+    const idDau = THE_DAU.map((x) => x.id);
+    const goi = (chi: string[]) =>
+      fetch('/api/luan-giai-v3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi }),
       })
-      .catch(() => {
-        if (huy) return;
-        setKq({ khoa, cau: null });
-        hong.current?.();
-      });
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => (Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null))
+        .catch(() => null);
+
+    const pDau = goi(idDau).then((cau) => {
+      if (!huy) setDau({ khoa, cau });
+      return cau;
+    });
+    // Lượt sau: ĐÚNG các câu còn lại — xin cả nhóm thì route sinh lại cả ba câu
+    // lượt đầu đang viết, tốn gấp đôi.
+    const idSau = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !idDau.includes(q.id)).map((q) => q.id);
+    const pSau = pDau.then(() => goi(idSau)).then((cau) => {
+      if (!huy) setSau({ khoa, cau });
+      return cau;
+    });
+    Promise.all([pDau, pSau]).then(([a, b]) => {
+      if (huy) return;
+      const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet);
+      if (hongHet(a) && hongHet(b)) hong.current?.();
+    });
     return () => {
       huy = true;
     };
@@ -71,8 +95,17 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [khoa]);
 
-  const dangDoc = Boolean(khoa) && (!kq || kq.khoa !== khoa);
-  return { dangDoc, cau: !dangDoc && kq ? kq.cau : null };
+  const dangDocDau = Boolean(khoa) && (!dau || dau.khoa !== khoa);
+  const dangDocSau = Boolean(khoa) && (!sau || sau.khoa !== khoa);
+  const cauDau = !dangDocDau && dau ? dau.cau : null;
+  const cauSau = !dangDocSau && sau ? sau.cau : null;
+  return {
+    /** Ba thẻ đầu còn đang chờ */
+    dangDoc: dangDocDau,
+    /** Danh sách tổng quan còn đang chờ */
+    dangDocDanhSach: dangDocSau,
+    cau: cauDau || cauSau ? [...(cauDau ?? []), ...(cauSau ?? [])] : null,
+  };
 }
 
 /** Một thẻ đầu trang dựng từ một câu tổng quan */

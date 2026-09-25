@@ -1,4 +1,6 @@
 import { embedTruyVan } from '@/lib/ai/embedding';
+import { ghiSuCo } from '@/lib/ai/su-co';
+import { AiRetryableError } from '@/lib/ai/types';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { tachTuKhoa } from './cum-tu-khoa';
 import type { ThucThe } from './thuc-the';
@@ -191,6 +193,13 @@ export async function truyHoi(
     vector = await embedTruyVan(keHoach.truyVan);
   } catch (e) {
     console.warn('[RAG] Không sinh được vector truy vấn:', e instanceof Error ? e.message : e);
+    // RAG hỏng thì mọi bài mất nguồn sách mà không báo lỗi gì ra ngoài — phải ghi sự cố
+    void ghiSuCo({
+      nguon: 'embedding',
+      provider: process.env.EMBEDDING_PROVIDER === 'gemini' ? 'gemini' : 'openai',
+      loai: e instanceof AiRetryableError ? e.loai : 'server',
+      thongDiep: e instanceof Error ? e.message : String(e),
+    });
     return rong();
   }
 

@@ -533,7 +533,7 @@ function TrangLaSo() {
 
         {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
         {dungV3 && laSo && !canBangCu && (
-          <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
+          <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} />
         )}
 
         {canBangCu && dangDocSau && !baiSau && (

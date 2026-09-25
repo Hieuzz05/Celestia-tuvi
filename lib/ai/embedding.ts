@@ -74,6 +74,16 @@ async function goiLoOpenAi(lo: string[], apiKey: string, lanThu = 0): Promise<nu
   });
 
   if (res.status === 429) {
+    /*
+     * 429 của OpenAI có HAI nghĩa: gọi quá nhanh (chờ là xong) và HẾT CREDIT
+     * (`insufficient_quota` — chờ bao lâu cũng không xong). Bản trước coi mọi 429
+     * là "chờ 20 giây", nên ngày 24/09/2026 log chỉ in "chạm hạn mức embedding,
+     * cần chờ 20 giây" trong khi thật ra tài khoản đã hết tiền.
+     */
+    const than = await res.text().catch(() => '');
+    if (than.includes('insufficient_quota')) {
+      throw new AiRetryableError(`openai embedding: hết quota / hết credit — ${than.slice(0, 160)}`, 'quota', 429);
+    }
     // OpenAI không có trần theo ngày cho embedding, chỉ có trần theo phút —
     // nên `hetNgay` luôn false: chờ là chạy tiếp được.
     const cho = Number(res.headers.get('retry-after') ?? '') || 20;

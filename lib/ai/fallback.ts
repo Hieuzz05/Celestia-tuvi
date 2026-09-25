@@ -2,6 +2,7 @@ import { modelKhaDungThuc } from './nguon-cau-hinh';
 import { goiModel } from './providers';
 import { AiRetryableError, type ChatRequest, type ChatResult } from './types';
 import { daCanHanMuc, ghiNhanSuDung, HAN_MUC_NGAY, soLuotHomNay } from './usage';
+import { ghiSuCo } from './su-co';
 
 export interface KetQuaFallback extends ChatResult {
   /** Các model đã thử và thất bại trước khi có kết quả */
@@ -90,6 +91,9 @@ export async function goiVoiFallback(
     } catch (e) {
       if (e instanceof AiRetryableError) {
         await ghiNhanSuDung(m.provider, m.model, 0, 0, true);
+        // Ghi KÈM LÝ DO để phân biệt hết credit với gọi hơi nhanh (lib/ai/su-co.ts).
+        // Không chờ: chuỗi đang lùi sang model kế, đừng bắt người dùng chờ thêm.
+        void ghiSuCo({ nguon: 'chat', provider: m.provider, model: m.model, loai: e.loai, thongDiep: e.message });
         daThuHong.push({ provider: m.provider, model: m.model, loi: e.message });
         continue;
       }
