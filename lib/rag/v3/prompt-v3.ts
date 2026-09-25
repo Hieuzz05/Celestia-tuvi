@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.12';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.14';
 
 
 
@@ -139,6 +139,23 @@ const GIONG_GOI_Y =
   'GIỌNG GỢI Ý (trường goiY): là gợi ý của người xem lá số, không phải giao việc. Dùng "bạn có thể…", "nên cân nhắc…", "sẽ nhẹ hơn nếu…"; KHÔNG đặt hạn ("trong tuần tới", "tuần này", "ngay hôm nay", "trong 30 ngày"), không ra lệnh liên tiếp, không bắt người đọc phải làm một việc nào đó.';
 void VIEC_LAM_NGAY_DA_BO;
 
+/*
+ * CÔNG THỨC CHUYÊN SÂU (25/09/2026) — review của chủ dự án về chủ đề Sự nghiệp:
+ * "Celes hiểu tôi từ 2–3 ý rồi diễn giải lại chính các ý đó theo 8 câu hỏi";
+ * "đọc giống career coaching"; "hợp nghề nào" mở bằng tên ngành nên người làm
+ * nghề khác mất niềm tin; "đỉnh 45–54" nói quá tuyệt đối; thiếu khoảnh khắc
+ * "đúng quá". Mỗi dòng dưới đây trả lời đúng một điểm của review.
+ */
+const CONG_THUC_CHUYEN_SAU = [
+  'CÁCH TRIỂN KHAI MỖI CÂU: câu đầu trả lời thẳng câu hỏi → biểu hiện trong đời → khi nào / với điều kiện nào thì rõ hơn → mức độ chắc chắn hoặc ngoại lệ. Người đọc phải nhận câu trả lời ngay câu đầu.',
+  'MỞ MỘT LỚP MỚI: câu này là một lát cắt riêng của chủ đề, không phải một bản chiếu lại. Nét chung mà các câu khác cùng chủ đề cũng nói (vd. "cần quy trình rõ, quyền hạn rõ") KHÔNG được làm trọng tâm — dùng nhiều nhất nửa câu, rồi đi vào điều chỉ câu này mới trả lời được.',
+  'KHÔNG CHUNG CHUNG: tự hỏi "bỏ dữ liệu lá số đi, câu này có đúng với gần như ai không?" — nếu có thì thay bằng điều riêng của lá số này.',
+  'BẢN CHẤT TRƯỚC, TÊN GỌI SAU: khi nói nghề, vai trò, lĩnh vực — nói đặc tính công việc trước, tên ngành chỉ là ví dụ; không định danh một ngành là "hợp nhất".',
+  'MỐC THỜI GIAN KHÔNG TUYỆT ĐỐI: nói rõ đỉnh / giai đoạn ấy là của cái gì (chức vụ, quyền, tiền, danh tiếng, độ ổn định), vì sao, và giai đoạn trước là tích lũy hay trắc trở — như một xu hướng có điều kiện, không phải lời phán.',
+  // KHÔNG đưa câu ví dụ: bản đầu có một câu mẫu và model chép gần nguyên văn vào 7/8 câu Sự nghiệp (đo 25/09/2026)
+  'MỘT KHOẢNH KHẮC "ĐÚNG QUÁ": trong bài có một câu gọi tên chính xác một cảm giác hay phản ứng mà người đọc nhận ra ngay — thuộc RIÊNG phần đời của câu hỏi này (không lấy lại nét chung của cả chủ đề), bằng tình huống của riêng câu này. Không dùng khuôn "Điều khiến bạn … không phải … mà là …", và KHÔNG dán nhãn cho nó (không viết "cảm giác rất đúng với bạn là…", "có lẽ bạn sẽ nhận ra…") — cứ nói thẳng tình huống ra.',
+].join('\n');
+
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
@@ -148,6 +165,7 @@ ${LOI_KHUYEN}
 ${GIONG_GOI_Y}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
+${CONG_THUC_CHUYEN_SAU}
 ${DUNG_NGUON}
 ${GIONG_GOI_Y}`;
 }

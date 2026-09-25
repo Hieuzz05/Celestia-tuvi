@@ -28,7 +28,31 @@ const SO_CAU = new Map(
 );
 
 /** `conCho`: nửa sau của chủ đề còn đang viết — nửa đầu đã hiện */
-type TrangThai = { dang: true } | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean };
+/**
+ * CÂU DẪN của từng chủ đề — nỗi băn khoăn thật người đọc mang tới (review chủ dự án
+ * 25/09/2026: "một câu dẫn phản ánh pain point"). Tĩnh, không tốn lượt gọi.
+ */
+const DAN_CHU_DE: Record<string, string> = {
+  'tinh-cach': 'Bạn thật sự là người thế nào — điều gì giúp bạn đi xa, và điều gì dễ khiến bạn tự làm khó mình?',
+  'su-nghiep': 'Bạn tạo ra giá trị bằng cách nào, hợp đứng ở đâu, và bao giờ con đường nghề nghiệp mới thật sự bật lên?',
+  'tien-bac': 'Tiền của bạn đến bằng cách nào, giữ được bao nhiêu, và khi nào mới thật sự tích thành tài sản?',
+  'tinh-duyen': 'Bạn yêu theo kiểu nào, dễ gặp người ra sao, và điều gì quyết định một cuộc hôn nhân bền với bạn?',
+  'con-cai': 'Duyên con cái đến sớm hay muộn, và quan hệ giữa bạn với con thay đổi thế nào theo năm tháng?',
+  'gia-dinh': 'Gia đình gốc là nền tựa hay là phần bạn phải tự gánh — và nó theo bạn tới đâu?',
+  'anh-em': 'Anh chị em có dựa được vào nhau không, và chuyện tiền bạc, tài sản chung nên đặt thế nào?',
+  'quy-nhan': 'Ai là người thường nâng bạn lên, và kiểu người nào dễ kéo bạn vào rắc rối?',
+  'phuc-duc': 'Khi gặp chuyện khó, bạn có hay tìm được đường thoát — và càng về sau đời có nhẹ đi không?',
+  'suc-khoe': 'Thể trạng của bạn bền đến đâu, vùng nào đáng để ý hơn, và giai đoạn nào cần giữ sức hơn?',
+  'nha-cua': 'Bạn có duyên tạo dựng nhà cửa không, nhà đến từ đâu, và khi nào mới an cư?',
+  'ra-ngoai': 'Ra ngoài, đi xa có làm vận của bạn sáng hơn không — hay chỗ quen mới là chỗ bạn đứng vững?',
+  'hoc-van': 'Học hành, thi cử và bằng cấp có phải thứ quyết định con đường của bạn không?',
+  'van-han': 'Đời bạn lên xuống theo những chặng nào, bạn đang đứng ở đâu, và vài năm tới đang dẫn tới đâu?',
+};
+
+/** `tomLai`: phần ghép các câu thành một câu chuyện — `dangTom` khi đang viết */
+type TrangThai =
+  | { dang: true }
+  | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean };
 
 function TrangSau() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -89,16 +113,33 @@ function TrangSau() {
         body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi }),
       }).then(async (res) => ({ ok: res.ok, d: await res.json() }));
     const loiMang = 'Không kết nối được. Thử lại sau ít phút.';
+    // Đủ các câu rồi mới xin phần "Tóm lại" — route không viết tóm lại từ bài dở dang
+    const layTomLai = () =>
+      fetch('/api/luan-giai-v3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, tomLai: true }),
+      })
+        .then((r) => r.json())
+        .then((d) => d?.tomLai ?? null)
+        .catch(() => null)
+        .then((tomLai: string | null) =>
+          setBai((cu) => {
+            const t = cu[chuDe];
+            return t && !t.dang ? { ...cu, [chuDe]: { ...t, tomLai, dangTom: false } } : cu;
+          })
+        );
     goi(ids.slice(0, giua))
       .then(({ ok, d }) => {
         const conLai = ids.slice(giua);
         setBai((cu) => ({
           ...cu,
           [chuDe]: ok
-            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0 }
+            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0 }
             : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
         }));
-        if (!ok || !conLai.length) return;
+        if (ok && !conLai.length) return layTomLai();
+        if (!ok) return;
         return goi(conLai).then(({ ok: ok2, d: d2 }) => {
           setBai((cu) => {
             const truoc = cu[chuDe];
@@ -109,9 +150,11 @@ function TrangSau() {
                 dang: false,
                 cau: ok2 ? [...dau, ...((d2.cau as CauV3[]) ?? [])] : dau,
                 loi: ok2 ? undefined : d2?.loi ?? 'Celes chưa viết xong phần còn lại.',
+                dangTom: ok2,
               },
             };
           });
+          if (ok2) return layTomLai();
         });
       })
       .catch(() => {
@@ -265,6 +308,11 @@ function TrangSau() {
               Luận giải chuyên sâu · Năm xem {namXem}
             </span>
             <h1 className="heading">{chuDe.ten}</h1>
+            {DAN_CHU_DE[chuDe.id] && (
+              <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
+                {DAN_CHU_DE[chuDe.id]}
+              </p>
+            )}
           </header>
 
           {!trangThai || trangThai.dang ? (
@@ -276,6 +324,27 @@ function TrangSau() {
               ))}
               {/* Nửa sau của chủ đề còn đang viết — nửa đầu đã đọc được */}
               {trangThai.conCho && <DangDocV3 key={`${chon}-tiep`} chu="Celes đang viết tiếp các câu còn lại" />}
+              {/* TÓM LẠI: ghép các câu thành một câu chuyện (review 25/09/2026) — đặt trước phần gợi ý */}
+              {!trangThai.conCho && (trangThai.dangTom || trangThai.tomLai) && (
+                <section className="card flex flex-col gap-[12px]" style={{ borderTop: '3px solid var(--accent)' }} aria-labelledby="tom-lai">
+                  <span className="eyebrow">Tóm lại</span>
+                  <h2 id="tom-lai" className="text-[20px] font-semibold leading-snug" style={{ color: 'var(--fg)' }}>
+                    {chuDe.ten} của bạn, gói trong một đoạn
+                  </h2>
+                  {trangThai.tomLai ? (
+                    trangThai.tomLai
+                      .split(/\n\s*\n/)
+                      .filter((x) => x.trim())
+                      .map((d, i) => (
+                        <p key={i} className="body-text" style={{ color: 'var(--fg)' }}>
+                          {d}
+                        </p>
+                      ))
+                  ) : (
+                    <DangDocV3 key={`${chon}-tom`} chu="Celes đang ghép các câu thành một câu chuyện" />
+                  )}
+                </section>
+              )}
               {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
               {trangThai.loi && (
                 <div className="flex flex-col gap-[12px]">
