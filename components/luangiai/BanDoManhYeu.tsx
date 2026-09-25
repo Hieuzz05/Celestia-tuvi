@@ -105,6 +105,153 @@ function yNghia(g: GopDiem): { loi: string; sao?: string } {
   };
 }
 
+/** Tên ngắn cho nhãn quanh biểu đồ — nhãn dài chen nhau ở màn 360px */
+const TEN_NGAN: Record<string, string> = {
+  'Mệnh': 'Bản thân', 'Phụ Mẫu': 'Cha mẹ', 'Phúc Đức': 'Tinh thần', 'Điền Trạch': 'Nhà cửa',
+  'Quan Lộc': 'Sự nghiệp', 'Nô Bộc': 'Bạn bè', 'Thiên Di': 'Đi xa', 'Tật Ách': 'Sức khỏe',
+  'Tài Bạch': 'Tiền bạc', 'Tử Tức': 'Con cái', 'Phu Thê': 'Tình duyên', 'Huynh Đệ': 'Anh em',
+};
+
+/**
+ * BIỂU ĐỒ RADAR 12 cung — hình dạng của cả lá số trong một cái nhìn.
+ *
+ * Trục xếp ĐÚNG thứ tự vòng lá số (Mệnh ở đỉnh, đi theo chiều địa chi), không
+ * theo điểm: nhờ vậy hai trục đối diện là hai cung xung chiếu, bốn trục cách
+ * đều là một bộ tam hợp — người biết tử vi đọc được quan hệ giữa các cung ngay
+ * trên hình. Bán kính: tương đối trong lá số (sàn 18% để cung thấp nhất vẫn
+ * có hình); vòng nét đứt là mức giữa (trung vị), cùng mốc với vạch giữa của thanh.
+ */
+function RadarManhYeu({
+  laSo,
+  ds,
+  mo,
+  daThay,
+  onChon,
+}: {
+  laSo: LaSo;
+  ds: ChiTietDiemCung[];
+  mo: string | null;
+  daThay: boolean;
+  onChon: (cung: string) => void;
+}) {
+  const menh = laSo.cungs.find((c) => c.tenCung === 'Mệnh');
+  const theoCung = new Map(ds.map((d) => [d.cung, d]));
+  const vong = Array.from({ length: 12 }, (_, k) => laSo.cungs[((menh?.chiIndex ?? 0) + k) % 12]?.tenCung)
+    .map((ten) => (ten ? theoCung.get(ten) : undefined))
+    .filter((d): d is ChiTietDiemCung => Boolean(d));
+  const diem = ds.map((d) => d.diem);
+  const [min, max] = [Math.min(...diem), Math.max(...diem)];
+  const giua = (ds[5].diem + ds[6].diem) / 2;
+  // Khung 400: nhãn dài nhất (~62px) ở trục ngang vẫn nằm trong khung, không tràn thẻ
+  const W = 400;
+  const C = W / 2;
+  const R = 108;
+  const r = (d: number) => R * (max === min ? 0.6 : 0.18 + (0.82 * (d - min)) / (max - min));
+  const goc = (k: number) => -Math.PI / 2 + (k * 2 * Math.PI) / vong.length;
+  const diemXY = (k: number, rr: number) => [C + rr * Math.cos(goc(k)), C + rr * Math.sin(goc(k))] as const;
+  const hinh = vong.map((d, k) => diemXY(k, r(d.diem)).join(',')).join(' ');
+  const luoi = [0.34, 0.67, 1].map((f) => vong.map((_, k) => diemXY(k, R * f).join(',')).join(' '));
+  const rGiua = r(giua);
+
+  return (
+    <figure className="flex flex-col items-center gap-[8px]">
+      <svg
+        // Cắt bớt khoảng trống trên/dưới: nhãn đỉnh và đáy chỉ cách tâm R + 24
+        viewBox={`0 ${C - R - 48} ${W} ${2 * (R + 48)}`}
+        className="w-full max-w-[420px]"
+        role="group"
+        aria-label="Biểu đồ radar độ thuận lợi của 12 lĩnh vực"
+      >
+        {luoi.map((p, i) => (
+          <polygon key={i} points={p} fill="none" stroke="var(--line)" strokeWidth={1} />
+        ))}
+        {vong.map((_, k) => {
+          const [x, y] = diemXY(k, R);
+          return <line key={k} x1={C} y1={C} x2={x} y2={y} stroke="var(--line)" strokeWidth={1} />;
+        })}
+        <circle cx={C} cy={C} r={rGiua} fill="none" stroke="var(--line-strong)" strokeWidth={1.2} strokeDasharray="4 4" />
+        <g
+          className="transition-transform duration-700 ease-out motion-reduce:transition-none"
+          style={{ transformOrigin: `${C}px ${C}px`, transform: daThay ? 'scale(1)' : 'scale(0.2)' }}
+        >
+          <polygon
+            points={hinh}
+            fill="color-mix(in srgb, var(--accent) 18%, transparent)"
+            stroke="var(--accent)"
+            strokeWidth={2}
+            strokeLinejoin="round"
+          />
+          {vong.map((d, k) => {
+            const [x, y] = diemXY(k, r(d.diem));
+            const chon = mo === d.cung;
+            return (
+              <circle
+                key={d.cung}
+                cx={x}
+                cy={y}
+                r={chon ? 7 : 5}
+                fill={NHOM[d.muc].mau}
+                stroke={chon ? 'var(--fg)' : 'var(--surface-card)'}
+                strokeWidth={2}
+              />
+            );
+          })}
+        </g>
+        {vong.map((d, k) => {
+          const [x, y] = diemXY(k, R + 24);
+          const cos = Math.cos(goc(k));
+          const chon = mo === d.cung;
+          const neo = Math.abs(cos) < 0.2 ? 'middle' : cos > 0 ? 'start' : 'end';
+          return (
+            <g
+              key={d.cung}
+              role="button"
+              tabIndex={0}
+              aria-label={`${tenLv(d.linhVuc)} — ${TEN_MUC[d.muc]}`}
+              aria-pressed={chon}
+              className="cursor-pointer outline-none focus-visible:[&>rect]:stroke-[var(--accent)]"
+              onClick={() => onChon(d.cung)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onChon(d.cung);
+                }
+              }}
+            >
+              {/* Vùng chạm 64×44 quanh nhãn */}
+              <rect
+                x={neo === 'middle' ? x - 32 : neo === 'start' ? x - 8 : x - 56}
+                y={y - 22}
+                width={64}
+                height={44}
+                rx={10}
+                fill={chon ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent'}
+                stroke="transparent"
+                strokeWidth={1.5}
+              />
+              <text
+                x={x}
+                y={y}
+                textAnchor={neo}
+                dominantBaseline="middle"
+                fontSize={15}
+                fontWeight={chon ? 700 : 600}
+                fill={d.muc === 'Bình' && !chon ? 'var(--fg-muted)' : 'var(--fg)'}
+              >
+                {TEN_NGAN[d.cung] ?? d.linhVuc}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <figcaption className="caption max-w-[440px] text-center">
+        Hình phình ra ở hướng nào, lĩnh vực đó càng thuận lợi. Vòng nét đứt là mức trung bình của lá số. Hai lĩnh vực đối
+        diện nhau trên vòng là hai cung chiếu thẳng vào nhau. Chạm vào tên để xem lý do.
+      </figcaption>
+    </figure>
+  );
+}
+
 function chuDeCuaCung(cung: string) {
   return CHU_DE_V3.find((c) => c.cungChinh === cung);
 }
@@ -384,6 +531,8 @@ export function BanDoManhYeu({
           Celes so 12 lĩnh vực trong lá số của bạn với nhau — không so với người khác. Chạm vào từng dòng để xem lý do.
         </p>
       </div>
+
+      <RadarManhYeu laSo={laSo} ds={ds} mo={mo} daThay={daThay} onChon={toiDong} />
 
       {/* Nhìn một giây là biết: mạnh nhất và cần chăm chút nhất */}
       <div className="grid grid-cols-2 gap-[12px]">

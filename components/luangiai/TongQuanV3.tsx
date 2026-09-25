@@ -212,7 +212,7 @@ export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
   return (
     <section className="flex flex-col gap-[24px]">
       <div className="flex flex-col gap-[8px] pb-[16px]" style={{ borderBottom: '1px solid var(--line)' }}>
-        <Eyebrow>Luận giải tổng quan</Eyebrow>
+        <Eyebrow>{`Luận giải tổng quan · ${conLai.length || CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !boQua.has(q.id)).length} câu hỏi`}</Eyebrow>
         <h2 className="heading-sm" style={{ color: 'var(--fg)' }}>
           Bức tranh chung của lá số
         </h2>
