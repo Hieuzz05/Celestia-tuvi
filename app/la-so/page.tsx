@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BaTheDauV3, TongQuanV3, useTongQuanV3 } from '@/components/luangiai/TongQuanV3';
+import { BanDoManhYeu } from '@/components/luangiai/BanDoManhYeu';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
@@ -471,6 +472,22 @@ function TrangLaSo() {
                 chinh
               />
             )
+          )}
+
+          {/*
+            BẢN ĐỒ MẠNH – YẾU (25/09/2026): cầu nối từ ba thẻ tổng quan sang đọc sâu
+            từng mặt đời. Tất định (engine), hiện ngay không chờ model; đoạn tóm tắt
+            TQ04 của Celes điền vào khi về. Tiếng Việt thôi — nhãn và luận v3 chỉ có vi.
+          */}
+          {laSo && dungV3 && (
+            <BanDoManhYeu
+              laSo={laSo}
+              namXem={namXem}
+              tomTat={tongQuan.cau?.find((c) => c.id === 'TQ04' && !c.chuaViet)?.luanGiai ?? null}
+              dangDocTomTat={!canBangCu && tongQuan.dangDocDanhSach}
+              duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`}
+              duocVao={duocVao}
+            />
           )}
 
           {/*

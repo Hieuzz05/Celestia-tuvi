@@ -142,6 +142,10 @@
   --chart-hung: var(--color-strawberry);
   --chart-cell: rgba(36, 0, 41, 0.015);
   --chart-han: rgba(255, 204, 17, 0.22);
+  /* Bản đồ mạnh–yếu: "cần gắng" dùng hổ phách chứ không đỏ — đây là phần phải bỏ công, không phải lời cảnh báo */
+  --tier-manh: var(--color-forest);
+  --tier-binh: var(--fg-muted);
+  --tier-gang: #b45f06;
 }
 
 :root[data-theme="night"] {
@@ -172,6 +176,9 @@
   --chart-hung: var(--color-strawberry);
   --chart-cell: rgba(255, 255, 255, 0.02);
   --chart-han: rgba(255, 204, 17, 0.14);
+  --tier-manh: var(--color-mint);
+  --tier-binh: var(--fg-muted);
+  --tier-gang: #f0a44b;
 
   --shadow-card: rgba(255, 255, 255, 0.11) 0 0 0 1px;
   --shadow-elevated: rgba(255, 255, 255, 0.11) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 16px 24px 0;

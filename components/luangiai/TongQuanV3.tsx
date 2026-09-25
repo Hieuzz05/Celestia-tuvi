@@ -204,7 +204,8 @@ export function BaTheDauV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
  * "làm nổi bật phần luận giải tổng quan, cho dễ nhìn hơn").
  */
 export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boolean }) {
-  const boQua = new Set(THE_DAU.map((x) => x.id));
+  // TQ04 (mạnh ở mặt nào, yếu ở mặt nào) đã nằm trong Bản đồ mạnh–yếu — không lặp ở danh sách
+  const boQua = new Set([...THE_DAU.map((x) => x.id), 'TQ04']);
   const conLai = (cau ?? []).filter((c) => !boQua.has(c.id));
   if (!dangDoc && !cau) return null;
 

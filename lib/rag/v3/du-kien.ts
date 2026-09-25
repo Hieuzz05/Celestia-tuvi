@@ -24,7 +24,7 @@ import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.4';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.5';
 
 export interface DuKienV3 {
   id: string;
@@ -73,22 +73,49 @@ const HUNG: Record<string, number> = {
   'Tang Môn': 0.5, 'Bạch Hổ': 0.5, 'Thiên Riêu': 0.5,
 };
 
-function diemBanCung(c: Cung, xung?: Cung): number {
+/** Một sao góp vào điểm của cung — để giao diện nói được VÌ SAO một mặt đời mạnh hay yếu */
+export interface GopDiem {
+  ten: string;
+  diem: number;
+}
+
+function chiTietBanCung(c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } {
+  const gop: GopDiem[] = [];
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
-  let d = chinh.reduce((a, s) => a + (DIEM_SANG[s.doSang ?? 'B'] ?? 0), 0);
+  for (const s of chinh) gop.push({ ten: `${s.ten}${s.doSang ? ` (${DO_SANG[s.doSang] ?? s.doSang})` : ''}`, diem: DIEM_SANG[s.doSang ?? 'B'] ?? 0 });
   if (!chinh.length && xung) {
     const muon = xung.sao.filter((s) => s.loai === 'chinh-tinh');
-    d = 0.5 * muon.reduce((a, s) => a + (DIEM_SANG[s.doSang ?? 'B'] ?? 0), 0) - 0.5;
+    gop.push({
+      ten: `Vô chính diệu, mượn ${muon.map((s) => s.ten).join(', ') || 'cung đối'}`,
+      diem: 0.5 * muon.reduce((a, s) => a + (DIEM_SANG[s.doSang ?? 'B'] ?? 0), 0) - 0.5,
+    });
   }
   for (const s of c.sao) {
     // Văn tinh hãm không còn là cát tinh
     if ((s.ten === 'Văn Xương' || s.ten === 'Văn Khúc') && s.doSang === 'H') continue;
-    d += CAT[s.ten] ?? 0;
-    d -= HUNG[s.ten] ?? 0;
+    if (CAT[s.ten]) gop.push({ ten: s.ten, diem: CAT[s.ten] });
+    /*
+     * Hung tinh ĐẮC ĐỊA chỉ trừ một nửa (25/09/2026). Bản trước trừ như nhau bất
+     * kể vị trí: Kình Dương ở tứ mộ hay Hóa Kỵ ở Thìn Tuất Sửu Mùi — sách xếp là
+     * bớt hung, có khi thành dụng — vẫn kéo cung xuống ngang lúc hãm địa.
+     */
+    if (HUNG[s.ten]) {
+      const dac = s.doSang === 'D';
+      gop.push({ ten: `${s.ten}${dac ? ' (đắc)' : ''}`, diem: -(dac ? HUNG[s.ten] / 2 : HUNG[s.ten]) });
+    }
   }
+  let d = gop.reduce((a, g) => a + g.diem, 0);
   // Tuần / Triệt làm giảm cả cát lẫn hung
-  if (c.coTuan || c.coTriet) d *= 0.6;
-  return d;
+  if (c.coTuan || c.coTriet) {
+    d *= 0.6;
+    const ten = c.coTuan && c.coTriet ? 'Tuần và Triệt' : c.coTuan ? 'Tuần' : 'Triệt';
+    gop.push({ ten: `${ten} — làm dịu cả tốt lẫn xấu`, diem: 0 });
+  }
+  return { diem: d, gop };
+}
+
+function diemBanCung(c: Cung, xung?: Cung): number {
+  return chiTietBanCung(c, xung).diem;
 }
 
 export interface DiemCung {
@@ -103,6 +130,36 @@ export const LINH_VUC_CUNG: Record<string, string> = {
   'Tử Tức': 'Con cái', 'Phụ Mẫu': 'Cha mẹ', 'Huynh Đệ': 'Anh chị em', 'Nô Bộc': 'Bạn bè, quý nhân',
   'Phúc Đức': 'Đời sống tinh thần', 'Tật Ách': 'Sức khỏe', 'Điền Trạch': 'Nhà cửa', 'Thiên Di': 'Ra ngoài',
 };
+
+/**
+ * Điểm từng cung KÈM chi tiết — cho Bản đồ mạnh–yếu ở /la-so.
+ * `trongCung`: sao của chính cung góp bao nhiêu; `soiVao`: cung đối diện và hai
+ * cung tam hợp góp bao nhiêu (trọng số nhỏ hơn, đúng như `diemTungCung`).
+ */
+export interface ChiTietDiemCung extends DiemCung {
+  trongCung: GopDiem[];
+  soiVao: { cung: string; linhVuc: string; diem: number }[];
+}
+
+export function chiTietDiemTungCung(laSo: LaSo): ChiTietDiemCung[] {
+  const theoChi = (i: number) => laSo.cungs[mod(i, 12)];
+  const ds = diemTungCung(laSo);
+  const lam = (n: number) => Math.round(n * 10) / 10;
+  return laSo.cungs.map((c) => {
+    const { xungChieu, tamHop } = tamPhuongTuChinh(c.chiIndex);
+    const x = theoChi(xungChieu);
+    const [t1, t2] = [theoChi(tamHop[0]), theoChi(tamHop[1])];
+    return {
+      ...ds.find((v) => v.cung === c.tenCung)!,
+      trongCung: chiTietBanCung(c, x).gop,
+      soiVao: [
+        { cung: x.tenCung, linhVuc: LINH_VUC_CUNG[x.tenCung] ?? x.tenCung, diem: lam(0.5 * diemBanCung(x, c)) },
+        { cung: t1.tenCung, linhVuc: LINH_VUC_CUNG[t1.tenCung] ?? t1.tenCung, diem: lam(0.3 * diemBanCung(t1)) },
+        { cung: t2.tenCung, linhVuc: LINH_VUC_CUNG[t2.tenCung] ?? t2.tenCung, diem: lam(0.3 * diemBanCung(t2)) },
+      ],
+    };
+  });
+}
 
 export function diemTungCung(laSo: LaSo): DiemCung[] {
   const theoChi = (i: number) => laSo.cungs[mod(i, 12)];

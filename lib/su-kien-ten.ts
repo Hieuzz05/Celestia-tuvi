@@ -39,6 +39,7 @@ export const TEN_SU_KIEN = [
   'support_entitlement_granted',
   'support_resume_action',
   'supporter_expired',
+  'strength_map_opened',
 ] as const;
 
 export type TenSuKien = (typeof TEN_SU_KIEN)[number];
