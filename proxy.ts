@@ -22,5 +22,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // api/su-kien: beacon phễu gửi dày, không cần làm mới phiên — bỏ qua cho đỡ một lượt gọi Supabase mỗi sự kiện
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/su-kien|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
