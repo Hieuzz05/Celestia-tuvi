@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.6';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.8';
 
 
 
@@ -96,11 +96,32 @@ export const DO_DAI_V3 = {
 const LUAN_SAU =
   'LUẬN SÂU: mỗi ý thêm biểu hiện cụ thể trong đời, một tình huống người đọc nhận ra được, và điều kiện khi nào nó mạnh lên hay yếu đi. Giữ nguyên mọi quy tắc khác.';
 
+/*
+ * Vòng chất lượng 25/09/2026 (scripts/do-chat-luong-v3.ts, 2 lá số × 25 câu):
+ * giám khảo chấm tổng quan thấp hơn chuyên sâu một bậc — "hơi an toàn", "còn
+ * phổ quát", "chưa có ví dụ đủ sắc" — và lời khuyên hay rơi vào công thức ("viết
+ * ra ba điều", "lập văn bản") ở cả hai loại.
+ */
+// Thử "DÁM NÓI RÕ" ở vòng 2: điểm tổng quan không tăng, và model chép nguyên cụm "Nói thẳng, …" vào bài — đã bỏ.
+// Chỉ cho TỔNG QUAN: ở chuyên sâu, luật này cắt mất biện pháp thực tế (tách quỹ, lập giấy khi cho vay) mà người đọc đánh giá cao — so mù lá số C thua 31%
+const LOI_KHUYEN =
+  'LỜI KHUYÊN: nói như một người từng trải khuyên người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
+
+/*
+ * DÙNG NGUỒN — CHỈ cho chuyên sâu (vòng 4, 25/09/2026). Đo so mù: chuyên sâu thắng
+ * 79% / 50% trên hai lá số, tỉ lệ ý có trích nguồn 32% → 61%; nhưng bài tổng quan
+ * một đoạn bị ép dựa nguồn thì thua 36% / 45% — kém tự nhiên. Tổng quan giữ như cũ.
+ */
+const DUNG_NGUON =
+  'DÙNG NGUỒN. NGUỒN THAM CHIẾU là kiến thức sách về đúng các sao – cung của lá số này, và là thứ làm bài của Celes khác lời nói chung. Đoạn ghi [KHỚP CUNG CHÍNH] nói đúng cung câu hỏi đang hỏi: khi có ít nhất một đoạn như vậy, dàn ý phải có ý dựa vào nguồn (ghi mã E###) — ít nhất HAI ý, và bài luận phải chuyển điều sách nói thành một nhận định đời thường cụ thể. Không bỏ phí nguồn khớp để quay về nét tính cách chung.';
+
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
     ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, ${d.luan[0]}–${d.luan[1]} từ, có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
-${LUAN_SAU}`
+${LUAN_SAU}
+${LOI_KHUYEN}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
-${LUAN_SAU}`;
+${LUAN_SAU}
+${DUNG_NGUON}`;
 }
