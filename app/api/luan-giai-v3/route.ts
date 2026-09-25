@@ -4,6 +4,7 @@ import { KhongCoModelError } from '@/lib/ai/fallback';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhieuTheoTienTo, docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@/lib/rag/noi-dung-ai';
 import { dungSoY } from '@/lib/rag/v3/so-y';
+import { viTomLai } from '@/lib/rag/v3/tom-lai';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
@@ -20,8 +21,9 @@ export const maxDuration = 60;
  * 2 → 3 (25/09/2026) — chống lặp giữa các phần (sổ ý so-y.ts + phân quyền dữ kiện); chủ dự án yêu cầu rà và sửa lặp trên chính lá số của mình.
  * 3 → 4 (25/09/2026) — phiên cải thiện chất lượng (CEL-131): truy hồi ưu tiên cung chính chủ đề, chuyên sâu dùng nguồn + việc làm được ngay, TQ04 nói vì sao.
  * 4 → 5 (25/09/2026) — bỏ "việc làm được ngay / trong tuần tới" (chủ dự án: nghe như ép buộc); bài thế hệ 4 có giọng đó.
+ * 5 → 6 (25/09/2026) — khung Sự nghiệp viết lại (id SN01–SN08 đổi nghĩa) + công thức chuyên sâu mới; bài cũ dưới cùng id là bài của câu khác.
  */
-const THE_HE_DEM: number = 5;
+const THE_HE_DEM: number = 6;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -49,6 +51,8 @@ interface Body {
   nhom?: string;
   /** Chỉ lấy / chỉ sinh các câu này trong nhóm — để trang chia một nhóm thành vài lượt song song */
   chi?: string[];
+  /** Lấy / viết phần "Tóm lại" của chủ đề (chỉ khi đủ các câu) */
+  tomLai?: boolean;
 }
 
 export interface CauTraRaV3 {
@@ -130,6 +134,25 @@ export async function POST(req: Request) {
   };
 
   try {
+    /*
+     * TÓM LẠI của một chủ đề chuyên sâu (25/09/2026) — gọi SAU khi đủ các câu.
+     * Khoá riêng "…|tom-lai" (không khớp khoá nhóm nên sổ ý không đọc nhầm nó).
+     * Chưa đủ câu thì trả rỗng, không sinh từ bài dở dang.
+     */
+    if (body.tomLai && nhom !== 'tong-quan') {
+      const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai` };
+      const daTom = await docNoiDung<{ tomLai: string }>(khoaTom);
+      if (daTom?.noiDung?.tomLai) return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
+      const nhomBai = await docNoiDung<CauTraRaV3[]>(khoa);
+      const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet)).filter((c): c is CauTraRaV3 => Boolean(c));
+      if (du.length < ids.length) return NextResponse.json({ nhom, tomLai: null, chuaDu: true });
+      const tom = await viTomLai({ chuDe: nhom, cau: du });
+      if (!tom) return NextResponse.json({ loi: 'Celes chưa viết được phần tóm lại.' }, { status: 502 });
+      const [provider, model] = tom.model.split('/');
+      await luuNoiDung(khoaTom, { tomLai: tom.tomLai }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      return NextResponse.json({ nhom, tomLai: tom.tomLai, tuDem: false });
+    }
+
     let cu = await docNoiDung<CauTraRaV3[]>(khoa);
     let chuyenKhoa = false;
     if (!cu && THE_HE_DEM === 1) {
@@ -229,7 +252,9 @@ async function baiTheHeTruoc(
   try {
     const khoaKy = THE_HE_DEM === 2 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM - 1}`;
     const cu = await docNoiDung<CauTraRaV3[]>({ ...hienTai, khoaKy });
-    return new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet).map((c) => [c.id, c]));
+    // Chỉ nhận bài cũ khi CÙNG câu hỏi: khung đổi nghĩa id (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác
+    const cauHoiCua = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
+    return new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id)).map((c) => [c.id, c]));
   } catch {
     return new Map();
   }

@@ -127,7 +127,7 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
  * khác trong chủ đề nêu tối đa một mốc trả lời đúng câu hỏi của nó.
  */
 const CAU_GIU_MOC: Record<string, string> = {
-  'tinh-cach': 'TC07', 'su-nghiep': 'SN06', 'tien-bac': 'TB06', 'tinh-duyen': 'TD03', 'con-cai': 'CC01',
+  'tinh-cach': 'TC07', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD03', 'con-cai': 'CC01',
   'suc-khoe': 'SK02', 'nha-cua': 'NC01', 'van-han': 'VH01',
 };
 
@@ -265,11 +265,17 @@ ${phamViChuyenSau(q)}`
     /(trong|ngay|ngay trong) (tuần|tháng) (tới|này|sau)|tuần tới|ngay hôm nay|trong \d+ ngày tới/i.test(`${b.luanGiai} ${b.goiY ?? ''}`)
       ? [{ ma: 'giao-viec', moTa: 'Lời khuyên đặt hạn kiểu "trong tuần tới / ngay hôm nay" — viết lại thành gợi ý ("bạn có thể…", "nên cân nhắc…"), không đặt hạn.', chan: true }]
       : [];
+  // Tên luật lọt vào bài ("Câu 'đúng quá' là…", "Cảm giác rất đúng với bạn là:") — model chép nhãn của yêu cầu (đo 25/09/2026)
+  const kiemNhanLuat = (b: BaiV3) =>
+    /đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc/i.test(b.luanGiai)
+      ? [{ ma: 'nhan-luat', moTa: 'Bài chép nhãn của yêu cầu viết ("đúng quá", "cảm giác rất đúng với bạn là", "lát cắt") — bỏ nhãn, nói thẳng tình huống.', chan: true }]
+      : [];
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
     ...kiemTenSach(b),
     ...kiemGiaoViec(b),
+    ...kiemNhanLuat(b),
   ];
 
   let soLanGoi = 0;

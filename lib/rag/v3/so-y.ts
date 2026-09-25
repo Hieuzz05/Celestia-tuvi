@@ -131,21 +131,23 @@ export function kiemLapPhanKhac(luanGiai: string, daNoi: MucDaNoi[], idCau: stri
   if (!khac.length) return [];
   const kho = khac.map((d) => ({ d, cum: cumBon(tu(d.luanGiai)) }));
   const cau = tachCau(luanGiai);
-  const lap: { cau: string; noi: string }[] = [];
+  const lap: { cau: string; noi: string; trung: number }[] = [];
   cau.forEach((c) => {
     const cc = [...cumBon(tu(c))];
     if (cc.length < 6) return;
     for (const { d, cum } of kho) {
       const trung = cc.filter((x) => cum.has(x)).length / cc.length;
       if (trung >= 0.55) {
-        lap.push({ cau: c, noi: `${tenNhom(d.nhom)} · ${d.cauHoi}` });
+        lap.push({ cau: c, noi: `${tenNhom(d.nhom)} · ${d.cauHoi}`, trung });
         return;
       }
     }
   });
   const cuoi = cau.at(-1) ?? '';
   const khuyenLap = lap.some((l) => l.cau === cuoi);
-  if (lap.length >= 2 || khuyenLap) {
+  // Một câu dài chép gần nguyên văn (≥ 70%) cũng chặn — đo 25/09: một "câu đúng quá" đi qua bảy câu Sự nghiệp
+  const chepNguyen = lap.some((l) => l.trung >= 0.7 && l.cau.split(/\s+/).length >= 12);
+  if (lap.length >= 2 || khuyenLap || chepNguyen) {
     return [
       {
         ma: 'lap-phan-khac',

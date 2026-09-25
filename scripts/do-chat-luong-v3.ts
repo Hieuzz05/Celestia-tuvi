@@ -8,6 +8,7 @@
  *   --nhan <chữ>                  nhãn lượt chạy, in cùng điểm
  *   --chi TQ04,SN01               TIẾT KIỆM: chỉ sinh lại đúng những câu thay đổi chạm tới
  *   --tu <tệp.json>               TIẾT KIỆM: lấy các câu còn lại từ một lượt đã có (không sinh lại bản mốc)
+ *   --tom-lai 1                   viết cả phần "Tóm lại" của mỗi chủ đề chuyên sâu (lưu ở tomLai trong tệp ra)
  *   --khong-cham 1                chỉ đo lặp bằng embedding + RAG, bỏ giám khảo (nhanh)
  *   --cham-lai <tệp.json>         chỉ chấm lại phiên đã có trong tệp (không sinh)
  *   --giam-khao provider|model    giám khảo chất lượng (mặc định gemini; hỏng thì lùi và in cảnh báo)
@@ -57,6 +58,7 @@ async function main() {
   type Cau = { id: string; nhom: string; cauHoi: string; luanGiai: string; viSao?: string; goiY?: string; yChinh: string[]; danY: { y: string; canCu: string[] }[]; soNguon: number; dat: boolean; ms: number; token?: { vao: number; ra: number; dem: number } };
   const phien: Cau[] = [];
   const daSinh = new Set<string>();
+  const tomLai: Record<string, string> = {};
   const t0 = Date.now();
 
   const chay = async (nhom: string, ids: string[]) => {
@@ -95,6 +97,11 @@ async function main() {
         await chay(nhom, ids.slice(0, giua));
         await chay(nhom, ids.slice(giua));
       } else await chay(nhom, ids);
+      if (thamSo('tom-lai', '') === '1') {
+        const { viTomLai } = await import('../lib/rag/v3/tom-lai');
+        const t = await viTomLai({ chuDe: nhom, cau: phien.filter((c) => c.nhom === nhom && c.luanGiai) });
+        tomLai[nhom] = t?.tomLai ?? '';
+      }
     }
   }
 
@@ -110,7 +117,7 @@ async function main() {
   const nguonCo = phien.reduce((a, c) => a + c.soNguon, 0);
 
   // Ghi bài trước khi chấm: giám khảo hỏng thì vẫn giữ được lượt sinh để chấm lại (--cham-lai)
-  if (!chamLai) writeFileSync(ra, JSON.stringify({ phien }, null, 1));
+  if (!chamLai) writeFileSync(ra, JSON.stringify({ phien, tomLai }, null, 1));
 
   /*
    * LẶP Ý bằng embedding — khách quan, lặp lại được. Mỗi câu (≥ 8 chữ) của bài
@@ -150,7 +157,7 @@ async function main() {
 
   if (thamSo('khong-cham', '') === '1') {
     console.log(JSON.stringify({ nhan, soCau: phien.length, dat: phien.filter((c) => c.dat).length, embLap, ragTiLeYCoNguon: yTong.length ? Math.round((yCoNguon / yTong.length) * 100) : 0, ragNguonDung: nguonDung }));
-    writeFileSync(ra, JSON.stringify({ embLap, capLap: capLap.sort((a, b) => b.sim - a.sim).slice(0, 40), phien }, null, 1));
+    writeFileSync(ra, JSON.stringify({ embLap, capLap: capLap.sort((a, b) => b.sim - a.sim).slice(0, 40), phien, tomLai }, null, 1));
     return;
   }
 
