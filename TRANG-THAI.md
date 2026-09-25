@@ -22,11 +22,14 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
+| **3 câu SQL CHƯA CHẠY** (25/09/2026) | `supabase/va-su-co-ai.sql` (bảng sự cố AI), `supabase/va-su-kien.sql` (phễu), `supabase/va-rag-toc-do.sql` (tăng tốc RAG). Chưa chạy thì code vẫn chạy, chỉ ghi lỗi vào log và thiếu phần tương ứng | Claude (máy 1) |
+| **Cerebras hết tiền** | Cron sức khoẻ bắt được "Payment required" — model nằm trong chuỗi dự phòng nhưng không dùng được. Nạp tiền hoặc tắt nó trong trang quản trị models (ĐỪNG sửa ai_model_configs bằng code) | Claude (máy 1) |
 
 ## Vừa xong
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: đợt tối ưu 3 — cảnh báo sự cố AI + cron sức khoẻ (CEL-124), phễu sự kiện tự ghi DB (CEL-063/082), tổng quan ba thẻ đầu trước + đệm RAG (CEL-125), Kết nối sửa tiếng lóng, mệnh bàn mobile dạng danh sách (CEL-072), Hỏi Celes dùng lá số vừa lập | `5b58368` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-123 — rà soát UI/UX + responsive mobile (báo cáo `UIUX-RA-SOAT-2026-09-24.md`), GỘP LUÔN `viec/mobile-adaptive` (CEL-112). Bẫy cần nhớ: `.link-action` đặt display ngoài layer nên thắng `hidden`/`lg:hidden` — muốn ẩn thì bọc ngoài | `582cfbd` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-122 — luận giải lá số (tổng quan + chuyên sâu) chỉ sinh MỘT lần mỗi lá số + năm + nhóm; khoá `/api/luan-giai-v3` không còn phiên bản. ĐỪNG thêm phiên bản lại vào khoá này; muốn làm mới toàn bộ thì tăng `THE_HE_DEM` | `50f0820` | 24/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-121 — sửa an sao sau đối chiếu tuvivietnam: độ sáng Thiên Khốc/Thiên Hư, Hóa Kỵ đắc tứ mộ, thêm Lưu Tang Môn/Bạch Hổ; phiên bản phương pháp vào khoá đệm (mọi bài sinh lại). Thiên Khôi/Việt năm Canh CHƯA đổi — chờ chủ dự án chốt | `e7c040b` | 24/09/2026 |
