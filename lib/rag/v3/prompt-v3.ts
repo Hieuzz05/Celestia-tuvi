@@ -103,6 +103,7 @@ const LUAN_SAU =
  * ra ba điều", "lập văn bản") ở cả hai loại.
  */
 // Thử "DÁM NÓI RÕ" ở vòng 2: điểm tổng quan không tăng, và model chép nguyên cụm "Nói thẳng, …" vào bài — đã bỏ.
+// Chỉ cho TỔNG QUAN: ở chuyên sâu, luật này cắt mất biện pháp thực tế (tách quỹ, lập giấy khi cho vay) mà người đọc đánh giá cao — so mù lá số C thua 31%
 const LOI_KHUYEN =
   'LỜI KHUYÊN: nói như một người từng trải khuyên người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
 
@@ -122,6 +123,5 @@ ${LUAN_SAU}
 ${LOI_KHUYEN}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
-${LOI_KHUYEN}
 ${DUNG_NGUON}`;
 }
