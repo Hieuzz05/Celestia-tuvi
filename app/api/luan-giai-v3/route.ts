@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
-import { docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@/lib/rag/noi-dung-ai';
+import { docNhieuTheoTienTo, docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@/lib/rag/noi-dung-ai';
+import { dungSoY } from '@/lib/rag/v3/so-y';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
@@ -16,8 +17,9 @@ export const maxDuration = 60;
  * Lịch sử: 1 → 2 (25/09/2026) — chủ dự án duyệt "chạy lại với các lá cũ" để mọi
  * lá số được viết theo bản C (luận sâu hơn, prompt 2026.09.6). Câu nào sinh lại
  * hỏng thì tạm trả bài của thế hệ trước (xem `baiTheHeTruoc`), không để trống.
+ * 2 → 3 (25/09/2026) — chống lặp giữa các phần (sổ ý so-y.ts + phân quyền dữ kiện); chủ dự án yêu cầu rà và sửa lặp trên chính lá số của mình.
  */
-const THE_HE_DEM: number = 2;
+const THE_HE_DEM: number = 3;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -55,6 +57,8 @@ export interface CauTraRaV3 {
   doRo: KetQuaCauV3['doRo'];
   /** Câu nào Celes chưa viết được thì nói thẳng, không bịa cho đủ */
   chuaViet: boolean;
+  /** Ý chính (dàn ý lúc sinh) — sổ ý chống lặp cho các phần sinh sau (so-y.ts) */
+  yChinh?: string[];
 }
 
 export async function POST(req: Request) {
@@ -141,7 +145,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ nhom, cau: phamVi.map((id) => daCo.get(id)!), tuDem: true });
     }
 
-    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot });
+    /*
+     * SỔ Ý: những gì các phần khác của CÙNG lá số + năm + thế hệ đệm đã nói —
+     * tổng quan, các chủ đề đã mở trước, và các câu cùng nhóm đã có. Câu sắp
+     * viết nhận danh sách này để không kể lại (so-y.ts). Đọc hỏng thì sổ rỗng.
+     */
+    const hauTo = THE_HE_DEM === 1 ? '' : `|th:${THE_HE_DEM}`;
+    const tienTo = `nam:${namXem}|nhom:`;
+    // Đúng thế hệ đệm hiện tại: "nam:2026|nhom:tien-bac|th:2" → "tien-bac"; khoá kiểu cũ ("…|s:…") bị loại
+    const nhomCua = (k: string) => {
+      if (!k.startsWith(tienTo) || !k.endsWith(hauTo)) return undefined;
+      const ten = k.slice(tienTo.length, k.length - hauTo.length);
+      return /^[a-z-]+$/.test(ten) ? ten : undefined;
+    };
+    const anhEm = (await docNhieuTheoTienTo<CauTraRaV3[]>(khoa, tienTo))
+      .map((r) => ({ nhom: nhomCua(r.khoaKy), cau: Array.isArray(r.noiDung) ? r.noiDung : [] }))
+      .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
+    const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
+
+    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi });
     /*
      * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
      * của nó trong lúc lượt này đang viết. Ghi đè bằng bản đọc lúc đầu là xoá
@@ -151,7 +173,10 @@ export async function POST(req: Request) {
     for (const c of moiNhat?.noiDung ?? []) if (!c.chuaViet && !daCo.has(c.id)) daCo.set(c.id, c);
     for (const k of kq) {
       if (!k.luanGiai) continue;
-      daCo.set(k.id, { id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false });
+      daCo.set(k.id, {
+        id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false,
+        yChinh: k.danY.map((y) => y.y).filter(Boolean),
+      });
     }
     const cau: CauTraRaV3[] = ids.map(
       (id) =>

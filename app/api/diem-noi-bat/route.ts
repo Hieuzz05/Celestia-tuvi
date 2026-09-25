@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { canDangNhap } from '@/lib/auth/cong';
 import { sinhDiemNoiBat, type DiemNoiBat } from '@/lib/rag/be-mat-ngan';
-import { kyTheoNgay, layHoacSinh } from '@/lib/rag/noi-dung-ai';
+import { docNhieuTheoTienTo, kyTheoNgay, layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -55,19 +55,28 @@ export async function POST(req: Request) {
 
   const laSo = lapLaSo({ ngay, thang, nam, gio, gioiTinh });
 
+  const chartHash = bamLaSo(ngay, thang, nam, gio, gioiTinh);
   const ra = await layHoacSinh<DiemNoiBat>(
     {
-      chartHash: bamLaSo(ngay, thang, nam, gio, gioiTinh),
+      chartHash,
       beMat: 'diem-noi-bat',
       // Khoá theo ngày TỰ hết hạn, nhưng bản sửa prompt không nên chờ hết ngày
       khoaKy: kyCoPhienBan(kyTheoNgay()),
       ngonNgu,
     },
     async () => {
+      // Thẻ ba ngày gần nhất của lá số này: thẻ hôm nay phải nói điều khác
+      const homNay = kyTheoNgay();
+      const cu = (await docNhieuTheoTienTo<DiemNoiBat>({ chartHash, beMat: 'diem-noi-bat', ngonNgu }, 'ngay:'))
+        .filter((r) => !r.khoaKy.startsWith(homNay))
+        .sort((a, b) => b.khoaKy.localeCompare(a.khoaKy))
+        .slice(0, 3)
+        .flatMap((r) => [r.noiDung?.insight, r.noiDung?.matTrai]);
       const kq = await sinhDiemNoiBat({
         laSo,
         namXem: namAmHienTai(),
         thangXem: thangAmHienTai(),
+        truoc: cu.filter((x): x is string => Boolean(x)),
       });
       return kq ? { noiDung: kq.noiDung, provider: kq.provider, model: kq.model, phienBan: kq.phienBan } : null;
     }

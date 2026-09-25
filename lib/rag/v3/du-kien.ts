@@ -24,7 +24,7 @@ import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.6';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.7';
 
 export interface DuKienV3 {
   id: string;
@@ -224,7 +224,7 @@ export function hoiThoiDiem(q: CauHoiV3): boolean {
   );
 }
 
-function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true): { noiDung: string; sao: string[] } {
+function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true, gon = false): { noiDung: string; sao: string[] } {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const hoa = c.sao.filter((s) => s.loai === 'tu-hoa');
   const phu = c.sao.filter(
@@ -277,15 +277,50 @@ function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true): { n
     c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
   ].filter(Boolean);
   const nghia = [
-    netChung.length ? `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.` : '',
-    netPhu.length ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
+    netChung.length && !gon ? `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.` : '',
+    netPhu.length && !gon ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
     tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
   ].filter(Boolean).join(' ');
+  /*
+   * GỌN (25/09/2026): cung chỉ đứng ở tam phương (xung chiếu / tam hợp) của cung
+   * chính thì không kèm đoạn diễn nghĩa. Rà lá số A: câu "tiền hay hao ở đâu"
+   * nhận nguyên Nghĩa nền tính cách của Mệnh (tam hợp của Tài Bạch) và nét Hỏa
+   * Linh của Phúc Đức (xung chiếu) — nên câu nào cũng kể lại tính cách và "phản
+   * ứng nhanh khi bị thúc ép". Cung ấy vẫn có tên sao, độ sáng, tứ hóa để luận
+   * tam phương; nghĩa của nó thuộc về câu mà nó là cung chính.
+   */
+  const nenHien = nen && !gon;
   return {
-    noiDung: `Cung ${c.tenCung} — mặt đời ${LINH_VUC_CUNG[c.tenCung] ?? c.tenCung} (${c.can} ${c.chi}${dv}): ${phan.join('; ')}.${nen ? ` Nghĩa nền (nói về CON NGƯỜI, không phải nghĩa của phần đời cung này) — ${nen}` : ''}${nghia ? ` ${nghia}` : ''}`,
+    noiDung: `Cung ${c.tenCung} — mặt đời ${LINH_VUC_CUNG[c.tenCung] ?? c.tenCung} (${c.can} ${c.chi}${dv}): ${phan.join('; ')}.${nenHien ? ` Nghĩa nền (nói về CON NGƯỜI, không phải nghĩa của phần đời cung này) — ${nen}` : ''}${nghia ? ` ${nghia}` : ''}${gon ? ' (Cung tam phương: chỉ dùng làm lực đỡ hay kéo cho cung chính; nghĩa riêng của cung này thuộc phần khác.)' : ''}`,
     // Thứ tự có nghĩa: truy hồi lấy mấy sao đầu làm truy vấn, nên sao nặng ký phải đứng trước
     sao: [...new Set([...chinh, ...hoa, ...phu, ...c.sao].map((s) => s.ten))],
   };
+}
+
+/**
+ * Cách cục của một cung TAM PHƯƠNG đi vào chủ đề nào (25/09/2026). Cách cục nằm
+ * ở Mệnh mà là tam hợp của Tài Bạch/Quan Lộc thì trước đây vào cả câu tiền bạc
+ * lẫn câu nghề — bốn cách cục của Mệnh lá số A (Tử Phủ Vũ Tướng, Khôi Việt, Tả
+ * Hữu, Khốc Hư) có mặt ở gần như mọi câu, và mọi câu kể lại "thấy thiếu", "có
+ * người cùng gánh". Cách cục trên cung chính của câu thì luôn vào.
+ */
+const CACH_CUC_CHU_DE: [string, string[]][] = [
+  ['Tử Phủ Vũ Tướng', ['su-nghiep', 'tien-bac']],
+  ['Sát Phá Tham', ['su-nghiep', 'ra-ngoai']],
+  ['Cơ Nguyệt Đồng Lương', ['su-nghiep']],
+  ['Cự Nhật', ['su-nghiep', 'ra-ngoai']],
+  ['Khôi Việt', ['su-nghiep', 'quy-nhan', 'hoc-van']],
+  ['Xương Khúc', ['hoc-van', 'su-nghiep']],
+  ['Tả Hữu', ['su-nghiep', 'quy-nhan']],
+  ['Song Lộc', ['tien-bac']],
+  ['Khốc Hư', ['phuc-duc']],
+  ['Không Kiếp', ['tien-bac']],
+  ['Đào Hồng', ['tinh-duyen']],
+  ['Long Phượng', ['hoc-van']],
+];
+function cachCucHopChuDe(ten: string, chuDe: string): boolean {
+  const dong = CACH_CUC_CHU_DE.find(([k]) => ten.startsWith(k));
+  return dong ? dong[1].includes(chuDe) : false;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -337,8 +372,9 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
       else if (LINH_VUC_CUNG[ten]) dua(timCung(laSo, ten, namXem), `phụ trợ — ${p.vaiTro}`);
     }
   }
+  const laTamPhuong = (vai: string) => vai.startsWith('xung chiếu') || vai.startsWith('tam hợp');
   for (const { c, vai } of cungVai) {
-    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q));
+    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q), laTamPhuong(vai));
     them(vai, m.noiDung, m.sao, c.tenCung);
   }
 
@@ -367,6 +403,8 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     // Cách cục chỉ vào khi nó nằm trên một cung đang đọc — cách cục của Mệnh không
     // phải căn cứ cho câu về năm nay hay chuyện nhà cửa.
     if (!daCo.has(cc.cung)) continue;
+    const vaiCung = cungVai.find((x) => x.c.tenCung === cc.cung)?.vai ?? '';
+    if (q.loai === 'chuyen-sau' && laTamPhuong(vaiCung) && !cachCucHopChuDe(cc.ten, q.chuDe)) continue;
     them('cách cục', `Cách cục ${cc.ten} (tại ${cc.cung}). ${cc.dieuKien}`, [...cc.sao], cc.cung);
   }
 
