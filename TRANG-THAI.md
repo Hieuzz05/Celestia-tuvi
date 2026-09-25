@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-132 luận v3 không kết bằng lời khuyên — trường `goiY` riêng, gom ở `components/luangiai/GoiYCeles.tsx` (cuối tổng quan, cuối mỗi chủ đề); bỏ "việc làm được ngay"; `THE_HE_DEM` = 5. CEL-133 bộ đo tiết kiệm token: `--chi` / `--tu` ở do-chat-luong-v3, giám khảo rẻ dừng sớm ở so-sanh-v3 — ĐỪNG sinh lại bản mốc mỗi vòng | `e277ed3` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-131 phiên cải thiện chất lượng luận giải — truy hồi v3 ưu tiên cung chính của chủ đề, chuyên sâu dùng nguồn RAG + "việc làm được ngay", TQ04 nêu hai đầu thang và vì sao, chặn tên sách, trang chuyên sâu gọi hai lượt nối tiếp; `THE_HE_DEM` = 4. Đo: `scripts/so-sanh-v3.ts` (so mù từng cặp) — DÙNG ≥3 giám khảo (`--giam-khao`), một giám khảo tự chấm dao động ±30% | `031c86b` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-130 chống lặp giữa các phần luận — phân quyền dữ kiện (cung tam phương không kèm diễn nghĩa), sổ ý `lib/rag/v3/so-y.ts`, một câu giữ mốc mỗi chủ đề; điểm nổi bật xoay 7 góc theo ngày; `THE_HE_DEM` = 3. Bộ đo: `scripts/do-chat-luong-v3.ts` (gemini hay 503 → giám khảo lùi về model viết, có cảnh báo) | `bb98aae` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-129 nút quay lại dùng chung (`components/QuayLai.tsx`) cho `/luan-giai/sau`, `/luan-giai`, `/dang-nhap`, `/hoi-dap` — về đúng lá số + đúng tab qua `?ve=`. Trang con mới thì gắn `<QuayLai>` và cho trang gọi truyền `themVe(...)` | `3e5a7bc` | 25/09/2026 |
