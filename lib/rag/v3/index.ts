@@ -94,7 +94,7 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
   TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và kết bằng cách dùng điểm mạnh ấy cho đúng chỗ. Không kể thêm điểm yếu.',
   TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh.',
   // Bản đồ mạnh – yếu trên trang đã liệt kê đủ ba nhóm; bài kể lại danh sách thì hết chữ cho phần "vì sao" (giám khảo 3/5, 25/09/2026)
-  TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — KHÔNG kể lại danh sách. Nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi kết bằng một lời khuyên dùng mặt mạnh để đỡ mặt yếu.',
+  TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — không kể lại đủ mười hai mặt. Mở bằng tên hai mặt mạnh nhất và hai mặt cần chăm chút nhất (để đoạn văn tự đứng được khi đọc riêng), rồi nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi kết bằng một lời khuyên dùng mặt mạnh để đỡ mặt yếu.',
   TQ05: 'Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên.',
   TQ06: 'Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính, mốc thay đổi nếu dữ kiện có.',
   TQ07: 'Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp.',

@@ -36,7 +36,8 @@ async function main() {
 
   const system =
     'Bạn là biên tập viên khó tính chấm bài luận giải tử vi cho người đọc phổ thông. Với mỗi câu hỏi có hai bản (1 và 2) viết cho CÙNG một lá số. Chọn bản tốt hơn theo: đọc như một người thật đang ngồi xem lá số của người đọc và nói chuyện với họ (không như bài trắc nghiệm tính cách), mượt; cụ thể, không chung chung; có giá trị (người đọc biết thêm, làm được gì). Nếu ngang nhau thật sự thì ghi 0. Chỉ trả JSON.';
-  const lo = 6;
+  const j = process.argv.indexOf('--lo');
+  const lo = j > 0 ? Number(process.argv[j + 1]) : 6;
   const ketQua: { id: string; yThang: number }[] = [];
   for (let k = 0; k < cap.length; k += lo) {
     const phan = cap.slice(k, k + lo);
