@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-129 nút quay lại dùng chung (`components/QuayLai.tsx`) cho `/luan-giai/sau`, `/luan-giai`, `/dang-nhap`, `/hoi-dap` — về đúng lá số + đúng tab qua `?ve=`. Trang con mới thì gắn `<QuayLai>` và cho trang gọi truyền `themVe(...)` | `3e5a7bc` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: `THE_HE_DEM` 1 → 2 ở `/api/luan-giai-v3` — mọi lá số cũ sinh lại một lần theo bản C khi được mở; câu sinh lại hỏng thì tạm trả bài thế hệ trước. Đã kiểm trên production: lần 1 sinh lại 19s, lần 2 lấy từ đệm 2s | `004fe2e` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-128 trang `/la-so` chia tab Tổng quan · Chuyên sâu (14 chủ đề) · Mạnh – yếu (radar 12 cung) · Lá số (chỉ điện thoại); tab nhớ trên URL `?tab=`. Đã bỏ thẻ đọc dài cũ, liên kết `/luan-giai` và thẻ Hỏi Celes lớn khỏi trang — đường lùi tiếng Anh vẫn giữ | `a84c6f1` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-127 thiết kế lại Bản đồ mạnh – yếu — thanh lệch hai phía quanh mức giữa, đủ 12 dòng, chữ viết lại dễ hiểu; tên nhóm mới Thuận lợi / Ổn định / Cần chăm chút dùng chung với prompt (`TEN_MUC` trong `lib/rag/v3/du-kien.ts`) | `7245d59` | 25/09/2026 |
