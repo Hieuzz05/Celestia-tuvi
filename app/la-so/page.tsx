@@ -26,6 +26,7 @@ import { lapLaSo } from '@/lib/tuvi/ansao';
 import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { themVe } from '@/components/QuayLai';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -622,7 +623,7 @@ function TrangLaSo() {
           <HoiCelesDong
             tieuDe={t.quickRead.hoiTieuDe}
             mo={t.quickRead.hoiMo}
-            href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
+            href={duocVao ? themVe('/hoi-dap', `/la-so?${boiCanhUrl}&tab=tong-quan`) : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
           />
         </div>
       )}
@@ -630,7 +631,11 @@ function TrangLaSo() {
       {/* ================= CHUYÊN SÂU: 14 chủ đề ================= */}
       {tabHien === 'chuyen-sau' && laSo && dungV3 && (
         <div id="panel-chuyen-sau" role="tabpanel" aria-labelledby="tab-chuyen-sau" className="flex flex-col gap-[24px]">
-          <ChuyenSauChuDe laSo={laSo} duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`} duocVao={duocVao} />
+          <ChuyenSauChuDe
+            laSo={laSo}
+            duongChuyenSau={themVe(`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`, `/la-so?${boiCanhUrl}&tab=chuyen-sau`)}
+            duocVao={duocVao}
+          />
         </div>
       )}
 
@@ -642,7 +647,7 @@ function TrangLaSo() {
             namXem={namXem}
             tomTat={tongQuan.cau?.find((c) => c.id === 'TQ04' && !c.chuaViet)?.luanGiai ?? null}
             dangDocTomTat={!canBangCu && tongQuan.dangDocDanhSach}
-            duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`}
+            duongChuyenSau={themVe(`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`, `/la-so?${boiCanhUrl}&tab=manh-yeu`)}
             duocVao={duocVao}
           />
         </div>

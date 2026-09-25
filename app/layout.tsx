@@ -6,6 +6,7 @@ import { BangCamOn } from "@/components/support/BangCamOn";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
+import { GhiTrangTruoc } from '@/components/QuayLai';
 
 // Kaio không có bản web miễn phí — Inter Tight 700 là một trong ba substitute mà
 // design system chỉ định, dùng cho toàn bộ display headline từ 36px trở lên.
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 đường nào cũng thấy, không phải chỉ khi ở màn thanh toán. */}
             <BangCamOn />
             <SiteNav />
+            <GhiTrangTruoc />
             <main className="flex-1">{children}</main>
             <SiteFooter />
           </BoiCanhProvider>

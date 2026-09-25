@@ -14,6 +14,7 @@ import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { QuayLai } from '@/components/QuayLai';
 
 function TrangLuanGiai() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -129,7 +130,8 @@ function TrangLuanGiai() {
   if (dangDoc) return <Shell className="py-[48px]"><span /></Shell>;
   if (!duocVao)
     return (
-      <Shell className="py-[48px]">
+      <Shell className="flex flex-col gap-[16px] py-[32px]">
+        <QuayLai theoTrangTruoc macDinh={{ href: '/home', nhan: 'Về trang Hôm nay' }} />
         <div className="mx-auto max-w-[620px]">
           <CongDangNhap nguon="deep_read" toanTrang />
         </div>
@@ -138,6 +140,7 @@ function TrangLuanGiai() {
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
+      <QuayLai theoTrangTruoc macDinh={{ href: '/home', nhan: 'Về trang Hôm nay' }} className="-mb-[16px]" />
       <div>
         <p className="eyebrow">KHÁM PHÁ SÂU HƠN</p>
         <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì?</h1>

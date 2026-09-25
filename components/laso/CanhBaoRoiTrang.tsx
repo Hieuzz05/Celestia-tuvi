@@ -52,6 +52,8 @@ export function CanhBaoRoiTrang({
       const href = a.getAttribute('href');
       if (!href || !href.startsWith('/') || a.target === '_blank') return;
       if (href.startsWith('/la-so')) return;
+      // Đi đăng nhập là đang chọn giữ lại rồi — hỏi "đăng nhập để lưu?" lần nữa là thừa (25/09/2026)
+      if (href.startsWith('/dang-nhap')) return;
 
       e.preventDefault();
       setDich(href);

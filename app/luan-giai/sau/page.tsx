@@ -8,6 +8,7 @@ import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
 import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
+import { QuayLai } from '@/components/QuayLai';
 
 /**
  * LUẬN GIẢI CHUYÊN SÂU v3 (CEL-119) — 14 chủ đề, 61 câu hỏi.
@@ -38,6 +39,11 @@ function TrangSau() {
   const gioiTinh = params.get('gt') === 'nu' ? 'nu' : 'nam';
   const namXem = Number(params.get('namXem')) || new Date().getFullYear();
   const coLaSo = Boolean(ngay && thang && nam && !Number.isNaN(gio));
+  // Không có `ve` (mở thẳng bằng đường dẫn) thì dựng lại đường về lá số từ chính thông tin sinh trên URL
+  const veLaSo = coLaSo
+    ? `/la-so?ngay=${ngay}&thang=${thang}&nam=${nam}&gio=${gio}&gt=${gioiTinh}&ten=${encodeURIComponent(params.get('ten') ?? '')}&tab=chuyen-sau`
+    : '/la-so';
+  const nutVe = <QuayLai macDinh={{ href: veLaSo, nhan: 'Về lá số' }} />;
 
   // Mở thẳng chủ đề được chỉ định (?chuDe=...) — Bản đồ mạnh–yếu ở /la-so dẫn sang đúng mặt đời vừa chạm
   const [chon, setChon] = useState<string>(() => {
@@ -97,7 +103,8 @@ function TrangSau() {
 
   if (!duocVao) {
     return (
-      <Shell className="py-[48px]">
+      <Shell className="flex flex-col gap-[16px] py-[32px]">
+        {nutVe}
         <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
           <h1 className="heading-sm">Luận giải chuyên sâu cần tài khoản</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
@@ -117,7 +124,8 @@ function TrangSau() {
 
   if (!coLaSo) {
     return (
-      <Shell className="py-[48px]">
+      <Shell className="flex flex-col gap-[16px] py-[32px]">
+        {nutVe}
         <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
           <h1 className="heading-sm">Chưa có lá số</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
@@ -151,7 +159,8 @@ function TrangSau() {
   };
 
   return (
-    <Shell className="py-[32px]">
+    <Shell className="flex flex-col gap-[16px] py-[24px]">
+      {nutVe}
       <div className="flex flex-col gap-[24px] lg:flex-row lg:items-start lg:gap-[32px]">
         {/*
           ---------- Mục lục chủ đề ----------

@@ -18,6 +18,7 @@ import { CongUngHo } from '@/components/support/CongUngHo';
 import { useQuyen } from '@/lib/support/useQuyen';
 import { bamLaSoTrinhDuyet, docHoiThoai, luuLuot, xoaHoiThoai } from '@/lib/store/hoi-thoai';
 import { dien, useT } from '@/lib/i18n/context';
+import { QuayLai } from '@/components/QuayLai';
 
 interface TinNhan {
   vaiTro: 'nguoi-dung' | 'tro-ly';
@@ -275,7 +276,8 @@ function TrangHoiDap() {
   if (dangDoc) return <Shell className="py-[48px]"><span /></Shell>;
   if (!duocVao)
     return (
-      <Shell className="py-[48px]">
+      <Shell className="flex flex-col gap-[16px] py-[32px]">
+        <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} />
         <div className="mx-auto max-w-[620px]">
           <CongDangNhap nguon="ask_celes" toanTrang />
         </div>
@@ -284,6 +286,7 @@ function TrangHoiDap() {
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
+      <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} className="-mb-[16px]" />
       <div>
         <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
         <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
