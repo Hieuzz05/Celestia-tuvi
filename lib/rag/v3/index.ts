@@ -126,9 +126,11 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
  * sáng nhất" — mỗi câu đều nhận chuỗi đại vận. Chỉ câu này kể đủ các mốc; câu
  * khác trong chủ đề nêu tối đa một mốc trả lời đúng câu hỏi của nó.
  */
+// Cập nhật 26/09/2026 theo khung mới (khung 2026.09.3)
 const CAU_GIU_MOC: Record<string, string> = {
-  'tinh-cach': 'TC07', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD03', 'con-cai': 'CC01',
-  'suc-khoe': 'SK02', 'nha-cua': 'NC01', 'van-han': 'VH01',
+  'tinh-cach': 'TC07', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD06', 'con-cai': 'CC02',
+  'gia-dinh': 'GD05', 'anh-em': 'AE02', 'quy-nhan': 'QN03', 'phuc-duc': 'PD05', 'suc-khoe': 'SK05',
+  'nha-cua': 'NC05', 'ra-ngoai': 'RN02', 'hoc-van': 'HV06', 'van-han': 'VH02',
 };
 
 function luatMoc(q: CauHoiV3): string {
@@ -173,7 +175,9 @@ const AN_TOAN_TAI_CHINH = 'Đây là góc nhìn từ lá số, không phải tư
 function datAnToan(q: CauHoiV3, bai: BaiV3): BaiV3 {
   const s = bai.luanGiai.toLowerCase();
   let luan = bai.luanGiai;
-  if (q.chuDe === 'suc-khoe' && !/tham khảo|chẩn đoán/.test(s)) luan = `${luan.trim()} ${AN_TOAN_SUC_KHOE}`;
+  // Sức khỏe: KHÔNG gắn câu an toàn vào từng câu nữa (26/09/2026 — sáu câu cùng một đuôi là đúng kiểu lời chung chủ dự án chê);
+  // trang chuyên sâu hiện MỘT dòng lưu ý ở đầu chủ đề Sức khỏe
+  void AN_TOAN_SUC_KHOE;
   if (/đầu tư/.test(q.cauHoi.toLowerCase()) && !s.includes('tư vấn tài chính')) luan = `${luan.trim()} ${AN_TOAN_TAI_CHINH}`;
   return { ...bai, luanGiai: luan };
 }
@@ -267,8 +271,8 @@ ${phamViChuyenSau(q)}`
       : [];
   // Tên luật lọt vào bài ("Câu 'đúng quá' là…", "Cảm giác rất đúng với bạn là:") — model chép nhãn của yêu cầu (đo 25/09/2026)
   const kiemNhanLuat = (b: BaiV3) =>
-    /đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc/i.test(b.luanGiai)
-      ? [{ ma: 'nhan-luat', moTa: 'Bài chép nhãn của yêu cầu viết ("đúng quá", "cảm giác rất đúng với bạn là", "lát cắt") — bỏ nhãn, nói thẳng tình huống.', chan: true }]
+    /đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc|dữ kiện|tín hiệu (bất lợi|phụ trợ|chiếu)/i.test(b.luanGiai)
+      ? [{ ma: 'nhan-luat', moTa: 'Bài dùng chữ nội bộ ("dữ kiện", "tín hiệu phụ trợ", "đúng quá", "lát cắt") — nói bằng lời người xem lá số: "lá số của bạn", "phần sức khỏe của bạn", hoặc nói thẳng điều đó.', chan: true }]
       : [];
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),

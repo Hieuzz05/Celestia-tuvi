@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
 import { GoiYCeles } from '@/components/luangiai/GoiYCeles';
+import { BucTranhLon } from '@/components/luangiai/BucTranhLon';
+import { DiSauHon } from '@/components/luangiai/DiSauHon';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
@@ -26,6 +28,9 @@ import { QuayLai } from '@/components/QuayLai';
 const SO_CAU = new Map(
   CHU_DE_V3.map((c) => [c.id, CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === c.id).length])
 );
+
+/** Mục cuối của mục lục: ghép các chủ đề đã đọc thành một câu chuyện (26/09/2026) */
+const BUC_TRANH = 'buc-tranh';
 
 /** `conCho`: nửa sau của chủ đề còn đang viết — nửa đầu đã hiện */
 /**
@@ -74,9 +79,10 @@ function TrangSau() {
   // Mở thẳng chủ đề được chỉ định (?chuDe=...) — Bản đồ mạnh–yếu ở /la-so dẫn sang đúng mặt đời vừa chạm
   const [chon, setChon] = useState<string>(() => {
     const c = params.get('chuDe');
-    return c && CHU_DE_V3.some((x) => x.id === c) ? c : CHU_DE_V3[0].id;
+    return c && (c === BUC_TRANH || CHU_DE_V3.some((x) => x.id === c)) ? c : CHU_DE_V3[0].id;
   });
   const [bai, setBai] = useState<Record<string, TrangThai>>({});
+  const [lanBucTranh, setLanBucTranh] = useState(0);
 
   // Điện thoại: mục lục là hàng chip cuộn ngang — mở thẳng một chủ đề ở cuối
   // danh sách (từ Bản đồ mạnh–yếu) thì chip đang chọn phải cuộn vào tầm nhìn.
@@ -93,7 +99,7 @@ function TrangSau() {
    */
   const [daGui] = useState(() => new Set<string>());
   useEffect(() => {
-    if (!duocVao || !coLaSo || bai[chon] || daGui.has(chon)) return;
+    if (chon === BUC_TRANH || !duocVao || !coLaSo || bai[chon] || daGui.has(chon)) return;
     daGui.add(chon);
     const chuDe = chon;
     ghiSuKien('deep_read_cta', { viTri: 'chuyen-sau-v3', chuDe });
@@ -210,16 +216,20 @@ function TrangSau() {
     );
   }
 
-  const iChon = CHU_DE_V3.findIndex((c) => c.id === chon);
-  const chuDe = CHU_DE_V3[iChon];
+  const laBuc = chon === BUC_TRANH;
+  const iChon = laBuc ? CHU_DE_V3.length : CHU_DE_V3.findIndex((c) => c.id === chon);
+  const chuDe = CHU_DE_V3[Math.min(iChon, CHU_DE_V3.length - 1)];
   const truoc = CHU_DE_V3[iChon - 1];
   const tiep = CHU_DE_V3[iChon + 1];
+  // Đường về đúng chủ đề đang đọc — cho các câu "Muốn đi sâu hơn" dẫn sang Hỏi Celes
+  const veChuDe = `/luan-giai/sau?${new URLSearchParams({ ...Object.fromEntries(params.entries()), chuDe: chon }).toString()}`;
   const trangThai = bai[chon];
   const soDaDoc = CHU_DE_V3.filter((c) => {
     const tt = bai[c.id];
     return Boolean(tt && !tt.dang && tt.cau);
   }).length;
   const moChuDe = (id: string) => {
+    if (id === BUC_TRANH) setLanBucTranh((n) => n + 1);
     setChon(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -292,6 +302,29 @@ function TrangSau() {
                 </li>
               );
             })}
+            <li className="shrink-0" data-chu-de={BUC_TRANH}>
+              <button
+                type="button"
+                onClick={() => moChuDe(BUC_TRANH)}
+                aria-current={laBuc ? 'true' : undefined}
+                className="flex w-full items-center gap-[12px] whitespace-nowrap rounded-full border px-[12px] py-[8px] text-left text-[14px] transition-colors lg:mt-[8px] lg:whitespace-normal lg:rounded-[12px] lg:border-0"
+                style={{
+                  borderColor: laBuc ? 'var(--accent)' : 'var(--line)',
+                  background: laBuc ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'transparent',
+                  color: laBuc ? 'var(--fg)' : 'var(--fg-muted)',
+                  fontWeight: laBuc ? 600 : 500,
+                }}
+              >
+                <span
+                  className="inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full text-[13px]"
+                  style={laBuc ? { background: 'var(--accent)', color: 'var(--action-fg)' } : { border: '1px solid var(--line)', color: 'var(--accent)' }}
+                  aria-hidden
+                >
+                  ✦
+                </span>
+                <span className="flex-1">Bức tranh lớn</span>
+              </button>
+            </li>
           </ol>
         </nav>
 
@@ -307,15 +340,29 @@ function TrangSau() {
             >
               Luận giải chuyên sâu · Năm xem {namXem}
             </span>
-            <h1 className="heading">{chuDe.ten}</h1>
-            {DAN_CHU_DE[chuDe.id] && (
-              <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-                {DAN_CHU_DE[chuDe.id]}
+            <h1 className="heading">{laBuc ? 'Bức tranh lớn của cuộc đời bạn' : chuDe.ten}</h1>
+            <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
+              {laBuc
+                ? 'Đây là kiểu cuộc đời nào, lợi thế lớn nhất và bài toán cứ lặp lại là gì, các mặt đời nối với nhau ra sao — và bạn đang đứng ở đâu.'
+                : DAN_CHU_DE[chuDe.id]}
+            </p>
+            {/* Sức khỏe: MỘT dòng lưu ý ở đầu chủ đề thay cho câu an toàn gắn vào từng câu (26/09/2026) */}
+            {!laBuc && chuDe.id === 'suc-khoe' && (
+              <p className="caption max-w-[620px]">
+                Đây là dự đoán xu hướng từ lá số để bạn lưu ý — không thay cho khám và chẩn đoán y khoa.
               </p>
             )}
           </header>
 
-          {!trangThai || trangThai.dang ? (
+          {laBuc && (
+            <BucTranhLon
+              key={lanBucTranh}
+              thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem }}
+              onMoChuDe={() => moChuDe(CHU_DE_V3[0].id)}
+            />
+          )}
+
+          {laBuc ? null : !trangThai || trangThai.dang ? (
             <DangDocV3 key={chon} />
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
@@ -346,6 +393,7 @@ function TrangSau() {
                 </section>
               )}
               {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
+              {!trangThai.conCho && <DiSauHon chuDe={chuDe.id} ve={veChuDe} />}
               {trangThai.loi && (
                 <div className="flex flex-col gap-[12px]">
                   <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
@@ -369,7 +417,14 @@ function TrangSau() {
           )}
 
           {/* Cuối bài: lùi về chủ đề trước (viền) và đi tiếp (nút chính duy nhất) */}
-          {trangThai && !trangThai.dang && !trangThai.conCho && (truoc || tiep) && (
+          {laBuc && (
+            <div className="flex flex-wrap items-center gap-[12px] pt-[24px]" style={{ borderTop: '1px solid var(--line)' }}>
+              <button type="button" className="btn-outline" onClick={() => moChuDe(CHU_DE_V3[CHU_DE_V3.length - 1].id)}>
+                ← Đọc lại: {CHU_DE_V3[CHU_DE_V3.length - 1].ten}
+              </button>
+            </div>
+          )}
+          {!laBuc && trangThai && !trangThai.dang && !trangThai.conCho && (truoc || tiep || iChon === CHU_DE_V3.length - 1) && (
             <div
               className="flex flex-wrap items-center gap-[12px] pt-[24px]"
               style={{ borderTop: '1px solid var(--line)' }}
@@ -379,9 +434,13 @@ function TrangSau() {
                   ← Đọc lại: {truoc.ten}
                 </button>
               )}
-              {tiep && (
+              {tiep ? (
                 <button type="button" className="btn-primary" onClick={() => moChuDe(tiep.id)}>
                   Đọc tiếp: {tiep.ten} →
+                </button>
+              ) : (
+                <button type="button" className="btn-primary" onClick={() => moChuDe(BUC_TRANH)}>
+                  Xem bức tranh lớn →
                 </button>
               )}
             </div>
