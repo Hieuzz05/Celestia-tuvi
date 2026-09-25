@@ -90,12 +90,28 @@ function TrangHoiDap() {
   useEffect(() => {
     if (khoaDaChot || boiCanh.dangTai) return;
     const h = boiCanh.hoSos.find((x) => x.id === idDangDung) ?? boiCanh.hoSos[0];
-    if (!h) return;
-    const f = formTuHoSo(h);
+    /*
+     * Chưa lưu hồ sơ nào nhưng vừa lập lá số trong phiên → dùng chính lá số đó.
+     * Bản trước bỏ qua trường hợp này: form để nguyên lá số MẪU (24/08/2000),
+     * khối chọn lá số mở bung trên điện thoại, và ai không để ý là hỏi Celes
+     * trên lá số của người khác (rà soát 25/09/2026).
+     */
+    const n = h ? null : boiCanh.nhap;
+    const f = h
+      ? formTuHoSo(h)
+      : n
+        ? {
+            hoTen: n.hoTen,
+            ngaySinh: `${n.nam}-${String(n.thang).padStart(2, '0')}-${String(n.ngay).padStart(2, '0')}`,
+            gio: n.gio,
+            gioiTinh: n.gioiTinh,
+          }
+        : null;
+    if (!f) return;
     setForm(f);
     setKhoaDaChot(khoaCua(f));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boiCanh.dangTai, boiCanh.hoSos, idDangDung]);
+  }, [boiCanh.dangTai, boiCanh.hoSos, boiCanh.nhap, idDangDung]);
 
   useEffect(() => {
     cuoiRef.current?.scrollIntoView({ behavior: 'smooth' });
