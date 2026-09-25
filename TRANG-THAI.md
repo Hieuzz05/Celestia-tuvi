@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-127 thiết kế lại Bản đồ mạnh – yếu — thanh lệch hai phía quanh mức giữa, đủ 12 dòng, chữ viết lại dễ hiểu; tên nhóm mới Thuận lợi / Ổn định / Cần chăm chút dùng chung với prompt (`TEN_MUC` trong `lib/rag/v3/du-kien.ts`) | `7245d59` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-127 Bản đồ mạnh – yếu 12 mặt đời ở `/la-so` (engine, chạm dòng mở "vì sao" + "Đọc sâu về …" sang `/luan-giai/sau?chuDe=`), hung tinh đắc địa trừ nửa điểm; CEL-126 "bản C" luận sâu hơn trong prompt v3. Bản C CHỈ áp cho lá số chưa có bài — THE_HE_DEM chưa tăng, chờ chủ dự án chốt có sinh lại bài cũ không. 3 câu SQL 25/09 đã chạy | `4f0d75c` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: đợt tối ưu 3 — cảnh báo sự cố AI + cron sức khoẻ (CEL-124), phễu sự kiện tự ghi DB (CEL-063/082), tổng quan ba thẻ đầu trước + đệm RAG (CEL-125), Kết nối sửa tiếng lóng, mệnh bàn mobile dạng danh sách (CEL-072), Hỏi Celes dùng lá số vừa lập | `5b58368` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-123 — rà soát UI/UX + responsive mobile (báo cáo `UIUX-RA-SOAT-2026-09-24.md`), GỘP LUÔN `viec/mobile-adaptive` (CEL-112). Bẫy cần nhớ: `.link-action` đặt display ngoài layer nên thắng `hidden`/`lg:hidden` — muốn ẩn thì bọc ngoài | `582cfbd` | 24/09/2026 |
