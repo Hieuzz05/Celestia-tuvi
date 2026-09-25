@@ -201,6 +201,10 @@ export async function luanMotCau(vao: {
   });
   const msTruyHoi = Date.now() - tRag;
   const phep = saoDuocPhep(duKien);
+  // Cung chính để đánh dấu nguồn khớp: cung chính của chủ đề (chuyên sâu) hoặc cung đầu danh sách câu
+  const cungChinhCau =
+    (q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined) ??
+    duKien.find((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)'))?.cung;
 
   const user = [
     khoiDoDai(q.loai),
@@ -219,7 +223,12 @@ ${phamViChuyenSau(q)}`
     `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
     `NGUỒN THAM CHIẾU (trích sách, chỉ dùng đoạn nói đúng tổ hợp sao – cung của lá số này):\n${
       nguon.length
-        ? nguon.map((n) => `${n.id} [${n.tieuDe}${n.duongDeMuc ? ` · ${n.duongDeMuc}` : ''}]\n${n.noiDung}`).join('\n\n')
+        ? nguon
+            .map(
+              (n) =>
+                `${n.id} [${n.tieuDe}${n.duongDeMuc ? ` · ${n.duongDeMuc}` : ''}]${n.khopCung && n.khopCung === cungChinhCau ? ' [KHỚP CUNG CHÍNH]' : ''}\n${n.noiDung}`
+            )
+            .join('\n\n')
         : '(Kho không có đoạn nào khớp — thu hẹp kết luận, chỉ dựa vào phần Nghĩa nền trong dữ kiện.)'
     }`,
   ]

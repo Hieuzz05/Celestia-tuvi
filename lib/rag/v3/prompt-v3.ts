@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.7';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.8';
 
 
 
@@ -106,6 +106,14 @@ const LUAN_SAU =
 const LOI_KHUYEN =
   'LỜI KHUYÊN: nói như một người từng trải khuyên người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
 
+/*
+ * DÙNG NGUỒN — CHỈ cho chuyên sâu (vòng 4, 25/09/2026). Đo so mù: chuyên sâu thắng
+ * 79% / 50% trên hai lá số, tỉ lệ ý có trích nguồn 32% → 61%; nhưng bài tổng quan
+ * một đoạn bị ép dựa nguồn thì thua 36% / 45% — kém tự nhiên. Tổng quan giữ như cũ.
+ */
+const DUNG_NGUON =
+  'DÙNG NGUỒN. NGUỒN THAM CHIẾU là kiến thức sách về đúng các sao – cung của lá số này, và là thứ làm bài của Celes khác lời nói chung. Đoạn ghi [KHỚP CUNG CHÍNH] nói đúng cung câu hỏi đang hỏi: khi có ít nhất một đoạn như vậy, dàn ý phải có ý dựa vào nguồn (ghi mã E###) — ít nhất HAI ý, và bài luận phải chuyển điều sách nói thành một nhận định đời thường cụ thể. Không bỏ phí nguồn khớp để quay về nét tính cách chung.';
+
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
@@ -114,5 +122,6 @@ ${LUAN_SAU}
 ${LOI_KHUYEN}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
-${LOI_KHUYEN}`;
+${LOI_KHUYEN}
+${DUNG_NGUON}`;
 }
