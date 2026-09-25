@@ -26,6 +26,13 @@ export const PHIEN_BAN_V3 = {
   prompt: PHIEN_BAN_PROMPT_V3,
 };
 
+/** Biến thể prompt cho bộ thử nghiệm (scripts/thu-nghiem-do-ro.ts) — không dùng trong sản phẩm */
+export interface ThuNghiemV3 {
+  system?: string;
+  themVao?: (laSo: LaSo, q: CauHoiV3) => string;
+  heSoDoDai?: number;
+}
+
 export interface KetQuaCauV3 {
   id: string;
   loai: CauHoiV3['loai'];
@@ -148,6 +155,8 @@ export async function luanMotCau(vao: {
    * cả nhóm chết vì quá trần.
    */
   hanChot?: number;
+  /** CHỈ dùng cho bộ thử nghiệm — thay system prompt, thêm khối vào user, nới độ dài. Sản phẩm không truyền. */
+  thuNghiem?: ThuNghiemV3;
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
@@ -165,6 +174,7 @@ export async function luanMotCau(vao: {
 
   const user = [
     khoiDoDai(q.loai),
+    vao.thuNghiem?.themVao?.(vao.laSo, q) ?? '',
     `CÂU HỎI CỦA NGƯỜI ĐỌC: ${q.cauHoi}`,
     `NGƯỜI ĐỌC CẦN NHẬN ĐƯỢC: ${q.nhanDuoc}`,
     PHAM_VI_TONG_QUAN[q.id]
@@ -187,14 +197,15 @@ ${phamViChuyenSau(q)}`
 
   const maDuKien = new Set(duKien.map((d) => d.id));
   const maNguon = new Set(nguon.map((n) => n.id));
-  const kiem = (b: BaiV3) => kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q) });
+  const kiem = (b: BaiV3) =>
+    kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai });
 
   let soLanGoi = 0;
   let model = '';
   const goi = async (u: string) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system: SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system: vao.thuNghiem?.system ?? SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     return docBai(kq.text);
   };
@@ -264,6 +275,7 @@ export async function luanNhieuCau(vao: {
   namXem: number;
   songSong?: number;
   hanChot?: number;
+  thuNghiem?: ThuNghiemV3;
   khiXong?: (k: KetQuaCauV3) => void;
 }): Promise<KetQuaCauV3[]> {
   const nho: BoNhoTruyHoi = new Map();
@@ -274,7 +286,7 @@ export async function luanNhieuCau(vao: {
     while (i < ds.length) {
       const j = i++;
       try {
-        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot });
+        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem });
       } catch (e) {
         ra[j] = {
           id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', doRo: 'Gợi ý', danY: [],

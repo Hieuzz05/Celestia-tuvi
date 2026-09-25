@@ -86,10 +86,14 @@ export function kiemBai(vao: {
   saoDuocPhep: Set<string>;
   /** Câu có hỏi về thời điểm không — không hỏi thì bài không được gắn mốc tuổi */
   hoiThoiDiem?: boolean;
+  /** Bộ thử nghiệm nới độ dài (vd 1.5) — sản phẩm không truyền */
+  heSoDoDai?: number;
 }): LoiV3[] {
   const { bai, loai } = vao;
   const loi: LoiV3[] = [];
-  const d = DO_DAI_V3[loai];
+  const g = DO_DAI_V3[loai];
+  const h = vao.heSoDoDai ?? 1;
+  const d = { ...g, luan: [g.luan[0], Math.round(g.luan[1] * h)] as const, viSao: g.viSao };
   const luan = bai.luanGiai.trim();
   const vs = bai.viSao.trim();
 
