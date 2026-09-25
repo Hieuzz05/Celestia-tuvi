@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.8';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.10';
 
 
 
@@ -117,6 +117,15 @@ const LOI_KHUYEN =
 const DUNG_NGUON =
   'DÙNG NGUỒN. NGUỒN THAM CHIẾU là kiến thức sách về đúng các sao – cung của lá số này, và là thứ làm bài của Celes khác lời nói chung. Đoạn ghi [KHỚP CUNG CHÍNH] nói đúng cung câu hỏi đang hỏi: khi có ít nhất một đoạn như vậy, dàn ý phải có ý dựa vào nguồn (ghi mã E###) — ít nhất HAI ý, và bài luận phải chuyển điều sách nói thành một nhận định đời thường cụ thể. Không bỏ phí nguồn khớp để quay về nét tính cách chung.';
 
+/*
+ * Vòng 9 (25/09/2026): ba giám khảo cùng chọn bản có biện pháp thực tế ("tách quỹ",
+ * "lập giấy khi cho vay", "thử hợp tác quy mô nhỏ") — đưa thành yêu cầu cho đoạn cuối.
+ * So mù 3 giám khảo × 2 lá số (78 lượt chấm): thắng 54–85%, trung bình ~68%. Đổi lại
+ * câu lặp ý nhích 3% → 6–8% — bù một phần bằng hai lượt nối tiếp ở trang chuyên sâu.
+ */
+const VIEC_LAM_NGAY =
+  'VIỆC LÀM ĐƯỢC NGAY: đoạn cuối đưa 2–3 việc cụ thể người đọc làm được trong tuần tới, gắn đúng tình huống của câu hỏi này, có mốc thời gian hoặc cách làm rõ ràng; khác các lời khuyên đã dùng ở phần khác; không nêu số tiền hay tỉ lệ tiền — viết thành câu văn liền, không gạch đầu dòng.';
+
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
@@ -125,5 +134,6 @@ ${LUAN_SAU}
 ${LOI_KHUYEN}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
-${DUNG_NGUON}`;
+${DUNG_NGUON}
+${VIEC_LAM_NGAY}`;
 }
