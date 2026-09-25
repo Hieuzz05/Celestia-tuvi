@@ -39,8 +39,20 @@ function TrangSau() {
   const namXem = Number(params.get('namXem')) || new Date().getFullYear();
   const coLaSo = Boolean(ngay && thang && nam && !Number.isNaN(gio));
 
-  const [chon, setChon] = useState<string>(CHU_DE_V3[0].id);
+  // Mở thẳng chủ đề được chỉ định (?chuDe=...) — Bản đồ mạnh–yếu ở /la-so dẫn sang đúng mặt đời vừa chạm
+  const [chon, setChon] = useState<string>(() => {
+    const c = params.get('chuDe');
+    return c && CHU_DE_V3.some((x) => x.id === c) ? c : CHU_DE_V3[0].id;
+  });
   const [bai, setBai] = useState<Record<string, TrangThai>>({});
+
+  // Điện thoại: mục lục là hàng chip cuộn ngang — mở thẳng một chủ đề ở cuối
+  // danh sách (từ Bản đồ mạnh–yếu) thì chip đang chọn phải cuộn vào tầm nhìn.
+  useEffect(() => {
+    document
+      .querySelector<HTMLElement>(`[data-chu-de="${chon}"]`)
+      ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [chon, duocVao]);
 
   /*
    * Chủ đề đang mở chưa có gì và chưa gửi yêu cầu → gửi. Mọi setState nằm trong
@@ -163,7 +175,7 @@ function TrangSau() {
               const daDoc = Boolean(tt && !tt.dang && tt.cau);
               const dangMo = chon === c.id;
               return (
-                <li key={c.id} className="shrink-0">
+                <li key={c.id} className="shrink-0" data-chu-de={c.id}>
                   <button
                     type="button"
                     onClick={() => moChuDe(c.id)}

@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.5';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.6';
 
 
 
@@ -78,14 +78,29 @@ export const SYSTEM_V3 = [
   MAU,
 ].join('\n\n');
 
+/*
+ * Độ dài nới ~1,3 lần (25/09/2026, "bản C"). Thử nghiệm mù trên 3 lá số × 6 câu
+ * (scripts/thu-nghiem-do-ro.ts): bài luận sâu hơn — thêm biểu hiện, tình huống,
+ * điều kiện — được chọn hay nhất 11/18 lần, rõ ràng 4,83 so với 4,28 của bản cũ,
+ * bám căn cứ không giảm. Vẫn nằm trong luật chủ dự án "dài hơn dàn ý 1,2–1,8 lần".
+ */
 export const DO_DAI_V3 = {
-  'tong-quan': { luan: [60, 110] as const, viSao: [40, 100] as const, doan: [1, 1] as const },
-  'chuyen-sau': { luan: [170, 280] as const, viSao: [60, 160] as const, doan: [2, 4] as const },
+  'tong-quan': { luan: [60, 140] as const, viSao: [40, 100] as const, doan: [1, 1] as const },
+  'chuyen-sau': { luan: [180, 360] as const, viSao: [60, 160] as const, doan: [2, 4] as const },
 };
+
+/**
+ * Yêu cầu LUẬN SÂU của bản C — nguyên văn khối đã thắng thử nghiệm, chỉ bỏ câu về
+ * độ dài (độ dài đã nằm trong khoiDoDai).
+ */
+const LUAN_SAU =
+  'LUẬN SÂU: mỗi ý thêm biểu hiện cụ thể trong đời, một tình huống người đọc nhận ra được, và điều kiện khi nào nó mạnh lên hay yếu đi. Giữ nguyên mọi quy tắc khác.';
 
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
-    ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, ${d.luan[0]}–${d.luan[1]} từ, có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.`
-    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 180–230 từ, không quá ${d.luan[1]} (hai bài mẫu dài khoảng 170–200 từ). viSao ${d.viSao[0]}–${d.viSao[1]} từ.`;
+    ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, ${d.luan[0]}–${d.luan[1]} từ, có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
+${LUAN_SAU}`
+    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
+${LUAN_SAU}`;
 }
