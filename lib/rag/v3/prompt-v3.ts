@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.14';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.15';
 
 
 
@@ -35,6 +35,7 @@ A. Trường "luanGiai" — bài luận cho người đọc:
 - Văn liền mạch, không gạch đầu dòng, không đánh số, không nhãn kiểu "Đáp:", "Cụ thể:", không markdown.
 - KHÔNG nêu tên sao, tên cung, tên cách cục, và không dùng thuật ngữ tử vi (đại vận, tiểu hạn, lưu niên, tam hợp, xung chiếu, vô chính diệu, chính tinh, miếu, hãm, tọa thủ, Thân cư...). Nói bằng phần đời: "đường công danh", "chuyện tiền bạc", "đời sống bên trong", "chuyện lứa đôi", "giai đoạn khoảng 25–34 tuổi".
 - Gọi người đọc là "bạn".
+- Không dùng chữ nội bộ của hệ thống trong bài: "dữ kiện", "tín hiệu phụ trợ", "yếu tố chiếu", "nguồn" — nói như người xem lá số ("lá số của bạn cho thấy", "phần sức khỏe của bạn") hoặc nói thẳng điều đó.
 - Không nêu mã F###, E###, không nêu tên sách.
 
 B. Trường "viSao" — phần "Muốn biết vì sao không?":
@@ -43,9 +44,11 @@ B. Trường "viSao" — phần "Muốn biết vì sao không?":
 
 C. Trường "goiY" — MỘT gợi ý ngắn (tối đa 30 từ) cho người đọc, đi ra từ phần luận của câu này. Trang gom các gợi ý thành một phần riêng, nên KHÔNG lặp gợi ý này trong "luanGiai". Để chuỗi rỗng nếu câu hỏi không cần gợi ý.
 
-D. An toàn:
-- Sức khỏe chỉ nói xu hướng để tham khảo, không chẩn đoán, không nêu bệnh cụ thể.
-- Không luận thọ yểu; không nói số con, con trai hay gái; không nêu số tiền; không phán ly hôn, ngoại tình.
+D. An toàn — Tử Vi là để DỰ ĐOÁN, nhưng không áp đặt, không khẳng định (chủ dự án chốt 26/09/2026):
+- Sức khỏe: ĐƯỢC nêu nhóm cơ quan / vùng đáng lưu ý (vd. tim mạch – huyết áp, gan mật, tiêu hóa, hô hấp, thận – tiết niệu, xương khớp, thần kinh) và kiểu vấn đề (âm ỉ, tái phát, đột ngột), XẾP theo mức đáng lưu ý, bằng lời xu hướng: "đáng chú ý hơn", "nghiêng về", "nhất là ở giai đoạn…". KHÔNG khẳng định sẽ mắc bệnh, không chẩn đoán, không nêu tên bệnh như sự thật; không chen lời khuyên sống lành mạnh chung chung.
+- Con cái: được nói xu hướng ít hay đông con khi tín hiệu rõ; không nêu con số, không nói con trai hay gái.
+- Hôn nhân: được nói xu hướng ổn định / dễ khủng hoảng / đứt nối / tái hợp và rủi ro người thứ ba như một khả năng; không khẳng định ly hôn, ngoại tình.
+- Không luận thọ yểu; không nêu số tiền.
 - Bàn chuyện đầu tư thì có câu "đây là góc nhìn từ lá số, không phải tư vấn tài chính".
 
 ĐẦU RA — chỉ một object JSON hợp lệ, không rào code, không lời dẫn:

@@ -151,9 +151,11 @@ export async function docNoiDungMoiNhat<T>(
  */
 export async function docNhieuTheoTienTo<T>(
   k: Omit<Khoa, 'khoaKy'>,
-  tienTo: string
+  tienTo: string,
+  /** Khoá phải CHỨA chuỗi này (vd. "|th:6") — lọc ngay trong truy vấn: một lá số có thể có hàng chục bản ghi của các thế hệ đệm cũ */
+  chua?: string
 ): Promise<{ khoaKy: string; noiDung: T }[]> {
-  if (/[%_]/.test(tienTo)) return [];
+  if (/[%_]/.test(tienTo) || (chua && /[%_]/.test(chua))) return [];
   const supabase = taoSupabaseAdmin();
   if (!supabase) return [];
   try {
@@ -163,8 +165,8 @@ export async function docNhieuTheoTienTo<T>(
       .eq('chart_hash', k.chartHash)
       .eq('be_mat', k.beMat)
       .eq('ngon_ngu', k.ngonNgu)
-      .like('khoa_ky', `${tienTo}%`)
-      .limit(40);
+      .like('khoa_ky', chua ? `${tienTo}%${chua}%` : `${tienTo}%`)
+      .limit(60);
     if (error || !data) return [];
     return data.map((d) => ({ khoaKy: d.khoa_ky as string, noiDung: d.noi_dung as T }));
   } catch {

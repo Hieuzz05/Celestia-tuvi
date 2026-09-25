@@ -5,6 +5,7 @@ import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { docNhieuTheoTienTo, docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@/lib/rag/noi-dung-ai';
 import { dungSoY } from '@/lib/rag/v3/so-y';
 import { viTomLai } from '@/lib/rag/v3/tom-lai';
+import { SO_CHU_DE_TOI_THIEU, viBucTranh } from '@/lib/rag/v3/buc-tranh';
 import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
@@ -22,8 +23,9 @@ export const maxDuration = 60;
  * 3 → 4 (25/09/2026) — phiên cải thiện chất lượng (CEL-131): truy hồi ưu tiên cung chính chủ đề, chuyên sâu dùng nguồn + việc làm được ngay, TQ04 nói vì sao.
  * 4 → 5 (25/09/2026) — bỏ "việc làm được ngay / trong tuần tới" (chủ dự án: nghe như ép buộc); bài thế hệ 4 có giọng đó.
  * 5 → 6 (25/09/2026) — khung Sự nghiệp viết lại (id SN01–SN08 đổi nghĩa) + công thức chuyên sâu mới; bài cũ dưới cùng id là bài của câu khác.
+ * 6 → 7 (26/09/2026) — khung 13 chủ đề còn lại viết lại (khung 2026.09.3), sức khỏe được nêu nhóm cơ quan, thêm Bức tranh lớn.
  */
-const THE_HE_DEM: number = 6;
+const THE_HE_DEM: number = 7;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -53,6 +55,8 @@ interface Body {
   chi?: string[];
   /** Lấy / viết phần "Tóm lại" của chủ đề (chỉ khi đủ các câu) */
   tomLai?: boolean;
+  /** Lấy / viết "Bức tranh lớn" của cả lá số (khi đã đọc đủ số chủ đề) */
+  bucTranh?: boolean;
 }
 
 export interface CauTraRaV3 {
@@ -139,6 +143,34 @@ export async function POST(req: Request) {
      * Khoá riêng "…|tom-lai" (không khớp khoá nhóm nên sổ ý không đọc nhầm nó).
      * Chưa đủ câu thì trả rỗng, không sinh từ bài dở dang.
      */
+    /*
+     * BỨC TRANH LỚN (26/09/2026): ghép phần "Tóm lại" của các chủ đề ĐÃ đọc +
+     * tổng quan. Khoá kèm danh sách chủ đề, nên đọc thêm chủ đề thì bức tranh
+     * được viết lại cho đủ; đọc lại mà không thêm gì thì lấy từ đệm.
+     */
+    if (body.bucTranh) {
+      const tienToNhom = `nam:${namXem}|nhom:`;
+      const cuoiTom = `|th:${THE_HE_DEM}|tom-lai`;
+      const ds = await docNhieuTheoTienTo<{ tomLai?: string } | CauTraRaV3[]>(khoa, tienToNhom, `|th:${THE_HE_DEM}`);
+      const tomLai = ds
+        .filter((r) => r.khoaKy.endsWith(cuoiTom) && !Array.isArray(r.noiDung) && r.noiDung?.tomLai)
+        .map((r) => ({ chuDe: r.khoaKy.slice(tienToNhom.length, r.khoaKy.length - cuoiTom.length), tomLai: (r.noiDung as { tomLai: string }).tomLai }))
+        .sort((a, b) => a.chuDe.localeCompare(b.chuDe));
+      if (tomLai.length < SO_CHU_DE_TOI_THIEU) {
+        return NextResponse.json({ bucTranh: null, soChuDe: tomLai.length, canToiThieu: SO_CHU_DE_TOI_THIEU });
+      }
+      const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|${tomLai.map((t) => t.chuDe).join('+')}` };
+      const da = await docNoiDung<{ bucTranh: string }>(khoaBuc);
+      if (da?.noiDung?.bucTranh) return NextResponse.json({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
+      const tq = ds.find((r) => r.khoaKy === `${tienToNhom}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
+      const tongQuan = ((tq?.noiDung as CauTraRaV3[] | undefined) ?? []).filter((c) => !c.chuaViet && c.luanGiai);
+      const bt = await viBucTranh({ tomLai, tongQuan });
+      if (!bt) return NextResponse.json({ loi: 'Celes chưa ghép được bức tranh lớn.' }, { status: 502 });
+      const [provider, model] = bt.model.split('/');
+      await luuNoiDung(khoaBuc, { bucTranh: bt.bucTranh }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      return NextResponse.json({ bucTranh: bt.bucTranh, soChuDe: tomLai.length, tuDem: false });
+    }
+
     if (body.tomLai && nhom !== 'tong-quan') {
       const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai` };
       const daTom = await docNoiDung<{ tomLai: string }>(khoaTom);
@@ -161,7 +193,11 @@ export async function POST(req: Request) {
       chuyenKhoa = Boolean(cu);
     }
 
-    const daCo = new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet).map((c) => [c.id, c]));
+    // Chỉ nhận bài đã cất khi CÙNG câu hỏi — khung đổi nghĩa id thì bài cũ dưới id ấy là của câu khác
+    const cauHoiHienTai = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
+    const daCo = new Map(
+      (cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiHienTai.get(c.id)).map((c) => [c.id, c])
+    );
     const thieu = phamVi.filter((id) => !daCo.has(id));
 
     if (!thieu.length) {
@@ -185,7 +221,7 @@ export async function POST(req: Request) {
       const ten = k.slice(tienTo.length, k.length - hauTo.length);
       return /^[a-z-]+$/.test(ten) ? ten : undefined;
     };
-    const anhEm = (await docNhieuTheoTienTo<CauTraRaV3[]>(khoa, tienTo))
+    const anhEm = (await docNhieuTheoTienTo<CauTraRaV3[]>(khoa, tienTo, hauTo || undefined))
       .map((r) => ({ nhom: nhomCua(r.khoaKy), cau: Array.isArray(r.noiDung) ? r.noiDung : [] }))
       .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
     const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
