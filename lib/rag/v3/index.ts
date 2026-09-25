@@ -226,7 +226,8 @@ ${phamViChuyenSau(q)}`
         ? nguon
             .map(
               (n) =>
-                `${n.id} [${n.tieuDe}${n.duongDeMuc ? ` · ${n.duongDeMuc}` : ''}]${n.khopCung && n.khopCung === cungChinhCau ? ' [KHỚP CUNG CHÍNH]' : ''}\n${n.noiDung}`
+                // Không đưa tên sách vào nhãn: model chép lại nó vào phần "vì sao" ("Theo cách đọc của Tử Vi Hàm Số…")
+                `${n.id} [${n.duongDeMuc ?? 'đoạn sách'}]${n.khopCung && n.khopCung === cungChinhCau ? ' [KHỚP CUNG CHÍNH]' : ''}\n${n.noiDung}`
             )
             .join('\n\n')
         : '(Kho không có đoạn nào khớp — thu hẹp kết luận, chỉ dựa vào phần Nghĩa nền trong dữ kiện.)'
@@ -237,9 +238,23 @@ ${phamViChuyenSau(q)}`
 
   const maDuKien = new Set(duKien.map((d) => d.id));
   const maNguon = new Set(nguon.map((n) => n.id));
+  /*
+   * Tên sách lọt vào bài (25/09/2026): luật trình bày cấm nêu tên sách, nhưng rà
+   * phần "vì sao" thấy "Theo cách đọc của Tử Vi Hàm Số…". Bắt bằng tên tài liệu của
+   * chính các đoạn nguồn được cấp (đủ ba chữ trở lên để không bắt nhầm "Tử Vi").
+   */
+  const tenSach = [...new Set(nguon.map((n) => n.tieuDe.trim()))].filter((t) => t.split(/\s+/).length >= 3);
+  const kiemTenSach = (b: BaiV3) => {
+    const chu = `${b.luanGiai} ${b.viSao}`.toLowerCase();
+    const lo = tenSach.filter((t) => chu.includes(t.toLowerCase()));
+    return lo.length
+      ? [{ ma: 'ten-sach', moTa: `Nêu tên sách (${lo.join(', ')}) — bỏ tên sách, nói "sách xưa" hoặc chỉ nói điều sách nói.`, chan: true }]
+      : [];
+  };
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
+    ...kiemTenSach(b),
   ];
 
   let soLanGoi = 0;

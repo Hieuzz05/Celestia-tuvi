@@ -52,7 +52,7 @@ async function main() {
   const ra = thamSo('ra', 'do-chat-luong.json');
   const nhan = thamSo('nhan', bat ? 'so-y' : 'khong-so-y');
 
-  type Cau = { id: string; nhom: string; cauHoi: string; luanGiai: string; yChinh: string[]; danY: { y: string; canCu: string[] }[]; soNguon: number; dat: boolean; ms: number };
+  type Cau = { id: string; nhom: string; cauHoi: string; luanGiai: string; viSao?: string; yChinh: string[]; danY: { y: string; canCu: string[] }[]; soNguon: number; dat: boolean; ms: number };
   const phien: Cau[] = [];
   const t0 = Date.now();
 
@@ -61,7 +61,7 @@ async function main() {
     const kq = await luanNhieuCau({ laSo, ids, namXem, songSong: ids.length, daNoi });
     for (const k of kq)
       phien.push({
-        id: k.id, nhom, cauHoi: k.cauHoi, luanGiai: k.luanGiai, yChinh: k.danY.map((y) => y.y), danY: k.danY,
+        id: k.id, nhom, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, yChinh: k.danY.map((y) => y.y), danY: k.danY,
         soNguon: k.nguon.length, dat: k.dat, ms: k.ms,
       });
     console.log(`  ${nhom.padEnd(11)} ${ids.length} câu · ${Math.round((Date.now() - t0) / 1000)}s · đạt ${kq.filter((k) => k.dat).length}/${kq.length}`);
