@@ -173,28 +173,51 @@ export interface DiemNoiBat {
   cauMangTheo: string;
 }
 
+/**
+ * GÓC CỦA NGÀY (25/09/2026). Thẻ này trước đây ngày nào cũng hỏi đúng một câu
+ * "điểm mạnh nổi bật nhất" — rà lá số A: bảy ngày liền cùng một nhận định (Tử
+ * Phủ Vũ Tướng Liêm dựng nền, Khốc Hư thấy thiếu, có người cùng gánh). Người mở
+ * trang chủ mỗi sáng thấy lại đúng điều hôm qua. Giờ xoay vòng bảy góc theo
+ * ngày, và thẻ biết mấy ngày trước đã nói gì.
+ */
+export const GOC_THEO_NGAY: { chuDe: ChuDe; cauHoi: string; nhan: string }[] = [
+  { chuDe: 'tong-quan', nhan: 'điểm mạnh', cauHoi: 'Điểm mạnh nổi bật nhất của người này là gì, và nó thể hiện ra đời sống thế nào' },
+  { chuDe: 'su-nghiep', nhan: 'công việc', cauHoi: 'Điểm sáng rõ nhất của người này trong công việc là gì, và nó hiện ra thế nào trong một ngày làm việc' },
+  { chuDe: 'tinh-cam', nhan: 'cách thương yêu', cauHoi: 'Nét rõ nhất trong cách người này thương yêu, gắn bó với người khác là gì' },
+  { chuDe: 'tai-chinh', nhan: 'chuyện tiền', cauHoi: 'Cách người này kiếm, giữ và tiêu tiền có điểm gì rõ nhất' },
+  { chuDe: 'gia-dao', nhan: 'gia đình', cauHoi: 'Người này hiện ra thế nào trong gia đình, với cha mẹ và người thân' },
+  { chuDe: 'suc-khoe', nhan: 'nhịp sức lực', cauHoi: 'Nhịp sức lực và cách người này nạp lại năng lượng có điểm gì rõ nhất' },
+  { chuDe: 'tong-quan', nhan: 'mặt bên trong', cauHoi: 'Mặt bên trong ít người thấy của người này là gì, và nó lộ ra lúc nào' },
+];
+
+/** Góc của một ngày — đếm theo ngày lịch, nên cùng một ngày luôn ra cùng một góc */
+export function gocCuaNgay(d = new Date()) {
+  const ngayThu = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86_400_000);
+  return GOC_THEO_NGAY[ngayThu % GOC_THEO_NGAY.length];
+}
+
 export async function sinhDiemNoiBat(vao: {
   laSo: LaSo;
   namXem: number;
   thangXem: number;
+  /** Ngày của thẻ — quyết định góc nhìn. Mặc định hôm nay */
+  ngayThe?: Date;
+  /** Nhận định của mấy ngày gần đây — thẻ hôm nay không được nói lại */
+  truoc?: string[];
 }): Promise<{ noiDung: DiemNoiBat; provider: string; model: string; phienBan: Record<string, string> } | null> {
-  const nen = await dungNen(
-    vao.laSo,
-    'Điểm mạnh nổi bật nhất của người này là gì, và nó thể hiện ra đời sống thế nào',
-    'tong-quan',
-    vao.namXem,
-    vao.thangXem
-  );
+  const goc = gocCuaNgay(vao.ngayThe);
+  const nen = await dungNen(vao.laSo, goc.cauHoi, goc.chuDe, vao.namXem, vao.thangXem);
 
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia. Viết tiếng Việt, bình tĩnh, nói với người đối diện.
 
 Đây là THẺ ĐIỂM NỔI BẬT của trang chủ. Mục tiêu: tạo một khoảnh khắc "đúng rồi" trong 20-40 giây. KHÔNG luận cả lá số. Tổng cả thẻ 60-100 từ.
+GÓC HÔM NAY: ${goc.nhan} — ${goc.cauHoi}. Cả thẻ bám đúng góc này.
 
 ${nenChung()}
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
 {
-  "insight": "1 câu: điểm mạnh rõ nhất, CỤ THỂ cho lá số này. Cấm câu ai đọc cũng thấy đúng.",
+  "insight": "1 câu: nét rõ nhất ở GÓC HÔM NAY, CỤ THỂ cho lá số này. Cấm câu ai đọc cũng thấy đúng.",
   "doiSong": "1 câu: nét đó thường lộ ra ở đâu trong đời sống thường ngày.",
   "matTrai": "1 câu: cái giá của chính nét đó, hoặc lúc nó quay ra làm khó người ta.",
   "cauMangTheo": "1 câu ngắn để mang theo hôm nay, mọc ra TỪ điểm mạnh vừa nói. Không phải châm ngôn chung chung, không hô khẩu hiệu.",
@@ -203,7 +226,11 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
 }`;
 
   // Mẫu vàng đứng sau khối dữ kiện — xem `mau-vang.ts`
-  const userNoiBat = [nen.khoi, khoiMauVang(chonMauVang({ beMat: 'be-mat-ngan', loai: ['cau-khep'] }))]
+  const tranh = (vao.truoc ?? []).filter(Boolean);
+  const khoiTranh = tranh.length
+    ? `MẤY NGÀY TRƯỚC THẺ ĐÃ NÓI (người đọc mở trang mỗi ngày, đã đọc những câu này) — KHÔNG nói lại ý, ví dụ hay tên cách cục đã dùng; chọn một nét KHÁC của lá số:\n${tranh.map((x) => `- ${x}`).join('\n')}`
+    : '';
+  const userNoiBat = [nen.khoi, khoiTranh, khoiMauVang(chonMauVang({ beMat: 'be-mat-ngan', loai: ['cau-khep'] }))]
     .filter(Boolean)
     .join('\n\n');
 
@@ -373,6 +400,7 @@ LUẬT RIÊNG CỦA PHẦN VẬN HẠN:
 - KHÔNG kết luận "năm nay sẽ xảy ra chuyện X" chỉ vì hạn đi vào cung X. Cung hạn là MỘT lớp, không phải nguyên nhân.
 - Nói xu hướng và điều đáng cân nhắc, không nói sự kiện.
 - Nhịp hành động của quãng đã được tính sẵn và ghi ở khối dữ kiện. Viết sao cho ba chuyển động nhất quán với nhịp đó. Không tự đổi nhịp, không nhắc lại chữ đó như một nhãn.
+- Đây là chuyện của QUÃNG THỜI GIAN, không phải chân dung con người: KHÔNG kể lại tính cách gốc hay cách cục của Mệnh (vd. Tử Phủ Vũ Tướng, Khốc Hư, Tả Hữu) — người đọc đã đọc chúng ở phần luận lá số. Chỉ dùng nét gốc nửa câu, khi nó giải thích một chuyển động RIÊNG của quãng này; ưu tiên sao của cung vận, cung hạn và lưu tinh.
 
 ${nenChung()}
 

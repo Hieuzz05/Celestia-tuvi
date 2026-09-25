@@ -145,6 +145,34 @@ export async function docNoiDungMoiNhat<T>(
 }
 
 /**
+ * Mọi bản ghi có khoá bắt đầu bằng `tienTo` — để một bề mặt đọc được các phần
+ * anh em đã cất của cùng lá số (sổ ý chống lặp của luận giải v3). Cùng luật
+ * `tienTo` như trên. Hỏng thì trả rỗng: thiếu sổ ý chỉ là lặp hơn, không phải lỗi.
+ */
+export async function docNhieuTheoTienTo<T>(
+  k: Omit<Khoa, 'khoaKy'>,
+  tienTo: string
+): Promise<{ khoaKy: string; noiDung: T }[]> {
+  if (/[%_]/.test(tienTo)) return [];
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('noi_dung_ai')
+      .select('khoa_ky, noi_dung')
+      .eq('chart_hash', k.chartHash)
+      .eq('be_mat', k.beMat)
+      .eq('ngon_ngu', k.ngonNgu)
+      .like('khoa_ky', `${tienTo}%`)
+      .limit(40);
+    if (error || !data) return [];
+    return data.map((d) => ({ khoaKy: d.khoa_ky as string, noiDung: d.noi_dung as T }));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Đọc đệm trước, thiếu thì sinh rồi cất.
  *
  * `sinh` được phép ném hoặc trả null khi model hỏng, hết hạn mức, hoặc bài

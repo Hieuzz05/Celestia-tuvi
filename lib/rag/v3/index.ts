@@ -6,6 +6,7 @@ import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKien
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
+import { khoiDaNoi, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -98,7 +99,7 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
   TQ07: 'Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp.',
   TQ08: 'Chỉ nói giai đoạn 10 năm đang chạy: tên gọi giai đoạn, chủ đề chính, một lưu ý.',
   TQ09: 'Chỉ nói năm xem: chủ đề năm, một hai việc nên làm và nên tránh, dựa trên vận năm trong dữ kiện.',
-  TQ10: 'Kể theo dòng thời gian các giai đoạn 10 năm có trong dữ kiện, mỗi giai đoạn một ý ngắn.',
+  TQ10: 'Kể đường đời theo BA chặng lớn — tiền vận, trung vận, hậu vận — mỗi chặng một hai câu về xu hướng chung và điều đổi khác giữa các chặng. KHÔNG liệt kê từng giai đoạn 10 năm (phần đó thuộc Vận hạn chuyên sâu).',
   TQ11: 'Chỉ gợi ý 2–3 phần nên xem sâu trước và lý do ngắn cho từng phần.',
 };
 
@@ -109,6 +110,31 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
  * nét tính cách, cùng một mốc tuổi, cùng một lời khuyên đi qua bốn năm câu.
  * Nói cho mỗi câu biết các câu anh em lo phần nào là cách rẻ nhất để chia ý.
  */
+/**
+ * Câu GIỮ DÒNG THỜI GIAN của từng chủ đề (25/09/2026). Đo lá số A: chủ đề Tiền
+ * bạc có ba câu (TB02, TB06, TB07) cùng kể lại "35–44 nhà cửa làm lại, 45–54
+ * sáng nhất" — mỗi câu đều nhận chuỗi đại vận. Chỉ câu này kể đủ các mốc; câu
+ * khác trong chủ đề nêu tối đa một mốc trả lời đúng câu hỏi của nó.
+ */
+const CAU_GIU_MOC: Record<string, string> = {
+  'tinh-cach': 'TC07', 'su-nghiep': 'SN06', 'tien-bac': 'TB06', 'tinh-duyen': 'TD03', 'con-cai': 'CC01',
+  'suc-khoe': 'SK02', 'nha-cua': 'NC01', 'van-han': 'VH01',
+};
+
+function luatMoc(q: CauHoiV3): string {
+  if (!hoiThoiDiem(q)) return '';
+  const giu = CAU_GIU_MOC[q.chuDe];
+  if (giu === q.id) {
+    return q.chuDe === 'van-han'
+      ? ''
+      : 'Câu này giữ dòng thời gian của chủ đề: ở mỗi mốc chỉ nói điều xảy ra với ĐÚNG phần đời của chủ đề này. Không gọi tên chủ đề chung của giai đoạn (kiểu "giai đoạn nhà cửa", "đoạn đời sống tinh thần") và không kể lại dòng đời chung — phần đó thuộc Vận hạn. Chỉ nêu những mốc thật sự làm phần đời này đổi khác, không cần đủ mọi giai đoạn.';
+  }
+  const cauGiu = giu && CAU_HOI_V3.find((x) => x.id === giu);
+  return cauGiu
+    ? `Các mốc giai đoạn của chủ đề này do câu "${cauGiu.cauHoi}" kể — câu này nêu tối đa MỘT mốc, đúng mốc trả lời câu hỏi của nó.`
+    : '';
+}
+
 function phamViChuyenSau(q: CauHoiV3): string {
   const anhEm = CAU_HOI_V3.filter((x) => x.loai === 'chuyen-sau' && x.chuDe === q.chuDe && x.id !== q.id);
   const ten = CHU_DE_V3.find((c) => c.id === q.chuDe)?.ten ?? q.chuDe;
@@ -120,7 +146,7 @@ function phamViChuyenSau(q: CauHoiV3): string {
           .join('\n')}`
       : '',
     hoiThoiDiem(q)
-      ? ''
+      ? luatMoc(q)
       : 'Câu này KHÔNG hỏi về thời điểm: không nêu mốc tuổi, giai đoạn mười năm hay năm cụ thể.',
     q.chuDe === 'tinh-cach'
       ? ''
@@ -157,6 +183,8 @@ export async function luanMotCau(vao: {
   hanChot?: number;
   /** CHỈ dùng cho bộ thử nghiệm — thay system prompt, thêm khối vào user, nới độ dài. Sản phẩm không truyền. */
   thuNghiem?: ThuNghiemV3;
+  /** Sổ ý các phần ĐÃ SINH của cùng lá số + năm — chống lặp giữa các phần (xem so-y.ts) */
+  daNoi?: MucDaNoi[];
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
@@ -183,6 +211,7 @@ export async function luanMotCau(vao: {
         ? `PHẠM VI CÂU NÀY:
 ${phamViChuyenSau(q)}`
         : '',
+    khoiDaNoi(q, vao.daNoi ?? []),
     q.yeuToThem ? `YẾU TỐ NÊN XÉT: ${q.yeuToThem}` : '',
     q.khongDuoc ? `KHÔNG ĐƯỢC: ${q.khongDuoc}` : '',
     `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
@@ -197,8 +226,10 @@ ${phamViChuyenSau(q)}`
 
   const maDuKien = new Set(duKien.map((d) => d.id));
   const maNguon = new Set(nguon.map((n) => n.id));
-  const kiem = (b: BaiV3) =>
-    kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai });
+  const kiem = (b: BaiV3) => [
+    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
+    ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
+  ];
 
   let soLanGoi = 0;
   let model = '';
@@ -276,6 +307,7 @@ export async function luanNhieuCau(vao: {
   songSong?: number;
   hanChot?: number;
   thuNghiem?: ThuNghiemV3;
+  daNoi?: MucDaNoi[];
   khiXong?: (k: KetQuaCauV3) => void;
 }): Promise<KetQuaCauV3[]> {
   const nho: BoNhoTruyHoi = new Map();
@@ -286,7 +318,7 @@ export async function luanNhieuCau(vao: {
     while (i < ds.length) {
       const j = i++;
       try {
-        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem });
+        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi });
       } catch (e) {
         ra[j] = {
           id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', doRo: 'Gợi ý', danY: [],
