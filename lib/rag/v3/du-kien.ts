@@ -404,7 +404,10 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     // phải căn cứ cho câu về năm nay hay chuyện nhà cửa.
     if (!daCo.has(cc.cung)) continue;
     const vaiCung = cungVai.find((x) => x.c.tenCung === cc.cung)?.vai ?? '';
-    if (q.loai === 'chuyen-sau' && laTamPhuong(vaiCung) && !cachCucHopChuDe(cc.ten, q.chuDe)) continue;
+    // Chuyên sâu: cách cục chỉ vào khi nằm trên cung chính CỦA CHỦ ĐỀ (không phải cung đầu danh sách câu —
+    // TD01 "yêu kiểu nào" đọc Mệnh trước, và bốn cách cục của Mệnh theo vào chủ đề tình duyên), hoặc khi liên quan
+    if (q.loai === 'chuyen-sau' && cc.cung !== cd?.cungChinh && !cachCucHopChuDe(cc.ten, q.chuDe)) continue;
+    void vaiCung;
     them('cách cục', `Cách cục ${cc.ten} (tại ${cc.cung}). ${cc.dieuKien}`, [...cc.sao], cc.cung);
   }
 
@@ -484,6 +487,26 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
         .map((m) => `${TEN_MUC[m]}: ${ds.filter((d) => d.muc === m).sort((a, b) => b.diem - a.diem).map((d) => `${d.linhVuc} (cung ${d.cung})`).join(', ')}`)
         .join('. ') + '.'
     );
+    /*
+     * VÌ SAO của hai đầu thang (25/09/2026). Giám khảo chấm TQ04 thấp nhất cả nhóm
+     * ("chia nhóm rõ nhưng lý giải sơ lược, chưa cho thấy vì sao") — dữ kiện chỉ
+     * có tên nhóm. Cấp đúng những sao engine đã dùng để chấm, cùng nguồn với Bản
+     * đồ mạnh – yếu trên trang, để bài luận và bản đồ nói cùng một lý do.
+     */
+    if (q.id === 'TQ04') {
+      const ct = chiTietDiemTungCung(laSo).sort((a, b) => b.diem - a.diem);
+      const lyDo = (d: ChiTietDiemCung) => {
+        const don = d.trongCung.filter((g) => g.diem > 0).sort((a, b) => b.diem - a.diem).slice(0, 3).map((g) => g.ten);
+        const keo = d.trongCung.filter((g) => g.diem < 0).sort((a, b) => a.diem - b.diem).slice(0, 2).map((g) => g.ten);
+        return `${d.linhVuc} (cung ${d.cung}): ${don.length ? `đỡ bởi ${don.join(', ')}` : 'ít sao đỡ'}${keo.length ? `; kéo bởi ${keo.join(', ')}` : ''}`;
+      };
+      const dau = [...ct.slice(0, 2), ...ct.slice(-2)];
+      them(
+        'vì sao mạnh / vì sao cần chăm chút (sao engine dùng để chấm)',
+        `${dau.map(lyDo).join('. ')}.`,
+        [...new Set(dau.flatMap((d) => d.trongCung.map((g) => g.sao).filter((x): x is string => Boolean(x))))]
+      );
+    }
   }
   return ra;
 }

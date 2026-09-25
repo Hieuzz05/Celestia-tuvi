@@ -17,7 +17,7 @@ import type { DuKienV3 } from './du-kien';
  * có điểm RRF cao mà chẳng dùng được.
  */
 
-export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.4';
+export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.5';
 
 /**
  * Tên tắt sách cổ hay dùng: "Vũ, Tướng: làm ra song khó nhọc". Không nhận tắt
@@ -63,8 +63,29 @@ const BI_DANH_CUNG: Record<string, string[]> = {
   'Tật Ách': ['tat ach', 'tat', 'ach'],
   'Tài Bạch': ['tai bach', 'tai'],
   'Tử Tức': ['tu tuc'],
-  'Phu Thê': ['phu the', 'the', 'phu'],
+  'Phu Thê': ['phu the', 'vo chong', 'the'],
   'Huynh Đệ': ['huynh de', 'bao', 'huynh'],
+};
+
+/**
+ * Từ khoá nhận ra một đoạn bàn ĐÚNG phần đời của câu hỏi (không bỏ dấu, so trên
+ * chữ đã bỏ dấu). Cộng điểm nhẹ khi đoạn nhắc tới — đoạn khớp sao mà nói chuyện
+ * khác (sao ấy ở Tài Bạch trong khi câu hỏi về vợ chồng) tụt xuống.
+ */
+const TU_NHAN_CHU_DE: Record<string, string[]> = {
+  'tinh-cach': ['tinh tinh', 'tinh cach', 'con nguoi', 'tam tinh'],
+  'su-nghiep': ['cong danh', 'quan loc', 'su nghiep', 'nghe nghiep', 'lam quan'],
+  'tien-bac': ['tien tai', 'tai loc', 'cua cai', 'giau', 'tai bach', 'hao tai'],
+  'tinh-duyen': ['vo chong', 'phu the', 'hon nhan', 'lay vo', 'lay chong', 'tinh duyen'],
+  'con-cai': ['con cai', 'tu tuc', 'sinh con'],
+  'gia-dinh': ['cha me', 'phu mau', 'song than'],
+  'anh-em': ['anh em', 'huynh de'],
+  'quy-nhan': ['ban be', 'no boc', 'quy nhan', 'giup do'],
+  'phuc-duc': ['phuc duc', 'ho hang', 'to tien'],
+  'suc-khoe': ['benh', 'tat ach', 'suc khoe', 'tai nan'],
+  'nha-cua': ['nha cua', 'dien trach', 'dien san', 'nha dat'],
+  'ra-ngoai': ['thien di', 'xuat ngoai', 'di xa', 'ra ngoai'],
+  'hoc-van': ['thi cu', 'hoc hanh', 'khoa bang', 'van chuong'],
 };
 
 const TU_KHOA_CHU_DE: Record<string, string> = {
@@ -180,9 +201,30 @@ export async function truyHoiChoCau(vao: {
   duKien: DuKienV3[];
   nho: BoNhoTruyHoi;
   soDoan?: number;
+  /** Cung chính của CHỦ ĐỀ (Phu Thê cho tình duyên) — đứng trước mọi cung khác khi chia chỗ */
+  cungUuTien?: string;
 }): Promise<DoanV3[]> {
   const tuKhoa = TU_KHOA_CHU_DE[vao.chuDeTuKhoa ?? vao.chuDe] ?? '';
-  const cungDoc = vao.duKien.filter((d) => d.cung && d.noiDung.startsWith('Cung ')).slice(0, 5);
+  /*
+   * Thứ tự cung theo VAI TRÒ (2026.09.5): cung chính → cùng xét → phụ trợ → tam
+   * phương. Bản trước lấy năm cung đầu theo thứ tự dữ kiện (chính, xung, tam hợp,
+   * tam hợp, cùng xét) rồi chia đều chỗ: câu "tôi yêu kiểu nào" (Phu Thê) nhận
+   * sáu trên tám đoạn nói về Tài Bạch, Quan Lộc, Mệnh — model không dùng được.
+   */
+  const hangVai = (v: string) =>
+    v === 'cung chính' || v.endsWith('(chính)') ? 0 : v.startsWith('cung chính') ? 1 : v.startsWith('phụ trợ') ? 2 : 3;
+  const cungDoc = vao.duKien
+    .filter((d) => d.cung && d.noiDung.startsWith('Cung '))
+    .map((d, i) => ({ d, i }))
+    .sort(
+      (a, b) =>
+        (a.d.cung === vao.cungUuTien ? -1 : hangVai(a.d.vaiTro)) - (b.d.cung === vao.cungUuTien ? -1 : hangVai(b.d.vaiTro)) ||
+        a.i - b.i
+    )
+    .map((x) => x.d)
+    .slice(0, 5);
+  const gioiTinh = /^Nữ,/.test(vao.duKien.find((d) => d.vaiTro === 'nền')?.noiDung ?? '') ? 'nu' : 'nam';
+  const tuNhan = TU_NHAN_CHU_DE[vao.chuDeTuKhoa ?? vao.chuDe] ?? [];
 
   /*
    * Mỗi cung một truy vấn. Truy vấn chỉ mang chính tinh + tứ hóa (cung không có
@@ -239,12 +281,17 @@ export async function truyHoiChoCau(vao: {
         const khopCung = biDanh.some((b) => coTu(bd, b));
         // Mục sách đặt tên theo cung ("TỨ TÀI BẠCH CUNG", "CUNG PHU-THÊ") là nguồn đắt nhất
         const deMucCung = coTu(boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''}`), biDanh[0] ?? '§');
+        const dungChuDe = tuNhan.some((w) => coTu(bd, w));
         let diem =
           d.diemRRF +
           0.012 * Math.min(khopSao.length, 3) +
           (khopCung && khopSao.length ? 0.02 : 0) +
-          (deMucCung ? 0.03 : 0);
+          (deMucCung ? 0.03 : 0) +
+          (dungChuDe ? 0.015 : 0);
         if (laDoanRac(d)) diem = -1;
+        // Câu phú viết cho giới kia ("NỮ MỆNH CA", "đàn bà thủ mệnh") không phải căn cứ cho lá số này
+        const tdBd = boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''} ${d.noiDung.slice(0, 160)}`);
+        if (gioiTinh === 'nam' ? /nu menh|dan ba|nu mang/.test(tdBd) : /nam menh|dan ong|nam mang/.test(tdBd)) diem = -1;
         return {
           id: '',
           tieuDe: d.tieuDe,
@@ -267,8 +314,9 @@ export async function truyHoiChoCau(vao: {
   const chon: DoanV3[] = [];
   const daLay = new Set<string>();
   const demTaiLieu = new Map<string, number>();
+  const thuTuChon = theoTruyVan.length ? [theoTruyVan[0], ...theoTruyVan] : [];
   for (let vong = 0; chon.length < soDoan && vong < 4; vong++) {
-    for (const ds of theoTruyVan) {
+    for (const ds of thuTuChon) {
       if (chon.length >= soDoan) break;
       // Bỏ trùng CẢ GIỮA các truy vấn: truy hồi chỉ bỏ bản chép trong một truy vấn,
       // còn cùng câu phú do hai truy vấn kéo về thì vẫn chiếm hai chỗ
