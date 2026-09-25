@@ -26,7 +26,8 @@ const SO_CAU = new Map(
   CHU_DE_V3.map((c) => [c.id, CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === c.id).length])
 );
 
-type TrangThai = { dang: true } | { dang: false; cau: CauV3[] | null; loi?: string };
+/** `conCho`: nửa sau của chủ đề còn đang viết — nửa đầu đã hiện */
+type TrangThai = { dang: true } | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean };
 
 function TrangSau() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -71,25 +72,54 @@ function TrangSau() {
     daGui.add(chon);
     const chuDe = chon;
     ghiSuKien('deep_read_cta', { viTri: 'chuyen-sau-v3', chuDe });
-    fetch('/api/luan-giai-v3', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe }),
-    })
-      .then(async (res) => {
-        const d = await res.json();
+    /*
+     * HAI LƯỢT NỐI TIẾP (25/09/2026): nửa đầu các câu của chủ đề, rồi nửa sau.
+     * Nửa sau được viết khi nửa đầu đã cất, nên sổ ý của route (so-y.ts) cho nó
+     * biết các câu anh em đã nói gì — đo lá số A/C: câu lặp ý với câu đã đọc
+     * 5–6% → 1–3%. Người đọc cũng thấy bài sớm hơn: nửa đầu hiện sau một lượt,
+     * không chờ câu chậm nhất của cả chủ đề. Bài đã đệm thì hai lượt đều tức thì.
+     */
+    const ids = CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === chuDe).map((q) => q.id);
+    const giua = ids.length >= 4 ? Math.ceil(ids.length / 2) : ids.length;
+    const goi = (chi: string[]) =>
+      fetch('/api/luan-giai-v3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi }),
+      }).then(async (res) => ({ ok: res.ok, d: await res.json() }));
+    const loiMang = 'Không kết nối được. Thử lại sau ít phút.';
+    goi(ids.slice(0, giua))
+      .then(({ ok, d }) => {
+        const conLai = ids.slice(giua);
         setBai((cu) => ({
           ...cu,
-          [chuDe]: res.ok
-            ? { dang: false, cau: d.cau as CauV3[] }
+          [chuDe]: ok
+            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0 }
             : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
         }));
+        if (!ok || !conLai.length) return;
+        return goi(conLai).then(({ ok: ok2, d: d2 }) => {
+          setBai((cu) => {
+            const truoc = cu[chuDe];
+            const dau = truoc && !truoc.dang && truoc.cau ? truoc.cau : [];
+            return {
+              ...cu,
+              [chuDe]: {
+                dang: false,
+                cau: ok2 ? [...dau, ...((d2.cau as CauV3[]) ?? [])] : dau,
+                loi: ok2 ? undefined : d2?.loi ?? 'Celes chưa viết xong phần còn lại.',
+              },
+            };
+          });
+        });
       })
       .catch(() => {
-        setBai((cu) => ({
-          ...cu,
-          [chuDe]: { dang: false, cau: null, loi: 'Không kết nối được. Thử lại sau ít phút.' },
-        }));
+        setBai((cu) => {
+          const truoc = cu[chuDe];
+          // Hỏng ở lượt sau thì giữ nửa đầu đã hiện
+          if (truoc && !truoc.dang && truoc.cau?.length) return { ...cu, [chuDe]: { dang: false, cau: truoc.cau, loi: loiMang } };
+          return { ...cu, [chuDe]: { dang: false, cau: null, loi: loiMang } };
+        });
       });
   }, [duocVao, coLaSo, chon, bai, daGui, ngay, thang, nam, gio, gioiTinh, namXem]);
 
@@ -243,6 +273,18 @@ function TrangSau() {
               {trangThai.cau.map((c, i) => (
                 <CauTraLoiV3 key={c.id} cau={c} so={i + 1} />
               ))}
+              {/* Nửa sau của chủ đề còn đang viết — nửa đầu đã đọc được */}
+              {trangThai.conCho && <DangDocV3 key={`${chon}-tiep`} chu="Celes đang viết tiếp các câu còn lại" />}
+              {trangThai.loi && (
+                <div className="flex flex-col gap-[12px]">
+                  <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
+                    {trangThai.loi}
+                  </p>
+                  <button type="button" className="btn-outline btn-sm self-start" onClick={thuLai}>
+                    Thử lại phần còn lại
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-[12px]">
@@ -256,7 +298,7 @@ function TrangSau() {
           )}
 
           {/* Cuối bài: lùi về chủ đề trước (viền) và đi tiếp (nút chính duy nhất) */}
-          {trangThai && !trangThai.dang && (truoc || tiep) && (
+          {trangThai && !trangThai.dang && !trangThai.conCho && (truoc || tiep) && (
             <div
               className="flex flex-wrap items-center gap-[12px] pt-[24px]"
               style={{ borderTop: '1px solid var(--line)' }}

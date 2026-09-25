@@ -76,7 +76,13 @@ async function main() {
       await chay('tong-quan', dau);
       await chay('tong-quan', CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !dau.includes(q.id)).map((q) => q.id));
     } else {
-      await chay(nhom, CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === nhom).map((q) => q.id));
+      const ids = CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === nhom).map((q) => q.id);
+      // --hai-dot 1: nửa đầu chạy trước, nửa sau nhận sổ ý của nửa đầu (thử chống lặp giữa các câu cùng chủ đề)
+      if (thamSo('hai-dot', '') === '1' && ids.length >= 4) {
+        const giua = Math.ceil(ids.length / 2);
+        await chay(nhom, ids.slice(0, giua));
+        await chay(nhom, ids.slice(giua));
+      } else await chay(nhom, ids);
     }
   }
 
