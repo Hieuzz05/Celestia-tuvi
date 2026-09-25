@@ -28,6 +28,8 @@ export interface MucDaNoi {
   /** Ý chính (dàn ý khi sinh; bài cũ không có thì lấy câu mở mỗi đoạn) */
   yChinh: string[];
   luanGiai: string;
+  /** Gợi ý đã tách riêng (25/09/2026) — bài cũ không có thì lấy câu cuối */
+  goiY?: string;
 }
 
 /** Câu tổng quan nào là bản TÓM TẮT của chủ đề chuyên sâu nào */
@@ -86,12 +88,12 @@ export function khoiDaNoi(q: CauHoiV3, daNoi: MucDaNoi[]): string {
       dong.push(`[${tenNhom(nhom)} · ${d.cauHoi}]${tomTatCuaChuDeNay ? ' (bản tóm tắt của chính chủ đề này)' : ''} ${y.join(' | ')}`);
     }
   }
-  const loiKhuyen = [...new Set(ds.map((d) => catTu(loiKhuyenCua(d.luanGiai), 24)).filter(Boolean))].slice(0, 24);
+  const loiKhuyen = [...new Set(ds.map((d) => catTu(d.goiY || loiKhuyenCua(d.luanGiai), 24)).filter(Boolean))].slice(0, 24);
 
   return [
     'ĐÃ NÓI Ở CÁC PHẦN KHÁC CỦA LÁ SỐ NÀY — người đọc đọc cả trang lá số, nên đã gặp những ý sau:',
     ...dong,
-    loiKhuyen.length ? `LỜI KHUYÊN ĐÃ DÙNG: ${loiKhuyen.map((l) => `"${l}"`).join(' ; ')}` : '',
+    loiKhuyen.length ? `GỢI Ý ĐÃ DÙNG (không lặp trong trường goiY): ${loiKhuyen.map((l) => `"${l}"`).join(' ; ')}` : '',
     `LUẬT CHỐNG LẶP GIỮA CÁC PHẦN:
 1. Không triển khai lại các ý trên, không dùng lại ví dụ hay tình huống đã dùng, không dùng lại lời khuyên đã dùng (kể cả đổi chữ).
 2. Một ý trên là căn cứ cần cho câu này thì chỉ gợi lại tối đa NỬA CÂU (vd. "nét cẩn trọng ấy") rồi đi ngay sang điều MỚI.
@@ -160,7 +162,7 @@ export function kiemLapPhanKhac(luanGiai: string, daNoi: MucDaNoi[], idCau: stri
 
 /** Dựng sổ từ các bản ghi đã cất của route (mỗi nhóm một mảng câu) */
 export function dungSoY(
-  banGhi: { nhom: string; cau: { id: string; cauHoi: string; luanGiai: string; yChinh?: string[]; chuaViet?: boolean }[] }[]
+  banGhi: { nhom: string; cau: { id: string; cauHoi: string; luanGiai: string; yChinh?: string[]; goiY?: string; chuaViet?: boolean }[] }[]
 ): MucDaNoi[] {
   const ra: MucDaNoi[] = [];
   for (const b of banGhi)
@@ -172,6 +174,7 @@ export function dungSoY(
         cauHoi: c.cauHoi || CAU_HOI_V3.find((q) => q.id === c.id)?.cauHoi || c.id,
         yChinh: c.yChinh?.length ? c.yChinh : yChinhTuBai(c.luanGiai),
         luanGiai: c.luanGiai,
+        goiY: c.goiY,
       });
     }
   return ra;

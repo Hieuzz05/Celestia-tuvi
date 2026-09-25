@@ -19,8 +19,9 @@ export const maxDuration = 60;
  * hỏng thì tạm trả bài của thế hệ trước (xem `baiTheHeTruoc`), không để trống.
  * 2 → 3 (25/09/2026) — chống lặp giữa các phần (sổ ý so-y.ts + phân quyền dữ kiện); chủ dự án yêu cầu rà và sửa lặp trên chính lá số của mình.
  * 3 → 4 (25/09/2026) — phiên cải thiện chất lượng (CEL-131): truy hồi ưu tiên cung chính chủ đề, chuyên sâu dùng nguồn + việc làm được ngay, TQ04 nói vì sao.
+ * 4 → 5 (25/09/2026) — bỏ "việc làm được ngay / trong tuần tới" (chủ dự án: nghe như ép buộc); bài thế hệ 4 có giọng đó.
  */
-const THE_HE_DEM: number = 4;
+const THE_HE_DEM: number = 5;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -60,6 +61,8 @@ export interface CauTraRaV3 {
   chuaViet: boolean;
   /** Ý chính (dàn ý lúc sinh) — sổ ý chống lặp cho các phần sinh sau (so-y.ts) */
   yChinh?: string[];
+  /** Gợi ý tách khỏi bài luận — trang gom thành phần "Gợi ý của Celes" */
+  goiY?: string;
 }
 
 export async function POST(req: Request) {
@@ -177,6 +180,7 @@ export async function POST(req: Request) {
       daCo.set(k.id, {
         id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false,
         yChinh: k.danY.map((y) => y.y).filter(Boolean),
+        goiY: k.goiY || undefined,
       });
     }
     const cau: CauTraRaV3[] = ids.map(

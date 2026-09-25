@@ -40,6 +40,8 @@ export interface CauV3 {
   viSao: string;
   doRo: 'Rõ' | 'Khá rõ' | 'Gợi ý';
   chuaViet: boolean;
+  /** Gợi ý tách khỏi bài luận — gom ở GoiYCeles, không hiện trong câu trả lời */
+  goiY?: string;
 }
 
 /**

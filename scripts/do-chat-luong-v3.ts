@@ -6,6 +6,8 @@
  *   --so-y 0|1                    tắt/bật sổ ý chống lặp giữa các phần (mặc định 1)
  *   --ra <tệp.json>               nơi ghi kết quả (nên để ngoài repo)
  *   --nhan <chữ>                  nhãn lượt chạy, in cùng điểm
+ *   --chi TQ04,SN01               TIẾT KIỆM: chỉ sinh lại đúng những câu thay đổi chạm tới
+ *   --tu <tệp.json>               TIẾT KIỆM: lấy các câu còn lại từ một lượt đã có (không sinh lại bản mốc)
  *   --khong-cham 1                chỉ đo lặp bằng embedding + RAG, bỏ giám khảo (nhanh)
  *   --cham-lai <tệp.json>         chỉ chấm lại phiên đã có trong tệp (không sinh)
  *   --giam-khao provider|model    giám khảo chất lượng (mặc định gemini; hỏng thì lùi và in cảnh báo)
@@ -52,31 +54,41 @@ async function main() {
   const ra = thamSo('ra', 'do-chat-luong.json');
   const nhan = thamSo('nhan', bat ? 'so-y' : 'khong-so-y');
 
-  type Cau = { id: string; nhom: string; cauHoi: string; luanGiai: string; viSao?: string; yChinh: string[]; danY: { y: string; canCu: string[] }[]; soNguon: number; dat: boolean; ms: number };
+  type Cau = { id: string; nhom: string; cauHoi: string; luanGiai: string; viSao?: string; goiY?: string; yChinh: string[]; danY: { y: string; canCu: string[] }[]; soNguon: number; dat: boolean; ms: number; token?: { vao: number; ra: number; dem: number } };
   const phien: Cau[] = [];
+  const daSinh = new Set<string>();
   const t0 = Date.now();
 
   const chay = async (nhom: string, ids: string[]) => {
     const daNoi = bat ? dungSoY([...new Set(phien.map((c) => c.nhom))].map((n) => ({ nhom: n, cau: phien.filter((c) => c.nhom === n) }))) : [];
     const kq = await luanNhieuCau({ laSo, ids, namXem, songSong: ids.length, daNoi });
+    for (const k of kq) daSinh.add(k.id);
     for (const k of kq)
       phien.push({
-        id: k.id, nhom, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, yChinh: k.danY.map((y) => y.y), danY: k.danY,
-        soNguon: k.nguon.length, dat: k.dat, ms: k.ms,
+        id: k.id, nhom, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, goiY: k.goiY, yChinh: k.danY.map((y) => y.y), danY: k.danY,
+        soNguon: k.nguon.length, dat: k.dat, ms: k.ms, token: k.token,
       });
     console.log(`  ${nhom.padEnd(11)} ${ids.length} câu · ${Math.round((Date.now() - t0) / 1000)}s · đạt ${kq.filter((k) => k.dat).length}/${kq.length}`);
   };
 
+  const chi = thamSo('chi') ? thamSo('chi').split(',') : null;
+  const tu = thamSo('tu');
+  // --tu: các câu KHÔNG nằm trong --chi lấy nguyên từ lượt cũ — vừa làm ngữ cảnh sổ ý, vừa không tốn lượt gọi
+  if (tu) phien.push(...(JSON.parse(readFileSync(tu, 'utf-8')).phien as Cau[]).filter((c) => !chi || !chi.includes(c.id)));
+  const loc = (ids: string[]) => (chi ? ids.filter((id) => chi.includes(id)) : ids);
   const chamLai = thamSo('cham-lai');
   if (chamLai) phien.push(...(JSON.parse(readFileSync(chamLai, 'utf-8')).phien as Cau[]));
   for (const nhom of chamLai ? [] : nhomMo) {
     if (nhom === 'tong-quan') {
       // Ba thẻ đầu trang (THE_DAU trong components/luangiai/TongQuanV3.tsx)
       const dau = ['TQ02', 'TQ03', 'TQ08'];
-      await chay('tong-quan', dau);
-      await chay('tong-quan', CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !dau.includes(q.id)).map((q) => q.id));
+      const a = loc(dau);
+      const b = loc(CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !dau.includes(q.id)).map((q) => q.id));
+      if (a.length) await chay('tong-quan', a);
+      if (b.length) await chay('tong-quan', b);
     } else {
-      const ids = CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === nhom).map((q) => q.id);
+      const ids = loc(CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === nhom).map((q) => q.id));
+      if (!ids.length) continue;
       // --hai-dot 1: nửa đầu chạy trước, nửa sau nhận sổ ý của nửa đầu (thử chống lặp giữa các câu cùng chủ đề)
       if (thamSo('hai-dot', '') === '1' && ids.length >= 4) {
         const giua = Math.ceil(ids.length / 2);
@@ -85,6 +97,11 @@ async function main() {
       } else await chay(nhom, ids);
     }
   }
+
+  /* ------------------------------- Token ------------------------------- */
+  // Chỉ tính câu SINH trong lượt này — câu lấy lại bằng --tu không tốn gì
+  const tk = phien.filter((c) => c.token && daSinh.has(c.id)).reduce((a, c) => ({ vao: a.vao + (c.token?.vao ?? 0), ra: a.ra + (c.token?.ra ?? 0), dem: a.dem + (c.token?.dem ?? 0) }), { vao: 0, ra: 0, dem: 0 });
+  console.log(`  token sinh: vào ${tk.vao.toLocaleString('vi')} (đệm ${tk.vao ? Math.round((tk.dem / tk.vao) * 100) : 0}%) · ra ${tk.ra.toLocaleString('vi')}`);
 
   /* ----------------------------- RAG bằng mã ----------------------------- */
   const yTong = phien.flatMap((c) => c.danY);

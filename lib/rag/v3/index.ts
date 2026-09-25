@@ -40,6 +40,8 @@ export interface KetQuaCauV3 {
   cauHoi: string;
   luanGiai: string;
   viSao: string;
+  /** Gợi ý tách khỏi bài luận — trang gom thành phần "Gợi ý của Celes" */
+  goiY: string;
   doRo: 'Rõ' | 'Khá rõ' | 'Gợi ý';
   danY: BaiV3['danY'];
   duKien: DuKienV3[];
@@ -49,6 +51,8 @@ export interface KetQuaCauV3 {
   /** Lỗi của bản đầu, trước khi sửa — để đo prompt chứ không chỉ đo đầu ra */
   loiBanDau: LoiV3[];
   soLanGoi: number;
+  /** Token của mọi lượt gọi cho câu này (vào / ra / phần vào được nhà cung cấp đệm) — để đo chi phí */
+  token: { vao: number; ra: number; dem: number };
   model: string;
   ms: number;
   msTruyHoi: number;
@@ -66,7 +70,12 @@ function docBai(text: string): BaiV3 | null {
           canCu: Array.isArray(y.canCu) ? (y.canCu as unknown[]).filter((x): x is string => typeof x === 'string') : [],
         }))
     : [];
-  return { danY, luanGiai: o.luanGiai.replace(/\r/g, '').trim(), viSao: o.viSao.replace(/\s*\n+\s*/g, ' ').trim() };
+  return {
+    danY,
+    luanGiai: o.luanGiai.replace(/\r/g, '').trim(),
+    viSao: o.viSao.replace(/\s*\n+\s*/g, ' ').trim(),
+    goiY: typeof o.goiY === 'string' ? o.goiY.replace(/\s+/g, ' ').trim() : '',
+  };
 }
 
 function doRoCua(q: CauHoiV3, dk: DuKienV3[], nguon: DoanV3[]): KetQuaCauV3['doRo'] {
@@ -152,8 +161,8 @@ function phamViChuyenSau(q: CauHoiV3): string {
     q.chuDe === 'tinh-cach'
       ? ''
       : 'Không tả lại tính cách chung của người này — phần đó thuộc chủ đề Tính cách. Nét tính cách chỉ được dùng một vế để giải thích một biểu hiện riêng của câu này.',
-    // Lượt 8: chia phạm vi xong thì ba câu kết bài mà không khuyên gì (giám khảo 4 → 1)
-    'Bài vẫn PHẢI kết bằng một lời khuyên hành động cụ thể ("bạn nên…" / "không nên…"), đi ra từ chính phần luận của câu này. Tránh lời khuyên chung là để thay bằng lời khuyên riêng — không phải để bỏ lời khuyên.',
+    // 25/09/2026 (chủ dự án): không câu nào kết bằng lời khuyên — gợi ý tách sang trường goiY, trang gom thành phần riêng
+    'Bài KHÔNG kết bằng lời khuyên: đoạn cuối khép lại bằng một điểm cần lưu ý hoặc hệ quả rút ra từ phần luận. Gợi ý (nếu có) viết vào trường "goiY".',
   ];
   return dong.filter(Boolean).join('\n');
 }
@@ -251,19 +260,29 @@ ${phamViChuyenSau(q)}`
       ? [{ ma: 'ten-sach', moTa: `Nêu tên sách (${lo.join(', ')}) — bỏ tên sách, nói "sách xưa" hoặc chỉ nói điều sách nói.`, chan: true }]
       : [];
   };
+  // Giọng giao việc có hạn — chủ dự án bỏ 25/09/2026 ("gây cảm giác ép buộc")
+  const kiemGiaoViec = (b: BaiV3) =>
+    /(trong|ngay|ngay trong) (tuần|tháng) (tới|này|sau)|tuần tới|ngay hôm nay|trong \d+ ngày tới/i.test(`${b.luanGiai} ${b.goiY ?? ''}`)
+      ? [{ ma: 'giao-viec', moTa: 'Lời khuyên đặt hạn kiểu "trong tuần tới / ngay hôm nay" — viết lại thành gợi ý ("bạn có thể…", "nên cân nhắc…"), không đặt hạn.', chan: true }]
+      : [];
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
     ...kiemTenSach(b),
+    ...kiemGiaoViec(b),
   ];
 
   let soLanGoi = 0;
   let model = '';
+  const token = { vao: 0, ra: 0, dem: 0 };
   const goi = async (u: string) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
     const kq = await goiVoiFallback({ system: vao.thuNghiem?.system ?? SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
+    token.vao += kq.tokensIn ?? 0;
+    token.ra += kq.tokensOut ?? 0;
+    token.dem += kq.tokensDem ?? 0;
     return docBai(kq.text);
   };
 
@@ -271,9 +290,9 @@ ${phamViChuyenSau(q)}`
   if (!bai) bai = await goi(user); // JSON gãy: thử lại nguyên lượt một lần
   if (!bai) {
     return {
-      id: q.id, loai: q.loai, cauHoi: q.cauHoi, luanGiai: '', viSao: '', doRo: 'Gợi ý', danY: [], duKien, nguon,
+      id: q.id, loai: q.loai, cauHoi: q.cauHoi, luanGiai: '', viSao: '', goiY: '', doRo: 'Gợi ý', danY: [], duKien, nguon,
       loiConLai: [{ ma: 'khong-doc-duoc', moTa: 'Model không trả JSON đọc được sau hai lượt.', chan: true }],
-      loiBanDau: [], soLanGoi, model, ms: Date.now() - t0, msTruyHoi, dat: false,
+      loiBanDau: [], soLanGoi, token, model, ms: Date.now() - t0, msTruyHoi, dat: false,
     };
   }
   bai = donTatDinh(bai);
@@ -311,6 +330,7 @@ ${phamViChuyenSau(q)}`
     cauHoi: q.cauHoi,
     luanGiai: bai.luanGiai,
     viSao: bai.viSao,
+    goiY: bai.goiY ?? '',
     doRo: doRoCua(q, duKien, nguon),
     danY: bai.danY,
     duKien,
@@ -318,6 +338,7 @@ ${phamViChuyenSau(q)}`
     loiConLai: loi,
     loiBanDau,
     soLanGoi,
+    token,
     model,
     ms: Date.now() - t0,
     msTruyHoi,
@@ -347,8 +368,8 @@ export async function luanNhieuCau(vao: {
         ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi });
       } catch (e) {
         ra[j] = {
-          id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', doRo: 'Gợi ý', danY: [],
-          duKien: [], nguon: [], loiBanDau: [], soLanGoi: 0, model: '', ms: 0, msTruyHoi: 0, dat: false,
+          id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', goiY: '', doRo: 'Gợi ý', danY: [],
+          duKien: [], nguon: [], loiBanDau: [], soLanGoi: 0, token: { vao: 0, ra: 0, dem: 0 }, model: '', ms: 0, msTruyHoi: 0, dat: false,
           loiConLai: [{ ma: 'loi-goi', moTa: (e as Error).message.slice(0, 200), chan: true }],
         };
       }
