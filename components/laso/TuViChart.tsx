@@ -13,6 +13,7 @@ import {
 import { useT } from '@/lib/i18n/context';
 import { CenterPanel } from './CenterPanel';
 import { PalaceCell } from './PalaceCell';
+import { DanhSachCung } from './DanhSachCung';
 import { PalaceDrawer } from './PalaceDrawer';
 import { VoidMarkers, type VoidMarker } from './VoidMarkers';
 import {
@@ -67,6 +68,8 @@ const BE_NGANG_HEP = 520;
  */
 const NGUONG_DOI_TI_LE = 0.02;
 
+const KHOA_KIEU_XEM = 'tuvi-ai:kieu-xem-menh-ban';
+
 export function TuViChart({
   laSo,
   namXem,
@@ -97,6 +100,24 @@ export function TuViChart({
   const [zoomThucTe, setZoomThucTe] = useState(1);
   const khungRef = useRef<HTMLDivElement>(null);
   const [hienSettings, setHienSettings] = useState(false);
+  // Cách xem trên màn hẹp — đọc lựa chọn cũ lúc khởi tạo (trang lá số dựng ở client)
+  const [kieuXem, setKieuXem] = useState<'ban' | 'danh-sach'>(() => {
+    try {
+      return typeof window !== 'undefined' && window.localStorage.getItem(KHOA_KIEU_XEM) === 'danh-sach'
+        ? 'danh-sach'
+        : 'ban';
+    } catch {
+      return 'ban';
+    }
+  });
+  const doiKieuXem = (k: 'ban' | 'danh-sach') => {
+    setKieuXem(k);
+    try {
+      window.localStorage.setItem(KHOA_KIEU_XEM, k);
+    } catch {
+      // Chế độ riêng tư chặn localStorage — chỉ mất phần "nhớ lựa chọn"
+    }
+  };
   const [hep, setHep] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -301,7 +322,49 @@ export function TuViChart({
           một màn, nên khi cửa sổ thấp hơn mệnh bàn thì phần thừa phải cuộn ở
           đây — không phải ở cả cột, vì cuộn cả cột là kéo thanh công cụ đi
           theo. Dưới lg thì cột không dính, trang cuộn như thường. */}
-      <div ref={khungRef} className="overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+      {/*
+        Màn hẹp: chọn giữa lưới 12 cung (bản đồ, chữ ~9px) và danh sách (chữ cỡ
+        thật) — CEL-072. Nhớ lựa chọn trong trình duyệt.
+      */}
+      {hep && !chiBanDo && (
+        <div className="no-print flex gap-[8px]" role="group" aria-label="Cách xem mệnh bàn">
+          {(['ban', 'danh-sach'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              className="pill-tag min-h-[44px] flex-1"
+              data-active={kieuXem === k}
+              aria-pressed={kieuXem === k}
+              onClick={() => doiKieuXem(k)}
+            >
+              {k === 'ban' ? 'Bàn 12 cung' : 'Danh sách 12 cung'}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {hep && !chiBanDo && kieuXem === 'danh-sach' && (
+        <DanhSachCung
+          laSo={laSo}
+          luuTinhTheoCung={luuTinhTheoCung}
+          cungTieuHanIndex={cungTieuHanIndex}
+          cungDaiVanIndex={daiVanHienTai?.chiIndex}
+          onChon={(i) => {
+            setChonCung(i);
+            setMoDrawer(true);
+          }}
+        />
+      )}
+
+      <div
+        ref={khungRef}
+        className="overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+        // Đang xem danh sách thì lưới vẫn DỰNG (xuất ảnh cần nó) nhưng cao 0 —
+        // không dùng display:none hay đẩy ra ngoài màn hình, vì khung phải giữ
+        // đúng bề ngang cột để phép đo "màn hẹp" không lật sang bố cục rộng.
+        style={hep && !chiBanDo && kieuXem === 'danh-sach' ? { height: 0, overflow: 'hidden' } : undefined}
+        aria-hidden={hep && !chiBanDo && kieuXem === 'danh-sach' ? true : undefined}
+      >
         <div
           ref={chartRef}
           className="relative grid grid-cols-4"
@@ -348,7 +411,7 @@ export function TuViChart({
         không đoán được điều đó nếu không có ai nói, và một mệnh bàn chữ li ti
         trông như một lỗi hiển thị chứ không như một tấm bản đồ bấm được.
       */}
-      {hep && !chiBanDo && (
+      {hep && !chiBanDo && kieuXem === 'ban' && (
         <p className="caption px-[2px] pt-[8px]">{t.banDo.chamDeXem}</p>
       )}
 
