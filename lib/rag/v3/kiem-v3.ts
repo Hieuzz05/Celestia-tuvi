@@ -14,6 +14,8 @@ export interface BaiV3 {
   danY: { y: string; canCu: string[] }[];
   luanGiai: string;
   viSao: string;
+  /** Gợi ý tách khỏi bài luận (25/09/2026) */
+  goiY?: string;
 }
 
 export interface LoiV3 {
@@ -170,11 +172,16 @@ export function kiemBai(vao: {
     }
   }
 
-  // Chuyên sâu phải kết bằng lời khuyên: đoạn cuối không có lấy một chữ khuyên
-  if (loai === 'chuyen-sau' && luan) {
-    const cuoi = luan.split(/\n\s*\n/).filter((x) => x.trim()).pop() ?? '';
-    if (!/(^|[^\p{L}])(nên|hãy|đừng|cần|thử|tránh)(?=$|[^\p{L}])/iu.test(cuoi)) {
-      loi.push({ ma: 'khong-loi-khuyen', moTa: 'Đoạn cuối không có lời khuyên — kết bằng một việc cụ thể người đọc nên/không nên làm, đi ra từ phần luận của câu này.', chan: true });
+  /*
+   * Bài KHÔNG kết bằng lời khuyên (chủ dự án 25/09/2026: "không nên mỗi câu hỏi
+   * đều có lời khuyên, tổng hợp thành một phần riêng"). Bản trước làm ngược lại —
+   * chặn bài nào đoạn cuối không có chữ khuyên. Giờ câu cuối mở bằng lời khuyên
+   * ("Bạn nên…", "Hãy…") thì chặn để chuyển sang trường goiY.
+   */
+  if (luan) {
+    const cauCuoi = luan.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).pop() ?? '';
+    if (/^(vì vậy,?\s*|do đó,?\s*|vì thế,?\s*)?(bạn\s+(nên|hãy|cần|có thể thử)|hãy\s|đừng\s|nên\s)/iu.test(cauCuoi)) {
+      loi.push({ ma: 'ket-loi-khuyen', moTa: 'Bài kết bằng lời khuyên — đổi câu cuối thành một điểm cần lưu ý hoặc câu khép ý; chuyển lời khuyên sang trường "goiY".', chan: true });
     }
   }
 

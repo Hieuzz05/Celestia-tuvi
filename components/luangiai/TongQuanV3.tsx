@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Eyebrow } from '@/components/ui';
 import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from './CauTraLoiV3';
+import { GoiYCeles } from './GoiYCeles';
 
 export interface ThongTinLaSoV3 {
   ngay: number;
@@ -225,13 +226,17 @@ export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
       {dangDoc ? (
         <DangDocV3 />
       ) : (
-        <ol className="flex flex-col gap-[16px]">
-          {conLai.map((c, i) => (
-            <li key={c.id} className="card">
-              <CauTraLoiV3 cau={c} so={i + 1} />
-            </li>
-          ))}
-        </ol>
+        <>
+          <ol className="flex flex-col gap-[16px]">
+            {conLai.map((c, i) => (
+              <li key={c.id} className="card">
+                <CauTraLoiV3 cau={c} so={i + 1} />
+              </li>
+            ))}
+          </ol>
+          {/* Gợi ý của mọi câu tổng quan (cả ba thẻ đầu) gom về một chỗ — không câu nào tự kết bằng lời khuyên */}
+          <GoiYCeles cau={cau} moTa="Rút ra từ phần đánh giá chung và luận giải tổng quan ở trên." />
+        </>
       )}
     </section>
   );

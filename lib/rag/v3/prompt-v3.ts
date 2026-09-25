@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.10';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.12';
 
 
 
@@ -24,10 +24,10 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 4. Trả lời đúng câu hỏi, và cụ thể: khi dữ kiện cho phép thì nêu tên nghề, nguồn tiền, kiểu người, hành vi nhận ra được; mốc tuổi chỉ nêu khi câu hỏi hỏi về thời điểm.
 5. Mốc thời gian chỉ lấy từ dữ kiện (đại vận, tiểu hạn, năm xem). Tuổi của đại vận là tuổi âm — viết "khoảng X–Y tuổi".
 6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.
-7. Ở đúng phạm vi câu hỏi. Lời khuyên cuối phải gắn với chính câu hỏi này, không kết bằng một lời khuyên chung dùng được cho câu nào cũng được.
+7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. Nét chung của chính tinh phải diễn giải theo mặt đời của cung đang đọc.
 9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
-10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Lời khuyên cuối phải chỉ đúng tình huống của câu này — tránh những câu khuyên dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội". Thay chúng bằng một việc cụ thể người đọc làm được trong đúng tình huống của câu này — không bỏ trống lời khuyên.`;
+10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Gợi ý ở trường "goiY" phải chỉ đúng tình huống của câu này — tránh những câu dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".`;
 
 const LUAT_TRINH_BAY = `LUẬT TRÌNH BÀY
 
@@ -41,7 +41,9 @@ B. Trường "viSao" — phần "Muốn biết vì sao không?":
 - MỘT đoạn văn liền mạch (không gạch ý) giải thích căn cứ: cung nào, sao nào dẫn tới các nhận định trong bài, mỗi tên sao kèm ngay ý nghĩa của nó, và vì sao kết hợp lại thì ra kết luận ấy.
 - Được nêu tên cung, tên sao, tên cách cục — nhưng CHỈ những sao có trong DỮ KIỆN LÁ SỐ của câu này. Không viết tắt (không "TPVTL"), không nêu mã F/E, không nêu tên sách.
 
-C. An toàn:
+C. Trường "goiY" — MỘT gợi ý ngắn (tối đa 30 từ) cho người đọc, đi ra từ phần luận của câu này. Trang gom các gợi ý thành một phần riêng, nên KHÔNG lặp gợi ý này trong "luanGiai". Để chuỗi rỗng nếu câu hỏi không cần gợi ý.
+
+D. An toàn:
 - Sức khỏe chỉ nói xu hướng để tham khảo, không chẩn đoán, không nêu bệnh cụ thể.
 - Không luận thọ yểu; không nói số con, con trai hay gái; không nêu số tiền; không phán ly hôn, ngoại tình.
 - Bàn chuyện đầu tư thì có câu "đây là góc nhìn từ lá số, không phải tư vấn tài chính".
@@ -50,7 +52,8 @@ C. An toàn:
 {
   "danY": [ { "y": "một ý ngắn", "canCu": ["F002", "E001"] } ],
   "luanGiai": "bài luận; các đoạn cách nhau bằng \\n\\n",
-  "viSao": "một đoạn"
+  "viSao": "một đoạn",
+  "goiY": "một gợi ý ngắn, hoặc chuỗi rỗng"
 }
 Dàn ý 3–7 ý, viết trước, rồi mới viết bài luận từ dàn ý.`;
 
@@ -108,7 +111,7 @@ const LUAN_SAU =
 // Thử 25/09 vòng 10 và BỎ: tổng quan kết bằng "1–2 việc làm được ngay" (như chuyên sâu) — so mù 3 giám khảo × 3 lá số ~50%.
 // Chỉ cho TỔNG QUAN: ở chuyên sâu, luật này cắt mất biện pháp thực tế (tách quỹ, lập giấy khi cho vay) mà người đọc đánh giá cao — so mù lá số C thua 31%
 const LOI_KHUYEN =
-  'LỜI KHUYÊN: nói như một người từng trải khuyên người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
+  'GỢI Ý (trường goiY, không nằm trong bài luận): nói như một người từng trải gợi ý cho người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
 
 /*
  * DÙNG NGUỒN — CHỈ cho chuyên sâu (vòng 4, 25/09/2026). Đo so mù: chuyên sâu thắng
@@ -124,17 +127,27 @@ const DUNG_NGUON =
  * So mù 3 giám khảo × 2 lá số (78 lượt chấm): thắng 54–85%, trung bình ~68%. Đổi lại
  * câu lặp ý nhích 3% → 6–8% — bù một phần bằng hai lượt nối tiếp ở trang chuyên sâu.
  */
-const VIEC_LAM_NGAY =
+/*
+ * BỎ 25/09/2026 (chủ dự án): "trong tuần tới…" nghe như giao việc, ép người đọc phải làm
+ * một điều gì đó. Giữ lại để nhớ vì sao có GIONG_GOI_Y bên dưới — không nối vào prompt nữa.
+ */
+const VIEC_LAM_NGAY_DA_BO =
   'VIỆC LÀM ĐƯỢC NGAY: đoạn cuối đưa 2–3 việc cụ thể người đọc làm được trong tuần tới, gắn đúng tình huống của câu hỏi này, có mốc thời gian hoặc cách làm rõ ràng; khác các lời khuyên đã dùng ở phần khác; không nêu số tiền hay tỉ lệ tiền — viết thành câu văn liền, không gạch đầu dòng.';
+
+/** Lời khuyên là GỢI Ý, không phải giao việc có hạn (chủ dự án 25/09/2026) */
+const GIONG_GOI_Y =
+  'GIỌNG GỢI Ý (trường goiY): là gợi ý của người xem lá số, không phải giao việc. Dùng "bạn có thể…", "nên cân nhắc…", "sẽ nhẹ hơn nếu…"; KHÔNG đặt hạn ("trong tuần tới", "tuần này", "ngay hôm nay", "trong 30 ngày"), không ra lệnh liên tiếp, không bắt người đọc phải làm một việc nào đó.';
+void VIEC_LAM_NGAY_DA_BO;
 
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
   const d = DO_DAI_V3[loai];
   return loai === 'tong-quan'
     ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, ${d.luan[0]}–${d.luan[1]} từ, có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
-${LOI_KHUYEN}`
+${LOI_KHUYEN}
+${GIONG_GOI_Y}`
     : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
 ${DUNG_NGUON}
-${VIEC_LAM_NGAY}`;
+${GIONG_GOI_Y}`;
 }

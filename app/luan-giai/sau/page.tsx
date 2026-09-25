@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
+import { GoiYCeles } from '@/components/luangiai/GoiYCeles';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
@@ -275,6 +276,7 @@ function TrangSau() {
               ))}
               {/* Nửa sau của chủ đề còn đang viết — nửa đầu đã đọc được */}
               {trangThai.conCho && <DangDocV3 key={`${chon}-tiep`} chu="Celes đang viết tiếp các câu còn lại" />}
+              {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
               {trangThai.loi && (
                 <div className="flex flex-col gap-[12px]">
                   <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
