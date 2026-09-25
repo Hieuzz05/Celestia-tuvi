@@ -24,7 +24,7 @@ import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.5';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.6';
 
 export interface DuKienV3 {
   id: string;
@@ -77,23 +77,43 @@ const HUNG: Record<string, number> = {
 export interface GopDiem {
   ten: string;
   diem: number;
+  /** Để giao diện giải nghĩa bằng lời thường thay vì đọc tên sao */
+  loai: 'chinh' | 'vcd' | 'cat' | 'hung' | 'tuan';
+  sao?: string;
+  doSang?: string;
 }
+
+/** Tên ba nhóm khi nói với người đọc — prompt và Bản đồ mạnh–yếu dùng chung, để hai bên gọi cùng một tên */
+export const TEN_MUC: Record<DiemCung['muc'], string> = {
+  'Mạnh': 'Thuận lợi',
+  'Bình': 'Ổn định',
+  'Cần gắng': 'Cần chăm chút',
+};
 
 function chiTietBanCung(c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } {
   const gop: GopDiem[] = [];
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
-  for (const s of chinh) gop.push({ ten: `${s.ten}${s.doSang ? ` (${DO_SANG[s.doSang] ?? s.doSang})` : ''}`, diem: DIEM_SANG[s.doSang ?? 'B'] ?? 0 });
+  for (const s of chinh)
+    gop.push({
+      ten: `${s.ten}${s.doSang ? ` (${DO_SANG[s.doSang] ?? s.doSang})` : ''}`,
+      diem: DIEM_SANG[s.doSang ?? 'B'] ?? 0,
+      loai: 'chinh',
+      sao: s.ten,
+      doSang: s.doSang ?? undefined,
+    });
   if (!chinh.length && xung) {
     const muon = xung.sao.filter((s) => s.loai === 'chinh-tinh');
     gop.push({
       ten: `Vô chính diệu, mượn ${muon.map((s) => s.ten).join(', ') || 'cung đối'}`,
       diem: 0.5 * muon.reduce((a, s) => a + (DIEM_SANG[s.doSang ?? 'B'] ?? 0), 0) - 0.5,
+      loai: 'vcd',
+      sao: muon.map((s) => s.ten).join(', ') || undefined,
     });
   }
   for (const s of c.sao) {
     // Văn tinh hãm không còn là cát tinh
     if ((s.ten === 'Văn Xương' || s.ten === 'Văn Khúc') && s.doSang === 'H') continue;
-    if (CAT[s.ten]) gop.push({ ten: s.ten, diem: CAT[s.ten] });
+    if (CAT[s.ten]) gop.push({ ten: s.ten, diem: CAT[s.ten], loai: 'cat', sao: s.ten });
     /*
      * Hung tinh ĐẮC ĐỊA chỉ trừ một nửa (25/09/2026). Bản trước trừ như nhau bất
      * kể vị trí: Kình Dương ở tứ mộ hay Hóa Kỵ ở Thìn Tuất Sửu Mùi — sách xếp là
@@ -101,7 +121,7 @@ function chiTietBanCung(c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } 
      */
     if (HUNG[s.ten]) {
       const dac = s.doSang === 'D';
-      gop.push({ ten: `${s.ten}${dac ? ' (đắc)' : ''}`, diem: -(dac ? HUNG[s.ten] / 2 : HUNG[s.ten]) });
+      gop.push({ ten: `${s.ten}${dac ? ' (đắc)' : ''}`, diem: -(dac ? HUNG[s.ten] / 2 : HUNG[s.ten]), loai: 'hung', sao: s.ten, doSang: s.doSang ?? undefined });
     }
   }
   let d = gop.reduce((a, g) => a + g.diem, 0);
@@ -109,7 +129,7 @@ function chiTietBanCung(c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } 
   if (c.coTuan || c.coTriet) {
     d *= 0.6;
     const ten = c.coTuan && c.coTriet ? 'Tuần và Triệt' : c.coTuan ? 'Tuần' : 'Triệt';
-    gop.push({ ten: `${ten} — làm dịu cả tốt lẫn xấu`, diem: 0 });
+    gop.push({ ten: `${ten} — làm dịu cả tốt lẫn xấu`, diem: 0, loai: 'tuan', sao: ten });
   }
   return { diem: d, gop };
 }
@@ -376,7 +396,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
         const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh';
         const hoa = c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten);
         const dang = ta >= c.daiVan!.tuTuoi && ta <= c.daiVan!.denTuoi ? ' ← ĐANG CHẠY' : '';
-        return `${c.daiVan!.tuTuoi}–${c.daiVan!.denTuoi}: cung ${c.tenCung} (${chinh}${hoa.length ? '; ' + hoa.join(', ') : ''}${c.coTuan ? '; Tuần' : ''}${c.coTriet ? '; Triệt' : ''}) — mặt đời ${LINH_VUC_CUNG[c.tenCung]}, nền cung: ${diem.get(c.tenCung)?.muc}${dang}`;
+        return `${c.daiVan!.tuTuoi}–${c.daiVan!.denTuoi}: cung ${c.tenCung} (${chinh}${hoa.length ? '; ' + hoa.join(', ') : ''}${c.coTuan ? '; Tuần' : ''}${c.coTriet ? '; Triệt' : ''}) — mặt đời ${LINH_VUC_CUNG[c.tenCung]}, nền cung: ${TEN_MUC[diem.get(c.tenCung)?.muc ?? 'Bình']}${dang}`;
       });
     if (q.van.includes('chuoi')) them('chuỗi đại vận (tuổi âm)', chuoi.join('\n'), laSo.cungs.flatMap((c) => c.sao.filter((s) => s.loai !== 'vong-sao').map((s) => s.ten)));
   }
@@ -422,8 +442,8 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     const ds = diemTungCung(laSo);
     them(
       'điểm mạnh – yếu 12 mặt đời (engine chấm theo luật)',
-      ['Mạnh', 'Bình', 'Cần gắng']
-        .map((m) => `${m}: ${ds.filter((d) => d.muc === m).sort((a, b) => b.diem - a.diem).map((d) => `${d.linhVuc} (cung ${d.cung})`).join(', ')}`)
+      (['Mạnh', 'Bình', 'Cần gắng'] as const)
+        .map((m) => `${TEN_MUC[m]}: ${ds.filter((d) => d.muc === m).sort((a, b) => b.diem - a.diem).map((d) => `${d.linhVuc} (cung ${d.cung})`).join(', ')}`)
         .join('. ') + '.'
     );
   }

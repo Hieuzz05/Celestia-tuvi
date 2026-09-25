@@ -92,7 +92,7 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
   TQ01: 'Chỉ nói con người: tính khí, cách ứng xử, mặt trong và mặt ngoài. Không bàn nghề, tiền, tình duyên, quý nhân.',
   TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và kết bằng cách dùng điểm mạnh ấy cho đúng chỗ. Không kể thêm điểm yếu.',
   TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh.',
-  TQ04: 'Xếp các mặt đời vào ba nhóm Mạnh / Bình / Cần gắng theo đúng dữ kiện engine chấm, kèm lý do ngắn cho nhóm Mạnh và nhóm Cần gắng, rồi kết bằng một lưu ý thực tế từ bức tranh ấy.',
+  TQ04: 'Xếp các mặt đời vào ba nhóm Thuận lợi / Ổn định / Cần chăm chút theo đúng dữ kiện engine chấm, kèm lý do ngắn cho nhóm Thuận lợi và nhóm Cần chăm chút, rồi kết bằng một lưu ý thực tế từ bức tranh ấy.',
   TQ05: 'Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên.',
   TQ06: 'Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính, mốc thay đổi nếu dữ kiện có.',
   TQ07: 'Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp.',
