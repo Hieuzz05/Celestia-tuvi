@@ -105,6 +105,7 @@ const LUAN_SAU =
 // Thử "DÁM NÓI RÕ" ở vòng 2: điểm tổng quan không tăng, và model chép nguyên cụm "Nói thẳng, …" vào bài — đã bỏ.
 // Thử 25/09 vòng 6 và BỎ: cho phép chỉ vào lá số bằng lời thường ("nhìn vào phần tiền bạc của bạn") tối đa hai lần mỗi bài — so mù thua 41% / 41%.
 // Thử 25/09 vòng 7 và BỎ: nới tổng quan 80–170 từ, 1–2 đoạn — so mù 55% / 45%, ngang nhiễu (cùng prompt tự so: 55% / 55%).
+// Thử 25/09 vòng 10 và BỎ: tổng quan kết bằng "1–2 việc làm được ngay" (như chuyên sâu) — so mù 3 giám khảo × 3 lá số ~50%.
 // Chỉ cho TỔNG QUAN: ở chuyên sâu, luật này cắt mất biện pháp thực tế (tách quỹ, lập giấy khi cho vay) mà người đọc đánh giá cao — so mù lá số C thua 31%
 const LOI_KHUYEN =
   'LỜI KHUYÊN: nói như một người từng trải khuyên người thân — MỘT việc cụ thể, tự nhiên, gắn đúng tình huống của câu này. Không lập danh sách ("ba điều", "ba dòng"), không bắt "ghi ra văn bản / lập thỏa thuận" trừ khi câu hỏi đúng là chuyện giấy tờ, tiền bạc, hợp đồng.';
