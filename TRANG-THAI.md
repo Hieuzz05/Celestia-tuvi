@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-130 chống lặp giữa các phần luận — phân quyền dữ kiện (cung tam phương không kèm diễn nghĩa), sổ ý `lib/rag/v3/so-y.ts`, một câu giữ mốc mỗi chủ đề; điểm nổi bật xoay 7 góc theo ngày; `THE_HE_DEM` = 3. Bộ đo: `scripts/do-chat-luong-v3.ts` (gemini hay 503 → giám khảo lùi về model viết, có cảnh báo) | `bb98aae` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-129 nút quay lại dùng chung (`components/QuayLai.tsx`) cho `/luan-giai/sau`, `/luan-giai`, `/dang-nhap`, `/hoi-dap` — về đúng lá số + đúng tab qua `?ve=`. Trang con mới thì gắn `<QuayLai>` và cho trang gọi truyền `themVe(...)` | `3e5a7bc` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: `THE_HE_DEM` 1 → 2 ở `/api/luan-giai-v3` — mọi lá số cũ sinh lại một lần theo bản C khi được mở; câu sinh lại hỏng thì tạm trả bài thế hệ trước. Đã kiểm trên production: lần 1 sinh lại 19s, lần 2 lấy từ đệm 2s | `004fe2e` | 25/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-128 trang `/la-so` chia tab Tổng quan · Chuyên sâu (14 chủ đề) · Mạnh – yếu (radar 12 cung) · Lá số (chỉ điện thoại); tab nhớ trên URL `?tab=`. Đã bỏ thẻ đọc dài cũ, liên kết `/luan-giai` và thẻ Hỏi Celes lớn khỏi trang — đường lùi tiếng Anh vẫn giữ | `a84c6f1` | 25/09/2026 |
