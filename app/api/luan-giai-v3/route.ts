@@ -12,8 +12,12 @@ export const maxDuration = 60;
  * Thế hệ đệm. TĂNG BẰNG TAY chỉ khi muốn MỌI lá số sinh lại (bài cũ thành sai,
  * không chỉ là "viết hay hơn được"). Sửa prompt thường ngày KHÔNG tăng số này —
  * bài mới chỉ áp cho lá số chưa có bài.
+ *
+ * Lịch sử: 1 → 2 (25/09/2026) — chủ dự án duyệt "chạy lại với các lá cũ" để mọi
+ * lá số được viết theo bản C (luận sâu hơn, prompt 2026.09.6). Câu nào sinh lại
+ * hỏng thì tạm trả bài của thế hệ trước (xem `baiTheHeTruoc`), không để trống.
  */
-const THE_HE_DEM = 1;
+const THE_HE_DEM: number = 2;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -160,9 +164,19 @@ export async function POST(req: Request) {
           chuaViet: true,
         }
     );
-    const cauTra = cau.filter((c) => phamVi.includes(c.id));
+    let cauTra = cau.filter((c) => phamVi.includes(c.id));
+    /*
+     * Câu nào sinh lại hỏng thì tạm lấy bài của thế hệ đệm trước để hiện — người
+     * đọc từng có bài ở đây, không được thấy chỗ trống chỉ vì mình vừa làm mới.
+     * Bài cũ CHỈ đi vào câu trả lời, không ghi vào khoá mới: lần sau còn thử lại.
+     */
+    if (THE_HE_DEM > 1 && cauTra.some((c) => c.chuaViet)) {
+      const truoc = await baiTheHeTruoc(khoa, khoaGoc);
+      if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet ? truoc.get(c.id) ?? c : c));
+    }
     // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
-    if (cauTra.every((c) => c.chuaViet)) {
+    if (cau.filter((c) => phamVi.includes(c.id)).every((c) => c.chuaViet)) {
+      if (cauTra.some((c) => !c.chuaViet)) return NextResponse.json({ nhom, cau: cauTra, tuDem: true });
       return NextResponse.json({ loi: 'Celes chưa viết được phần này. Bạn thử lại giúp.' }, { status: 502 });
     }
     const mot = kq.find((k) => k.model);
@@ -174,5 +188,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
     }
     return NextResponse.json({ loi: e instanceof Error ? e.message : 'Lỗi không xác định' }, { status: 502 });
+  }
+}
+
+/** Bài đã viết được ở thế hệ đệm liền trước — đường lùi khi sinh lại hỏng */
+async function baiTheHeTruoc(
+  hienTai: Parameters<typeof docNoiDung>[0],
+  khoaGoc: string
+): Promise<Map<string, CauTraRaV3>> {
+  try {
+    const khoaKy = THE_HE_DEM === 2 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM - 1}`;
+    const cu = await docNoiDung<CauTraRaV3[]>({ ...hienTai, khoaKy });
+    return new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet).map((c) => [c.id, c]));
+  } catch {
+    return new Map();
   }
 }
