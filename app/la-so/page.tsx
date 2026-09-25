@@ -6,6 +6,10 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BaTheDauV3, TongQuanV3, useTongQuanV3 } from '@/components/luangiai/TongQuanV3';
 import { BanDoManhYeu } from '@/components/luangiai/BanDoManhYeu';
+import { ChuyenSauChuDe } from '@/components/luangiai/ChuyenSauChuDe';
+import { HoiCelesDong } from '@/components/laso/HoiCelesDong';
+import { TabLaSo, type MucTab } from '@/components/laso/TabLaSo';
+import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
@@ -398,7 +402,6 @@ function TrangLaSo() {
 
   // Nơi quay lại sau khi đăng nhập, mang sẵn thông tin sinh để không phải nhập lại
   const duongVe = laSo ? `/la-so?${boiCanhUrl}` : '/la-so';
-  const lienKetSau = laSo ? `/luan-giai?${boiCanhUrl}` : '/luan-giai';
   const duongHoi = (cauHoi: string) => `/hoi-dap?q=${encodeURIComponent(cauHoi)}`;
 
   /** Đổi lá số: đã đăng nhập và có lá số đã lưu thì mở danh sách trước, không quăng vào form */
@@ -417,6 +420,45 @@ function TrangLaSo() {
     setBatNhapMoi(true);
     boiCanh.datNhap(null);
   };
+
+  /*
+   * TAB (25/09/2026): Tổng quan · Chuyên sâu · Mạnh – yếu · Lá số (chỉ điện thoại).
+   * Nhớ tab trên URL (?tab=) để quay lại/chia sẻ đúng chỗ — ghi bằng
+   * history.replaceState chứ không router.replace: đổi tab không phải một lần
+   * điều hướng, và không được chạm vào luồng đọc form từ URL.
+   */
+  const [tab, setTab] = useState(() => {
+    const x = params.get('tab');
+    return x && TAB_HOP_LE.includes(x) ? x : 'tong-quan';
+  });
+  // v3 chỉ có tiếng Việt: giao diện khác thì không có hai tab chuyên sâu và mạnh–yếu
+  const tabHien = !dungV3 && (tab === 'chuyen-sau' || tab === 'manh-yeu') ? 'tong-quan' : tab;
+  const doiTab = (id: string, cuonLen = false) => {
+    setTab(id);
+    ghiSuKien('chart_tab_opened', { tab: id });
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('tab', id);
+      window.history.replaceState(window.history.state, '', u.toString());
+    } catch {
+      /* không ghi được URL thì tab vẫn đổi */
+    }
+    // Đang ở sâu dưới trang mà đổi tab: đưa đầu phần mới lên ngay dưới thanh điều hướng
+    const dau = document.getElementById('dau-phan-doc');
+    if (dau && (cuonLen || dau.getBoundingClientRect().top < 0)) {
+      dau.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+  const tabs: MucTab[] = [
+    { id: 'tong-quan', nhan: t.quickRead.tabTongQuan, dem: dungV3 ? String(SO_PHAN_TONG_QUAN) : undefined },
+    ...(dungV3
+      ? [
+          { id: 'chuyen-sau', nhan: t.quickRead.tabChuyenSau, dem: '14' },
+          { id: 'manh-yeu', nhan: t.quickRead.tabManhYeu, dem: '12' },
+        ]
+      : []),
+    { id: 'la-so', nhan: t.quickRead.tabLaSo, chiDienThoai: true },
+  ];
 
   // --- Chưa có lá số nào để hiện: luồng nhập từng bước ---
   if (!form) {
@@ -455,92 +497,49 @@ function TrangLaSo() {
    */
   const phanDoc = (
     <>
-          {/* Ba thẻ đầu: v3 viết từ lá số; chỉ khi v3 hỏng mới lùi về thẻ khuôn cũ */}
-          {!canBangCu ? (
-            <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
-          ) : (
-            gocNhin[0] && (
-              <GocNhinCard
-                gocNhin={
-                  noiBatAi
-                    ? {
-                        ...gocNhin[0],
-                        noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
-                      }
-                    : gocNhin[0]
-                }
-                chinh
-              />
-            )
-          )}
+      <TabLaSo tabs={tabs} chon={tabHien} onChon={doiTab} />
 
-          {/*
-            BẢN ĐỒ MẠNH – YẾU (25/09/2026): cầu nối từ ba thẻ tổng quan sang đọc sâu
-            từng mặt đời. Tất định (engine), hiện ngay không chờ model; đoạn tóm tắt
-            TQ04 của Celes điền vào khi về. Tiếng Việt thôi — nhãn và luận v3 chỉ có vi.
-          */}
-          {laSo && dungV3 && (
-            <BanDoManhYeu
-              laSo={laSo}
-              namXem={namXem}
-              tomTat={tongQuan.cau?.find((c) => c.id === 'TQ04' && !c.chuaViet)?.luanGiai ?? null}
-              dangDocTomTat={!canBangCu && tongQuan.dangDocDanhSach}
-              duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`}
-              duocVao={duocVao}
-            />
-          )}
-
-          {/*
-            LUẬN GIẢI SÂU — đặt ngay sau thẻ đầu, không để cuối trang.
-
-            Trước đây khối này nằm dưới cùng, sau cả bảng mười hai phần, dưới
-            dạng một nút viền nhạt cạnh một nút khác. Người dùng đọc hết trang
-            mà không nhận ra đây là phần sâu nhất sản phẩm có — nút ở cuối một
-            trang dài thì gần như không tồn tại.
-
-            Nút CHÍNH, không phải nút viền: trang này chỉ có đúng một việc đáng
-            làm tiếp, và nó phải trông như vậy.
-          */}
-          <div
-            className="card flex flex-col gap-[12px]"
-            style={{ borderColor: 'var(--accent)' }}
-          >
-            <Eyebrow>{t.nav.khamPha}</Eyebrow>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.sauNoiBatTieuDe}
-            </h2>
-            <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.sauNoiBatMo}
-            </p>
-            <div className="mt-[4px] flex flex-wrap items-center gap-[12px]">
-              <Link
-                href={
-                  duocVao
-                    ? `/luan-giai/sau?${boiCanhUrl}`
-                    : `/dang-nhap?intent=deep_read&next=${encodeURIComponent(`/luan-giai/sau?${boiCanhUrl}`)}`
-                }
-                className="btn-primary"
-                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang' })}
-              >
-                {t.quickRead.sauNoiBatCta}
-              </Link>
-              <Link
-                href={lienKetSau}
-                className="link-text link-action"
-                onClick={() => ghiSuKien('deep_read_cta', { viTri: 'dau-trang-kham-pha' })}
-              >
-                {t.quickRead.sauNoiBatKhamPha}
-              </Link>
+      {/* ================= TỔNG QUAN: đánh giá chung + luận tổng quan ================= */}
+      {(tabHien === 'tong-quan' || tabHien === 'la-so') && (
+        <div
+          id="panel-tong-quan"
+          role="tabpanel"
+          aria-labelledby="tab-tong-quan"
+          className={`flex flex-col gap-[32px] ${tabHien === 'la-so' ? 'hidden lg:flex' : ''}`}
+        >
+          <section className="flex flex-col gap-[16px]">
+            <div className="flex flex-col gap-[4px]">
+              <Eyebrow>{t.quickRead.danhGiaTieuDe}</Eyebrow>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.danhGiaMo}
+              </p>
             </div>
-          </div>
-
-          {canBangCu && (
-            <div className="grid gap-[16px] md:grid-cols-2">
-              {gocNhin.slice(1, 3).map((g) => (
-                <GocNhinCard key={g.id} gocNhin={g} nho />
-              ))}
-            </div>
-          )}
+            {/* Ba thẻ đầu: v3 viết từ lá số; chỉ khi v3 hỏng mới lùi về thẻ khuôn cũ */}
+            {!canBangCu ? (
+              <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
+            ) : (
+              <>
+                {gocNhin[0] && (
+                  <GocNhinCard
+                    gocNhin={
+                      noiBatAi
+                        ? {
+                            ...gocNhin[0],
+                            noiDung: `${noiBatAi.insight} ${noiBatAi.doiSong} ${noiBatAi.matTrai}`,
+                          }
+                        : gocNhin[0]
+                    }
+                    chinh
+                  />
+                )}
+                <div className="grid gap-[16px] md:grid-cols-2">
+                  {gocNhin.slice(1, 3).map((g) => (
+                    <GocNhinCard key={g.id} gocNhin={g} nho />
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
 
           {loi && (
             <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
@@ -548,103 +547,106 @@ function TrangLaSo() {
             </p>
           )}
 
-        {/* Đang đọc: nói rõ đang chờ cái gì và chờ bao lâu, thay vì để trống */}
-        {dungV3 && laSo && !canBangCu && (
-          <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} />
-        )}
+          {dungV3 && laSo && !canBangCu && <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} />}
 
-        {canBangCu && dangDocSau && !baiSau && (
-          <section className="flex flex-col gap-[12px]">
-            <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
-            <p className="body-text" style={{ color: 'var(--fg)' }}>
-              {t.luanSau.dangDoc}
-              <span className="dot-dang-doc" aria-hidden />
-            </p>
-            <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
-              {t.luanSau.dangDocMo}
-            </p>
-          </section>
-        )}
-
-        {/* Bảng luận giải theo lĩnh vực — phần tổng quan, mở cho cả khách */}
-        {canBangCu && baiSau && baiSau.chang.length > 0 && (
-          <BangLuanGiai
-            bai={baiSau}
-            duongHoi={duongHoi}
-            day={dayLuanGiai}
-            duongVe={duongVe}
-          />
-        )}
-
-        {/* ---------- Đi sâu hơn: spec v4 giữ khối này cho cả hai trạng thái ----------
-
-            Một cột, không phải hai.
-
-            Thẻ trái chứa cả BÀI ĐỌC DÀI sau khi bấm — vài trăm từ. Xếp nó cạnh
-            một thẻ bốn dòng thì cột trái dài gấp nhiều lần cột phải, và khoảng
-            trắng bên phải kéo suốt cả bài. Xếp dọc thì Khám phá tự xuống cuối,
-            đúng vai của nó: lối đi tiếp, không phải nội dung để đọc.
-        */}
-        <section className="flex flex-col gap-[16px]">
-          <div className="card flex flex-col gap-[12px]">
-            <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.docDai}
-            </h2>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.sauMo}
-            </p>
-
-            {!duocVao ? (
-              <Link
-                href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
-                className="btn-outline btn-sm self-start"
-                onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'deep_read' })}
-              >
-                {t.quickRead.docDai}
-              </Link>
-            ) : dangChay ? (
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                {t.quickRead.dangDoc}
+          {canBangCu && dangDocSau && !baiSau && (
+            <section className="flex flex-col gap-[12px]">
+              <Eyebrow>{t.luanSau.eyebrow}</Eyebrow>
+              <p className="body-text" style={{ color: 'var(--fg)' }}>
+                {t.luanSau.dangDoc}
+                <span className="dot-dang-doc" aria-hidden />
               </p>
-            ) : (
-              <NutVien nho onClick={docSau} className="self-start">
-                {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
-              </NutVien>
-            )}
+              <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
+                {t.luanSau.dangDocMo}
+              </p>
+            </section>
+          )}
 
-            {ketQua && (
-              <>
-                <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />
-              </>
-            )}
-          </div>
+          {/* Bảng luận giải theo lĩnh vực — đường lùi khi v3 hỏng hoặc giao diện không phải tiếng Việt */}
+          {canBangCu && baiSau && baiSau.chang.length > 0 && (
+            <BangLuanGiai bai={baiSau} duongHoi={duongHoi} day={dayLuanGiai} duongVe={duongVe} />
+          )}
 
           {/*
-            Thẻ cuối trang giờ CHỈ còn Hỏi Celes.
-
-            Nút "Khám phá sâu hơn" đã lên đầu trang. Để nguyên ở cả hai chỗ là
-            hiện cùng một lời mời hai lần trong một màn — người đọc không hiểu
-            hai nút khác nhau chỗ nào, và cái ở đầu mất đi phần sức nặng.
+            Hết tổng quan thì chỉ ĐÚNG một việc tiếp: sang chuyên sâu (nút chính).
+            Mạnh – yếu và Hỏi Celes là lối phụ, nhỏ hơn một bậc.
           */}
-          <div className="card flex flex-col gap-[12px]">
-            <span className="eyebrow">{t.nav.hoiCeles}</span>
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.quickRead.theoChuDeTieuDe}
-            </h2>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.quickRead.theoChuDeMo}
-            </p>
-            <div className="mt-auto flex flex-wrap gap-[12px]">
-              <Link
-                href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
-                className="btn-outline btn-sm"
-              >
-                {t.quickRead.hoiThang}
-              </Link>
+          {dungV3 ? (
+            <div className="card flex flex-col gap-[12px]" style={{ borderColor: 'var(--accent)' }}>
+              <Eyebrow>{t.quickRead.tabChuyenSau}</Eyebrow>
+              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.quickRead.tiepTieuDe}
+              </h2>
+              <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.tiepMo}
+              </p>
+              <div className="mt-[4px] flex flex-wrap items-center gap-[12px]">
+                <button type="button" className="btn-primary" onClick={() => doiTab('chuyen-sau', true)}>
+                  {t.quickRead.tiepCta}
+                </button>
+                <button type="button" className="link-text link-action" onClick={() => doiTab('manh-yeu', true)}>
+                  {t.quickRead.tiepManhYeu}
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          ) : (
+            <div className="card flex flex-col gap-[12px]">
+              <span className="eyebrow">{t.quickRead.sauTieuDe}</span>
+              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.quickRead.docDai}
+              </h2>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                {t.quickRead.sauMo}
+              </p>
+              {!duocVao ? (
+                <Link
+                  href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                  className="btn-outline btn-sm self-start"
+                  onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'deep_read' })}
+                >
+                  {t.quickRead.docDai}
+                </Link>
+              ) : dangChay ? (
+                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {t.quickRead.dangDoc}
+                </p>
+              ) : (
+                <NutVien nho onClick={docSau} className="self-start">
+                  {ketQua ? t.quickRead.docLai : t.quickRead.docDai}
+                </NutVien>
+              )}
+              {ketQua && <MarkdownLuanGiai noiDung={ketQua.noiDung} nho />}
+            </div>
+          )}
+
+          <HoiCelesDong
+            tieuDe={t.quickRead.hoiTieuDe}
+            mo={t.quickRead.hoiMo}
+            href={duocVao ? '/hoi-dap' : `/dang-nhap?intent=ask_celes&next=${encodeURIComponent(duongVe)}`}
+          />
+        </div>
+      )}
+
+      {/* ================= CHUYÊN SÂU: 14 chủ đề ================= */}
+      {tabHien === 'chuyen-sau' && laSo && dungV3 && (
+        <div id="panel-chuyen-sau" role="tabpanel" aria-labelledby="tab-chuyen-sau" className="flex flex-col gap-[24px]">
+          <ChuyenSauChuDe laSo={laSo} duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`} duocVao={duocVao} />
+        </div>
+      )}
+
+      {/* ================= MẠNH – YẾU ================= */}
+      {tabHien === 'manh-yeu' && laSo && dungV3 && (
+        <div id="panel-manh-yeu" role="tabpanel" aria-labelledby="tab-manh-yeu" className="flex flex-col gap-[24px]">
+          <BanDoManhYeu
+            laSo={laSo}
+            namXem={namXem}
+            tomTat={tongQuan.cau?.find((c) => c.id === 'TQ04' && !c.chuaViet)?.luanGiai ?? null}
+            dangDocTomTat={!canBangCu && tongQuan.dangDocDanhSach}
+            duongChuyenSau={`/luan-giai/sau?${boiCanhUrl}&namXem=${namXem}`}
+            duocVao={duocVao}
+          />
+        </div>
+      )}
     </>
   );
 
@@ -669,15 +671,7 @@ function TrangLaSo() {
             <p className="body-sm mt-[6px]" style={{ color: 'var(--fg-muted)' }}>
               {t.quickRead.moTa}
             </p>
-            {/* Màn hẹp: bài đọc lên trước mệnh bàn — lối tắt xuống mệnh bàn cho người cần nó */}
-            {/* Bọc ngoài để ẩn: `.link-action` đặt display ngoài layer nên thắng `lg:hidden` */}
-            {laSo && (
-              <div className="mt-[4px] lg:hidden">
-                <a href="#ban-12-cung" className="link-text link-action">
-                  {t.quickRead.xemBan12Cung}
-                </a>
-              </div>
-            )}
+            {/* Màn hẹp: mệnh bàn giờ là tab "Lá số" trên thanh tab — không cần lối tắt riêng ở đây */}
             {/*
               "Đã giữ lại" là TRẠNG THÁI, không phải hành động, nên nó không
               thuộc hàng nút. Đặt nó cạnh một cái nút là để hai thứ khác bản
@@ -771,12 +765,12 @@ function TrangLaSo() {
           */}
           <aside
             id="ban-12-cung"
-            className="order-2 flex min-w-0 scroll-mt-[88px] flex-col gap-[12px] lg:order-none lg:sticky lg:top-[24px] lg:col-span-6 lg:max-h-[calc(100vh-48px)]"
+            className={`order-2 min-w-0 scroll-mt-[88px] flex-col gap-[12px] lg:order-none lg:sticky lg:top-[24px] lg:col-span-6 lg:flex lg:max-h-[calc(100vh-48px)] ${tabHien === 'la-so' ? 'flex' : 'hidden'}`}
           >
             <TuViChart laSo={laSo} namXem={namXem} thangXem={thangXem} onNamXemChange={setNamXem} />
           </aside>
 
-          <div className="order-1 flex flex-col gap-[32px] lg:order-none lg:col-span-6">{phanDoc}</div>
+          <div id="dau-phan-doc" className="order-1 flex min-w-0 scroll-mt-[76px] flex-col gap-[24px] lg:order-none lg:col-span-6 lg:scroll-mt-[65px]">{phanDoc}</div>
         </div>
       ) : (
         // Chưa có lá số thì chỉ có một cột chữ, nên giữ lại bề ngang 1200px của
@@ -794,6 +788,10 @@ interface DiemNoiBatAi {
   matTrai: string;
   cauMangTheo: string;
 }
+
+const TAB_HOP_LE = ['tong-quan', 'chuyen-sau', 'manh-yeu', 'la-so'];
+// Số phần của tab Tổng quan: mọi câu tổng quan trừ TQ04 (câu mạnh–yếu nằm ở tab riêng)
+const SO_PHAN_TONG_QUAN = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && q.id !== 'TQ04').length;
 
 export default function TrangLaSoBoc() {
   return (
