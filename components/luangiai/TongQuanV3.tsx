@@ -37,9 +37,15 @@ export const THE_DAU: { id: string; nhan: string; tieuDe: string }[] = [
  * không setState đồng bộ trong effect (luật lint kho này đang giữ).
  */
 export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhach?: boolean) => void) {
+  /*
+   * "Tạo bản mới" (26/09/2026): mỗi lần bấm tăng `lanMoi`, khoá đổi nên hai lượt
+   * tải chạy lại với taoMoi — route chỉ viết lại câu viết với kho tri thức cũ.
+   */
+  const [lanMoi, setLanMoi] = useState(0);
   const khoa = laSo
-    ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}`
+    ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}|${lanMoi}`
     : null;
+  const [banMoi, setBanMoi] = useState<string | null>(null);
   /*
    * HAI LƯỢT NỐI TIẾP, không chồng câu (25/09/2026): ba câu của ba thẻ đầu, rồi
    * tám câu còn lại. Một lượt 11 câu thì ba thẻ đầu phải chờ câu chậm nhất trong
@@ -69,11 +75,12 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi }),
+        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi, taoMoi: lanMoi > 0 }),
       })
         .then((r) => (r.ok || r.status === 429 ? r.json() : null))
         .then((d) => {
           if (d?.gioiHanKhach) gioiHan = true;
+          if (d?.banMoi && !huy) setBanMoi(khoa);
           return Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null;
         })
         .catch(() => null);
@@ -111,6 +118,9 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
     /** Danh sách tổng quan còn đang chờ */
     dangDocDanhSach: dangDocSau,
     cau: cauDau || cauSau ? [...(cauDau ?? []), ...(cauSau ?? [])] : null,
+    /** Có câu viết với kho tri thức cũ — người đã đăng nhập được "Tạo bản mới" */
+    banMoi: Boolean(khoa) && banMoi === khoa && !dangDocDau && !dangDocSau,
+    taoBanMoi: () => setLanMoi((n) => n + 1),
   };
 }
 

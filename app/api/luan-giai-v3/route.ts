@@ -8,6 +8,7 @@ import { viTomLai } from '@/lib/rag/v3/tom-lai';
 import { SO_CHU_DE_TOI_THIEU, viBucTranh } from '@/lib/rag/v3/buc-tranh';
 import { bamLaSo, veGioLaSo } from '@/lib/rag/nhat-ky';
 import { laKhach, xinLuotLaSoMoi } from '@/lib/auth/gioi-han-khach';
+import { phienBanKho } from '@/lib/rag/tai-lieu-meta';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
 export const maxDuration = 60;
@@ -33,6 +34,15 @@ export const maxDuration = 60;
  * hỏi chủ dự án, và gom nhiều thay đổi vào một lần tăng.
  */
 const THE_HE_DEM: number = 7;
+
+/**
+ * Bài viết trước khi có dấu kho (26/09/2026) được coi là viết với kho lúc đó —
+ * dấu đo ngay trước khi deploy. Không có dòng này thì nút "Tạo bản mới" hiện
+ * trên MỌI lá số ngay sau deploy (bài cũ không mang dấu nào), mời viết lại
+ * hàng loạt dù kho chưa đổi gì.
+ */
+const KHO_TRUOC_DAU = '40749bb09806';
+const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -66,6 +76,12 @@ interface Body {
   tomLai?: boolean;
   /** Lấy / viết "Bức tranh lớn" của cả lá số (khi đã đọc đủ số chủ đề) */
   bucTranh?: boolean;
+  /**
+   * "Tạo bản mới" (chủ dự án chốt 26/09/2026, phương án C): viết lại những câu
+   * được viết với KHO TRI THỨC cũ. Cần đăng nhập; mỗi lá số chỉ một lần cho mỗi
+   * phiên bản kho — câu đã viết với kho hiện tại thì trả nguyên, không gọi model.
+   */
+  taoMoi?: boolean;
 }
 
 export interface CauTraRaV3 {
@@ -80,6 +96,10 @@ export interface CauTraRaV3 {
   yChinh?: string[];
   /** Gợi ý tách khỏi bài luận — trang gom thành phần "Gợi ý của Celes" */
   goiY?: string;
+  /** Phiên bản kho tri thức lúc viết câu này (tai-lieu-meta.ts) — thiếu là bài viết trước 26/09/2026 */
+  kho?: string;
+  /** Ý ghép nghĩa hai sao chưa có nguồn cho tổ hợp — sổ khuyết để bổ sung kho sau */
+  ghep?: string[];
 }
 
 export async function POST(req: Request) {
@@ -105,8 +125,9 @@ export async function POST(req: Request) {
   }
 
   const nhom = body.nhom ?? 'tong-quan';
-  if (nhom !== 'tong-quan') {
-    const cong = await canDangNhap('deep_read');
+  const taoMoi = body.taoMoi === true;
+  if (nhom !== 'tong-quan' || taoMoi) {
+    const cong = await canDangNhap(taoMoi ? 'regenerate' : 'deep_read');
     if (!cong.duocPhep) return cong.chan!;
   }
   const ids = CAU_HOI_V3.filter((q) =>
@@ -175,29 +196,36 @@ export async function POST(req: Request) {
         return NextResponse.json({ bucTranh: null, soChuDe: tomLai.length, canToiThieu: SO_CHU_DE_TOI_THIEU });
       }
       const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|k:${PHIEN_BAN_V3.khung}|${tomLai.map((t) => t.chuDe).join('+')}` };
-      const da = await docNoiDung<{ bucTranh: string }>(khoaBuc);
-      if (da?.noiDung?.bucTranh) return NextResponse.json({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
+      const da = await docNoiDung<{ bucTranh: string; kho?: string }>(khoaBuc);
+      const khoBuc = await phienBanKho();
+      if (da?.noiDung?.bucTranh && !(taoMoi && khoBuc && khoCua(da.noiDung) !== khoBuc)) {
+        return NextResponse.json({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
+      }
       const tq = ds.find((r) => r.khoaKy === `${tienToNhom}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
       const tongQuan = ((tq?.noiDung as CauTraRaV3[] | undefined) ?? []).filter((c) => !c.chuaViet && c.luanGiai);
       const bt = await viBucTranh({ tomLai, tongQuan });
       if (!bt) return NextResponse.json({ loi: 'Celes chưa ghép được bức tranh lớn.' }, { status: 502 });
       const [provider, model] = bt.model.split('/');
-      await luuNoiDung(khoaBuc, { bucTranh: bt.bucTranh }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      await luuNoiDung(khoaBuc, { bucTranh: bt.bucTranh, kho: khoBuc ?? undefined }, { provider, model, phienBan: PHIEN_BAN_V3 });
       return NextResponse.json({ bucTranh: bt.bucTranh, soChuDe: tomLai.length, tuDem: false });
     }
 
     if (body.tomLai && nhom !== 'tong-quan') {
       // Kèm phiên bản khung: khung đổi câu hỏi thì tóm lại cũ (viết từ câu cũ) không được dùng lại
       const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}` };
-      const daTom = await docCoLui<{ tomLai: string }>(khoaTom, bamCu);
-      if (daTom?.noiDung?.tomLai) return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
+      const daTom = await docCoLui<{ tomLai: string; kho?: string }>(khoaTom, bamCu);
+      const khoTom = await phienBanKho();
+      // Tạo bản mới: tóm lại viết với kho cũ thì viết lại từ các câu (vừa được viết lại)
+      if (daTom?.noiDung?.tomLai && !(taoMoi && khoTom && khoCua(daTom.noiDung) !== khoTom)) {
+        return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
+      }
       const nhomBai = await docCoLui<CauTraRaV3[]>(khoa, bamCu);
       const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet)).filter((c): c is CauTraRaV3 => Boolean(c));
       if (du.length < ids.length) return NextResponse.json({ nhom, tomLai: null, chuaDu: true });
       const tom = await viTomLai({ chuDe: nhom, cau: du });
       if (!tom) return NextResponse.json({ loi: 'Celes chưa viết được phần tóm lại.' }, { status: 502 });
       const [provider, model] = tom.model.split('/');
-      await luuNoiDung(khoaTom, { tomLai: tom.tomLai }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      await luuNoiDung(khoaTom, { tomLai: tom.tomLai, kho: khoTom ?? undefined }, { provider, model, phienBan: PHIEN_BAN_V3 });
       return NextResponse.json({ nhom, tomLai: tom.tomLai, tuDem: false });
     }
 
@@ -214,6 +242,14 @@ export async function POST(req: Request) {
     const daCo = new Map(
       (cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiHienTai.get(c.id)).map((c) => [c.id, c])
     );
+    const kho = await phienBanKho();
+    // Có câu viết với kho cũ thì người đã đăng nhập được thấy nút "Tạo bản mới"
+    const coBanMoi = (ds: CauTraRaV3[]) => Boolean(kho) && ds.some((c) => !c.chuaViet && khoCua(c) !== kho);
+    if (taoMoi) {
+      if (!kho) return NextResponse.json({ loi: 'Chưa đọc được kho tri thức, thử lại sau ít phút.' }, { status: 503 });
+      // Chỉ câu viết với kho cũ; câu đã theo kho hiện tại giữ nguyên — mỗi phiên bản kho một lần
+      for (const id of phamVi) if (daCo.get(id) && khoCua(daCo.get(id)!) !== kho) daCo.delete(id);
+    }
     const thieu = phamVi.filter((id) => !daCo.has(id));
 
     if (!thieu.length) {
@@ -221,7 +257,8 @@ export async function POST(req: Request) {
       if (chuyenKhoa) {
         await luuNoiDung(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
-      return NextResponse.json({ nhom, cau: phamVi.map((id) => daCo.get(id)!), tuDem: true });
+      const cauDem = phamVi.map((id) => daCo.get(id)!);
+      return NextResponse.json({ nhom, cau: cauDem, tuDem: true, banMoi: coBanMoi(cauDem) });
     }
 
     // Tới đây là phải gọi model — khách chưa đăng nhập thì xin lượt trước (chỉ tổng quan mới tới được đây khi là khách)
@@ -271,6 +308,8 @@ export async function POST(req: Request) {
         id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false,
         yChinh: k.danY.map((y) => y.y).filter(Boolean),
         goiY: k.goiY || undefined,
+        kho: kho ?? undefined,
+        ghep: k.danY.some((y) => y.ghep) ? k.danY.filter((y) => y.ghep && y.y).map((y) => y.y).slice(0, 5) : undefined,
       });
     }
     const cau: CauTraRaV3[] = ids.map(
@@ -302,7 +341,7 @@ export async function POST(req: Request) {
     const mot = kq.find((k) => k.model);
     const [provider, model] = (mot?.model ?? '/').split('/');
     await luuNoiDung(khoa, cau, { provider, model, phienBan: PHIEN_BAN_V3 });
-    return NextResponse.json({ nhom, cau: cauTra, tuDem: false });
+    return NextResponse.json({ nhom, cau: cauTra, tuDem: false, banMoi: coBanMoi(cauTra) });
   } catch (e) {
     if (e instanceof KhongCoModelError) {
       return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
