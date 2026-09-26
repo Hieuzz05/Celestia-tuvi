@@ -1,7 +1,16 @@
 /**
  * NGHIỆM THU KIẾN THỨC — KIEN-TRUC-LUAN-GIAI.md mục 11.7.
  *
- *   npx tsx scripts/do-kien-thuc.ts <thư mục ra của do-thu-vien.ts> [--ban A,B,B2] [--giam-khao a,b] [--song-song 6]
+ *   npx tsx scripts/do-kien-thuc.ts <thư mục ra của do-thu-vien.ts> [--ban A,B3] [--giam-khao a,b] [--song-song 6]
+ *                                    [--du] [--batch] [--ngan-sach <token>]
+ *
+ * TIẾT KIỆM (26/09/2026 — chủ dự án: test tốn quá nhiều token):
+ *   - Giám khảo mặc định gpt-4o-mini (rẻ; đã qua kiểm cài lỗi 10/12, nhất quán 92–97%). Luna chỉ khi truyền.
+ *   - ĐỆM kết quả chấm (cham-cache.json): cùng bài + cùng đáp án + cùng giám khảo thì không chấm lại —
+ *     bản mốc A chỉ chấm MỘT lần cho mọi lượt so sau.
+ *   - DỪNG SỚM (so hai bản, không --du / --batch): chấm từng đợt 20 cặp; sau mỗi đợt, khoảng tin cậy
+ *     95% của chênh KT đã nằm hẳn dưới hoặc trên ngưỡng +10 thì dừng.
+ *   - --batch: gửi mọi lượt chấm qua OpenAI Batch API (nửa giá, chờ vài phút).
  *
  * 1. ĐÁP ÁN KIẾN THỨC cho mỗi (lá, câu), dựng độc lập với các bản: engine liệt kê cấu hình
  *    trọng yếu; gpt-5.6-luna viết 5–8 điểm bài đúng phải nói + 2–4 điều không được nói, từ
@@ -13,9 +22,11 @@
  * Cách viết chấm riêng: scripts/so-sanh-v3.ts A.json B2.json --du
  * Đầu ra có văn sách → thư mục NGOÀI repo.
  */
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { boLaSo } from './lat-cat-su-nghiep';
+import { batDauLuotThu } from './thu-chung';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const i = d.indexOf('=');
@@ -24,6 +35,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const v = d.slice(i + 1).trim().replace(/^["']|["']$/g, '');
   if (v && !process.env[k]) process.env[k] = v;
 }
+batDauLuotThu('do-kien-thuc');
 const thamSo = (ten: string, macDinh = '') => {
   const i = process.argv.indexOf(`--${ten}`);
   return i > 0 ? process.argv[i + 1] : macDinh;
@@ -51,7 +63,9 @@ async function main() {
   const thuMuc = process.argv.slice(2).find((a) => !a.startsWith('--'));
   if (!thuMuc) throw new Error('Thiếu thư mục ra');
   const banTen = thamSo('ban', 'A,B,B2').split(',');
-  const giamKhao = thamSo('giam-khao', 'openai|gpt-5.6-luna,openai|gpt-4o-mini').split(',');
+  const giamKhao = thamSo('giam-khao', 'openai|gpt-4o-mini').split(',');
+  const du = process.argv.includes('--du');
+  const dungBatch = process.argv.includes('--batch');
   const songSong = Number(thamSo('song-song', '6'));
   const { goiVoiFallback } = await import('../lib/ai/fallback');
   const { docObjectJson } = await import('../lib/rag/doc-json');
@@ -141,15 +155,33 @@ Chỉ trả JSON: {"diem":[{"id":"K1","noiDung":"...","sao":["..."],"muc":"bat-b
 - Mỗi điều X "không được nói": viPham true nếu bài phạm.
 - "saiKhac": các nhận định trong bài trái kiến thức Tử Vi với cấu hình này mà đáp án không nêu (liệt kê ngắn; không có thì mảng rỗng).
 Khắt khe, nhất quán. Chỉ trả JSON: {"diem":[{"id":"K1","kq":"dat|thieu|sai"}],"khongDuoc":[{"id":"X1","viPham":false}],"saiKhac":[]}`;
-  const cham = async (gk: string, khoa: string, luanGiai: string): Promise<KetQuaCham> => {
+  const userCham = (khoa: string, luanGiai: string) => {
     const da = dapAn[khoa];
-    if (!da) return { diem: {}, viPham: 0, saiKhac: 0, hong: true };
-    const user = `ĐÁP ÁN:\n${da.diem.map((d) => `${d.id} [${d.muc}] ${d.noiDung}`).join('\n')}\nKHÔNG ĐƯỢC NÓI:\n${da.khongDuoc.map((x) => `${x.id} ${x.noiDung}`).join('\n')}\n\nCẤU HÌNH TRỌNG YẾU:\n${cauHinh(khoa)}\n\nBÀI LUẬN:\n${luanGiai}`;
-    const o = (await goi(heCham, user, gk, 1200)) as { diem?: { id: string; kq: string }[]; khongDuoc?: { viPham?: boolean }[]; saiKhac?: unknown[] } | null;
+    return `ĐÁP ÁN:\n${da.diem.map((d) => `${d.id} [${d.muc}] ${d.noiDung}`).join('\n')}\nKHÔNG ĐƯỢC NÓI:\n${da.khongDuoc.map((x) => `${x.id} ${x.noiDung}`).join('\n')}\n\nCẤU HÌNH TRỌNG YẾU:\n${cauHinh(khoa)}\n\nBÀI LUẬN:\n${luanGiai}`;
+  };
+  type ThoCham = { diem?: { id: string; kq: string }[]; khongDuoc?: { viPham?: boolean }[]; saiKhac?: unknown[] } | null;
+  const docCham = (o: ThoCham): KetQuaCham => {
     if (!o?.diem?.length) return { diem: {}, viPham: 0, saiKhac: 0, hong: true };
     const diem: KetQuaCham['diem'] = {};
     for (const d of o.diem) if (['dat', 'thieu', 'sai'].includes(d.kq)) diem[d.id] = d.kq as 'dat' | 'thieu' | 'sai';
     return { diem, viPham: (o.khongDuoc ?? []).filter((x) => x.viPham).length, saiKhac: Array.isArray(o.saiKhac) ? o.saiKhac.length : 0, hong: false };
+  };
+  // Đệm kết quả chấm — khoá gồm giám khảo + luật chấm + toàn bộ nội dung gửi đi
+  const tepDem = join(thuMuc, 'cham-cache.json');
+  const demCham: Record<string, KetQuaCham> = existsSync(tepDem) ? JSON.parse(readFileSync(tepDem, 'utf-8')) : {};
+  const khoaDem = (gk: string, user: string) => createHash('sha1').update(`${gk}\n${heCham}\n${user}`).digest('hex');
+  let trungDem = 0;
+  const cham = async (gk: string, khoa: string, luanGiai: string, boQuaDem = false): Promise<KetQuaCham> => {
+    if (!dapAn[khoa]) return { diem: {}, viPham: 0, saiKhac: 0, hong: true };
+    const user = userCham(khoa, luanGiai);
+    const kd = khoaDem(gk, user);
+    if (!boQuaDem && demCham[kd]) {
+      trungDem++;
+      return demCham[kd];
+    }
+    const r = docCham((await goi(heCham, user, gk, 1200)) as ThoCham);
+    if (!r.hong && !boQuaDem) demCham[kd] = r;
+    return r;
   };
   const diemKT = (khoa: string, r: KetQuaCham) => {
     const da = dapAn[khoa];
@@ -186,12 +218,61 @@ Khắt khe, nhất quán. Chỉ trả JSON: {"diem":[{"id":"K1","kq":"dat|thieu|
     const viec = [
       ...banTen.flatMap((t) => ban[t].map((b) => ({ nhom: t, khoa: b.khoa, luanGiai: b.luanGiai }))),
       ...caiLoi.map((c) => ({ nhom: 'caiLoi', khoa: c.khoa, luanGiai: c.luanGiai })),
-      ...ban.A.slice(0, 20).map((b) => ({ nhom: 'chamLai', khoa: b.khoa, luanGiai: b.luanGiai })),
+      ...ban.A.slice(0, 10).map((b) => ({ nhom: 'chamLai', khoa: b.khoa, luanGiai: b.luanGiai })),
     ];
-    await chayDong(viec, async (v) => {
-      const r = await cham(gk, v.khoa, v.luanGiai);
-      (theoBan[v.nhom] ??= []).push({ khoa: v.khoa, r });
-    });
+    const nhanKetQua = (nhom: string, khoa: string, r: KetQuaCham): void => {
+      (theoBan[nhom] ??= []).push({ khoa, r });
+    };
+
+    if (dungBatch) {
+      // Mọi lượt chưa có trong đệm → một batch (nửa giá). Chấm lại để đo nhất quán luôn gửi riêng.
+      const { chayBatchOpenAi } = await import('../lib/ai/batch-openai');
+      const model = gk.split('|')[1] ?? gk;
+      const can = viec.filter((v) => dapAn[v.khoa] && (v.nhom === 'chamLai' || !demCham[khoaDem(gk, userCham(v.khoa, v.luanGiai))]));
+      console.log(`Batch ${gk}: ${can.length} lượt (đệm sẵn ${viec.length - can.length})`);
+      const kq = await chayBatchOpenAi(
+        can.map((v, i) => ({ id: `${i}`, system: heCham, user: userCham(v.khoa, v.luanGiai), model, maxTokens: 1200, temperature: 0 })),
+        { nhan: 'cham-kien-thuc', khiCho: (t, x, n) => console.log(`  batch ${t} ${x}/${n}`) }
+      );
+      can.forEach((v, i) => {
+        const r = docCham(docObjectJson(kq.get(`${i}`)?.text ?? '') as ThoCham);
+        if (v.nhom === 'chamLai') nhanKetQua('chamLai', v.khoa, r);
+        else if (!r.hong) demCham[khoaDem(gk, userCham(v.khoa, v.luanGiai))] = r;
+      });
+      for (const v of viec.filter((x) => x.nhom !== 'chamLai')) {
+        const d = dapAn[v.khoa] ? demCham[khoaDem(gk, userCham(v.khoa, v.luanGiai))] : undefined;
+        nhanKetQua(v.nhom, v.khoa, d ?? { diem: {}, viPham: 0, saiKhac: 0, hong: true });
+      }
+    } else if (banTen.length === 2 && !du) {
+      // Kiểm giám khảo trước (rẻ), rồi so từng đợt 20 cặp và DỪNG SỚM khi đã rõ
+      await chayDong(viec.filter((v) => v.nhom === 'caiLoi' || v.nhom === 'chamLai'), async (v) => nhanKetQua(v.nhom, v.khoa, await cham(gk, v.khoa, v.luanGiai, v.nhom === 'chamLai')));
+      const [ta, tb] = banTen;
+      const khoaSo = khoaDs.filter((k) => dapAn[k]);
+      for (let dau = 0; dau < khoaSo.length; dau += 20) {
+        const dot = khoaSo.slice(dau, dau + 20);
+        await chayDong(dot.flatMap((k) => [ta, tb].map((t) => ({ t, k }))), async ({ t, k }) => {
+          const b = ban[t].find((x) => x.khoa === k);
+          if (b) nhanKetQua(t, k, await cham(gk, k, b.luanGiai));
+        });
+        const chenh = khoaSo.slice(0, dau + dot.length).flatMap((k) => {
+          const ra = theoBan[ta]?.find((x) => x.khoa === k)?.r, rb = theoBan[tb]?.find((x) => x.khoa === k)?.r;
+          return ra && rb && !ra.hong && !rb.hong ? [100 * (diemKT(k, rb) - diemKT(k, ra))] : [];
+        });
+        if (chenh.length >= 20) {
+          const tb2 = chenh.reduce((a, c) => a + c, 0) / chenh.length;
+          const sd = Math.sqrt(chenh.reduce((a, c) => a + (c - tb2) ** 2, 0) / (chenh.length - 1));
+          const bien = (1.96 * sd) / Math.sqrt(chenh.length);
+          console.log(`  sau ${chenh.length} cặp: chênh KT ${tb2.toFixed(1)} ± ${bien.toFixed(1)}`);
+          if (tb2 + bien < 10 || tb2 - bien > 10) {
+            console.log(`  → khoảng tin cậy đã nằm hẳn ${tb2 + bien < 10 ? 'DƯỚI' : 'TRÊN'} ngưỡng +10, dừng sớm (bớt ${khoaSo.length - dau - dot.length} cặp)`);
+            break;
+          }
+        }
+      }
+    } else {
+      await chayDong(viec, async (v) => nhanKetQua(v.nhom, v.khoa, await cham(gk, v.khoa, v.luanGiai, v.nhom === 'chamLai')));
+    }
+    writeFileSync(tepDem, JSON.stringify(demCham));
     // Kiểm giám khảo
     const batLoi = caiLoi.filter((c) => theoBan.caiLoi?.find((x) => x.khoa === c.khoa)?.r.diem[c.diemId] === 'sai').length;
     let trung = 0, tongDiem = 0;
@@ -229,7 +310,7 @@ Khắt khe, nhất quán. Chỉ trả JSON: {"diem":[{"id":"K1","kq":"dat|thieu|
     console.log(JSON.stringify(ketQua[gk], null, 1));
   }
   writeFileSync(join(thuMuc, 'kien-thuc.json'), JSON.stringify({ ketQua, tokens }, null, 1));
-  console.log(`Token: vào ${tokens.vao}, ra ${tokens.ra}`);
+  console.log(`Token: vào ${tokens.vao}, ra ${tokens.ra} · lấy từ đệm ${trungDem} lượt chấm`);
 }
 
 main().catch((e) => {

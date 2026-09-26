@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { AiRetryableError, type ChatRequest, type ChatResult, type ProviderId } from './types';
 
 const TIMEOUT_MS = 55_000;
@@ -150,6 +151,8 @@ async function chatOpenAiCompat(
      */
     if (req.tatSuyNghi) than.reasoning_effort = 'low';
     else than.reasoning_effort = req.mucSuyNghi ?? 'low';
+    // Không có khoá riêng thì gom theo phần luật cố định (system) — mọi bề mặt cùng luật dùng chung đệm
+    than.prompt_cache_key = req.cacheKey ?? `sys:${createHash('sha1').update(req.system).digest('hex').slice(0, 16)}`;
   } else {
     than.temperature = req.temperature ?? 0.7;
     than.max_tokens = req.maxTokens ?? 2048;
@@ -163,11 +166,19 @@ async function chatOpenAiCompat(
     }
   }
 
-  const res = await goiApi(`${baseUrl}/chat/completions`, {
+  let res = await goiApi(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers,
     body: JSON.stringify(than),
   });
+  // Model / cổng nào không nhận prompt_cache_key thì gửi lại không có nó — khoá đệm chỉ là tối ưu giá
+  if (!res.ok && res.status === 400 && than.prompt_cache_key) {
+    const loi = await res.clone().text();
+    if (/prompt_cache_key/i.test(loi)) {
+      delete than.prompt_cache_key;
+      res = await goiApi(`${baseUrl}/chat/completions`, { method: 'POST', headers, body: JSON.stringify(than) });
+    }
+  }
   if (!res.ok) await nemLoi(res, provider);
   const data = await res.json();
   const lua = data.choices?.[0];
@@ -188,6 +199,7 @@ async function chatOpenAiCompat(
     tokensIn: data.usage?.prompt_tokens,
     tokensOut: data.usage?.completion_tokens,
     tokensDem: data.usage?.prompt_tokens_details?.cached_tokens,
+    tokensNghi: data.usage?.completion_tokens_details?.reasoning_tokens,
   };
 }
 

@@ -643,6 +643,42 @@ Phần tóm lại / bức tranh lớn chưa đo riêng (ước ~5 nghìn vào, ~
 lượt ≈ 4,5%" là **thấp** — đo thật ~124 lượt ≈ 8%. Đổi ra tiền: token vào chưa đệm × giá vào + token vào được đệm ×
 giá đệm + token ra × giá ra, theo bảng giá model trên hoá đơn OpenAI.
 
+### 15.1 Giảm chi phí KHÔNG đổi đầu ra — làm 26/09/2026
+
+Cơ cấu tiền của một câu (giá đệm ≈ 1/10, token ra ≈ 8 lần token vào — tỉ lệ bảng giá dòng gpt-5):
+**token ra ~61%**, token vào chưa đệm ~37%, token vào đệm ~2%. Prompt một câu chuyên sâu: luật cố định
+~4.200 token, khối cố định theo câu hỏi ~1.650, dữ kiện lá số ~1.480, đoạn sách ~1.790. Mức nghĩ đã ở
+thấp nhất (`reasoning_effort: 'low'`).
+
+| Việc | Vì sao đầu ra không đổi | Ước tiết kiệm |
+|---|---|---|
+| **Sửa cục bộ** (`lib/rag/v3/sua-cuc-bo.ts`): lỗi khoanh được vào câu (từ cấm, lộ tên sao, thuật ngữ, chữ nội bộ, giao việc, lộ luật ngầm) → chỉ gửi các câu ấy cho model viết lại | đúng ý định của vòng sửa ("sửa đúng lỗi, giữ nguyên phần còn lại"); phần không lỗi giữ nguyên từng chữ; không đỡ được thì vẫn đi đường sửa cả bài | vòng sửa đang chiếm 22% token ra, 30/37 ca là lỗi một câu → **~9% token ra** |
+| **Khoá đệm prompt** (`prompt_cache_key`): theo câu hỏi cho v3, theo mã băm phần luật cho mọi bề mặt khác | chỉ là gợi ý định tuyến đệm của nhà cung cấp | tăng tỉ lệ token vào được đệm |
+| **Thứ tự tiền tố**: khối cố định theo câu hỏi (yếu tố nên xét, không được) đứng trước sổ ý / dữ kiện | cùng nội dung, chỉ đổi thứ tự khối | ~1.650 token / lượt thêm vào phần đệm được |
+| **Sổ chi phí đủ**: ghi token đệm + token suy nghĩ (`supabase/va-chi-phi-token.sql`, chưa chạy) | không đụng luận giải | để tính đúng tiền mỗi lá số |
+
+**Ước tổng: ~20–25% chi phí mỗi câu** (tỉ lệ đệm 41% → ~70%, token ra −9%). Nếu một lá số đọc trọn hiện ~9 nghìn
+đồng (theo chủ dự án) → **~7 nghìn**. Số thật đo lại được khi có credit: một lượt 6 câu (~0,1 tr token).
+
+**Muốn giảm sâu hơn thì phải đổi đầu ra hoặc sản phẩm** — chủ dự án quyết, cần so mù nhỏ trước:
+model rẻ cho tóm lại / bức tranh lớn; bỏ hẳn suy nghĩ nội bộ nếu model nhận (`reasoning_effort: 'none'`); giới hạn số
+chủ đề chuyên sâu cho tài khoản miễn phí (88 / 99 câu của một lá đọc trọn là chuyên sâu ≈ 89% chi phí cả lá).
+
+### 15.2 Giảm chi phí TEST — làm 26/09/2026
+
+| Việc | Ở đâu |
+|---|---|
+| Trần ngân sách mặc định 1 tr token mỗi lượt script, vượt là dừng; nhãn `@test` trong sổ chi phí | `scripts/thu-chung.ts`, `lib/ai/fallback.ts` |
+| Giám khảo chỉ định không gọi được thì báo lỗi, KHÔNG lặng lẽ lùi sang luna | `AI_KHONG_LUI` |
+| Giám khảo mặc định gpt-4o-mini; luna chỉ khi truyền | `do-kien-thuc.ts`, `so-sanh-v3.ts` |
+| Đệm kết quả chấm / phiếu so mù — bản mốc chỉ chấm một lần | `cham-cache.json`, `so-sanh-cache.json` |
+| Dừng sớm theo đợt 20 cặp khi khoảng tin cậy đã rõ | `do-kien-thuc.ts` |
+| Mẫu thăm dò 6 lá × 3 câu; 60 cặp chỉ với `--nghiem-thu` | `do-thu-vien.ts` |
+| Batch API (nửa giá) cho dựng thư viện và chấm | `lib/ai/batch-openai.ts`, `--batch` |
+| Trích tăng dần — bỏ đoạn đã đọc | `dung-thu-vien.ts --bo-qua` |
+
+Ước: một vòng A/B nghiệm thu ~3 tr token → ~0,5 tr (thăm dò + đệm + dừng sớm + gpt-4o-mini), ~0,25 tr khi dùng Batch.
+
 | Khoản | Ước tính |
 |---|---|
 | Dựng lát cắt Sự nghiệp (một lần) | ≈ 0,2–0,3 ngày — **chủ dự án đã duyệt 26/09** |

@@ -45,16 +45,39 @@ export interface DongSuDung {
  * Ghi nhận một lượt gọi. Cố tình nuốt lỗi: thống kê hỏng thì cũng không được
  * làm chết luồng luận giải của người dùng.
  */
+/** Hàm ghi v2 (có token đệm / suy nghĩ) đã có trên DB chưa — null = chưa biết */
+let hamV2: boolean | null = null;
+
 export async function ghiNhanSuDung(
   provider: string,
   model: string,
   tokensVao = 0,
   tokensRa = 0,
-  laLoi = false
+  laLoi = false,
+  /** Phần token vào được đệm (~1/10 giá) và phần token ra là suy nghĩ — cần supabase/va-chi-phi-token.sql */
+  them: { dem?: number; nghi?: number } = {}
 ): Promise<void> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return;
   try {
+    if (hamV2 !== false) {
+      const { error } = await supabase.rpc('ghi_nhan_su_dung_v2', {
+        p_provider: provider,
+        p_model: model,
+        p_tokens_vao: tokensVao,
+        p_tokens_ra: tokensRa,
+        p_loi: laLoi,
+        p_tokens_dem: them.dem ?? 0,
+        p_tokens_nghi: them.nghi ?? 0,
+      });
+      if (!error) {
+        hamV2 = true;
+        return;
+      }
+      // Chưa chạy SQL v2 → nhớ lại, từ giờ gọi thẳng hàm cũ
+      if (error.code === 'PGRST202' || /could not find the function/i.test(error.message)) hamV2 = false;
+      else throw new Error(error.message);
+    }
     await supabase.rpc('ghi_nhan_su_dung', {
       p_provider: provider,
       p_model: model,

@@ -1,7 +1,7 @@
 /**
  * ĐO LÁT CẮT "SỰ NGHIỆP — LÁ SỐ GỐC" — KIEN-TRUC-LUAN-GIAI.md mục 11.2.
  *
- *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--so-la 12] [--chi-do-phu] [--chi-b B2] [--dot sn-2]
+ *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--nghiem-thu] [--so-la N] [--cau SN01,SN02] [--chi-do-phu] [--chi-b B2] [--dot sn-2]
  *
  * --chi-b <tên>: chỉ sinh lại bản có thư viện (sau khi sửa khâu chọn / thư viện), ghi
  *   <tên>.json + chi-tiet-<tên>.json; bản A giữ nguyên từ lượt trước để so cùng mốc.
@@ -17,6 +17,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { boLaSo, CAU_LAT_CAT } from './lat-cat-su-nghiep';
+import { batDauLuotThu } from './thu-chung';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const i = d.indexOf('=');
@@ -25,6 +26,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const v = d.slice(i + 1).trim().replace(/^["']|["']$/g, '');
   if (v && !process.env[k]) process.env[k] = v;
 }
+batDauLuotThu('do-thu-vien');
 const thamSo = (ten: string, macDinh = '') => {
   const i = process.argv.indexOf(`--${ten}`);
   return i > 0 ? process.argv[i + 1] : macDinh;
@@ -41,7 +43,13 @@ async function main() {
   const ra = thamSo('ra');
   if (!ra) throw new Error('Thiếu --ra <thư mục ngoài repo>');
   mkdirSync(ra, { recursive: true });
-  const soLa = Number(thamSo('so-la', '12'));
+  /*
+   * MẪU NHỎ MẶC ĐỊNH (26/09/2026 — tiết kiệm token test): thăm dò 6 lá × 3 câu = 18 cặp. Chỉ
+   * --nghiem-thu mới chạy đủ 12 lá × 5 câu = 60 cặp (ngưỡng 11.2). Kết quả phẳng thấy rõ từ 18 cặp.
+   */
+  const nghiemThu = process.argv.includes('--nghiem-thu');
+  const soLa = Number(thamSo('so-la', nghiemThu ? '12' : '6'));
+  const CAU = nghiemThu ? CAU_LAT_CAT : (thamSo('cau') || 'SN01,SN02,SN05').split(',');
   const { lapLaSo } = await import('../lib/tuvi/ansao');
   const { luanNhieuCau } = await import('../lib/rag/v3');
   const { docThuVien } = await import('../lib/rag/thu-vien/kho');
@@ -53,7 +61,7 @@ async function main() {
   const thuVien = await docThuVien('su-nghiep', thamSo('dot') || undefined);
   if (!thuVien.length) throw new Error('Thư viện rỗng — chạy scripts/dung-thu-vien.ts trước');
   const la = boLaSo(soLa);
-  console.log(`Thư viện ${thuVien.length} mục · ${la.length} lá số × ${CAU_LAT_CAT.length} câu`);
+  console.log(`Thư viện ${thuVien.length} mục · ${la.length} lá số × ${CAU.length} câu${nghiemThu ? ' (nghiệm thu)' : ' (thăm dò — thêm --nghiem-thu để chạy đủ 60 cặp)'}`);
 
   // ---- Tiêu chí 3: độ phủ (không gọi model) ----
   let donVi = 0, phu = 0;
@@ -75,13 +83,13 @@ async function main() {
     const laSo = lapLaSo(la[i]);
     const chiB = thamSo('chi-b');
     if (chiB) {
-      const b = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU_LAT_CAT) } });
+      const b = await luanNhieuCau({ laSo, ids: CAU, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU) } });
       B.push(...b.map((k) => ({ ...k, khoa: `L${String(i + 1).padStart(2, '0')}-${k.id}` })));
       console.log(`  lá ${i + 1}/${la.length}: ${chiB} ${b.filter((k) => k.luanGiai).length}/5`);
       continue;
     }
-    const a = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5 });
-    const b = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU_LAT_CAT) } });
+    const a = await luanNhieuCau({ laSo, ids: CAU, namXem: 2026, songSong: 5 });
+    const b = await luanNhieuCau({ laSo, ids: CAU, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU) } });
     A.push(...a.map((k) => ({ ...k, khoa: `L${String(i + 1).padStart(2, '0')}-${k.id}` })));
     B.push(...b.map((k) => ({ ...k, khoa: `L${String(i + 1).padStart(2, '0')}-${k.id}` })));
     console.log(`  lá ${i + 1}/${la.length}: A ${a.filter((k) => k.luanGiai).length}/5 · B ${b.filter((k) => k.luanGiai).length}/5 · T trung bình ${(b.reduce((s, k) => s + (k.thuVien?.daChon.length ?? 0), 0) / b.length).toFixed(1)}`);

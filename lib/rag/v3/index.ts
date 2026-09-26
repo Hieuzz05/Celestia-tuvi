@@ -11,6 +11,7 @@ import { NHAN_TIN_CAY } from '../uu-tien-nguon';
 import { docMetaTaiLieu } from '../tai-lieu-meta';
 import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
+import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -260,9 +261,14 @@ export async function luanMotCau(vao: {
     (q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined) ??
     duKien.find((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)'))?.cung;
 
+  /*
+   * THỨ TỰ = TIỀN TỐ ĐỆM (26/09/2026): mọi khối CỐ ĐỊNH theo câu hỏi đứng liền sau phần luật, trước
+   * mọi thứ đổi theo lá số (sổ ý, dữ kiện, nguồn). Nhà cung cấp đệm theo tiền tố giống nhau, nên
+   * cùng một câu hỏi trên mọi lá số dùng chung ~5,8 nghìn token đầu (luật + khối câu hỏi) ở giá đệm.
+   * Bản trước để sổ ý chen giữa, cắt tiền tố ngay trước "YẾU TỐ NÊN XÉT". Nội dung không đổi.
+   */
   const user = [
     khoiDoDai(q.loai),
-    vao.thuNghiem?.themVao?.(vao.laSo, q) ?? '',
     `CÂU HỎI CỦA NGƯỜI ĐỌC: ${q.cauHoi}`,
     `NGƯỜI ĐỌC CẦN NHẬN ĐƯỢC: ${q.nhanDuoc}`,
     PHAM_VI_TONG_QUAN[q.id]
@@ -271,9 +277,10 @@ export async function luanMotCau(vao: {
         ? `PHẠM VI CÂU NÀY:
 ${phamViChuyenSau(q)}`
         : '',
-    khoiDaNoi(q, vao.daNoi ?? []),
     q.yeuToThem ? `YẾU TỐ NÊN XÉT: ${q.yeuToThem}` : '',
     q.khongDuoc ? `KHÔNG ĐƯỢC: ${q.khongDuoc}` : '',
+    vao.thuNghiem?.themVao?.(vao.laSo, q) ?? '',
+    khoiDaNoi(q, vao.daNoi ?? []),
     `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
     tv?.khoi ?? '',
     `NGUỒN THAM CHIẾU (trích sách, chỉ dùng đoạn nói đúng tổ hợp sao – cung của lá số này):\n${
@@ -304,19 +311,24 @@ ${phamViChuyenSau(q)}`
     const chu = `${b.luanGiai} ${b.viSao}`.toLowerCase();
     const lo = tenSach.filter((t) => chu.includes(t.toLowerCase()));
     return lo.length
-      ? [{ ma: 'ten-sach', moTa: `Nêu tên sách (${lo.join(', ')}) — bỏ tên sách, nói "sách xưa" hoặc chỉ nói điều sách nói.`, chan: true }]
+      ? [{ ma: 'ten-sach', moTa: `Nêu tên sách (${lo.join(', ')}) — bỏ tên sách, nói "sách xưa" hoặc chỉ nói điều sách nói.`, chan: true, cum: lo }]
       : [];
   };
   // Giọng giao việc có hạn — chủ dự án bỏ 25/09/2026 ("gây cảm giác ép buộc")
-  const kiemGiaoViec = (b: BaiV3) =>
-    /(trong|ngay|ngay trong) (tuần|tháng) (tới|này|sau)|tuần tới|ngay hôm nay|trong \d+ ngày tới/i.test(`${b.luanGiai} ${b.goiY ?? ''}`)
-      ? [{ ma: 'giao-viec', moTa: 'Lời khuyên đặt hạn kiểu "trong tuần tới / ngay hôm nay" — viết lại thành gợi ý ("bạn có thể…", "nên cân nhắc…"), không đặt hạn.', chan: true }]
+  const RE_GIAO_VIEC = /(trong|ngay|ngay trong) (tuần|tháng) (tới|này|sau)|tuần tới|ngay hôm nay|trong \d+ ngày tới/gi;
+  const kiemGiaoViec = (b: BaiV3) => {
+    const cum = [...new Set([...`${b.luanGiai} ${b.goiY ?? ''}`.matchAll(RE_GIAO_VIEC)].map((m) => m[0]))];
+    return cum.length
+      ? [{ ma: 'giao-viec', moTa: 'Lời khuyên đặt hạn kiểu "trong tuần tới / ngay hôm nay" — viết lại thành gợi ý ("bạn có thể…", "nên cân nhắc…"), không đặt hạn.', chan: true, cum }]
       : [];
+  };
   // Tên luật lọt vào bài ("Câu 'đúng quá' là…", "Cảm giác rất đúng với bạn là:") — model chép nhãn của yêu cầu (đo 25/09/2026)
-  const kiemNhanLuat = (b: BaiV3) =>
-    /đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc|dữ kiện|tín hiệu (bất lợi|phụ trợ|chiếu)/i.test(b.luanGiai)
-      ? [{ ma: 'nhan-luat', moTa: 'Bài dùng chữ nội bộ ("dữ kiện", "tín hiệu phụ trợ", "đúng quá", "lát cắt") — nói bằng lời người xem lá số: "lá số của bạn", "phần sức khỏe của bạn", hoặc nói thẳng điều đó.', chan: true }]
+  const kiemNhanLuat = (b: BaiV3) => {
+    const cum = [...new Set([...b.luanGiai.matchAll(/đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc|dữ kiện|tín hiệu (bất lợi|phụ trợ|chiếu)/gi)].map((m) => m[0]))];
+    return cum.length
+      ? [{ ma: 'nhan-luat', moTa: 'Bài dùng chữ nội bộ ("dữ kiện", "tín hiệu phụ trợ", "đúng quá", "lát cắt") — nói bằng lời người xem lá số: "lá số của bạn", "phần sức khỏe của bạn", hoặc nói thẳng điều đó.', chan: true, cum }]
       : [];
+  };
   /*
    * MỨC TIN CẬY (26/09/2026): đoạn "bổ trợ" chỉ làm dày ngữ cảnh — một ý mà căn
    * cứ duy nhất là đoạn bổ trợ thì chưa đủ đứng thành nhận định.
@@ -333,11 +345,14 @@ ${phamViChuyenSau(q)}`
   };
   // Luật ngầm lộ ra bài — chủ dự án 26/09/2026: nguồn chuyên gia Celes không ghi trên lá số
   const coLuatNgam = nguon.some((n) => n.an) || Boolean(tv?.daChon.some((t) => t.an));
-  const kiemLuatNgam = (b: BaiV3) =>
+  const kiemLuatNgam = (b: BaiV3) => {
+    if (!coLuatNgam) return [];
     // Chỉ bắt kiểu viện dẫn ("theo chuyên gia", "ghi chú của…") — "làm chuyên gia" là lời thường ở câu nghề nghiệp
-    coLuatNgam && /(theo|của|ghi chú|nhận định|góc nhìn|kinh nghiệm)( của)?( các| một| giới)? chuyên gia|luật ngầm|luật nội bộ|tài liệu nội bộ/i.test(`${b.luanGiai} ${b.viSao} ${b.goiY ?? ''}`)
-      ? [{ ma: 'lo-luat-ngam', moTa: 'Bài nhắc tới "chuyên gia" / "ghi chú" / "nội bộ" — đoạn LUẬT NGẦM chỉ để định hướng, không được gọi tên hay nhắc tới. Nói thẳng nhận định như điều lá số cho thấy.', chan: true }]
+    const cum = [...new Set([...`${b.luanGiai} ${b.viSao} ${b.goiY ?? ''}`.matchAll(/(theo|của|ghi chú|nhận định|góc nhìn|kinh nghiệm)( của)?( các| một| giới)? chuyên gia|luật ngầm|luật nội bộ|tài liệu nội bộ/gi)].map((m) => m[0]))];
+    return cum.length
+      ? [{ ma: 'lo-luat-ngam', moTa: 'Bài nhắc tới "chuyên gia" / "ghi chú" / "nội bộ" — đoạn LUẬT NGẦM chỉ để định hướng, không được gọi tên hay nhắc tới. Nói thẳng nhận định như điều lá số cho thấy.', chan: true, cum }]
       : [];
+  };
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
@@ -355,7 +370,7 @@ ${phamViChuyenSau(q)}`
   const goi = async (u: string) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system: vao.thuNghiem?.system ?? SYSTEM_V3, user: u, maxTokens: 6000 }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system: vao.thuNghiem?.system ?? SYSTEM_V3, user: u, maxTokens: 6000, cacheKey: `v3:${q.id}` }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     token.vao += kq.tokensIn ?? 0;
     token.ra += kq.tokensOut ?? 0;
@@ -382,7 +397,38 @@ ${phamViChuyenSau(q)}`
    */
   let loi = loiBanDau;
   const conLai = (vao.hanChot ?? Infinity) - Date.now();
-  if (loi.some((l) => l.chan) && conLai > 20_000) {
+  /*
+   * SỬA CỤC BỘ trước (sua-cuc-bo.ts): mọi lỗi chặn khoanh được vào câu thì chỉ gửi các câu ấy —
+   * ~100 token ra thay vì ~1.100. Không sửa được / còn lỗi chặn thì đi tiếp đường sửa cả bài.
+   */
+  const cauLoi = suaCucBoDuoc(loi) ? chonCauLoi(bai, loi) : null;
+  if (cauLoi && conLai > 12_000) {
+    soLanGoi += 1;
+    try {
+      const trongHan = Math.max(12_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
+      const kq = await goiVoiFallback(
+        { system: vao.thuNghiem?.system ?? SYSTEM_V3, user: `${user}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
+        undefined,
+        trongHan
+      );
+      token.vao += kq.tokensIn ?? 0;
+      token.ra += kq.tokensOut ?? 0;
+      token.dem += kq.tokensDem ?? 0;
+      const o = docObjectJson(kq.text) as { sua?: { id?: string; cau?: string }[] } | null;
+      const sua = new Map((o?.sua ?? []).filter((x) => x.id && x.cau).map((x) => [x.id!, x.cau!]));
+      if (sua.size) {
+        const s = donTatDinh(apCauSua(bai, sua));
+        const loiSau = kiem(s);
+        if (loiSau.filter((l) => l.chan).length <= loi.filter((l) => l.chan).length) {
+          bai = s;
+          loi = loiSau;
+        }
+      }
+    } catch {
+      /* hỏng thì đi đường sửa cả bài bên dưới */
+    }
+  }
+  if (loi.some((l) => l.chan) && (vao.hanChot ?? Infinity) - Date.now() > 20_000) {
     const sua = await goi(
       `${user}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
         .filter((l) => l.chan)

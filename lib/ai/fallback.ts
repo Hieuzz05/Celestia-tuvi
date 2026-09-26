@@ -36,6 +36,28 @@ const TOI_THIEU_MOT_LUOT_MS = 16_000;
 /** Ngân sách mặc định: 50 giây, chừa 10 giây của trần 60 cho phần còn lại của route */
 const NGAN_SACH_MAC_DINH_MS = 50_000;
 
+/*
+ * TRẦN NGÂN SÁCH cho script đo / thử (26/09/2026 — một ngày đo tiêu ~11 tr token, góp phần làm hết
+ * credit). Script đặt AI_NGAN_SACH_TOKEN=<số>: cộng dồn token vào + ra của tiến trình, vượt là dừng
+ * hẳn thay vì âm thầm chạy tiếp. Sản phẩm không đặt biến này nên không bị ảnh hưởng.
+ */
+// Đọc mỗi lượt gọi, không đọc lúc nạp module — script đặt biến sau khi đã import
+const nganSachThu = () => Number(process.env.AI_NGAN_SACH_TOKEN) || 0;
+const nhanLog = () => (process.env.AI_NHAN ?? '').trim();
+let daTieuThu = 0;
+export class VuotNganSachError extends Error {
+  name = 'VuotNganSachError';
+}
+function kiemNganSachThu() {
+  if (nganSachThu() && daTieuThu >= nganSachThu()) {
+    throw new VuotNganSachError(`Vượt ngân sách lượt thử: đã dùng ${daTieuThu} / ${nganSachThu()} token (AI_NGAN_SACH_TOKEN)`);
+  }
+}
+/** Token đã dùng trong tiến trình này — script in ra cuối lượt */
+export function tokenDaDung(): number {
+  return daTieuThu;
+}
+
 export async function goiVoiFallback(
   req: ChatRequest,
   uuTienProvider?: string,
@@ -50,6 +72,15 @@ export async function goiVoiFallback(
     const chon = danhSach.filter((m) => `${m.provider}|${m.model}` === uuTienProvider);
     const conLai = danhSach.filter((m) => `${m.provider}|${m.model}` !== uuTienProvider);
     if (chon.length) danhSach = [...chon, ...conLai];
+    /*
+     * Script đo (AI_KHONG_LUI=1, đặt bởi scripts/thu-chung.ts): giám khảo được chỉ định mà không gọi
+     * được thì BÁO LỖI, không lặng lẽ lùi sang model khác — 26/09/2026 "giám khảo groq" không gọi được
+     * nên mọi phiếu rơi về luna (model đắt nhất), vừa tốn gấp nhiều lần vừa làm hỏng phép đo nhiều giám khảo.
+     */
+    if (process.env.AI_KHONG_LUI === '1') {
+      if (!chon.length) throw new KhongCoModelError();
+      danhSach = chon;
+    }
   }
 
   // Biết trước model nào đã cạn lượt trong ngày thì bỏ qua luôn, thay vì tiêu
@@ -85,8 +116,14 @@ export async function goiVoiFallback(
     }
 
     try {
+      kiemNganSachThu();
       const kq = await goiModel(m.provider, m.model, m.apiKey, req);
-      await ghiNhanSuDung(m.provider, m.model, kq.tokensIn ?? 0, kq.tokensOut ?? 0);
+      daTieuThu += (kq.tokensIn ?? 0) + (kq.tokensOut ?? 0);
+      // Cho scripts/thu-chung.ts đọc lúc thoát mà không phải import module này
+      (globalThis as { __celestiaTokenDaDung?: number }).__celestiaTokenDaDung = daTieuThu;
+      // Lượt chạy thử / đo (script đặt AI_NHAN=test) ghi riêng dòng "<model>@test" — tách chi phí
+      // test khỏi chi phí người dùng thật trong ai_usage_logs (26/09/2026: test ~70% lượng dùng một ngày)
+      await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, kq.tokensIn ?? 0, kq.tokensOut ?? 0, false, { dem: kq.tokensDem, nghi: kq.tokensNghi });
       return { ...kq, daThuHong };
     } catch (e) {
       if (e instanceof AiRetryableError) {
