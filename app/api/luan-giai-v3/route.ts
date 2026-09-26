@@ -50,7 +50,21 @@ const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
  * đây khi lát cắt của nó đã đạt đủ ngưỡng 11.2 — đo bằng scripts/do-thu-vien.ts và
  * scripts/so-sanh-v3.ts --du. Rỗng = thư viện chưa chạy cho người dùng.
  */
-const CAU_THU_VIEN = new Set<string>([]);
+const CAU_THU_VIEN = new Set<string>(['SN01', 'SN02', 'SN03', 'SN05', 'SN06']);
+
+/**
+ * BẬT 26/09/2026 theo quyết định chủ dự án ("đẩy thư viện lên, tôi tự check trên lá số") — dù
+ * lát cắt chưa đạt ngưỡng 11.2 / 11.7 (KIEN-TRUC-LUAN-GIAI.md, QĐ-16). Chỉ năm câu Sự nghiệp
+ * không hỏi thời điểm; chỉ đợt trích lượt 2.
+ */
+const DOT_THU_VIEN = 'sn-2,sn-2b';
+
+/**
+ * Dấu kho MONG ĐỢI của một câu: câu dùng thư viện mang thêm đợt thư viện. Nhờ vậy câu Sự nghiệp
+ * đã viết trước khi bật thư viện hiện nút "Tạo bản mới" — và CHỈ năm câu ấy (+ tóm lại) được viết
+ * lại, không đụng câu hay chủ đề khác.
+ */
+const khoMongDoi = (kho: string | null, id?: string) => (kho && id && CAU_THU_VIEN.has(id) ? `${kho}|tv:${DOT_THU_VIEN}` : kho);
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -222,7 +236,8 @@ export async function POST(req: Request) {
       // Kèm phiên bản khung: khung đổi câu hỏi thì tóm lại cũ (viết từ câu cũ) không được dùng lại
       const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}` };
       const daTom = await docCoLui<{ tomLai: string; kho?: string }>(khoaTom, bamCu);
-      const khoTom = await phienBanKho();
+      // Tóm lại của chủ đề có câu dùng thư viện mang dấu thư viện — viết lại khi các câu được viết lại
+      const khoTom = khoMongDoi(await phienBanKho(), ids.find((id) => CAU_THU_VIEN.has(id)));
       // Tạo bản mới: tóm lại viết với kho cũ thì viết lại từ các câu (vừa được viết lại)
       if (daTom?.noiDung?.tomLai && !(taoMoi && khoTom && khoCua(daTom.noiDung) !== khoTom)) {
         return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
@@ -252,11 +267,11 @@ export async function POST(req: Request) {
     );
     const kho = await phienBanKho();
     // Có câu viết với kho cũ thì người đã đăng nhập được thấy nút "Tạo bản mới"
-    const coBanMoi = (ds: CauTraRaV3[]) => Boolean(kho) && ds.some((c) => !c.chuaViet && khoCua(c) !== kho);
+    const coBanMoi = (ds: CauTraRaV3[]) => Boolean(kho) && ds.some((c) => !c.chuaViet && khoCua(c) !== khoMongDoi(kho, c.id));
     if (taoMoi) {
       if (!kho) return NextResponse.json({ loi: 'Chưa đọc được kho tri thức, thử lại sau ít phút.' }, { status: 503 });
       // Chỉ câu viết với kho cũ; câu đã theo kho hiện tại giữ nguyên — mỗi phiên bản kho một lần
-      for (const id of phamVi) if (daCo.get(id) && khoCua(daCo.get(id)!) !== kho) daCo.delete(id);
+      for (const id of phamVi) if (daCo.get(id) && khoCua(daCo.get(id)!) !== khoMongDoi(kho, id)) daCo.delete(id);
     }
     const thieu = phamVi.filter((id) => !daCo.has(id));
 
@@ -302,7 +317,7 @@ export async function POST(req: Request) {
       .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
     const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
 
-    const thuVien = thieu.some((id) => CAU_THU_VIEN.has(id)) ? { muc: await docThuVien(nhom), cau: CAU_THU_VIEN } : undefined;
+    const thuVien = thieu.some((id) => CAU_THU_VIEN.has(id)) ? { muc: await docThuVien(nhom, DOT_THU_VIEN), cau: CAU_THU_VIEN } : undefined;
     const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi, thuVien });
     /*
      * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
@@ -317,7 +332,7 @@ export async function POST(req: Request) {
         id: k.id, cauHoi: k.cauHoi, luanGiai: k.luanGiai, viSao: k.viSao, doRo: k.doRo, chuaViet: false,
         yChinh: k.danY.map((y) => y.y).filter(Boolean),
         goiY: k.goiY || undefined,
-        kho: kho ?? undefined,
+        kho: khoMongDoi(kho, k.id) ?? undefined,
         ghep: k.danY.some((y) => y.ghep) ? k.danY.filter((y) => y.ghep && y.y).map((y) => y.y).slice(0, 5) : undefined,
       });
     }

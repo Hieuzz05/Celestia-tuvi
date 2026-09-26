@@ -16,38 +16,82 @@ import type { MucThuVien } from './kieu';
 const CHART_HASH = 'thu-vien';
 const BE_MAT = 'thu-vien';
 const HAN_MS = 5 * 60_000;
-let dem: { luc: number; ds: MucThuVien[] } | null = null;
+/** Khoá của GÓI một đợt — cả đợt trong một dòng, đọc bằng khoá chính xác qua chỉ mục duy nhất */
+const khoaGoi = (dot: string) => `goi:${dot}`;
 
+/** Đệm theo bộ đợt ("" = mọi đợt) */
+const dem = new Map<string, { luc: number; ds: MucThuVien[] }>();
+
+/**
+ * Đọc thư viện. Có `dot` ("sn-2,sn-2b"): đọc GÓI của từng đợt — lọc theo phien_ban->>dot hay theo
+ * khoảng khoa_ky đều chậm / sai (trường JSON không có chỉ mục: 11,6 giây cho 2.499 mục; collation bỏ
+ * qua gạch nối nên khoảng "TV-SN-2-…" trả rỗng). Gói thiếu thì lùi về đọc từng dòng.
+ */
 export async function docThuVien(chuDe?: string, dot?: string): Promise<MucThuVien[]> {
-  const ds = await docTatCa(chuDe);
-  // Nhiều đợt: "sn-2,sn-2b"
-  const dsDot = dot?.split(',').map((x) => x.trim()).filter(Boolean);
-  return dsDot?.length ? ds.filter((m) => dsDot.includes(m.dotTrich)) : ds;
-}
-
-async function docTatCa(chuDe?: string): Promise<MucThuVien[]> {
-  if (!dem || Date.now() - dem.luc > HAN_MS) {
+  const dsDot = (dot ?? '').split(',').map((x) => x.trim()).filter(Boolean).sort();
+  const khoa = dsDot.join(',');
+  const co = dem.get(khoa);
+  if (!co || Date.now() - co.luc > HAN_MS) {
     const supabase = taoSupabaseAdmin();
     if (!supabase) return [];
-    const ds: MucThuVien[] = [];
+    let ds: MucThuVien[] = [];
     try {
-      for (let tu = 0; ; tu += 1000) {
-        const { data, error } = await supabase
+      let duGoi = dsDot.length > 0;
+      for (const d of dsDot) {
+        const { data } = await supabase
           .from('noi_dung_ai')
           .select('noi_dung')
           .eq('chart_hash', CHART_HASH)
           .eq('be_mat', BE_MAT)
-          .range(tu, tu + 999);
-        if (error) return dem?.ds.filter((m) => !chuDe || m.chuDe.includes(chuDe)) ?? [];
-        ds.push(...(data ?? []).map((d) => d.noi_dung as MucThuVien));
-        if (!data || data.length < 1000) break;
+          .eq('khoa_ky', khoaGoi(d))
+          .eq('ngon_ngu', 'vi')
+          .maybeSingle();
+        if (Array.isArray(data?.noi_dung)) ds.push(...(data!.noi_dung as MucThuVien[]));
+        else duGoi = false;
       }
+      if (!duGoi) ds = (await docTungDong()).filter((m) => !dsDot.length || dsDot.includes(m.dotTrich));
     } catch {
-      return [];
+      return (co?.ds ?? []).filter((m) => !chuDe || m.chuDe.includes(chuDe));
     }
-    dem = { luc: Date.now(), ds };
+    dem.set(khoa, { luc: Date.now(), ds });
   }
-  return dem.ds.filter((m) => !chuDe || m.chuDe.includes(chuDe));
+  return dem.get(khoa)!.ds.filter((m) => !chuDe || m.chuDe.includes(chuDe));
+}
+
+/** Đọc từng dòng mục (chậm — dùng offline hoặc khi chưa có gói) */
+async function docTungDong(): Promise<MucThuVien[]> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return [];
+  const ds: MucThuVien[] = [];
+  for (let tu = 0; ; tu += 1000) {
+    const { data, error } = await supabase
+      .from('noi_dung_ai')
+      .select('noi_dung')
+      .eq('chart_hash', CHART_HASH)
+      .eq('be_mat', BE_MAT)
+      .order('khoa_ky')
+      .range(tu, tu + 999);
+    if (error) throw new Error(error.message);
+    for (const d of data ?? []) if (!Array.isArray(d.noi_dung)) ds.push(d.noi_dung as MucThuVien);
+    if (!data || data.length < 1000) break;
+  }
+  return ds;
+}
+
+/** Dựng lại GÓI cho các đợt từ các dòng mục — gọi sau mỗi lần lưu / sửa mục */
+export async function dongGoi(dots: string[]): Promise<void> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase || !dots.length) return;
+  const tatCa = await docTungDong();
+  for (const d of new Set(dots)) {
+    const ds = tatCa.filter((m) => m.dotTrich === d);
+    const { error } = await supabase.from('noi_dung_ai').upsert(
+      { chart_hash: CHART_HASH, be_mat: BE_MAT, khoa_ky: khoaGoi(d), ngon_ngu: 'vi', noi_dung: ds, phien_ban: { goi: d, so: String(ds.length) } },
+      { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' }
+    );
+    if (error) throw new Error(`Không lưu được gói ${d}: ${error.message}`);
+  }
+  dem.clear();
 }
 
 export async function luuThuVien(ds: MucThuVien[]): Promise<number> {
@@ -67,7 +111,7 @@ export async function luuThuVien(ds: MucThuVien[]): Promise<number> {
     if (error) throw new Error(`Không lưu được thư viện: ${error.message}`);
     da += lo.length;
   }
-  dem = null;
+  await dongGoi([...new Set(ds.map((m) => m.dotTrich))]);
   return da;
 }
 
@@ -76,5 +120,6 @@ export async function xoaDotTrich(dot: string): Promise<void> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return;
   await supabase.from('noi_dung_ai').delete().eq('chart_hash', CHART_HASH).eq('be_mat', BE_MAT).eq('phien_ban->>dot', dot);
-  dem = null;
+  await supabase.from('noi_dung_ai').delete().eq('chart_hash', CHART_HASH).eq('be_mat', BE_MAT).eq('khoa_ky', khoaGoi(dot));
+  dem.clear();
 }

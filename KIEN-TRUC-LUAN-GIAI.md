@@ -619,6 +619,7 @@ Bốn tầng eval của v1 (Phụ lục V1 mục 8) vẫn là khung chung.
 | QĐ-11 | Bài cũ làm mới theo phương án C | "đọc lại phải thấy đúng bài cũ" (CEL-122) | giữ mãi (A); làm mới toàn bộ (B) | — |
 | QĐ-12 | Lát cắt đầu là Sự nghiệp, không phải Tính cách | tính cách chạy tạm ổn bằng nghĩa sao đơn nên không thử được kiến trúc | Tính cách | — |
 | QĐ-13 | Thư viện tạm lưu trong `noi_dung_ai` (bề mặt `thu-vien`) | máy làm không chạy được SQL; bảng có sẵn khoá duy nhất đúng dạng | chờ chủ dự án chạy SQL bảng riêng | chủ dự án chạy `supabase/thu-vien-tri-thuc.sql` (sẽ viết khi lát cắt đạt) |
+| QĐ-16 | BẬT thư viện `sn-2` + `sn-2b` cho SN01, SN02, SN03, SN05, SN06 (26/09) | chủ dự án: "đẩy thư viện lên, tôi tự check trên lá số" — chủ dự án tự nghiệm thu bằng mắt thay cho ngưỡng 11.2 / 11.7 (chưa đạt) | giữ tắt tới khi đạt ngưỡng máy | chủ dự án thấy bài Sự nghiệp kém đi → xoá mã câu khỏi `CAU_THU_VIEN` trong route |
 | QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước; bộ đo độ đúng (11.5–11.6) cũng không thấy B đúng hơn | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
 | QĐ-14 | `THE_HE_DEM` chỉ tăng khi chủ dự án đồng ý | tăng liên tục làm bài "load lại" trên mọi thiết bị | tự tăng khi đổi prompt | — |
 
@@ -626,12 +627,24 @@ Bốn tầng eval của v1 (Phụ lục V1 mục 8) vẫn là khung chung.
 
 ## 15. Chi phí
 
-Số từ `ai_usage_logs`. Quy về "phần trăm lượng tiêu ngày 25/09" (15,6 triệu token vào):
+**Đo lại 26/09/2026 trên 60 câu Sự nghiệp thật** (`chi-tiet.json`, `chi-tiet-B3.json` của lượt đo): mỗi câu
+trung bình **1,25 lượt gọi, 11.678 token vào (41% được nhà cung cấp đệm), 1.429 token ra**; câu dùng thư viện
+**1,37 lượt, 13.250 vào (39% đệm), 1.656 ra**.
+
+| Phần của một lá số | Câu | Token vào | Token ra | ≈ % token vào ngày 25/09 |
+|---|---|---|---|---|
+| Tổng quan | 11 | ~128 nghìn | ~16 nghìn (cận trên — bài tổng quan ngắn hơn) | 0,8% |
+| Một chủ đề chuyên sâu (trung bình 6,3 câu) | 6,3 | ~73 nghìn | ~9 nghìn | 0,5% |
+| Sự nghiệp (8 câu), chưa bật thư viện | 8 | ~93 nghìn | ~11,4 nghìn | 0,6% |
+| Sự nghiệp, bật thư viện cho 5 câu | 8 | ~101 nghìn (+9%) | ~12,6 nghìn (+11%) | 0,65% |
+| **Cả lá số** (tổng quan + 14 chủ đề = 99 câu, + 14 tóm lại + bức tranh lớn) | 99 | **~1,24 triệu** | **~150 nghìn** | **~8%** |
+
+Phần tóm lại / bức tranh lớn chưa đo riêng (ước ~5 nghìn vào, ~0,6 nghìn ra mỗi lượt). Ước tính cũ "cả lá ≈ 76
+lượt ≈ 4,5%" là **thấp** — đo thật ~124 lượt ≈ 8%. Đổi ra tiền: token vào chưa đệm × giá vào + token vào được đệm ×
+giá đệm + token ra × giá ra, theo bảng giá model trên hoá đơn OpenAI.
 
 | Khoản | Ước tính |
 |---|---|
-| Một lá số, tổng quan | ~12 lượt ≈ 0,7% |
-| Một chủ đề chuyên sâu | ~5 lượt ≈ 0,3% |
 | Dựng lát cắt Sự nghiệp (một lần) | ≈ 0,2–0,3 ngày — **chủ dự án đã duyệt 26/09** |
 | Dựng toàn thư viện (một lần) | ≈ 1,3–1,6 ngày; giảm ~một nửa với Batch API — **cần duyệt riêng** |
 | Mỗi lần luận sau khi có thư viện | không tăng; token vào ước giảm 15–25% |
