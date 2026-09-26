@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Dựng cấu hình AI Agent cho Claude Code: .claude/agents (researcher, celes-domain, qa), skill build-feature, specs/, quyền chặn đọc .env | viec/agent-setup | .claude/**, specs/** (không chạm mã chạy) | 26/09/2026 |
+| — | (chưa có việc nào đang chạy) | — | — | — |
 
 ## Đang vướng — đừng đụng vào
 
@@ -29,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **Cấu hình AI Agent cho Claude Code**: `.claude/agents` (researcher chỉ đọc, celes-domain thẩm định Tử Vi, qa chạy cổng kiểm), skill `/build-feature <mã>` (Spec → Research → Domain → Plan DỪNG chờ duyệt → Code → QA), `specs/_MAU.md`, `.claude/settings.json` chặn đọc .env và force push. Máy kia `git pull` là có | `38a8687` | 26/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-148 giảm chi phí API không đổi đầu ra — sửa cục bộ (`lib/rag/v3/sua-cuc-bo.ts`), `prompt_cache_key` mọi bề mặt, khối cố định theo câu hỏi đứng trước sổ ý (prompt 2026.09.18); ghi token đệm / suy nghĩ cần chạy `supabase/va-chi-phi-token.sql` (CHƯA chạy — mã tự lùi). Test: MỌI script đo / dựng gọi `batDauLuotThu()` (`scripts/thu-chung.ts`): trần 1 tr token, nhãn `@test`, không lùi ngầm sang luna; `--batch` nửa giá; `do-thu-vien.ts` mặc định thăm dò 6×3, `--nghiem-thu` cho 60 cặp. Ước −20–25% mỗi câu, CHƯA đo thật (OpenAI hết credit) | `3880013` | 26/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-147 BẬT thư viện tri thức cho SN01, SN02, SN03, SN05, SN06 (`CAU_THU_VIEN`, đợt `sn-2,sn-2b`) theo quyết định chủ dự án tự nghiệm thu (QĐ-16). Câu Sự nghiệp đã viết trước đó hiện nút "Tạo bản mới" (dấu kho theo câu `khoMongDoi`). Thư viện đọc theo GÓI mỗi đợt (`goi:<đợt>`, 0,6 giây) — sửa mục thì gọi `dongGoi()`. Tắt: xoá mã câu khỏi `CAU_THU_VIEN`. Chưa sinh được bài mới vì OpenAI hết credit | `02bf475` | 26/09/2026 |
 | CEL-145 nguyên nhân gốc thư viện (KIEN-TRUC 11.7): giám khảo kiến thức hợp lệ, KT phẳng; thư viện chỉ phủ 15% điểm đáp án chuyên gia (3% có độ sáng) → cần sửa KHÂU TRÍCH trước (bắt độ sáng, cung, sao đi cùng). `scripts/do-kien-thuc.ts` = thước kiến thức dùng lại được; đáp án lưu ngoài repo. Thư viện vẫn tắt | `viec/rootcause-thu-vien` | 26/09/2026 |
