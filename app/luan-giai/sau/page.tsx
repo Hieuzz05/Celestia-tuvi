@@ -12,6 +12,7 @@ import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
 import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
 import { QuayLai } from '@/components/QuayLai';
+import { XuatLuanGiai, type BaiDaDoc } from '@/components/luangiai/XuatLuanGiai';
 
 /**
  * LUẬN GIẢI CHUYÊN SÂU v3 (CEL-119) — 14 chủ đề, 61 câu hỏi.
@@ -233,6 +234,15 @@ function TrangSau() {
     setChon(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  // Nút xuất (chỉ quản trị viên): các chủ đề đã đọc trọn — đủ câu, đã có tóm lại, không lỗi
+  const daDocTron: Record<string, BaiDaDoc> = {};
+  for (const [id, tt] of Object.entries(bai)) {
+    if (!tt.dang && tt.cau && !tt.conCho && !tt.dangTom && !tt.loi) daDocTron[id] = { cau: tt.cau, tomLai: tt.tomLai };
+  }
+  const daNapKhiXuat = (id: string, b: BaiDaDoc) => {
+    daGui.add(id);
+    setBai((cu) => (cu[id] && !cu[id].dang ? cu : { ...cu, [id]: { dang: false, cau: b.cau, tomLai: b.tomLai, dangTom: false } }));
+  };
   const thuLai = () => {
     daGui.delete(chon);
     setBai((cu) => {
@@ -331,15 +341,24 @@ function TrangSau() {
         {/* ---------- Bài của chủ đề đang mở ---------- */}
         <main className="flex min-w-0 flex-1 flex-col gap-[24px] lg:max-w-[700px]">
           <header className="flex flex-col items-start gap-[12px]">
-            <span
-              className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold uppercase tracking-[0.08em]"
-              style={{
-                background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
-                color: 'var(--accent)',
-              }}
-            >
-              Luận giải chuyên sâu · Năm xem {namXem}
-            </span>
+            <div className="flex w-full flex-wrap items-center justify-between gap-[12px]">
+              <span
+                className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold uppercase tracking-[0.08em]"
+                style={{
+                  background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
+                  color: 'var(--accent)',
+                }}
+              >
+                Luận giải chuyên sâu · Năm xem {namXem}
+              </span>
+              <XuatLuanGiai
+                thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem, ten: params.get('ten') ?? '' }}
+                chuDeDangXem={laBuc ? null : chuDe.id}
+                daDoc={daDocTron}
+                danChuDe={DAN_CHU_DE}
+                onDaNap={daNapKhiXuat}
+              />
+            </div>
             <h1 className="heading">{laBuc ? 'Bức tranh lớn của cuộc đời bạn' : chuDe.ten}</h1>
             <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
               {laBuc
