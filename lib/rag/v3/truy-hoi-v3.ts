@@ -42,7 +42,7 @@ export const DIEM_TIN_CAY: Record<string, number> = {
  * thì đúng những câu phú quý nhất của kho bị chấm là "không nhắc sao nào".
  * Chỉ lấy tên tắt ít trùng lời thường; "Cơ", "Đồng", "Cự" để ngoài.
  */
-const TEN_TAT: Record<string, string[]> = {
+export const TEN_TAT: Record<string, string[]> = {
   'Vũ Khúc': ['vu'], 'Thiên Tướng': ['tuong'], 'Liêm Trinh': ['liem'], 'Tham Lang': ['tham'],
   'Phá Quân': ['pha'], 'Thiên Lương': ['luong'], 'Thái Âm': ['nguyet'], 'Thái Dương': ['nhat'],
   'Thất Sát': ['that sat'], 'Thiên Phủ': ['phu'], 'Tử Vi': ['tu vi'], 'Thiên Cơ': ['thien co'],
@@ -55,7 +55,7 @@ const CHINH_TINH_TEN = new Set([
 ]);
 
 const TIEU_DE_RAC = /(la so|lich su|chu tinh|thuat ngu|pdf|muc luc|loi noi dau|an sao|cach an|bang tra|dieu thuyen)/;
-function laDoanRac(d: { tieuDe: string; duongDeMuc: string | null; noiDung: string }): boolean {
+export function laDoanRac(d: { tieuDe: string; duongDeMuc: string | null; noiDung: string }): boolean {
   const td = boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''}`);
   if (TIEU_DE_RAC.test(td)) return true;
   const tu = boDau(d.noiDung).split(/[^a-z0-9]+/).filter(Boolean);
@@ -70,7 +70,7 @@ function laDoanRac(d: { tieuDe: string; duongDeMuc: string | null; noiDung: stri
   return hoa > 0.5 && cham < 2;
 }
 
-const BI_DANH_CUNG: Record<string, string[]> = {
+export const BI_DANH_CUNG: Record<string, string[]> = {
   'Mệnh': ['menh', 'mang'],
   'Phụ Mẫu': ['phu mau'],
   'Phúc Đức': ['phuc duc', 'phuc'],

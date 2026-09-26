@@ -12,7 +12,7 @@ import { DO_DAI_V3 } from './prompt-v3';
 
 export interface BaiV3 {
   /** `ghep`: ý ghép nghĩa hai sao trở lên mà không đoạn nguồn nào nói về chính tổ hợp ấy — ghi lại để bổ sung kho */
-  danY: { y: string; canCu: string[]; ghep?: boolean }[];
+  danY: { y: string; canCu: string[]; ghep?: boolean; sao?: string[] }[];
   luanGiai: string;
   viSao: string;
   /** Gợi ý tách khỏi bài luận (25/09/2026) */

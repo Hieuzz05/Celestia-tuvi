@@ -1,4 +1,460 @@
-# Kiến trúc luận giải Celes — bản chốt v1
+# Kiến trúc luận giải Celes — bản v2
+
+> Tài liệu thiết kế. Viết cho chủ dự án (người quyết) và người/AI sẽ làm.
+> v2 ngày 2026-09-26: gộp bản kiến trúc v1 (22/09) với thiết kế Thư viện tri thức,
+> sau ba vòng phản biện và các quyết định của chủ dự án ngày 26/09.
+>
+> **Cách đọc:** mỗi mục ghi rõ **[ĐANG CHẠY]** (có mã trên production) hay **[ĐÍCH]**
+> (mới trên giấy). Đừng cắm việc mới vào một lớp chỉ có trên giấy.
+>
+> Bản v1 giữ nguyên ở **Phụ lục V1** cuối tài liệu. Chú thích trong mã trỏ tới "mục 1",
+> "mục 7.2", "A1–A5", "mục 11" là số mục **của Phụ lục V1**.
+
+---
+
+## 1. Vấn đề và mục tiêu
+
+**Phản hồi gốc về văn (22/09):** lan man, trừu tượng, lủng củng, lặp ý giữa các phần.
+Phase A của v1 và luồng v3 đã xử phần lớn (xem mục 2).
+
+**Mục tiêu chuyên môn (26/09) — chủ dự án đặt:** khi luận một lá số, Celes phải
+
+1. xét **đủ mọi sao**: chính tinh, phụ tinh, sao vòng, tứ hoá, lưu tinh;
+2. biết **nghĩa từng sao**: nghĩa chung, nghĩa ở từng cung, nghĩa theo độ sáng;
+3. biết **sao nào đi theo bộ** và bộ đó nghĩa gì;
+4. biết **khi kết hợp** (bộ với chính tinh, bộ với bộ) thì nghĩa đổi ra sao, kể cả
+   ngoại lệ kiểu phản vi kỳ cách;
+5. **luận hạn nhiều tầng**: đại vận, tiểu hạn, lưu niên, nguyệt hạn, lưu tinh, tứ hoá
+   theo Bắc phái.
+
+---
+
+## 2. Hiện trạng [ĐANG CHẠY] — rà trên mã ngày 26/09/2026
+
+### 2.1 Luồng luận giải v3 (production)
+
+```
+engine (lib/tuvi) → dữ kiện F### theo ma trận cung (lib/rag/v3/du-kien.ts)
+  → truy hồi THEO TỪNG CUNG → đoạn sách E### (lib/rag/v3/truy-hoi-v3.ts)
+  → MỘT lượt gọi: dàn ý có mã căn cứ → bài luận → "vì sao" → gợi ý (prompt-v3.ts)
+  → kiểm bằng mã (kiem-v3.ts + các kiểm trong index.ts)
+  → lỗi chặn: MỘT vòng sửa có chỉ đích → kiểm lại
+  → đệm theo lá số + năm + nhóm (noi_dung_ai), mỗi lá số chỉ sinh một lần
+```
+
+Route `/api/luan-giai-v3`: tổng quan mở cho khách (giới hạn 3 lá số mới / ngày / IP),
+chuyên sâu cần đăng nhập, cắt cứng ở 52 giây.
+
+### 2.2 Những gì đã có — không làm lại
+
+| Hạng mục | Ở đâu |
+|---|---|
+| Truy hồi lai vector + từ khoá, trộn RRF | `lib/rag/truy-hoi.ts` |
+| Truy hồi theo cung, chấm khớp sao–cung, lọc đoạn rác, xoay vòng giữa truy vấn | `lib/rag/v3/truy-hoi-v3.ts` |
+| Mức tin cậy tài liệu **có tác dụng thật**: cộng điểm sau cổng khớp, nhãn trong prompt, kiểm "bổ trợ không làm căn cứ duy nhất"; admin gán lại được | `truy-hoi-v3.ts` `DIEM_TIN_CAY`, `lib/rag/tai-lieu-meta.ts`, `/admin/knowledge` |
+| Luật ngầm (ghi chú chuyên gia, nội bộ): dùng nhưng không nhắc | `LOAI_NGUON_AN`, kiểm `lo-luat-ngam` |
+| Luật ghép nghĩa hai sao (được ghép trừ khi nguồn nói ngược) + cờ `ghep` | `prompt-v3.ts` luật 12 |
+| Sổ ý chống lặp giữa các phần | `lib/rag/v3/so-y.ts` |
+| Phiên bản kho trên mỗi câu + nút "Tạo bản mới" | `phienBanKho()`, route `taoMoi` |
+| Phase A của v1: ngân sách từ là trần, chỗ cắm mẫu vàng, chia ba nhóm luật | Phụ lục V1 mục 9 |
+| Bộ đo so mù nhiều giám khảo | `scripts/so-sanh-v3.ts` |
+
+### 2.3 Những gì CHƯA có — dù v1 vẽ trong sơ đồ
+
+**Claim Synthesizer** và **Content Planner** (Phụ lục V1 mục 5–7) **chưa có dòng mã
+nào**: không có `lib/rag/claim.ts`, không có `ke-hoach-noi-dung.ts`. Luồng v3 làm dàn ý
+có mã căn cứ ngay trong một lượt prompt. Thư viện tri thức cắm vào **luồng v3**, không
+cắm vào hai lớp đó.
+
+### 2.4 Lỗ hổng so với mục tiêu chuyên môn
+
+| Hạng mục | Đang có | Lỗ hổng |
+|---|---|---|
+| Sao đưa vào dữ kiện | chính tinh, tứ hoá, ~30 phụ tinh cát/hung | ~50 sao bị bỏ trừ khi thuộc chủ đề |
+| Nghĩa sao | một dòng chung mỗi sao (từ điển engine) | không theo cung, không theo độ sáng, không có nguồn |
+| Nghĩa tổ hợp | model tự ghép (nay có luật 12 + cờ `ghep`) | không có tri thức riêng về tổ hợp |
+| Cách cục | engine nhận 25 cách; mỗi câu chỉ truy vấn sách cho 2 | mất thông tin trên lá số nhiều cách |
+| Truy hồi | mỗi cung một truy vấn, chỉ chính tinh + tứ hoá, 8 đoạn / câu | phụ tinh không được hỏi đích danh |
+| Vận hạn | đại vận, tiểu hạn, nguyệt hạn, 9 lưu tinh, lưu tứ hoá | chưa có tứ hoá đại vận, chưa có phi hoá |
+
+Gốc chung: tri thức được **lấy lúc người dùng chờ**, nên mọi con số bị bóp theo thời
+gian của route.
+
+---
+
+## 3. Đích [ĐÍCH]
+
+```
+TẦNG 1 — ENGINE: an sao, tính quan hệ → hợp đồng dữ kiện (mục 5)
+        ↓
+TẦNG 2 — THƯ VIỆN TRI THỨC: dựng TRƯỚC (offline), lúc luận chỉ TRA
+         mọi mục có điều kiện khớp lá số, không giới hạn số sao / số bộ
+        ↓
+LUỒNG v3 ĐANG CHẠY: dàn ý có mã (thêm mã T### cho mục thư viện) → bài → kiểm
+        ↓
+người đọc
+
+Thư viện thiếu mục → dùng đoạn sách như hiện nay (nhãn "chưa kiểm")
+  → ghi SỔ LỖ HỔNG → bổ sung thư viện OFFLINE (không trích lúc người dùng chờ)
+```
+
+Kho sách không bị bỏ: nó là lưới đỡ, và mỗi lần phải dùng tới là một tín hiệu bổ sung.
+
+---
+
+## 4. Mười nguyên tắc
+
+1. Dữ kiện lá số do engine tính, không do AI.
+2. Tri thức nào cũng phải có căn cứ trỏ về một đoạn cụ thể.
+3. **Tổ hợp có tri thức riêng thì theo tri thức đó.** Được ghép nghĩa hai sao đơn lẻ khi
+   thư viện và sách không nói gì về tổ hợp ấy (chủ dự án chốt 26/09) — nhưng ý ghép
+   được đánh dấu ngầm và cặp sao vào sổ lỗ hổng. Ghép ngược với một mục có sẵn là lỗi.
+4. Chỉ dùng những kiểu quan hệ engine tính được (bộ từ vựng đóng, mục 5.2).
+5. Mặc định là **cộng thêm**; điều chỉnh / hoá giải / thay thế phải chỉ rõ mục đích và có
+   chữ trong sách nói rõ.
+6. Độ tin đến từ bằng chứng (mức tin cậy tài liệu, số nguồn độc lập), không từ model tự chấm.
+7. Trường phái là phạm vi áp dụng, không phải mâu thuẫn.
+8. Thư viện không chứa câu văn của bài viết: mỗi mục là **một câu nghĩa trung tính**.
+9. Thư viện đổi thì không lặng lẽ đổi bài đã giao — người đọc tự bấm "Tạo bản mới".
+10. Câu trích sách nằm trong Supabase, **không vào repo** (repo công khai, sách có bản quyền).
+
+---
+
+## 5. Hợp đồng dữ kiện engine
+
+### 5.1 Kiểm kê — đo trên 720 lá số tổng hợp ngày 26/09/2026 [ĐANG CHẠY]
+
+| Dữ kiện | Engine có? | Chi tiết đo được | Ghi chú cho thư viện |
+|---|---|---|---|
+| Chính tinh | có | 14 | có độ sáng M/V/Đ/B/H |
+| Phụ tinh | có | 55 tên | độ sáng chỉ có cho một phần (dưới) |
+| Sao vòng (Bác Sĩ, Thái Tuế, …) | có | 24 tên, loại `vong-sao` | trùng tên với phụ tinh ở vài sao (Đại Hao, Tiểu Hao, Tang Môn, Bạch Hổ) — khớp theo tên đủ |
+| Tứ hoá gốc | có | 4, là một "sao" đặt cùng cung với sao được hoá | **không ghi sao nào được hoá**; suy lại được từ `TU_HOA[canNam]` — hợp đồng phải thêm trường `hoaCua` |
+| Độ sáng | có | 32 sao: 14 chính tinh + Kình, Đà, Không, Kiếp, Hoả, Linh, Xương, Khúc, Mã, Riêu, Hình, Khốc, Hư, Tang Môn, Bạch Hổ, Đại Hao, Tiểu Hao, Hoá Kỵ | phụ tinh ngoài danh sách này không mang độ sáng → mục có điều kiện độ sáng cho chúng là không khớp được |
+| Tuần, Triệt | có | thuộc tính cung (`coTuan`, `coTriet`), ~2 cung mỗi loại / lá | không phải sao — hợp đồng biểu diễn là thuộc tính cung |
+| Vòng Tràng Sinh | có | 12 giai đoạn, thuộc tính cung (`trangSinh`) | như trên |
+| Vô chính diệu | có | ~2 cung / lá; dữ kiện v3 đã ghi "mượn chính tinh cung xung chiếu" | quan hệ `muon-tu` (mục 5.2) |
+| Cung Thân | có | `laCungThan`, `thanCuCung` | |
+| Cách cục | có | 25 cách định nghĩa, 23 gặp trên mẫu (Xương Khúc 35%, Sát Phá Tham 23%, …) | `lib/tuvi/cach-cuc.ts` |
+| Đại vận, tiểu hạn, nguyệt hạn | có | `cungDaiVan`, `cungTieuHan`, `cungNguyetHan` | |
+| Lưu tinh theo năm | có | 9: Thái Tuế, Lộc Tồn, Kình, Đà, Mã, Khốc, Hư, Tang Môn, Bạch Hổ | |
+| Lưu tứ hoá theo năm | có | theo can năm xem | |
+| Tứ hoá đại vận | **chưa** | | chỗ đặt sẵn trong hợp đồng (lớp `dai-van`) |
+| Phi hoá Bắc phái, tự hoá | **chưa** | | chỗ đặt sẵn: quan hệ `hoa-den`, `tu-hoa` |
+
+### 5.2 Bộ từ vựng quan hệ — đóng, do engine quyết
+
+Mọi quan hệ **neo vào một cung gốc** (cung đang luận):
+
+| Quan hệ | Nghĩa | Ví dụ |
+|---|---|---|
+| `o-cung` | sao nằm tại cung gốc | Tử Vi tại Quan Lộc |
+| `xung` | sao ở cung xung chiếu | Tham Lang chiếu từ Phu Thê |
+| `tam-hop` | sao ở một trong hai cung tam hợp | |
+| `tam-phuong` | sao ở bất kỳ cung nào trong tam phương tứ chính (gốc + xung + 2 tam hợp) | "Quan Lộc hội Tả Hữu" |
+| `giap` | **hai** sao ở **hai** cung kề, kẹp cung gốc — cần đủ cả hai bên | Kình Đà giáp Mệnh |
+| `muon-tu` | cung gốc vô chính diệu, mượn chính tinh cung xung | |
+| *(đặt sẵn)* `hoa-den`, `tu-hoa` | phi hoá từ can cung A vào cung B; tự hoá | chưa tính — không mục nào được dùng cho tới khi engine có |
+
+Thuộc tính cung: `tuan`, `triet`, `trangSinh`, `voChinhDieu`, `laThan`. Thuộc tính sao:
+`doSang`, `lop` (`goc` | `dai-van` | `luu-nien` | `nguyet`).
+
+---
+
+## 6. Thư viện tri thức [ĐÍCH — lát cắt đầu đang làm, mục 11]
+
+### 6.1 Một mục
+
+```ts
+interface MucThuVien {
+  id: string;                        // "TV-SN-0042"
+  schemaVersion: 1;
+  chuDe: string[];                   // ['su-nghiep']
+  dieuKien: {
+    cung: string[];                  // cung gốc được phép neo: ['Quan Lộc'] — rỗng = mọi cung
+    sao: { ten: string; quanHe: QuanHe; doSang?: string[] }[];  // phải có đủ
+    khong?: { ten: string; quanHe: QuanHe }[];                  // phải vắng (phá cách)
+    thuocTinh?: { tuan?: boolean; triet?: boolean; trangSinh?: string[]; voChinhDieu?: boolean };
+  };
+  y: string;                         // MỘT câu nghĩa trung tính, ≤ 45 chữ
+  nhan: { chieu: 'cat' | 'hung' | 'trung'; muc: 'manh' | 'vua' | 'nhe'; linhVuc: string[] };
+  cheDo: 'add' | 'modify' | 'neutralize' | 'override';
+  dich?: string[];                   // id mục bị tác động — BẮT BUỘC khi cheDo ≠ add
+  canCu: { chunkId: string; documentId: string; trich: string }[];  // ≥ 1
+  truongPhai: 'chung' | 'nam-phai' | 'bac-phai' | 'celes';
+  duyet: 'chua' | 'da-duyet' | 'bi-bac';
+  dotTrich: string;                  // đợt trích sinh ra mục — số đo nằm ở đợt, không ở mục
+}
+```
+
+Luật của trường `y` — kiểm bằng mã: ≤ 45 chữ; không "bạn"; không "nên / hãy / cần phải";
+không từ nối chuyển ý kiểu kể chuyện. `y` là ngữ nghĩa, bài văn là việc của khâu viết.
+
+**Mức tin cậy không nằm trong mục.** Mục trỏ tới tài liệu qua `canCu.documentId`; mức
+đọc tươi từ `knowledge_documents`. Admin đổi mức một tài liệu là mọi mục theo ngay.
+
+**Trạng thái duyệt là của từng mục; độ chính xác là của cả đợt trích** ("đợt 3: đúng
+92% trên 100 mẫu"). Không có trạng thái "đã lấy mẫu" cho một mục.
+
+**Nguồn chuyên gia Celes** (`truongPhai: 'celes'`, tài liệu loại ghi chú chuyên gia) là
+luật ngầm: tham gia khớp và phân xử như mọi mục, nhưng bài không bao giờ nhắc tới.
+Chỉ trang quản trị thấy.
+
+### 6.2 Chế độ tương tác
+
+| Chế độ | Nghĩa | Khi nào được gán |
+|---|---|---|
+| `add` (mặc định) | chồng thêm nghĩa | luôn luôn |
+| `modify` | đổi mức / sắc thái của mục đích | câu trích có dấu hiệu rõ + có `dich` |
+| `neutralize` | hoá giải mặt xấu của mục đích | câu trích có "giải", "hoá giải", "không sợ", "chẳng kỵ"… + có `dich` |
+| `override` | thay hẳn nghĩa mục đích (phản vi kỳ cách, phá cách) | câu trích có "phản vi", "trái lại", "lại thành", "phá cách"… + có `dich` |
+
+Thiếu dấu hiệu hoặc thiếu đích → **ép về `add`** (bằng mã). Mặc định `add` vì nó không
+bao giờ lặng lẽ xoá tri thức.
+
+---
+
+## 7. Dựng thư viện — offline
+
+1. **Chọn đoạn**: từ trên xuống (khoá sao × cung của chủ đề, nhiều cách viết: tên đủ,
+   tên tắt "Vũ, Tướng", tên cung cổ "Bào", "Thê") và từ dưới lên (đọc trọn các mục sách
+   đặt tên theo cung của chủ đề). Chiều dưới lên là cách duy nhất bắt được ngoại lệ hiếm.
+2. **Trích**: model đọc lô đoạn, trả các mục theo lược đồ 6.1 kèm câu trích nguyên văn.
+3. **Kiểm tất định** — trượt là bỏ, không nhờ model:
+   - câu trích có nguyên văn trong đoạn (chuẩn hoá khoảng trắng);
+   - mọi tên sao trong điều kiện có trong từ điển engine; độ sáng chỉ cho 32 sao có độ sáng;
+   - mọi sao và cung trong điều kiện **được nhắc** trong câu trích, câu liền trước hoặc đề
+     mục (dùng bảng tên tắt / bí danh cung của `truy-hoi-v3.ts`);
+   - `y` qua luật 6.1; chế độ ≠ `add` phải qua luật 6.2.
+4. **Gộp**: cùng điều kiện, cùng chiều → một mục, nhiều căn cứ. Bỏ bản chép phú của nhau
+   (hàm `doTrung` có sẵn).
+5. **Mâu thuẫn**: cùng điều kiện, ngược chiều → giữ cả hai, mục chưa duyệt, vào hàng duyệt.
+6. **Đo đợt trích**: tỉ lệ qua kiểm tất định; lấy mẫu chấm độ đúng.
+
+**Sổ lỗ hổng**: lúc luận, cấu hình không khớp mục nào và các cặp sao bị ghép → đếm vào
+sổ (không lưu ngày giờ sinh, chỉ cấu hình). Sổ là danh sách việc bổ sung, xếp theo tần
+suất. **Bản đồ độ phủ** lấy thẳng từ sổ này.
+
+---
+
+## 8. Lúc luận — tra thư viện
+
+1. **Bộ khớp** chạy trên các cung câu hỏi đọc, qua **chỉ mục theo tên sao** (không duyệt
+   hết thư viện). So điều kiện trong bộ nhớ — mili-giây, nên không còn "2 cách cục",
+   "một truy vấn mỗi cung".
+2. **Gom nhóm**: mục tổ hợp đứng cùng các mục đơn cấu thành nó — tổ hợp là hiệu ứng chung,
+   mục đơn là nền.
+3. **Chế độ**: `override` / `neutralize` gắn cờ lên mục đích (mục đích vẫn hiện, kèm chú
+   "bị … lật / hoá giải") — model không phải tự đoán.
+4. **Xung đột**: hai mục `add` ngược chiều cát/hung cùng khớp trên một cung → vẫn đưa cả
+   hai, kèm lời dặn "cân cả hai", và cặp đó vào hàng duyệt ưu tiên cao (dấu hiệu một chế độ
+   lẽ ra phải là `override`).
+5. **Ngân sách**: chọn theo ngân sách chữ, xếp theo: tổ hợp trước → khớp cung chính →
+   mức tin cậy → `muc`.
+6. **Mã T###** trong prompt cạnh F### và E###; dàn ý trích T### như trích E###.
+7. **Kho sách dự phòng**: vẫn truy hồi đoạn sách; khi thư viện đã khớp đủ, số đoạn sách
+   giảm để giữ độ dài prompt.
+
+---
+
+## 9. Vận hạn [ĐÍCH — sau lát cắt đầu]
+
+Bổ sung engine: tứ hoá đại vận, phi hoá Bắc phái (cần chủ dự án chọn nhánh). An sao vẫn
+Nam phái; Bắc phái chỉ dùng cho vận hạn (AGENTS.md quyết định số 1). Luận năm = chồng lớp
+gốc / đại vận / lưu niên, khớp các mục có điều kiện `lop`.
+
+---
+
+## 10. Phiên bản và làm mới bài cũ [ĐANG CHẠY]
+
+- Mỗi lá số chỉ sinh một lần (CEL-122); khoá đệm không chứa phiên bản.
+- Mỗi câu lưu `kho` = dấu vân tay kho tri thức đang xuất bản; bản ghi lưu phiên bản
+  prompt / khung / dữ kiện / truy hồi ở cột `phien_ban`.
+- **Phương án C** (chủ dự án chốt): người đã đăng nhập bấm "Tạo bản mới" khi kho đổi; mỗi
+  lá số một lần mỗi phiên bản kho. Khách không bấm được.
+- `THE_HE_DEM` chỉ tăng khi chủ dự án đồng ý (đo 26/09: tăng liên tục làm một lá số sinh
+  lại 8 lần trong 2 ngày).
+
+---
+
+## 11. Lát cắt đầu: "Sự nghiệp — lá số gốc"
+
+### 11.1 Phạm vi
+
+- Câu hỏi: **SN01, SN02, SN03, SN05, SN06** — năm câu sự nghiệp không dùng dữ kiện vận
+  hạn. SN04, SN07 (chuỗi đại vận) và SN08 (đại vận + tiểu hạn) nằm ngoài: engine còn thiếu
+  phần vận hạn, đưa vào là đo engine chứ không đo thư viện.
+- Cung: Quan Lộc (chính) + tam phương (Mệnh, Tài Bạch, Thiên Di) + phụ trợ của khung.
+- Thư viện: dự kiến khoảng 200 mục; lượt 1 trích được 1.091 mục từ phần sách liên quan sự nghiệp.
+- Bật trong production **chỉ khi đạt đủ ngưỡng 11.2**.
+
+### 11.2 Ngưỡng đạt — CHỐT TRƯỚC KHI CHẠY (26/09/2026)
+
+Bộ đo: **12 lá số tổng hợp cố định** (sinh bằng hạt giống trong script, không lá số thật)
+× 5 câu = **60 cặp**. Bản A = production hiện tại (prompt 2026.09.17, truy hồi 2026.09.6).
+Bản B = A + thư viện. Cùng model viết.
+
+| # | Tiêu chí | Cách đo | Ngưỡng |
+|---|---|---|---|
+| 1 | Ghép bỏ qua thư viện | ý gắn `ghep` mà cặp sao của nó đã có mục tổ hợp khớp trên lá số, chia cho tổng số ý của B | **≤ 1%** |
+| 2 | Độ phủ căn cứ nguồn | tỉ lệ ý trong dàn ý có ít nhất một mã E### hoặc T### | **B > A** |
+| 3 | Độ phủ thư viện | trên 12 lá × 4 cung (Quan Lộc, Mệnh, Tài Bạch, Thiên Di) = 48 đơn vị: đơn vị có ít nhất một mục khớp neo vào cung đó | **≥ 80%** |
+| 4 | So mù | 3 giám khảo (gpt-oss-120b, gpt-4o-mini, gpt-5.6-luna) chấm **đủ 60 cặp, không dừng sớm**; tỉ lệ thắng = thắng / (thắng + thua), bỏ hoà | **trung bình ≥ 60%**, không giám khảo nào < 50% |
+| 5 | Thời gian | p95 thời gian mỗi câu (ms) | **B ≤ A + 2 giây và B ≤ 45 giây** |
+
+Chỉ theo dõi, **không phải tiêu chí** (đặt làm tiêu chí thì khuyến khích nhồi): số mục T
+dùng mỗi bài, số cặp `add` ngược chiều, tỉ lệ qua kiểm tất định của đợt trích, độ đúng
+trên mẫu.
+
+Trượt một tiêu chí → không bật; báo kết quả kèm khâu hỏng (trích / khớp / căn cứ / bài).
+
+### 11.3 Kết quả lượt 1 — 26/09/2026: TRƯỢT tiêu chí 4, CHƯA bật
+
+Thư viện đợt `sn-1`: 997 đoạn sách → 1.746 ứng viên → **1.295 qua kiểm tất định (74%)** → gộp còn
+**1.091 mục** (741 tổ hợp, 97 mục có ≥ 2 tài liệu độc lập, 19 cặp mâu thuẫn). Tốn 0,64 triệu token vào
+(0,27 triệu được đệm), 0,37 triệu ra.
+
+| # | Tiêu chí | Kết quả | Đạt? |
+|---|---|---|---|
+| 1 | Ghép bỏ qua thư viện | 0,4% (1 / 258 ý) | đạt |
+| 2 | Ý có mã nguồn E / T | A 51,1% → B 78,3% | đạt |
+| 3 | Độ phủ | 48 / 48 = 100% | đạt (xem lưu ý) |
+| 4 | So mù | luna 48% và 42% (hai lượt), gpt-4o-mini 50% (30 cặp) rồi 46% (50 cặp) — trung bình ~47% | **trượt** |
+| 5 | p95 mỗi câu | A 30,2 giây → B 22,4 giây | đạt |
+
+Theo dõi: 14 mục T mỗi bài (chạm trần); 160 / 258 ý trích T; **392 cặp `add` ngược chiều trên 60 bài
+(~6,5 mỗi bài)**; token vào B +7%; đạt hết luật 58/60 ở cả hai bản.
+
+**Lượt so mù chưa hợp lệ hoàn toàn:** chuỗi dự phòng chỉ gọi được hai model khác nhau (luna,
+gpt-4o-mini) — groq / gemini / anthropic đều rơi về luna. Muốn đủ ba giám khảo khác nhau cần chủ dự án
+bật thêm một nhà cung cấp trong trang quản trị models. Kết quả hiện có đã đủ để kết luận không đạt 60%.
+
+**Chẩn đoán:** A và B cùng độ dài (354 chữ), cùng giọng; B đổi *nội dung được nêu* sang điều có căn cứ.
+Giám khảo so mù chấm "đọc như người thật, cụ thể, có giá trị" — không chấm được độ đúng chuyên môn. Thư
+viện tăng độ có căn cứ mà không làm bài *hay hơn*. Lưu ý thêm: tiêu chí 3 dễ đạt vì nhiều mục không
+giới hạn cung.
+
+**Bốn câu 11.4 — đã có số:** (1) độ đúng trích: 74% qua kiểm tất định; trên 40 mẫu, giám khảo
+gpt-4o-mini thấy 80% đúng cả điều kiện lẫn nghĩa — lỗi chính là **bỏ sót điều kiện cung** (ngữ cảnh
+đoạn nói về một cung, mục lại để "mọi cung"). (2) 15 cuốn có nhiều quy tắc sự nghiệp hơn dự kiến
+(1.091 mục, 741 tổ hợp). (3) `add` mặc định sinh ~6,5 cặp ngược chiều mỗi bài — cao, nhiều cặp là
+cùng bộ sao khác độ sáng mà lúc trích bị mất độ sáng. (4) Lượng mục khớp vượt xa ngân sách (một câu khớp
+tới ~150 mục) — trần 14 đang cắt.
+
+**Hướng tiếp** (chủ dự án chọn): (a) chủ dự án tự đọc mù ~10 cặp để chấm độ ĐÚNG — thứ giám khảo máy
+không chấm được; (b) sửa khâu trích (bắt điều kiện cung và độ sáng từ ngữ cảnh đoạn) rồi đo lại với
+cùng ngưỡng; (c) đổi ngưỡng 4 thành "không thua" (≥ 45%) kèm tiêu chí 2 — là đổi luật đã chốt, chỉ chủ
+dự án được quyết.
+
+### 11.4 Bốn câu chỉ lát cắt trả lời được
+
+1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
+2. Riêng sự nghiệp, 15 cuốn trong kho có bao nhiêu quy tắc tổ hợp thật?
+3. Mặc định `add` sinh ra bao nhiêu cặp ngược chiều?
+4. Lượng mục khớp có vừa ngân sách prompt không?
+
+---
+
+## 12. Đo lường
+
+Đo **từng khâu**, bài kém thì biết hỏng ở đâu:
+
+| Khâu | Chỉ số |
+|---|---|
+| Trích | tỉ lệ qua kiểm tất định; độ đúng trên mẫu |
+| Khớp | độ phủ (11.2 #3); số mục khớp / câu |
+| Căn cứ | 11.2 #1, #2 |
+| Bài | so mù ≥ 3 giám khảo × ≥ 60 cặp (một giám khảo tự chấm lệch tới ±30%) |
+
+Bốn tầng eval của v1 (Phụ lục V1 mục 8) vẫn là khung chung.
+
+---
+
+## 13. Lộ trình
+
+| Giai đoạn | Việc | Trạng thái |
+|---|---|---|
+| Phase A (v1) | ngân sách từ là trần, mẫu vàng, chia nhóm luật | **xong** |
+| Luồng v3 | tổng quan + chuyên sâu, sổ ý, tóm lại, bức tranh lớn | **đang chạy** |
+| Dọn nền | mức tin cậy có tác dụng + admin gán lại; luật ngầm; phiên bản kho; Tạo bản mới | **xong 26/09** |
+| Lát cắt Sự nghiệp | mục 11 | **lượt 1 xong 26/09 — trượt so mù, chưa bật** (11.3) |
+| Toàn thư viện | các chủ đề còn lại, đọc toàn kho | chỉ khi lát cắt đạt + chủ dự án duyệt chi phí |
+| Vận hạn | mục 9 | sau khi chủ dự án chọn nhánh phi hoá |
+| Duyệt + sổ lỗ hổng trên trang quản trị | | sau lát cắt |
+| Claim Synthesizer / Content Planner (v1 Phase B) | | **hoãn** — xem nhật ký QĐ-07 |
+
+---
+
+## 14. Nhật ký quyết định
+
+| # | Quyết định | Vì sao | Phương án đã bác | Xét lại khi |
+|---|---|---|---|---|
+| QĐ-01 | Tri thức dựng trước, lúc luận chỉ tra | route còn ~13 giây dư trên trần 52 giây; tra trong bộ nhớ mất mili-giây | trích quy tắc lúc người dùng chờ | ngân sách thời gian route nới ra đáng kể |
+| QĐ-02 | Quan hệ neo vào cung, bộ từ vựng đóng | quan hệ hai ngôi không biểu diễn được "giáp", tam phương | `{from, type, to}` tự do; đồ thị | engine thêm loại quan hệ mới |
+| QĐ-03 | Chế độ mặc định `add` | Tử Vi là chồng nghĩa; "cụ thể thắng" xoá nghĩa nền | tổ hợp ghi đè nghĩa đơn; mặc định `modify` | số cặp ngược chiều (11.3 #3) quá lớn |
+| QĐ-04 | Mức tin cậy nằm ở tài liệu | admin đổi mức thì mọi mục theo | chép mức vào từng mục | — |
+| QĐ-05 | Được ghép nghĩa hai sao trừ khi có tri thức nói khác | chủ dự án 26/09 | cấm ghép tuyệt đối | sổ lỗ hổng cho thấy ghép sai nhiều |
+| QĐ-06 | Nguồn chuyên gia Celes là luật ngầm | chủ dự án 26/09 | hiện tên nguồn trong bài | — |
+| QĐ-07 | Hoãn Claim Synthesizer / Planner | luồng v3 một lượt đã đạt chất lượng đo được; thêm lớp là thêm lượt gọi và độ trễ | làm Phase B trước thư viện | so mù cho thấy thư viện không đủ, lỗi nằm ở khâu luận |
+| QĐ-08 | Không dùng đồ thị (Neo4j, GraphRAG) | quan hệ do engine tính, thư viện vài nghìn mục | cơ sở dữ liệu đồ thị | số quan hệ vượt vài trăm nghìn |
+| QĐ-09 | Không dùng reranker | chưa đo ra tăng | reranker sau RRF | đo ra NDCG / MRR tăng rõ |
+| QĐ-10 | Không có điểm tin cậy do model chấm | model tự chấm không hiệu chỉnh được | điểm 0–1 cho mỗi mục | có dữ liệu thực nghiệm để hiệu chỉnh |
+| QĐ-11 | Bài cũ làm mới theo phương án C | "đọc lại phải thấy đúng bài cũ" (CEL-122) | giữ mãi (A); làm mới toàn bộ (B) | — |
+| QĐ-12 | Lát cắt đầu là Sự nghiệp, không phải Tính cách | tính cách chạy tạm ổn bằng nghĩa sao đơn nên không thử được kiến trúc | Tính cách | — |
+| QĐ-13 | Thư viện tạm lưu trong `noi_dung_ai` (bề mặt `thu-vien`) | máy làm không chạy được SQL; bảng có sẵn khoá duy nhất đúng dạng | chờ chủ dự án chạy SQL bảng riêng | chủ dự án chạy `supabase/thu-vien-tri-thuc.sql` (sẽ viết khi lát cắt đạt) |
+| QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
+| QĐ-14 | `THE_HE_DEM` chỉ tăng khi chủ dự án đồng ý | tăng liên tục làm bài "load lại" trên mọi thiết bị | tự tăng khi đổi prompt | — |
+
+---
+
+## 15. Chi phí
+
+Số từ `ai_usage_logs`. Quy về "phần trăm lượng tiêu ngày 25/09" (15,6 triệu token vào):
+
+| Khoản | Ước tính |
+|---|---|
+| Một lá số, tổng quan | ~12 lượt ≈ 0,7% |
+| Một chủ đề chuyên sâu | ~5 lượt ≈ 0,3% |
+| Dựng lát cắt Sự nghiệp (một lần) | ≈ 0,2–0,3 ngày — **chủ dự án đã duyệt 26/09** |
+| Dựng toàn thư viện (một lần) | ≈ 1,3–1,6 ngày; giảm ~một nửa với Batch API — **cần duyệt riêng** |
+| Mỗi lần luận sau khi có thư viện | không tăng; token vào ước giảm 15–25% |
+
+---
+
+## 16. Rủi ro
+
+| Rủi ro | Cách xử |
+|---|---|
+| Model trích sai điều kiện | kiểm tất định mục 7.3; mục chưa duyệt không dùng cho miền rủi ro |
+| Sách mâu thuẫn, nhất là phụ tinh | mức tin cậy thật (chủ dự án xếp lại 15 tài liệu) |
+| Lời phán nặng của sách cổ | `y` viết ở mức ôn hoà ngay lúc dựng |
+| Kho sách ít quy tắc tổ hợp cho một chủ đề | 11.3 #2 trả lời; thiếu thì dựa thêm nguồn chuyên gia Celes |
+| Prompt phình khi nhiều mục khớp | ngân sách chữ, giảm đoạn sách khi thư viện đủ |
+| Đổi kho bật "Tạo bản mới" cho mọi lá số | gom thay đổi kho thành đợt |
+
+---
+
+## 17. Việc chủ dự án
+
+1. Xếp lại mức tin cậy 15 tài liệu; lưu trữ tài liệu "README" đang xuất bản.
+2. Danh sách phụ tinh / bộ / cách cục bắt buộc cho sự nghiệp (để kiểm độ phủ).
+3. Chọn nhánh phi hoá Bắc phái (cho vận hạn, chưa gấp).
+4. Duyệt chi phí dựng toàn thư viện — chỉ khi lát cắt đạt.
+
+---
+
+## 18. Ghi chú vận hành
+
+- Mọi thay đổi tính năng / logic cập nhật `PRODUCT-BACKLOG.xlsx` trong cùng commit.
+- Không đổi truy hồi / prompt / model khi chưa có bài kiểm hồi quy.
+- Tăng `PHIEN_BAN_*` tương ứng khi đổi luật đo được.
+- SQL mới chỉ cộng thêm, ghi `supabase/DA-CHAY.md`.
+
+---
+---
+
+# Phụ lục V1 — bản chốt ngày 22/09/2026 (giữ nguyên số mục)
+
 
 > Tài liệu thiết kế. Viết cho người (hoặc AI) sẽ implement.
 > Chốt sau năm vòng phản biện, ngày 2026-09-22.

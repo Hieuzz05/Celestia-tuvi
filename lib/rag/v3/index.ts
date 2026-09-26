@@ -8,6 +8,9 @@ import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
 import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 import { NHAN_TIN_CAY } from '../uu-tien-nguon';
+import { docMetaTaiLieu } from '../tai-lieu-meta';
+import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
+import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -58,6 +61,8 @@ export interface KetQuaCauV3 {
   ms: number;
   msTruyHoi: number;
   dat: boolean;
+  /** Thư viện: mục đã đưa vào prompt (T###) và mọi mục khớp — để đo lát cắt (mục 11.2) */
+  thuVien?: { daChon: { ma: string; id: string; cung: string; sao: string[] }[]; khopHet: { id: string; sao: string[] }[]; nguocChieu: [string, string][] };
 }
 
 function docBai(text: string): BaiV3 | null {
@@ -70,6 +75,7 @@ function docBai(text: string): BaiV3 | null {
           y: typeof y.y === 'string' ? y.y : '',
           canCu: Array.isArray(y.canCu) ? (y.canCu as unknown[]).filter((x): x is string => typeof x === 'string') : [],
           ...(y.ghep === true ? { ghep: true } : {}),
+          ...(y.ghep === true && Array.isArray(y.sao) ? { sao: (y.sao as unknown[]).filter((x): x is string => typeof x === 'string') } : {}),
         }))
     : [];
   return {
@@ -226,18 +232,26 @@ export async function luanMotCau(vao: {
   thuNghiem?: ThuNghiemV3;
   /** Sổ ý các phần ĐÃ SINH của cùng lá số + năm — chống lặp giữa các phần (xem so-y.ts) */
   daNoi?: MucDaNoi[];
+  /** Thư viện tri thức (KIEN-TRUC-LUAN-GIAI.md mục 8) — chỉ truyền cho câu thuộc lát cắt đã bật */
+  thuVien?: MucThuVien[];
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
   const duKien = dungDuKien(vao.laSo, q, vao.namXem);
+  const cungChuDe = q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined;
+  const tv = vao.thuVien?.length
+    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
+    : null;
   const tRag = Date.now();
   const nguon = await truyHoiChoCau({
     chuDe: q.chuDe,
     chuDeTuKhoa: TU_KHOA_TONG_QUAN[q.id],
-    cungUuTien: q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined,
+    cungUuTien: cungChuDe,
     cauHoi: q.cauHoi,
     duKien,
     nho: vao.nho,
+    // Thư viện đã khớp đủ thì bớt đoạn sách thô — giữ độ dài prompt (mục 8.7)
+    soDoan: tv && tv.daChon.length >= 6 ? 4 : undefined,
   });
   const msTruyHoi = Date.now() - tRag;
   const phep = saoDuocPhep(duKien);
@@ -261,6 +275,7 @@ ${phamViChuyenSau(q)}`
     q.yeuToThem ? `YẾU TỐ NÊN XÉT: ${q.yeuToThem}` : '',
     q.khongDuoc ? `KHÔNG ĐƯỢC: ${q.khongDuoc}` : '',
     `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
+    tv?.khoi ?? '',
     `NGUỒN THAM CHIẾU (trích sách, chỉ dùng đoạn nói đúng tổ hợp sao – cung của lá số này):\n${
       nguon.length
         ? nguon
@@ -278,7 +293,7 @@ ${phamViChuyenSau(q)}`
     .join('\n\n');
 
   const maDuKien = new Set(duKien.map((d) => d.id));
-  const maNguon = new Set(nguon.map((n) => n.id));
+  const maNguon = new Set([...nguon.map((n) => n.id), ...(tv?.daChon.map((t) => t.ma) ?? [])]);
   /*
    * Tên sách lọt vào bài (25/09/2026): luật trình bày cấm nêu tên sách, nhưng rà
    * phần "vì sao" thấy "Theo cách đọc của Tử Vi Hàm Số…". Bắt bằng tên tài liệu của
@@ -306,7 +321,10 @@ ${phamViChuyenSau(q)}`
    * MỨC TIN CẬY (26/09/2026): đoạn "bổ trợ" chỉ làm dày ngữ cảnh — một ý mà căn
    * cứ duy nhất là đoạn bổ trợ thì chưa đủ đứng thành nhận định.
    */
-  const hoTro = new Set(nguon.filter((n) => n.mucTinCay === 'ho-tro').map((n) => n.id));
+  const hoTro = new Set([
+    ...nguon.filter((n) => n.mucTinCay === 'ho-tro').map((n) => n.id),
+    ...(tv?.daChon.filter((t) => t.mucTinCay === 'ho-tro').map((t) => t.ma) ?? []),
+  ]);
   const kiemHoTro = (b: BaiV3) => {
     const chiHoTro = b.danY.filter((y) => y.canCu.length && y.canCu.every((m) => hoTro.has(m)));
     return chiHoTro.length
@@ -314,7 +332,7 @@ ${phamViChuyenSau(q)}`
       : [];
   };
   // Luật ngầm lộ ra bài — chủ dự án 26/09/2026: nguồn chuyên gia Celes không ghi trên lá số
-  const coLuatNgam = nguon.some((n) => n.an);
+  const coLuatNgam = nguon.some((n) => n.an) || Boolean(tv?.daChon.some((t) => t.an));
   const kiemLuatNgam = (b: BaiV3) =>
     // Chỉ bắt kiểu viện dẫn ("theo chuyên gia", "ghi chú của…") — "làm chuyên gia" là lời thường ở câu nghề nghiệp
     coLuatNgam && /(theo|của|ghi chú|nhận định|góc nhìn|kinh nghiệm)( của)?( các| một| giới)? chuyên gia|luật ngầm|luật nội bộ|tài liệu nội bộ/i.test(`${b.luanGiai} ${b.viSao} ${b.goiY ?? ''}`)
@@ -401,6 +419,15 @@ ${phamViChuyenSau(q)}`
     model,
     ms: Date.now() - t0,
     msTruyHoi,
+    ...(tv
+      ? {
+          thuVien: {
+            daChon: tv.daChon.map((t) => ({ ma: t.ma, id: t.khop.muc.id, cung: t.khop.cung, sao: saoCuaMuc(t.khop.muc) })),
+            khopHet: tv.khopHet.map((k) => ({ id: k.muc.id, sao: saoCuaMuc(k.muc) })),
+            nguocChieu: tv.nguocChieu,
+          },
+        }
+      : {}),
     dat: !loi.some((l) => l.chan),
   };
 }
@@ -415,6 +442,8 @@ export async function luanNhieuCau(vao: {
   thuNghiem?: ThuNghiemV3;
   daNoi?: MucDaNoi[];
   khiXong?: (k: KetQuaCauV3) => void;
+  /** Thư viện tri thức + các câu được dùng nó (lát cắt đã bật) */
+  thuVien?: { muc: MucThuVien[]; cau: Set<string> };
 }): Promise<KetQuaCauV3[]> {
   const nho: BoNhoTruyHoi = new Map();
   const ds = vao.ids.map((id) => CAU_HOI_V3.find((q) => q.id === id)).filter((q): q is CauHoiV3 => !!q);
@@ -424,7 +453,10 @@ export async function luanNhieuCau(vao: {
     while (i < ds.length) {
       const j = i++;
       try {
-        ra[j] = await luanMotCau({ laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi });
+        ra[j] = await luanMotCau({
+          laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi,
+          thuVien: vao.thuVien?.cau.has(ds[j].id) ? vao.thuVien.muc : undefined,
+        });
       } catch (e) {
         ra[j] = {
           id: ds[j].id, loai: ds[j].loai, cauHoi: ds[j].cauHoi, luanGiai: '', viSao: '', goiY: '', doRo: 'Gợi ý', danY: [],
