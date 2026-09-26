@@ -28,6 +28,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-137 xuất luận giải chuyên sâu ra Excel / PDF cho quản trị viên — nút "Xuất dữ liệu" ở `/luan-giai/sau` (chỉ hiện với `ADMIN_EMAILS`), từng chủ đề hoặc toàn bộ + Bức tranh lớn; route `/api/admin/xuat-luan-giai` kiểm quyền (403), exceljs / pdfkit + font Be Vietnam Pro trong `lib/xuat/fonts` | `adc9147` | 26/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-136 lăng kính riêng từng chủ đề (`LANG_KINH` trong `lib/rag/v3/index.ts`), khung Tính cách ba tầng (khung 2026.09.4), chống lặp cụm từ + cụm quen tay (`so-y.ts`). Không tăng `THE_HE_DEM`: route chỉ nhận bài cùng câu hỏi nên chỉ câu đổi nghĩa sinh lại; khoá tóm lại / bức tranh kèm phiên bản khung | `01ed7f7` | 26/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-135 khung chuyên sâu mới cho cả 14 chủ đề (khung 2026.09.3, 87 câu — id ĐỔI NGHĨA), sức khỏe được nêu nhóm cơ quan dạng xu hướng (chủ dự án duyệt), "Bức tranh lớn" (mục cuối mục lục, cần ≥3 chủ đề) + "Muốn đi sâu hơn"; route chỉ nhận bài cùng câu hỏi; `THE_HE_DEM` = 7 | `4931459` | 26/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-134 chuyên sâu thành một mạch đọc — khung Sự nghiệp mới (id SN01–SN08 ĐỔI NGHĨA), công thức viết chuyên sâu, phần "Tóm lại" cuối mỗi chủ đề (`lib/rag/v3/tom-lai.ts`, khoá `…|tom-lai`), câu dẫn 14 chủ đề; `THE_HE_DEM` = 6. Đừng đưa câu ví dụ vào prompt cho yêu cầu kiểu "khoảnh khắc đúng quá" — model chép nguyên | `649b1c4` | 26/09/2026 |
