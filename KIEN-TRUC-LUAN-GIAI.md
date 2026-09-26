@@ -385,6 +385,29 @@ Giám khảo: gpt-5.6-luna và gpt-4o-mini (hai model khác nhau duy nhất gọ
 Bộ đo này KHÔNG thay tiêu chí so mù (11.2 #4). Bật thư viện khi so mù trượt mà độ đúng đạt là đổi luật
 đã chốt — chủ dự án quyết.
 
+**Kết quả 11.5 (26/09/2026): KHÔNG DÙNG ĐƯỢC — cả hai giám khảo trượt bài kiểm giám khảo.**
+
+| | luna | gpt-4o-mini |
+|---|---|---|
+| Cài lỗi (bắt được) | 12 / 12 | 5 / 12 |
+| `co-can-cu` bài thật / bài lệch lá | 94,2% / **94,8%** | 86,2% / **89,4%** |
+| A: căn cứ / mâu thuẫn / chung chung | 90,3 / 0 / 0,4 | 84,5 / 1,3 / 6,7 |
+| B: căn cứ / mâu thuẫn / chung chung | 87,7 / 0,2 / 0,2 | 86,7 / 0,2 / 3,1 |
+
+Bài của MỘT LÁ SỐ KHÁC được chấm "có căn cứ" ngang bài thật: giám khảo tách nhận định rồi xếp loại
+quá dễ dãi, và bài luận đủ chung để dữ kiện của lá nào cũng "đỡ" được. Không kết luận A / B từ bảng này.
+
+### 11.6 Bộ đo độ đúng lượt 2 — có ĐÁP ÁN THẬT, chốt 26/09/2026 trước khi chạy
+
+1. **Nhận diện lá số.** Mỗi bài: giám khảo nhận dữ kiện của HAI lá số (lá thật + một lá mồi cùng câu
+   hỏi, thứ tự xáo cố định) và bài luận + phần vì sao, trả lời bài viết cho lá nào. Đoán bừa = 50%.
+   Bài càng bám đúng lá số càng dễ nhận ra — đây là thước đo có đáp án, không cần tin giám khảo dễ dãi.
+   *Giám khảo hợp lệ* khi tỉ lệ đúng trên bản A ≥ 60% (nhận ra được ít nhất bản đang chạy).
+2. **Sao lạ trong phần vì sao** (đếm bằng mã, không giám khảo): tên sao được nêu mà không có trên lá số.
+
+**B đúng hơn A khi:** với mọi giám khảo hợp lệ, tỉ lệ nhận diện đúng của B ≥ A + 5 điểm; **và** số sao lạ
+của B ≤ A.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
