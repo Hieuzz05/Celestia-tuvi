@@ -8,5 +8,7 @@
       "Bash(git push -f:*)",
       "Bash(git push origin --force:*)"
     ]
-  }
+  },
+  "autoCompactWindow": 200000,
+  "bashOutputMaxChars": 12000
 }
