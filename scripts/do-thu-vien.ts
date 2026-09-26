@@ -13,6 +13,7 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { boLaSo, CAU_LAT_CAT } from './lat-cat-su-nghiep';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const i = d.indexOf('=');
@@ -26,21 +27,7 @@ const thamSo = (ten: string, macDinh = '') => {
   return i > 0 ? process.argv[i + 1] : macDinh;
 };
 
-export const CAU_LAT_CAT = ['SN01', 'SN02', 'SN03', 'SN05', 'SN06'];
 const CUNG_DO_PHU = ['Quan Lộc', 'Mệnh', 'Tài Bạch', 'Thiên Di'];
-
-/** 12 lá số tổng hợp cố định — LCG, chạy lại ra đúng bộ này */
-function boLaSo(n: number) {
-  let x = 20260926;
-  const r = (m: number) => ((x = (x * 1103515245 + 12345) % 2147483648), x % m);
-  return Array.from({ length: n }, () => ({
-    ngay: 1 + r(28),
-    thang: 1 + r(12),
-    nam: 1965 + r(36),
-    gio: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23][r(12)],
-    gioiTinh: (r(2) ? 'nam' : 'nu') as 'nam' | 'nu',
-  }));
-}
 
 const p95 = (ds: number[]) => {
   const s = [...ds].sort((a, b) => a - b);

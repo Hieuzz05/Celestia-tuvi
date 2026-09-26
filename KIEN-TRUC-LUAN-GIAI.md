@@ -417,6 +417,25 @@ luận không có tên sao, tên cung). Cùng ngưỡng: mọi giám khảo hợ
 giám khảo lại chạm trần (A và B cùng ≥ 97%) thì ghi "không phân biệt được" cho giám khảo đó, không tính
 là đạt.
 
+**Kết quả lượt 3 (26/09/2026): KHÔNG ĐẠT — không có bằng chứng B đúng hơn A.**
+
+| Giám khảo | Nhận diện A | Nhận diện B | Chênh |
+|---|---|---|---|
+| gpt-5.6-luna | 93,3% | 90,0% | −3,3 |
+| gpt-4o-mini | 70,0% | 75,0% | +5,0 |
+
+Hai giám khảo ngược chiều, cả hai chênh đều trong sai số (60 bài: ±4–8 điểm). Sao lạ: A 0, B 0.
+
+**Kết luận cho lát cắt lượt 1:** thư viện tăng tỉ lệ ý có mã nguồn (51% → 78%) và nhanh hơn, nhưng **không
+làm bài hay hơn (so mù ~47%) và không làm bài đúng lá số hơn (nhận diện ngang)**. Giữ tắt.
+
+**Phát hiện phụ có giá trị:** bài hiện tại (A) bám lá số tốt — chỉ đọc bài luận (không tên sao) mà luna
+nhận đúng lá số 93%. Bộ đo nhận diện (`scripts/do-nhan-dien.ts --chi-bai-luan`) dùng lại được làm thước
+"bài có riêng cho lá số không" cho mọi thay đổi prompt sau này.
+
+**Bài học đo:** giám khảo máy xếp loại nhận định là quá dễ dãi (11.5); cần phép đo có đáp án thật, và phải
+bỏ những gì cho phép dò chữ (tên sao) thay vì hiểu nội dung (11.6).
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
@@ -473,7 +492,7 @@ Bốn tầng eval của v1 (Phụ lục V1 mục 8) vẫn là khung chung.
 | QĐ-11 | Bài cũ làm mới theo phương án C | "đọc lại phải thấy đúng bài cũ" (CEL-122) | giữ mãi (A); làm mới toàn bộ (B) | — |
 | QĐ-12 | Lát cắt đầu là Sự nghiệp, không phải Tính cách | tính cách chạy tạm ổn bằng nghĩa sao đơn nên không thử được kiến trúc | Tính cách | — |
 | QĐ-13 | Thư viện tạm lưu trong `noi_dung_ai` (bề mặt `thu-vien`) | máy làm không chạy được SQL; bảng có sẵn khoá duy nhất đúng dạng | chờ chủ dự án chạy SQL bảng riêng | chủ dự án chạy `supabase/thu-vien-tri-thuc.sql` (sẽ viết khi lát cắt đạt) |
-| QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
+| QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước; bộ đo độ đúng (11.5–11.6) cũng không thấy B đúng hơn | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
 | QĐ-14 | `THE_HE_DEM` chỉ tăng khi chủ dự án đồng ý | tăng liên tục làm bài "load lại" trên mọi thiết bị | tự tăng khi đổi prompt | — |
 
 ---
