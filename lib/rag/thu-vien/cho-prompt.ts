@@ -20,6 +20,18 @@ const BAC: Record<string, number> = { 'cot-loi': 3, 'chuyen-gia-duyet': 2, 'tham
 const MUC: Record<string, number> = { manh: 2, vua: 1, nhe: 0 };
 const CHIEU: Record<string, string> = { cat: 'cát', hung: 'hung', trung: 'trung tính' };
 
+export const CHINH_TINH = new Set([
+  'Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ',
+  'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân',
+]);
+/** Sao lớn: chính tinh, lục cát, lục sát, tứ hoá, Lộc Tồn, Thiên Mã */
+export const SAO_LON = new Set([
+  ...CHINH_TINH,
+  'Tả Phù', 'Hữu Bật', 'Văn Xương', 'Văn Khúc', 'Thiên Khôi', 'Thiên Việt',
+  'Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp',
+  'Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa', 'Hóa Kỵ', 'Lộc Tồn', 'Thiên Mã',
+]);
+
 export interface KetQuaThuVienCau {
   /** Khối chèn vào user prompt ('' khi không mục nào khớp) */
   khoi: string;
@@ -52,8 +64,23 @@ export function dungKhoiThuVien(vao: {
     const cao = ds.map((x) => x.mucTinCay).sort((a, b) => (BAC[b] ?? 0) - (BAC[a] ?? 0))[0] ?? 'tham-khao';
     return { mucTinCay: cao, an: ds.length > 0 && ds.every((x) => LOAI_NGUON_AN.has(x.loaiNguon)) };
   };
+  /*
+   * XẾP THEO TẦNG (bản B2, 26/09/2026 — KIEN-TRUC-LUAN-GIAI.md 11.7).
+   *
+   * Bản đầu cộng +100 cho MỌI tổ hợp ≥ 2 sao. Đo lượt 1: tổ hợp sao nhỏ (Tướng Quân +
+   * Phục Binh…) chiếm chỗ, 24% mục vào prompt chỉ có sao nhỏ, và ở 6/12 lá số nghĩa
+   * của chính tinh tại cung chính KHÔNG lọt vào prompt dù thư viện có mục khớp.
+   * Giờ: chính tinh tại cung chính (ưu tiên mục có độ sáng khớp) → tổ hợp chính tinh +
+   * sao lớn → sao lớn → sao nhỏ chỉ lấp chỗ trống.
+   */
+  const coChinhTaiGoc = (k: MucKhop) =>
+    k.cung === vao.cungChinh && k.muc.dieuKien.sao.some((s) => CHINH_TINH.has(s.ten) && (s.quanHe === 'o-cung' || s.quanHe === 'muon-tu'));
+  const coDoSang = (k: MucKhop) => k.muc.dieuKien.sao.some((s) => CHINH_TINH.has(s.ten) && s.doSang?.length);
+  const lon = (k: MucKhop) => saoCuaMuc(k.muc).filter((s) => SAO_LON.has(s)).length;
   const diem = (k: MucKhop) =>
-    (saoCuaMuc(k.muc).length >= 2 ? 100 : 0) +
+    (coChinhTaiGoc(k) ? 400 + (coDoSang(k) ? 60 : 0) : 0) +
+    (saoCuaMuc(k.muc).some((s) => CHINH_TINH.has(s)) && lon(k) >= 2 ? 200 : 0) +
+    (lon(k) >= 1 ? 100 : 0) +
     (k.cung === vao.cungChinh ? 20 : 0) +
     (BAC[tinCay(k.muc).mucTinCay] ?? 0) * 4 +
     (MUC[k.muc.nhan.muc] ?? 0) * 2 +
@@ -63,9 +90,13 @@ export function dungKhoiThuVien(vao: {
   // Gom: mỗi tổ hợp kéo theo ngay sau nó các mục đơn cấu thành nó (cùng cung)
   const thuTu: MucKhop[] = [];
   const da = new Set<string>();
+  // Cùng một bộ sao tối đa 3 mục — mười câu nghĩa gần giống nhau về một sao là lãng phí chỗ
+  const demBo = new Map<string, number>();
   const them = (k: MucKhop) => {
-    if (da.has(k.muc.id) || thuTu.length >= TRAN_MUC) return;
+    const bo = [...saoCuaMuc(k.muc)].sort().join('+');
+    if (da.has(k.muc.id) || thuTu.length >= TRAN_MUC || (demBo.get(bo) ?? 0) >= 3) return;
     da.add(k.muc.id);
+    demBo.set(bo, (demBo.get(bo) ?? 0) + 1);
     thuTu.push(k);
   };
   for (const k of xep) {
@@ -73,7 +104,8 @@ export function dungKhoiThuVien(vao: {
     them(k);
     if (saoCuaMuc(k.muc).length >= 2) {
       const sao = new Set(saoCuaMuc(k.muc));
-      for (const d of xep) if (saoCuaMuc(d.muc).length === 1 && sao.has(saoCuaMuc(d.muc)[0]) && d.cung === k.cung) them(d);
+      // Kéo theo mục đơn cấu thành — chỉ sao lớn, sao nhỏ không đáng một chỗ riêng
+      for (const d of xep) if (saoCuaMuc(d.muc).length === 1 && sao.has(saoCuaMuc(d.muc)[0]) && SAO_LON.has(saoCuaMuc(d.muc)[0]) && d.cung === k.cung) them(d);
     }
   }
 

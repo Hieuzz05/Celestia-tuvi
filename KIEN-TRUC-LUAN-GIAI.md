@@ -468,6 +468,45 @@ khớp; (2) tổ hợp chính tinh + sao lớn (lục cát, lục sát, tứ ho�
 Cách viết: so mù B2 vs A — báo cáo; đề xuất nghiệm thu "không thua rõ" (≥ 45%) thay cho 60% — **chủ dự án
 quyết**, cho tới lúc đó giữ 60%.
 
+**Kết quả 11.7 (26/09/2026) — giám khảo kiến thức HỢP LỆ, không bản nào hơn:**
+
+| | Cài lỗi | Nhất quán | KT A | KT B | KT B2 | Lỗi / bài A · B · B2 |
+|---|---|---|---|---|---|---|
+| gpt-5.6-luna | 12 / 12 | 87,5% | 58,5 | 58,3 | 56,9 | 0,48 · 0,37 · 0,58 |
+| gpt-4o-mini | 10 / 12 | 92,6% | 51,0 | 53,2 | 51,0 | 1,03 · 1,07 · 0,98 |
+
+Cách viết A vs B2 (so mù đủ): luna 43%, gpt-4o-mini 52%. B2 chọn đúng hơn hẳn (chính tinh Quan Lộc vào
+prompt 11/12 lá, trước 6/12; 89% mục có chính tinh, trước 30%) mà kiến thức vẫn phẳng → khâu chọn KHÔNG
+phải nguyên nhân quyết định.
+
+**Nguyên nhân gốc — đo trên 269 điểm BẮT BUỘC của đáp án:**
+
+| Bài đúng cần | Tỉ lệ điểm đáp án | Thư viện đang cho |
+|---|---|---|
+| tổng hợp nhiều yếu tố | trung bình 4,6 yếu tố / điểm; 48% kết hợp ≥ 2 cung | mục đơn hoặc cặp sao, neo một cung |
+| độ sáng | 94% | 8% mục có độ sáng |
+| sát tinh / Hoá Kỵ | 42% | sát tinh gần như không lọt vào 14 chỗ (ví dụ lá 5: Kình Dương hãm tại Quan Lộc — 0 mục) |
+| Tuần / Triệt | 25% | hiếm |
+| **Phủ đáp án** | — | **15%** điểm có mục thư viện chứa đủ sao; **3%** có cả độ sáng |
+
+Ví dụ chủ dự án nêu: 6 mục Liêm Phủ, **0 mục Liêm Phủ + lục cát**, 1 / 6 có độ sáng; một mục đòi đủ năm
+chính tinh Tử Vũ Tướng Liêm Phủ cùng lúc (hiểu sai "cách Tử Phủ Vũ Tướng").
+
+**Kết luận:** (1) **nguyên nhân chính: thư viện chưa đủ chi tiết** — tri thức dạng "nghĩa sao đơn, không độ
+sáng, không sát tinh đi cùng", trùng với thứ model viết đã biết; luận đúng cần tổ hợp có điều kiện. Gốc
+sâu hơn nằm ở khâu trích (lược đồ đủ chỗ cho độ sáng / cung / sao phải vắng nhưng model trích bỏ trống) và
+một phần ở sách (sách cổ viết theo từng sao). (2) Kỹ thuật chọn mục: có lỗi thật, đã sửa, không quyết định.
+(3) Giám khảo: trước đây đo sai thứ (cách viết) hoặc quá dễ dãi; nay có thước kiến thức hợp lệ.
+(4) Giới hạn của thước: đáp án do chính model viết soạn → nghiêng về kiến thức model đã có; cần chủ dự án
+duyệt mẫu đáp án.
+
+**Tiêu chí nghiệm thu đề xuất cho các lượt sau** (chủ dự án chốt):
+1. *Cổng rẻ, tất định — chạy trước:* thư viện phủ ≥ 50% điểm bắt buộc của đáp án, ≥ 30% có độ sáng.
+   Chưa qua thì chưa tốn tiền sinh bài.
+2. *Kiến thức:* KT ≥ A + 10 điểm và lỗi kiến thức ≤ A, mọi giám khảo hợp lệ (cài lỗi ≥ 10/12, nhất quán ≥ 80%).
+3. *Cách viết:* so mù không thua rõ (≥ 45%).
+4. *Đáp án:* chủ dự án duyệt 10 đáp án mẫu (`dap-an.json`) trước khi tin điểm KT.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
