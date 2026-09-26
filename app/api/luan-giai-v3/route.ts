@@ -6,7 +6,8 @@ import { docNhieuTheoTienTo, docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@
 import { dungSoY } from '@/lib/rag/v3/so-y';
 import { viTomLai } from '@/lib/rag/v3/tom-lai';
 import { SO_CHU_DE_TOI_THIEU, viBucTranh } from '@/lib/rag/v3/buc-tranh';
-import { bamLaSo } from '@/lib/rag/nhat-ky';
+import { bamLaSo, veGioLaSo } from '@/lib/rag/nhat-ky';
+import { laKhach, xinLuotLaSoMoi } from '@/lib/auth/gioi-han-khach';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
 export const maxDuration = 60;
@@ -24,6 +25,12 @@ export const maxDuration = 60;
  * 4 → 5 (25/09/2026) — bỏ "việc làm được ngay / trong tuần tới" (chủ dự án: nghe như ép buộc); bài thế hệ 4 có giọng đó.
  * 5 → 6 (25/09/2026) — khung Sự nghiệp viết lại (id SN01–SN08 đổi nghĩa) + công thức chuyên sâu mới; bài cũ dưới cùng id là bài của câu khác.
  * 6 → 7 (26/09/2026) — khung 13 chủ đề còn lại viết lại (khung 2026.09.3), sức khỏe được nêu nhóm cơ quan, thêm Bức tranh lớn.
+ *
+ * CÁI GIÁ CỦA MỖI LẦN TĂNG — đo 26/09/2026: lá số của chủ dự án bị sinh lại
+ * TÁM lần trong hai ngày 24–25/09 (đổi kiểu khoá + th:2 → th:6 → th:7). Chủ dự
+ * án mở trên máy khác, thấy bài viết lại, tưởng đệm không theo tài khoản — thật
+ * ra đệm đúng theo lá số, chỉ là thế hệ vừa đổi. Nên: KHÔNG tăng số này khi chưa
+ * hỏi chủ dự án, và gom nhiều thay đổi vào một lần tăng.
  */
 const THE_HE_DEM: number = 7;
 
@@ -41,6 +48,8 @@ const THE_HE_DEM: number = 7;
  *   - Chuyên sâu cần đăng nhập.
  *   - KHÔNG trừ hạn mức ở cả hai. Bài đã đệm theo lá số + năm + nhóm, nên mở
  *     lại không tốn thêm lượt gọi nào.
+ *   - Khách chưa đăng nhập: tối đa LA_SO_MOI_MOI_NGAY lá số PHẢI VIẾT MỚI mỗi
+ *     IP mỗi ngày (26/09/2026, gioi-han-khach.ts). Lá số đã có bài thì không đếm.
  */
 
 interface Body {
@@ -130,8 +139,14 @@ export async function POST(req: Request) {
    * rồi ghép vào — không sinh lại cả nhóm.
    */
   const khoaGoc = `nam:${namXem}|nhom:${nhom}`;
+  /*
+   * Băm theo KHUNG giờ, không theo giờ thô (26/09/2026): cùng một người, máy
+   * này lưu giờ 6, máy kia lưu giờ 5 — cùng lá số nhưng hai khoá, máy thứ hai
+   * sinh lại từ đầu. Bài đã cất dưới khoá giờ thô vẫn được đọc lùi (docCoLui).
+   */
+  const bamCu = bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh);
   const khoa = {
-    chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
+    chartHash: bamLaSo(ngay!, thang!, nam!, veGioLaSo(gio!), gioiTinh),
     beMat: 'luan-giai-v3' as const,
     khoaKy: THE_HE_DEM === 1 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM}`,
     ngonNgu: 'vi',
@@ -174,9 +189,9 @@ export async function POST(req: Request) {
     if (body.tomLai && nhom !== 'tong-quan') {
       // Kèm phiên bản khung: khung đổi câu hỏi thì tóm lại cũ (viết từ câu cũ) không được dùng lại
       const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}` };
-      const daTom = await docNoiDung<{ tomLai: string }>(khoaTom);
+      const daTom = await docCoLui<{ tomLai: string }>(khoaTom, bamCu);
       if (daTom?.noiDung?.tomLai) return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
-      const nhomBai = await docNoiDung<CauTraRaV3[]>(khoa);
+      const nhomBai = await docCoLui<CauTraRaV3[]>(khoa, bamCu);
       const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet)).filter((c): c is CauTraRaV3 => Boolean(c));
       if (du.length < ids.length) return NextResponse.json({ nhom, tomLai: null, chuaDu: true });
       const tom = await viTomLai({ chuDe: nhom, cau: du });
@@ -186,7 +201,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ nhom, tomLai: tom.tomLai, tuDem: false });
     }
 
-    let cu = await docNoiDung<CauTraRaV3[]>(khoa);
+    let cu = await docCoLui<CauTraRaV3[]>(khoa, bamCu);
     let chuyenKhoa = false;
     if (!cu && THE_HE_DEM === 1) {
       // Bài đã sinh dưới khoá kiểu cũ ("…|s:<phiên bản>|v:<băm>") — dùng lại bản mới nhất
@@ -207,6 +222,21 @@ export async function POST(req: Request) {
         await luuNoiDung(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
       return NextResponse.json({ nhom, cau: phamVi.map((id) => daCo.get(id)!), tuDem: true });
+    }
+
+    // Tới đây là phải gọi model — khách chưa đăng nhập thì xin lượt trước (chỉ tổng quan mới tới được đây khi là khách)
+    if (nhom === 'tong-quan' && (await laKhach())) {
+      const luot = await xinLuotLaSoMoi(req, khoa.chartHash);
+      if (!luot.duocPhep) {
+        return NextResponse.json(
+          {
+            loi: `Hôm nay bạn đã mở ${luot.tran} lá số mới khi chưa đăng nhập. Đăng nhập miễn phí để Celes viết tiếp.`,
+            gioiHanKhach: true,
+            canDangNhap: true,
+          },
+          { status: 429 }
+        );
+      }
     }
 
     /*
@@ -261,7 +291,7 @@ export async function POST(req: Request) {
      * Bài cũ CHỈ đi vào câu trả lời, không ghi vào khoá mới: lần sau còn thử lại.
      */
     if (THE_HE_DEM > 1 && cauTra.some((c) => c.chuaViet)) {
-      const truoc = await baiTheHeTruoc(khoa, khoaGoc);
+      const truoc = await baiTheHeTruoc(khoa, khoaGoc, bamCu);
       if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet ? truoc.get(c.id) ?? c : c));
     }
     // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
@@ -281,14 +311,30 @@ export async function POST(req: Request) {
   }
 }
 
+/**
+ * Đọc đệm; thiếu thì đọc dưới khoá băm GIỜ THÔ (trước 26/09/2026) và chép sang
+ * khoá mới, để lần sau đọc thẳng. Giờ lẻ, 0 và 23 thì hai khoá trùng nhau.
+ */
+async function docCoLui<T>(
+  khoa: Parameters<typeof docNoiDung>[0],
+  bamCu: string
+): Promise<Awaited<ReturnType<typeof docNoiDung<T>>>> {
+  const da = await docNoiDung<T>(khoa);
+  if (da || bamCu === khoa.chartHash) return da;
+  const cu = await docNoiDung<T>({ ...khoa, chartHash: bamCu });
+  if (cu) await luuNoiDung(khoa, cu.noiDung, { provider: cu.provider ?? undefined, model: cu.model ?? undefined });
+  return cu;
+}
+
 /** Bài đã viết được ở thế hệ đệm liền trước — đường lùi khi sinh lại hỏng */
 async function baiTheHeTruoc(
   hienTai: Parameters<typeof docNoiDung>[0],
-  khoaGoc: string
+  khoaGoc: string,
+  bamCu: string
 ): Promise<Map<string, CauTraRaV3>> {
   try {
     const khoaKy = THE_HE_DEM === 2 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM - 1}`;
-    const cu = await docNoiDung<CauTraRaV3[]>({ ...hienTai, khoaKy });
+    const cu = await docCoLui<CauTraRaV3[]>({ ...hienTai, khoaKy }, bamCu);
     // Chỉ nhận bài cũ khi CÙNG câu hỏi: khung đổi nghĩa id (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác
     const cauHoiCua = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
     return new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id)).map((c) => [c.id, c]));

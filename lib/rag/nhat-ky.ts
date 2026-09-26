@@ -15,6 +15,19 @@ import type { KetQuaTruyHoi } from './truy-hoi';
  * — đó là thứ người dùng thật sự đến vì nó.
  */
 
+/**
+ * Giờ đại diện cho khung hai tiếng chứa `gio` — cùng khung là cùng lá số.
+ *
+ * Hồ sơ lưu giờ theo lúc nhập: 6 (gõ "06:30") ở máy này, 5 (chọn "giờ Mão" ở ô
+ * chọn) ở máy kia. Engine ra đúng một lá số cho cả hai (hourToChi), nhưng băm
+ * giờ thô thì ra hai khoá đệm và máy thứ hai sinh lại bài từ đầu. Giờ chẵn 2–22
+ * gộp về giờ lẻ liền trước; 0 và 23 giữ nguyên vì 23 giờ là Tý muộn, đã sang
+ * ngày âm lịch kế tiếp (isLateZiHour) — hai lá số khác nhau thật.
+ */
+export function veGioLaSo(gio: number): number {
+  return gio === 0 || gio === 23 || gio % 2 === 1 ? gio : gio - 1;
+}
+
 /** Băm lá số để trace lần được mà không chép lại ngày giờ sinh */
 export function bamLaSo(ngay: number, thang: number, nam: number, gio: number, gioiTinh: string): string {
   return createHash('sha256').update(`${ngay}-${thang}-${nam}-${gio}-${gioiTinh}`).digest('hex').slice(0, 16);

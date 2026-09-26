@@ -36,7 +36,7 @@ export const THE_DAU: { id: string; nhan: string; tieuDe: string }[] = [
  * vì Celes lỗi. "Đang đọc" là DẪN XUẤT từ việc khoá kết quả khớp khoá đang cần,
  * không setState đồng bộ trong effect (luật lint kho này đang giữ).
  */
-export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) {
+export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhach?: boolean) => void) {
   const khoa = laSo
     ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}`
     : null;
@@ -63,14 +63,19 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) 
     if (!laSo || !khoa) return;
     let huy = false;
     const idDau = THE_DAU.map((x) => x.id);
+    // Khách chưa đăng nhập đã hết lượt lá số mới trong ngày (route trả 429 gioiHanKhach)
+    let gioiHan = false;
     const goi = (chi: string[]) =>
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi }),
       })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => (Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null))
+        .then((r) => (r.ok || r.status === 429 ? r.json() : null))
+        .then((d) => {
+          if (d?.gioiHanKhach) gioiHan = true;
+          return Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null;
+        })
         .catch(() => null);
 
     const pDau = goi(idDau).then((cau) => {
@@ -80,14 +85,14 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: () => void) 
     // Lượt sau: ĐÚNG các câu còn lại — xin cả nhóm thì route sinh lại cả ba câu
     // lượt đầu đang viết, tốn gấp đôi.
     const idSau = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !idDau.includes(q.id)).map((q) => q.id);
-    const pSau = pDau.then(() => goi(idSau)).then((cau) => {
+    const pSau = pDau.then(() => (gioiHan ? null : goi(idSau))).then((cau) => {
       if (!huy) setSau({ khoa, cau });
       return cau;
     });
     Promise.all([pDau, pSau]).then(([a, b]) => {
       if (huy) return;
       const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet);
-      if (hongHet(a) && hongHet(b)) hong.current?.();
+      if (hongHet(a) && hongHet(b)) hong.current?.(gioiHan);
     });
     return () => {
       huy = true;
