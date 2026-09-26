@@ -131,6 +131,13 @@ export function kiemBai(vao: {
 
   const lo = tenRiengLo(luan);
   if (lo.length) loi.push({ ma: 'lo-ten', moTa: `Bài luận nêu tên sao/cung/cách cục: ${lo.join(', ')} — chỉ được nêu ở viSao.`, chan: true, cum: lo });
+  /*
+   * CÂU QUÁ DÀI (27/09/2026 — giọng văn chủ dự án chốt): bản mẫu sửa tay có 6% câu > 35 chữ, câu dài nhất
+   * ~45; máy viết 37% câu > 35 chữ. Chặn câu > 40 chữ — lỗi khoanh được vào câu nên đi đường sửa cục bộ
+   * (tách câu, ~100 token ra), không bắt viết lại cả bài.
+   */
+  const cauDai = luan.replace(/\n+/g, ' ').split(/(?<=[.!?…])\s+/).filter((c) => c.split(/\s+/).filter(Boolean).length > 40);
+  if (cauDai.length) loi.push({ ma: 'cau-dai', moTa: `${cauDai.length} câu dài quá 40 chữ — tách thành hai, ba câu ngắn, mỗi câu nói một điều.`, chan: true, cum: cauDai.map((c) => c.slice(0, 60)) });
   const thuat = THUAT_NGU.filter((t) => luan.toLowerCase().includes(t));
   if (thuat.length) loi.push({ ma: 'thuat-ngu', moTa: `Bài luận dùng thuật ngữ: ${thuat.join(', ')}.`, chan: true, cum: thuat });
 

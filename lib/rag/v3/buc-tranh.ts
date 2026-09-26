@@ -2,6 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import { docObjectJson } from '../doc-json';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3 } from './khung';
+import { GIONG_VAN } from './prompt-v3';
 
 /**
  * BỨC TRANH LỚN CỦA CUỘC ĐỜI (26/09/2026) — tầng cuối, sau khi người đọc đã
@@ -20,7 +21,7 @@ export async function viBucTranh(vao: {
 }): Promise<{ bucTranh: string; model: string } | null> {
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia, đang ngồi nói với chính người đọc. Viết tiếng Việt, gọi người đọc là "bạn".
 
-Việc: viết "BỨC TRANH LỚN CỦA CUỘC ĐỜI BẠN" — ghép các phần đã luận bên dưới thành MỘT câu chuyện, trả lời lần lượt sáu điều (không đánh số, không tiêu đề, để chúng chảy thành văn):
+Việc: viết "BỨC TRANH LỚN CỦA CUỘC ĐỜI BẠN" — ghép các phần đã luận bên dưới thành một bài liền mạch, trả lời lần lượt sáu điều (không đánh số, không tiêu đề, viết thành văn liền):
 1. Đây là kiểu cuộc đời nào (ổn định, nhiều chuyển động, muộn thành, tự thân, nhờ quan hệ…).
 2. Lợi thế lớn nhất của người này.
 3. Bài toán khó nhất cứ lặp lại trong đời.
@@ -33,6 +34,8 @@ LUẬT:
 - Chỉ dùng những gì các phần bên dưới đã nói — không thêm nhận định, mốc tuổi, sự kiện mới.
 - Nối bằng quan hệ nhân quả, không kể lại từng phần theo thứ tự.
 - KHÔNG nêu tên sao, tên cung, thuật ngữ tử vi. Không lời khuyên, không "bạn nên".
+
+${GIONG_VAN}
 
 Chỉ trả JSON: {"bucTranh": "…"}`;
   const ten = (id: string) => CHU_DE_V3.find((c) => c.id === id)?.ten ?? id;

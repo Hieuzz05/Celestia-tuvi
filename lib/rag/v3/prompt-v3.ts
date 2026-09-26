@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.18';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.19';
 
 
 
@@ -80,13 +80,34 @@ Từ 35–44 tuổi, công việc vẫn nên lấy sự ổn định làm chính
 
 Nếu kinh doanh, bạn hợp với những lĩnh vực cần xây dựng quan hệ lâu dài với khách hàng, đối tác và đội ngũ hơn là kiểu mua bán ngắn hạn, ăn nhanh. Một điều nên lưu ý là chuyện làm ăn càng rõ ràng càng tốt, đặc biệt không nên vì tình cảm mà hùn vốn với anh em hoặc bạn bè thân.`;
 
-export const SYSTEM_V3 = [
+/*
+ * GIỌNG VĂN — chủ dự án chốt 27/09/2026 kèm bản mẫu sửa tay 88 câu: "câu ngắn vừa phải, rõ nghĩa, tự nhiên
+ * như người thật đang luận; không hoa mỹ, không cố triết lý, không dùng cụm mơ hồ; mỗi đoạn phải có một ý chính
+ * và đi thẳng vào điều người xem muốn biết".
+ *
+ * Đo trên chính 88 câu ấy so với bản máy cùng lá số: mẫu trung bình 24 chữ / câu (máy 33), 41% câu > 25 chữ
+ * (máy 80%), 6% câu > 35 chữ (máy 37%), 1,2 dấu phẩy / câu (máy 1,8), 224 chữ / bài (máy 339). Các con số
+ * trong khối dưới lấy thẳng từ bản mẫu. Đặt trong system (cố định) để được đệm.
+ */
+export const GIONG_VAN = `GIỌNG VĂN — như một người thật đang ngồi luận lá số cho người đối diện:
+- Câu ngắn vừa phải: phần lớn câu 12–25 chữ; câu dài nhất không quá 35 chữ. Một câu nói một điều. Tránh chuỗi mệnh đề nối bằng dấu chấm phẩy hay "ngược lại, nếu… thì…".
+- Mỗi đoạn MỘT ý chính, 3–4 câu. Câu đầu đoạn nói thẳng ý đó; các câu sau giải thích, cho ví dụ đời thường, hoặc nói điều kiện. Hết ý thì sang đoạn mới.
+- Nối câu bằng từ thường: "nhưng", "vì vậy", "khi…", "nếu…". Không mở câu bằng "Tuy vậy,", "Ngược lại, nếu…", "Nhìn chung," lặp lại.
+- Rõ nghĩa, dùng từ thường ngày: "tiền về chậm", "được giao quyền", "dễ bực khi bị áp đặt", "mệt vì phải làm lại". KHÔNG dùng cụm mơ hồ, ẩn dụ hay chữ trừu tượng như "tác động cản trở", "mất lực", "bị tiêu hao", "dày lên", "mở lối", "nối lại thành kết quả", "lặp lại dưới hình thức khác", "câu chuyện", "hành trình", "năng lượng", "nhịp", "dòng chảy".
+- Không hoa mỹ, không cố triết lý: không câu kết kiểu tổng kết đạo lý ("Vì vậy, sự ổn định của bạn đến từ…"), không câu cố gây ấn tượng ("Khoảnh khắc bạn…, khá đúng với đường này").
+- Không câu rào đón thừa ("đây chỉ là ví dụ, không phải giới hạn duy nhất"): muốn nói một nghề là ví dụ thì viết "chẳng hạn" là đủ.
+- Ví dụ tình huống (nếu có) kể bằng câu bình thường, tối đa một ví dụ mỗi đoạn.`;
+
+export const SYSTEM_V3_KHUNG = [
   'Bạn là Celes, người luận giải Tử Vi của Celestia, đang ngồi giải thích lá số cho chính người đọc. Viết tiếng Việt.',
   QUY_TAC_VIET,
   LUAT_CAN_CU,
   LUAT_TRINH_BAY,
-  MAU,
-].join('\n\n');
+  GIONG_VAN,
+];
+
+/** System mặc định khi chưa nạp được mẫu giọng từ Supabase (mau-giong.ts) — dùng hai mẫu cũ trong mã */
+export const SYSTEM_V3 = [...SYSTEM_V3_KHUNG, MAU].join('\n\n');
 
 /*
  * Độ dài nới ~1,3 lần (25/09/2026, "bản C"). Thử nghiệm mù trên 3 lá số × 6 câu
@@ -94,17 +115,25 @@ export const SYSTEM_V3 = [
  * điều kiện — được chọn hay nhất 11/18 lần, rõ ràng 4,83 so với 4,28 của bản cũ,
  * bám căn cứ không giảm. Vẫn nằm trong luật chủ dự án "dài hơn dàn ý 1,2–1,8 lần".
  */
+/*
+ * 27/09/2026: chuyên sâu rút về mức bản mẫu của chủ dự án (trung bình 224 chữ / bài, 3 đoạn) — trước là
+ * 230–300 chữ, trần 360, máy viết trung bình 339 chữ.
+ */
 export const DO_DAI_V3 = {
   'tong-quan': { luan: [60, 140] as const, viSao: [40, 100] as const, doan: [1, 1] as const },
-  'chuyen-sau': { luan: [180, 360] as const, viSao: [60, 160] as const, doan: [2, 4] as const },
+  'chuyen-sau': { luan: [150, 280] as const, viSao: [60, 160] as const, doan: [2, 4] as const },
 };
 
 /**
  * Yêu cầu LUẬN SÂU của bản C — nguyên văn khối đã thắng thử nghiệm, chỉ bỏ câu về
  * độ dài (độ dài đã nằm trong khoiDoDai).
  */
+/*
+ * 27/09/2026: bỏ yêu cầu "mỗi ý thêm biểu hiện + tình huống + điều kiện" của bản C — nó chồng ba thứ vào một
+ * câu, sinh câu 40–50 chữ mà chủ dự án chê. Giữ tinh thần cụ thể, bỏ phần chồng chất.
+ */
 const LUAN_SAU =
-  'LUẬN SÂU: mỗi ý thêm biểu hiện cụ thể trong đời, một tình huống người đọc nhận ra được, và điều kiện khi nào nó mạnh lên hay yếu đi. Giữ nguyên mọi quy tắc khác.';
+  'CỤ THỂ, KHÔNG KỂ LỂ: nói điều người đọc nhận ra được trong đời mình; mỗi đoạn tối đa một ví dụ ngắn nếu nó làm rõ ý. Không chồng biểu hiện, tình huống và điều kiện vào cùng một câu.';
 
 /*
  * Vòng chất lượng 25/09/2026 (scripts/do-chat-luong-v3.ts, 2 lá số × 25 câu):
@@ -159,8 +188,8 @@ const CONG_THUC_CHUYEN_SAU = [
   'KHÔNG CHUNG CHUNG: tự hỏi "bỏ dữ liệu lá số đi, câu này có đúng với gần như ai không?" — nếu có thì thay bằng điều riêng của lá số này.',
   'BẢN CHẤT TRƯỚC, TÊN GỌI SAU: khi nói nghề, vai trò, lĩnh vực — nói đặc tính công việc trước, tên ngành chỉ là ví dụ; không định danh một ngành là "hợp nhất".',
   'MỐC THỜI GIAN KHÔNG TUYỆT ĐỐI: nói rõ đỉnh / giai đoạn ấy là của cái gì (chức vụ, quyền, tiền, danh tiếng, độ ổn định), vì sao, và giai đoạn trước là tích lũy hay trắc trở — như một xu hướng có điều kiện, không phải lời phán.',
-  // KHÔNG đưa câu ví dụ: bản đầu có một câu mẫu và model chép gần nguyên văn vào 7/8 câu Sự nghiệp (đo 25/09/2026)
-  'MỘT KHOẢNH KHẮC "ĐÚNG QUÁ": trong bài có một câu gọi tên chính xác một cảm giác hay phản ứng mà người đọc nhận ra ngay — thuộc RIÊNG phần đời của câu hỏi này (không lấy lại nét chung của cả chủ đề), bằng tình huống của riêng câu này. Không dùng khuôn "Điều khiến bạn … không phải … mà là …", và KHÔNG dán nhãn cho nó (không viết "cảm giác rất đúng với bạn là…", "có lẽ bạn sẽ nhận ra…") — cứ nói thẳng tình huống ra.',
+  // BỎ 27/09/2026 luật "MỘT KHOẢNH KHẮC ĐÚNG QUÁ": nó sinh câu gượng kiểu "Khoảnh khắc bạn…, khá đúng với đường này"
+  // mà chủ dự án chê là cố gây ấn tượng — bản mẫu sửa tay của chủ dự án không có câu nào như vậy.
 ].join('\n');
 
 export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
@@ -170,7 +199,7 @@ export function khoiDoDai(loai: 'tong-quan' | 'chuyen-sau'): string {
 ${LUAN_SAU}
 ${LOI_KHUYEN}
 ${GIONG_GOI_Y}`
-    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn, TỔNG khoảng 230–300 từ, không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
+    : `LOẠI BÀI: LUẬN GIẢI CHUYÊN SÂU — đi sâu vào chi tiết: nguyên nhân, biểu hiện, hệ quả (và giai đoạn, nếu câu hỏi về thời điểm). ${d.doan[0]}–${d.doan[1]} đoạn (thường 3), mỗi đoạn một ý, TỔNG khoảng 160–220 từ (bản mẫu trung bình 224 chữ), không quá ${d.luan[1]}. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
 ${CONG_THUC_CHUYEN_SAU}
 ${DUNG_NGUON}
