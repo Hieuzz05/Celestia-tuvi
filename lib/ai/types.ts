@@ -42,6 +42,12 @@ export interface ChatRequest {
    * hỏng theo cách không phân biệt được với một model chết.
    */
   mucSuyNghi?: 'low' | 'medium' | 'high';
+  /**
+   * Khoá gom đệm prompt (OpenAI `prompt_cache_key`). Các lượt cùng khoá được đưa tới cùng máy
+   * chủ đệm, nên phần đầu prompt giống nhau (luật + khối cố định của câu hỏi) được tính giá đệm
+   * (~1/10) thường xuyên hơn. KHÔNG đổi nội dung trả về. Đo 26/09/2026: chỉ 41% token vào được đệm.
+   */
+  cacheKey?: string;
 }
 
 export interface ChatResult {
@@ -50,6 +56,8 @@ export interface ChatResult {
   model: string;
   tokensIn?: number;
   tokensOut?: number;
+  /** Phần token ra là suy nghĩ nội bộ (tính tiền như token ra) — để biết tiền đi vào đâu */
+  tokensNghi?: number;
   /**
    * Phần token ĐẦU VÀO được nhà cung cấp lấy từ bộ đệm của chính họ.
    *

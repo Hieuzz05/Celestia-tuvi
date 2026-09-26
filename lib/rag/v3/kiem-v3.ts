@@ -24,6 +24,12 @@ export interface LoiV3 {
   moTa: string;
   /** Lỗi chặn = phải sửa; lỗi nhẹ = ghi nhận */
   chan: boolean;
+  /**
+   * Cụm chữ gây lỗi — chỉ có ở lỗi KHOANH ĐƯỢC VÀO CÂU (từ cấm, lộ tên sao, thuật ngữ…). Có trường này
+   * thì vòng sửa chỉ gửi đúng các câu chứa cụm ấy cho model viết lại (sửa cục bộ, index.ts), không bắt
+   * viết lại cả bài: đo 26/09/2026, vòng sửa cả bài chiếm 22% token ra, 30/37 ca là lỗi một câu.
+   */
+  cum?: string[];
 }
 
 export const TU_CAM = [
@@ -124,22 +130,22 @@ export function kiemBai(vao: {
   if (/^\s*[-•*]\s/m.test(vs)) loi.push({ ma: 'liet-ke-visao', moTa: 'viSao phải là một đoạn liền, không gạch ý.', chan: true });
 
   const lo = tenRiengLo(luan);
-  if (lo.length) loi.push({ ma: 'lo-ten', moTa: `Bài luận nêu tên sao/cung/cách cục: ${lo.join(', ')} — chỉ được nêu ở viSao.`, chan: true });
+  if (lo.length) loi.push({ ma: 'lo-ten', moTa: `Bài luận nêu tên sao/cung/cách cục: ${lo.join(', ')} — chỉ được nêu ở viSao.`, chan: true, cum: lo });
   const thuat = THUAT_NGU.filter((t) => luan.toLowerCase().includes(t));
-  if (thuat.length) loi.push({ ma: 'thuat-ngu', moTa: `Bài luận dùng thuật ngữ: ${thuat.join(', ')}.`, chan: true });
+  if (thuat.length) loi.push({ ma: 'thuat-ngu', moTa: `Bài luận dùng thuật ngữ: ${thuat.join(', ')}.`, chan: true, cum: thuat });
 
   const cam = TU_CAM.filter((t) => luan.toLowerCase().includes(t) || vs.toLowerCase().includes(t));
-  if (cam.length) loi.push({ ma: 'tu-cam', moTa: `Dùng từ cấm: ${cam.map((x) => `"${x}"`).join(', ')}.`, chan: true });
+  if (cam.length) loi.push({ ma: 'tu-cam', moTa: `Dùng từ cấm: ${cam.map((x) => `"${x}"`).join(', ')}.`, chan: true, cum: cam });
 
   // Model lẫn ngôn ngữ giữa câu: production 24/09/2026 có "cách làm cũ აღარ còn
   // thuyết phục" (chữ Georgia, nghĩa "không còn") nằm ngay thẻ đầu trang /la-so
   const la = [...new Set((luan + ' ' + vs).match(KY_TU_LA) ?? [])];
-  if (la.length) loi.push({ ma: 'ky-tu-la', moTa: `Lẫn chữ không phải tiếng Việt: "${la.join('", "')}" — viết lại đúng chỗ đó bằng tiếng Việt.`, chan: true });
+  if (la.length) loi.push({ ma: 'ky-tu-la', moTa: `Lẫn chữ không phải tiếng Việt: "${la.join('", "')}" — viết lại đúng chỗ đó bằng tiếng Việt.`, chan: true, cum: la });
 
   const ma = [...new Set([...(luan + ' ' + vs).matchAll(/\b[FE]\d{3}\b|\bTQ\d{2}\b|\b[A-Z]{2}\d{2}\b/g)].map((m) => m[0]))];
-  if (ma.length) loi.push({ ma: 'lo-ma', moTa: `Lộ mã nội bộ trong văn: ${ma.join(', ')}.`, chan: true });
+  if (ma.length) loi.push({ ma: 'lo-ma', moTa: `Lộ mã nội bộ trong văn: ${ma.join(', ')}.`, chan: true, cum: ma });
   const viettat = [...new Set([...(luan + ' ' + vs).matchAll(/\b[A-ZĐ]{3,}\b/g)].map((m) => m[0]))].filter((x) => x !== 'AI');
-  if (viettat.length) loi.push({ ma: 'viet-tat', moTa: `Viết tắt người đọc không hiểu: ${viettat.join(', ')}.`, chan: true });
+  if (viettat.length) loi.push({ ma: 'viet-tat', moTa: `Viết tắt người đọc không hiểu: ${viettat.join(', ')}.`, chan: true, cum: viettat });
 
   // viSao chỉ được nêu sao có trong dữ kiện của câu này
   // So khớp CÓ DẤU: bỏ dấu thì "Tử Phủ" (gọi tắt Tử Vi – Thiên Phủ) trùng "Tử Phù"
@@ -148,7 +154,7 @@ export function kiemBai(vao: {
     .filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION')
     .filter((t) => [t.ten, ...t.biDanh].some((x) => vs.includes(x)));
   const ngoai = saoVs.filter((t) => !vao.saoDuocPhep.has(t.ten) && !t.biDanh.some((b) => vao.saoDuocPhep.has(b)));
-  if (ngoai.length) loi.push({ ma: 'sao-ngoai', moTa: `viSao nêu sao không có trong dữ kiện câu này: ${ngoai.map((t) => t.ten).join(', ')}.`, chan: true });
+  if (ngoai.length) loi.push({ ma: 'sao-ngoai', moTa: `viSao nêu sao không có trong dữ kiện câu này: ${ngoai.map((t) => t.ten).join(', ')}.`, chan: true, cum: ngoai.flatMap((t) => [t.ten, ...t.biDanh]).filter((x) => vs.includes(x)) });
 
   // "Bạn A. Bạn B. Bạn C." — giọng đọc kết quả mà quy tắc cấm
   const cau = luan.split(/(?<=[.!?])\s+/).filter((x) => x.trim());

@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.17';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.18';
 
 
 

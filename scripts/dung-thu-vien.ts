@@ -12,6 +12,7 @@
  * (có câu trích) phải ghi RA NGOÀI repo — repo công khai.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { batDauLuotThu } from './thu-chung';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const i = d.indexOf('=');
@@ -20,6 +21,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const v = d.slice(i + 1).trim().replace(/^["']|["']$/g, '');
   if (v && !process.env[k]) process.env[k] = v;
 }
+batDauLuotThu('dung-thu-vien');
 
 const thamSo = (ten: string, macDinh = '') => {
   const i = process.argv.indexOf(`--${ten}`);
@@ -128,6 +130,17 @@ async function main() {
       })
     : [];
   const chon = (chiDoSang ? doanDoSang : [...suNghiep.sort((a, b) => Number(deMuc(b)) - Number(deMuc(a))), ...doanToHop, ...doanDoSang]).slice(0, gioiHan);
+  /*
+   * TRÍCH TĂNG DẦN (26/09/2026): --bo-qua <báo cáo lượt trước> bỏ các đoạn đã đọc ở lượt ấy — kho thêm
+   * sách mới thì chỉ trích phần mới, không đọc lại cả kho.
+   */
+  const boQuaTep = thamSo('bo-qua');
+  if (boQuaTep) {
+    const daDoc = new Set<string>(JSON.parse(readFileSync(boQuaTep, 'utf-8')).daXuLy ?? []);
+    const truoc = chon.length;
+    chon.splice(0, chon.length, ...chon.filter((c) => !daDoc.has(c.id)));
+    console.log(`Trích tăng dần: bỏ ${truoc - chon.length} đoạn đã đọc ở ${boQuaTep}`);
+  }
   console.log(`Đoạn trong kho ${tatCa.length} → chọn ${chon.length} (sự nghiệp ${suNghiep.length}, đề mục sự nghiệp ${suNghiep.filter(deMuc).length}; tổ hợp ${doanToHop.length}; độ sáng ${doanDoSang.length})`);
 
   // Lô theo số ký tự, tối đa `loToiDa` đoạn
@@ -183,34 +196,59 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
   const token = { vao: 0, ra: 0, dem: 0 };
   let loi = 0;
   let k = 0;
-  const tho = async () => {
-    while (k < lo.length) {
-      const ds = lo[k++];
-      const user = ds
-        .map((d, i) => {
-          const nc = nguCanhTruoc(d);
-          return `[D${i + 1}] (đề mục: ${d.duong_de_muc ?? '—'})${nc ? `\n(ngữ cảnh đoạn trước — KHÔNG trích từ đây: …${nc})` : ''}\n${d.noi_dung}`;
-        })
-        .join('\n\n');
-      try {
-        const kq = await goiVoiFallback({ system, user, maxTokens: 5000 }, undefined, 90_000);
-        token.vao += kq.tokensIn ?? 0;
-        token.ra += kq.tokensOut ?? 0;
-        token.dem += kq.tokensDem ?? 0;
-        const o = docObjectJson(kq.text);
-        const mang = Array.isArray(o?.muc) ? (o!.muc as Tho[]) : [];
-        for (const t of mang) {
-          const d = ds[Number(t.doan) - 1];
-          if (d) ungVien.push({ tho: t, doan: d, lo: ds });
-        }
-      } catch (e) {
-        loi++;
-        console.warn('lô hỏng:', e instanceof Error ? e.message.slice(0, 120) : e);
-      }
-      if (k % 10 === 0) console.log(`  … ${k}/${lo.length} lô, ${ungVien.length} ứng viên`);
+  const userCua = (ds: Doan[]) =>
+    ds
+      .map((d, i) => {
+        const nc = nguCanhTruoc(d);
+        return `[D${i + 1}] (đề mục: ${d.duong_de_muc ?? '—'})${nc ? `\n(ngữ cảnh đoạn trước — KHÔNG trích từ đây: …${nc})` : ''}\n${d.noi_dung}`;
+      })
+      .join('\n\n');
+  const nhanKetQua = (ds: Doan[], text: string) => {
+    const o = docObjectJson(text);
+    const mang = Array.isArray(o?.muc) ? (o!.muc as Tho[]) : [];
+    for (const t of mang) {
+      const d = ds[Number(t.doan) - 1];
+      if (d) ungVien.push({ tho: t, doan: d, lo: ds });
     }
   };
-  await Promise.all(Array.from({ length: songSong }, tho));
+  if (process.argv.includes('--batch')) {
+    // Batch API: nửa giá, kết quả về sau vài phút (26/09/2026 — giảm chi phí dựng thư viện)
+    const { chayBatchOpenAi } = await import('../lib/ai/batch-openai');
+    const kq = await chayBatchOpenAi(
+      lo.map((ds, i) => ({ id: String(i), system, user: userCua(ds), model: thamSo('model', 'gpt-5.6-luna'), maxTokens: 5000 })),
+      { nhan: `dung-${dot}`, khiCho: (t, x, n) => console.log(`  batch ${t} ${x}/${n}`) }
+    );
+    lo.forEach((ds, i) => {
+      const r = kq.get(String(i));
+      if (!r || r.loi) {
+        loi++;
+        return;
+      }
+      token.vao += r.tokensIn;
+      token.ra += r.tokensOut;
+      token.dem += r.tokensDem;
+      nhanKetQua(ds, r.text);
+    });
+  } else {
+    const tho = async () => {
+      while (k < lo.length) {
+        const ds = lo[k++];
+        try {
+          const kq = await goiVoiFallback({ system, user: userCua(ds), maxTokens: 5000 }, undefined, 90_000);
+          token.vao += kq.tokensIn ?? 0;
+          token.ra += kq.tokensOut ?? 0;
+          token.dem += kq.tokensDem ?? 0;
+          nhanKetQua(ds, kq.text);
+        } catch (e) {
+          loi++;
+          console.warn('lô hỏng:', e instanceof Error ? e.message.slice(0, 120) : e);
+          if (e instanceof Error && e.name === 'VuotNganSachError') break;
+        }
+        if (k % 10 === 0) console.log(`  … ${k}/${lo.length} lô, ${ungVien.length} ứng viên`);
+      }
+    };
+    await Promise.all(Array.from({ length: songSong }, tho));
+  }
   console.log(`Trích: ${lo.length} lô (${loi} hỏng) → ${ungVien.length} ứng viên. Token vào ${token.vao} (đệm ${token.dem}), ra ${token.ra}`);
 
   // ---------- 3. Kiểm tất định ----------
@@ -357,7 +395,7 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
   console.log(`Gộp: ${dat.length} → ${gop.length} mục · tổ hợp ${toHop} · ≥2 tài liệu độc lập ${nguonDocLap} · chế độ ${JSON.stringify(theoCheDo)} (ép về add vì không có đích: ${epAdd}) · cặp mâu thuẫn ${mauThuan.length}`);
 
   if (baoCao) {
-    writeFileSync(baoCao, JSON.stringify({ dot, token, soLo: lo.length, ungVien: ungVien.length, dat: dat.length, lyDoTruot: Object.fromEntries(lyDoTruot), muc: gop, mauThuan: mauThuan.map((ds) => ds.map((m) => m.id)) }, null, 1));
+    writeFileSync(baoCao, JSON.stringify({ dot, token, daXuLy: chon.map((c) => c.id), soLo: lo.length, ungVien: ungVien.length, dat: dat.length, lyDoTruot: Object.fromEntries(lyDoTruot), muc: gop, mauThuan: mauThuan.map((ds) => ds.map((m) => m.id)) }, null, 1));
     console.log(`Báo cáo: ${baoCao}`);
   }
   if (thu) {

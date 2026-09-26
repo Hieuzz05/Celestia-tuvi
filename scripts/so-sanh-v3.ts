@@ -17,7 +17,10 @@
  * khảo chỉ trả mã chọn, không viết lý do (phần ra là phần đắt nhất). Cặp nào hai
  * bản trùng nguyên văn (câu lấy lại bằng --tu) thì bỏ, không tốn lượt chấm.
  */
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { batDauLuotThu } from './thu-chung';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const s = d.trim();
@@ -26,6 +29,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const v = p.join('=').trim();
   if (v) process.env[k.trim()] = v;
 }
+batDauLuotThu('so-sanh-v3');
 
 type Cau = { id: string; cauHoi: string; luanGiai: string };
 
@@ -36,7 +40,8 @@ const thamSo = (ten: string, macDinh = '') => {
 
 async function main() {
   const [fx, fy] = process.argv.slice(2).filter((a) => a.endsWith('.json'));
-  const chuoi = thamSo('giam-khao', 'groq|openai/gpt-oss-120b,openai|gpt-4o-mini,openai|gpt-5.6-luna').split(',');
+  // Rẻ → đắt; groq bỏ khỏi mặc định (26/09/2026 không gọi được, phiếu lặng lẽ rơi về luna)
+  const chuoi = thamSo('giam-khao', 'openai|gpt-4o-mini,openai|gpt-5.6-luna').split(',');
   const chi = thamSo('chi') ? thamSo('chi').split(',') : null;
   const lo = Number(thamSo('lo', '3'));
   const { goiVoiFallback } = await import('../lib/ai/fallback');
@@ -54,11 +59,27 @@ async function main() {
     'Bạn là biên tập viên khó tính chấm bài luận giải tử vi cho người đọc phổ thông. Với mỗi câu hỏi có hai bản (1 và 2) viết cho CÙNG một lá số. Chọn bản tốt hơn theo: đọc như một người thật đang ngồi xem lá số của người đọc và nói chuyện với họ (không như bài trắc nghiệm tính cách), mượt; cụ thể, không chung chung; có giá trị (người đọc hiểu thêm về mình). Nếu ngang nhau thật sự thì ghi 0. Chỉ trả JSON.';
 
   const tongToken = { vao: 0, ra: 0 };
+  /*
+   * ĐỆM PHIẾU (26/09/2026 — tiết kiệm token test): phiếu của một cặp (cùng giám khảo, cùng hai bài,
+   * cùng tiêu chí) lưu vào so-sanh-cache.json cạnh tệp X; chạy lại / so lại bản mốc không chấm lại.
+   */
+  const tepDem = join(dirname(fx), 'so-sanh-cache.json');
+  const dem: Record<string, number> = existsSync(tepDem) ? JSON.parse(readFileSync(tepDem, 'utf-8')) : {};
+  const khoaPhieu = (gk: string, c: { x: Cau; y: Cau }) =>
+    createHash('sha1').update(`${gk}\n${system}\n${c.x.cauHoi}\n${c.x.luanGiai}\n${c.y.luanGiai}`).digest('hex');
+  let tuDem = 0;
   const chamBoi = async (giamKhao: string) => {
     const kq: { id: string; yThang: number }[] = [];
     let thucTe = '';
-    for (let k = 0; k < cap.length; k += lo) {
-      const phan = cap.slice(k, k + lo);
+    const conCham = cap.filter((c) => {
+      const d = dem[khoaPhieu(giamKhao, c)];
+      if (d === undefined) return true;
+      kq.push({ id: c.x.id, yThang: d });
+      tuDem++;
+      return false;
+    });
+    for (let k = 0; k < conCham.length; k += lo) {
+      const phan = conCham.slice(k, k + lo);
       const user =
         phan
           .map((c, j) => {
@@ -74,9 +95,12 @@ async function main() {
       for (const ch of o?.chon ?? []) {
         const c = phan[ch.cau - 1];
         if (!c) continue;
-        kq.push({ id: c.x.id, yThang: ch.tot === 0 ? 0.5 : (ch.tot === 2) !== daoCho(c.x.id) ? 1 : 0 });
+        const yThang = ch.tot === 0 ? 0.5 : (ch.tot === 2) !== daoCho(c.x.id) ? 1 : 0;
+        kq.push({ id: c.x.id, yThang });
+        dem[khoaPhieu(giamKhao, c)] = yThang;
       }
     }
+    writeFileSync(tepDem, JSON.stringify(dem));
     const ti = kq.length ? Math.round((kq.reduce((a, c) => a + c.yThang, 0) / kq.length) * 100) : 50;
     // Tỉ lệ thắng BỎ HOÀ (ngưỡng nghiệm thu 11.2 #4): thắng / (thắng + thua)
     const thang = kq.filter((c) => c.yThang === 1).length;
@@ -102,7 +126,7 @@ async function main() {
   }
   const tb = Math.round(ket.reduce((a, c) => a + c.ti, 0) / ket.length);
   const tbBoHoa = Math.round(ket.reduce((a, c) => a + c.tiBoHoa, 0) / ket.length);
-  console.log(JSON.stringify({ soCap: cap.length, yThangTrungBinh: tb, yThangBoHoaTrungBinh: tbBoHoa, giamKhao: ket, tokenCham: tongToken }));
+  console.log(JSON.stringify({ soCap: cap.length, yThangTrungBinh: tb, yThangBoHoaTrungBinh: tbBoHoa, giamKhao: ket, tokenCham: tongToken, phieuTuDem: tuDem }));
 }
 
 main().catch((e) => {

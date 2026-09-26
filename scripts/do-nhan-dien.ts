@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { boLaSo } from './lat-cat-su-nghiep';
+import { batDauLuotThu } from './thu-chung';
 
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const i = d.indexOf('=');
@@ -21,6 +22,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const v = d.slice(i + 1).trim().replace(/^["']|["']$/g, '');
   if (v && !process.env[k]) process.env[k] = v;
 }
+batDauLuotThu('do-nhan-dien');
 const thamSo = (ten: string, macDinh = '') => {
   const i = process.argv.indexOf(`--${ten}`);
   return i > 0 ? process.argv[i + 1] : macDinh;
