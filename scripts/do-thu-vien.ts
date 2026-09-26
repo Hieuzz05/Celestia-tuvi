@@ -1,7 +1,10 @@
 /**
  * ĐO LÁT CẮT "SỰ NGHIỆP — LÁ SỐ GỐC" — KIEN-TRUC-LUAN-GIAI.md mục 11.2.
  *
- *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--so-la 12] [--chi-do-phu]
+ *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--so-la 12] [--chi-do-phu] [--chi-b B2]
+ *
+ * --chi-b <tên>: chỉ sinh lại bản có thư viện (sau khi sửa khâu chọn / thư viện), ghi
+ *   <tên>.json + chi-tiet-<tên>.json; bản A giữ nguyên từ lượt trước để so cùng mốc.
  *
  * Sinh bản A (luồng v3 hiện tại) và bản B (A + thư viện) trên cùng 12 lá số TỔNG
  * HỢP × 5 câu (SN01 SN02 SN03 SN05 SN06), rồi tính tiêu chí 1, 2, 3, 5. Tiêu chí 4
@@ -69,6 +72,13 @@ async function main() {
   const B: (KetQuaCauV3 & { khoa: string })[] = [];
   for (let i = 0; i < la.length; i++) {
     const laSo = lapLaSo(la[i]);
+    const chiB = thamSo('chi-b');
+    if (chiB) {
+      const b = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU_LAT_CAT) } });
+      B.push(...b.map((k) => ({ ...k, khoa: `L${String(i + 1).padStart(2, '0')}-${k.id}` })));
+      console.log(`  lá ${i + 1}/${la.length}: ${chiB} ${b.filter((k) => k.luanGiai).length}/5`);
+      continue;
+    }
     const a = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5 });
     const b = await luanNhieuCau({ laSo, ids: CAU_LAT_CAT, namXem: 2026, songSong: 5, thuVien: { muc: thuVien, cau: new Set(CAU_LAT_CAT) } });
     A.push(...a.map((k) => ({ ...k, khoa: `L${String(i + 1).padStart(2, '0')}-${k.id}` })));
@@ -76,6 +86,14 @@ async function main() {
     console.log(`  lá ${i + 1}/${la.length}: A ${a.filter((k) => k.luanGiai).length}/5 · B ${b.filter((k) => k.luanGiai).length}/5 · T trung bình ${(b.reduce((s, k) => s + (k.thuVien?.daChon.length ?? 0), 0) / b.length).toFixed(1)}`);
   }
 
+  const chiBTen = thamSo('chi-b');
+  if (chiBTen) {
+    writeFileSync(join(ra, `${chiBTen}.json`), JSON.stringify({ phien: B.map((k) => ({ id: k.khoa, cauHoi: k.cauHoi, luanGiai: k.luanGiai })) }, null, 1));
+    writeFileSync(join(ra, `chi-tiet-${chiBTen}.json`), JSON.stringify({ B }, null, 1));
+    const p95B = p95(B.filter((k) => k.luanGiai).map((k) => k.ms));
+    console.log(`Đã ghi ${chiBTen}. p95 ${p95B} ms · T trung bình ${(B.reduce((s, k) => s + (k.thuVien?.daChon.length ?? 0), 0) / B.length).toFixed(1)} · cặp ngược chiều ${B.reduce((s, k) => s + (k.thuVien?.nguocChieu.length ?? 0), 0)}`);
+    return;
+  }
   // Tệp cho so-sanh-v3 (id duy nhất theo lá + câu)
   const phien = (ds: typeof A) => ({ phien: ds.map((k) => ({ id: k.khoa, cauHoi: k.cauHoi, luanGiai: k.luanGiai })) });
   writeFileSync(join(ra, 'A.json'), JSON.stringify(phien(A), null, 1));

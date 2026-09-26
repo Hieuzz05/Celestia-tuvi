@@ -436,6 +436,77 @@ nhận đúng lá số 93%. Bộ đo nhận diện (`scripts/do-nhan-dien.ts --c
 **Bài học đo:** giám khảo máy xếp loại nhận định là quá dễ dãi (11.5); cần phép đo có đáp án thật, và phải
 bỏ những gì cho phép dò chữ (tên sao) thay vì hiểu nội dung (11.6).
 
+### 11.7 Phân tích nguyên nhân gốc + bộ nghiệm thu KIẾN THỨC — chốt 26/09/2026 trước khi chạy
+
+**Nguyên nhân gốc (đo trên dữ liệu lượt 1, `chi-tiet.json`):**
+
+| Giả thuyết | Bằng chứng | Kết luận |
+|---|---|---|
+| Kỹ thuật — khâu chọn mục | thư viện có mục cho chính tinh Quan Lộc ở 11/12 lá, nhưng chỉ 6/12 lá có mục ấy lọt vào prompt; 30% mục vào prompt có chính tinh, 24% CHỈ sao nhỏ (Tướng Quân, Phục Binh…). Hàm chấm cộng +100 cho MỌI tổ hợp ≥ 2 sao nên tổ hợp sao nhỏ đè nghĩa chính tinh | **nguyên nhân chính** |
+| Thư viện chưa đủ chi tiết | độ sáng chỉ có ở 8% mục; 43% mục không giới hạn cung; lá có cát tinh ở tam phương Quan Lộc → chỉ 1/4 có mục tổ hợp "chính tinh + cát tinh"; ~6,5 cặp ngược chiều mỗi bài | **nguyên nhân phụ** |
+| Giám khảo | so mù đo cách viết, không có đáp án kiến thức; bộ xếp loại nhận định quá dễ dãi; nhận diện lá số A đã 93% nên khó thấy cải thiện | **thước đo chưa đo kiến thức** |
+| Trùng lặp với đoạn sách A đã có | chỉ 1% mục T có câu trích nằm trong đoạn A đã dùng | loại — thư viện mang thông tin mới |
+
+**Sửa khâu chọn (bản B2):** xếp theo tầng — (1) mục có chính tinh tại cung chính, ưu tiên mục có độ sáng
+khớp; (2) tổ hợp chính tinh + sao lớn (lục cát, lục sát, tứ hoá, Lộc Tồn, Mã); (3) mục chỉ sao lớn;
+(4) sao nhỏ — chỉ lấp chỗ trống. Tổ hợp CHỈ được cộng khi có ít nhất một sao lớn.
+
+**Bộ nghiệm thu kiến thức (chủ dự án gợi ý 26/09):**
+
+1. *Đáp án kiến thức* cho mỗi (lá, câu), dựng ĐỘC LẬP với A và B: engine liệt kê cấu hình trọng yếu (chính
+   tinh + độ sáng tại Quan Lộc / vô chính diệu mượn sao, lục cát, lục sát, tứ hoá, Lộc Tồn, Mã, Tuần / Triệt
+   ở tam phương Quan Lộc, cách cục); gpt-5.6-luna viết 5–8 điểm kiến thức bài ĐÚNG phải nói (mỗi điểm: nội
+   dung, sao căn cứ, `bat-buoc` / `nen-co`) và 2–4 điều KHÔNG được nói (sai lầm điển hình, vd. luận sao hãm
+   như miếu), từ kiến thức Tử Vi của model + đoạn sách của cả hai bên (hợp đoạn A dùng và câu trích thư viện).
+2. *Chấm kiến thức* từng bài riêng, không biết bản: mỗi điểm đáp án → `dat` / `thieu` / `sai`; đếm vi phạm
+   "không được nói" và sai kiến thức khác. Điểm KT = (2 × bắt buộc đạt + nên có đạt) / (2 × số bắt buộc +
+   số nên có). Chấm cách viết tách riêng bằng so mù hiện có.
+3. *Kiểm giám khảo kiến thức*: 12 bài cài lỗi — đảo nghĩa đúng một điểm kiến thức → giám khảo phải chấm
+   điểm ấy `sai` ở ≥ 10 / 12; chấm lại 20 bài lần hai, cùng kết quả từng điểm ≥ 80%.
+
+**Ngưỡng (mọi giám khảo hợp lệ):** KT của B2 ≥ A + 10 điểm; số lỗi kiến thức (sai + vi phạm) của B2 ≤ A.
+Cách viết: so mù B2 vs A — báo cáo; đề xuất nghiệm thu "không thua rõ" (≥ 45%) thay cho 60% — **chủ dự án
+quyết**, cho tới lúc đó giữ 60%.
+
+**Kết quả 11.7 (26/09/2026) — giám khảo kiến thức HỢP LỆ, không bản nào hơn:**
+
+| | Cài lỗi | Nhất quán | KT A | KT B | KT B2 | Lỗi / bài A · B · B2 |
+|---|---|---|---|---|---|---|
+| gpt-5.6-luna | 12 / 12 | 87,5% | 58,5 | 58,3 | 56,9 | 0,48 · 0,37 · 0,58 |
+| gpt-4o-mini | 10 / 12 | 92,6% | 51,0 | 53,2 | 51,0 | 1,03 · 1,07 · 0,98 |
+
+Cách viết A vs B2 (so mù đủ): luna 43%, gpt-4o-mini 52%. B2 chọn đúng hơn hẳn (chính tinh Quan Lộc vào
+prompt 11/12 lá, trước 6/12; 89% mục có chính tinh, trước 30%) mà kiến thức vẫn phẳng → khâu chọn KHÔNG
+phải nguyên nhân quyết định.
+
+**Nguyên nhân gốc — đo trên 269 điểm BẮT BUỘC của đáp án:**
+
+| Bài đúng cần | Tỉ lệ điểm đáp án | Thư viện đang cho |
+|---|---|---|
+| tổng hợp nhiều yếu tố | trung bình 4,6 yếu tố / điểm; 48% kết hợp ≥ 2 cung | mục đơn hoặc cặp sao, neo một cung |
+| độ sáng | 94% | 8% mục có độ sáng |
+| sát tinh / Hoá Kỵ | 42% | sát tinh gần như không lọt vào 14 chỗ (ví dụ lá 5: Kình Dương hãm tại Quan Lộc — 0 mục) |
+| Tuần / Triệt | 25% | hiếm |
+| **Phủ đáp án** | — | **15%** điểm có mục thư viện chứa đủ sao; **3%** có cả độ sáng |
+
+Ví dụ chủ dự án nêu: 6 mục Liêm Phủ, **0 mục Liêm Phủ + lục cát**, 1 / 6 có độ sáng; một mục đòi đủ năm
+chính tinh Tử Vũ Tướng Liêm Phủ cùng lúc (hiểu sai "cách Tử Phủ Vũ Tướng").
+
+**Kết luận:** (1) **nguyên nhân chính: thư viện chưa đủ chi tiết** — tri thức dạng "nghĩa sao đơn, không độ
+sáng, không sát tinh đi cùng", trùng với thứ model viết đã biết; luận đúng cần tổ hợp có điều kiện. Gốc
+sâu hơn nằm ở khâu trích (lược đồ đủ chỗ cho độ sáng / cung / sao phải vắng nhưng model trích bỏ trống) và
+một phần ở sách (sách cổ viết theo từng sao). (2) Kỹ thuật chọn mục: có lỗi thật, đã sửa, không quyết định.
+(3) Giám khảo: trước đây đo sai thứ (cách viết) hoặc quá dễ dãi; nay có thước kiến thức hợp lệ.
+(4) Giới hạn của thước: đáp án do chính model viết soạn → nghiêng về kiến thức model đã có; cần chủ dự án
+duyệt mẫu đáp án.
+
+**Tiêu chí nghiệm thu đề xuất cho các lượt sau** (chủ dự án chốt):
+1. *Cổng rẻ, tất định — chạy trước:* thư viện phủ ≥ 50% điểm bắt buộc của đáp án, ≥ 30% có độ sáng.
+   Chưa qua thì chưa tốn tiền sinh bài.
+2. *Kiến thức:* KT ≥ A + 10 điểm và lỗi kiến thức ≤ A, mọi giám khảo hợp lệ (cài lỗi ≥ 10/12, nhất quán ≥ 80%).
+3. *Cách viết:* so mù không thua rõ (≥ 45%).
+4. *Đáp án:* chủ dự án duyệt 10 đáp án mẫu (`dap-an.json`) trước khi tin điểm KT.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
