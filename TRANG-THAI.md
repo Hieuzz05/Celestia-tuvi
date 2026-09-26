@@ -16,13 +16,13 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| — | (chưa có việc nào đang chạy) | — | — | — |
+| Claude (máy 1) | Dựng cấu hình AI Agent cho Claude Code: .claude/agents (researcher, celes-domain, qa), skill build-feature, specs/, quyền chặn đọc .env | viec/agent-setup | .claude/**, specs/** (không chạm mã chạy) | 26/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
-| **OpenAI HẾT CREDIT (26/09/2026)** | `insufficient_quota` từ OpenAI — gpt-5.6-luna (model chính) và gpt-4o-mini đều không gọi được. Production: lá số MỚI gọi luận giải v3 trả 502, chuyên sâu / hỏi Celes lỗi; lá số đã có bài vẫn đọc từ đệm, tổng quan tự lùi về bản tất định. Các nhà cung cấp dự phòng (groq, gemini, anthropic, cerebras) cũng không gọi được. Chủ dự án nạp credit trong platform.openai.com/settings/organization/billing — ĐỪNG đổi ai_model_configs bằng code | Claude (máy 1) |
+| ~~OpenAI hết credit (26/09/2026)~~ — **ĐÃ XỬ LÝ**: chủ dự án đã nạp credit (26/09). Dự phòng (groq, gemini, cerebras) vẫn cần trả phí mới chạy thật | — | Claude (máy 1) |
 | **Cerebras hết tiền** | Cron sức khoẻ bắt được "Payment required" — model nằm trong chuỗi dự phòng nhưng không dùng được. Nạp tiền hoặc tắt nó trong trang quản trị models (ĐỪNG sửa ai_model_configs bằng code) | Claude (máy 1) |
 
 ## Vừa xong
