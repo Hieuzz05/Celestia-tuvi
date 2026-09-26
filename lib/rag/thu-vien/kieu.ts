@@ -32,6 +32,12 @@ export interface DieuKienMuc {
   /** Chi của cung gốc ("tại Dần Thân") — rỗng là mọi chi */
   chi?: string[];
   sao: DieuKienSao[];
+  /**
+   * Nhóm "ít nhất k trong số" — sách viết "gặp Kình Đà Hỏa Linh", "hội Tả Hữu Xương Khúc"
+   * với nghĩa gặp các sao ấy, KHÔNG phải phải có đủ cả nhóm. Lượt 1 ghi thành điều kiện
+   * "có đủ" nên gần như không lá số nào khớp (KIEN-TRUC 11.8).
+   */
+  nhom?: { ten: string[]; quanHe: QuanHe; toiThieu: number }[];
   /** Phải VẮNG — phá cách, ngoại lệ */
   khong?: { ten: string; quanHe: QuanHe }[];
   thuocTinh?: { tuan?: boolean; triet?: boolean; trangSinh?: string[]; voChinhDieu?: boolean };
@@ -67,7 +73,7 @@ export interface MucThuVien {
 
 /** Tên tất cả sao trong điều kiện (có mặt) của một mục */
 export function saoCuaMuc(m: MucThuVien): string[] {
-  return [...new Set(m.dieuKien.sao.map((s) => s.ten))];
+  return [...new Set([...m.dieuKien.sao.map((s) => s.ten), ...(m.dieuKien.nhom ?? []).flatMap((n) => n.ten)])];
 }
 
 /** Mục tổ hợp = điều kiện có từ hai sao trở lên */

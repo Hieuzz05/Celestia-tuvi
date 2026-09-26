@@ -20,7 +20,9 @@ let dem: { luc: number; ds: MucThuVien[] } | null = null;
 
 export async function docThuVien(chuDe?: string, dot?: string): Promise<MucThuVien[]> {
   const ds = await docTatCa(chuDe);
-  return dot ? ds.filter((m) => m.dotTrich === dot) : ds;
+  // Nhiều đợt: "sn-2,sn-2b"
+  const dsDot = dot?.split(',').map((x) => x.trim()).filter(Boolean);
+  return dsDot?.length ? ds.filter((m) => dsDot.includes(m.dotTrich)) : ds;
 }
 
 async function docTatCa(chuDe?: string): Promise<MucThuVien[]> {

@@ -43,7 +43,8 @@ async function main() {
       const S = [...new Set(nhanDangThucThe(txt).filter((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION').map((t) => t.ten))].filter((s) => SAO_LON.has(s));
       if (!S.length) continue;
       n++;
-      const muc = khop.filter((k) => S.every((s) => k.muc.dieuKien.sao.some((x) => x.ten === s)));
+      const coSao = (k: (typeof khop)[number], s: string) => k.muc.dieuKien.sao.some((x) => x.ten === s) || (k.muc.dieuKien.nhom ?? []).some((n) => n.ten.includes(s));
+      const muc = khop.filter((k) => S.every((s) => coSao(k, s)));
       if (muc.length) phu++;
       if (/ham|mieu|vuong|dac|binh/.test(boDau(txt))) {
         canSang++;

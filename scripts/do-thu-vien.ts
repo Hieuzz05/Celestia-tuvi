@@ -1,7 +1,7 @@
 /**
  * ĐO LÁT CẮT "SỰ NGHIỆP — LÁ SỐ GỐC" — KIEN-TRUC-LUAN-GIAI.md mục 11.2.
  *
- *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--so-la 12] [--chi-do-phu] [--chi-b B2]
+ *   npx tsx scripts/do-thu-vien.ts --ra <thư mục NGOÀI repo> [--so-la 12] [--chi-do-phu] [--chi-b B2] [--dot sn-2]
  *
  * --chi-b <tên>: chỉ sinh lại bản có thư viện (sau khi sửa khâu chọn / thư viện), ghi
  *   <tên>.json + chi-tiet-<tên>.json; bản A giữ nguyên từ lượt trước để so cùng mốc.
@@ -49,7 +49,8 @@ async function main() {
   const { saoCuaMuc } = await import('../lib/rag/thu-vien/kieu');
   type KetQuaCauV3 = import('../lib/rag/v3').KetQuaCauV3;
 
-  const thuVien = await docThuVien('su-nghiep');
+  // --dot: chỉ dùng một đợt trích (so đợt mới với mốc mà không lẫn đợt cũ)
+  const thuVien = await docThuVien('su-nghiep', thamSo('dot') || undefined);
   if (!thuVien.length) throw new Error('Thư viện rỗng — chạy scripts/dung-thu-vien.ts trước');
   const la = boLaSo(soLa);
   console.log(`Thư viện ${thuVien.length} mục · ${la.length} lá số × ${CAU_LAT_CAT.length} câu`);

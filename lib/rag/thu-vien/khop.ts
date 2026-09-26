@@ -74,6 +74,10 @@ export function khopTaiCung(laSo: LaSo, muc: MucThuVien, goc: Cung): boolean {
       if (!xuoi && !nguoc) return false;
     }
   }
+  for (const n of dk.nhom ?? []) {
+    const o = viTri(n.quanHe, goc.chiIndex).map(theoChi);
+    if (n.ten.filter((t) => o.some((c) => co(c, t))).length < Math.max(1, n.toiThieu)) return false;
+  }
   for (const k of dk.khong ?? []) {
     if (viTri(k.quanHe, goc.chiIndex).some((i) => co(theoChi(i), k.ten))) return false;
   }
@@ -93,6 +97,7 @@ export function khopThuVien(laSo: LaSo, thuVien: MucThuVien[], cungDoc: string[]
   for (const muc of thuVien) {
     if (muc.duyet === 'bi-bac') continue;
     if (!muc.dieuKien.sao.every((s) => tenTrenLa.has(s.ten))) continue;
+    if (!(muc.dieuKien.nhom ?? []).every((n) => n.ten.filter((t) => tenTrenLa.has(t)).length >= Math.max(1, n.toiThieu))) continue;
     for (const c of goc) {
       if (khopTaiCung(laSo, muc, c)) {
         ra.push({ muc, cung: c.tenCung });

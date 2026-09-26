@@ -522,6 +522,29 @@ trích có từ độ sáng mà mục không mang độ sáng → trượt; cung
 
 Qua cổng → chạy lại nghiệm thu 11.7 (kiến thức + cách viết) với cùng đáp án, cùng ngưỡng.
 
+**Kết quả dựng (26/09/2026):** đợt `sn-2`: 1.978 đoạn (997 sự nghiệp + 981 tổ hợp) → 3.381 ứng viên → 2.404
+qua kiểm (71%) → **2.041 mục** (1.470 tổ hợp, 307 mục có nhóm "ít nhất k", 171 mục ≥ 2 tài liệu độc lập);
+tốn 1,76 tr token vào (0,75 tr đệm), 0,74 tr ra. Thêm bằng mã sau khi trích: độ sáng theo đề mục / ngữ cảnh
+(+282 mục) → **673 / 2.041 mục có độ sáng (33%, `sn-1`: 8%)**. Đợt `sn-2b`: 394 đoạn "sao + độ sáng".
+
+Sửa trong lượt 2 ngoài kế hoạch, mỗi sửa do một lỗi đo được ở lượt thử: nhóm "ít nhất k trong số" (sách
+viết "gặp Kình Đà Hỏa Linh" = gặp các sao ấy, không phải đủ cả bốn); so nguyên văn bỏ gạch nối / dấu câu và
+khớp gần ≥ 90% theo thứ tự; tìm lại đoạn thật khi model ghi nhầm số đoạn; từ chỉ nhóm ("sát tinh", "cát
+tinh") nhắc được cả nhóm; gán độ sáng bằng mã trên văn CÓ DẤU (bỏ dấu thì "miêu tả", "ham muốn" bị nhận
+nhầm). Tỉ lệ qua kiểm trên lượt thử: 38–54% → 87%.
+
+**Cổng (đợt `sn-2`):** phủ **49,4%** (≈ cổng 50%), phủ có độ sáng **16,1%** (cổng 30%) → **TRƯỢT cổng độ sáng.**
+
+**Nhưng cổng độ sáng đặt sai về cấu trúc** — phân tích điểm cần độ sáng theo số sao lớn: 1 sao: phủ 87%; 2 sao:
+13%; 3 sao: 17%; 4–7 sao: 0%. Đáp án tổng hợp 3–7 sao trong MỘT nhận định; không sách nào viết sẵn quy tắc
+năm sao — tổng hợp là việc của khâu viết. Theo THÀNH PHẦN: 66% điểm có mục đúng độ sáng cho mọi chính tinh
+liên quan. Cổng "một mục chứa đủ mọi sao" không thư viện trích từ sách nào đạt được.
+
+**Quyết định (chủ dự án giao "làm theo ý bạn"):** vẫn chạy nghiệm thu kiến thức 11.7 — đó là thước chính,
+cổng chỉ để tiết kiệm. Ngưỡng giữ nguyên: KT ≥ A + 10 và lỗi ≤ A với mọi giám khảo hợp lệ; cách viết báo cáo
+(60% theo luật, 45% đề xuất). Bản B3 = thư viện `sn-2` + `sn-2b`, khâu chọn ưu tiên thêm sao lớn đóng tại cung
+chính có độ sáng khớp, trần 18 mục. Cổng cho lượt sau đề xuất đổi thành "phủ theo thành phần" — chủ dự án chốt.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?

@@ -7,7 +7,7 @@
  */
 import { lapLaSo, type Cung } from '../lib/tuvi/ansao';
 import { khopTaiCung, khopThuVien } from '../lib/rag/thu-vien/khop';
-import { chuanDoSang, kiemMuc, khoaGop, khoaDieuKien } from '../lib/rag/thu-vien/kiem';
+import { chuanDoSang, cungTuDeMuc, dienDoSang, dienDoSangNguCanh, kiemMuc, khoaGop, khoaDieuKien, toHopDongCung } from '../lib/rag/thu-vien/kiem';
 import type { MucThuVien } from '../lib/rag/thu-vien/kieu';
 
 let sai = 0;
@@ -77,6 +77,38 @@ const m1 = muc({ cung: ['Quan Lộc'], sao: [{ ten: 'Tử Vi', quanHe: 'o-cung' 
 const m2 = muc({ cung: ['Quan Lộc'], sao: [{ ten: 'Tả Phù', quanHe: 'tam-phuong' }, { ten: 'Tử Vi', quanHe: 'o-cung' }] });
 kiem('khoaGop: thứ tự sao không làm đổi khoá', khoaGop(m1) === khoaGop(m2));
 kiem('khoaDieuKien: khác chiều vẫn cùng khoá điều kiện', khoaDieuKien(m1) === khoaDieuKien({ ...m2, nhan: { ...m2.nhan, chieu: 'hung' } }));
+
+// ---- Kiểm lượt 2 (KIEN-TRUC 11.8) ----
+const dc = toHopDongCung();
+kiem('toHopDongCung: Liêm Trinh + Thiên Phủ đồng cung được', dc.has('Liêm Trinh+Thiên Phủ'));
+kiem('toHopDongCung: Tử Vi + Liêm Trinh không bao giờ đồng cung', !dc.has('Liêm Trinh+Tử Vi'));
+kiem('toHopDongCung: các cặp phủ ≥ 12 chính tinh', new Set([...dc].flatMap((x) => x.split('+'))).size >= 12);
+const doanLP = { noiDung: 'Liêm Trinh, Thiên Phủ đồng cung gặp Tả Phù thì công danh bền. Tử Vi, Liêm Trinh đồng cung thì uy quyền.', duongDeMuc: 'QUAN LỘC' };
+kiem('kiemMuc: cặp chính tinh không đồng cung được thì trượt', !kiemMuc({ dieuKien: { cung: ['Quan Lộc'], sao: [{ ten: 'Tử Vi', quanHe: 'o-cung' }, { ten: 'Liêm Trinh', quanHe: 'o-cung' }] }, y: 'Có uy quyền trong công việc và dễ được giao việc lớn.', cheDo: 'add', trich: 'Tử Vi, Liêm Trinh đồng cung thì uy quyền' }, doanLP).dat);
+kiem('kiemMuc: cặp đồng cung hợp lệ thì đạt', kiemMuc({ dieuKien: { cung: ['Quan Lộc'], sao: [{ ten: 'Liêm Trinh', quanHe: 'o-cung' }, { ten: 'Thiên Phủ', quanHe: 'o-cung' }, { ten: 'Tả Phù', quanHe: 'tam-phuong' }] }, y: 'Công danh bền vững, có người trợ lực trong công việc.', cheDo: 'add', trich: 'Liêm Trinh, Thiên Phủ đồng cung gặp Tả Phù thì công danh bền' }, doanLP).dat);
+const doanHam = { noiDung: 'QUAN LỘC. Thái Dương hãm địa ở Quan Lộc thì công danh trắc trở.', duongDeMuc: 'QUAN LỘC' };
+const mHam = { dieuKien: { cung: ['Quan Lộc'], sao: [{ ten: 'Thái Dương', quanHe: 'o-cung' as const }] }, y: 'Công danh dễ trắc trở, phải bền bỉ mới giữ được vị trí.', cheDo: 'add' as const, trich: 'Thái Dương hãm địa ở Quan Lộc thì công danh trắc trở' };
+kiem('kiemMuc: câu trích nói hãm mà mục không mang độ sáng thì trượt', !kiemMuc(mHam, doanHam).dat);
+kiem('kiemMuc: mang độ sáng H thì đạt', kiemMuc({ ...mHam, dieuKien: { ...mHam.dieuKien, sao: [{ ten: 'Thái Dương', quanHe: 'o-cung' as const, doSang: ['H'] }] } }, doanHam).dat);
+kiem('kiemMuc: "Tử vi hàm số" không bị nhận là độ sáng', kiemMuc(mTot, { ...doan, noiDung: `Tử vi hàm số. ${doan.noiDung}` }).dat);
+kiem('cungTuDeMuc: đề mục nêu một cung thì lấy', cungTuDeMuc('TỨ QUAN LỘC CUNG') === 'Quan Lộc');
+kiem('cungTuDeMuc: đề mục nêu hai cung thì không đoán', cungTuDeMuc('MỆNH VÀ QUAN LỘC') === null);
+const dkS = { cung: ['Quan Lộc'], sao: [{ ten: 'Tả Phù', quanHe: 'tam-phuong' as const }, { ten: 'Thái Dương', quanHe: 'o-cung' as const }] } as MucThuVien['dieuKien'];
+dienDoSang(dkS, 'Gặp Tả Phù mà Thái-Dương hãm địa thì công danh trắc trở');
+kiem('dienDoSang: gán H cho sao đứng ngay trước chữ "hãm"', JSON.stringify(dkS.sao[1].doSang) === '["H"]' && !dkS.sao[0].doSang);
+const dkK = { cung: [], sao: [{ ten: 'Văn Xương', quanHe: 'o-cung' as const }] } as MucThuVien['dieuKien'];
+dienDoSang(dkK, 'Văn Xương miếu vượng thì văn tài xuất chúng');
+kiem('dienDoSang: phụ tinh "miếu vượng" thành D', JSON.stringify(dkK.sao[0].doSang) === '["D"]');
+const dkN = () => ({ cung: ['Quan Lộc'], sao: [{ ten: 'Thái Dương', quanHe: 'o-cung' as const }] }) as MucThuVien['dieuKien'];
+const n1 = dkN(); dienDoSangNguCanh(n1, 'THÁI DƯƠNG — Hãm địa', 'Ở Quan Lộc thì công danh chậm, phải bôn ba.', 'Ở Quan Lộc thì công danh chậm');
+kiem('dienDoSangNguCanh: đề mục "Hãm địa" → H', JSON.stringify(n1.sao[0].doSang) === '["H"]');
+const n2 = dkN(); dienDoSangNguCanh(n2, 'THÁI DƯƠNG', 'Miếu địa thì sáng sủa. Hãm địa: ở Quan Lộc thì công danh chậm.', 'ở Quan Lộc thì công danh chậm');
+kiem('dienDoSangNguCanh: lấy chữ độ sáng GẦN NHẤT trước câu trích', JSON.stringify(n2.sao[0].doSang) === '["H"]');
+const n3 = dkN(); dienDoSangNguCanh(n3, 'Tử vi hàm số', 'Sách miêu tả người có ham muốn lớn. Ở Quan Lộc thì công danh chậm.', 'Ở Quan Lộc thì công danh chậm');
+kiem('dienDoSangNguCanh: "hàm", "miêu tả", "ham muốn" không bị nhận là độ sáng', !n3.sao[0].doSang);
+kiem('kiemMuc: chép sót một chữ vẫn khớp gần nguyên văn', kiemMuc({ ...mTot, trich: 'Tử Vi ở Quan Lộc gặp Tả Phù, Hữu Bật thì công danh rất hiển đạt' }, doan).dat);
+kiem('kiemMuc: "gặp sát tinh" nhắc được nhóm lục sát', kiemMuc({ dieuKien: { cung: ['Quan Lộc'], sao: [{ ten: 'Tử Vi', quanHe: 'o-cung' }], nhom: [{ ten: ['Kình Dương', 'Đà La', 'Địa Không'], quanHe: 'tam-phuong', toiThieu: 1 }] }, y: 'Công danh có lúc bị cản trở, phải chịu áp lực lớn.', cheDo: 'add', trich: 'Tử Vi ở Quan Lộc mà gặp sát tinh thì công danh trắc trở' }, { noiDung: 'Tử Vi ở Quan Lộc mà gặp sát tinh thì công danh trắc trở.', duongDeMuc: 'QUAN LỘC' }).dat);
+kiem('kiemMuc: gạch nối trong sách ("Tử-Vi") vẫn khớp nguyên văn', kiemMuc(mTot, { ...doan, noiDung: doan.noiDung.replace('Tử Vi', 'Tử-Vi') }).dat);
 
 console.log(sai ? `\n${sai} CHỖ SAI` : '\nTẤT CẢ ĐỀU ĐÚNG');
 process.exit(sai ? 1 : 0);
