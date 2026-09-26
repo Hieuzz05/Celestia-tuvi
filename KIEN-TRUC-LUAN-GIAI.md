@@ -559,6 +559,10 @@ thắt ở KHÂU VIẾT, không ở tri thức. Thí nghiệm: bản **O** = lu�
 - **≤ 70%** → nút thắt là KHÂU VIẾT / khuôn bài (độ dài, phạm vi, cách dàn ý) — thêm tri thức không lên.
 - Ở giữa → cả hai.
 
+**Chưa có kết quả (26/09/2026):** tài khoản OpenAI HẾT CREDIT giữa lúc sinh bản O (`insufficient_quota`) — 0 / 60
+bài, lượt chấm hỏng theo. Chạy lại khi nạp credit:
+`npx tsx scripts/do-tran-kien-thuc.ts <thư mục>` rồi `npx tsx scripts/do-kien-thuc.ts <thư mục> --ban A,O`.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
