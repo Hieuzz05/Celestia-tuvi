@@ -150,7 +150,7 @@ export async function POST(req: Request) {
      */
     if (body.bucTranh) {
       const tienToNhom = `nam:${namXem}|nhom:`;
-      const cuoiTom = `|th:${THE_HE_DEM}|tom-lai`;
+      const cuoiTom = `|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}`;
       const ds = await docNhieuTheoTienTo<{ tomLai?: string } | CauTraRaV3[]>(khoa, tienToNhom, `|th:${THE_HE_DEM}`);
       const tomLai = ds
         .filter((r) => r.khoaKy.endsWith(cuoiTom) && !Array.isArray(r.noiDung) && r.noiDung?.tomLai)
@@ -159,7 +159,7 @@ export async function POST(req: Request) {
       if (tomLai.length < SO_CHU_DE_TOI_THIEU) {
         return NextResponse.json({ bucTranh: null, soChuDe: tomLai.length, canToiThieu: SO_CHU_DE_TOI_THIEU });
       }
-      const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|${tomLai.map((t) => t.chuDe).join('+')}` };
+      const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|k:${PHIEN_BAN_V3.khung}|${tomLai.map((t) => t.chuDe).join('+')}` };
       const da = await docNoiDung<{ bucTranh: string }>(khoaBuc);
       if (da?.noiDung?.bucTranh) return NextResponse.json({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
       const tq = ds.find((r) => r.khoaKy === `${tienToNhom}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
@@ -172,7 +172,8 @@ export async function POST(req: Request) {
     }
 
     if (body.tomLai && nhom !== 'tong-quan') {
-      const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai` };
+      // Kèm phiên bản khung: khung đổi câu hỏi thì tóm lại cũ (viết từ câu cũ) không được dùng lại
+      const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}` };
       const daTom = await docNoiDung<{ tomLai: string }>(khoaTom);
       if (daTom?.noiDung?.tomLai) return NextResponse.json({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
       const nhomBai = await docNoiDung<CauTraRaV3[]>(khoa);
