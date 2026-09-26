@@ -346,6 +346,45 @@ không chấm được; (b) sửa khâu trích (bắt điều kiện cung và đ
 cùng ngưỡng; (c) đổi ngưỡng 4 thành "không thua" (≥ 45%) kèm tiêu chí 2 — là đổi luật đã chốt, chỉ chủ
 dự án được quyết.
 
+### 11.5 Bộ đo ĐỘ ĐÚNG — chốt 26/09/2026, TRƯỚC khi chạy
+
+Chủ dự án yêu cầu sau lượt 1: so mù đo độ *hay*, không đo độ *đúng* — cần bộ đo riêng.
+
+**Gói bằng chứng CHUNG cho mỗi cặp (lá số, câu)** — hai bản bị đối chiếu với đúng một gói:
+- dữ kiện lá số F### (engine tính; giống hệt nhau ở A và B);
+- N## = hợp mọi đoạn sách mà A **hoặc** B đã dùng, cộng câu trích gốc đứng sau các mục thư viện B
+  đã dùng. Chỉ đưa văn sách, **không** đưa câu nghĩa của mục thư viện — tránh thiên vị B.
+
+**Cách chấm:** giám khảo chấm TỪNG BÀI riêng, không biết bài của bản nào. Tách 5–10 nhận định chính
+(bỏ câu minh hoạ không mang khẳng định), mỗi nhận định vào một loại:
+
+| Loại | Nghĩa |
+|---|---|
+| `co-can-cu` | dữ kiện lá số và / hoặc đoạn N## ủng hộ, đúng cấu hình của lá số này |
+| `mau-thuan` | trái với dữ kiện, hoặc trái với đoạn N## nói về đúng cấu hình ấy |
+| `chung-chung` | đúng với gần như ai, không gắn gì riêng của lá số |
+| `khong-kiem-duoc` | không có gì trong gói ủng hộ hay phản bác |
+
+Thêm phần "vì sao": đếm tên sao / cung nêu sai so với dữ kiện.
+
+**Kiểm giám khảo trước — điều kiện để tin số của giám khảo đó:**
+- *Cài lỗi*: 12 bài, đổi một tên sao trong phần "vì sao" thành một chính tinh không có trong dữ kiện →
+  giám khảo phải bắt ≥ 10 / 12.
+- *Lệch lá*: 12 bài chấm với dữ kiện + nguồn của MỘT LÁ SỐ KHÁC → tỉ lệ `co-can-cu` phải thấp hơn bài
+  thật ít nhất 15 điểm.
+- Giám khảo trượt một trong hai → loại số của giám khảo đó.
+
+Giám khảo: gpt-5.6-luna và gpt-4o-mini (hai model khác nhau duy nhất gọi được, xem 11.3).
+
+**B đúng hơn A khi MỌI giám khảo hợp lệ cùng cho:**
+1. tỉ lệ `mau-thuan` của B ≤ A;
+2. tỉ lệ `co-can-cu` của B ≥ A + 10 điểm;
+3. tỉ lệ `chung-chung` của B ≤ A + 3 điểm;
+4. lỗi sao / cung trong "vì sao" của B ≤ A.
+
+Bộ đo này KHÔNG thay tiêu chí so mù (11.2 #4). Bật thư viện khi so mù trượt mà độ đúng đạt là đổi luật
+đã chốt — chủ dự án quyết.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
