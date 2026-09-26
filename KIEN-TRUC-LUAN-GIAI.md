@@ -545,6 +545,20 @@ cổng chỉ để tiết kiệm. Ngưỡng giữ nguyên: KT ≥ A + 10 và l�
 (60% theo luật, 45% đề xuất). Bản B3 = thư viện `sn-2` + `sn-2b`, khâu chọn ưu tiên thêm sao lớn đóng tại cung
 chính có độ sáng khớp, trần 18 mục. Cổng cho lượt sau đề xuất đổi thành "phủ theo thành phần" — chủ dự án chốt.
 
+**Kết quả B3 (thư viện `sn-2` + `sn-2b`, 2.499 mục):** giám khảo hợp lệ (luna 12/12, 88,2%; gpt-4o-mini 10/12,
+97%). KT: luna A 59,0 / B3 60,0; gpt-4o-mini A 52,2 / B3 53,7. Lỗi / bài: luna 0,45 / 0,55; gpt-4o-mini 0,97 /
+0,93. Cách viết B3 vs A: 49% / 50%. **Không đạt** (+1 điểm, ngưỡng +10).
+
+### 11.9 Đo TRẦN kiến thức — chốt 26/09/2026 trước khi chạy
+
+Thư viện tốt lên nhiều (phủ 26,6 → 49,4%, độ sáng 5,2 → 21%) mà KT gần như không đổi. Giả thuyết còn lại: nút
+thắt ở KHÂU VIẾT, không ở tri thức. Thí nghiệm: bản **O** = luồng v3 + ĐƯA THẲNG đáp án cho người viết
+(`scripts/do-tran-kien-thuc.ts`) — mức trần, không phải bản dùng được. Đọc kết quả (KT của O theo luna):
+- **≥ 80%** → khâu viết đưa được tri thức vào bài khi có đủ; nút thắt là NỘI DUNG tri thức mà thư viện cung cấp
+  (dạng mục đơn lẻ chưa đủ, cần tri thức đã tổng hợp theo cấu hình).
+- **≤ 70%** → nút thắt là KHÂU VIẾT / khuôn bài (độ dài, phạm vi, cách dàn ý) — thêm tri thức không lên.
+- Ở giữa → cả hai.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
