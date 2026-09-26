@@ -18,7 +18,12 @@ const BE_MAT = 'thu-vien';
 const HAN_MS = 5 * 60_000;
 let dem: { luc: number; ds: MucThuVien[] } | null = null;
 
-export async function docThuVien(chuDe?: string): Promise<MucThuVien[]> {
+export async function docThuVien(chuDe?: string, dot?: string): Promise<MucThuVien[]> {
+  const ds = await docTatCa(chuDe);
+  return dot ? ds.filter((m) => m.dotTrich === dot) : ds;
+}
+
+async function docTatCa(chuDe?: string): Promise<MucThuVien[]> {
   if (!dem || Date.now() - dem.luc > HAN_MS) {
     const supabase = taoSupabaseAdmin();
     if (!supabase) return [];

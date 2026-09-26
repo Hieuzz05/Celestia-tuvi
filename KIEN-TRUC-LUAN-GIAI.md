@@ -507,6 +507,21 @@ duyệt mẫu đáp án.
 3. *Cách viết:* so mù không thua rõ (≥ 45%).
 4. *Đáp án:* chủ dự án duyệt 10 đáp án mẫu (`dap-an.json`) trước khi tin điểm KT.
 
+### 11.8 Thư viện lượt 2 (đợt `sn-2`) — chốt 26/09/2026 trước khi dựng
+
+**Cổng tất định** (`scripts/do-phu-dap-an.ts`): điểm BẮT BUỘC của đáp án (11.7), chỉ tính SAO LỚN của điểm
+(chính tinh, lục cát, lục sát, tứ hoá, Lộc Tồn, Mã); phủ = có mục khớp lá số chứa đủ các sao ấy; phủ có độ
+sáng = điểm có nói độ sáng và mục mang độ sáng cho ít nhất một sao ấy. **Mốc `sn-1`: 26,6% / 5,2%. Cổng:
+≥ 50% / ≥ 30%.** Không nhìn đáp án khi sửa khâu trích — đáp án chỉ dùng làm cổng.
+
+**Sửa khâu trích:** bắt buộc độ sáng khi đoạn nói miếu / vượng / đắc / hãm (câu nêu hai trường hợp thì
+tách hai mục); cung lấy từ đề mục và ngữ cảnh đoạn trước; ghi đủ sao đi cùng; cách cục có tên không được
+ghi quá hai chính tinh tại cung gốc; trích thêm đoạn nói TỔ HỢP chính tinh + sao lớn trên toàn kho (không
+chỉ đoạn có chữ "quan lộc"). Kiểm tất định thêm: chính tinh đồng cung phải là cặp engine an được; câu
+trích có từ độ sáng mà mục không mang độ sáng → trượt; cung trống mà đề mục nêu đúng một cung → điền.
+
+Qua cổng → chạy lại nghiệm thu 11.7 (kiến thức + cách viết) với cùng đáp án, cùng ngưỡng.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
