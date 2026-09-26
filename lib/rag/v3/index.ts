@@ -4,7 +4,7 @@ import { docObjectJson } from '../doc-json';
 import { CAU_HOI_V3, CHU_DE_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
 import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
-import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
+import { khoiDoDai, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
 import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 import { NHAN_TIN_CAY } from '../uu-tien-nguon';
@@ -12,6 +12,7 @@ import { docMetaTaiLieu } from '../tai-lieu-meta';
 import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
+import { heThongV3 } from './mau-giong';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -364,13 +365,15 @@ ${phamViChuyenSau(q)}`
     ...kiemLuatNgam(b),
   ];
 
+  // System v3 kèm mẫu giọng chủ dự án sửa tay (Supabase) — giống nhau mọi lượt nên vẫn được đệm
+  const system = vao.thuNghiem?.system ?? (await heThongV3());
   let soLanGoi = 0;
   let model = '';
   const token = { vao: 0, ra: 0, dem: 0 };
   const goi = async (u: string) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system: vao.thuNghiem?.system ?? SYSTEM_V3, user: u, maxTokens: 6000, cacheKey: `v3:${q.id}` }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system, user: u, maxTokens: 6000, cacheKey: `v3:${q.id}` }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     token.vao += kq.tokensIn ?? 0;
     token.ra += kq.tokensOut ?? 0;
@@ -407,7 +410,7 @@ ${phamViChuyenSau(q)}`
     try {
       const trongHan = Math.max(12_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
       const kq = await goiVoiFallback(
-        { system: vao.thuNghiem?.system ?? SYSTEM_V3, user: `${user}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
+        { system, user: `${user}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
         undefined,
         trongHan
       );

@@ -43,7 +43,9 @@ export type BeMat =
    */
   | 'gioi-han-khach'
   /** KHÔNG phải nội dung — mục thư viện tri thức, tạm lưu ở đây (lib/rag/thu-vien/kho.ts, QĐ-13) */
-  | 'thu-vien';
+  | 'thu-vien'
+  /** KHÔNG phải nội dung — mẫu giọng văn chủ dự án sửa tay cho system prompt v3 (lib/rag/v3/mau-giong.ts) */
+  | 'mau-giong';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

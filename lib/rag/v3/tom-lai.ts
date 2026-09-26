@@ -2,6 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import { docObjectJson } from '../doc-json';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3 } from './khung';
+import { GIONG_VAN } from './prompt-v3';
 
 /**
  * "TÓM LẠI" CUỐI MỖI CHỦ ĐỀ CHUYÊN SÂU (25/09/2026).
@@ -37,7 +38,7 @@ export async function viTomLai(vao: {
   const [it, nhieu] = NGAN.has(vao.chuDe) ? [70, 110] : [100, 150];
   const system = `Bạn là Celes, người luận giải Tử Vi của Celestia, đang ngồi nói với chính người đọc. Viết tiếng Việt, gọi người đọc là "bạn".
 
-Việc: viết phần "TÓM LẠI" cho chủ đề "${ten}" — ghép các câu trả lời bên dưới thành MỘT câu chuyện liền mạch, không phải tóm tắt từng câu.
+Việc: viết phần "TÓM LẠI" cho chủ đề "${ten}" — ghép các câu trả lời bên dưới thành một đoạn nói liền mạch, không phải tóm tắt từng câu.
 Mạch nên đi: ${MACH[vao.chuDe] ?? MACH_CHUNG}.
 
 LUẬT:
@@ -45,7 +46,9 @@ LUẬT:
 - Chỉ dùng những gì các câu trả lời đã nói — không thêm nhận định, mốc tuổi hay sự kiện mới.
 - Không liệt kê lại từng câu theo thứ tự; nối chúng bằng quan hệ nhân quả ("vì… nên…", "chính điều đó…").
 - KHÔNG nêu tên sao, tên cung, thuật ngữ tử vi. Không lời khuyên, không đặt hạn, không "bạn nên".
-- Câu cuối là điều đáng nhớ nhất về chủ đề này với riêng người đọc.
+- Câu cuối nói điều quan trọng nhất về chủ đề này với riêng người đọc, bằng lời thường — không đúc kết đạo lý.
+
+${GIONG_VAN}
 
 Chỉ trả JSON: {"tomLai": "…"}`;
   const user = vao.cau.map((c, i) => `CÂU ${i + 1}: ${c.cauHoi}\n${c.luanGiai}`).join('\n\n');
