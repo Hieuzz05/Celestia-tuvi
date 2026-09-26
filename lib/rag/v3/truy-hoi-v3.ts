@@ -1,6 +1,7 @@
 import { boDau, nhanDangThucThe } from '../thuc-the';
 import { truyHoi, type DoanUngVien } from '../truy-hoi';
 import { doTrung, NGUONG_TRUNG } from '../uu-tien-nguon';
+import { docMetaTaiLieu, LOAI_NGUON_AN } from '../tai-lieu-meta';
 import type { DuKienV3 } from './du-kien';
 
 /**
@@ -17,7 +18,24 @@ import type { DuKienV3 } from './du-kien';
  * có điểm RRF cao mà chẳng dùng được.
  */
 
-export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.5';
+export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.6';
+
+/**
+ * MỨC TIN CẬY CÓ TÁC DỤNG THẬT (2026.09.6, chủ dự án 26/09/2026: "mức độ tin
+ * cậy có value thực sự"). Trước đây v3 bỏ qua hẳn mức tin cậy.
+ *
+ * Cộng vào điểm SAU khi đoạn đã qua cổng khớp (đúng sao, đúng cung): mức tin
+ * cậy chọn giữa các đoạn đã liên quan, không kéo đoạn lạc đề lên. Cỡ cộng đặt
+ * cạnh các điểm khớp khác: "cốt lõi" nặng gần bằng một lần khớp đúng cung
+ * (0,02), "bổ trợ" bị trừ bằng một sao khớp (0,012). Mục sách đúng tên cung
+ * (0,03) vẫn nặng hơn mọi mức tin cậy.
+ */
+export const DIEM_TIN_CAY: Record<string, number> = {
+  'cot-loi': 0.02,
+  'chuyen-gia-duyet': 0.012,
+  'tham-khao': 0,
+  'ho-tro': -0.012,
+};
 
 /**
  * Tên tắt sách cổ hay dùng: "Vũ, Tướng: làm ra song khó nhọc". Không nhận tắt
@@ -117,6 +135,10 @@ export interface DoanV3 {
   /** Đoạn này khớp đúng sao + đúng cung của truy vấn nào */
   khopCung: string;
   khopSao: string[];
+  /** Mức tin cậy hiện hành của tài liệu (đọc tươi từ kho, tai-lieu-meta.ts) */
+  mucTinCay: string;
+  /** Luật ngầm — Celes dùng để định hướng, bài không được nhắc tới (LOAI_NGUON_AN) */
+  an: boolean;
 }
 
 export type BoNhoTruyHoi = Map<string, Promise<DoanUngVien[]>>;
@@ -263,7 +285,10 @@ export async function truyHoiChoCau(vao: {
     }
   }
 
-  const ketQua = await Promise.all(truyVan.map((t) => motTruyVan(t.q, t.k, vao.nho)));
+  const [ketQua, meta] = await Promise.all([
+    Promise.all(truyVan.map((t) => motTruyVan(t.q, t.k, vao.nho))),
+    docMetaTaiLieu(),
+  ]);
 
   /*
    * Chấm từng đoạn theo truy vấn đã kéo nó về, rồi CHỌN XOAY VÒNG giữa các truy
@@ -282,12 +307,15 @@ export async function truyHoiChoCau(vao: {
         // Mục sách đặt tên theo cung ("TỨ TÀI BẠCH CUNG", "CUNG PHU-THÊ") là nguồn đắt nhất
         const deMucCung = coTu(boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''}`), biDanh[0] ?? '§');
         const dungChuDe = tuNhan.some((w) => coTu(bd, w));
+        const m = meta.get(d.documentId);
+        const mucTinCay = m?.mucTinCay ?? d.mucTinCay;
         let diem =
           d.diemRRF +
           0.012 * Math.min(khopSao.length, 3) +
           (khopCung && khopSao.length ? 0.02 : 0) +
           (deMucCung ? 0.03 : 0) +
-          (dungChuDe ? 0.015 : 0);
+          (dungChuDe ? 0.015 : 0) +
+          (DIEM_TIN_CAY[mucTinCay] ?? 0);
         if (laDoanRac(d)) diem = -1;
         // Câu phú viết cho giới kia ("NỮ MỆNH CA", "đàn bà thủ mệnh") không phải căn cứ cho lá số này
         const tdBd = boDau(`${d.tieuDe} ${d.duongDeMuc ?? ''} ${d.noiDung.slice(0, 160)}`);
@@ -302,6 +330,8 @@ export async function truyHoiChoCau(vao: {
           diem,
           khopCung: khopCung || deMucCung ? t.cung : '',
           khopSao,
+          mucTinCay,
+          an: LOAI_NGUON_AN.has(m?.loaiNguon ?? ''),
         };
       })
       // Truy vấn theo cung chỉ nhận đoạn nói đúng cung ấy; truy vấn cách cục /

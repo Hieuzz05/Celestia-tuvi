@@ -219,6 +219,24 @@ export default function TrangKhoTriThuc() {
     if (res.ok) void tai();
   }
 
+  const [dangDoiMeta, setDangDoiMeta] = useState<string | null>(null);
+  async function doiMeta(documentId: string, doi: { mucTinCay?: string; loaiNguon?: string }) {
+    setDangDoiMeta(documentId);
+    const res = await fetch('/api/admin/knowledge', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ documentId, ...doi }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setDangDoiMeta(null);
+    setThongBao(
+      res.ok
+        ? { loai: 'ok', noiDung: 'Đã đổi. Celes dùng mức mới từ lượt luận giải kế tiếp (tối đa khoảng một phút).' }
+        : { loai: 'loi', noiDung: d.loi ?? 'Không đổi được' }
+    );
+    if (res.ok) void tai();
+  }
+
   async function xoaNguon(documentId: string, tieuDe: string) {
     if (!confirm(`Xoá hẳn "${tieuDe}" cùng toàn bộ phiên bản và đoạn của nó?\n\nKhông khôi phục được. Nếu chỉ muốn Celes ngừng dùng, hãy chọn Lưu trữ.`)) {
       return;
@@ -326,10 +344,44 @@ export default function TrangKhoTriThuc() {
                       {t.tieu_de}
                     </h2>
                     <p className="caption mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
-                      {nhan(HE_PHAI, t.he_phai)} · {nhan(LOAI_NGUON, t.loai_nguon)} ·{' '}
-                      {nhan(MUC_TIN_CAY, t.muc_tin_cay)}
+                      {nhan(HE_PHAI, t.he_phai)}
                       {t.tac_gia ? ` · ${t.tac_gia}` : ''}
                     </p>
+                    {/*
+                      Gán lại được sau khi đã tải lên (26/09/2026). Mức tin cậy có
+                      tác dụng thật: cộng điểm khi chọn đoạn, gắn nhãn cho Celes, và
+                      đoạn "Bổ trợ" không được là căn cứ duy nhất của một ý.
+                      "Ghi chú chuyên gia" / "Nội bộ" là luật ngầm: Celes dùng nhưng
+                      không bao giờ nhắc tới trong bài.
+                    */}
+                    <div className="mt-[8px] flex flex-wrap gap-[8px]">
+                      <select
+                        aria-label="Loại nguồn"
+                        value={t.loai_nguon}
+                        disabled={dangDoiMeta === t.id}
+                        onChange={(e) => doiMeta(t.id, { loaiNguon: e.target.value })}
+                        className="field-input !w-auto"
+                      >
+                        {LOAI_NGUON.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.nhan}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        aria-label="Mức tin cậy"
+                        value={t.muc_tin_cay}
+                        disabled={dangDoiMeta === t.id}
+                        onChange={(e) => doiMeta(t.id, { mucTinCay: e.target.value })}
+                        className="field-input !w-auto"
+                      >
+                        {MUC_TIN_CAY.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.nhan}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <button
                     onClick={() => xoaNguon(t.id, t.tieu_de)}

@@ -58,7 +58,7 @@ const DAN_CHU_DE: Record<string, string> = {
 /** `tomLai`: phần ghép các câu thành một câu chuyện — `dangTom` khi đang viết */
 type TrangThai =
   | { dang: true }
-  | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean };
+  | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean; banMoi?: boolean };
 
 function TrangSau() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -99,10 +99,13 @@ function TrangSau() {
    * đang giữ ở mốc bảy lỗi cũ). "Đã gửi" giữ bằng một tập riêng.
    */
   const [daGui] = useState(() => new Set<string>());
+  // Chủ đề người đọc vừa bấm "Tạo bản mới" — lượt gửi kế tiếp mang taoMoi
+  const [lamMoi] = useState(() => new Set<string>());
   useEffect(() => {
     if (chon === BUC_TRANH || !duocVao || !coLaSo || bai[chon] || daGui.has(chon)) return;
     daGui.add(chon);
     const chuDe = chon;
+    const taoMoi = lamMoi.delete(chuDe);
     ghiSuKien('deep_read_cta', { viTri: 'chuyen-sau-v3', chuDe });
     /*
      * HAI LƯỢT NỐI TIẾP (25/09/2026): nửa đầu các câu của chủ đề, rồi nửa sau.
@@ -117,7 +120,7 @@ function TrangSau() {
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi }),
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi, taoMoi }),
       }).then(async (res) => ({ ok: res.ok, d: await res.json() }));
     const loiMang = 'Không kết nối được. Thử lại sau ít phút.';
     // Đủ các câu rồi mới xin phần "Tóm lại" — route không viết tóm lại từ bài dở dang
@@ -125,7 +128,7 @@ function TrangSau() {
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, tomLai: true }),
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, tomLai: true, taoMoi }),
       })
         .then((r) => r.json())
         .then((d) => d?.tomLai ?? null)
@@ -142,7 +145,7 @@ function TrangSau() {
         setBai((cu) => ({
           ...cu,
           [chuDe]: ok
-            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0 }
+            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0, banMoi: Boolean(d.banMoi) }
             : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
         }));
         if (ok && !conLai.length) return layTomLai();
@@ -158,6 +161,7 @@ function TrangSau() {
                 cau: ok2 ? [...dau, ...((d2.cau as CauV3[]) ?? [])] : dau,
                 loi: ok2 ? undefined : d2?.loi ?? 'Celes chưa viết xong phần còn lại.',
                 dangTom: ok2,
+                banMoi: Boolean((truoc && !truoc.dang && truoc.banMoi) || d2?.banMoi),
               },
             };
           });
@@ -172,7 +176,7 @@ function TrangSau() {
           return { ...cu, [chuDe]: { dang: false, cau: null, loi: loiMang } };
         });
       });
-  }, [duocVao, coLaSo, chon, bai, daGui, ngay, thang, nam, gio, gioiTinh, namXem]);
+  }, [duocVao, coLaSo, chon, bai, daGui, lamMoi, ngay, thang, nam, gio, gioiTinh, namXem]);
 
   if (dangDoc) {
     return (
@@ -242,6 +246,20 @@ function TrangSau() {
   const daNapKhiXuat = (id: string, b: BaiDaDoc) => {
     daGui.add(id);
     setBai((cu) => (cu[id] && !cu[id].dang ? cu : { ...cu, [id]: { dang: false, cau: b.cau, tomLai: b.tomLai, dangTom: false } }));
+  };
+  /*
+   * TẠO BẢN MỚI (26/09/2026): kho tri thức đã đổi kể từ khi chủ đề này được viết.
+   * Route chỉ viết lại những câu viết với kho cũ, mỗi phiên bản kho một lần.
+   */
+  const taoBanMoi = () => {
+    ghiSuKien('deep_read_cta', { viTri: 'tao-ban-moi', chuDe: chon });
+    lamMoi.add(chon);
+    daGui.delete(chon);
+    setBai((cu) => {
+      const moi = { ...cu };
+      delete moi[chon];
+      return moi;
+    });
   };
   const thuLai = () => {
     daGui.delete(chon);
@@ -413,6 +431,16 @@ function TrangSau() {
               )}
               {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
               {!trangThai.conCho && <DiSauHon chuDe={chuDe.id} ve={veChuDe} />}
+              {!trangThai.conCho && trangThai.banMoi && (
+                <div className="card flex flex-col gap-[8px]">
+                  <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                    Kho tri thức của Celes vừa được cập nhật sau khi phần này được viết. Bạn có thể để Celes viết lại theo kho mới — mỗi lần kho cập nhật chỉ viết lại một lần.
+                  </p>
+                  <button type="button" onClick={taoBanMoi} className="btn-outline btn-sm self-start">
+                    Tạo bản mới
+                  </button>
+                </div>
+              )}
               {trangThai.loi && (
                 <div className="flex flex-col gap-[12px]">
                   <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>

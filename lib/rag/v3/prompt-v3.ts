@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.16';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.17';
 
 
 
@@ -27,7 +27,10 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. Nét chung của chính tinh phải diễn giải theo mặt đời của cung đang đọc.
 9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
-10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Gợi ý ở trường "goiY" phải chỉ đúng tình huống của câu này — tránh những câu dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".`;
+10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Gợi ý ở trường "goiY" phải chỉ đúng tình huống của câu này — tránh những câu dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".
+11. MỨC TIN CẬY của nguồn ghi ở nhãn mỗi đoạn (cốt lõi > chuyên gia đã duyệt > tham khảo > bổ trợ). Hai đoạn nói ngược nhau thì theo đoạn tin cậy cao hơn; ngang mức thì nói cả hai khả năng ở mức ôn hòa, không chọn bừa. Đoạn "bổ trợ" chỉ làm dày ngữ cảnh — một ý không được lấy đoạn bổ trợ làm căn cứ duy nhất.
+12. GHÉP NGHĨA HAI SAO: được ghép nghĩa hai sao (cùng cung hoặc chiếu nhau) thành một nhận định, TRỪ KHI nguồn được cấp nói tổ hợp ấy mang nghĩa khác hoặc ngược với nghĩa từng sao (phản vi kỳ cách, gặp nhau thì hóa xấu / hóa tốt, bị phá cách) — khi đó theo nguồn. Ý nào ghép hai sao trở lên mà không đoạn nguồn nào nói về chính tổ hợp ấy thì thêm "ghep": true vào ý đó trong dàn ý.
+13. Đoạn ghi [LUẬT NGẦM] là kinh nghiệm luận riêng của Celes: dùng để định hướng và cân nhắc như mọi nguồn khác, nhưng KHÔNG nhắc tới nó, không trích lại lời nó, không nói "theo chuyên gia", "ghi chú", "nội bộ" — cả trong bài lẫn phần "vì sao". Nói thẳng nhận định như điều lá số cho thấy.`;
 
 const LUAT_TRINH_BAY = `LUẬT TRÌNH BÀY
 
@@ -54,7 +57,7 @@ D. An toàn — Tử Vi là để DỰ ĐOÁN, nhưng không áp đặt, không 
 
 ĐẦU RA — chỉ một object JSON hợp lệ, không rào code, không lời dẫn:
 {
-  "danY": [ { "y": "một ý ngắn", "canCu": ["F002", "E001"] } ],
+  "danY": [ { "y": "một ý ngắn", "canCu": ["F002", "E001"] }, { "y": "một ý ghép hai sao chưa có nguồn cho tổ hợp", "canCu": ["F003"], "ghep": true } ],
   "luanGiai": "bài luận; các đoạn cách nhau bằng \\n\\n",
   "viSao": "một đoạn",
   "goiY": "một gợi ý ngắn, hoặc chuỗi rỗng"

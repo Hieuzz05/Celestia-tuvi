@@ -7,6 +7,7 @@ import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
 import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
+import { NHAN_TIN_CAY } from '../uu-tien-nguon';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -68,6 +69,7 @@ function docBai(text: string): BaiV3 | null {
         .map((y) => ({
           y: typeof y.y === 'string' ? y.y : '',
           canCu: Array.isArray(y.canCu) ? (y.canCu as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+          ...(y.ghep === true ? { ghep: true } : {}),
         }))
     : [];
   return {
@@ -265,7 +267,8 @@ ${phamViChuyenSau(q)}`
             .map(
               (n) =>
                 // Không đưa tên sách vào nhãn: model chép lại nó vào phần "vì sao" ("Theo cách đọc của Tử Vi Hàm Số…")
-                `${n.id} [${n.duongDeMuc ?? 'đoạn sách'}]${n.khopCung && n.khopCung === cungChinhCau ? ' [KHỚP CUNG CHÍNH]' : ''}\n${n.noiDung}`
+                // Luật ngầm không mang cả đề mục — đề mục của ghi chú chuyên gia hay tự xưng tên mình.
+                `${n.id} [${n.an ? 'LUẬT NGẦM' : (n.duongDeMuc ?? 'đoạn sách')}] [tin cậy: ${NHAN_TIN_CAY[n.mucTinCay] ?? n.mucTinCay}]${n.khopCung && n.khopCung === cungChinhCau ? ' [KHỚP CUNG CHÍNH]' : ''}\n${n.noiDung}`
             )
             .join('\n\n')
         : '(Kho không có đoạn nào khớp — thu hẹp kết luận, chỉ dựa vào phần Nghĩa nền trong dữ kiện.)'
@@ -299,6 +302,24 @@ ${phamViChuyenSau(q)}`
     /đúng quá|rất đúng với bạn|cảm giác rất đúng|lát cắt|khoảnh khắc|dữ kiện|tín hiệu (bất lợi|phụ trợ|chiếu)/i.test(b.luanGiai)
       ? [{ ma: 'nhan-luat', moTa: 'Bài dùng chữ nội bộ ("dữ kiện", "tín hiệu phụ trợ", "đúng quá", "lát cắt") — nói bằng lời người xem lá số: "lá số của bạn", "phần sức khỏe của bạn", hoặc nói thẳng điều đó.', chan: true }]
       : [];
+  /*
+   * MỨC TIN CẬY (26/09/2026): đoạn "bổ trợ" chỉ làm dày ngữ cảnh — một ý mà căn
+   * cứ duy nhất là đoạn bổ trợ thì chưa đủ đứng thành nhận định.
+   */
+  const hoTro = new Set(nguon.filter((n) => n.mucTinCay === 'ho-tro').map((n) => n.id));
+  const kiemHoTro = (b: BaiV3) => {
+    const chiHoTro = b.danY.filter((y) => y.canCu.length && y.canCu.every((m) => hoTro.has(m)));
+    return chiHoTro.length
+      ? [{ ma: 'chi-bo-tro', moTa: `Ý "${chiHoTro[0].y}" chỉ dựa vào đoạn [tin cậy: bổ trợ] — thêm căn cứ từ dữ kiện lá số (F###) hoặc một đoạn nguồn khác, hoặc bỏ ý đó.`, chan: true }]
+      : [];
+  };
+  // Luật ngầm lộ ra bài — chủ dự án 26/09/2026: nguồn chuyên gia Celes không ghi trên lá số
+  const coLuatNgam = nguon.some((n) => n.an);
+  const kiemLuatNgam = (b: BaiV3) =>
+    // Chỉ bắt kiểu viện dẫn ("theo chuyên gia", "ghi chú của…") — "làm chuyên gia" là lời thường ở câu nghề nghiệp
+    coLuatNgam && /(theo|của|ghi chú|nhận định|góc nhìn|kinh nghiệm)( của)?( các| một| giới)? chuyên gia|luật ngầm|luật nội bộ|tài liệu nội bộ/i.test(`${b.luanGiai} ${b.viSao} ${b.goiY ?? ''}`)
+      ? [{ ma: 'lo-luat-ngam', moTa: 'Bài nhắc tới "chuyên gia" / "ghi chú" / "nội bộ" — đoạn LUẬT NGẦM chỉ để định hướng, không được gọi tên hay nhắc tới. Nói thẳng nhận định như điều lá số cho thấy.', chan: true }]
+      : [];
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
@@ -306,6 +327,8 @@ ${phamViChuyenSau(q)}`
     ...kiemTenSach(b),
     ...kiemGiaoViec(b),
     ...kiemNhanLuat(b),
+    ...kiemHoTro(b),
+    ...kiemLuatNgam(b),
   ];
 
   let soLanGoi = 0;
