@@ -9,6 +9,7 @@ import { SO_CHU_DE_TOI_THIEU, viBucTranh } from '@/lib/rag/v3/buc-tranh';
 import { bamLaSo, veGioLaSo } from '@/lib/rag/nhat-ky';
 import { laKhach, xinLuotLaSoMoi } from '@/lib/auth/gioi-han-khach';
 import { phienBanKho } from '@/lib/rag/tai-lieu-meta';
+import { docThuVien } from '@/lib/rag/thu-vien/kho';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
 
 export const maxDuration = 60;
@@ -43,6 +44,13 @@ const THE_HE_DEM: number = 7;
  */
 const KHO_TRUOC_DAU = '40749bb09806';
 const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
+
+/**
+ * Câu được dùng THƯ VIỆN TRI THỨC (KIEN-TRUC-LUAN-GIAI.md mục 11). Chỉ thêm câu vào
+ * đây khi lát cắt của nó đã đạt đủ ngưỡng 11.2 — đo bằng scripts/do-thu-vien.ts và
+ * scripts/so-sanh-v3.ts --du. Rỗng = thư viện chưa chạy cho người dùng.
+ */
+const CAU_THU_VIEN = new Set<string>([]);
 
 /**
  * Luận giải v3 — MỘT NHÓM câu hỏi mỗi lượt gọi: "tong-quan" (11 câu) hoặc một
@@ -294,7 +302,8 @@ export async function POST(req: Request) {
       .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
     const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
 
-    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi });
+    const thuVien = thieu.some((id) => CAU_THU_VIEN.has(id)) ? { muc: await docThuVien(nhom), cau: CAU_THU_VIEN } : undefined;
+    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi, thuVien });
     /*
      * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
      * của nó trong lúc lượt này đang viết. Ghi đè bằng bản đọc lúc đầu là xoá

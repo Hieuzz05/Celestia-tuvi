@@ -41,7 +41,9 @@ export type BeMat =
    * ngày (lib/auth/gioi-han-khach.ts). Mượn bảng này vì nó đã có đúng khoá duy
    * nhất cần dùng; chart_hash ở đây là băm IP, không phải băm lá số.
    */
-  | 'gioi-han-khach';
+  | 'gioi-han-khach'
+  /** KHÔNG phải nội dung — mục thư viện tri thức, tạm lưu ở đây (lib/rag/thu-vien/kho.ts, QĐ-13) */
+  | 'thu-vien';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

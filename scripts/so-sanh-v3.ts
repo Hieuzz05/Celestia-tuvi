@@ -4,6 +4,8 @@
  *   --giam-khao a,b,c   chuỗi giám khảo theo thứ tự RẺ → ĐẮT (mặc định groq → gpt-4o-mini → luna)
  *   --chi TQ04,SN01     chỉ chấm các câu này (câu còn lại không đổi thì không tốn lượt chấm)
  *   --lo 3              số cặp mỗi lượt gọi (groq cần 3 vì giới hạn token/phút)
+ *   --du                chấm ĐỦ mọi giám khảo, không dừng sớm — bắt buộc khi đo nghiệm thu
+ *                       (KIEN-TRUC-LUAN-GIAI.md 11.2 #4: 3 giám khảo × đủ 60 cặp)
  *
  * Điểm tuyệt đối 1–5 dao động ±0,2 giữa hai lần chấm cùng một bài; so từng cặp
  * nhạy hơn. Nhưng MỘT giám khảo vẫn dao động tới ±30% (đo 25/09/2026: đổi chữ
@@ -76,16 +78,21 @@ async function main() {
       }
     }
     const ti = kq.length ? Math.round((kq.reduce((a, c) => a + c.yThang, 0) / kq.length) * 100) : 50;
-    return { ti, n: kq.length, thucTe };
+    // Tỉ lệ thắng BỎ HOÀ (ngưỡng nghiệm thu 11.2 #4): thắng / (thắng + thua)
+    const thang = kq.filter((c) => c.yThang === 1).length;
+    const thua = kq.filter((c) => c.yThang === 0).length;
+    const tiBoHoa = thang + thua ? Math.round((100 * thang) / (thang + thua)) : 50;
+    return { ti, tiBoHoa, thang, thua, hoa: kq.length - thang - thua, n: kq.length, thucTe };
   };
 
-  const ket: { giamKhao: string; ti: number; n: number }[] = [];
+  const du = process.argv.includes('--du');
+  const ket: { giamKhao: string; ti: number; tiBoHoa: number; thang: number; thua: number; hoa: number; n: number }[] = [];
   for (const gk of chuoi) {
     const r = await chamBoi(gk);
     // Giám khảo lùi sang model khác (vd. groq hết hạn mức → luna) thì ghi đúng model đã chấm
-    ket.push({ giamKhao: r.thucTe || gk, ti: r.ti, n: r.n });
-    console.log(`  ${(r.thucTe || gk).padEnd(34)} Y thắng ${r.ti}% (${r.n} cặp)`);
-    if (ket.length >= 2) {
+    ket.push({ giamKhao: r.thucTe || gk, ti: r.ti, tiBoHoa: r.tiBoHoa, thang: r.thang, thua: r.thua, hoa: r.hoa, n: r.n });
+    console.log(`  ${(r.thucTe || gk).padEnd(34)} Y thắng ${r.ti}% (${r.n} cặp) · bỏ hoà ${r.tiBoHoa}% (${r.thang}/${r.thua}/${r.hoa})`);
+    if (!du && ket.length >= 2) {
       const [a, b] = ket.slice(-2);
       if ((a.ti >= 60 && b.ti >= 60) || (a.ti <= 40 && b.ti <= 40)) {
         console.log('  → hai giám khảo cùng chiều rõ ràng, dừng sớm');
@@ -94,7 +101,8 @@ async function main() {
     }
   }
   const tb = Math.round(ket.reduce((a, c) => a + c.ti, 0) / ket.length);
-  console.log(JSON.stringify({ soCap: cap.length, yThangTrungBinh: tb, giamKhao: ket, tokenCham: tongToken }));
+  const tbBoHoa = Math.round(ket.reduce((a, c) => a + c.tiBoHoa, 0) / ket.length);
+  console.log(JSON.stringify({ soCap: cap.length, yThangTrungBinh: tb, yThangBoHoaTrungBinh: tbBoHoa, giamKhao: ket, tokenCham: tongToken }));
 }
 
 main().catch((e) => {
