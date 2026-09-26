@@ -408,6 +408,15 @@ quá dễ dãi, và bài luận đủ chung để dữ kiện của lá nào cũ
 **B đúng hơn A khi:** với mọi giám khảo hợp lệ, tỉ lệ nhận diện đúng của B ≥ A + 5 điểm; **và** số sao lạ
 của B ≤ A.
 
+**Kết quả 11.6 (26/09/2026):** nhận diện — luna A 100% / B 100% (**chạm trần**), gpt-4o-mini A 90% /
+B 96,7%; sao lạ A 0 / B 0. Chưa đạt theo luật (luna không phân biệt được vì chạm trần). Nguyên nhân: phần
+"vì sao" nêu thẳng tên sao — dò tên là ra, không đo được nội dung.
+
+**Lượt 3 — chốt trước khi chạy:** như 11.6 #1 nhưng giám khảo CHỈ nhận bài luận (không phần vì sao — bài
+luận không có tên sao, tên cung). Cùng ngưỡng: mọi giám khảo hợp lệ (A ≥ 60%) cho B ≥ A + 5 điểm. Nếu một
+giám khảo lại chạm trần (A và B cùng ≥ 97%) thì ghi "không phân biệt được" cho giám khảo đó, không tính
+là đạt.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
