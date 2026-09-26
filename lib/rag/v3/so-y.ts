@@ -94,6 +94,10 @@ export function khoiDaNoi(q: CauHoiV3, daNoi: MucDaNoi[]): string {
     'ĐÃ NÓI Ở CÁC PHẦN KHÁC CỦA LÁ SỐ NÀY — người đọc đọc cả trang lá số, nên đã gặp những ý sau:',
     ...dong,
     loiKhuyen.length ? `GỢI Ý ĐÃ DÙNG (không lặp trong trường goiY): ${loiKhuyen.map((l) => `"${l}"`).join(' ; ')}` : '',
+    (() => {
+      const cum = cumDaDungNhieu(ds, q.loai === 'chuyen-sau' ? q.chuDe : 'tong-quan');
+      return cum.length ? `CỤM TỪ CÁC CÂU TRƯỚC ĐÃ DÙNG NHIỀU — KHÔNG dùng lại, đổi cách nói: ${cum.map((k) => `"${k}"`).join(', ')}` : '';
+    })(),
     `LUẬT CHỐNG LẶP GIỮA CÁC PHẦN:
 1. Không triển khai lại các ý trên, không dùng lại ví dụ hay tình huống đã dùng, không dùng lại lời khuyên đã dùng (kể cả đổi chữ).
 2. Một ý trên là căn cứ cần cho câu này thì chỉ gợi lại tối đa NỬA CÂU (vd. "nét cẩn trọng ấy") rồi đi ngay sang điều MỚI.
@@ -160,6 +164,78 @@ export function kiemLapPhanKhac(luanGiai: string, daNoi: MucDaNoi[], idCau: stri
     ];
   }
   return [];
+}
+
+/* -------------------------------------------------------------------------- */
+/* Lặp CỤM TỪ (26/09/2026) — khác lặp ý: "tình huống rối" đi qua năm câu của    */
+/* chủ đề Tính cách lá số Hiếu. Người đọc thấy ngay, và thấy khó chịu.          */
+/* -------------------------------------------------------------------------- */
+
+const TU_NOI = new Set(
+  (
+    'và của là có thì mà một những các khi bạn được cho với trong này để không người đó như lại hơn rất cũng vì nên đã sẽ đang từ ra vào về rồi hay dễ thể việc sự điều cách bởi nếu nhưng hoặc càng mình họ ai gì nào đây kia ấy thường luôn nhiều ít chỉ còn đều cùng theo trước sau ở tại qua lúc lần phần mới vẫn cả thật khá quá hãy đến bị làm'
+  ).split(' ')
+);
+
+/**
+ * Cụm 3–4 ÂM TIẾT có nghĩa (chữ đầu và chữ cuối không phải từ nối) → số lần xuất hiện.
+ * Không lấy cụm 2 âm tiết: tiếng Việt tách theo âm tiết nên "quyết định", "nguyên tắc"
+ * là MỘT từ bình thường — bắt chúng thì bài nào cũng bị chặn (thử trên lá số Hiếu 26/09).
+ */
+function cumDat(van: string): Map<string, number> {
+  const w = tu(van);
+  const ra = new Map<string, number>();
+  for (let n = 3; n <= 4; n++)
+    for (let i = 0; i + n <= w.length; i++) {
+      const c = w.slice(i, i + n);
+      if (TU_NOI.has(c[0]) || TU_NOI.has(c[n - 1]) || c.some((x) => x.length < 2)) continue;
+      const k = c.join(' ');
+      ra.set(k, (ra.get(k) ?? 0) + 1);
+    }
+  return ra;
+}
+
+/**
+ * Cụm đã dùng ở ≥ 2 câu trước trong CÙNG chủ đề (hoặc tổng quan, khi đang viết tổng
+ * quan) — câu sắp viết không được dùng lại. Chỉ lấy cụm dài nhất (bỏ cụm con).
+ */
+export function cumDaDungNhieu(daNoi: MucDaNoi[], nhom: string): string[] {
+  const cung = daNoi.filter((d) => d.nhom === nhom && d.luanGiai);
+  const soBai = new Map<string, number>();
+  for (const d of cung) for (const k of cumDat(d.luanGiai).keys()) soBai.set(k, (soBai.get(k) ?? 0) + 1);
+  const nhieu = [...soBai].filter(([, v]) => v >= 2).sort((a, b) => b[1] - a[1] || b[0].length - a[0].length).map(([k]) => k);
+  return nhieu.filter((k) => !nhieu.some((x) => x !== k && x.includes(k))).slice(0, 25);
+}
+
+/**
+ * CỤM QUEN TAY của Celes — hình ảnh model hay dùng trên rất nhiều lá số, nên đi qua
+ * nhiều câu là người đọc thấy ngay ("tình huống rối" năm lần trong chương Tính cách
+ * lá số Hiếu, 26/09/2026). Mỗi cụm tối đa MỘT lần trong cả chủ đề.
+ */
+export const CUM_QUEN_TAY = [
+  'tình huống rối', 'mọi thứ rối', 'việc rối', 'gỡ rối', 'giữ trật tự', 'giữ nhịp', 'tự xoay xở', 'đứng giữa',
+  'âm ỉ', 'chịu trách nhiệm đến cùng', 'kéo về đúng hướng', 'đi đến cùng', 'làm đến nơi đến chốn', 'đưa mọi thứ về',
+];
+
+/**
+ * Chặn khi: bài mới dùng lại ≥ 2 cụm đã dùng nhiều ở các câu trước, tự lặp một cụm
+ * ≥ 3 lần trong chính nó, hoặc dùng lại một cụm quen tay đã có ở câu khác cùng chủ đề.
+ */
+export function kiemLapCum(luanGiai: string, daNoi: MucDaNoi[], nhom: string): LoiV3[] {
+  const cua = cumDat(luanGiai);
+  const daDung = cumDaDungNhieu(daNoi, nhom).filter((k) => cua.has(k));
+  const tuLap = [...cua].filter(([, v]) => v >= 3).map(([k]) => k);
+  const loi: LoiV3[] = [];
+  const vanCung = daNoi.filter((d) => d.nhom === nhom).map((d) => d.luanGiai.toLowerCase()).join(' ');
+  const thuong = luanGiai.toLowerCase();
+  const quenTay = CUM_QUEN_TAY.filter((k) => thuong.includes(k) && (vanCung.includes(k) || thuong.split(k).length > 2));
+  if (quenTay.length)
+    loi.push({ ma: 'cum-quen-tay', moTa: `Cụm quen tay đã dùng ở câu khác (hoặc lặp trong bài) — tả bằng hình ảnh khác, cụ thể hơn: ${quenTay.map((k) => `"${k}"`).join(', ')}.`, chan: true });
+  if (daDung.length >= 2)
+    loi.push({ ma: 'lap-cum', moTa: `Dùng lại cụm từ các câu trước đã dùng nhiều — đổi cách nói: ${daDung.slice(0, 6).map((k) => `"${k}"`).join(', ')}.`, chan: true });
+  if (tuLap.length)
+    loi.push({ ma: 'lap-cum-trong-bai', moTa: `Một cụm lặp từ ba lần trở lên trong bài — đổi cách nói: ${tuLap.slice(0, 4).map((k) => `"${k}"`).join(', ')}.`, chan: true });
+  return loi;
 }
 
 /** Dựng sổ từ các bản ghi đã cất của route (mỗi nhóm một mảng câu) */

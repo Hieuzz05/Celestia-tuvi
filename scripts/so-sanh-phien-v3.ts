@@ -5,6 +5,7 @@
  * "Celes hiểu tôi từ 2–3 ý rồi diễn giải lại chính các ý đó theo 8 câu hỏi". Ở đây
  * giám khảo đọc trọn hai bộ (xáo tên), đếm số câu MỞ LỚP MỚI và chọn bộ đọc như
  * "một con đường" hơn. Hai bộ được phép khác câu hỏi (khung cũ và khung mới).
+ *   --tieu-chi "…"  đổi câu hỏi chọn bộ tốt hơn cho đúng chủ đề (vd. Tính cách: "có trượt sang phong cách làm việc không")
  * Rẻ: một lượt gọi cho mỗi giám khảo; chuỗi rẻ → đắt, dừng khi hai giám khảo đồng ý.
  */
 import { readFileSync } from 'node:fs';
@@ -41,7 +42,7 @@ async function main() {
   const user = `BỘ 1\n${by}\n\n====\n\nBỘ 2\n${bx}\n\nĐÁNH GIÁ:
 - lopMoi: trong mỗi bộ, bao nhiêu câu mở ra một lớp MỚI về người này (không chỉ diễn giải lại ý của câu trước)?
 - lapLai: mỗi bộ có bao nhiêu câu chủ yếu lặp lại mô-típ đã nói?
-- tot: bộ nào đọc giống "được đọc ra một con đường riêng" hơn, ít giống bài huấn luyện nghề nghiệp chung chung hơn, và có nhiều khoảnh khắc "đúng, mình chính xác như vậy" hơn? (1 hoặc 2)
+- tot: ${thamSo('tieu-chi', 'bộ nào đọc giống "được đọc ra một con đường riêng" hơn, ít giống bài huấn luyện nghề nghiệp chung chung hơn, và có nhiều khoảnh khắc "đúng, mình chính xác như vậy" hơn?')} (1 hoặc 2)
 JSON: {"lopMoi":[số bộ 1, số bộ 2],"lapLai":[số bộ 1, số bộ 2],"tot":1}`;
   // BỘ 1 là y (bản mới), BỘ 2 là x — đổi chỗ ở lượt thứ hai của mỗi giám khảo để triệt thiên lệch vị trí
   const user2 = user.replace(`BỘ 1\n${by}\n\n====\n\nBỘ 2\n${bx}`, `BỘ 1\n${bx}\n\n====\n\nBỘ 2\n${by}`);

@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.15';
+export const PHIEN_BAN_PROMPT_V3 = '2026.09.16';
 
 
 
@@ -35,6 +35,7 @@ A. Trường "luanGiai" — bài luận cho người đọc:
 - Văn liền mạch, không gạch đầu dòng, không đánh số, không nhãn kiểu "Đáp:", "Cụ thể:", không markdown.
 - KHÔNG nêu tên sao, tên cung, tên cách cục, và không dùng thuật ngữ tử vi (đại vận, tiểu hạn, lưu niên, tam hợp, xung chiếu, vô chính diệu, chính tinh, miếu, hãm, tọa thủ, Thân cư...). Nói bằng phần đời: "đường công danh", "chuyện tiền bạc", "đời sống bên trong", "chuyện lứa đôi", "giai đoạn khoảng 25–34 tuổi".
 - Gọi người đọc là "bạn".
+- Không lặp một cụm từ đặc trưng (vd. một hình ảnh, một cách gọi tình huống) quá MỘT lần trong bài — lần sau đổi cách nói. Hạn chế các cụm quen tay: "tình huống rối", "mọi thứ rối", "gỡ rối", "giữ trật tự", "giữ nhịp", "tự xoay xở", "đứng giữa", "âm ỉ" — tả bằng hình ảnh cụ thể của đúng lá số này.
 - Không dùng chữ nội bộ của hệ thống trong bài: "dữ kiện", "tín hiệu phụ trợ", "yếu tố chiếu", "nguồn" — nói như người xem lá số ("lá số của bạn cho thấy", "phần sức khỏe của bạn") hoặc nói thẳng điều đó.
 - Không nêu mã F###, E###, không nêu tên sách.
 

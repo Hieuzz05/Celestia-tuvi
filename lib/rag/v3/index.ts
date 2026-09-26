@@ -6,7 +6,7 @@ import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKien
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3, SYSTEM_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
-import { khoiDaNoi, kiemLapPhanKhac, type MucDaNoi } from './so-y';
+import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -99,9 +99,9 @@ const TU_KHOA_TONG_QUAN: Record<string, string> = {
  * của cả năm. Chia phạm vi bằng mã rẻ hơn gộp mười một câu vào một lượt gọi.
  */
 const PHAM_VI_TONG_QUAN: Record<string, string> = {
-  TQ01: 'Chỉ nói con người: tính khí, cách ứng xử, mặt trong và mặt ngoài. Không bàn nghề, tiền, tình duyên, quý nhân.',
-  TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và kết bằng cách dùng điểm mạnh ấy cho đúng chỗ. Không kể thêm điểm yếu.',
-  TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh.',
+  TQ01: 'Chỉ nói con người: tính khí, cách ứng xử, mặt trong và mặt ngoài. Không bàn nghề, tiền, tình duyên, quý nhân Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
+  TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và kết bằng cách dùng điểm mạnh ấy cho đúng chỗ. Không kể thêm điểm yếu Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
+  TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
   // Bản đồ mạnh – yếu trên trang đã liệt kê đủ ba nhóm; bài kể lại danh sách thì hết chữ cho phần "vì sao" (giám khảo 3/5, 25/09/2026)
   TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — không kể lại đủ mười hai mặt. Mở bằng tên hai mặt mạnh nhất và hai mặt cần chăm chút nhất (để đoạn văn tự đứng được khi đọc riêng), rồi nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi kết bằng một lời khuyên dùng mặt mạnh để đỡ mặt yếu.',
   TQ05: 'Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên.',
@@ -128,7 +128,7 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
  */
 // Cập nhật 26/09/2026 theo khung mới (khung 2026.09.3)
 const CAU_GIU_MOC: Record<string, string> = {
-  'tinh-cach': 'TC07', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD06', 'con-cai': 'CC02',
+  'tinh-cach': 'TC08', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD06', 'con-cai': 'CC02',
   'gia-dinh': 'GD05', 'anh-em': 'AE02', 'quy-nhan': 'QN03', 'phuc-duc': 'PD05', 'suc-khoe': 'SK05',
   'nha-cua': 'NC05', 'ra-ngoai': 'RN02', 'hoc-van': 'HV06', 'van-han': 'VH02',
 };
@@ -147,11 +147,36 @@ function luatMoc(q: CauHoiV3): string {
     : '';
 }
 
+/**
+ * LĂNG KÍNH của từng chủ đề (26/09/2026). Review chương Tính cách lá số Hiếu:
+ * "khoảng 40% đã trượt sang năng lực / phong cách làm việc" — bản chất tả bằng
+ * "sắp xếp ai làm gì", người khác nhìn tôi thành "đồng nghiệp nhìn tôi", gợi ý
+ * thành tư vấn nghề. Nguyên nhân: dữ kiện Mệnh của nhiều lá số là bộ sao "điều
+ * hành", model kéo mọi chủ đề về công việc. Mỗi chủ đề giữ đúng phần đời của nó;
+ * công việc chỉ là MỘT nơi ví dụ, không phải khung chính.
+ */
+const LANG_KINH: Record<string, string> = {
+  'tinh-cach':
+    'Nói về CON NGƯỜI khi bỏ hết nghề nghiệp, chức danh và trách nhiệm ra ngoài: điều họ sống vì, cần gì để thấy yên, dễ tổn thương bởi gì, cách đối xử với chính mình và với người khác. Ví dụ phải trải qua nhiều nơi — gia đình, bạn bè, tình yêu, tiền bạc, lúc ở một mình, khi gặp biến cố. Công việc tối đa MỘT ví dụ phụ trong cả bài; KHÔNG dùng từ vựng quản lý (điều phối, quyền quyết định, nguồn lực, đầu mối, tiến độ, giao việc, cả nhóm).',
+  'tien-bac': 'Nói về chuyện TIỀN: kiếm, giữ, tiêu, hao, tích sản. Công việc chỉ xuất hiện như một nguồn tiền; không phân tích phong cách làm việc hay tính cách chung.',
+  'tinh-duyen': 'Nói về đời sống TÌNH CẢM và hôn nhân: cách yêu, người đi cùng, những gì xảy ra giữa hai người. Công việc chỉ nhắc khi câu hỏi hỏi về ảnh hưởng qua lại.',
+  'con-cai': 'Nói về CON CÁI và quan hệ cha mẹ – con; không tả lại tính cách chung của người đọc.',
+  'gia-dinh': 'Nói về CHA MẸ và gia đình gốc; không tả lại tính cách chung hay chuyện công việc của người đọc.',
+  'anh-em': 'Nói về ANH CHỊ EM; không tả lại tính cách chung của người đọc.',
+  'quy-nhan': 'Nói về NHỮNG NGƯỜI XUNG QUANH: ai giúp, ai kéo, vì sao; không tả lại tính cách chung.',
+  'phuc-duc': 'Nói về NỀN PHÚC, đường thoát khi gặp khó và hậu vận; không kéo sang công việc.',
+  'suc-khoe': 'Nói về THỂ TRẠNG và các vùng sức khỏe; không kéo sang tính cách hay công việc, trừ khi đó là nguyên nhân trực tiếp của một rủi ro vừa luận.',
+  'nha-cua': 'Nói về NHÀ CỬA, nơi ở và tài sản cố định; không kéo sang tính cách chung.',
+  'ra-ngoai': 'Nói về chuyện ĐI XA, ra ngoài xã hội và sống ở nơi khác; công việc chỉ nhắc như một lý do đi.',
+  'hoc-van': 'Nói về HỌC HÀNH, thi cử, bằng cấp; không biến thành lời khuyên phương pháp học hay tư vấn nghề.',
+};
+
 function phamViChuyenSau(q: CauHoiV3): string {
   const anhEm = CAU_HOI_V3.filter((x) => x.loai === 'chuyen-sau' && x.chuDe === q.chuDe && x.id !== q.id);
   const ten = CHU_DE_V3.find((c) => c.id === q.chuDe)?.ten ?? q.chuDe;
   const dong = [
     `Đây là một trong ${anhEm.length + 1} câu của chủ đề "${ten}"; người đọc đọc liền các câu trên cùng một trang. Chỉ đi sâu đúng trọng tâm câu này.`,
+    LANG_KINH[q.chuDe] ? `LĂNG KÍNH CHỦ ĐỀ (áp cho cả bài luận và trường goiY): ${LANG_KINH[q.chuDe]}` : '',
     anhEm.length
       ? `Những phần sau đã có câu khác trả lời — KHÔNG triển khai lại ở đây; nếu buộc phải chạm tới thì tối đa nửa câu làm cầu nối:\n${anhEm
           .map((x) => `- ${x.cauHoi} (${x.nhanDuoc})`)
@@ -277,6 +302,7 @@ ${phamViChuyenSau(q)}`
   const kiem = (b: BaiV3) => [
     ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
+    ...kiemLapCum(b.luanGiai, vao.daNoi ?? [], q.loai === 'chuyen-sau' ? q.chuDe : 'tong-quan'),
     ...kiemTenSach(b),
     ...kiemGiaoViec(b),
     ...kiemNhanLuat(b),
