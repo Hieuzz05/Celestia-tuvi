@@ -346,6 +346,96 @@ không chấm được; (b) sửa khâu trích (bắt điều kiện cung và đ
 cùng ngưỡng; (c) đổi ngưỡng 4 thành "không thua" (≥ 45%) kèm tiêu chí 2 — là đổi luật đã chốt, chỉ chủ
 dự án được quyết.
 
+### 11.5 Bộ đo ĐỘ ĐÚNG — chốt 26/09/2026, TRƯỚC khi chạy
+
+Chủ dự án yêu cầu sau lượt 1: so mù đo độ *hay*, không đo độ *đúng* — cần bộ đo riêng.
+
+**Gói bằng chứng CHUNG cho mỗi cặp (lá số, câu)** — hai bản bị đối chiếu với đúng một gói:
+- dữ kiện lá số F### (engine tính; giống hệt nhau ở A và B);
+- N## = hợp mọi đoạn sách mà A **hoặc** B đã dùng, cộng câu trích gốc đứng sau các mục thư viện B
+  đã dùng. Chỉ đưa văn sách, **không** đưa câu nghĩa của mục thư viện — tránh thiên vị B.
+
+**Cách chấm:** giám khảo chấm TỪNG BÀI riêng, không biết bài của bản nào. Tách 5–10 nhận định chính
+(bỏ câu minh hoạ không mang khẳng định), mỗi nhận định vào một loại:
+
+| Loại | Nghĩa |
+|---|---|
+| `co-can-cu` | dữ kiện lá số và / hoặc đoạn N## ủng hộ, đúng cấu hình của lá số này |
+| `mau-thuan` | trái với dữ kiện, hoặc trái với đoạn N## nói về đúng cấu hình ấy |
+| `chung-chung` | đúng với gần như ai, không gắn gì riêng của lá số |
+| `khong-kiem-duoc` | không có gì trong gói ủng hộ hay phản bác |
+
+Thêm phần "vì sao": đếm tên sao / cung nêu sai so với dữ kiện.
+
+**Kiểm giám khảo trước — điều kiện để tin số của giám khảo đó:**
+- *Cài lỗi*: 12 bài, đổi một tên sao trong phần "vì sao" thành một chính tinh không có trong dữ kiện →
+  giám khảo phải bắt ≥ 10 / 12.
+- *Lệch lá*: 12 bài chấm với dữ kiện + nguồn của MỘT LÁ SỐ KHÁC → tỉ lệ `co-can-cu` phải thấp hơn bài
+  thật ít nhất 15 điểm.
+- Giám khảo trượt một trong hai → loại số của giám khảo đó.
+
+Giám khảo: gpt-5.6-luna và gpt-4o-mini (hai model khác nhau duy nhất gọi được, xem 11.3).
+
+**B đúng hơn A khi MỌI giám khảo hợp lệ cùng cho:**
+1. tỉ lệ `mau-thuan` của B ≤ A;
+2. tỉ lệ `co-can-cu` của B ≥ A + 10 điểm;
+3. tỉ lệ `chung-chung` của B ≤ A + 3 điểm;
+4. lỗi sao / cung trong "vì sao" của B ≤ A.
+
+Bộ đo này KHÔNG thay tiêu chí so mù (11.2 #4). Bật thư viện khi so mù trượt mà độ đúng đạt là đổi luật
+đã chốt — chủ dự án quyết.
+
+**Kết quả 11.5 (26/09/2026): KHÔNG DÙNG ĐƯỢC — cả hai giám khảo trượt bài kiểm giám khảo.**
+
+| | luna | gpt-4o-mini |
+|---|---|---|
+| Cài lỗi (bắt được) | 12 / 12 | 5 / 12 |
+| `co-can-cu` bài thật / bài lệch lá | 94,2% / **94,8%** | 86,2% / **89,4%** |
+| A: căn cứ / mâu thuẫn / chung chung | 90,3 / 0 / 0,4 | 84,5 / 1,3 / 6,7 |
+| B: căn cứ / mâu thuẫn / chung chung | 87,7 / 0,2 / 0,2 | 86,7 / 0,2 / 3,1 |
+
+Bài của MỘT LÁ SỐ KHÁC được chấm "có căn cứ" ngang bài thật: giám khảo tách nhận định rồi xếp loại
+quá dễ dãi, và bài luận đủ chung để dữ kiện của lá nào cũng "đỡ" được. Không kết luận A / B từ bảng này.
+
+### 11.6 Bộ đo độ đúng lượt 2 — có ĐÁP ÁN THẬT, chốt 26/09/2026 trước khi chạy
+
+1. **Nhận diện lá số.** Mỗi bài: giám khảo nhận dữ kiện của HAI lá số (lá thật + một lá mồi cùng câu
+   hỏi, thứ tự xáo cố định) và bài luận + phần vì sao, trả lời bài viết cho lá nào. Đoán bừa = 50%.
+   Bài càng bám đúng lá số càng dễ nhận ra — đây là thước đo có đáp án, không cần tin giám khảo dễ dãi.
+   *Giám khảo hợp lệ* khi tỉ lệ đúng trên bản A ≥ 60% (nhận ra được ít nhất bản đang chạy).
+2. **Sao lạ trong phần vì sao** (đếm bằng mã, không giám khảo): tên sao được nêu mà không có trên lá số.
+
+**B đúng hơn A khi:** với mọi giám khảo hợp lệ, tỉ lệ nhận diện đúng của B ≥ A + 5 điểm; **và** số sao lạ
+của B ≤ A.
+
+**Kết quả 11.6 (26/09/2026):** nhận diện — luna A 100% / B 100% (**chạm trần**), gpt-4o-mini A 90% /
+B 96,7%; sao lạ A 0 / B 0. Chưa đạt theo luật (luna không phân biệt được vì chạm trần). Nguyên nhân: phần
+"vì sao" nêu thẳng tên sao — dò tên là ra, không đo được nội dung.
+
+**Lượt 3 — chốt trước khi chạy:** như 11.6 #1 nhưng giám khảo CHỈ nhận bài luận (không phần vì sao — bài
+luận không có tên sao, tên cung). Cùng ngưỡng: mọi giám khảo hợp lệ (A ≥ 60%) cho B ≥ A + 5 điểm. Nếu một
+giám khảo lại chạm trần (A và B cùng ≥ 97%) thì ghi "không phân biệt được" cho giám khảo đó, không tính
+là đạt.
+
+**Kết quả lượt 3 (26/09/2026): KHÔNG ĐẠT — không có bằng chứng B đúng hơn A.**
+
+| Giám khảo | Nhận diện A | Nhận diện B | Chênh |
+|---|---|---|---|
+| gpt-5.6-luna | 93,3% | 90,0% | −3,3 |
+| gpt-4o-mini | 70,0% | 75,0% | +5,0 |
+
+Hai giám khảo ngược chiều, cả hai chênh đều trong sai số (60 bài: ±4–8 điểm). Sao lạ: A 0, B 0.
+
+**Kết luận cho lát cắt lượt 1:** thư viện tăng tỉ lệ ý có mã nguồn (51% → 78%) và nhanh hơn, nhưng **không
+làm bài hay hơn (so mù ~47%) và không làm bài đúng lá số hơn (nhận diện ngang)**. Giữ tắt.
+
+**Phát hiện phụ có giá trị:** bài hiện tại (A) bám lá số tốt — chỉ đọc bài luận (không tên sao) mà luna
+nhận đúng lá số 93%. Bộ đo nhận diện (`scripts/do-nhan-dien.ts --chi-bai-luan`) dùng lại được làm thước
+"bài có riêng cho lá số không" cho mọi thay đổi prompt sau này.
+
+**Bài học đo:** giám khảo máy xếp loại nhận định là quá dễ dãi (11.5); cần phép đo có đáp án thật, và phải
+bỏ những gì cho phép dò chữ (tên sao) thay vì hiểu nội dung (11.6).
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?
@@ -402,7 +492,7 @@ Bốn tầng eval của v1 (Phụ lục V1 mục 8) vẫn là khung chung.
 | QĐ-11 | Bài cũ làm mới theo phương án C | "đọc lại phải thấy đúng bài cũ" (CEL-122) | giữ mãi (A); làm mới toàn bộ (B) | — |
 | QĐ-12 | Lát cắt đầu là Sự nghiệp, không phải Tính cách | tính cách chạy tạm ổn bằng nghĩa sao đơn nên không thử được kiến trúc | Tính cách | — |
 | QĐ-13 | Thư viện tạm lưu trong `noi_dung_ai` (bề mặt `thu-vien`) | máy làm không chạy được SQL; bảng có sẵn khoá duy nhất đúng dạng | chờ chủ dự án chạy SQL bảng riêng | chủ dự án chạy `supabase/thu-vien-tri-thuc.sql` (sẽ viết khi lát cắt đạt) |
-| QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
+| QĐ-15 | Lát cắt Sự nghiệp lượt 1 KHÔNG bật (26/09) | trượt so mù (~47% < 60%) theo luật đã chốt trước; bộ đo độ đúng (11.5–11.6) cũng không thấy B đúng hơn | dời ngưỡng sau khi thấy kết quả | chủ dự án chọn hướng ở 11.3, hoặc lượt đo sau đạt đủ năm tiêu chí |
 | QĐ-14 | `THE_HE_DEM` chỉ tăng khi chủ dự án đồng ý | tăng liên tục làm bài "load lại" trên mọi thiết bị | tự tăng khi đổi prompt | — |
 
 ---
