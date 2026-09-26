@@ -39,6 +39,46 @@ const CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 
 const TRANG_SINH = ['Trường Sinh', 'Mộc Dục', 'Quan Đới', 'Lâm Quan', 'Đế Vượng', 'Suy', 'Bệnh', 'Tử', 'Mộ', 'Tuyệt', 'Thai', 'Dưỡng'];
 
 const chuan = (s: string) => boDau(s).replace(/\s+/g, ' ').trim();
+/** Chuẩn để so NGUYÊN VĂN: bỏ dấu câu và gạch nối — sách OCR viết "Văn-Xương", "Phá-Quân", model chép "Văn Xương" */
+const chuanSo = (s: string) => boDau(s).replace(/[^a-z0-9]+/g, ' ').trim();
+/** Câu trích có nguyên văn trong văn bản không (bỏ dấu câu, gạch nối) */
+export function coNguyenVan(trich: string, vanBan: string): boolean {
+  return viTriNguyenVan(trich, vanBan) >= 0;
+}
+
+/**
+ * Vị trí (theo chữ đã chuẩn) của câu trích trong văn bản, -1 nếu không có. Khớp đúng nguyên văn,
+ * hoặc khớp GẦN: các chữ của câu trích xuất hiện theo đúng thứ tự trong một cửa sổ ≤ 1,25 lần độ
+ * dài, sót không quá 10% — model hay chép thiếu / thừa một chữ (lượt thử 11.8: 16 / 48 trượt).
+ * Vẫn là văn của sách: không có cửa sổ nào như vậy thì câu trích bị coi là bịa.
+ */
+export function viTriNguyenVan(trich: string, vanBan: string): number {
+  const t = chuanSo(trich);
+  const v = chuanSo(vanBan);
+  if (t.length < 12) return -1;
+  const dung = v.indexOf(t);
+  if (dung >= 0) return dung;
+  const tt = t.split(' '), vv = v.split(' ');
+  const cuaSo = Math.ceil(tt.length * 1.25);
+  const canKhop = Math.ceil(tt.length * 0.9);
+  for (let i = 0; i < vv.length; i++) {
+    if (vv[i] !== tt[0] && vv[i] !== tt[1]) continue;
+    let j = 0, khop = 0;
+    for (let k = i; k < Math.min(vv.length, i + cuaSo) && j < tt.length; k++) {
+      if (vv[k] === tt[j]) { khop++; j++; }
+      else if (j + 1 < tt.length && vv[k] === tt[j + 1]) { khop++; j += 2; }
+    }
+    if (khop >= canKhop) return vv.slice(0, i).join(' ').length + (i ? 1 : 0);
+  }
+  return -1;
+}
+
+/** Từ chỉ NHÓM sao — "gặp sát tinh" nhắc cả lục sát, không cần gọi tên từng sao */
+const TU_NHOM: [RegExp, string[]][] = [
+  [/(sat tinh|hung tinh|luc sat|sat dieu|ac tinh)/, ['Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp', 'Hóa Kỵ']],
+  [/(cat tinh|luc cat|thien cat|phu tinh tot|van tinh|quy tinh)/, ['Tả Phù', 'Hữu Bật', 'Văn Xương', 'Văn Khúc', 'Thiên Khôi', 'Thiên Việt']],
+  [/(tam hoa|khoa quyen loc|loc quyen khoa)/, ['Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa']],
+];
 function coTu(s: string, tu: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${tu.replace(/ /g, '[^a-z0-9]+')}($|[^a-z0-9])`).test(s);
 }
@@ -75,6 +115,101 @@ export function chuanDoSang(ten: string, ds: string[] | undefined): string[] | u
   return [...new Set(ra.filter((m) => ['M', 'V', 'D', 'B', 'H'].includes(m)))];
 }
 
+const CHINH_TINH_TEN = ['Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ', 'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân'];
+
+/** Từ độ sáng trên chữ CÓ DẤU — bỏ dấu thì "hãm" trùng "hàm" (tên sách "Tử vi hàm số"), "vượng" trùng "thịnh vượng" */
+const TU_DO_SANG = /(miếu|vượng địa|miếu vượng|đắc địa|hãm địa|lạc hãm|\bhãm\b|sáng sủa)/i;
+
+let dongCung: Set<string> | null = null;
+/** Mọi cặp chính tinh engine từng an vào cùng một cung — dựng từ engine, không chép tay */
+export function toHopDongCung(): Set<string> {
+  if (dongCung) return dongCung;
+  const s = new Set<string>();
+  for (let y = 1960; y < 2000; y += 3)
+    for (let m = 1; m <= 12; m += 2)
+      for (const ngay of [1, 8, 15, 22, 29])
+        for (const c of lapLaSo({ ngay: Math.min(ngay, 28), thang: m, nam: y, gio: 7, gioiTinh: 'nam' }).cungs) {
+          const ct = c.sao.filter((x) => x.loai === 'chinh-tinh').map((x) => x.ten).sort();
+          if (ct.length === 2) s.add(ct.join('+'));
+        }
+  dongCung = s;
+  return s;
+}
+
+const MA_SANG: [RegExp, string[]][] = [
+  [/miếu vượng|miếu địa|nhập miếu|miếu/i, ['M', 'V']],
+  [/vượng địa/i, ['V']],
+  [/đắc địa|đắc cách/i, ['D']],
+  [/bình hòa|bình hoà/i, ['B']],
+  [/hãm địa|lạc hãm|hãm/i, ['H']],
+  [/sáng sủa/i, ['M', 'V', 'D']],
+];
+
+/**
+ * Gán độ sáng bằng mã khi model quên (lượt thử 11.8: 13 / 66 mục trượt "bỏ độ sáng"): chữ độ
+ * sáng đứng ngay sau tên một sao (≤ 25 ký tự) thì thuộc sao ấy; không có thì thuộc sao ĐẦU
+ * TIÊN của điều kiện có độ sáng trong engine. Chỉ điền khi sao chưa có độ sáng.
+ */
+export function dienDoSang(dk: MucThuVien['dieuKien'], trich: string): void {
+  if (!TU_DO_SANG.test(trich) || dk.sao.some((s) => s.doSang?.length)) return;
+  const chu = trich.replace(/-/g, ' ');
+  for (const s of dk.sao) {
+    if (!coDoSang(s.ten)) continue;
+    const i = chu.toLowerCase().indexOf(s.ten.toLowerCase());
+    if (i < 0) continue;
+    const sau = chu.slice(i + s.ten.length, i + s.ten.length + 25);
+    const trung = MA_SANG.find(([re]) => re.test(sau));
+    if (trung) s.doSang = chuanDoSang(s.ten, trung[1]);
+  }
+  if (dk.sao.some((s) => s.doSang?.length)) return;
+  const dau = dk.sao.find((s) => coDoSang(s.ten));
+  const trung = MA_SANG.find(([re]) => re.test(chu));
+  if (dau && trung) dau.doSang = chuanDoSang(dau.ten, trung[1]);
+}
+
+/** Chữ độ sáng trên văn CÓ DẤU — bỏ dấu thì "miêu tả" thành "mieu", "ham muốn" thành "ham" */
+const MA_SANG_CO_DAU: [RegExp, string[]][] = [
+  [/(miếu vượng|nhập miếu|miếu địa|miếu)/gi, ['M', 'V']],
+  [/vượng địa/gi, ['V']],
+  [/đắc địa/gi, ['D']],
+  [/bình hòa|bình hoà/gi, ['B']],
+  [/(hãm địa|lạc hãm|hãm)/gi, ['H']],
+];
+
+/**
+ * Độ sáng theo NGỮ CẢNH — sách hay viết đề mục "Hãm địa:" rồi mới tới các câu, nên câu trích không
+ * có chữ độ sáng dù cả đoạn nói về sao hãm. Lấy chữ độ sáng GẦN NHẤT trong đề mục + 250 ký tự ngay
+ * trước câu trích (trên văn gốc có dấu), gán cho sao đầu tiên có độ sáng trong engine. Chỉ khi mục
+ * chưa có độ sáng nào.
+ */
+export function dienDoSangNguCanh(dk: MucThuVien['dieuKien'], deMuc: string | null, vanBanDoan: string, trich: string): void {
+  if (dk.sao.some((s) => s.doSang?.length)) return;
+  const dau = dk.sao.find((s) => coDoSang(s.ten));
+  if (!dau) return;
+  const van = vanBanDoan.replace(/-/g, ' ');
+  const dauTrich = trich.replace(/-/g, ' ').slice(0, 20).toLowerCase();
+  const i = dauTrich.length >= 8 ? van.toLowerCase().indexOf(dauTrich) : -1;
+  const nguCanh = `${deMuc ?? ''} . ${i > 0 ? van.slice(Math.max(0, i - 250), i) : ''}`;
+  let viTri = -1;
+  let ma: string[] | null = null;
+  for (const [re, m] of MA_SANG_CO_DAU) {
+    for (const k of nguCanh.matchAll(re)) {
+      if ((k.index ?? -1) > viTri) {
+        viTri = k.index!;
+        ma = m;
+      }
+    }
+  }
+  if (ma) dau.doSang = chuanDoSang(dau.ten, ma);
+}
+
+/** Cung trống mà đề mục nêu đúng MỘT cung ("TỨ QUAN LỘC CUNG") → lấy cung ấy (lượt 1: 43% mục để "mọi cung") */
+export function cungTuDeMuc(duongDeMuc: string | null): string | null {
+  const dm = chuan(duongDeMuc ?? '');
+  const co = TEN_CUNG.filter((c) => coTu(dm, chuan(c)));
+  return co.length === 1 ? co[0] : null;
+}
+
 export interface KetQuaKiemMuc {
   dat: boolean;
   lyDo: string[];
@@ -94,18 +229,23 @@ export function kiemMuc(
   doan: { noiDung: string; duongDeMuc: string | null }
 ): KetQuaKiemMuc {
   const lyDo: string[] = [];
-  const noiDungChuan = chuan(doan.noiDung);
-  const trichChuan = chuan(m.trich);
+  const noiDungChuan = chuanSo(doan.noiDung);
+  const trichChuan = chuanSo(m.trich);
   const dict = tuDienSao();
 
   // 1. Câu trích có nguyên văn trong đoạn
   if (trichChuan.length < 12) lyDo.push('câu trích quá ngắn');
-  const viTri = noiDungChuan.indexOf(trichChuan);
+  const viTri = viTriNguyenVan(m.trich, doan.noiDung);
   if (viTri < 0) lyDo.push('câu trích không có nguyên văn trong đoạn');
 
   // 2. Tên sao, cung, quan hệ, độ sáng hợp lệ
   const dk = m.dieuKien;
-  if (!dk.sao.length) lyDo.push('điều kiện không có sao nào');
+  if (!dk.sao.length && !dk.nhom?.length) lyDo.push('điều kiện không có sao nào');
+  for (const n of dk.nhom ?? []) {
+    if (!(QUAN_HE as readonly string[]).includes(n.quanHe)) lyDo.push(`quan hệ lạ: ${n.quanHe}`);
+    if (n.toiThieu < 1 || n.toiThieu > n.ten.length) lyDo.push('nhóm có số tối thiểu sai');
+    for (const t of n.ten) if (!dict.has(t)) lyDo.push(`sao không có trong engine: ${t}`);
+  }
   for (const s of [...dk.sao, ...(dk.khong ?? [])]) {
     if (!dict.has(s.ten)) lyDo.push(`sao không có trong engine: ${s.ten}`);
     if (!(QUAN_HE as readonly string[]).includes(s.quanHe)) lyDo.push(`quan hệ lạ: ${s.quanHe}`);
@@ -115,10 +255,20 @@ export function kiemMuc(
   for (const c of dk.chi ?? []) if (!CHI.includes(c)) lyDo.push(`chi lạ: ${c}`);
   for (const t of dk.thuocTinh?.trangSinh ?? []) if (!TRANG_SINH.includes(t)) lyDo.push(`tràng sinh lạ: ${t}`);
 
+  // 2b. Chính tinh đồng cung phải là tổ hợp engine an được (lượt 1 có mục đòi đủ năm sao Tử Vũ Tướng Liêm Phủ tại một cung)
+  const chinhTai = dk.sao.filter((s) => s.quanHe === 'o-cung' && CHINH_TINH_TEN.includes(s.ten)).map((s) => s.ten);
+  if (chinhTai.length > 2) lyDo.push('quá hai chính tinh đồng cung');
+  else if (chinhTai.length === 2 && !toHopDongCung().has([...chinhTai].sort().join('+'))) lyDo.push(`${chinhTai.join(' + ')} không bao giờ đồng cung`);
+
+  // 2c. Câu trích nói độ sáng mà mục không mang độ sáng → mất đúng điều kiện đổi nghĩa (lượt 1: 8% mục có độ sáng)
+  if (TU_DO_SANG.test(m.trich) && !dk.sao.some((s) => s.doSang?.length)) lyDo.push('bỏ độ sáng');
+
   // 3. Sao và cung trong điều kiện PHẢI được nhắc: câu trích + ~300 ký tự trước nó + đề mục
   const truoc = viTri >= 0 ? noiDungChuan.slice(Math.max(0, viTri - 300), viTri) : '';
   const ngu = `${chuan(doan.duongDeMuc ?? '')} ${truoc} ${trichChuan}`;
   for (const s of dk.sao) if (!cachGoi(s.ten).some((g) => coTu(ngu, g))) lyDo.push(`không thấy nhắc ${s.ten}`);
+  const nhomNhac = TU_NHOM.filter(([re]) => re.test(ngu)).flatMap(([, ds]) => ds);
+  for (const t of (dk.nhom ?? []).flatMap((n) => n.ten)) if (!nhomNhac.includes(t) && !cachGoi(t).some((g) => coTu(ngu, g))) lyDo.push(`không thấy nhắc ${t}`);
   for (const c of dk.cung) if (!(BI_DANH_CUNG[c] ?? [chuan(c)]).some((b) => coTu(ngu, b))) lyDo.push(`không thấy nhắc cung ${c}`);
 
   // 4. Câu nghĩa trung tính
@@ -139,7 +289,8 @@ export function khoaGop(m: Pick<MucThuVien, 'dieuKien' | 'nhan'>): string {
   const dk = m.dieuKien;
   const sao = dk.sao.map((s) => `${s.ten}@${s.quanHe}${s.doSang?.length ? `:${[...s.doSang].sort().join('')}` : ''}`).sort();
   const khong = (dk.khong ?? []).map((s) => `${s.ten}@${s.quanHe}`).sort();
-  return JSON.stringify([[...dk.cung].sort(), [...(dk.chi ?? [])].sort(), sao, khong, dk.thuocTinh ?? {}, dk.gioiTinh ?? '', m.nhan.chieu]);
+  const nhom = (dk.nhom ?? []).map((n) => `${[...n.ten].sort().join('|')}@${n.quanHe}>=${n.toiThieu}`).sort();
+  return JSON.stringify([[...dk.cung].sort(), [...(dk.chi ?? [])].sort(), sao, khong, nhom, dk.thuocTinh ?? {}, dk.gioiTinh ?? '', m.nhan.chieu]);
 }
 
 /** Khoá điều kiện, bỏ chiều — hai mục cùng khoá này mà khác chiều là mâu thuẫn */

@@ -18,7 +18,14 @@ const BE_MAT = 'thu-vien';
 const HAN_MS = 5 * 60_000;
 let dem: { luc: number; ds: MucThuVien[] } | null = null;
 
-export async function docThuVien(chuDe?: string): Promise<MucThuVien[]> {
+export async function docThuVien(chuDe?: string, dot?: string): Promise<MucThuVien[]> {
+  const ds = await docTatCa(chuDe);
+  // Nhiều đợt: "sn-2,sn-2b"
+  const dsDot = dot?.split(',').map((x) => x.trim()).filter(Boolean);
+  return dsDot?.length ? ds.filter((m) => dsDot.includes(m.dotTrich)) : ds;
+}
+
+async function docTatCa(chuDe?: string): Promise<MucThuVien[]> {
   if (!dem || Date.now() - dem.luc > HAN_MS) {
     const supabase = taoSupabaseAdmin();
     if (!supabase) return [];

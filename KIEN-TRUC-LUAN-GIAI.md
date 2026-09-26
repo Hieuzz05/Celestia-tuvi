@@ -507,6 +507,62 @@ duyệt mẫu đáp án.
 3. *Cách viết:* so mù không thua rõ (≥ 45%).
 4. *Đáp án:* chủ dự án duyệt 10 đáp án mẫu (`dap-an.json`) trước khi tin điểm KT.
 
+### 11.8 Thư viện lượt 2 (đợt `sn-2`) — chốt 26/09/2026 trước khi dựng
+
+**Cổng tất định** (`scripts/do-phu-dap-an.ts`): điểm BẮT BUỘC của đáp án (11.7), chỉ tính SAO LỚN của điểm
+(chính tinh, lục cát, lục sát, tứ hoá, Lộc Tồn, Mã); phủ = có mục khớp lá số chứa đủ các sao ấy; phủ có độ
+sáng = điểm có nói độ sáng và mục mang độ sáng cho ít nhất một sao ấy. **Mốc `sn-1`: 26,6% / 5,2%. Cổng:
+≥ 50% / ≥ 30%.** Không nhìn đáp án khi sửa khâu trích — đáp án chỉ dùng làm cổng.
+
+**Sửa khâu trích:** bắt buộc độ sáng khi đoạn nói miếu / vượng / đắc / hãm (câu nêu hai trường hợp thì
+tách hai mục); cung lấy từ đề mục và ngữ cảnh đoạn trước; ghi đủ sao đi cùng; cách cục có tên không được
+ghi quá hai chính tinh tại cung gốc; trích thêm đoạn nói TỔ HỢP chính tinh + sao lớn trên toàn kho (không
+chỉ đoạn có chữ "quan lộc"). Kiểm tất định thêm: chính tinh đồng cung phải là cặp engine an được; câu
+trích có từ độ sáng mà mục không mang độ sáng → trượt; cung trống mà đề mục nêu đúng một cung → điền.
+
+Qua cổng → chạy lại nghiệm thu 11.7 (kiến thức + cách viết) với cùng đáp án, cùng ngưỡng.
+
+**Kết quả dựng (26/09/2026):** đợt `sn-2`: 1.978 đoạn (997 sự nghiệp + 981 tổ hợp) → 3.381 ứng viên → 2.404
+qua kiểm (71%) → **2.041 mục** (1.470 tổ hợp, 307 mục có nhóm "ít nhất k", 171 mục ≥ 2 tài liệu độc lập);
+tốn 1,76 tr token vào (0,75 tr đệm), 0,74 tr ra. Thêm bằng mã sau khi trích: độ sáng theo đề mục / ngữ cảnh
+(+282 mục) → **673 / 2.041 mục có độ sáng (33%, `sn-1`: 8%)**. Đợt `sn-2b`: 394 đoạn "sao + độ sáng".
+
+Sửa trong lượt 2 ngoài kế hoạch, mỗi sửa do một lỗi đo được ở lượt thử: nhóm "ít nhất k trong số" (sách
+viết "gặp Kình Đà Hỏa Linh" = gặp các sao ấy, không phải đủ cả bốn); so nguyên văn bỏ gạch nối / dấu câu và
+khớp gần ≥ 90% theo thứ tự; tìm lại đoạn thật khi model ghi nhầm số đoạn; từ chỉ nhóm ("sát tinh", "cát
+tinh") nhắc được cả nhóm; gán độ sáng bằng mã trên văn CÓ DẤU (bỏ dấu thì "miêu tả", "ham muốn" bị nhận
+nhầm). Tỉ lệ qua kiểm trên lượt thử: 38–54% → 87%.
+
+**Cổng (đợt `sn-2`):** phủ **49,4%** (≈ cổng 50%), phủ có độ sáng **16,1%** (cổng 30%) → **TRƯỢT cổng độ sáng.**
+
+**Nhưng cổng độ sáng đặt sai về cấu trúc** — phân tích điểm cần độ sáng theo số sao lớn: 1 sao: phủ 87%; 2 sao:
+13%; 3 sao: 17%; 4–7 sao: 0%. Đáp án tổng hợp 3–7 sao trong MỘT nhận định; không sách nào viết sẵn quy tắc
+năm sao — tổng hợp là việc của khâu viết. Theo THÀNH PHẦN: 66% điểm có mục đúng độ sáng cho mọi chính tinh
+liên quan. Cổng "một mục chứa đủ mọi sao" không thư viện trích từ sách nào đạt được.
+
+**Quyết định (chủ dự án giao "làm theo ý bạn"):** vẫn chạy nghiệm thu kiến thức 11.7 — đó là thước chính,
+cổng chỉ để tiết kiệm. Ngưỡng giữ nguyên: KT ≥ A + 10 và lỗi ≤ A với mọi giám khảo hợp lệ; cách viết báo cáo
+(60% theo luật, 45% đề xuất). Bản B3 = thư viện `sn-2` + `sn-2b`, khâu chọn ưu tiên thêm sao lớn đóng tại cung
+chính có độ sáng khớp, trần 18 mục. Cổng cho lượt sau đề xuất đổi thành "phủ theo thành phần" — chủ dự án chốt.
+
+**Kết quả B3 (thư viện `sn-2` + `sn-2b`, 2.499 mục):** giám khảo hợp lệ (luna 12/12, 88,2%; gpt-4o-mini 10/12,
+97%). KT: luna A 59,0 / B3 60,0; gpt-4o-mini A 52,2 / B3 53,7. Lỗi / bài: luna 0,45 / 0,55; gpt-4o-mini 0,97 /
+0,93. Cách viết B3 vs A: 49% / 50%. **Không đạt** (+1 điểm, ngưỡng +10).
+
+### 11.9 Đo TRẦN kiến thức — chốt 26/09/2026 trước khi chạy
+
+Thư viện tốt lên nhiều (phủ 26,6 → 49,4%, độ sáng 5,2 → 21%) mà KT gần như không đổi. Giả thuyết còn lại: nút
+thắt ở KHÂU VIẾT, không ở tri thức. Thí nghiệm: bản **O** = luồng v3 + ĐƯA THẲNG đáp án cho người viết
+(`scripts/do-tran-kien-thuc.ts`) — mức trần, không phải bản dùng được. Đọc kết quả (KT của O theo luna):
+- **≥ 80%** → khâu viết đưa được tri thức vào bài khi có đủ; nút thắt là NỘI DUNG tri thức mà thư viện cung cấp
+  (dạng mục đơn lẻ chưa đủ, cần tri thức đã tổng hợp theo cấu hình).
+- **≤ 70%** → nút thắt là KHÂU VIẾT / khuôn bài (độ dài, phạm vi, cách dàn ý) — thêm tri thức không lên.
+- Ở giữa → cả hai.
+
+**Chưa có kết quả (26/09/2026):** tài khoản OpenAI HẾT CREDIT giữa lúc sinh bản O (`insufficient_quota`) — 0 / 60
+bài, lượt chấm hỏng theo. Chạy lại khi nạp credit:
+`npx tsx scripts/do-tran-kien-thuc.ts <thư mục>` rồi `npx tsx scripts/do-kien-thuc.ts <thư mục> --ban A,O`.
+
 ### 11.4 Bốn câu chỉ lát cắt trả lời được
 
 1. Model trích quy tắc từ sách cổ tiếng Việt đúng bao nhiêu phần trăm?

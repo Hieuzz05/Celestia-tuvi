@@ -26,7 +26,14 @@ const thamSo = (ten: string, macDinh = '') => {
   return i > 0 ? process.argv[i + 1] : macDinh;
 };
 
-type Doan = { id: string; document_id: string; duong_de_muc: string | null; noi_dung: string; tieuDe: string; hePhai: string; loaiNguon: string };
+/** Nhóm dự phòng khi model vẫn ghi danh sách dài thành "phải có đủ": [tên, sao, số tối thiểu] */
+const NHOM_DU_PHONG: [string, string[], number][] = [
+  ['lục sát', ['Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp', 'Hóa Kỵ'], 1],
+  ['lục cát', ['Tả Phù', 'Hữu Bật', 'Văn Xương', 'Văn Khúc', 'Thiên Khôi', 'Thiên Việt'], 2],
+  ['tam hoá', ['Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa', 'Lộc Tồn'], 2],
+];
+
+type Doan = { id: string; document_id: string; duong_de_muc: string | null; noi_dung: string; thu_tu?: number; tieuDe: string; hePhai: string; loaiNguon: string };
 
 async function main() {
   const dot = thamSo('dot', 'sn-1');
@@ -35,6 +42,10 @@ async function main() {
   const loToiDa = Number(thamSo('lo', '6'));
   const songSong = Number(thamSo('song-song', '4'));
   const thu = process.argv.includes('--thu');
+  const themToHop = process.argv.includes('--to-hop');
+  // --do-sang: thêm tập độ sáng; --chi-do-sang: CHỈ tập độ sáng (bổ sung vào một đợt đã có, lưu dưới đợt riêng)
+  const themDoSang = process.argv.includes('--do-sang');
+  const chiDoSang = process.argv.includes('--chi-do-sang');
   const baoCao = thamSo('bao-cao');
 
   const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
@@ -43,7 +54,7 @@ async function main() {
   const { boDau, nhanDangThucThe } = await import('../lib/rag/thuc-the');
   const { laDoanRac } = await import('../lib/rag/v3/truy-hoi-v3');
   const { doTrung, NGUONG_TRUNG } = await import('../lib/rag/uu-tien-nguon');
-  const { kiemMuc, khoaGop, khoaDieuKien, tuDienSao, TEN_CUNG, chuanDoSang } = await import('../lib/rag/thu-vien/kiem');
+  const { kiemMuc, khoaGop, khoaDieuKien, tuDienSao, TEN_CUNG, chuanDoSang, cungTuDeMuc, dienDoSang, dienDoSangNguCanh, coNguyenVan } = await import('../lib/rag/thu-vien/kiem');
   const { SCHEMA_THU_VIEN, QUAN_HE, saoCuaMuc } = await import('../lib/rag/thu-vien/kieu');
   type MucThuVien = import('../lib/rag/thu-vien/kieu').MucThuVien;
   const { luuThuVien, xoaDotTrich } = await import('../lib/rag/thu-vien/kho');
@@ -63,7 +74,7 @@ async function main() {
   for (let tu = 0; ; tu += 1000) {
     const { data, error } = await sb
       .from('knowledge_chunks')
-      .select('id, document_id, duong_de_muc, noi_dung')
+      .select('id, document_id, duong_de_muc, noi_dung, thu_tu')
       .in('version_id', banXuat)
       .eq('trang_thai', 'hoat_dong')
       .order('id')
@@ -75,15 +86,49 @@ async function main() {
     }
     if (!data || data.length < 1000) break;
   }
+  // Ngữ cảnh: cuối đoạn liền trước cùng tài liệu — nhiều đoạn chỉ nói "sao này gặp…" mà cung / sao chủ nằm ở đoạn trước
+  const theoViTri = new Map(tatCa.map((c) => [`${c.document_id}#${c.thu_tu}`, c]));
+  const nguCanhTruoc = (c: Doan) => theoViTri.get(`${c.document_id}#${(c.thu_tu ?? 0) - 1}`)?.noi_dung.slice(-400) ?? '';
+
   const NHAN_SN = /(quan loc|cong danh|su nghiep|lam quan|nghe nghiep|chuc vu|quyen chuc)/;
   const deMuc = (c: Doan) => NHAN_SN.test(boDau(c.duong_de_muc ?? ''));
-  const chon = tatCa
-    .filter((c) => (deMuc(c) || NHAN_SN.test(boDau(c.noi_dung))) && !/readme/i.test(c.tieuDe))
-    .filter((c) => !laDoanRac({ tieuDe: c.tieuDe, duongDeMuc: c.duong_de_muc, noiDung: c.noi_dung }))
-    .filter((c) => nhanDangThucThe(c.noi_dung).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION'))
-    .sort((a, b) => Number(deMuc(b)) - Number(deMuc(a)))
-    .slice(0, gioiHan);
-  console.log(`Đoạn trong kho ${tatCa.length} → chọn ${chon.length} (đề mục sự nghiệp ${chon.filter(deMuc).length})`);
+  const sach = (c: Doan) =>
+    !/readme/i.test(c.tieuDe) &&
+    !laDoanRac({ tieuDe: c.tieuDe, duongDeMuc: c.duong_de_muc, noiDung: c.noi_dung }) &&
+    nhanDangThucThe(c.noi_dung).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION');
+  const suNghiep = tatCa.filter((c) => (deMuc(c) || NHAN_SN.test(boDau(c.noi_dung))) && sach(c));
+
+  /*
+   * TẬP TỔ HỢP (lượt 2, KIEN-TRUC 11.8): đoạn nói chính tinh CÙNG sao lớn trong một câu,
+   * trên toàn kho — lượt 1 chỉ đọc đoạn có chữ "quan lộc / công danh", nên câu kiểu "Liêm
+   * Phủ gặp Tả Hữu thì phú quý" ở phần bàn cung Mệnh bị bỏ (0 mục Liêm Phủ + lục cát).
+   * Bỏ đoạn thuộc mục của cung không liên quan sự nghiệp.
+   */
+  const CUNG_KHAC = /(phu the|tu tuc|huynh de|phu mau|phuc duc|dien trach|tat ach|no boc)/;
+  const CHINH = ['Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ', 'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân'];
+  const DI_KEM = /(ta phu|huu bat|ta huu|van xuong|van khuc|xuong khuc|thien khoi|thien viet|khoi viet|kinh duong|da la|kinh da|hoa tinh|linh tinh|hoa linh|dia khong|dia kiep|khong kiep|hoa loc|hoa quyen|hoa khoa|hoa ky|khoa quyen|loc ton|thien ma|loc ma|tuan|triet)/;
+  const doanToHop = themToHop
+    ? tatCa.filter((c) => {
+        if (suNghiep.includes(c) || CUNG_KHAC.test(boDau(c.duong_de_muc ?? '')) || !sach(c)) return false;
+        return boDau(c.noi_dung).split(/[.;!?\n]/).some((cau) => CHINH.some((x) => cau.includes(boDau(x))) && DI_KEM.test(cau));
+      })
+    : [];
+  /*
+   * TẬP ĐỘ SÁNG (lượt 2b, KIEN-TRUC 11.8): đoạn nói một sao KÈM độ sáng trong cùng câu ("Thái
+   * Dương hãm địa…", "Kình Dương đắc địa…") — sách hay có phần "miếu địa: … / hãm địa: …" cho
+   * từng sao, nằm ngoài cả tập sự nghiệp lẫn tập tổ hợp. Đợt sn-2 chỉ phủ 13,5% điểm cần độ sáng.
+   */
+  const SAO_SANG = ['Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ', 'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân', 'Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp', 'Văn Xương', 'Văn Khúc', 'Thiên Mã', 'Hóa Kỵ'];
+  const TU_SANG = /(mieu|vuong dia|dac dia|ham dia|lac ham|binh hoa)/;
+  const daCo = new Set([...suNghiep, ...doanToHop]);
+  const doanDoSang = chiDoSang || themDoSang
+    ? tatCa.filter((c) => {
+        if (daCo.has(c) || CUNG_KHAC.test(boDau(c.duong_de_muc ?? '')) || !sach(c)) return false;
+        return boDau(c.noi_dung.replace(/-/g, ' ')).split(/[.;!?\n]/).some((cau) => TU_SANG.test(cau) && SAO_SANG.some((x) => cau.includes(boDau(x))));
+      })
+    : [];
+  const chon = (chiDoSang ? doanDoSang : [...suNghiep.sort((a, b) => Number(deMuc(b)) - Number(deMuc(a))), ...doanToHop, ...doanDoSang]).slice(0, gioiHan);
+  console.log(`Đoạn trong kho ${tatCa.length} → chọn ${chon.length} (sự nghiệp ${suNghiep.length}, đề mục sự nghiệp ${suNghiep.filter(deMuc).length}; tổ hợp ${doanToHop.length}; độ sáng ${doanDoSang.length})`);
 
   // Lô theo số ký tự, tối đa `loToiDa` đoạn
   const lo: Doan[][] = [];
@@ -105,6 +150,7 @@ MỖI QUY TẮC = điều kiện máy đọc được + một câu nghĩa + câu
 - "chi": nếu sách nói "tại Dần Thân", "ở Tý Ngọ"… → ["Dần","Thân"]; không thì bỏ.
 - "sao": mỗi sao PHẢI CÓ: {"ten": tên đúng như danh sách dưới, "quanHe": một trong ${QUAN_HE.join(' | ')}, "doSang": ["M"|"V"|"D"|"B"|"H"] nếu sách nói miếu/vượng/đắc/bình/hãm}.
   o-cung = ngay tại cung gốc (đồng cung, thủ, tọa); xung = cung xung chiếu; tam-hop = hai cung tam hợp; tam-phuong = bất kỳ đâu trong tam phương tứ chính ("hội", "gặp", "chiếu" chung chung); giap = kẹp hai bên cung gốc; muon-tu = cung vô chính diệu mượn sao cung xung.
+- "nhom": khi sách liệt kê một NHÓM sao với nghĩa "gặp các sao này" (có một vài là đủ, không cần đủ cả nhóm) — vd. "gặp Kình Đà Hỏa Linh", "hội Tả Hữu Xương Khúc Khôi Việt", "Khoa Quyền Lộc hội chiếu" — ghi {"ten": [các sao], "quanHe": "tam-phuong", "toiThieu": 1 nếu gặp một sao đã đủ, 2 nếu sách nhấn mạnh gặp nhiều}. Chỉ ghi vào "sao" những sao BẮT BUỘC phải có mặt.
 - "khong": các sao phải VẮNG ("không gặp", "chẳng có") — cùng dạng {ten, quanHe}.
 - "thuocTinh": {"tuan": true} / {"triet": true} / {"trangSinh": ["Tuyệt"]} / {"voChinhDieu": true} khi sách nói tới.
 - "gioiTinh": "nam" | "nu" nếu quy tắc chỉ cho một giới.
@@ -118,15 +164,22 @@ ${dict.join(', ')}
 "trich": câu (hoặc vế câu) NGUYÊN VĂN trong đoạn làm căn cứ, chép đúng từng chữ, 12–300 ký tự.
 "doan": số thứ tự đoạn [D#] chứa câu trích.
 
+ĐỘ CHI TIẾT — thư viện dùng để luận ĐÚNG từng lá số, nên điều kiện phải đủ như sách viết:
+- ĐỘ SÁNG BẮT BUỘC khi câu trích hoặc câu ngay trước nói miếu / vượng / đắc địa / bình hòa / hãm (kể cả "sáng sủa" = M/V/D, "mờ ám / lạc hãm" = H) — ghi "doSang" cho đúng sao ấy. Câu nêu HAI trường hợp ("miếu vượng thì…, hãm địa thì…") là HAI quy tắc riêng, mỗi quy tắc một độ sáng và một chiều cát / hung.
+- CUNG: đề mục hoặc ngữ cảnh đoạn trước cho biết đang bàn cung nào (vd. đề mục "QUAN LỘC", "cung Mệnh") thì ghi cung đó, kể cả khi câu trích không lặp lại tên cung.
+- SAO ĐI CÙNG: ghi ĐỦ mọi sao câu trích đặt làm điều kiện ("gặp Tả Hữu, Xương Khúc" → Tả Phù, Hữu Bật, Văn Xương, Văn Khúc; "gặp / hội / chiếu" chung chung → tam-phuong). Sao phải vắng ("không gặp sát tinh", "chẳng bị Không Kiếp") → "khong".
+- CÁCH CỤC CÓ TÊN (Tử Phủ Vũ Tướng, Sát Phá Tham, Cơ Nguyệt Đồng Lương, Cự Nhật, Nhật Nguyệt…): các sao của cách nằm rải trong tam phương — ghi sao đóng tại cung gốc là "o-cung" (tối đa HAI chính tinh), các sao còn lại "tam-phuong". Chỉ có những cặp chính tinh engine an được mới đồng cung.
+- Chính tinh gặp sát tinh / Hóa Kỵ / Tuần / Triệt thì ghi cả điều kiện đó — đó thường là chỗ nghĩa đổi chiều.
+
 "A hay B", "A hoặc B" là HAI quy tắc riêng — tách ra, mỗi quy tắc một sao; chỉ gộp vào một quy tắc khi sách nói các sao phải CÙNG có mặt.
 "y" nói ĐẶC TÍNH làm việc / công danh mà sao cho thấy; tên một nghề cụ thể chỉ là ví dụ và chỉ nêu khi chính câu trích nêu nghề đó.
 
-CHỈ trích quy tắc có điều kiện sao cụ thể và nói về sự nghiệp / công danh / năng lực làm việc. Bỏ lời bàn chung, lịch sử, cách an sao. Không bịa: đoạn không có quy tắc nào thì trả mảng rỗng.
+CHỈ trích quy tắc có điều kiện sao cụ thể và nói về sự nghiệp / công danh / năng lực làm việc (quy tắc ở cung Mệnh nói "phú quý", "quyền chức", "hiển đạt", "làm nên" cũng tính). Bỏ lời bàn chung, lịch sử, cách an sao. Không bịa: đoạn không có quy tắc nào thì trả mảng rỗng.
 
-Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao": [...], "khong": [...], "thuocTinh": {...}, "gioiTinh": "...", "y": "...", "chieu": "...", "muc": "...", "cheDo": "...", "trich": "..."} ]}`;
+Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao": [...], "nhom": [...], "khong": [...], "thuocTinh": {...}, "gioiTinh": "...", "y": "...", "chieu": "...", "muc": "...", "cheDo": "...", "trich": "..."} ]}`;
 
   type Tho = Record<string, unknown>;
-  const ungVien: { tho: Tho; doan: Doan }[] = [];
+  const ungVien: { tho: Tho; doan: Doan; lo: Doan[] }[] = [];
   const token = { vao: 0, ra: 0, dem: 0 };
   let loi = 0;
   let k = 0;
@@ -134,7 +187,10 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
     while (k < lo.length) {
       const ds = lo[k++];
       const user = ds
-        .map((d, i) => `[D${i + 1}] (đề mục: ${d.duong_de_muc ?? '—'})\n${d.noi_dung}`)
+        .map((d, i) => {
+          const nc = nguCanhTruoc(d);
+          return `[D${i + 1}] (đề mục: ${d.duong_de_muc ?? '—'})${nc ? `\n(ngữ cảnh đoạn trước — KHÔNG trích từ đây: …${nc})` : ''}\n${d.noi_dung}`;
+        })
         .join('\n\n');
       try {
         const kq = await goiVoiFallback({ system, user, maxTokens: 5000 }, undefined, 90_000);
@@ -145,7 +201,7 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
         const mang = Array.isArray(o?.muc) ? (o!.muc as Tho[]) : [];
         for (const t of mang) {
           const d = ds[Number(t.doan) - 1];
-          if (d) ungVien.push({ tho: t, doan: d });
+          if (d) ungVien.push({ tho: t, doan: d, lo: ds });
         }
       } catch (e) {
         loi++;
@@ -161,7 +217,13 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
   const mang = (v: unknown) => (Array.isArray(v) ? v : []);
   const lyDoTruot = new Map<string, number>();
   const dat: MucThuVien[] = [];
-  for (const { tho: t, doan } of ungVien) {
+  for (const { tho: t, doan: doanGhi, lo: loCua } of ungVien) {
+    // Model hay ghi nhầm số [D#] hoặc trích từ ngữ cảnh đoạn trước — tìm đoạn THẬT chứa câu trích
+    // trong lô và các đoạn liền trước (lượt thử 11.8: 17 / 48 trượt "không có nguyên văn")
+    const trichTho = String(t.trich ?? '');
+    const doan =
+      [doanGhi, ...loCua, ...loCua.map((c) => theoViTri.get(`${c.document_id}#${(c.thu_tu ?? 0) - 1}`)).filter((c): c is Doan => Boolean(c))]
+        .find((c) => coNguyenVan(trichTho, c.noi_dung)) ?? doanGhi;
     const dieuKien = {
       cung: mang(t.cung).filter((x): x is string => typeof x === 'string'),
       chi: mang(t.chi).filter((x): x is string => typeof x === 'string'),
@@ -179,15 +241,43 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
       ...(t.gioiTinh === 'nam' || t.gioiTinh === 'nu' ? { gioiTinh: t.gioiTinh as 'nam' | 'nu' } : {}),
     };
     if (!dieuKien.chi.length) delete (dieuKien as { chi?: string[] }).chi;
+    // Cung trống mà đề mục nêu đúng một cung → lấy cung ấy (lượt 1: 43% mục để "mọi cung")
+    const cungDm = cungTuDeMuc(doan.duong_de_muc);
+    if (!dieuKien.cung.length && cungDm) dieuKien.cung = [cungDm];
     // Câu trích nói "vô chính diệu" mà điều kiện quên ghi → khớp nhầm cung có chính tinh (thấy ở lượt sn-1)
     if (/vo chinh dieu|khong co chinh tinh/.test(boDau(`${t.trich ?? ''} ${t.y ?? ''}`))) {
       (dieuKien as { thuocTinh?: MucThuVien['dieuKien']['thuocTinh'] }).thuocTinh = { ...(dieuKien as { thuocTinh?: object }).thuocTinh, voChinhDieu: true };
     }
     if (!dieuKien.khong.length) delete (dieuKien as { khong?: unknown[] }).khong;
+    // Nhóm "ít nhất k": từ model, và luật dự phòng tất định — ≥ 3 sao cùng một nhóm (lục sát / lục
+    // cát / tam hoá) cùng quan hệ ngoài cung gốc là cách sách liệt kê "gặp các sao này", không
+    // phải "phải có đủ" (lượt thử 11.8: "Kình Đà Hỏa Linh" ghi thành bốn điều kiện bắt buộc)
+    const nhom: NonNullable<MucThuVien['dieuKien']['nhom']> = mang(t.nhom)
+      .filter((x): x is Tho => !!x && typeof x === 'object' && Array.isArray((x as Tho).ten))
+      .map((x) => ({
+        ten: mang(x.ten).map(String),
+        quanHe: String(x.quanHe ?? 'tam-phuong') as MucThuVien['dieuKien']['sao'][number]['quanHe'],
+        toiThieu: Math.max(1, Math.min(Number(x.toiThieu) || 1, mang(x.ten).length)),
+      }));
+    for (const [nhomTen, ds, toiThieu] of NHOM_DU_PHONG) {
+      const trong = dieuKien.sao.filter((s) => ds.includes(s.ten) && s.quanHe !== 'o-cung' && !s.doSang?.length);
+      const theoQh = new Map<string, typeof trong>();
+      for (const s of trong) theoQh.set(s.quanHe, [...(theoQh.get(s.quanHe) ?? []), s]);
+      for (const [qh, cac] of theoQh) {
+        if (cac.length < 3) continue;
+        nhom.push({ ten: cac.map((s) => s.ten), quanHe: qh as MucThuVien['dieuKien']['sao'][number]['quanHe'], toiThieu });
+        dieuKien.sao = dieuKien.sao.filter((s) => !cac.includes(s));
+        void nhomTen;
+      }
+    }
+    if (nhom.length) (dieuKien as { nhom?: typeof nhom }).nhom = nhom;
     const cheDo = (['add', 'modify', 'neutralize', 'override'].includes(String(t.cheDo)) ? t.cheDo : 'add') as MucThuVien['cheDo'];
     const y = String(t.y ?? '').trim();
     const trich = String(t.trich ?? '').trim();
+    dienDoSang(dieuKien, trich);
+    dienDoSangNguCanh(dieuKien, doan.duong_de_muc, doan.noi_dung, trich);
     const kq = kiemMuc({ dieuKien, y, cheDo, trich }, { noiDung: doan.noi_dung, duongDeMuc: doan.duong_de_muc });
+    if (!kq.dat && process.env.GO_LOI && kq.lyDo.some((l) => l.includes(process.env.GO_LOI!))) console.log('GO:', JSON.stringify({ sao: t.sao, nhom: t.nhom, trich: String(t.trich).slice(0, 80) }));
     if (!kq.dat) {
       for (const l of kq.lyDo) {
         const loai = l.replace(/:.*$/, '').replace(/ \d+ chữ.*/, ' (độ dài)').replace(/không thấy nhắc cung .*/, 'không thấy nhắc cung').replace(/không thấy nhắc .*/, 'không thấy nhắc sao');
@@ -239,7 +329,8 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
 
   // Thứ tự id ổn định: tổ hợp trước, rồi theo tên sao
   gop.sort((a, b) => saoCuaMuc(b).length - saoCuaMuc(a).length || saoCuaMuc(a).join().localeCompare(saoCuaMuc(b).join()) || a.y.localeCompare(b.y));
-  gop.forEach((m, i) => (m.id = `TV-SN-${String(i + 1).padStart(4, '0')}`));
+  const tienTo = dot === 'sn-1' ? 'TV-SN' : `TV-${dot.toUpperCase()}`;
+  gop.forEach((m, i) => (m.id = `${tienTo}-${String(i + 1).padStart(4, '0')}`));
 
   // ---------- 6. Đích cho mục khác add ----------
   let epAdd = 0;

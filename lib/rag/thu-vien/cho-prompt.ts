@@ -13,8 +13,12 @@ import { saoCuaMuc, type MucThuVien } from './kieu';
  * kết quả đã xếp, không nhận một đống nghĩa rời để tự chọn.
  */
 
-/** Trần số mục mỗi câu — theo ngân sách chữ: ~14 câu nghĩa ≈ 500 chữ, ít hơn tám đoạn sách thô */
-export const TRAN_MUC = 14;
+/**
+ * Trần số mục mỗi câu — theo ngân sách chữ: ~18 câu nghĩa ≈ 650 chữ, vẫn ít hơn tám đoạn sách thô.
+ * 14 → 18 (lượt 2, KIEN-TRUC 11.8): đáp án chuyên gia tổng hợp 3–7 sao lớn mỗi điểm — bài cần đủ
+ * THÀNH PHẦN (từng sao đúng độ sáng) để tự tổng hợp, không có quy tắc sách nào gộp sẵn năm sao.
+ */
+export const TRAN_MUC = 18;
 
 const BAC: Record<string, number> = { 'cot-loi': 3, 'chuyen-gia-duyet': 2, 'tham-khao': 1, 'ho-tro': 0 };
 const MUC: Record<string, number> = { manh: 2, vua: 1, nhe: 0 };
@@ -77,8 +81,14 @@ export function dungKhoiThuVien(vao: {
     k.cung === vao.cungChinh && k.muc.dieuKien.sao.some((s) => CHINH_TINH.has(s.ten) && (s.quanHe === 'o-cung' || s.quanHe === 'muon-tu'));
   const coDoSang = (k: MucKhop) => k.muc.dieuKien.sao.some((s) => CHINH_TINH.has(s.ten) && s.doSang?.length);
   const lon = (k: MucKhop) => saoCuaMuc(k.muc).filter((s) => SAO_LON.has(s)).length;
+  // Sao lớn KHÔNG phải chính tinh đóng tại cung chính (Kình Dương hãm tại Quan Lộc…) — lượt 1 lá 5: 0 mục vào prompt
+  const saoLonTaiGoc = (k: MucKhop) =>
+    k.cung === vao.cungChinh && k.muc.dieuKien.sao.some((s) => SAO_LON.has(s.ten) && !CHINH_TINH.has(s.ten) && s.quanHe === 'o-cung');
+  const coSangBatKy = (k: MucKhop) => k.muc.dieuKien.sao.some((s) => s.doSang?.length);
   const diem = (k: MucKhop) =>
     (coChinhTaiGoc(k) ? 400 + (coDoSang(k) ? 60 : 0) : 0) +
+    (saoLonTaiGoc(k) ? 250 + (coSangBatKy(k) ? 60 : 0) : 0) +
+    (coSangBatKy(k) ? 40 : 0) +
     (saoCuaMuc(k.muc).some((s) => CHINH_TINH.has(s)) && lon(k) >= 2 ? 200 : 0) +
     (lon(k) >= 1 ? 100 : 0) +
     (k.cung === vao.cungChinh ? 20 : 0) +
