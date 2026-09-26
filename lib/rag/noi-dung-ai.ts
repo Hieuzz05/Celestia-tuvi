@@ -35,7 +35,13 @@ export type BeMat =
    */
   | 'ban-doc-sau'
   /** Luận giải v3 — đệm theo NHÓM câu hỏi (tổng quan / từng chủ đề chuyên sâu) */
-  | 'luan-giai-v3';
+  | 'luan-giai-v3'
+  /**
+   * KHÔNG phải nội dung — sổ đếm lá số mới mà khách chưa đăng nhập mở trong
+   * ngày (lib/auth/gioi-han-khach.ts). Mượn bảng này vì nó đã có đúng khoá duy
+   * nhất cần dùng; chart_hash ở đây là băm IP, không phải băm lá số.
+   */
+  | 'gioi-han-khach';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

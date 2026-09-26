@@ -267,6 +267,12 @@ function TrangLaSo() {
    * gấp đôi lượt gọi model cho cùng một chỗ trên trang.
    */
   const [v3HongKhoa, setV3HongKhoa] = useState<string | null>(null);
+  /*
+   * Khách chưa đăng nhập hết lượt lá số mới trong ngày (gioi-han-khach.ts):
+   * lùi về bản tất định như khi v3 hỏng — bản đó không gọi model — và nói rõ
+   * vì sao, kèm lối đăng nhập.
+   */
+  const [gioiHanKhoa, setGioiHanKhoa] = useState<string | null>(null);
   const dungV3 = ngonNgu === 'vi';
   const canBangCu = !dungV3 || (khoaSau !== null && v3HongKhoa === khoaSau);
   const tongQuan = useTongQuanV3(
@@ -280,7 +286,10 @@ function TrangLaSo() {
           namXem,
         }
       : null,
-    () => setV3HongKhoa(khoaSau)
+    (gioiHanKhach) => {
+      setV3HongKhoa(khoaSau);
+      if (gioiHanKhach) setGioiHanKhoa(khoaSau);
+    }
   );
 
   useEffect(() => {
@@ -515,6 +524,23 @@ function TrangLaSo() {
                 {t.quickRead.danhGiaMo}
               </p>
             </div>
+            {gioiHanKhoa !== null && gioiHanKhoa === khoaSau && (
+              <div className="card flex flex-col gap-[8px]" style={{ borderTop: '3px solid var(--accent)' }}>
+                <p className="body-text" style={{ color: 'var(--fg)' }}>
+                  Hôm nay bạn đã mở khá nhiều lá số mới khi chưa đăng nhập, nên phần dưới đây là bản đọc nhanh.
+                </p>
+                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  Đăng nhập miễn phí để Celes viết luận giải tổng quan cho lá số này. Những lá số bạn đã mở trước đó vẫn xem lại được.
+                </p>
+                <Link
+                  href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
+                  className="btn-outline btn-sm self-start"
+                  onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'gioi_han_khach' })}
+                >
+                  Đăng nhập để đọc tiếp
+                </Link>
+              </div>
+            )}
             {/* Ba thẻ đầu: v3 viết từ lá số; chỉ khi v3 hỏng mới lùi về thẻ khuôn cũ */}
             {!canBangCu ? (
               <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
