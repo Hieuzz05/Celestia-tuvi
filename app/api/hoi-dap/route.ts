@@ -124,9 +124,9 @@ export async function POST(req: Request) {
       // Để Celes biết bảng tám lĩnh vực đã nói gì với chính người này
       chartHash,
     });
-    await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
 
-    // Ghi vết sau khi đã chốt: nhật ký hỏng không được làm mất câu trả lời.
+    // Ghi vết trước khi rẽ nhánh: nhật ký hỏng không được làm mất dấu vết để chẩn đoán sau này,
+    // dù lượt này có chốt hay hoàn lại.
     await ghiVetTraLoi({
       requestId,
       chartHash,
@@ -138,6 +138,31 @@ export async function POST(req: Request) {
       doTreMs: kq.doTreMs.tong,
       kiemDuyet: kq.kiemDuyet ?? undefined,
     });
+
+    /*
+     * MODEL TRẢ JSON GÃY hoặc BÀI TRỐNG NGHĨA (27/09/2026 — rà thấy khi kiểm hội thoại dài).
+     *
+     * `traLoiCoCanCu` cố ý trả `van: ''` khi văn bản thô trông như JSON nhưng đọc không được
+     * (xem lib/rag/doc-json.ts::laChuoiJson) — lý do là một khối JSON dở dang còn tệ hơn không có
+     * gì. Nhưng route này trước đây ship thẳng chuỗi rỗng đó cho người đọc như một câu trả lời
+     * bình thường (HTTP 200): người dùng thấy một bong bóng chat TRẮNG, không có chip, không có
+     * lỗi, không có cách hỏi lại — và lượt hỏi của họ vẫn bị trừ.
+     *
+     * Coi đây là một lượt gọi HỎNG, giống hệt nhánh lỗi ở catch bên dưới: trả lại lượt (không gọi
+     * `chotCauHoi`, không đánh dấu thành công), rồi trả lỗi để giao diện hiện đúng chỗ retry.
+     * Đo lại (27/09/2026): không tái hiện được bằng cách lặp lại đúng bối cảnh 6 lần — đây là một
+     * lần hỏng hiếm ở phía model, không phải lỗi cấu trúc; nhưng đường lùi này vẫn cần có, vì lần
+     * hỏng kế tiếp — hiếm tới đâu — không được phép lại là một bong bóng trắng im lặng.
+     */
+    if (!kq.van) {
+      await hoanCauHoi(cho.nguon, requestId);
+      return NextResponse.json(
+        { loi: 'Celes chưa trả lời được câu này. Bạn hỏi lại giúp.', chuaTraLoiDuoc: true },
+        { status: 502 }
+      );
+    }
+
+    await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
 
     /*
      * "Muốn biết vì sao không?" giờ CHỈ dành cho quản trị.

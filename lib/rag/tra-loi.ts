@@ -315,10 +315,22 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * Hết chỗ giữa chừng thì JSON gãy, `docTraLoi` trả null, và đường lùi đổ
    * nguyên chuỗi JSON dở dang ra trước mặt người đọc.
    */
-  const kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
+  let kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
+  let coCauTruc = docTraLoi(kq.text);
+  /*
+   * JSON gãy: thử lại NGUYÊN LƯỢT một lần, cùng cách `lib/rag/v3/index.ts` đã làm.
+   *
+   * Sửa 27/09/2026 — trước đó chat không có vòng thử lại nào: gãy một lần là
+   * rơi thẳng xuống đường lùi bên dưới, dù đây thường chỉ là một lần model gõ
+   * lệch, gọi lại là ra ngay. Chỉ thử lại khi văn bản thô THẬT SỰ trông như
+   * JSON (xem `laChuoiJson`) — văn xuôi lệch khuôn thì gọi lại cũng vô ích, để
+   * đường lùi bên dưới xử theo đúng lý lẽ "thà có chữ".
+   */
+  if (!coCauTruc && laChuoiJson(kq.text)) {
+    kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
+    coCauTruc = docTraLoi(kq.text);
+  }
   const doTreModel = Date.now() - truocModel;
-
-  const coCauTruc = docTraLoi(kq.text);
 
   /*
    * Model không trả về JSON đọc được: vẫn trả chữ, nhưng KHÔNG trả chữ là JSON.
@@ -330,6 +342,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    *
    * Trả chuỗi rỗng thì giao diện hiện phần lỗi và người ta biết để hỏi lại —
    * hơn hẳn việc đọc một màn dữ liệu thô rồi mất lòng tin vào cả sản phẩm.
+   * `van` rỗng ở đây là TÍN HIỆU CÓ CHỦ ĐÍCH cho lớp gọi (route API): coi lượt
+   * này là hỏng, hoàn lại lượt cho người dùng — xem app/api/hoi-dap/route.ts.
    */
   if (!coCauTruc) {
     return {
