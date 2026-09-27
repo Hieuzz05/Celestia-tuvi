@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| — | (chưa có việc nào đang chạy) | — | — | — |
+| Claude (máy 1) | Cải thiện Core Web Vitals + a11y + SEO theo đo Lighthouse production (LCP, CLS /la-so, lỗi 401 diem-noi-bat, thứ bậc tiêu đề, sitemap/robots) | viec/core-web-vitals | app/la-so/page.tsx, components/home/TrangHomeNoiDung.tsx, components/landing/TrangChuNoiDung.tsx, components/ChuyenNgonNgu.tsx, app/layout.tsx, app/sitemap.ts, app/robots.ts, app/api/diem-noi-bat | 27/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
