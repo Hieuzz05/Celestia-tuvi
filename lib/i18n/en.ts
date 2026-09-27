@@ -37,7 +37,7 @@ export const en: TuDien = {
     banDo: 'Explore the map',
     hanhTrinh: 'Journey',
     hoiCeles: 'Ask Celes',
-    ketNoi: 'Connections',
+    ketNoi: 'Relationships',
     nguoiCuaToi: 'Charts',
     taiKhoan: 'Account',
     quanTri: 'Admin',

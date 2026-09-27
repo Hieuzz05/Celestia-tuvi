@@ -114,10 +114,16 @@ Cách sửa lỗi `set-state-in-effect` khi cần nạp dữ liệu lúc mở tr
 RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt state trong `.then` của effect. Xem
 `app/admin/models/page.tsx` hoặc `app/admin/knowledge/page.tsx`.
 
-## App di động — ĐANG TẠM DỪNG
+## App di động — ĐANG LÀM (GĐ1, từ 27/09/2026)
 
-`apps/celes-app/` (Expo + expo-router) tạm dừng: chưa có dự định đẩy lên store. Đừng làm tiếp
-tính năng cho nó. Việc di động hiện tại là **bản web khi mở trên điện thoại**.
+`apps/celes-app/` (Expo + expo-router) mở lại ngày 27/09/2026: chủ dự án chọn dựng app riêng
+(không PWA), iOS trước, một bộ code cho cả Android. Luồng và giao diện ĐÃ DUYỆT nằm trên canvas
+"Celes iOS — luồng app" (12 màn, kèm ghi chú token và ba giọng viết). Chốt:
+- Cùng design system với web: bo góc thẻ 14 / nút 8 / ô nhập 6, nút `#D32298`, pill chỉ cho lựa
+  chọn. Lá số hiện ĐẦY ĐỦ như web (cỡ chữ chế độ ô hẹp), mạnh–yếu có biểu đồ radar như web.
+- Tab thứ tư tên "Mối quan hệ" (web cũng đổi theo).
+- Thanh toán TẠM ẨN trên iOS; mở lại thì dùng mua trong app (quy định 3.1.1), không PayOS.
+- Làm bản nội bộ trước (Expo Go → TestFlight khi có tài khoản Apple Developer).
 
 Luật màn hẹp (390px không cuộn ngang, vùng chạm ≥ 44px): xem `docs/bay/giao-dien.md`.
 Đọc `apps/celes-app/README.md` trước nếu buộc phải sửa app.

@@ -162,7 +162,7 @@ export default function KetNoiPage() {
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
-        <p className="eyebrow">KẾT NỐI</p>
+        <p className="eyebrow">MỐI QUAN HỆ</p>
         <h1 className="heading mt-[10px]">Hai người có hợp nhau không?</h1>
         <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
           Cùng Celes xem hai lá số để hiểu hai người hợp nhau ở điểm nào, dễ bất đồng vì đâu và chuyện tình cảm, hợp tác hay gia đình có thể diễn biến ra sao.
