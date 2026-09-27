@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | App di động gọi được API bằng token đăng nhập (Bearer) — nửa phía máy chủ | `viec/app-gd1` (worktree `D:/SAPP BA/tuvi-ai-app`) | `lib/supabase/server.ts` | 27/09 22:30 |
+| — | (chưa có việc nào đang chạy) | — | — | — |
 
 ## Đang vướng — đừng đụng vào
 
@@ -30,6 +30,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| App di động gọi API bằng token đăng nhập (Bearer) — **mới nửa máy chủ**, nhánh `viec/app-gd1` chưa gộp. Nửa app chờ chọn cách đăng nhập trên di động | `0992c1b` | 27/09 |
 | Thêm `HUONG-DAN-AI-AGENT.md` (hướng dẫn dùng .claude/agents cho người mới) | `ef17cb2` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-152 sửa bong bóng chat TRẮNG ở Hỏi Celes khi model trả JSON gãy — `tra-loi.ts` thử lại nguyên lượt 1 lần trước khi bỏ cuộc; `van` rỗng thì `route.ts` coi là lượt hỏng, hoàn lại lượt (không trừ hạn mức) và trả lỗi rõ thay vì 200 rỗng. Đã rà toàn bộ bề mặt AI khác — không có lỗi tương tự (các nơi khác đã trả lỗi rõ hoặc lặng lẽ giữ bản tất định là đúng thiết kế). Không tái hiện được lỗi gốc bằng API thật sau 6 lần thử cùng bối cảnh — xác nhận đúng bằng đọc mã, cùng khuôn với nhánh catch lỗi sẵn có | `d0e6f20` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-150 sửa mất trí nhớ hội thoại Hỏi Celes khi bấm chip gợi ý thứ hai — client gửi cờ `tuChip` (biết chắc, không đoán bằng chữ), cửa sổ "mạch đang nói dở" 1→3 cặp (`SO_CAP_GIU_KHI_NOI_TIEP`, `tiep-noi.ts`), trần lịch sử 10→60 tin nhắn, `gomDieuTuKe` 5→8 sự việc. Đã kiểm bằng API thật (~115 nghìn token): đúng kịch bản đã báo lỗi + kịch bản kéo dài (nhớ đúng sau 3 lượt đổi chủ đề). Phát hiện phụ chưa sửa: một lượt trong phiên thử trả `van` rỗng — cần rà riêng, không liên quan trí nhớ. CEL-151 đổi tiêu đề/mô tả trang Kết nối | `3663f2d` | 27/09/2026 |
