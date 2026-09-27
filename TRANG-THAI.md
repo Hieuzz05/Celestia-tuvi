@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | App di động gọi được API bằng token đăng nhập (Bearer) — nửa phía máy chủ | `viec/app-gd1` (worktree `D:\SAPP BA	uvi-ai-app`) | `lib/supabase/server.ts` | 27/09 22:30 |
+| Claude (máy 1) | App di động gọi được API bằng token đăng nhập (Bearer) — nửa phía máy chủ | `viec/app-gd1` (worktree `D:/SAPP BA/tuvi-ai-app`) | `lib/supabase/server.ts` | 27/09 22:30 |
 
 ## Đang vướng — đừng đụng vào
 
