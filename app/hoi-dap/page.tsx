@@ -187,7 +187,14 @@ function TrangHoiDap() {
     }
   };
 
-  const hoi = async (noiDung: string) => {
+  /**
+   * `tuChip`: câu hỏi này đến từ một chip gợi ý do chính Celes vừa đề xuất
+   * (goiYTiep), không phải người dùng tự gõ. Máy chủ dùng cờ này để BIẾT CHẮC
+   * đây là câu nối tiếp, thay vì đoán qua văn bản — sửa lỗi 27/09/2026: nhiều
+   * chip là câu hỏi trọn vẹn trên năm từ ("Vậy tôi có nên chuyển việc không?")
+   * nên đoán bằng chữ từng xếp nhầm chúng là "chủ đề mới" và xoá sạch trí nhớ.
+   */
+  const hoi = async (noiDung: string, tuChip = false) => {
     const cau = noiDung.trim();
     if (!cau || dangChay) return;
     const { ngay, thang, nam } = tachNgaySinh(form.ngaySinh);
@@ -224,6 +231,7 @@ function TrangHoiDap() {
           hoTen: form.hoTen,
           cauHoi: cau,
           lichSu,
+          tuChip,
         }),
       });
       const data = await res.json();
@@ -460,7 +468,7 @@ function TrangHoiDap() {
                     {i === tinNhan.length - 1 && !dangChay && !!m.goiYTiep?.length && (
                       <div className="flex flex-wrap gap-[8px] pt-[2px]">
                         {m.goiYTiep.map((g) => (
-                          <button key={g} onClick={() => hoi(g)} className="pill-tag">
+                          <button key={g} onClick={() => hoi(g, true)} className="pill-tag">
                             {g}
                           </button>
                         ))}

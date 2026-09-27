@@ -62,11 +62,13 @@ export interface LuotChat {
 /**
  * Số lượt đọc lại khi mở trang.
  *
- * Hai mươi lượt là khoảng mười lượt hỏi đáp — đủ dài để giữ mạch một buổi, đủ
- * ngắn để không phải cuộn qua chuyện của tuần trước mới thấy câu vừa hỏi.
- * Tuyến `/api/hoi-dap` dù sao cũng chỉ nhận 10 lượt cuối vào prompt.
+ * 60 (30 lượt hỏi đáp) — nâng từ 20 ngày 27/09/2026 cùng lúc với trần của tuyến
+ * `/api/hoi-dap` (xem route.ts), để mở lại trang không cắt mất đúng phần lịch
+ * sử mà một phiên đang mở vẫn gửi được. Đây là khung hiển thị VÀ là nguồn cho
+ * "điều người đọc tự kể" — dài hơn không tốn thêm lượt gọi model, chỉ là đọc
+ * thêm vài dòng text từ chính bảng đã có.
  */
-const SO_LUOT_DOC = 20;
+const SO_LUOT_DOC = 60;
 
 interface DongChat {
   vai_tro: 'nguoi-dung' | 'tro-ly';
