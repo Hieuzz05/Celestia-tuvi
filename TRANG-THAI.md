@@ -22,6 +22,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Chỗ nào | Vướng gì | Ai biết rõ |
 |---|---|---|
+| **Hai phiên Claude cùng chạy trong MỘT thư mục `D:\SAPP BA	uvi-ai`** | 27/09 ~21:50–21:52: máy 1 (mình) và dell-02 cùng `git checkout` trong thư mục chính cùng lúc → hai nhánh bị lẫn commit của nhau (`viec/huong-dan-ai-agent` từng trỏ nhầm sang commit app di động của dell-02, ngược lại commit tài liệu của mình rơi vào `viec/app-gd1`). Không mất dữ liệu — dell-02 giữ bản sao lưu ở nhánh `sao-luu/huong-dan-917d449`, mình cherry-pick lại. dell-02 đã chuyển sang worktree riêng `D:\SAPP BA	uvi-ai-app`. **Từ giờ: chỉ một phiên checkout trong thư mục chính tại một thời điểm; phiên thứ hai dùng `git worktree add`** | Claude (máy 1) + dell-02 |
 | ~~OpenAI hết credit (26/09/2026)~~ — **ĐÃ XỬ LÝ**: chủ dự án đã nạp credit (26/09). Dự phòng (groq, gemini, cerebras) vẫn cần trả phí mới chạy thật | — | Claude (máy 1) |
 | **Cerebras hết tiền** | Cron sức khoẻ bắt được "Payment required" — model nằm trong chuỗi dự phòng nhưng không dùng được. Nạp tiền hoặc tắt nó trong trang quản trị models (ĐỪNG sửa ai_model_configs bằng code) | Claude (máy 1) |
 
@@ -29,6 +30,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| Thêm `HUONG-DAN-AI-AGENT.md` (hướng dẫn dùng .claude/agents cho người mới) | `ef17cb2` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-152 sửa bong bóng chat TRẮNG ở Hỏi Celes khi model trả JSON gãy — `tra-loi.ts` thử lại nguyên lượt 1 lần trước khi bỏ cuộc; `van` rỗng thì `route.ts` coi là lượt hỏng, hoàn lại lượt (không trừ hạn mức) và trả lỗi rõ thay vì 200 rỗng. Đã rà toàn bộ bề mặt AI khác — không có lỗi tương tự (các nơi khác đã trả lỗi rõ hoặc lặng lẽ giữ bản tất định là đúng thiết kế). Không tái hiện được lỗi gốc bằng API thật sau 6 lần thử cùng bối cảnh — xác nhận đúng bằng đọc mã, cùng khuôn với nhánh catch lỗi sẵn có | `d0e6f20` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-150 sửa mất trí nhớ hội thoại Hỏi Celes khi bấm chip gợi ý thứ hai — client gửi cờ `tuChip` (biết chắc, không đoán bằng chữ), cửa sổ "mạch đang nói dở" 1→3 cặp (`SO_CAP_GIU_KHI_NOI_TIEP`, `tiep-noi.ts`), trần lịch sử 10→60 tin nhắn, `gomDieuTuKe` 5→8 sự việc. Đã kiểm bằng API thật (~115 nghìn token): đúng kịch bản đã báo lỗi + kịch bản kéo dài (nhớ đúng sau 3 lượt đổi chủ đề). Phát hiện phụ chưa sửa: một lượt trong phiên thử trả `van` rỗng — cần rà riêng, không liên quan trí nhớ. CEL-151 đổi tiêu đề/mô tả trang Kết nối | `3663f2d` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION — CEL-150 Core Web Vitals / a11y / SEO**: font tự phục vụ app/fonts (đừng quay lại next/font/google), inlineCss, main min-h-svh chống dịch chân trang, supabase-js nạp khi cần (`laySupabaseClient()` async — KHÔNG còn `taoSupabaseClient`), token `--accent-chu` cho chữ hồng, sitemap/robots. Chưa làm: tách route [lang] (chờ chủ dự án) | `84facc5` | 27/09/2026 |
