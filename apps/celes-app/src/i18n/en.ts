@@ -34,7 +34,7 @@ export const en: TuDienApp = {
     tenNhan: 'Your name',
     tenGoiY: 'Only so Celes can address you naturally.',
 
-    ngayTieuDe: 'The day this story began',
+    ngayTieuDe: 'Your date of birth',
     ngayMoTa: 'This lets Celes build a map that belongs to you.',
     ngayNhan: 'Date of birth',
     ngayVD: 'DD/MM/YYYY',
@@ -138,16 +138,11 @@ export const en: TuDienApp = {
   banDo: {
     tieuDe: 'My map',
     phu: 'Traditional chart',
-    cheDo: {
-      deHieu: 'Simple',
-      coDien: 'Classic',
-      chuyenSau: 'Expert',
-    },
     menh: 'Self',
     than: 'Body',
     cuc: 'Element',
     banMenh: 'Nature',
-    xemCoDien: 'View the classic chart',
+    trangSinh: 'Life stage',
     hoiVeCung: 'Ask Celes about this house',
   },
 

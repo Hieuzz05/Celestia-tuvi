@@ -36,7 +36,7 @@ export const vi = {
     tenNhan: 'Tên của bạn',
     tenGoiY: 'Chỉ dùng để Celes xưng hô cho tự nhiên.',
 
-    ngayTieuDe: 'Ngày bạn bắt đầu câu chuyện này',
+    ngayTieuDe: 'Ngày sinh của bạn',
     ngayMoTa: 'Thông tin này giúp Celes tạo bản đồ của riêng bạn.',
     ngayNhan: 'Ngày sinh',
     ngayVD: 'NN/TT/NNNN',
@@ -140,16 +140,11 @@ export const vi = {
   banDo: {
     tieuDe: 'Bản đồ của tôi',
     phu: 'Lá số Tử Vi',
-    cheDo: {
-      deHieu: 'Dễ hiểu',
-      coDien: 'Cổ điển',
-      chuyenSau: 'Chuyên sâu',
-    },
     menh: 'Mệnh',
     than: 'Thân',
     cuc: 'Cục',
     banMenh: 'Bản mệnh',
-    xemCoDien: 'Xem lá số cổ điển',
+    trangSinh: 'Tràng sinh',
     hoiVeCung: 'Hỏi Celes về cung này',
   },
 

@@ -138,9 +138,11 @@ gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
 
 ## Việc còn dang dở
 
-Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Ba việc lớn nhất còn lại: lớp NGÀY của Hành
-trình (cần đối chiếu quy tắc an ngày hạn), bản mobile của mệnh bàn (mini-chart + carousel 12 cung),
-và cổng Gate 2 cho gói Plus. Hai tài liệu định hướng gốc:
+Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Hai việc lớn nhất còn lại: lớp NGÀY của Hành
+trình (cần đối chiếu quy tắc an ngày hạn) và cổng Gate 2 cho gói Plus. Mệnh bàn mobile (`app/ban-do.tsx`
+trong `apps/celes-app`) đã có bản đầu (27/09/2026): lưới 4×4 tĩnh, MỘT phiên bản đầy đủ thông tin
+(không chia Dễ hiểu/Cổ điển/Chuyên sâu như web), chữ rất nhỏ (token `micro`/`nano` — chỉ dùng ở màn
+này) để fit trọn 12 cung trên một màn hình dọc, không cuộn ngang. Hai tài liệu định hướng gốc:
 `D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf` và
 `D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (bản sau thay thế bản trước).
 

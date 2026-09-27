@@ -748,7 +748,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Hành trình lớp NGÀY | Chưa — cần đối chiếu quy tắc an ngày hạn với bản mẫu trước |
 | Mệnh bàn 3 chế độ Dễ hiểu / Cổ điển / Chuyên sâu | Xong — ba mức độ dày, an sao không đổi |
 | Web trên màn hình điện thoại | Xong — không trang nào tràn ngang, vùng chạm 45px |
-| Mệnh bàn bản mobile (mini-chart + carousel 12 cung) | Chưa — hiện giữ tỉ lệ 0.5 và cho vuốt ngang trong khung riêng |
+| Mệnh bàn bản mobile (`apps/celes-app/app/ban-do.tsx`) | Bản đầu xong (27/09/2026) — lưới 4×4 tĩnh, một phiên bản đầy đủ, chữ rất nhỏ, fit một màn hình dọc |
 | App Expo (`apps/celes-app/`) | **Tạm dừng** — chưa có dự định đẩy lên store |
 | Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
 | Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |

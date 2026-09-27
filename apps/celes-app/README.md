@@ -53,8 +53,12 @@ src/
 1. **Đúng năm tab.** Không đưa "Luận giải chi tiết", "Hỏi đáp", "Hồ sơ", "Quản
    trị" lên điều hướng chính.
 2. **Mỗi màn đúng một nút hành động nổi trội.** Hồng Fuchsia chỉ dành cho nó.
-3. **Không thu nhỏ mệnh bàn 920px của web.** Chế độ Cổ điển dựng lưới riêng cho
-   di động, ô đủ lớn để chạm.
+3. **Mệnh bàn (`ban-do.tsx`) là MỘT phiên bản đầy đủ, không chia mức.** Quyết
+   định đổi 27/09/2026: bỏ Dễ hiểu/Cổ điển/Chuyên sâu, dựng lưới 4×4 riêng cho
+   di động (không copy CSS Grid 920px của web), fit trọn 12 cung trên một màn
+   hình dọc — đánh đổi có chủ đích: chữ trong ô rất nhỏ (token `micro`/`nano`,
+   chỉ dùng ở màn này), đọc tổng quan trước, chạm vào cung để xem chi tiết đầy
+   đủ bên dưới thay vì phải đọc hết trong ô nhỏ.
 4. **Không hiện tên model, nhà cung cấp, hay từ "AI"** ở bất cứ đâu người dùng
    nhìn thấy. Lỗi thì nói bằng giọng Celes, không phải mã lỗi.
 5. **Không đoán giờ sinh.** Người chọn "Tôi không chắc" phải được giải thích vì
