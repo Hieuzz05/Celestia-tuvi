@@ -29,7 +29,7 @@ export function GoiYCeles({ cau, moTa }: { cau: CauV3[] | null; moTa?: string })
       aria-labelledby="goi-y-celes"
     >
       <div className="flex flex-col gap-[4px]">
-        <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent)' }}>
+        <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent-chu)' }}>
           Gợi ý của Celes
         </span>
         <h2 id="goi-y-celes" className="text-[20px] font-semibold leading-snug" style={{ color: 'var(--fg)' }}>

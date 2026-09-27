@@ -106,7 +106,7 @@ export function DanhSachCung({
                     ))
                   : 'Vô chính diệu'}
                 {hoa.length > 0 && (
-                  <span className="ml-[8px] text-[14px]" style={{ color: 'var(--accent)' }}>
+                  <span className="ml-[8px] text-[14px]" style={{ color: 'var(--accent-chu)' }}>
                     {hoa.map((s) => s.ten).join(', ')}
                   </span>
                 )}

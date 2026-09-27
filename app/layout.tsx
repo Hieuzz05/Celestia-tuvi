@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight, JetBrains_Mono, Permanent_Marker } from "next/font/google";
+import localFont from "next/font/local";
+import { Permanent_Marker } from "next/font/google";
 import { NgonNguProvider } from "@/lib/i18n/context";
 import { BoiCanhProvider } from "@/lib/store/boi-canh";
 import { BangCamOn } from "@/components/support/BangCamOn";
@@ -7,39 +8,62 @@ import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 import { GhiTrangTruoc } from '@/components/QuayLai';
+import { URL_GOC } from '@/lib/trang-web';
+
+/*
+ * Font tự phục vụ, MỘT file cho mỗi họ chữ gồm latin + tiếng Việt (27/09/2026).
+ *
+ * Bản next/font/google cũ khai báo đủ các bộ ký tự với unicode-range chồng nhau;
+ * với ă/đ/ơ/ư trình duyệt chọn file latin-ext (Inter 85KB, Inter Tight 37KB) dù
+ * file vietnamese đã có glyph — mỗi trang tiếng Việt tải ~240KB font. Gộp sẵn thì
+ * còn 116KB, chữ hiện sớm hơn. Cách cắt lại: docs/bay/giao-dien.md (mục font).
+ */
 
 // Kaio không có bản web miễn phí — Inter Tight 700 là một trong ba substitute mà
 // design system chỉ định, dùng cho toàn bộ display headline từ 36px trở lên.
-const displaySans = Inter_Tight({
+const displaySans = localFont({
+  src: "./fonts/inter-tight-700-latin-vi.woff2",
+  weight: "700",
+  style: "normal",
   variable: "--font-display-sans",
-  subsets: ["latin", "vietnamese"],
-  weight: ["700"],
+  display: "swap",
 });
 
-const inter = Inter({
+// Bản biến thiên, trục wght 400–700 đủ cho mọi độ đậm đang dùng
+const inter = localFont({
+  src: "./fonts/inter-latin-vi.woff2",
+  weight: "400 700",
+  style: "normal",
   variable: "--font-inter",
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-// Eyebrow và nhãn kỹ thuật — giãn chữ 0.10em biến mono thành giọng nhãn, không phải code
-const monoLabel = JetBrains_Mono({
+// Eyebrow và nhãn kỹ thuật — giãn chữ 0.10em biến mono thành giọng nhãn, không phải code.
+// Không tải trước: nhãn nhỏ, không phải chữ chính, đừng tranh băng thông với Inter.
+const monoLabel = localFont({
+  src: "./fonts/jetbrains-mono-400-latin-vi.woff2",
+  weight: "400",
+  style: "normal",
   variable: "--font-mono-label",
-  subsets: ["latin", "vietnamese"],
-  weight: ["400"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
 
-// Lớp cá tính: ghi chú viết tay đặt trên dải gradient hero
+// Lớp cá tính: ghi chú viết tay đặt trên dải gradient hero — chỉ trang chủ dùng,
+// nên không tải trước trên mọi trang.
 const annotation = Permanent_Marker({
   variable: "--font-annotation",
   subsets: ["latin"],
   weight: ["400"],
+  preload: false,
 });
 
 // Mặt trước không nhắc AI, model hay trường phái — brand spec cấm đưa lớp kỹ
 // thuật lên tiêu đề. Tiêu đề bán giá trị: bớt mơ hồ, thấy hướng đi.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://celestia-tuvi.vercel.app"),
+  metadataBase: new URL(URL_GOC),
   title: {
     default: "Celestia — Hiểu mình. Rõ đường. Vững bước.",
     template: "%s — Celestia",
@@ -83,7 +107,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <BangCamOn />
             <SiteNav />
             <GhiTrangTruoc />
-            <main className="flex-1">{children}</main>
+            {/*
+              Cao tối thiểu một màn: chân trang luôn bắt đầu DƯỚI mép màn hình. Nhiều trang
+              dựng phần chính sau khi đọc phiên / tải bài (khung chờ thấp) — nếu chân trang
+              đang nằm trong màn thì bị đẩy xuống, tính là dịch bố cục. Đo 27/09/2026:
+              /la-so CLS 0,34, /hoi-dap 0,06–0,13 đều chỉ từ chân trang.
+            */}
+            <main className="min-h-svh flex-1">{children}</main>
             <SiteFooter />
           </BoiCanhProvider>
         </NgonNguProvider>

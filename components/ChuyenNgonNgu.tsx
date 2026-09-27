@@ -31,7 +31,9 @@ export function ChuyenNgonNgu() {
       <button
         onClick={() => setMo((v) => !v)}
         className="pill-tag flex items-center gap-[8px]"
-        aria-label={t.nav.ngonNgu}
+        // Tên đọc được phải CHỨA chữ đang hiện trên nút (WCAG 2.5.3): người dùng
+        // điều khiển bằng giọng nói nói "VI" thì trình duyệt phải tìm ra nút này.
+        aria-label={`${NHAN[ngonNgu]} · ${t.nav.ngonNgu}`}
         aria-expanded={mo}
         aria-haspopup="menu"
       >

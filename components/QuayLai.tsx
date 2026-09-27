@@ -75,12 +75,45 @@ type PropsQuayLai = {
   className?: string;
 };
 
-/** Bọc Suspense sẵn: đọc `?ve=` cần useSearchParams, trang tĩnh không bọc thì build hỏng */
+/**
+ * Bọc Suspense sẵn: đọc `?ve=` cần useSearchParams, trang tĩnh không bọc thì build hỏng.
+ *
+ * Fallback là CHÍNH cái nút với đích mặc định, không phải `null`: HTML tĩnh chỉ chứa
+ * fallback, nên `null` nghĩa là nút hiện ra sau khi JS chạy và đẩy cả trang xuống 60px
+ * (đo 27/09/2026 trên /dang-nhap: CLS 0,058 chỉ từ nút này). Nút `chiKhiCoVe` thì
+ * mặc định vốn không hiện nên fallback rỗng là đúng.
+ */
 export function QuayLai(p: PropsQuayLai) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={p.chiKhiCoVe ? null : <LienKetQuayLai href={p.macDinh.href} nhan={p.macDinh.nhan} className={p.className} />}>
       <NutQuayLai {...p} />
     </Suspense>
+  );
+}
+
+function LienKetQuayLai({
+  href,
+  nhan,
+  className = '',
+  onClick,
+}: {
+  href: string;
+  nhan: string;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+}) {
+  return (
+    <Link
+      data-quay-lai
+      href={href}
+      onClick={onClick}
+      className={`link-text link-action inline-flex min-h-[44px] items-center gap-[8px] self-start text-[14px] ${className}`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      {nhan}
+    </Link>
   );
 }
 
@@ -103,9 +136,10 @@ function NutQuayLai({
   if (chiKhiCoVe && !ve) return null;
 
   return (
-    <Link
-      data-quay-lai
+    <LienKetQuayLai
       href={ve ?? macDinh.href}
+      nhan={ve ? nhanCho(ve) : macDinh.nhan}
+      className={className}
       onClick={(e) => {
         if (ve || !theoTrangTruoc) return;
         let truoc: string | null = null;
@@ -119,12 +153,6 @@ function NutQuayLai({
           router.push(truoc);
         }
       }}
-      className={`link-text link-action inline-flex min-h-[44px] items-center gap-[8px] self-start text-[14px] ${className}`}
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      {ve ? nhanCho(ve) : macDinh.nhan}
-    </Link>
+    />
   );
 }

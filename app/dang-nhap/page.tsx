@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseDaCauHinh } from '@/lib/supabase/config';
+import { laySupabaseClient } from '@/lib/supabase/client';
 import { ghiSuKien } from '@/lib/analytics';
 import { dien, useT } from '@/lib/i18n/context';
 import { Shell } from '@/components/ui';
@@ -31,9 +31,10 @@ export default function DangNhapPage() {
   const [tenHienThi, setTenHienThi] = useState('');
   const [thongBao, setThongBao] = useState<{ loai: 'loi' | 'ok'; noiDung: string } | null>(null);
   const [dangXuLy, setDangXuLy] = useState(false);
-  const [ssoDangBat, setSsoDangBat] = useState<SsoId[]>([]);
+  // null = chưa biết (đang hỏi Supabase). Lúc đó giữ sẵn chỗ bằng đúng khung một nút +
+  // đường kẻ: khối này chèn TRÊN form, hiện muộn là đẩy cả form xuống (CLS 0,088, 27/09/2026).
+  const [ssoDangBat, setSsoDangBat] = useState<SsoId[] | null>(SUPABASE_URL ? null : []);
 
-  const supabase = taoSupabaseClient();
 
   // Nhắc lại đúng thứ người dùng vừa bấm — spec v2 §4.5: cổng phải giải thích
   // lợi ích CỦA TÍNH NĂNG đó, không phải lợi ích chung của tài khoản.
@@ -71,7 +72,7 @@ export default function DangNhapPage() {
       .catch(() => setSsoDangBat([]));
   }, []);
 
-  if (!supabase) {
+  if (!supabaseDaCauHinh) {
     return (
       <Shell className="py-[60px]">
         <div className="mx-auto w-full max-w-[560px]">
@@ -91,6 +92,8 @@ export default function DangNhapPage() {
     setDangXuLy(true);
     setThongBao(null);
     try {
+      const supabase = await laySupabaseClient();
+      if (!supabase) throw new Error(t.auth.chuaBat);
       if (che === 'dang-ky') {
         const { error } = await supabase.auth.signUp({
           email,
@@ -128,6 +131,11 @@ export default function DangNhapPage() {
       return;
     }
     setDangXuLy(true);
+    const supabase = await laySupabaseClient();
+    if (!supabase) {
+      setDangXuLy(false);
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/dang-nhap`,
     });
@@ -145,6 +153,8 @@ export default function DangNhapPage() {
   const dangNhapSSO = async (provider: SsoId) => {
     setThongBao(null);
     const quayVe = new URLSearchParams(window.location.search).get('next') ?? '/';
+    const supabase = await laySupabaseClient();
+    if (!supabase) return;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -170,19 +180,26 @@ export default function DangNhapPage() {
             : t.auth.moTaDangKy}
       </p>
 
-      {ssoDangBat.length > 0 && (
+      {(ssoDangBat === null || ssoDangBat.length > 0) && (
         <div className="mt-[28px] flex flex-col gap-[12px]">
-          {ssoDangBat.map((id) => (
-            <button
-              key={id}
-              onClick={() => dangNhapSSO(id)}
-              className="btn-outline w-full"
-              type="button"
-            >
-              {dien(t.auth.tiepTucVoi, { ten: SSO.find((s) => s.id === id)!.nhan })}
+          {ssoDangBat === null ? (
+            // Khung giữ chỗ cùng cỡ một nút thật — không bấm được, không đọc lên
+            <button className="btn-outline invisible w-full" type="button" disabled aria-hidden tabIndex={-1}>
+              {dien(t.auth.tiepTucVoi, { ten: SSO[0].nhan })}
             </button>
-          ))}
-          <div className="my-[6px] flex items-center gap-[12px]">
+          ) : (
+            ssoDangBat.map((id) => (
+              <button
+                key={id}
+                onClick={() => dangNhapSSO(id)}
+                className="btn-outline w-full"
+                type="button"
+              >
+                {dien(t.auth.tiepTucVoi, { ten: SSO.find((s) => s.id === id)!.nhan })}
+              </button>
+            ))
+          )}
+          <div className={`my-[6px] flex items-center gap-[12px] ${ssoDangBat === null ? 'invisible' : ''}`}>
             <span className="h-px flex-1" style={{ background: 'var(--line)' }} />
             <span className="text-[12px]" style={{ color: 'var(--fg-subtle)' }}>
               {t.auth.hoacEmail}

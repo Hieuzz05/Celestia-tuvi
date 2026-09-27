@@ -273,7 +273,7 @@ function Nhan({ children }: { children: React.ReactNode }) {
   return (
     <span
       className="inline-flex items-center rounded-full px-[8px] py-[2px] text-[12px] font-medium leading-[18px]"
-      style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
+      style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent-chu)' }}
     >
       {children}
     </span>
@@ -574,7 +574,7 @@ export function BanDoManhYeu({
           className="flex flex-col items-start gap-[8px] rounded-[12px] p-[16px]"
           style={{ background: 'color-mix(in srgb, var(--accent) 7%, transparent)' }}
         >
-          <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent)' }}>
+          <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent-chu)' }}>
             Celes nhận xét
           </span>
           <p className={`body-text ${moTomTat ? '' : 'line-clamp-3'}`} style={{ color: 'var(--fg)' }}>

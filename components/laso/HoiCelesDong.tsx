@@ -16,7 +16,7 @@ export function HoiCelesDong({ tieuDe, mo, href }: { tieuDe: string; mo: string;
       <span
         aria-hidden
         className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full"
-        style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
+        style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent-chu)' }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />

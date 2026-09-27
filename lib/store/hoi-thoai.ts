@@ -1,6 +1,6 @@
 'use client';
 
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
 
 /**
  * Hội thoại Hỏi Celes, lưu theo LÁ SỐ chứ không theo tab trình duyệt.
@@ -75,7 +75,7 @@ interface DongChat {
 
 /** Đọc lại mạch hội thoại của một lá số. Mảng rỗng khi chưa có gì hoặc không đọc được. */
 export async function docHoiThoai(chartHash: string): Promise<LuotChat[]> {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase || !chartHash) return [];
 
   try {
@@ -118,7 +118,7 @@ export async function luuLuot(
   traLoi: string,
   model?: string
 ): Promise<void> {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase || !chartHash) return;
 
   try {
@@ -170,7 +170,7 @@ export async function luuLuot(
  * nó là muốn thứ họ đã kể biến mất thật, chứ không phải ẩn đi.
  */
 export async function xoaHoiThoai(chartHash: string): Promise<void> {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase || !chartHash) return;
 
   try {

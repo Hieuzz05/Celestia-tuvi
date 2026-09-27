@@ -1,6 +1,6 @@
 'use client';
 
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
 import type { GioiTinh } from '@/lib/tuvi/ansao';
 
 export interface HoSo {
@@ -83,7 +83,7 @@ function dichLoi(message: string, viec: string): Error {
 
 /** Client Supabase kèm user hiện tại, hoặc null nếu chưa đăng nhập/chưa cấu hình */
 async function phienDangNhap() {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase) return null;
   const { data } = await supabase.auth.getUser();
   return data.user ? { supabase, userId: data.user.id } : null;

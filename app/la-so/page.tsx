@@ -205,25 +205,7 @@ function TrangLaSo() {
    * thì màn này vẫn có chữ, chỉ là chữ cũ.
    */
   const [noiBatAi, setNoiBatAi] = useState<DiemNoiBatAi | null>(null);
-  useEffect(() => {
-    if (!form) return;
-    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
-    if (!ngay || !thang || !nam) return;
-    let huy = false;
-    fetch('/api/diem-noi-bat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, ngonNgu }),
-    })
-      .then((r) => (r.status === 200 ? r.json() : null))
-      .then((d) => {
-        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
-      })
-      .catch(() => {});
-    return () => {
-      huy = true;
-    };
-  }, [form, ngonNgu]);
+  // Lượt gọi /api/diem-noi-bat nằm SAU `canBangCu` (bên dưới) — chỉ gọi khi thẻ này thật sự hiện.
 
   const gocNhin = useMemo(
     () => (laSo ? docNhanh(laSo, namXem, form?.yDinh, ngonNgu) : []),
@@ -291,6 +273,33 @@ function TrangLaSo() {
       if (gioiHanKhach) setGioiHanKhoa(khoaSau);
     }
   );
+
+  /*
+   * Thẻ "điểm nổi bật" do model viết chỉ hiện ở nhánh bảng cũ (v3 hỏng hoặc giao
+   * diện không phải tiếng Việt) — nhánh v3 dùng BaTheDauV3. Và tuyến này cần đăng
+   * nhập. Đo 27/09/2026: bản cũ gọi ở MỌI lần mở lá số — khách nhận 401 (lỗi đỏ
+   * trong console, Lighthouse trừ điểm), người đăng nhập tốn một lượt model mỗi ngày
+   * cho một bài không ai thấy.
+   */
+  useEffect(() => {
+    if (!form || !duocVao || !canBangCu) return;
+    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
+    if (!ngay || !thang || !nam) return;
+    let huy = false;
+    fetch('/api/diem-noi-bat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, ngonNgu }),
+    })
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [form, ngonNgu, duocVao, canBangCu]);
 
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
@@ -473,7 +482,7 @@ function TrangLaSo() {
   // --- Chưa có lá số nào để hiện: luồng nhập từng bước ---
   if (!form) {
     if (boiCanh.dangTai && !batNhapMoi) {
-      return <Shell className="py-[48px]"><span /></Shell>;
+      return KHUNG_CHO_LA_SO;
     }
     return (
       <Shell className="py-[48px]">
@@ -519,7 +528,7 @@ function TrangLaSo() {
         >
           <section className="flex flex-col gap-[16px]">
             <div className="flex flex-col gap-[4px]">
-              <Eyebrow>{t.quickRead.danhGiaTieuDe}</Eyebrow>
+              <Eyebrow cap="h2">{t.quickRead.danhGiaTieuDe}</Eyebrow>
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 {t.quickRead.danhGiaMo}
               </p>
@@ -835,9 +844,17 @@ const TAB_HOP_LE = ['tong-quan', 'chuyen-sau', 'manh-yeu', 'la-so'];
 // Số phần của tab Tổng quan: mọi câu tổng quan trừ TQ04 (câu mạnh–yếu nằm ở tab riêng)
 const SO_PHAN_TONG_QUAN = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && q.id !== 'TQ04').length;
 
+/*
+ * Khung chờ phải cao ít nhất một màn: HTML tĩnh của trang này CHỈ có khung chờ
+ * (useSearchParams nằm trong Suspense). Khung thấp thì chân trang nằm ngay trong
+ * màn hình rồi bị bài đọc đẩy xuống — đo 27/09/2026: CLS 0,34 ("Kém") chỉ từ chân
+ * trang. Cao một màn thì chân trang bắt đầu dưới mép màn, dịch ở đó không tính.
+ */
+const KHUNG_CHO_LA_SO = <Shell className="min-h-[100svh] py-[48px]"><span /></Shell>;
+
 export default function TrangLaSoBoc() {
   return (
-    <Suspense fallback={<Shell className="py-[48px]"><span /></Shell>}>
+    <Suspense fallback={KHUNG_CHO_LA_SO}>
       <TrangLaSo />
     </Suspense>
   );

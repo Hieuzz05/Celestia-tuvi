@@ -1,6 +1,6 @@
 'use client';
 
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
 
 export interface HoSoTaiKhoan {
   id: string;
@@ -16,7 +16,7 @@ export interface HoSoTaiKhoan {
  * Nhờ vậy nav luôn có tên gọn để hiện thay vì địa chỉ email dài.
  */
 export async function taiTaiKhoan(): Promise<HoSoTaiKhoan | null> {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase) return null;
 
   const { data } = await supabase.auth.getUser();
@@ -42,7 +42,7 @@ export async function taiTaiKhoan(): Promise<HoSoTaiKhoan | null> {
 }
 
 export async function datTenHienThi(tenMoi: string): Promise<void> {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase) throw new Error('Chưa cấu hình đăng nhập');
 
   const { data } = await supabase.auth.getUser();

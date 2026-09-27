@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
+import { supabaseDaCauHinh } from '@/lib/supabase/config';
 
 /**
  * Trạng thái đăng nhập dùng chung cho các màn có cổng.
@@ -12,24 +13,40 @@ import { taoSupabaseClient } from '@/lib/supabase/client';
  * khoản" rồi mới biến mất — trông như sản phẩm chưa xong.
  */
 export function useTaiKhoan() {
-  const coAuth = Boolean(taoSupabaseClient());
+  const coAuth = supabaseDaCauHinh;
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
   // Chưa cấu hình Supabase thì không có phiên nào để đọc — khỏi chờ vòng nào cả
   const [dangDoc, setDangDoc] = useState(coAuth);
 
   useEffect(() => {
-    const supabase = taoSupabaseClient();
-    if (!supabase) return;
+    if (!coAuth) return;
+    let huy = false;
+    let boTheoDoi: (() => void) | null = null;
 
     taiTaiKhoan()
-      .then(setTaiKhoan)
-      .finally(() => setDangDoc(false));
+      .then((tk) => {
+        if (!huy) setTaiKhoan(tk);
+      })
+      .finally(() => {
+        if (!huy) setDangDoc(false);
+      });
 
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      taiTaiKhoan().then(setTaiKhoan);
+    // Supabase nạp khi cần — đăng ký theo dõi phiên sau khi thư viện về
+    laySupabaseClient().then((supabase) => {
+      if (huy || !supabase) return;
+      const { data: sub } = supabase.auth.onAuthStateChange(() => {
+        taiTaiKhoan().then((tk) => {
+          if (!huy) setTaiKhoan(tk);
+        });
+      });
+      boTheoDoi = () => sub.subscription.unsubscribe();
     });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+
+    return () => {
+      huy = true;
+      boTheoDoi?.();
+    };
+  }, [coAuth]);
 
   return {
     taiKhoan,
