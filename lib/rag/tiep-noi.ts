@@ -27,7 +27,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
  * thêm một lượt nữa chỉ để tóm tắt lịch sử là nhân đôi chi phí cho mỗi câu hỏi.
  */
 
-export const PHIEN_BAN_TIEP_NOI = '2026.09.2';
+export const PHIEN_BAN_TIEP_NOI = '2026.09.3';
 
 function boDau(s: string): string {
   return s
@@ -124,7 +124,14 @@ const MAU_TU_KE: RegExp[] = [
 /** Câu giả định không phải điều đã xảy ra — "nếu tôi nghỉ việc thì sao" */
 const GIA_DINH = /\b(?:nếu|giả sử|liệu|có nên|nên không)\b/i;
 
-export function gomDieuTuKe(lichSu: TinNhan[], toiDa = 5): string[] {
+/*
+ * 5 → 8 (27/09/2026): trần đầu vào của hàm này (lịch sử được truyền tới) vừa
+ * nâng 10 → 60 tin nhắn ở route.ts, một hội thoại dài thật sự kể ra nhiều hơn
+ * năm chuyện đáng nhớ (lương, quy mô đội, ngành, tình trạng gia đình, thâm
+ * niên…). Vẫn hẹp: mỗi chuyện chỉ vài chục ký tự, tám chuyện vẫn rẻ hơn nhiều
+ * so với dán nguyên văn tám lượt hỏi–đáp.
+ */
+export function gomDieuTuKe(lichSu: TinNhan[], toiDa = 8): string[] {
   const ra: string[] = [];
   const daCo = new Set<string>();
 
@@ -160,17 +167,43 @@ export interface BoiCanhHoiThoai {
 }
 
 /**
+ * Số CẶP (người hỏi + Celes) giữ lại khi câu hiện tại là câu nối.
+ *
+ * Từng là 1 — đúng một cặp ngay trước. Sửa 27/09/2026: rà một phiên chat thật
+ * lộ ra đúng lỗi bản ghi chú trên nói tới ("thiếu vì điều đáng nhớ trôi mất") —
+ * nhưng ở một chỗ khác: bấm chip gợi ý lượt 2 (câu hỏi thứ ba trong phiên) vẫn
+ * được nhận là câu nối, nhưng cửa sổ 1 cặp chỉ còn thấy lượt 2, CÂU HỎI GỐC ở
+ * lượt 1 đã rơi khỏi cửa sổ — Celes trả lời đúng câu chữ, lạc mất chủ đề đầu
+ * phiên. Giữ 3 cặp (tối đa 6 tin nhắn) vẫn là "vài lượt liên quan", không phải
+ * "dán cả lịch sử" mà ghi chú trên đang tránh.
+ */
+const SO_CAP_GIU_KHI_NOI_TIEP = 3;
+
+/**
  * Chọn đúng phần lịch sử cần cho câu hỏi hiện tại.
  *
- * Câu nối tiếp thì giữ hai lượt gần nhất để model biết "điều đó" là điều gì.
+ * Câu nối tiếp thì giữ vài lượt gần nhất để model biết "điều đó" là điều gì,
+ * và không lạc mất chủ đề đã mở từ đầu phiên (xem SO_CAP_GIU_KHI_NOI_TIEP).
  * Câu mở chủ đề mới thì KHÔNG giữ lượt nào: giữ lại chỉ khiến model kéo bài cũ
  * sang bài mới, mà người hỏi đã chuyển chuyện rồi.
+ *
+ * `laTiepTuChip`: câu hỏi này đến từ một CHIP gợi ý do chính Celes vừa đề xuất
+ * (goiYTiep) — máy chủ biết chắc điều này (client gửi kèm cờ), nên không cần
+ * đoán qua heuristic chữ. Chip do Celes đề xuất luôn là tiếp nối, bất kể văn
+ * bản của nó dài hay ngắn, có đại từ trỏ ngược hay không — sửa đúng lỗ hổng đã
+ * đo: nhiều chip hợp lệ là câu hỏi trọn vẹn trên 5 từ ("Vậy tôi có nên chuyển
+ * việc không?") nên `laCauNoiTiep` từng chấm chúng là "chủ đề mới" và xoá sạch
+ * trí nhớ ngay từ lượt đó.
  */
-export function chonBoiCanhHoiThoai(cauHoi: string, lichSu: TinNhan[]): BoiCanhHoiThoai {
-  const noiTiep = laCauNoiTiep(cauHoi, lichSu);
+export function chonBoiCanhHoiThoai(
+  cauHoi: string,
+  lichSu: TinNhan[],
+  laTiepTuChip = false
+): BoiCanhHoiThoai {
+  const noiTiep = laTiepTuChip || laCauNoiTiep(cauHoi, lichSu);
   return {
     dieuTuKe: gomDieuTuKe(lichSu),
-    machDangNoi: noiTiep ? lichSu.slice(-2) : [],
+    machDangNoi: noiTiep ? lichSu.slice(-2 * SO_CAP_GIU_KHI_NOI_TIEP) : [],
     noiTiep,
   };
 }

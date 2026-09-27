@@ -40,6 +40,8 @@ export interface DauVaoTraLoi {
   namXem: number;
   thangXem: number;
   lichSu?: TinNhan[];
+  /** Câu hỏi này đến từ chip gợi ý (goiYTiep) do chính Celes vừa đề xuất — xem tiep-noi.ts */
+  laTiepTuChip?: boolean;
   requestId?: string;
   cauHinhTruyHoi?: Partial<CauHinhTruyHoi>;
   /** Không ghi nhật ký khi chạy thử trong Lab hay eval */
@@ -297,7 +299,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     goi,
     vao.lichSu ?? [],
     daNoiTruoc,
-    khoiNghiengVe(nghieng)
+    khoiNghiengVe(nghieng),
+    vao.laTiepTuChip === true
   );
 
   const truocModel = Date.now();
@@ -360,7 +363,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   const vanTho = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
-    laCauNoi: laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
+    laCauNoi: vao.laTiepTuChip === true || laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
   });
 
   /*

@@ -260,7 +260,9 @@ export function dungPromptCoCanCu(
    */
   daNoiTruoc: string[] = [],
   /** Khối hướng nghiêng do engine đếm — xem `nghieng-ve.ts`. Rỗng khi không tính được. */
-  khoiNghieng = ''
+  khoiNghieng = '',
+  /** Câu hỏi này đến từ chip gợi ý của chính Celes — xem chonBoiCanhHoiThoai */
+  laTiepTuChip = false
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -270,7 +272,7 @@ export function dungPromptCoCanCu(
    * chỗ để model bám nhầm; thiếu vì điều người dùng tự kể trôi mất khi nó lùi
    * quá lượt thứ sáu, dù đó mới là thứ đáng nhớ nhất.
    */
-  const bc = chonBoiCanhHoiThoai(goi.cauHoi, lichSu);
+  const bc = chonBoiCanhHoiThoai(goi.cauHoi, lichSu, laTiepTuChip);
 
   const phanTuKe = bc.dieuTuKe.length
     ? `\n\nĐIỀU NGƯỜI ĐỌC TỰ KỂ (là bối cảnh, KHÔNG phải dữ kiện lá số — đừng luận nó như một cung)\n${bc.dieuTuKe

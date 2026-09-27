@@ -277,11 +277,63 @@ console.log('\n== TRÍ NHỚ HỘI THOẠI ==\n');
   );
   kiem('Chưa có lượt nào của Celes thì không thể là câu nối', !laCauNoiTiep('Vì sao vậy?', []));
 
+  // Cửa sổ nâng 1 → 3 cặp ngày 27/09/2026 (xem tiep-noi.ts SO_CAP_GIU_KHI_NOI_TIEP) — bài kiểm
+  // "quên ngữ cảnh từ lượt thứ ba" cho thấy giữ đúng 1 cặp là không đủ. `ls` chỉ có 3 tin nhắn
+  // nên cửa sổ 3 cặp (6 tin nhắn) lấy trọn cả ba, không cắt bớt.
   const bcNoi = chonBoiCanhHoiThoai('Vì sao vậy?', ls);
-  kiem('Câu nối thì giữ mạch đang nói', bcNoi.machDangNoi.length === 2);
+  kiem('Câu nối thì giữ mạch đang nói', bcNoi.machDangNoi.length === ls.length);
   const bcMoi = chonBoiCanhHoiThoai('Tình duyên của tôi năm nay thế nào?', ls);
   kiem('Câu mở chủ đề mới thì KHÔNG kéo mạch cũ sang', bcMoi.machDangNoi.length === 0);
   kiem('Nhưng vẫn giữ điều người dùng tự kể', bcMoi.dieuTuKe.length > 0);
+
+  /*
+   * BUG THẬT (27/09/2026): chủ dự án báo — hỏi câu 1, bấm chip gợi ý của Celes (lượt 2) thì Celes
+   * còn nhớ ngữ cảnh; bấm tiếp chip gợi ý thứ hai (lượt 3) thì QUÊN, dù câu trả lời vẫn đúng nghĩa
+   * đen. Gốc: (a) nhiều chip hợp lệ là câu hỏi trọn vẹn trên 5 từ, không đại từ trỏ ngược — bị
+   * `laCauNoiTiep` xếp nhầm là "chủ đề mới" ngay từ lượt nó được hỏi; (b) cửa sổ cũ chỉ giữ 1 cặp,
+   * nên dù được nhận đúng là câu nối, tới lượt 3 thì câu hỏi GỐC ở lượt 1 đã rơi khỏi cửa sổ.
+   * Sửa bằng cờ `laTiepTuChip` (client biết chắc — không cần đoán) + cửa sổ rộng hơn (SO_CAP_GIU_KHI_NOI_TIEP).
+   */
+  const hoi1 = { vaiTro: 'nguoi-dung' as const, noiDung: 'Sự nghiệp của tôi năm nay thế nào?' };
+  const dap1 = { vaiTro: 'tro-ly' as const, noiDung: 'Năm nay nghiêng về giữ vị trí hơn là chuyển...' };
+  // Chip hợp lệ theo đúng luật goiYTiep (viết như lời người dùng gõ) — KHÔNG khớp dấu hiệu nào của
+  // laCauNoiTiep, đây chính là chip đã gây lỗi.
+  const chip1 = 'Vậy tôi có nên chuyển việc trong năm nay không?';
+  kiem('BUG GỐC (đối chứng): chip hợp lệ vẫn bị đoán nhầm là "chủ đề mới" nếu chỉ xét chữ', !laCauNoiTiep(chip1, [hoi1, dap1]));
+  const bcChip1KhongCo = chonBoiCanhHoiThoai(chip1, [hoi1, dap1]);
+  kiem('BUG GỐC (đối chứng): không có cờ, chip mất trắng ngữ cảnh dù mới ở lượt 2', bcChip1KhongCo.machDangNoi.length === 0);
+
+  const bcChip1 = chonBoiCanhHoiThoai(chip1, [hoi1, dap1], true);
+  kiem('Cờ laTiepTuChip: chip được nhận là câu nối bất kể chữ', bcChip1.noiTiep);
+  kiem('Cờ laTiepTuChip: thấy đúng cặp hỏi1/đáp1 ngay trước nó', bcChip1.machDangNoi.length === 2 && bcChip1.machDangNoi[0] === hoi1);
+
+  const dap2 = { vaiTro: 'tro-ly' as const, noiDung: 'Nghiêng về giữ lại hơn, vì tiểu hạn năm nay có Hóa Kỵ...' };
+  const chip2 = 'Nếu công ty mới trả lương cao hơn thì có đáng để chuyển không?';
+  const lichSuLuot3 = [hoi1, dap1, { vaiTro: 'nguoi-dung' as const, noiDung: chip1 }, dap2];
+  const bcChip2 = chonBoiCanhHoiThoai(chip2, lichSuLuot3, true);
+  kiem(
+    'Lượt 3 (chip2): cửa sổ rộng hơn vẫn thấy CÂU HỎI GỐC ở lượt 1 — không còn "quên ngữ cảnh"',
+    bcChip2.machDangNoi.includes(hoi1) && bcChip2.machDangNoi.includes(dap1)
+  );
+  kiem('Lượt 3 (chip2): vẫn thấy cặp ngay trước nó', bcChip2.machDangNoi.includes(dap2));
+
+  // Kéo dài ghi nhớ (27/09/2026): điều tự kể ở lượt xa vẫn được nhớ, không chỉ vài ba lượt —
+  // và trần đồng thời đã nâng 5 → 8.
+  const phienDai = [{ vaiTro: 'nguoi-dung' as const, noiDung: 'Tôi đang làm việc ở một công ty phần mềm.' }];
+  for (let i = 1; i <= 25; i++) {
+    phienDai.push(
+      { vaiTro: 'tro-ly' as const, noiDung: `Đáp ${i}...` } as never,
+      { vaiTro: 'nguoi-dung' as const, noiDung: `Câu hỏi phụ số ${i}, không có gì đáng nhớ.` }
+    );
+  }
+  kiem('Kéo dài ghi nhớ: nhớ được sự việc kể cách đây 25 lượt (51 tin nhắn)', gomDieuTuKe(phienDai).some((d) => d.includes('phần mềm')));
+  const muoiSuViec = Array.from({ length: 10 }, (_, i) => ({
+    vaiTro: 'nguoi-dung' as const,
+    noiDung: `Lương của tôi hồi thứ ${i} là ${10 + i} triệu một tháng.`,
+  }));
+  const tamChuyenGanNhat = gomDieuTuKe(muoiSuViec, 8);
+  kiem('Kéo dài ghi nhớ: trần đồng thời đã nâng 5 → 8', tamChuyenGanNhat.length === 8);
+  kiem('Kéo dài ghi nhớ: vượt trần thì giữ chuyện MỚI NHẤT, không giữ chuyện đầu tiên', !tamChuyenGanNhat.some((d) => d.includes('thứ 0')));
 }
 
 console.log('\n== CỤM TỪ KHOÁ ==');

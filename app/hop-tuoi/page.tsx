@@ -163,9 +163,9 @@ export default function KetNoiPage() {
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <div>
         <p className="eyebrow">KẾT NỐI</p>
-        <h1 className="heading mt-[10px]">Hai người gặp nhau ở đâu — và dễ lệch nhau ở đâu?</h1>
+        <h1 className="heading mt-[10px]">Hai người có hợp nhau không?</h1>
         <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-          Celes sẽ nhìn hai lá số theo điều bạn thực sự muốn hiểu về mối quan hệ này.
+          Cùng Celes xem hai lá số để hiểu hai người hợp nhau ở điểm nào, dễ bất đồng vì đâu và chuyện tình cảm, hợp tác hay gia đình có thể diễn biến ra sao.
         </p>
       </div>
 

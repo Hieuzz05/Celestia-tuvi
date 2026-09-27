@@ -23,6 +23,8 @@ interface Body {
   thangXem?: number;
   cauHoi?: string;
   lichSu?: TinNhan[];
+  /** Câu hỏi này đến từ chip gợi ý (goiYTiep) do chính Celes vừa đề xuất ở lượt trước */
+  tuChip?: boolean;
 }
 
 const soHopLe = (v: unknown, min: number, max: number) =>
@@ -56,8 +58,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ loi: 'Câu hỏi quá dài (tối đa 800 ký tự)' }, { status: 400 });
   }
 
-  // Lịch sử đến từ client nên phải lọc lại: chỉ nhận đúng hình dạng mong đợi và
-  // cắt bớt độ dài, tránh việc nhét nội dung tuỳ ý vào prompt.
+  /*
+   * Lịch sử đến từ client nên phải lọc lại: chỉ nhận đúng hình dạng mong đợi và
+   * cắt bớt độ dài, tránh việc nhét nội dung tuỳ ý vào prompt.
+   *
+   * TRẦN 60 (30 lượt hỏi–đáp), không phải 10 — sửa 27/09/2026 theo yêu cầu "kéo
+   * dài ghi nhớ, không chỉ vài ba lượt". Nâng trần này an toàn về chi phí vì
+   * mảng đầy đủ không bao giờ bị dán thẳng vào prompt: `chonBoiCanhHoiThoai`
+   * (tiep-noi.ts) chỉ trích ra
+   *   (a) MẠCH VỪA NÓI — luôn bị cắt còn tối đa 3 cặp gần nhất, bất kể mảng vào
+   *       dài bao nhiêu, và
+   *   (b) ĐIỀU NGƯỜI ĐỌC TỰ KỂ — quét bằng luật (không gọi model), giữ tối đa
+   *       vài câu ngắn gần nhất, bất kể quét qua bao nhiêu tin nhắn.
+   * Nâng trần chỉ nới ĐỘ SÂU của việc quét (b) — một chuyện đã kể từ hai mươi
+   * lượt trước vẫn được nhớ — mà không làm phần dán nguyên văn ở (a) phình ra.
+   */
   const lichSu: TinNhan[] = Array.isArray(body.lichSu)
     ? body.lichSu
         .filter(
@@ -66,7 +81,7 @@ export async function POST(req: Request) {
             (t.vaiTro === 'nguoi-dung' || t.vaiTro === 'tro-ly') &&
             typeof t.noiDung === 'string'
         )
-        .slice(-10)
+        .slice(-60)
         .map((t) => ({ vaiTro: t.vaiTro, noiDung: t.noiDung.slice(0, 2000) }))
     : [];
 
@@ -104,6 +119,7 @@ export async function POST(req: Request) {
       namXem,
       thangXem,
       lichSu,
+      laTiepTuChip: body.tuChip === true,
       requestId,
       // Để Celes biết bảng tám lĩnh vực đã nói gì với chính người này
       chartHash,
