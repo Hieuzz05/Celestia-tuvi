@@ -101,7 +101,7 @@ export function CongDangNhap({
         <ul className="flex flex-col gap-[8px]">
           {loiIch.diem.map((d) => (
             <li key={d} className="body-sm flex items-start gap-[8px]" style={{ color: 'var(--fg)' }}>
-              <span aria-hidden style={{ color: 'var(--accent)' }}>
+              <span aria-hidden style={{ color: 'var(--accent-chu)' }}>
                 ✓
               </span>
               <span>{d}</span>

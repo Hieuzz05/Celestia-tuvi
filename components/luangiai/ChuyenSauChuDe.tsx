@@ -83,7 +83,7 @@ export function ChuyenSauChuDe({
                 >
                   <span
                     className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full text-[13px] font-semibold"
-                    style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent)' }}
+                    style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', color: 'var(--accent-chu)' }}
                     aria-hidden
                   >
                     {i + 1}

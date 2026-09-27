@@ -20,6 +20,7 @@ import {
 } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { useT } from '@/lib/i18n/context';
+import type { MauDaTinh } from '@/lib/tuvi/la-so-mau';
 
 /**
  * Landing công khai.
@@ -32,7 +33,11 @@ import { useT } from '@/lib/i18n/context';
  * trang. Trước đây có hai câu khác nhau ngang hàng, người đọc phải chọn giữa hai
  * thứ mà họ chưa hiểu cái nào.
  */
-export function TrangChuNoiDung() {
+export function TrangChuNoiDung({
+  laSoMau,
+}: {
+  laSoMau: { nhan: { nhan: string; nhanEn: string }[]; mauDau: MauDaTinh; namXem: number };
+}) {
   const t = useT();
   const bam = () => ghiSuKien('landing_cta_click');
 
@@ -72,7 +77,7 @@ export function TrangChuNoiDung() {
                 {t.quickRead.viSao}
               </GhiChuTay>
             </span>
-            <LaSoMau />
+            <LaSoMau nhan={laSoMau.nhan} mauDau={laSoMau.mauDau} namXem={laSoMau.namXem} />
           </div>
         </Shell>
       </HeroBand>

@@ -107,7 +107,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <BangCamOn />
             <SiteNav />
             <GhiTrangTruoc />
-            <main className="flex-1">{children}</main>
+            {/*
+              Cao tối thiểu một màn: chân trang luôn bắt đầu DƯỚI mép màn hình. Nhiều trang
+              dựng phần chính sau khi đọc phiên / tải bài (khung chờ thấp) — nếu chân trang
+              đang nằm trong màn thì bị đẩy xuống, tính là dịch bố cục. Đo 27/09/2026:
+              /la-so CLS 0,34, /hoi-dap 0,06–0,13 đều chỉ từ chân trang.
+            */}
+            <main className="min-h-svh flex-1">{children}</main>
             <SiteFooter />
           </BoiCanhProvider>
         </NgonNguProvider>

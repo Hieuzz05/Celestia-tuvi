@@ -1,6 +1,6 @@
 'use client';
 
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
 
 /**
  * "Lá số của tôi" — lá số mặc định của một tài khoản.
@@ -39,7 +39,7 @@ function ghiLocal(userId: string, id: string) {
 }
 
 async function phien() {
-  const supabase = taoSupabaseClient();
+  const supabase = await laySupabaseClient();
   if (!supabase) return null;
   const { data } = await supabase.auth.getUser();
   return data.user ? { supabase, userId: data.user.id } : null;

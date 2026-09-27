@@ -203,6 +203,13 @@ export function TrangHomeNoiDung() {
           </h1>
         </div>
 
+        {/*
+          Giữ chỗ lúc còn đang đọc phiên: thẻ ở ô này (khách: "chưa có bản đồ"; có lá
+          số: điểm nổi bật) hiện muộn là đẩy "Đi tiếp từ đây" xuống — đo 27/09/2026
+          CLS 0,18. Cao bằng thẻ của khách, trường hợp của mọi người mới tới.
+        */}
+        {(dangDoc || boiCanh.dangTai) && <div className="card min-h-[208px]" aria-hidden />}
+
         {/* Chưa có bản đồ nào thì việc tiếp theo chỉ có một, nói thẳng ra */}
         {!dangDoc && !boiCanh.dangTai && !chinh && (
           <The className="flex flex-col gap-[12px]">

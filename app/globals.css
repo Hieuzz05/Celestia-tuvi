@@ -126,6 +126,12 @@
   --accent: var(--color-fuchsia-signal);
   --action-bg: var(--color-fuchsia-deep);
   --action-fg: var(--color-canvas);
+  /*
+   * Hồng dùng làm CHỮ nhỏ (nhãn, số thứ tự). #df37a7 chỉ đạt 4,01:1 trên nền trắng và
+   * 3,32:1 trên nền hồng nhạt 14% — dưới mức 4,5:1 cho chữ thường (WCAG AA, Lighthouse
+   * 27/09/2026). Bản đậm hơn này đạt ≥ 4,69:1 trên mọi nền sáng; nút và nền giữ --accent.
+   */
+  --accent-chu: #b62b8b;
 
   /* Trạng thái thành công: bộ ba viền / nền / chữ, không rò sang chỗ khác */
   --ok-fg: var(--color-forest);
@@ -166,6 +172,8 @@
   --accent: var(--color-fuchsia-signal);
   --action-bg: var(--color-fuchsia-deep);
   --action-fg: var(--color-canvas);
+  /* Đêm: sáng hơn một chút — #df37a7 trên thẻ #2d0334 chỉ 4,46:1, trên nền hồng 14% còn 3,78:1 */
+  --accent-chu: #e55bb7;
 
   --ok-fg: var(--color-mint);
   --ok-bg: rgba(21, 128, 61, 0.24);

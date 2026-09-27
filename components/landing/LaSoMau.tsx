@@ -1,11 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { PillTag } from '@/components/ui';
 import { useNgonNgu } from '@/lib/i18n/context';
-import { lapLaSo } from '@/lib/tuvi/ansao';
-import { docNhanh } from '@/lib/tuvi/quick-read';
+import type { MauDaTinh } from '@/lib/tuvi/la-so-mau';
 
 /**
  * Khối xem trước trên landing.
@@ -13,36 +12,46 @@ import { docNhanh } from '@/lib/tuvi/quick-read';
  * Đây là góc nhìn thật, tính từ một ngày sinh mẫu bằng chính engine của sản phẩm,
  * chứ không phải chữ viết sẵn. Người chưa tạo lá số vẫn bấm được "Vì sao?" và thấy
  * đúng thứ họ sẽ nhận — đó là cách thuyết phục rẻ nhất mà không phải hứa hẹn gì.
+ *
+ * Người mẫu đầu tính sẵn ở máy chủ (`lib/tuvi/la-so-mau.ts`); bấm người khác mới nạp
+ * engine về và tính — engine không nằm trong gói JS tải trước lần vẽ đầu.
  */
-
-const NGUOI_MAU = [
-  { nhan: 'Nam · 2000', nhanEn: 'Male · 2000', ngay: 24, thang: 8, nam: 2000, gio: 9, gioiTinh: 'nam' as const },
-  { nhan: 'Nữ · 1995', nhanEn: 'Female · 1995', ngay: 12, thang: 3, nam: 1995, gio: 15, gioiTinh: 'nu' as const },
-  { nhan: 'Nam · 1988', nhanEn: 'Male · 1988', ngay: 2, thang: 11, nam: 1988, gio: 23, gioiTinh: 'nam' as const },
-];
-
-export function LaSoMau() {
+export function LaSoMau({
+  nhan,
+  mauDau,
+  namXem,
+}: {
+  nhan: { nhan: string; nhanEn: string }[];
+  mauDau: MauDaTinh;
+  namXem: number;
+}) {
   const { ngonNgu, t } = useNgonNgu();
   const [chon, setChon] = useState(0);
-  const namNay = new Date().getFullYear();
+  const [daTinh, setDaTinh] = useState<Record<number, MauDaTinh>>({ 0: mauDau });
 
-  const gocNhin = useMemo(() => {
-    const m = NGUOI_MAU[chon];
-    return docNhanh(lapLaSo({ ...m }), namNay, undefined, ngonNgu);
-  }, [chon, namNay, ngonNgu]);
+  const chonMau = (i: number) => {
+    setChon(i);
+    if (daTinh[i]) return;
+    import('@/lib/tuvi/la-so-mau').then(({ tinhMotMau }) => {
+      setDaTinh((cu) => (cu[i] ? cu : { ...cu, [i]: tinhMotMau(i, namXem) }));
+    });
+  };
+
+  // Chưa tính xong người vừa chọn thì giữ thẻ đang hiện — không để khoảng trống nhảy
+  const gocNhin = (daTinh[chon] ?? daTinh[0])[ngonNgu];
 
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="flex flex-wrap items-center justify-center gap-[8px]">
         <span className="caption">{t.landing.thuNgaySinhKhac}</span>
-        {NGUOI_MAU.map((m, i) => (
+        {nhan.map((m, i) => (
           // Nhãn "1 / 2 / 3" (32px) không nói mình đang xem gì — đo 24/09/2026
           <PillTag
             key={m.nhan}
             dangChon={i === chon}
             aria-pressed={i === chon}
             className="min-h-[44px]"
-            onClick={() => setChon(i)}
+            onClick={() => chonMau(i)}
           >
             {ngonNgu === 'en' ? m.nhanEn : m.nhan}
           </PillTag>

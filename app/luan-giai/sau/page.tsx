@@ -345,7 +345,7 @@ function TrangSau() {
               >
                 <span
                   className="inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full text-[13px]"
-                  style={laBuc ? { background: 'var(--accent)', color: 'var(--action-fg)' } : { border: '1px solid var(--line)', color: 'var(--accent)' }}
+                  style={laBuc ? { background: 'var(--accent)', color: 'var(--action-fg)' } : { border: '1px solid var(--line)', color: 'var(--accent-chu)' }}
                   aria-hidden
                 >
                   ✦
@@ -364,7 +364,7 @@ function TrangSau() {
                 className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold uppercase tracking-[0.08em]"
                 style={{
                   background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
-                  color: 'var(--accent)',
+                  color: 'var(--accent-chu)',
                 }}
               >
                 Luận giải chuyên sâu · Năm xem {namXem}

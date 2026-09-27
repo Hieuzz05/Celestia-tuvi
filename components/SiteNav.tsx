@@ -9,7 +9,8 @@ import { IconDong, IconMenu, IconNguoiDung, Shell } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
 import { useQuyen } from '@/lib/support/useQuyen';
 import { taiTaiKhoan, type HoSoTaiKhoan } from '@/lib/store/profile';
-import { taoSupabaseClient } from '@/lib/supabase/client';
+import { laySupabaseClient } from '@/lib/supabase/client';
+import { supabaseDaCauHinh } from '@/lib/supabase/config';
 import { ThemeToggle } from './ThemeToggle';
 
 /**
@@ -28,7 +29,9 @@ export function SiteNav() {
   const pathname = usePathname();
   const t = useT();
   const [taiKhoan, setTaiKhoan] = useState<HoSoTaiKhoan | null>(null);
-  const [daCauHinhAuth, setDaCauHinhAuth] = useState(false);
+  // Hằng số lúc build (NEXT_PUBLIC_*), server và trình duyệt như nhau — nút tài khoản có
+  // ngay trong HTML tĩnh thay vì hiện ra sau khi JS chạy (header đổi chiều rộng).
+  const daCauHinhAuth = supabaseDaCauHinh;
   const [moMenu, setMoMenu] = useState(false);
   /*
    * Menu điều hướng cho màn hẹp — TÁCH RIÊNG khỏi `moMenu` của tài khoản.
@@ -57,15 +60,27 @@ export function SiteNav() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const supabase = taoSupabaseClient();
-    if (!supabase) return;
-    setDaCauHinhAuth(true);
+    if (!supabaseDaCauHinh) return;
+    let huy = false;
+    let boTheoDoi: (() => void) | null = null;
 
-    taiTaiKhoan().then(setTaiKhoan);
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      taiTaiKhoan().then(setTaiKhoan);
+    taiTaiKhoan().then((tk) => {
+      if (!huy) setTaiKhoan(tk);
     });
-    return () => sub.subscription.unsubscribe();
+    // Supabase nạp khi cần — theo dõi phiên sau khi thư viện về
+    laySupabaseClient().then((supabase) => {
+      if (huy || !supabase) return;
+      const { data: sub } = supabase.auth.onAuthStateChange(() => {
+        taiTaiKhoan().then((tk) => {
+          if (!huy) setTaiKhoan(tk);
+        });
+      });
+      boTheoDoi = () => sub.subscription.unsubscribe();
+    });
+    return () => {
+      huy = true;
+      boTheoDoi?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -78,7 +93,7 @@ export function SiteNav() {
   }, [moMenu]);
 
   const dangXuat = async () => {
-    const supabase = taoSupabaseClient();
+    const supabase = await laySupabaseClient();
     await supabase?.auth.signOut();
     setTaiKhoan(null);
     setMoMenu(false);

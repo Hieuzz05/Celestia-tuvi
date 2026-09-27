@@ -482,7 +482,7 @@ function TrangLaSo() {
   // --- Chưa có lá số nào để hiện: luồng nhập từng bước ---
   if (!form) {
     if (boiCanh.dangTai && !batNhapMoi) {
-      return <Shell className="py-[48px]"><span /></Shell>;
+      return KHUNG_CHO_LA_SO;
     }
     return (
       <Shell className="py-[48px]">
@@ -844,9 +844,17 @@ const TAB_HOP_LE = ['tong-quan', 'chuyen-sau', 'manh-yeu', 'la-so'];
 // Số phần của tab Tổng quan: mọi câu tổng quan trừ TQ04 (câu mạnh–yếu nằm ở tab riêng)
 const SO_PHAN_TONG_QUAN = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && q.id !== 'TQ04').length;
 
+/*
+ * Khung chờ phải cao ít nhất một màn: HTML tĩnh của trang này CHỈ có khung chờ
+ * (useSearchParams nằm trong Suspense). Khung thấp thì chân trang nằm ngay trong
+ * màn hình rồi bị bài đọc đẩy xuống — đo 27/09/2026: CLS 0,34 ("Kém") chỉ từ chân
+ * trang. Cao một màn thì chân trang bắt đầu dưới mép màn, dịch ở đó không tính.
+ */
+const KHUNG_CHO_LA_SO = <Shell className="min-h-[100svh] py-[48px]"><span /></Shell>;
+
 export default function TrangLaSoBoc() {
   return (
-    <Suspense fallback={<Shell className="py-[48px]"><span /></Shell>}>
+    <Suspense fallback={KHUNG_CHO_LA_SO}>
       <TrangLaSo />
     </Suspense>
   );
