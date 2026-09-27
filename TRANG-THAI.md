@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Cải thiện Core Web Vitals + a11y + SEO theo đo Lighthouse production (LCP, CLS /la-so, lỗi 401 diem-noi-bat, thứ bậc tiêu đề, sitemap/robots) | viec/core-web-vitals | app/la-so/page.tsx, components/home/TrangHomeNoiDung.tsx, components/landing/TrangChuNoiDung.tsx, components/ChuyenNgonNgu.tsx, app/layout.tsx, app/sitemap.ts, app/robots.ts, app/api/diem-noi-bat | 27/09/2026 |
+| — | (chưa có việc nào đang chạy) | — | — | — |
 
 ## Đang vướng — đừng đụng vào
 
@@ -29,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION — CEL-150 Core Web Vitals / a11y / SEO**: font tự phục vụ app/fonts (đừng quay lại next/font/google), inlineCss, main min-h-svh chống dịch chân trang, supabase-js nạp khi cần (`laySupabaseClient()` async — KHÔNG còn `taoSupabaseClient`), token `--accent-chu` cho chữ hồng, sitemap/robots. Chưa làm: tách route [lang] (chờ chủ dự án) | `84facc5` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-149 giọng văn tự nhiên theo 88 câu chủ dự án sửa tay — khối `GIONG_VAN` (prompt 2026.09.19), chuyên sâu 160–220 chữ, kiểm `cau-dai` (> 40 chữ, sửa cục bộ). Mẫu giọng ở Supabase `mau-giong` (đổi bằng `scripts/nap-mau-giong.ts`, KHÔNG đưa văn lá số thật vào repo). Chỉ áp bài sinh mới | `c0771bd` | 27/09/2026 |
 | **Giảm token Claude Code — MÁY 2 ĐỌC**: `AGENTS.md` đã rút từ 28KB còn 9,3KB; toàn bộ mục "Bẫy đã gặp" chuyển NGUYÊN VĂN sang `docs/bay/*.md` (giao-dien, quyen-thanh-toan, engine, ai-rag, moi-truong) — sửa vùng nào đọc tệp đó trước. `.claude/rules` tự nhắc theo thư mục; `.claude/settings.json` thêm autoCompactWindow 200k, bashOutputMaxChars 12k | `14e2c37` | 27/09/2026 |
 | **Cấu hình AI Agent cho Claude Code**: `.claude/agents` (researcher chỉ đọc, celes-domain thẩm định Tử Vi, qa chạy cổng kiểm), skill `/build-feature <mã>` (Spec → Research → Domain → Plan DỪNG chờ duyệt → Code → QA), `specs/_MAU.md`, `.claude/settings.json` chặn đọc .env và force push. Máy kia `git pull` là có | `38a8687` | 26/09/2026 |
