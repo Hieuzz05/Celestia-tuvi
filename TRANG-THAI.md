@@ -30,6 +30,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-155 mệnh bàn app di động viết lại: bỏ 3 chế độ Dễ hiểu/Cổ điển/Chuyên sâu, một lưới 4×4 đầy đủ fit một màn hình dọc (không cuộn ngang) — phản hồi thật từ chủ dự án kèm ảnh app đối thủ tham khảo cách trình bày. Sửa copy bước ngày sinh onboarding. Nhánh `viec/app-gd1`, chưa gộp main | `app-gd1-menh-ban` | 27/09/2026 |
 | App di động gọi API bằng token đăng nhập (Bearer) — **mới nửa máy chủ**, nhánh `viec/app-gd1` chưa gộp. Nửa app chờ chọn cách đăng nhập trên di động | `0992c1b` | 27/09 |
 | Thêm `HUONG-DAN-AI-AGENT.md` (hướng dẫn dùng .claude/agents cho người mới) | `ef17cb2` | 27/09/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-152 sửa bong bóng chat TRẮNG ở Hỏi Celes khi model trả JSON gãy — `tra-loi.ts` thử lại nguyên lượt 1 lần trước khi bỏ cuộc; `van` rỗng thì `route.ts` coi là lượt hỏng, hoàn lại lượt (không trừ hạn mức) và trả lỗi rõ thay vì 200 rỗng. Đã rà toàn bộ bề mặt AI khác — không có lỗi tương tự (các nơi khác đã trả lỗi rõ hoặc lặng lẽ giữ bản tất định là đúng thiết kế). Không tái hiện được lỗi gốc bằng API thật sau 6 lần thử cùng bối cảnh — xác nhận đúng bằng đọc mã, cùng khuôn với nhánh catch lỗi sẵn có | `d0e6f20` | 27/09/2026 |
