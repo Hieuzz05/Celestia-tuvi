@@ -5,16 +5,20 @@ export function Eyebrow({
   children,
   icon,
   className = '',
+  cap = 'p',
 }: {
   children: ReactNode;
   icon?: ReactNode;
   className?: string;
+  /** 'h2' khi nhãn này là tiêu đề thật của một khối (giữ thứ bậc h1 → h2 → h3), giao diện không đổi */
+  cap?: 'p' | 'h2';
 }) {
+  const The = cap;
   return (
-    <p className={`eyebrow inline-flex items-center gap-[8px] ${className}`}>
+    <The className={`eyebrow inline-flex items-center gap-[8px] ${className}`}>
       {icon}
       {children}
-    </p>
+    </The>
   );
 }
 

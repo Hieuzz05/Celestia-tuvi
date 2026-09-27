@@ -262,7 +262,13 @@ export function SiteNav() {
                     href="/la-so"
                     className={`${pathname === '/' ? 'btn-outline' : 'btn-primary'} btn-sm whitespace-nowrap`}
                   >
-                    <span className="sm:hidden">{t.nav.batDauNgan}</span>
+                    {/* Nhãn ngắn vẫn giữ để header không gãy dòng; phần ẩn cho trình
+                        đọc màn hình và máy tìm kiếm biết nút dẫn tới đâu — "Bắt đầu"
+                        trơn là chữ liên kết không mô tả (Lighthouse SEO, 27/09/2026). */}
+                    <span className="sm:hidden">
+                      {t.nav.batDauNgan}
+                      <span className="sr-only"> {t.nav.batDauNganMoTa}</span>
+                    </span>
                     <span className="max-sm:hidden">{t.nav.batDauMienPhi}</span>
                   </Link>
                 )}

@@ -30,6 +30,7 @@ export const vi = {
     veCelestia: 'Về Celestia',
     batDauMienPhi: 'Bắt đầu miễn phí',
     batDauNgan: 'Bắt đầu',
+    batDauNganMoTa: 'lập lá số miễn phí',
     homNay: 'Hôm nay',
     banDo: 'Khám phá bản đồ',
     hanhTrinh: 'Hành trình',

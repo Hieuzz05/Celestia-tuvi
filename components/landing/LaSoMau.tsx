@@ -51,7 +51,8 @@ export function LaSoMau() {
 
       <div className="grid gap-[16px] md:grid-cols-3">
         {gocNhin.map((g) => (
-          <GocNhinCard key={g.id} gocNhin={g} nho />
+          // Nằm trong hero, ngay dưới h1 — chưa có h2 nào phía trên nên thẻ dùng h2
+          <GocNhinCard key={g.id} gocNhin={g} nho cap="h2" />
         ))}
       </div>
     </div>

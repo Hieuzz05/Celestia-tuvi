@@ -32,6 +32,7 @@ export const en: TuDien = {
     veCelestia: 'About Celestia',
     batDauMienPhi: 'Start free',
     batDauNgan: 'Start',
+    batDauNganMoTa: 'your free chart',
     homNay: 'Today',
     banDo: 'Explore the map',
     hanhTrinh: 'Journey',

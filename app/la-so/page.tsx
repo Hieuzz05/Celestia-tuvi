@@ -205,25 +205,7 @@ function TrangLaSo() {
    * thì màn này vẫn có chữ, chỉ là chữ cũ.
    */
   const [noiBatAi, setNoiBatAi] = useState<DiemNoiBatAi | null>(null);
-  useEffect(() => {
-    if (!form) return;
-    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
-    if (!ngay || !thang || !nam) return;
-    let huy = false;
-    fetch('/api/diem-noi-bat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, ngonNgu }),
-    })
-      .then((r) => (r.status === 200 ? r.json() : null))
-      .then((d) => {
-        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
-      })
-      .catch(() => {});
-    return () => {
-      huy = true;
-    };
-  }, [form, ngonNgu]);
+  // Lượt gọi /api/diem-noi-bat nằm SAU `canBangCu` (bên dưới) — chỉ gọi khi thẻ này thật sự hiện.
 
   const gocNhin = useMemo(
     () => (laSo ? docNhanh(laSo, namXem, form?.yDinh, ngonNgu) : []),
@@ -291,6 +273,33 @@ function TrangLaSo() {
       if (gioiHanKhach) setGioiHanKhoa(khoaSau);
     }
   );
+
+  /*
+   * Thẻ "điểm nổi bật" do model viết chỉ hiện ở nhánh bảng cũ (v3 hỏng hoặc giao
+   * diện không phải tiếng Việt) — nhánh v3 dùng BaTheDauV3. Và tuyến này cần đăng
+   * nhập. Đo 27/09/2026: bản cũ gọi ở MỌI lần mở lá số — khách nhận 401 (lỗi đỏ
+   * trong console, Lighthouse trừ điểm), người đăng nhập tốn một lượt model mỗi ngày
+   * cho một bài không ai thấy.
+   */
+  useEffect(() => {
+    if (!form || !duocVao || !canBangCu) return;
+    const { ngay, thang, nam } = tachNgay(form.ngaySinh);
+    if (!ngay || !thang || !nam) return;
+    let huy = false;
+    fetch('/api/diem-noi-bat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ngay, thang, nam, gio: form.gio, gioiTinh: form.gioiTinh, ngonNgu }),
+    })
+      .then((r) => (r.status === 200 ? r.json() : null))
+      .then((d) => {
+        if (!huy && d) setNoiBatAi(d as DiemNoiBatAi);
+      })
+      .catch(() => {});
+    return () => {
+      huy = true;
+    };
+  }, [form, ngonNgu, duocVao, canBangCu]);
 
   useEffect(() => {
     // Không dọn state ngay trong thân effect: đặt state đồng bộ ở đây là một
@@ -519,7 +528,7 @@ function TrangLaSo() {
         >
           <section className="flex flex-col gap-[16px]">
             <div className="flex flex-col gap-[4px]">
-              <Eyebrow>{t.quickRead.danhGiaTieuDe}</Eyebrow>
+              <Eyebrow cap="h2">{t.quickRead.danhGiaTieuDe}</Eyebrow>
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 {t.quickRead.danhGiaMo}
               </p>

@@ -17,13 +17,17 @@ export function GocNhinCard({
   gocNhin,
   nho = false,
   chinh = false,
+  cap = 'h3',
 }: {
   gocNhin: GocNhin;
   /** Thẻ phụ: chữ nhỏ hơn, dùng cho hai góc nhìn đứng sau */
   nho?: boolean;
   /** Thẻ dẫn đầu: tiêu đề cỡ lớn, chiếm trọn bề ngang */
   chinh?: boolean;
+  /** Cấp tiêu đề: 'h2' khi thẻ đứng ngay dưới h1 của trang (không được nhảy cấp h1 → h3) */
+  cap?: 'h2' | 'h3';
 }) {
+  const TieuDe = cap;
   const t = useT();
   const [moCanCu, setMoCanCu] = useState(false);
 
@@ -37,12 +41,12 @@ export function GocNhinCard({
     <The className="flex flex-col gap-[12px]">
       <span className="eyebrow">{gocNhin.nhomChu}</span>
 
-      <h3
+      <TieuDe
         className={chinh ? 'heading-sm' : nho ? 'text-[17px] font-semibold' : 'text-[20px] font-semibold'}
         style={{ color: 'var(--fg)' }}
       >
         {gocNhin.tieuDe}
-      </h3>
+      </TieuDe>
 
       <p className={chinh ? 'body-lg' : nho ? 'body-sm' : 'body-text'} style={chinh ? { color: 'var(--fg)' } : undefined}>
         {gocNhin.noiDung}

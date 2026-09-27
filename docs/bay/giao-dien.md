@@ -30,6 +30,17 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   Sửa nhầm tầng là chuyện đã xảy ra: viết lại khuôn câu của một bảng tất định rồi
   tưởng đã "đưa AI vào", trong khi màn đó vẫn không gọi model lần nào.
 
+- **Font tự phục vụ, MỘT file / họ chữ (latin + tiếng Việt) — đừng quay lại `next/font/google`
+  cho Inter / Inter Tight / JetBrains Mono.** Bản Google khai báo đủ các bộ ký tự với
+  unicode-range chồng nhau; gặp ă/đ/ơ/ư trình duyệt chọn file latin-ext (Inter 85KB) dù file
+  vietnamese đã có glyph → ~240KB font mỗi trang. Tệp ở `app/fonts/`, cắt lại bằng
+  `scripts/cat-font.py` (giữ đủ tính năng `calt cv11 ss02 ss03 tnum` mà `body` dùng). Cần thêm độ
+  đậm ngoài 400–700 hay ký tự ngoài latin + tiếng Việt thì sửa script rồi cắt lại.
+- **Font trang trí không tải trước.** Permanent Marker (chỉ hero trang chủ) và JetBrains Mono (nhãn
+  eyebrow) để `preload: false` — tải trước ở mọi trang là tranh băng thông với chữ chính (LCP).
+- **Khối chờ phải giữ chỗ gần bằng nội dung thật.** Khối chờ thấp (vài chục px) làm chân trang nằm
+  trong màn hình rồi bị đẩy xuống khi nội dung về — đo /la-so 27/09/2026: CLS 0,34, "Kém".
+
 Hai luật cho web ở màn hẹp, đã đo bằng Chrome ở 390px:
 - **Không trang nào được cuộn ngang.** Kiểm bằng `scrollWidth - clientWidth` phải bằng 0.
 - **Vùng chạm tối thiểu 44px.** `.nav-link` và `.link-text` dùng `::after` phủ thêm chiều cao ở
