@@ -102,7 +102,7 @@ export const en: TuDienApp = {
     homNay: 'Today',
     hanhTrinh: 'Journey',
     celes: 'Celes',
-    ketNoi: 'People',
+    ketNoi: 'Relationships',
     toi: 'Me',
   },
 

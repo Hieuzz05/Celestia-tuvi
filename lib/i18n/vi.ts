@@ -35,7 +35,7 @@ export const vi = {
     banDo: 'Khám phá bản đồ',
     hanhTrinh: 'Hành trình',
     hoiCeles: 'Hỏi Celes',
-    ketNoi: 'Kết nối',
+    ketNoi: 'Mối quan hệ',
     nguoiCuaToi: 'Lá số',
     taiKhoan: 'Tài khoản',
     quanTri: 'Quản trị',

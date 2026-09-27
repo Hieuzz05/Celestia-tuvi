@@ -1,9 +1,11 @@
 /**
  * Token thiết kế của Celestia trên di động.
  *
- * Nguồn: `D:\Celestia\Celestia_DESIGN.md`. Cùng bảng màu với web nhưng thang chữ
- * và bo góc khác — spec cấm thu nhỏ bố cục web xuống điện thoại, nên mọi con số ở
- * đây là con số dành riêng cho di động, không phải bản rút gọn của web.
+ * CÙNG design system với web (`app/globals.css`) — chốt 27/09/2026 sau phản biện:
+ * bản trước lấy bo góc và thang chữ riêng từ spec di động 16/09 (thẻ 18/22, nút 12,
+ * ô nhập 12, nút màu #DF37A7), nên app "cùng màu cùng font" nhưng lệch component.
+ * Giờ bo góc và màu nút theo đúng web; chỉ thang chữ tiêu đề co lại cho màn hẹp.
+ * Luật: pill (999) CHỈ cho lựa chọn / tag / bộ lọc; hành động là nút bo 8.
  *
  * Component chỉ được đọc token ngữ nghĩa (`mau.nen`, `mau.chu`...), không đọc
  * thẳng bảng màu gốc — đổi theme là đổi một chỗ.
@@ -13,6 +15,10 @@
 export const BANG_MAU = {
   aubergine: '#240029',
   fuchsia: '#DF37A7',
+  /** Nền nút hành động — web dùng bản đậm này để chữ trắng đạt tương phản WCAG */
+  fuchsiaNut: '#D32298',
+  /** Fuchsia cho CHỮ trên nền sáng (liên kết, nhãn nhấn) */
+  fuchsiaChu: '#B62B8B',
   hong: '#FFBDD3',
   vangAm: '#FFCC11',
   kem: '#FFF1BD',
@@ -58,7 +64,7 @@ const SANG: BoMau = {
   chuMo: BANG_MAU.chuMo,
   chuNhat: '#9B869B',
   vien: BANG_MAU.vien,
-  hanhDong: BANG_MAU.fuchsia,
+  hanhDong: BANG_MAU.fuchsiaNut,
   chuTrenHanhDong: BANG_MAU.trang,
   tot: BANG_MAU.tot,
   xau: BANG_MAU.xau,
@@ -100,7 +106,7 @@ export const CHU = {
   body: { fontSize: 16, lineHeight: 24, fontWeight: '400' as const },
   bodySm: { fontSize: 14, lineHeight: 20, fontWeight: '400' as const },
   caption: { fontSize: 12, lineHeight: 17, fontWeight: '400' as const },
-  eyebrow: { fontSize: 11, lineHeight: 13, fontWeight: '400' as const },
+  eyebrow: { fontSize: 12, lineHeight: 15, fontWeight: '400' as const },
 };
 
 /** Tên font đã nạp — heading và body tách họ, eyebrow dùng mono */
@@ -126,13 +132,14 @@ export const KHOANG = {
   x12: 48,
 };
 
+/** Theo web: thẻ 14, nút 6 (di động 8 cho vùng chạm to), ô nhập 3 (di động 6) */
 export const BO_GOC = {
-  the: 18,
-  theHero: 22,
-  nut: 12,
-  oNhap: 12,
+  the: 14,
+  theHero: 16,
+  nut: 8,
+  oNhap: 6,
   vien: 999,
-  bottomSheet: 24,
+  bottomSheet: 20,
 };
 
 /** Lề ngang của màn hình — spec cho 16/20/24 tuỳ bề ngang máy */

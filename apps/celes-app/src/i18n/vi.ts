@@ -104,7 +104,7 @@ export const vi = {
     homNay: 'Hôm nay',
     hanhTrinh: 'Hành trình',
     celes: 'Celes',
-    ketNoi: 'Kết nối',
+    ketNoi: 'Mối quan hệ',
     toi: 'Tôi',
   },
 
