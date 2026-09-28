@@ -30,6 +30,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-155/156/157 app di động: mệnh bàn đủ nội dung như web + màu (tứ hoá, đủ phụ tinh hai cột cát/hung, hạn, tam phương, bảng giữa, năm xem); bước giờ sinh đổi sang 12 khung giờ như web; sửa 4 chỗ app lấy tháng dương làm tháng xem. Nhánh `viec/app-gd1`, chưa gộp main, chưa soát bằng mắt trên máy thật | `43f2562` | 28/09/2026 |
 | CEL-155 mệnh bàn app di động viết lại: bỏ 3 chế độ Dễ hiểu/Cổ điển/Chuyên sâu, một lưới 4×4 đầy đủ fit một màn hình dọc (không cuộn ngang) — phản hồi thật từ chủ dự án kèm ảnh app đối thủ tham khảo cách trình bày. Sửa copy bước ngày sinh onboarding. Nhánh `viec/app-gd1`, chưa gộp main | `app-gd1-menh-ban` | 27/09/2026 |
 | App di động gọi API bằng token đăng nhập (Bearer) — **mới nửa máy chủ**, nhánh `viec/app-gd1` chưa gộp. Nửa app chờ chọn cách đăng nhập trên di động | `0992c1b` | 27/09 |
 | Thêm `HUONG-DAN-AI-AGENT.md` (hướng dẫn dùng .claude/agents cho người mới) | `ef17cb2` | 27/09/2026 |
