@@ -140,9 +140,9 @@ gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
 
 Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Hai việc lớn nhất còn lại: lớp NGÀY của Hành
 trình (cần đối chiếu quy tắc an ngày hạn) và cổng Gate 2 cho gói Plus. Mệnh bàn mobile (`app/ban-do.tsx`
-trong `apps/celes-app`) đã có bản đầu (27/09/2026): lưới 4×4 tĩnh, MỘT phiên bản đầy đủ thông tin
-(không chia Dễ hiểu/Cổ điển/Chuyên sâu như web), chữ rất nhỏ (token `micro`/`nano` — chỉ dùng ở màn
-này) để fit trọn 12 cung trên một màn hình dọc, không cuộn ngang. Hai tài liệu định hướng gốc:
+trong `apps/celes-app`): lưới 4×4 MỘT phiên bản, từ 28/09/2026 hiện đủ nội dung như mệnh bàn web
+(tứ hoá, đủ phụ tinh + vòng sao hai cột cát/hung, hạn, tam phương, bảng giữa, năm xem), vừa bề
+ngang màn hình, không cuộn ngang — xem luật 3 trong `apps/celes-app/README.md`. Hai tài liệu định hướng gốc:
 `D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf` và
 `D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (bản sau thay thế bản trước).
 

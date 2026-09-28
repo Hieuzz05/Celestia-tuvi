@@ -9,6 +9,7 @@ import { dien, useT } from '@/i18n/context';
 import { useMau } from '@/thiet-ke/theme';
 import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
 import { cungDaiVan, cungNguyetHan, cungTieuHan } from '@tuvi/ansao';
+import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
 
 /**
  * Hành trình — thời gian dưới dạng câu chuyện, không phải bảng tra.
@@ -28,10 +29,10 @@ export default function ManHanhTrinh() {
   const le = useSafeAreaInsets();
   const { laSo } = useHoSo();
 
-  const namNay = new Date().getFullYear();
+  const namNay = namAmHienTai();
   const [doan, setDoan] = useState<Doan>('tong-quan');
   const [nam, setNam] = useState(namNay);
-  const [thang, setThang] = useState(new Date().getMonth() + 1);
+  const [thang, setThang] = useState(thangAmHienTai());
 
   useEffect(() => {
     ghiSuKien('journey_viewed');

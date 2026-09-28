@@ -1,3 +1,4 @@
+import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
 import type { HoSo } from './ho-so';
 
 /**
@@ -46,8 +47,8 @@ export async function hoiCeles(
         gio: hoSo.gio,
         gioiTinh: hoSo.gioiTinh,
         hoTen: hoSo.ten,
-        namXem: bayGio.getFullYear(),
-        thangXem: bayGio.getMonth() + 1,
+        namXem: namAmHienTai(bayGio),
+        thangXem: thangAmHienTai(bayGio),
         cauHoi,
         // Chỉ gửi vài lượt gần nhất: đủ giữ mạch mà không phình yêu cầu
         lichSu: lichSu.slice(-6),

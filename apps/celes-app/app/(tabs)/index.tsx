@@ -11,6 +11,7 @@ import { dien, useT } from '@/i18n/context';
 import { useMau } from '@/thiet-ke/theme';
 import { BANG_MAU, BO_GOC, DO_NOI, KHOANG, LE_NGANG } from '@/thiet-ke/token';
 import { cungDaiVan } from '@tuvi/ansao';
+import { namAmHienTai } from '@tuvi/bay-gio';
 
 /**
  * Hôm nay — lý do mở app mỗi ngày.
@@ -44,7 +45,7 @@ export default function ManHomNay() {
   const chinh = gocNhin[0];
   const giaiDoan = useMemo(() => {
     if (!laSo || !hoSo) return null;
-    const tuoiAm = new Date().getFullYear() - laSo.thongTin.amLich.nam + 1;
+    const tuoiAm = namAmHienTai() - laSo.thongTin.amLich.nam + 1;
     return cungDaiVan(laSo, tuoiAm) ?? null;
   }, [laSo, hoSo]);
 

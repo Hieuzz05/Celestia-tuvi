@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { lapLaSo, type GioiTinh, type LaSo } from '@tuvi/ansao';
+import { namAmHienTai } from '@tuvi/bay-gio';
 import { docNhanh, type GocNhin, type YDinhDoc } from '@tuvi/quick-read';
 import { useNgonNgu } from '@/i18n/context';
 
@@ -117,7 +118,7 @@ export function HoSoProvider({ children }: { children: ReactNode }) {
   const gocNhin = useMemo(() => {
     if (!laSo) return [];
     const yDinh = hoSo?.banKhoan.map((b) => SANG_Y_DINH[b]).find(Boolean);
-    return docNhanh(laSo, new Date().getFullYear(), yDinh, ngonNgu);
+    return docNhanh(laSo, namAmHienTai(), yDinh, ngonNgu);
   }, [laSo, hoSo, ngonNgu]);
 
   return (
