@@ -30,6 +30,11 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-163 app di động: tab Mối quan hệ so hai lá số thật — chọn người trong Người của tôi, chọn ý định + câu hỏi, gọi `/api/hop-tuoi`; kết luận trước, bảng kỹ thuật sau, không điểm tổng; chưa ủng hộ thì thẻ khoá không nút mua. Nhánh `viec/app-gd1`, chưa gộp main | `6293adb` | 28/09/2026 |
+| CEL-162 app di động: tab Hành trình có chữ Celes viết (nhịp, ba chuyển động, mốc giai đoạn/năm/tháng) + màn Xem chi tiết luận hạn. Nhánh `viec/app-gd1`, chưa gộp main | `595c6d0` | 28/09/2026 |
+| CEL-161 app di động: luận giải — tổng quan (mở cho khách), 14 mặt đời, tóm lại, bức tranh lớn qua `/api/luan-giai-v3`. Nhánh `viec/app-gd1`, chưa gộp main | `14346df` | 28/09/2026 |
+| CEL-160 app di động: lá số đồng bộ với tài khoản web + màn Người của tôi (nhiều lá số, đặt làm lá số của tôi). Nhánh `viec/app-gd1`, chưa gộp main | `9b40f84` | 28/09/2026 |
+| CEL-159 app di động: Hỏi Celes ngang web — trí nhớ hội thoại chung web, chip gợi ý, lối đi tiếp, markdown, hết lượt. Nhánh `viec/app-gd1`, chưa gộp main | `237e510` | 28/09/2026 |
 | CEL-158 app di động: đăng nhập bằng mã 6 số qua email, app gắn Bearer token khi hỏi Celes (nửa còn lại của CEL-154); tab Celes mời đăng nhập thay vì báo lỗi, tab Tôi có đăng xuất. Nhánh `viec/app-gd1`, chưa gộp main. **Chờ chủ dự án:** thêm `{{ .Token }}` vào mẫu email Supabase, SMTP riêng trước khi có người dùng thật; production chưa nhận Bearer tới khi merge + deploy | `e176a32` | 28/09/2026 |
 | CEL-155/156/157 app di động: mệnh bàn đủ nội dung như web + màu (tứ hoá, đủ phụ tinh hai cột cát/hung, hạn, tam phương, bảng giữa, năm xem); bước giờ sinh đổi sang 12 khung giờ như web; sửa 4 chỗ app lấy tháng dương làm tháng xem. Nhánh `viec/app-gd1`, chưa gộp main, chưa soát bằng mắt trên máy thật | `43f2562` | 28/09/2026 |
 | CEL-155 mệnh bàn app di động viết lại: bỏ 3 chế độ Dễ hiểu/Cổ điển/Chuyên sâu, một lưới 4×4 đầy đủ fit một màn hình dọc (không cuộn ngang) — phản hồi thật từ chủ dự án kèm ảnh app đối thủ tham khảo cách trình bày. Sửa copy bước ngày sinh onboarding. Nhánh `viec/app-gd1`, chưa gộp main | `app-gd1-menh-ban` | 27/09/2026 |
