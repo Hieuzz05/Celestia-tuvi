@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| — | (chưa có việc nào đang chạy) | — | — | — |
+| Claude (máy 1) | Cứng hoá production: test tự động engine an sao, CI GitHub Actions, chặn admin khi ADMIN_EMAILS rỗng, trang lỗi error/not-found, rate limit | `viec/cung-hoa-production` | `scripts/test-ansao-chuan.ts` (mới), `.github/workflows/` (mới), `lib/supabase/config.ts`, `app/error.tsx`/`not-found.tsx`/`global-error.tsx` (mới), `lib/i18n/*`, `proxy.ts` | 28/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
