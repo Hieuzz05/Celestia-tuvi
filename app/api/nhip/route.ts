@@ -8,6 +8,7 @@ import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
 import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
 import type { NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
 import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * "Điều đang chuyển động" — phần chữ của Hành trình, do model viết.
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
   }
 
   if (
+    !laNgayDuongCoThat(body.ngay, body.thang, body.nam) ||
     !soHopLe(body.ngay, 1, 31) ||
     !soHopLe(body.thang, 1, 12) ||
     !soHopLe(body.nam, 1900, 2100) ||

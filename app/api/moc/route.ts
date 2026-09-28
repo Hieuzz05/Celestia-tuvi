@@ -9,6 +9,7 @@ import { CHI, CHINH_TINH } from '@/lib/tuvi/constants';
 import { cacGiaiDoan, cacNam, cacThang, type MocHanhTrinh } from '@/lib/tuvi/hanh-trinh';
 import { KHUON, type NgonNguDoc } from '@/lib/tuvi/quick-read-noi-dung';
 import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * Chữ cho các mốc trên dòng thời gian, sinh theo NHÓM chứ không theo từng mốc.
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
   }
 
   if (
+    !laNgayDuongCoThat(body.ngay, body.thang, body.nam) ||
     !soHopLe(body.ngay, 1, 31) ||
     !soHopLe(body.thang, 1, 12) ||
     !soHopLe(body.nam, 1900, 2100) ||

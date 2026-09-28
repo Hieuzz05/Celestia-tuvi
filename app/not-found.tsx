@@ -1,0 +1,20 @@
+'use client';
+
+import Link from 'next/link';
+import { Shell } from '@/components/ui';
+import { useT } from '@/lib/i18n/context';
+
+export default function KhongTimThay() {
+  const t = useT().loiTrang;
+  return (
+    <Shell className="py-[60px]">
+      <h1 className="heading">{t.khongThayTieuDe}</h1>
+      <p className="body-text mt-[18px] max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
+        {t.khongThayMoTa}
+      </p>
+      <Link href="/" className="btn-primary mt-[24px] inline-block">
+        {t.veTrangChu}
+      </Link>
+    </Shell>
+  );
+}

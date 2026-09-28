@@ -13,6 +13,9 @@ export function laAdmin(email: string | null | undefined): boolean {
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
-  if (ds.length === 0) return true; // chưa khai báo admin -> chế độ mở, dùng khi phát triển
+  // Chưa khai báo admin: chỉ mở khi chạy `next dev` trên máy. Trên Vercel (cả bản
+  // xem thử) NODE_ENV là production — quên đặt biến mà vẫn mở thì mọi tài khoản
+  // vừa vào được /admin, vừa được miễn hạn mức AI ở lib/support/quota*.ts.
+  if (ds.length === 0) return process.env.NODE_ENV !== 'production';
   return Boolean(email && ds.includes(email.toLowerCase()));
 }

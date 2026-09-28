@@ -13,3 +13,6 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Chặn quyền vào `/admin` đã nằm ở `app/admin/layout.tsx`** — server component, chạy trước mọi
   trang con, và in ra đúng email đang đăng nhập khi từ chối. Đừng thêm cổng thứ hai ở tầng page:
   nó không bao giờ chạy tới, mà lại gây hiểu nhầm là chưa có cổng nào.
+- **`ADMIN_EMAILS` rỗng trên Vercel = không ai là admin** (từ 28/09/2026). Trước đó rỗng nghĩa là
+  MỌI tài khoản là admin — vừa vào được `/admin`, vừa được miễn hạn mức AI vì `laAdmin` cũng quyết
+  định `admin_exempt` trong `lib/support/quota*.ts`. Chế độ mở giờ chỉ còn khi `next dev`.

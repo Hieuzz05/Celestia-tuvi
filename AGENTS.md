@@ -80,7 +80,8 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
-npm run lint              # ĐANG có sẵn 7 lỗi set-state-in-effect — đừng để tăng thêm
+node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (đang 5 lỗi set-state-in-effect)
+npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner, validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — không được tụt
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
@@ -93,7 +94,12 @@ node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy kh
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
 ```
 
-Nếu lint tăng quá 7, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua.
+Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua. Sửa bớt được lỗi cũ thì HẠ
+`MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
+
+**CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
 logic, hay thêm một luật bất biến mới, thì cập nhật `PRODUCT-BACKLOG.xlsx` TRONG CÙNG commit đó.

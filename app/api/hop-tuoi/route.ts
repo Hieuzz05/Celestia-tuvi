@@ -6,6 +6,7 @@ import { luanKetNoi } from '@/lib/ket-noi/tra-loi';
 import { laYDinhHopLe, Y_DINH_MAC_DINH, type YDinhKetNoi } from '@/lib/ket-noi/y-dinh';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { soSanhHaiLaSo } from '@/lib/tuvi/hoptuoi';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
 
@@ -24,6 +25,7 @@ const soHopLe = (v: unknown, min: number, max: number) =>
 function kiemTra(n: NguoiXem | undefined): string | null {
   if (!n) return 'Thiếu thông tin người xem';
   if (
+    !laNgayDuongCoThat(n.ngay, n.thang, n.nam) ||
     !soHopLe(n.ngay, 1, 31) ||
     !soHopLe(n.thang, 1, 12) ||
     !soHopLe(n.nam, 1900, 2100) ||

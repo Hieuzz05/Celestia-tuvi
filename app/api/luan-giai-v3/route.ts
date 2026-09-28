@@ -11,6 +11,7 @@ import { laKhach, xinLuotLaSoMoi } from '@/lib/auth/gioi-han-khach';
 import { phienBanKho } from '@/lib/rag/tai-lieu-meta';
 import { docThuVien } from '@/lib/rag/thu-vien/kho';
 import { CAU_HOI_V3, luanNhieuCau, PHIEN_BAN_V3, type KetQuaCauV3 } from '@/lib/rag/v3';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
 
@@ -137,6 +138,7 @@ export async function POST(req: Request) {
   const soHopLe = (v: unknown, min: number, max: number) =>
     typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
   if (
+    !laNgayDuongCoThat(ngay, thang, nam) ||
     !soHopLe(ngay, 1, 31) ||
     !soHopLe(thang, 1, 12) ||
     !soHopLe(nam, 1900, 2100) ||
