@@ -66,8 +66,14 @@ export default function ManDangNhap() {
       setLoi(ketQua);
       return;
     }
-    if (sau === 'quay-lai' && router.canGoBack()) router.back();
-    else router.replace('/(tabs)');
+    if (sau === 'quay-lai' && router.canGoBack()) {
+      router.back();
+      return;
+    }
+    // Về điểm rẽ: nó chờ đồng bộ lá số xong rồi mới chọn Hôm nay hay onboarding —
+    // máy mới đăng nhập trước thì nhận lá số từ tài khoản, khỏi nhập lại
+    if (router.canDismiss()) router.dismissAll();
+    router.replace('/');
   };
 
   const dongLoi = loi && (

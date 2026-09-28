@@ -71,7 +71,7 @@ export default function ManToi() {
           <Eyebrow>{t.toi.nhomDuLieu}</Eyebrow>
           <View style={{ gap: KHOANG.x2 }}>
             {[
-              { nhan: t.toi.nguoiCuaToi, icon: IconToi },
+              { nhan: t.toi.nguoiCuaToi, icon: IconToi, di: '/nguoi-cua-toi' as const },
               { nhan: t.homNay.khamPha.banDo, icon: IconBanDo, di: '/ban-do' as const },
               { nhan: t.toi.daLuu, icon: IconSach },
             ].map((m) => (

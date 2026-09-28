@@ -1,10 +1,10 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, useWindowDimensions, type TextStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chu, Eyebrow, NutPhu, Pill, The } from '@/giao-dien/co-ban';
 import { IconQuayLai } from '@/giao-dien/icon';
-import { useHoSo } from '@/du-lieu/ho-so';
+import { dungLaSo, useHoSo } from '@/du-lieu/ho-so';
 import { useT } from '@/i18n/context';
 import { useTheme } from '@/thiet-ke/theme';
 import { BO_GOC, CHAM_TOI_THIEU, FONT, KHOANG, LE_NGANG } from '@/thiet-ke/token';
@@ -174,8 +174,16 @@ export default function ManBanDo() {
   const t = useT();
   const { mau, theme } = useTheme();
   const le = useSafeAreaInsets();
-  const { laSo } = useHoSo();
+  const { laSo: laSoCuaToi, nguoi } = useHoSo();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const { width } = useWindowDimensions();
+
+  // ?id= mở lá số một người trong "Người của tôi"; không có thì là lá số của mình
+  const nguoiXem = id ? nguoi.find((n) => n.id === id) : undefined;
+  const laSo = useMemo(
+    () => (nguoiXem ? dungLaSo(nguoiXem) : laSoCuaToi),
+    [nguoiXem, laSoCuaToi]
+  );
 
   const [namXem, setNamXem] = useState(namAmHienTai());
   const [thangXem] = useState(thangAmHienTai());
@@ -201,7 +209,7 @@ export default function ManBanDo() {
     return (
       <View style={{ flex: 1, backgroundColor: mau.nen, padding: LE_NGANG, paddingTop: le.top + KHOANG.x10 }}>
         <Chu kieu="body" mo>
-          {t.trangThai.rong}
+          {id && !nguoiXem ? t.nguoi.khongTimThay : t.trangThai.rong}
         </Chu>
       </View>
     );
