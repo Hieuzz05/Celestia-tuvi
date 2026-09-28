@@ -51,7 +51,7 @@ export function thanLaSo(hoSo: HoSo) {
 
 /**
  * Một lượt POST JSON tới máy chủ, gắn Bearer nếu đã đăng nhập.
- * 401 `canDangNhap` → LoiCanDangNhap, 402 → LoiHetLuot, còn lại → LoiCeles.
+ * 401 `canDangNhap` / 429 `gioiHanKhach` → LoiCanDangNhap, 402 → LoiHetLuot, còn lại → LoiCeles.
  */
 export async function goiApi<T>(duong: string, body: unknown): Promise<T> {
   // App không có cookie như trình duyệt — máy chủ đọc phiên từ header Bearer
@@ -72,6 +72,10 @@ export async function goiApi<T>(duong: string, body: unknown): Promise<T> {
     freeLimit?: number;
   };
   if (res.status === 401 && data.canDangNhap) throw new LoiCanDangNhap('can-dang-nhap');
+  // Khách đã xem đủ lá số mới trong ngày (tổng quan luận giải) — lối ra cũng là đăng nhập
+  if (res.status === 429 && (data as { gioiHanKhach?: boolean }).gioiHanKhach) {
+    throw new LoiCanDangNhap('gioi-han-khach');
+  }
   if (res.status === 402) throw new LoiHetLuot(data.freeLimit);
   if (!res.ok) throw new LoiCeles(data.loi ?? `http-${res.status}`);
   return data;
@@ -117,5 +121,85 @@ export async function hoiCeles(
     model: data.model,
     goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
     loiDi: Array.isArray(data.loiDi) ? data.loiDi : [],
+  };
+}
+
+/* ------------------------------------------------------------ Luận giải */
+
+/** Một câu của luận giải chuyên sâu — khuôn `CauV3` của web */
+export interface CauV3 {
+  id: string;
+  cauHoi: string;
+  luanGiai: string;
+  /** Căn cứ trên lá số — viết bằng tên sao, tên cung; màn hình ẩn mặc định */
+  viSao: string;
+  chuaViet: boolean;
+}
+
+/**
+ * Năm xem của luận giải: năm DƯƠNG hiện tại, đúng như trang web gửi. Khoá bài
+ * đệm trên máy chủ có năm xem — lệch một năm là trượt bài web đã viết, tốn một
+ * lượt viết mới cho cùng nội dung.
+ */
+export const namXemLuanGiai = () => new Date().getFullYear();
+
+function thanV3(hoSo: HoSo) {
+  const { ngay, thang, nam, gio, gioiTinh } = thanLaSo(hoSo);
+  return { ngay, thang, nam, gio, gioiTinh, namXem: namXemLuanGiai() };
+}
+
+/** Chỉ giữ trường màn hình dùng — phần còn lại (độ rõ, dấu vết kho) không lên giao diện */
+const gonCau = (c: Partial<CauV3>): CauV3 => ({
+  id: String(c.id ?? ''),
+  cauHoi: String(c.cauHoi ?? ''),
+  luanGiai: String(c.luanGiai ?? ''),
+  viSao: String(c.viSao ?? ''),
+  chuaViet: Boolean(c.chuaViet) || !c.luanGiai,
+});
+
+/**
+ * Các câu `chi` của một nhóm (`tong-quan` hoặc id chủ đề). Tổng quan mở cho
+ * khách; nhóm khác cần đăng nhập. Không trừ hạn mức — bài được đệm dùng chung.
+ */
+export async function docNhomV3(hoSo: HoSo, nhom: string, chi: string[]): Promise<CauV3[]> {
+  const data = await goiApi<{ cau?: Partial<CauV3>[] }>('/api/luan-giai-v3', {
+    ...thanV3(hoSo),
+    nhom,
+    chi,
+  });
+  return Array.isArray(data.cau) ? data.cau.map(gonCau) : [];
+}
+
+/** Phần "Tóm lại" của một chủ đề — chỉ xin khi đã đủ các câu */
+export async function docTomLaiV3(hoSo: HoSo, nhom: string): Promise<string | null> {
+  try {
+    const data = await goiApi<{ tomLai?: string | null }>('/api/luan-giai-v3', {
+      ...thanV3(hoSo),
+      nhom,
+      tomLai: true,
+    });
+    return data.tomLai ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface BucTranh {
+  bucTranh: string | null;
+  soChuDe: number;
+  canToiThieu?: number;
+}
+
+/** Bức tranh lớn: ghép phần tóm lại của các chủ đề đã đọc */
+export async function docBucTranhV3(hoSo: HoSo): Promise<BucTranh> {
+  const data = await goiApi<Partial<BucTranh>>('/api/luan-giai-v3', {
+    ...thanV3(hoSo),
+    nhom: 'tinh-cach',
+    bucTranh: true,
+  });
+  return {
+    bucTranh: data.bucTranh ?? null,
+    soChuDe: Number(data.soChuDe ?? 0),
+    canToiThieu: data.canToiThieu,
   };
 }

@@ -4,7 +4,7 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chu, Eyebrow, NenGradient, NutChu, Pill, The } from '@/giao-dien/co-ban';
 import { BangViSao } from '@/giao-dien/vi-sao';
-import { IconBanDo, IconKetNoi, IconMuiTenPhai, IconSach, MAU_LINH_VUC } from '@/giao-dien/icon';
+import { IconBanDo, IconCeles, IconKetNoi, IconMuiTenPhai, IconSach, MAU_LINH_VUC } from '@/giao-dien/icon';
 import { useHoSo } from '@/du-lieu/ho-so';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { dien, useT } from '@/i18n/context';
@@ -172,6 +172,7 @@ export default function ManHomNay() {
             {[
               { nhan: t.homNay.khamPha.banDo, icon: IconBanDo, di: '/ban-do' as const },
               { nhan: t.homNay.khamPha.ketNoi, icon: IconKetNoi, di: '/(tabs)/ket-noi' as const },
+              { nhan: t.homNay.khamPha.chuDe, icon: IconCeles, di: '/luan-giai' as const },
               { nhan: t.homNay.khamPha.hoc, icon: IconSach, di: '/(tabs)/toi' as const },
             ].map((m) => (
               <The
