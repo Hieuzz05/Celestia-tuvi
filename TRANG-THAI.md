@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Cứng hoá production: test tự động engine an sao, CI GitHub Actions, chặn admin khi ADMIN_EMAILS rỗng, trang lỗi error/not-found, rate limit | `viec/cung-hoa-production` | `scripts/test-ansao-chuan.ts` (mới), `.github/workflows/` (mới), `lib/supabase/config.ts`, `app/error.tsx`/`not-found.tsx`/`global-error.tsx` (mới), `lib/i18n/*`, `proxy.ts` | 28/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -30,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-164..168 cứng hoá production: test engine tự đối chiếu + 60 mẫu đóng băng, chặn ngày không có thật (form + 11 route), admin đóng khi ADMIN_EMAILS rỗng trên production, trang lỗi/not-found, giới hạn tốc độ route AI trong `proxy.ts`, CI GitHub Actions. Nhánh `viec/cung-hoa-production`, chưa gộp main | `aa51751` | 28/09/2026 |
 | CEL-163 app di động: tab Mối quan hệ so hai lá số thật — chọn người trong Người của tôi, chọn ý định + câu hỏi, gọi `/api/hop-tuoi`; kết luận trước, bảng kỹ thuật sau, không điểm tổng; chưa ủng hộ thì thẻ khoá không nút mua. Nhánh `viec/app-gd1`, chưa gộp main | `6293adb` | 28/09/2026 |
 | CEL-162 app di động: tab Hành trình có chữ Celes viết (nhịp, ba chuyển động, mốc giai đoạn/năm/tháng) + màn Xem chi tiết luận hạn. Nhánh `viec/app-gd1`, chưa gộp main | `595c6d0` | 28/09/2026 |
 | CEL-161 app di động: luận giải — tổng quan (mở cho khách), 14 mặt đời, tóm lại, bức tranh lớn qua `/api/luan-giai-v3`. Nhánh `viec/app-gd1`, chưa gộp main | `14346df` | 28/09/2026 |
