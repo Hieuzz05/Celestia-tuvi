@@ -250,6 +250,23 @@ export const vi = {
   },
 
   hanhTrinh: {
+    giaiDoan: 'Giai đoạn',
+    moTa: 'Có những thay đổi diễn ra trong nhiều năm, có chuyện chỉ nổi lên trong một năm, và có tháng chỉ cần chú ý đúng một điều.',
+    dangMo: 'Đang mở ra',
+    dangCang: 'Đang căng',
+    canCho: 'Cần chờ',
+    giaiDoanMo: 'Những giai đoạn kéo dài nhiều năm — trọng tâm cuộc sống đang dịch chuyển về đâu.',
+    namMo: 'Mỗi năm làm nổi lên một vài chủ đề khác nhau. Chọn năm bạn muốn xem.',
+    thangTieuDe: 'Từng tháng trong năm {nam}',
+    thangMo: 'Tháng tính theo cách chia của lá số nên có thể lệch lịch treo tường vài ngày.',
+    dangDienRa: 'Đang ở đây',
+    veHienTai: 'Về hiện tại',
+    lui: 'Lùi',
+    toi: 'Tới',
+    hoiVe: 'Hỏi Celes về quãng này',
+    ngayTieuDe: 'Còn từng ngày thì sao?',
+    ngayMo: 'Lớp ngày cần một quy tắc tính riêng mà Celestia chưa đối chiếu xong, nên tạm chưa mở. Ba lớp trên đã đủ để thấy nhịp của một giai đoạn.',
+    moiDangNhap: 'Đăng nhập để Celes viết lời cho từng giai đoạn, từng năm, từng tháng của bạn.',
     tieuDe: 'Hành trình của bạn',
     tongQuan: 'Tổng quan',
     nam: 'Năm',
@@ -260,6 +277,19 @@ export const vi = {
     nenTanDung: 'Điều nên tận dụng',
     hoiVeNam: 'Hỏi Celes về năm này',
     hoiVeThang: 'Hỏi Celes về tháng này',
+  },
+
+  chiTietHan: {
+    xemChiTiet: 'Xem chi tiết',
+    quayLai: 'Hành trình',
+    theoLinhVuc: 'Luận theo lĩnh vực',
+    viSao: 'Vì sao Celes nói vậy?',
+    viSaoDong: 'Thu gọn căn cứ',
+    ctaTieuDe: 'Có điều gì trong giai đoạn này khiến bạn băn khoăn?',
+    ctaNut: 'Hỏi Celes về giai đoạn này',
+    khoaTieuDe: 'Muốn nhìn kỹ giai đoạn này?',
+    khoaMoTa: 'Phần đọc sâu theo từng lớp vận và từng lĩnh vực đang mở cho tài khoản ủng hộ Celestia. Phần tổng quan ở trên vẫn là của bạn.',
+    loi: 'Celes chưa mở được phần này. Thử lại sau một chút nhé.',
   },
 
   ketNoi: {

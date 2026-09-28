@@ -1,4 +1,5 @@
 import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
+import type { CapLuanHan, LuanHan } from '@tuvi/luan-han';
 import type { HoSo } from './ho-so';
 import { tokenHienTai } from './supabase';
 
@@ -202,4 +203,99 @@ export async function docBucTranhV3(hoSo: HoSo): Promise<BucTranh> {
     soChuDe: Number(data.soChuDe ?? 0),
     canToiThieu: data.canToiThieu,
   };
+}
+
+/* ------------------------------------------------------------ Hành trình */
+
+type NgonNgu = 'vi' | 'en';
+
+export interface ChuyenDongAi {
+  tieuDe: string;
+  noiDung: string;
+}
+
+/** Ba chuyển động do model viết — đang mở / đang căng / cần chờ, kèm đoạn ghép lại */
+export interface NhipAi {
+  dangMo: ChuyenDongAi;
+  dangCang: ChuyenDongAi;
+  canCho: ChuyenDongAi;
+  ghepLai: string;
+  /** Chỉ có ở bài chi tiết: id lĩnh vực → đoạn văn model viết */
+  linhVuc?: Record<string, string>;
+}
+
+function thanHanhTrinh(hoSo: HoSo) {
+  const { ngay, thang, nam, gio, gioiTinh } = thanLaSo(hoSo);
+  return { ngay, thang, nam, gio, gioiTinh };
+}
+
+/**
+ * Chữ model viết cho các mốc của một lớp (id mốc → câu). Máy chủ tự dựng danh
+ * sách mốc từ engine nên chỉ cần gửi lá số và năm xem (năm ÂM, như web).
+ * Hỏng hay 204 thì trả rỗng — màn hình giữ câu tất định của engine.
+ */
+export async function docMoc(
+  hoSo: HoSo,
+  loai: 'giai-doan' | 'nam' | 'thang',
+  namXem: number,
+  ngonNgu: NgonNgu
+): Promise<Record<string, string>> {
+  try {
+    const d = await goiApi<{ moc?: Record<string, string> }>('/api/moc', {
+      ...thanHanhTrinh(hoSo),
+      namXem,
+      loai,
+      ngonNgu,
+    });
+    return d.moc ?? {};
+  } catch {
+    return {};
+  }
+}
+
+/** Nhịp tháng đang chọn — thẻ đầu Hành trình. Hỏng thì null, thẻ tất định vẫn đứng */
+export async function docNhip(
+  hoSo: HoSo,
+  namXem: number,
+  thangXem: number,
+  ngonNgu: NgonNgu
+): Promise<NhipAi | null> {
+  try {
+    const d = await goiApi<Partial<NhipAi>>('/api/nhip', {
+      ...thanHanhTrinh(hoSo),
+      cap: 'thang',
+      namXem,
+      thangXem,
+      ngonNgu,
+    });
+    return d.dangMo && d.dangCang && d.canCho ? (d as NhipAi) : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface KetQuaLuanHan {
+  /** Đã mở quyền đọc sâu chưa — chưa thì `bai` chỉ còn tiêu đề và chủ đề chính */
+  day: boolean;
+  ai: NhipAi | null;
+  bai: LuanHan;
+}
+
+/** Luận hạn chi tiết — tầng hai của Hành trình, dựng ở máy chủ vì là phần trả phí */
+export async function docLuanHan(
+  hoSo: HoSo,
+  cap: CapLuanHan,
+  namXem: number,
+  thangXem: number,
+  ngonNgu: NgonNgu
+): Promise<KetQuaLuanHan> {
+  const d = await goiApi<Partial<KetQuaLuanHan>>('/api/luan-han', {
+    ...thanLaSo(hoSo),
+    cap,
+    namXem,
+    thangXem,
+    ngonNgu,
+  });
+  if (!d.bai) throw new LoiCeles('khong-co-noi-dung');
+  return { day: Boolean(d.day), ai: d.ai ?? null, bai: d.bai };
 }

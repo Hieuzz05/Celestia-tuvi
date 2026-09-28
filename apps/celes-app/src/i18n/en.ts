@@ -248,6 +248,23 @@ export const en: TuDienApp = {
   },
 
   hanhTrinh: {
+    giaiDoan: 'Stages',
+    moTa: 'Some changes run for years, some things surface for a single year, and some months only ask you to watch one thing.',
+    dangMo: 'Opening up',
+    dangCang: 'Under strain',
+    canCho: 'Not yet',
+    giaiDoanMo: 'The stretches that run for years — where the centre of your life is moving.',
+    namMo: 'Each year brings a different handful of themes to the surface. Pick the year you want.',
+    thangTieuDe: 'Month by month in {nam}',
+    thangMo: 'Months follow the chart’s own division, so they can sit a few days off your wall calendar.',
+    dangDienRa: 'You are here',
+    veHienTai: 'Back to now',
+    lui: 'Back',
+    toi: 'Forward',
+    hoiVe: 'Ask Celes about this stretch',
+    ngayTieuDe: 'What about single days?',
+    ngayMo: 'The day layer needs a rule Celestia has not finished checking, so it stays closed for now. The three layers above are enough to read the rhythm of a stretch.',
+    moiDangNhap: 'Sign in so Celes can write about each of your stages, years and months.',
     tieuDe: 'Your journey',
     tongQuan: 'Overview',
     nam: 'Year',
@@ -258,6 +275,19 @@ export const en: TuDienApp = {
     nenTanDung: 'Worth using',
     hoiVeNam: 'Ask Celes about this year',
     hoiVeThang: 'Ask Celes about this month',
+  },
+
+  chiTietHan: {
+    xemChiTiet: 'See the detail',
+    quayLai: 'Your journey',
+    theoLinhVuc: 'By area of life',
+    viSao: 'Why does Celes say so?',
+    viSaoDong: 'Collapse the evidence',
+    ctaTieuDe: 'Is something in this stretch on your mind?',
+    ctaNut: 'Ask Celes about this stretch',
+    khoaTieuDe: 'Want a closer look at this stretch?',
+    khoaMoTa: 'The layer-by-layer reading for each area of life is open to Celestia supporter accounts. The overview above is still yours.',
+    loi: 'Celes could not open this part. Try again in a moment.',
   },
 
   ketNoi: {

@@ -33,6 +33,15 @@ export function tuyenApp(duong: string): Href | null {
       return '/ban-do';
     case '/hanh-trinh':
       return '/(tabs)/hanh-trinh';
+    case '/hanh-trinh/chi-tiet': {
+      const lay = (k: string) => new RegExp(`(?:^|&)${k}=([\w-]+)`).exec(truyVan)?.[1];
+      const params: Record<string, string> = {};
+      for (const k of ['cap', 'nam', 'thang']) {
+        const v = lay(k);
+        if (v) params[k] = v;
+      }
+      return { pathname: '/chi-tiet-han', params };
+    }
     case '/hop-tuoi':
       return '/(tabs)/ket-noi';
     default:
