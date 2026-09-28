@@ -1,6 +1,8 @@
 import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
+import type { KetQuaSoSanh } from '@tuvi/hoptuoi';
 import type { CapLuanHan, LuanHan } from '@tuvi/luan-han';
 import type { HoSo } from './ho-so';
+import type { NguoiLuu } from './la-so-luu';
 import { tokenHienTai } from './supabase';
 
 /**
@@ -298,4 +300,49 @@ export async function docLuanHan(
   });
   if (!d.bai) throw new LoiCeles('khong-co-noi-dung');
   return { day: Boolean(d.day), ai: d.ai ?? null, bai: d.bai };
+}
+
+/* ---------------------------------------------------------------- Mối quan hệ */
+
+/** Cùng bộ id với `lib/ket-noi/y-dinh.ts` — máy chủ chọn cung và mục theo id này */
+export type YDinhKetNoi = 'tinh-cam' | 'lam-an' | 'ban-be' | 'gia-dinh' | 'khac';
+export const Y_DINH_KET_NOI: YDinhKetNoi[] = ['tinh-cam', 'lam-an', 'ban-be', 'gia-dinh', 'khac'];
+
+export interface KetNoiAi {
+  yDinh: YDinhKetNoi;
+  dangChuY: { tieuDe: string; noiDung: string };
+  muc: { id: string; tieuDe: string; noiDung: string; luongNguoc?: string }[];
+  cauHoiCuaBan?: { cauHoi: string; traLoi: string };
+  canCu: {
+    duKien: { id: string; noiDung: string }[];
+    cachNoi?: string | null;
+    coNguon: boolean;
+    phuongPhap: string;
+  };
+}
+
+/**
+ * Bảng so của engine luôn có; phần diễn giải `ketNoi` có thể vắng khi phía AI
+ * hỏng. Máy chủ còn trả tên model / lý do lỗi — cố ý KHÔNG nhận vào đây, để
+ * không màn nào lỡ hiện ra.
+ */
+export interface KetQuaKetNoi {
+  soSanh: KetQuaSoSanh;
+  ketNoi: KetNoiAi | null;
+}
+
+/** So hai lá số theo một ý định. 402 (chưa mở quyền) đi ra thành LoiHetLuot */
+export async function docKetNoi(
+  hoSo: HoSo,
+  b: NguoiLuu,
+  yDinh: YDinhKetNoi,
+  cauHoi: string
+): Promise<KetQuaKetNoi> {
+  const d = await goiApi<{ soSanh?: KetQuaSoSanh; ketNoi?: KetNoiAi }>('/api/hop-tuoi', {
+    a: thanLaSo(hoSo),
+    b: { ngay: b.ngay, thang: b.thang, nam: b.nam, gio: b.gio, gioiTinh: b.gioiTinh, hoTen: b.hoTen },
+    comparison: { intent: yDinh, question: cauHoi.trim() || undefined },
+  });
+  if (!d.soSanh) throw new LoiCeles('khong-co-noi-dung');
+  return { soSanh: d.soSanh, ketNoi: d.ketNoi ?? null };
 }
