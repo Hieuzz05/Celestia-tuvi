@@ -8,11 +8,13 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Chu, Eyebrow, ONhap, Pill, The } from '@/giao-dien/co-ban';
+import { useRouter } from 'expo-router';
+import { Chu, Eyebrow, NutChinh, ONhap, Pill, The } from '@/giao-dien/co-ban';
 import { IconCeles, IconGui, MAU_LINH_VUC } from '@/giao-dien/icon';
 import { LienKetViSao } from '@/giao-dien/vi-sao';
-import { hoiCeles, type TinNhanGui } from '@/du-lieu/api';
+import { hoiCeles, LoiCanDangNhap, type TinNhanGui } from '@/du-lieu/api';
 import { useHoSo } from '@/du-lieu/ho-so';
+import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { dien, useT } from '@/i18n/context';
 import { useMau } from '@/thiet-ke/theme';
@@ -24,6 +26,10 @@ import { BO_GOC, CHAM_TOI_THIEU, KHOANG, LE_NGANG } from '@/thiet-ke/token';
  * Không gọi là chatbot, không hiện tên model, không hiện trạng thái kỹ thuật.
  * Lúc chờ thì nói "Celes đang nhìn lại những điều liên quan…" chứ không phải
  * "đang gọi AI"; lúc lỗi thì nói Celes chưa hoàn thành được, không phải mã lỗi.
+ *
+ * Hỏi Celes cần tài khoản (máy chủ chặn bằng `canDangNhap`). Chưa đăng nhập thì
+ * KHÔNG gửi và KHÔNG xoá câu đang gõ — hiện thẻ mời đăng nhập, xong quay lại
+ * đúng màn này bấm gửi tiếp. Thẻ tự biến mất khi đã có phiên.
  */
 
 interface TinNhan extends TinNhanGui {
@@ -36,8 +42,13 @@ export default function ManCeles() {
   const mau = useMau();
   const le = useSafeAreaInsets();
   const { hoSo } = useHoSo();
+  const router = useRouter();
+  const { coTaiKhoan, phien } = useTaiKhoan();
 
   const [tin, setTin] = useState<TinNhan[]>([]);
+  const [canDangNhap, setCanDangNhap] = useState(false);
+  // Có phiên rồi thì thôi mời — không cần effect để tắt cờ
+  const moiDangNhap = canDangNhap && !phien;
   const [nhap, setNhap] = useState('');
   const [dangCho, setDangCho] = useState(false);
   const danhSach = useRef<FlatList<TinNhan>>(null);
@@ -49,6 +60,12 @@ export default function ManCeles() {
   const gui = async (noiDung: string) => {
     const cau = noiDung.trim();
     if (!cau || !hoSo || dangCho) return;
+
+    if (coTaiKhoan && !phien) {
+      setNhap(cau);
+      setCanDangNhap(true);
+      return;
+    }
 
     const cuaToi: TinNhan = { id: `u${Date.now()}`, vaiTro: 'nguoi-dung', noiDung: cau };
     const truoc = tin;
@@ -65,7 +82,15 @@ export default function ManCeles() {
       );
       setTin((x) => [...x, { id: `c${Date.now()}`, vaiTro: 'tro-ly', noiDung: traLoi }]);
       ghiSuKien('celes_response_received');
-    } catch {
+    } catch (e) {
+      // Phiên hết hạn giữa chừng: rút câu vừa gửi về ô nhập, mời đăng nhập lại.
+      // Còn phiên mà máy chủ vẫn chặn thì mời nữa chỉ thành vòng lặp — báo lỗi chung.
+      if (e instanceof LoiCanDangNhap && coTaiKhoan && !phien) {
+        setTin(truoc);
+        setNhap(cau);
+        setCanDangNhap(true);
+        return;
+      }
       setTin((x) => [
         ...x,
         { id: `e${Date.now()}`, vaiTro: 'tro-ly', noiDung: t.trangThai.loi, loi: true },
@@ -164,6 +189,21 @@ export default function ManCeles() {
             ) : null
           }
         />
+      )}
+
+      {moiDangNhap && (
+        <View style={{ paddingHorizontal: LE_NGANG, paddingBottom: KHOANG.x3 }}>
+          <The am style={{ gap: KHOANG.x3 }}>
+            <Chu kieu="h3">{t.celes.canDangNhapTieuDe}</Chu>
+            <Chu kieu="bodySm" mo>
+              {t.celes.canDangNhapMoTa}
+            </Chu>
+            <NutChinh
+              nhan={t.celes.canDangNhapNut}
+              onPress={() => router.push('/dang-nhap?sau=quay-lai')}
+            />
+          </The>
+        </View>
       )}
 
       <View

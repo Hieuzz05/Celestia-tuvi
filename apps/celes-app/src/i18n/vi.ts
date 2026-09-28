@@ -104,6 +104,28 @@ export const vi = {
     email: 'Dùng email',
   },
 
+  dangNhap: {
+    emailTieuDe: 'Email của bạn là gì?',
+    emailMoTa: 'Celes sẽ gửi một mã 6 số tới email này. Không cần mật khẩu.',
+    emailNhan: 'ten@email.com',
+    guiMa: 'Gửi mã',
+    maTieuDe: 'Nhập mã trong email',
+    maMoTa: 'Mã vừa được gửi tới {email}. Không thấy thì xem thêm mục Quảng cáo hoặc Thư rác.',
+    maNhan: 'Mã 6 số',
+    xacNhan: 'Đăng nhập',
+    guiLai: 'Gửi lại mã',
+    guiLaiSau: 'Gửi lại mã sau {giay} giây',
+    doiEmail: 'Dùng email khác',
+    dangGui: 'Đang gửi…',
+    loi: {
+      'email-sai': 'Địa chỉ email này chưa đúng. Bạn kiểm tra lại giúp nhé.',
+      'qua-nhieu': 'Bạn vừa xin mã nhiều lần quá. Đợi một lúc rồi thử lại nhé.',
+      'ma-sai': 'Mã chưa đúng hoặc đã hết hạn. Gõ lại, hoặc xin mã mới.',
+      mang: 'Chưa kết nối được. Kiểm tra mạng rồi thử lại.',
+      khac: 'Chưa đăng nhập được lúc này. Thử lại sau ít phút nhé.',
+    },
+  },
+
   tab: {
     homNay: 'Hôm nay',
     hanhTrinh: 'Hành trình',
@@ -212,6 +234,10 @@ export const vi = {
     chuaDung: 'Chưa đúng',
     luuLai: 'Lưu lại',
     dangDungBanDo: 'Đang dùng bản đồ: {ten}',
+    canDangNhapTieuDe: 'Đăng nhập để trò chuyện cùng Celes',
+    canDangNhapMoTa:
+      'Celes cần biết đó là bạn để nhớ mạch câu chuyện. Câu bạn vừa viết vẫn còn nguyên, đăng nhập xong gửi lại là được.',
+    canDangNhapNut: 'Đăng nhập bằng email',
   },
 
   hanhTrinh: {
@@ -271,6 +297,8 @@ export const vi = {
     giaoDienToi: 'Tối',
     chuaDangNhap: 'Chưa đăng nhập',
     dangNhap: 'Đăng nhập',
+    dangXuat: 'Đăng xuất',
+    dangNhapMoTa: 'Để Celes nhớ câu chuyện của bạn trên mọi thiết bị.',
   },
 
   trangThai: {

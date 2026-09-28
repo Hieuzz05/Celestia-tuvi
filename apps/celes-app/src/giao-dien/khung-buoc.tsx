@@ -16,6 +16,9 @@ export const TONG_BUOC = 5;
  * Mỗi màn hỏi đúng một việc — spec yêu cầu "one question per screen". Khung này
  * giữ cố định vị trí thanh tiến độ, nút quay lại và nút tiếp tục, để người dùng
  * không phải tìm lại chúng ở mỗi bước.
+ *
+ * Bỏ `buoc` thì khung ẩn thanh tiến độ — dùng cho màn một-câu-hỏi nằm ngoài
+ * onboarding (đăng nhập), nơi "bước 3/5" là sai.
  */
 export function KhungBuoc({
   buoc,
@@ -26,7 +29,7 @@ export function KhungBuoc({
   choPhepTiep = true,
   onTiep,
 }: {
-  buoc: number;
+  buoc?: number;
   tieuDe: string;
   moTa?: string;
   children: ReactNode;
@@ -60,7 +63,7 @@ export function KhungBuoc({
           <IconQuayLai size={22} mau={mau.chu} />
         </Pressable>
 
-        <ThanhTienDo buoc={buoc} tong={TONG_BUOC} />
+        {buoc !== undefined && <ThanhTienDo buoc={buoc} tong={TONG_BUOC} />}
       </View>
 
       <ScrollView

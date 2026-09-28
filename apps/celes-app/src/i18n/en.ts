@@ -102,6 +102,28 @@ export const en: TuDienApp = {
     email: 'Use email',
   },
 
+  dangNhap: {
+    emailTieuDe: 'What’s your email?',
+    emailMoTa: 'Celes will send a 6-digit code to this address. No password needed.',
+    emailNhan: 'you@email.com',
+    guiMa: 'Send code',
+    maTieuDe: 'Enter the code from your email',
+    maMoTa: 'We just sent it to {email}. Can’t find it? Check your Promotions or Spam folder.',
+    maNhan: '6-digit code',
+    xacNhan: 'Sign in',
+    guiLai: 'Send a new code',
+    guiLaiSau: 'Send a new code in {giay}s',
+    doiEmail: 'Use a different email',
+    dangGui: 'Sending…',
+    loi: {
+      'email-sai': 'That email address doesn’t look right. Could you check it?',
+      'qua-nhieu': 'You’ve asked for a lot of codes just now. Please wait a little and try again.',
+      'ma-sai': 'That code isn’t right or has expired. Type it again, or ask for a new one.',
+      mang: 'Couldn’t connect. Check your network and try again.',
+      khac: 'Couldn’t sign you in right now. Please try again in a few minutes.',
+    },
+  },
+
   tab: {
     homNay: 'Today',
     hanhTrinh: 'Journey',
@@ -210,6 +232,10 @@ export const en: TuDienApp = {
     chuaDung: 'Not quite',
     luuLai: 'Save',
     dangDungBanDo: 'Using map: {ten}',
+    canDangNhapTieuDe: 'Sign in to talk with Celes',
+    canDangNhapMoTa:
+      'Celes needs to know it’s you to keep the thread of your story. What you just wrote is still here — sign in and send it again.',
+    canDangNhapNut: 'Sign in with email',
   },
 
   hanhTrinh: {
@@ -269,6 +295,8 @@ export const en: TuDienApp = {
     giaoDienToi: 'Dark',
     chuaDangNhap: 'Not signed in',
     dangNhap: 'Sign in',
+    dangXuat: 'Sign out',
+    dangNhapMoTa: 'So Celes can remember your story on every device.',
   },
 
   trangThai: {

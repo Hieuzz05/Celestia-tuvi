@@ -13,6 +13,12 @@ npm run kiem-tra        # tsc --noEmit
 npx expo export --platform android --output-dir /tmp/kiem   # thử bundle
 ```
 
+Đăng nhập (mã 6 số qua email) cần `.env.local`: chép `.env.example` rồi điền URL
+và khoá **công khai** của Supabase — giống `NEXT_PUBLIC_SUPABASE_*` của web. Thiếu
+thì app vẫn chạy, chỉ ẩn mọi lối đăng nhập. Đổi `.env.local` phải khởi động lại
+`npx expo start -c`. Mẫu email "Confirm signup" và "Magic Link" trên Supabase phải
+chứa `{{ .Token }}`, không thì thư chỉ có link và người dùng không có mã để nhập.
+
 ## Điểm kiến trúc quan trọng nhất
 
 **App KHÔNG có bản sao engine an sao.** Nó đọc thẳng `lib/tuvi/` ở gốc kho mã qua

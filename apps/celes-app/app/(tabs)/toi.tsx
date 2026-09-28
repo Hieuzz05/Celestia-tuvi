@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Chu, ChonPhanDoan, Eyebrow, The } from '@/giao-dien/co-ban';
+import { Chu, ChonPhanDoan, Eyebrow, NutChinh, NutPhu, The } from '@/giao-dien/co-ban';
 import { IconBanDo, IconMuiTenPhai, IconSach, IconToi } from '@/giao-dien/icon';
 import { useHoSo } from '@/du-lieu/ho-so';
+import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { useNgonNgu, useT, type NgonNgu } from '@/i18n/context';
 import { useMau, useTheme } from '@/thiet-ke/theme';
 import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
@@ -25,6 +26,7 @@ export default function ManToi() {
   const { ngonNgu, datNgonNgu } = useNgonNgu();
   const { luaChon, datTheme } = useTheme();
   const { hoSo } = useHoSo();
+  const { coTaiKhoan, dangNap, email, dangXuat } = useTaiKhoan();
 
   return (
     <View style={{ flex: 1, backgroundColor: mau.nen }}>
@@ -41,10 +43,28 @@ export default function ManToi() {
           <View style={{ flex: 1 }}>
             <Chu kieu="h2">{hoSo?.ten?.trim() || t.toi.tieuDe}</Chu>
             <Chu kieu="caption" mo>
-              {t.toi.chuaDangNhap}
+              {email ?? t.toi.chuaDangNhap}
             </Chu>
           </View>
         </View>
+
+        {/* --- Tài khoản: ẩn hẳn khi app dựng thiếu cấu hình, và trong lúc đọc phiên cũ --- */}
+        {coTaiKhoan && !dangNap && (
+          <View style={{ gap: KHOANG.x3 }}>
+            <Eyebrow>{t.toi.nhomTaiKhoan}</Eyebrow>
+            {email ? (
+              <NutPhu nhan={t.toi.dangXuat} onPress={dangXuat} />
+            ) : (
+              <The style={{ gap: KHOANG.x3 }}>
+                <Chu kieu="bodySm" mo>
+                  {t.toi.dangNhapMoTa}
+                </Chu>
+                <NutChinh nhan={t.toi.dangNhap} onPress={() => router.push('/dang-nhap?sau=quay-lai')}
+                />
+              </The>
+            )}
+          </View>
+        )}
 
         {/* --- Dữ liệu của tôi --- */}
         <View style={{ gap: KHOANG.x3 }}>

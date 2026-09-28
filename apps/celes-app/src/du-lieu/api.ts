@@ -1,5 +1,6 @@
 import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
 import type { HoSo } from './ho-so';
+import { tokenHienTai } from './supabase';
 
 /**
  * Gọi sang dịch vụ của Celestia.
@@ -16,6 +17,12 @@ const GOC =
 
 /** Ném ra khi máy chủ không trả lời được — màn hình tự đổi sang thông điệp của Celes */
 export class LoiCeles extends Error {}
+
+/**
+ * Máy chủ trả 401 kèm `canDangNhap` — chưa đăng nhập hoặc phiên đã hết hạn.
+ * Tách riêng để màn hình mời đăng nhập thay vì báo "Celes chưa hoàn thành được".
+ */
+export class LoiCanDangNhap extends LoiCeles {}
 
 export interface TinNhanGui {
   vaiTro: 'nguoi-dung' | 'tro-ly';
@@ -35,11 +42,16 @@ export async function hoiCeles(
   const { ngay, thang, nam } = tachNgay(hoSo.ngaySinh);
   const bayGio = new Date();
 
+  // App không có cookie như trình duyệt — máy chủ đọc phiên từ header Bearer
+  const token = await tokenHienTai();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   let res: Response;
   try {
     res = await fetch(`${GOC}/api/hoi-dap`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         ngay,
         thang,
@@ -58,6 +70,10 @@ export async function hoiCeles(
     throw new LoiCeles('khong-ket-noi-duoc');
   }
 
+  if (res.status === 401) {
+    const data = (await res.json().catch(() => ({}))) as { canDangNhap?: boolean };
+    if (data.canDangNhap) throw new LoiCanDangNhap('can-dang-nhap');
+  }
   if (!res.ok) throw new LoiCeles(`http-${res.status}`);
 
   const data = (await res.json()) as { noiDung?: string; loi?: string };
