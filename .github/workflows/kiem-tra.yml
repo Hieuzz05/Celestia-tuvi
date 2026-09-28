@@ -28,6 +28,10 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # LayoutProps / PageProps là kiểu toàn cục Next sinh vào .next/types — máy dev có sẵn
+      # nhờ next dev, CI chạy từ kho sạch thì phải sinh trước, không tsc báo thiếu tên
+      - name: Sinh kiểu route
+        run: npx next typegen
       - name: Kiểu (tsc)
         run: npx tsc --noEmit
       - name: Lint không vượt mốc
