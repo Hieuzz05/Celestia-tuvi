@@ -138,6 +138,7 @@ export const en: TuDienApp = {
     chaoToi: 'Good evening, {ten}',
     nhan: 'TODAY',
     hoiVeDieuNay: 'Ask Celes about this',
+    cauHoiVe: 'Tell me more about "{tieuDe}" — how is this showing up in my life?',
 
     giaiDoanTieuDe: 'The season you’re in',
     giaiDoanCta: 'View journey',
@@ -236,6 +237,14 @@ export const en: TuDienApp = {
     canDangNhapMoTa:
       'Celes needs to know it’s you to keep the thread of your story. What you just wrote is still here — sign in and send it again.',
     canDangNhapNut: 'Sign in with email',
+    guiNhan: 'Send to Celes',
+    xoaNut: 'Clear conversation',
+    xoaTieuDe: 'Clear this conversation?',
+    xoaMoTa:
+      'Everything you’ve told Celes about this map will be deleted for good, on both web and app. Celes will start fresh.',
+    hetLuotTieuDe: 'You’ve asked all {so} questions for today',
+    hetLuotTieuDeChung: 'You’ve asked all your questions for today',
+    hetLuotMoTa: 'What you just wrote is still here. Come back tomorrow — Celes will remember where you left off.',
   },
 
   hanhTrinh: {

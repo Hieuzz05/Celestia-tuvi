@@ -90,7 +90,11 @@ export default function ManHomNay() {
                   mauChu={BANG_MAU.aubergine}
                   onPress={() => {
                     ghiSuKien('daily_insight_opened');
-                    router.push('/(tabs)/celes');
+                    // Chỉ điền sẵn câu hỏi — người dùng tự bấm gửi (mỗi lượt tính hạn mức)
+                    router.push({
+                      pathname: '/(tabs)/celes',
+                      params: { q: dien(t.homNay.cauHoiVe, { tieuDe: chinh.tieuDe }) },
+                    });
                   }}
                 />
                 <NutChu

@@ -24,24 +24,36 @@ export class LoiCeles extends Error {}
  */
 export class LoiCanDangNhap extends LoiCeles {}
 
+/**
+ * Máy chủ trả 402: hết lượt miễn phí hôm nay, hoặc tính năng cần bậc cao hơn.
+ * Thanh toán đang TẠM ẨN trên iOS (quy định 3.1.1) nên app chỉ báo, không mở cổng.
+ */
+export class LoiHetLuot extends LoiCeles {
+  constructor(public gioiHan?: number) {
+    super('het-luot');
+  }
+}
+
 export interface TinNhanGui {
   vaiTro: 'nguoi-dung' | 'tro-ly';
   noiDung: string;
 }
 
-function tachNgay(ngaySinh: string) {
+export function tachNgay(ngaySinh: string) {
   const [nam, thang, ngay] = ngaySinh.split('-').map(Number);
   return { ngay, thang, nam };
 }
 
-export async function hoiCeles(
-  hoSo: HoSo,
-  cauHoi: string,
-  lichSu: TinNhanGui[]
-): Promise<string> {
-  const { ngay, thang, nam } = tachNgay(hoSo.ngaySinh);
-  const bayGio = new Date();
+/** Phần lá số mọi tuyến đều cần — cùng hình dạng body của web */
+export function thanLaSo(hoSo: HoSo) {
+  return { ...tachNgay(hoSo.ngaySinh), gio: hoSo.gio, gioiTinh: hoSo.gioiTinh, hoTen: hoSo.ten };
+}
 
+/**
+ * Một lượt POST JSON tới máy chủ, gắn Bearer nếu đã đăng nhập.
+ * 401 `canDangNhap` → LoiCanDangNhap, 402 → LoiHetLuot, còn lại → LoiCeles.
+ */
+export async function goiApi<T>(duong: string, body: unknown): Promise<T> {
   // App không có cookie như trình duyệt — máy chủ đọc phiên từ header Bearer
   const token = await tokenHienTai();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -49,35 +61,61 @@ export async function hoiCeles(
 
   let res: Response;
   try {
-    res = await fetch(`${GOC}/api/hoi-dap`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        ngay,
-        thang,
-        nam,
-        gio: hoSo.gio,
-        gioiTinh: hoSo.gioiTinh,
-        hoTen: hoSo.ten,
-        namXem: namAmHienTai(bayGio),
-        thangXem: thangAmHienTai(bayGio),
-        cauHoi,
-        // Chỉ gửi vài lượt gần nhất: đủ giữ mạch mà không phình yêu cầu
-        lichSu: lichSu.slice(-6),
-      }),
-    });
+    res = await fetch(`${GOC}${duong}`, { method: 'POST', headers, body: JSON.stringify(body) });
   } catch {
     throw new LoiCeles('khong-ket-noi-duoc');
   }
 
-  if (res.status === 401) {
-    const data = (await res.json().catch(() => ({}))) as { canDangNhap?: boolean };
-    if (data.canDangNhap) throw new LoiCanDangNhap('can-dang-nhap');
-  }
-  if (!res.ok) throw new LoiCeles(`http-${res.status}`);
+  const data = (await res.json().catch(() => ({}))) as T & {
+    loi?: string;
+    canDangNhap?: boolean;
+    freeLimit?: number;
+  };
+  if (res.status === 401 && data.canDangNhap) throw new LoiCanDangNhap('can-dang-nhap');
+  if (res.status === 402) throw new LoiHetLuot(data.freeLimit);
+  if (!res.ok) throw new LoiCeles(data.loi ?? `http-${res.status}`);
+  return data;
+}
 
-  const data = (await res.json()) as { noiDung?: string; loi?: string };
-  if (!data.noiDung) throw new LoiCeles(data.loi ?? 'khong-co-noi-dung');
+/** Lối đi tiếp do máy chủ dựng — `duong` là đường dẫn WEB, màn hình tự đổi sang tuyến app */
+export interface LoiDi {
+  nhan: string;
+  duong: string;
+}
 
-  return data.noiDung;
+export interface TraLoiCeles {
+  traLoi: string;
+  model?: string;
+  goiYTiep: string[];
+  loiDi: LoiDi[];
+}
+
+/** Trần lịch sử gửi lên — khớp trần 60 của `/api/hoi-dap` */
+const TRAN_LICH_SU = 60;
+
+export async function hoiCeles(
+  hoSo: HoSo,
+  cauHoi: string,
+  lichSu: TinNhanGui[],
+  tuChip = false
+): Promise<TraLoiCeles> {
+  const bayGio = new Date();
+  const data = await goiApi<Partial<TraLoiCeles>>('/api/hoi-dap', {
+    ...thanLaSo(hoSo),
+    namXem: namAmHienTai(bayGio),
+    thangXem: thangAmHienTai(bayGio),
+    cauHoi,
+    lichSu: lichSu.slice(-TRAN_LICH_SU),
+    // Câu bấm từ chip gợi ý — máy chủ dùng cờ này để biết chắc đây là lượt nối tiếp
+    tuChip,
+  });
+
+  // Máy chủ trả `traLoi` (không phải `noiDung`) — đọc nhầm tên này là Celes im lặng
+  if (!data.traLoi) throw new LoiCeles('khong-co-noi-dung');
+  return {
+    traLoi: data.traLoi,
+    model: data.model,
+    goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
+    loiDi: Array.isArray(data.loiDi) ? data.loiDi : [],
+  };
 }

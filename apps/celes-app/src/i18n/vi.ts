@@ -140,6 +140,7 @@ export const vi = {
     chaoToi: 'Chào buổi tối, {ten}',
     nhan: 'HÔM NAY',
     hoiVeDieuNay: 'Hỏi Celes về điều này',
+    cauHoiVe: 'Kể thêm cho tôi về "{tieuDe}" — điều này đang thể hiện thế nào trong đời tôi?',
 
     giaiDoanTieuDe: 'Giai đoạn bạn đang đi qua',
     giaiDoanCta: 'Xem hành trình',
@@ -238,6 +239,14 @@ export const vi = {
     canDangNhapMoTa:
       'Celes cần biết đó là bạn để nhớ mạch câu chuyện. Câu bạn vừa viết vẫn còn nguyên, đăng nhập xong gửi lại là được.',
     canDangNhapNut: 'Đăng nhập bằng email',
+    guiNhan: 'Gửi cho Celes',
+    xoaNut: 'Xoá hội thoại',
+    xoaTieuDe: 'Xoá hội thoại này?',
+    xoaMoTa:
+      'Những gì bạn đã kể với Celes về bản đồ này sẽ bị xoá hẳn, trên cả web lẫn app. Celes sẽ bắt đầu lại từ đầu.',
+    hetLuotTieuDe: 'Hôm nay bạn đã hỏi đủ {so} câu',
+    hetLuotTieuDeChung: 'Hôm nay bạn đã hỏi đủ số câu',
+    hetLuotMoTa: 'Câu bạn vừa viết vẫn còn nguyên. Mai quay lại, Celes vẫn nhớ mạch câu chuyện.',
   },
 
   hanhTrinh: {
