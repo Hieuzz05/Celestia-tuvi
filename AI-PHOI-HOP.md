@@ -72,15 +72,17 @@ Chạy đủ bốn, không bỏ cổng nào:
 
 ```bash
 npx tsc --noEmit                        # phải sạch
-npx eslint .                            # phải đúng 7 lỗi, không hơn
+node scripts/dem-loi-lint.mjs           # không được vượt mốc (đang 5)
+npx tsx scripts/test-ansao-chuan.ts     # phải "TẤT CẢ ĐỀU ĐÚNG"
 npx tsx scripts/test-rag-planner.ts     # phải "TẤT CẢ ĐỀU ĐÚNG"
 npx tsx scripts/test-chuan-ngon-ngu.ts  # phải "TẤT CẢ ĐỀU ĐÚNG"
 npx next build                          # phải "Compiled successfully"
 ```
 
-**Mốc 7 lỗi eslint là cố ý.** Đó là 7 cảnh báo `react-hooks/set-state-in-effect`
-đã tồn tại từ trước và đã được cân nhắc. Con số lên 8 nghĩa là bạn vừa thêm một
-lỗi mới — sửa nó, đừng nâng mốc.
+**Mốc lỗi eslint là cố ý.** Đó là các cảnh báo `react-hooks/set-state-in-effect`
+đã tồn tại từ trước và đã được cân nhắc (7 lúc đầu, 5 từ 28/09/2026). Vượt mốc
+nghĩa là bạn vừa thêm một lỗi mới — sửa nó, đừng nâng mốc. GitHub Actions chạy
+các cổng này trên mọi nhánh được đẩy lên; đỏ CI thì chưa xin gộp.
 
 Nếu có động vào phần AI viết chữ, chạy thêm:
 

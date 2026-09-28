@@ -18,8 +18,11 @@ export interface DanhTinhQuanTri {
 export async function canQuanTri(): Promise<
   { duocPhep: true; actor: DanhTinhQuanTri } | { duocPhep: false; chan: NextResponse }
 > {
-  // Chưa bật Supabase thì chưa có hệ thống tài khoản — chỉ xảy ra khi chạy cục bộ.
-  if (!supabaseDaCauHinh) return { duocPhep: true, actor: {} };
+  // Chưa bật Supabase thì chưa có hệ thống tài khoản — chỉ cho qua khi chạy cục bộ.
+  if (!supabaseDaCauHinh) {
+    if (process.env.NODE_ENV !== 'production') return { duocPhep: true, actor: {} };
+    return { duocPhep: false, chan: NextResponse.json({ loi: 'Chưa bật đăng nhập' }, { status: 503 }) };
+  }
 
   const user = await nguoiDungHienTai();
   if (!user) {

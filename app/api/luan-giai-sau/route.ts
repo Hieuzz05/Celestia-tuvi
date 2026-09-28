@@ -12,6 +12,7 @@ import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { khoaBangLinhVuc } from '@/lib/rag/phien-ban-chu';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * Bảng luận giải 8 lĩnh vực.
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
   }
 
   if (
+    !laNgayDuongCoThat(body.ngay, body.thang, body.nam) ||
     !soHopLe(body.ngay, 1, 31) ||
     !soHopLe(body.thang, 1, 12) ||
     !soHopLe(body.nam, 1900, 2100) ||

@@ -1,9 +1,21 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabaseDaCauHinh } from '@/lib/supabase/config';
+import { ghiLuotGoi, laRouteTonModel } from '@/lib/gioi-han-toc-do';
 
 /** Làm mới phiên đăng nhập trên mỗi request để cookie không hết hạn giữa chừng */
 export async function proxy(request: NextRequest) {
+  if (request.method === 'POST' && laRouteTonModel(request.nextUrl.pathname)) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'khong-ro';
+    const choGiay = ghiLuotGoi(ip);
+    if (choGiay > 0) {
+      return NextResponse.json(
+        { loi: `Bạn đang hỏi hơi dồn. Đợi khoảng ${choGiay} giây rồi thử lại nhé — dữ liệu của bạn vẫn còn nguyên.` },
+        { status: 429, headers: { 'Retry-After': String(choGiay) } }
+      );
+    }
+  }
+
   if (!supabaseDaCauHinh) return NextResponse.next();
 
   let response = NextResponse.next({ request });

@@ -7,6 +7,7 @@ import { dien, useT } from '@/lib/i18n/context';
 import { hourToChi } from '@/lib/tuvi/lunar';
 import { CHI } from '@/lib/tuvi/constants';
 import type { GioiTinh } from '@/lib/tuvi/ansao';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * Onboarding: Celes làm quen với người dùng.
@@ -58,8 +59,10 @@ export function BuocNhapSinh({
   const set = <K extends keyof ThongTinSinhForm>(k: K, v: ThongTinSinhForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  // Date.parse('1990-04-31') vẫn ra một ngày (1/5) — phải kiểm số ngày của tháng
+  const [namNhap, thangNhap, ngayNhap] = form.ngaySinh.split('-').map(Number);
   const ngayHopLe =
-    /^\d{4}-\d{2}-\d{2}$/.test(form.ngaySinh) && !Number.isNaN(Date.parse(form.ngaySinh));
+    /^\d{4}-\d{2}-\d{2}$/.test(form.ngaySinh) && laNgayDuongCoThat(ngayNhap, thangNhap, namNhap);
 
   const tien = () => {
     if (buoc === 1) ghiSuKien('birth_flow_started', { yDinh: form.yDinh });

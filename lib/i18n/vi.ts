@@ -766,6 +766,15 @@ export const vi = {
     lichSuTrong: 'Chưa có lần ủng hộ nào.',
   },
 
+  loiTrang: {
+    tieuDe: 'Trang này vừa gặp trục trặc',
+    moTa: 'Lá số và dữ liệu của bạn vẫn còn nguyên. Thử tải lại phần này; nếu vẫn chưa được, quay về trang chủ rồi mở lại sau ít phút.',
+    thuLai: 'Thử lại',
+    veTrangChu: 'Về trang chủ',
+    khongThayTieuDe: 'Không tìm thấy trang này',
+    khongThayMoTa: 'Đường dẫn có thể đã đổi hoặc gõ nhầm. Bạn quay về trang chủ để tiếp tục cùng Celes nhé.',
+  },
+
   chan: {
     mienTru:
       'Celes đưa ra góc nhìn để bạn cân nhắc, không phải phán quyết về tương lai — và không thay thế tư vấn y tế, tài chính hay pháp lý.',

@@ -10,6 +10,7 @@ import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { layHoacSinh } from '@/lib/rag/noi-dung-ai';
 import { tuoiAmTaiNam } from '@/lib/tuvi/hanh-trinh';
 import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * Luận hạn chi tiết cho một quãng / năm / tháng.
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
   }
 
   if (
+    !laNgayDuongCoThat(body.ngay, body.thang, body.nam) ||
     !soHopLe(body.ngay, 1, 31) ||
     !soHopLe(body.thang, 1, 12) ||
     !soHopLe(body.nam, 1900, 2100) ||

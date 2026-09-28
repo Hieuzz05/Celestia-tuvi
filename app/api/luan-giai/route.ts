@@ -9,6 +9,7 @@ import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { nhanPhuongPhap } from '@/lib/tuvi/phuong-phap';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
 
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
     typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
 
   if (
+    !laNgayDuongCoThat(ngay, thang, nam) ||
     !soHopLe(ngay, 1, 31) ||
     !soHopLe(thang, 1, 12) ||
     !soHopLe(nam, 1900, 2100) ||

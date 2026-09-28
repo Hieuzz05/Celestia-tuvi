@@ -6,6 +6,7 @@ import { bamLaSo } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { kyCoPhienBan } from '@/lib/rag/phien-ban-chu';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 /**
  * Điểm nổi bật của hôm nay — một thẻ, sinh một lần mỗi ngày cho mỗi lá số.
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
   }
 
   if (
+    !laNgayDuongCoThat(body.ngay, body.thang, body.nam) ||
     !soHopLe(body.ngay, 1, 31) ||
     !soHopLe(body.thang, 1, 12) ||
     !soHopLe(body.nam, 1900, 2100) ||

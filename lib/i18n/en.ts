@@ -764,6 +764,15 @@ export const en: TuDien = {
     lichSuTrong: 'No contributions yet.',
   },
 
+  loiTrang: {
+    tieuDe: 'Something went wrong on this page',
+    moTa: 'Your chart and data are safe. Try reloading this section; if it still does not work, head back home and try again in a few minutes.',
+    thuLai: 'Try again',
+    veTrangChu: 'Back to home',
+    khongThayTieuDe: 'Page not found',
+    khongThayMoTa: 'The link may have changed or been mistyped. Head back home to continue with Celes.',
+  },
+
   chan: {
     mienTru:
       'Celes offers a perspective for you to weigh, not a verdict about your future — and it is no substitute for medical, financial or legal advice.',

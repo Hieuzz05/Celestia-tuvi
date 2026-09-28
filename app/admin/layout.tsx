@@ -11,6 +11,16 @@ import { TabQuanTri } from '@/components/admin/TabQuanTri';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Chưa cấu hình Supabase thì chưa có hệ thống tài khoản để phân quyền — lúc này
   // app chỉ chạy cục bộ nên cho vào, nhưng phải cảnh báo rõ trước khi công khai.
+  if (!supabaseDaCauHinh && process.env.NODE_ENV === 'production') {
+    return (
+      <Shell className="py-[60px]">
+        <h1 className="heading">Chưa bật đăng nhập</h1>
+        <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
+          Trang quản trị đóng cho tới khi cấu hình Supabase và <code>ADMIN_EMAILS</code>.
+        </p>
+      </Shell>
+    );
+  }
   if (!supabaseDaCauHinh) {
     return (
       <>

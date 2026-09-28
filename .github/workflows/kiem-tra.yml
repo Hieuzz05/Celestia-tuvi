@@ -1,0 +1,50 @@
+# Cổng tự động cho mọi lần đẩy nhánh và mọi PR vào main.
+# Chỉ chạy các bài kiểm OFFLINE: không cần khoá, không gọi model, không chạm
+# database — nên không cần secret nào và không tốn tiền. Các bài chạm DB thật
+# hoặc model thật (test-hoi-thoai, eval-chat-quyet-dinh, test-rag-toan-tuyen)
+# vẫn chạy tay theo AGENTS.md.
+name: Kiem tra
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['TRANG-THAI.md', '**/*.xlsx']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: kiem-tra-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kiem-tra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Kiểu (tsc)
+        run: npx tsc --noEmit
+      - name: Lint không vượt mốc
+        run: node scripts/dem-loi-lint.mjs
+
+      - name: Engine an sao
+        run: npx tsx scripts/test-ansao-chuan.ts
+      - name: Planner RAG
+        run: npx tsx scripts/test-rag-planner.ts
+      - name: Bộ vàng planner
+        run: npx tsx scripts/eval-planner.ts
+      - name: Chuẩn ngôn ngữ
+        run: npx tsx scripts/test-chuan-ngon-ngu.ts
+      - name: Cách cục
+        run: npx tsx scripts/test-cach-cuc.ts
+      - name: Bài luận 12 cung
+        run: npx tsx scripts/test-12-cung.ts
+
+      - name: Build
+        run: npx next build

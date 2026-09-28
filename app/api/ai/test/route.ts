@@ -15,7 +15,7 @@ export const maxDuration = 60;
  * phát triển cục bộ) thì cho phép, vì lúc đó app chưa public.
  */
 async function kiemTraQuyen(): Promise<string | null> {
-  if (!supabaseDaCauHinh) return null;
+  if (!supabaseDaCauHinh) return process.env.NODE_ENV !== 'production' ? null : 'Chưa bật đăng nhập';
   const user = await nguoiDungHienTai();
   if (!user) return 'Cần đăng nhập để dùng chức năng này';
   if (!laAdmin(user.email)) return 'Tài khoản của bạn không có quyền quản trị';

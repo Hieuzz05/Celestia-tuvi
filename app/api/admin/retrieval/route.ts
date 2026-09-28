@@ -5,6 +5,7 @@ import { ghiLanTruyHoi } from '@/lib/rag/nhat-ky';
 import { lapKeHoach, NHAN_CHU_DE, NHAN_LOP_HAN } from '@/lib/rag/planner';
 import { truyHoi, type CauHinhTruyHoi } from '@/lib/rag/truy-hoi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
+import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
 
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
   const ls = body.laSo;
   const coLaSo =
     ls &&
+    laNgayDuongCoThat(ls.ngay, ls.thang, ls.nam) &&
     soHopLe(ls.ngay, 1, 31) &&
     soHopLe(ls.thang, 1, 12) &&
     soHopLe(ls.nam, 1900, 2100) &&
