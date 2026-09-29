@@ -4,10 +4,19 @@ Hai canvas thiết kế app đang sống trên claude.ai dưới tài khoản **
 Tài khoản đó sắp mất quyền truy cập, và artifact không chuyển chủ được — nên toàn bộ mã
 nguồn được lưu ở đây. Mất tài khoản thì mất link, **không mất thiết kế**.
 
-| Thư mục | Canvas gốc | Ghi chú |
+| Thư mục | Canvas gốc (đã xoá khỏi it-ba ngày 29/09/2026) | Ghi chú |
 |---|---|---|
-| `aurora/` | https://claude.ai/artifact/NMRtuGEvTVXNAhsUQNchSP | Bản mới nhất (bản 7, 29/09/2026). Sinh bằng `gen.py`. |
-| `luong-app/` | https://claude.ai/artifact/3kyf5Y9xTeRGpa5XHM3M7J | "Celes iOS — luồng app", 12 màn đã duyệt ngày 27/09/2026. Viết tay, không có script sinh. |
+| `aurora/` | ~~NMRtuGEvTVXNAhsUQNchSP~~ | Bản mới nhất (bản 7, 29/09/2026). Sinh bằng `gen.py`. |
+| `luong-app/` | ~~3kyf5Y9xTeRGpa5XHM3M7J~~ | "Celes iOS — luồng app", 12 màn đã duyệt ngày 27/09/2026. Viết tay, không có script sinh. |
+
+Trước khi xoá đã đối chiếu: mọi tệp `project/*` ở đây khớp từng byte với bản trên claude.ai;
+hai canvas không có bình luận, không có tệp tải lên. Phần còn lại của canvas (`artifact-type/*`,
+`SKILL.md`) là mã chung của kiểu Design, tạo canvas mới là tự có.
+
+## Xem trên web (chia sẻ cho người khác)
+
+`aurora/index.html` là trang mục lục 17 màn, sinh cùng `gen.py`. Deploy tĩnh lên Vercel với
+Root Directory = `docs/thiet-ke/celes-ios/aurora`, Framework = Other (không có bước build).
 
 ## Sửa và sinh lại `aurora/`
 

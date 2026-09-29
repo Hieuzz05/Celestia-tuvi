@@ -1074,3 +1074,56 @@ canvas = {
 with open(os.path.join(OUT, "canvas.json"), "w", encoding="utf-8", newline="\n") as f:
     json.dump(canvas, f, ensure_ascii=False, indent=2)
 print("ok", sorted(os.listdir(OUT)), xn, yn, x21, y21, x24, y24)
+
+# =====================================================================
+# index.html — trang mục lục để chia sẻ bản thiết kế ra ngoài claude.ai (deploy tĩnh lên Vercel)
+# =====================================================================
+NHOM = ["Mở đầu", "Ba tab chính", "Mối quan hệ · Tài khoản", "Lá số và luận giải", "Chế độ sáng"]
+the = []
+for ten_nhom, hang in zip(NHOM, layout):
+    o = "".join(
+        f'<a class="o" href="project/{f}"><span class="khung"><iframe src="project/{f}" loading="lazy" tabindex="-1" title="{t}"></iframe></span><span class="nhan">{t}</span></a>'
+        for f, t in hang)
+    the.append(f'<section><h2>{ten_nhom}</h2><div class="luoi">{o}</div></section>')
+index = f"""<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Celes iOS — thiết kế</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<style>
+:root{{--nen:#1A001E;--chu:#FFF4FA;--mo:#D9B8CC;--vien:rgba(255,189,211,.18)}}
+*{{box-sizing:border-box}}
+body{{margin:0;background:var(--nen);color:var(--chu);font-family:'Be Vietnam Pro',system-ui,sans-serif}}
+main{{max-width:1240px;margin:0 auto;padding:40px 16px 64px}}
+h1{{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-.03em;margin:0 0 8px}}
+.dan{{overflow-wrap:anywhere;color:var(--mo);font-size:15px;line-height:1.55;max-width:640px;margin:0 0 8px}}
+h2{{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;margin:40px 0 16px}}
+.luoi{{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:24px 20px}}
+.o{{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--chu)}}
+.khung{{display:block;width:195px;height:422px;border-radius:26px;overflow:hidden;border:1px solid var(--vien);box-shadow:0 18px 40px rgba(0,0,0,.35);position:relative}}
+.khung iframe{{width:390px;height:844px;border:0;transform:scale(.5);transform-origin:0 0;pointer-events:none}}
+.o:hover .khung,.o:focus-visible .khung{{border-color:#FF8BD0}}
+.nhan{{font-size:14px;font-weight:500;line-height:1.4}}
+@media (max-width:640px){{.luoi{{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}}.khung{{width:100%;height:auto;aspect-ratio:390/844}}.khung iframe{{position:absolute;left:0;top:0}}}}
+</style>
+</head>
+<body>
+<main>
+<h1>Celes — thiết kế app iOS</h1>
+<p class="dan">Bản 7 · 29/09/2026. Chạm một màn để mở cỡ thật; trong màn, thanh tab và các nút đều bấm được như app. Dùng nút quay lại của trình duyệt để về mục lục. Xem đẹp nhất trên điện thoại.</p>
+<p class="dan">Dữ liệu trong thiết kế là dữ liệu mẫu.</p>
+{''.join(the)}
+</main>
+<script>
+// thu nhỏ iframe theo đúng bề ngang ô khi màn hẹp
+function vua(){{document.querySelectorAll('.khung').forEach(k=>{{const i=k.querySelector('iframe');i.style.transform='scale('+(k.clientWidth/390)+')'}})}}
+addEventListener('resize',vua);vua();
+</script>
+</body>
+</html>
+"""
+with open(os.path.join(os.path.dirname(OUT), "index.html"), "w", encoding="utf-8", newline="\n") as f:
+    f.write(index)
