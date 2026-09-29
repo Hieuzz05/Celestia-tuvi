@@ -16,6 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1) | Thay logo mới (trăng khuyết + sao bốn cánh, bảng màu đào–tím) trên web và app | `viec/logo-2909` | `components/Logo.tsx`, `app/icon.svg`, `app/favicon.ico`, `app/apple-icon.png`, `app/opengraph-image.png`, `apps/celes-app/src/giao-dien/icon.tsx`, `apps/celes-app/assets/*`, `apps/celes-app/app.json` | 29/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
