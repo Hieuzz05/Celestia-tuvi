@@ -16,6 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1) | Dựng giao diện app di động theo bản thiết kế iOS Aurora bản 8 (nền gần đen, mỗi luồng một vùng màu) | `viec/app-aurora` | `apps/celes-app/**` (thiết kế, giao diện, các màn) | 29/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
