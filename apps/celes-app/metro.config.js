@@ -30,4 +30,16 @@ config.resolver.blockList = [
   new RegExp(`^${escapeRegExp(nodeModulesGoc)}${escapeRegExp(path.sep)}.*$`),
 ];
 
+// Mã ở `lib/rag/**` của web import engine bằng bí danh `@/lib/...` của Next.js.
+// Bên app `@/` là `src/`, nên chỉ riêng tiền tố `@/lib/` được trỏ về gốc kho mã
+// (app không có `src/lib`). Nhờ vậy app dùng lại được bảng điểm mạnh–yếu của web
+// (`lib/rag/v3/du-kien.ts`) thay vì chép logic.
+const resolveGoc = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const ten = moduleName.startsWith('@/lib/')
+    ? path.resolve(gocKhoMa, moduleName.slice(2))
+    : moduleName;
+  return (resolveGoc ?? context.resolveRequest)(context, ten, platform);
+};
+
 module.exports = config;

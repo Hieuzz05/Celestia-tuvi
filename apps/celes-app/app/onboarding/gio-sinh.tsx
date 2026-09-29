@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { Chu, NutChu, ONhap } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import { Text, View } from 'react-native';
+import { BeMatKinh, Chu, HangDanhSach, NutChu, ONhap } from '@/giao-dien/co-ban';
+import { Icon } from '@/giao-dien/icon-aurora';
+import { KhungBuoc, OChon, useKieuONhapLon } from '@/giao-dien/khung-buoc';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
 import { useT, dien } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
-import { BO_GOC, CHAM_TOI_THIEU, CHU, FONT, KHOANG } from '@/thiet-ke/token';
+import { useMau, useVung } from '@/thiet-ke/theme';
+import { BO_GOC, FONT, KHOANG } from '@/thiet-ke/token';
 import { CHI } from '@tuvi/constants';
 import { hourToChi } from '@tuvi/lunar';
 
@@ -34,6 +35,7 @@ export default function BuocGioSinh() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
+  const v = useVung('khoiDau');
   const { dat } = useBanNhap();
 
   const [chinhXac, setChinhXac] = useState(false);
@@ -47,6 +49,7 @@ export default function BuocGioSinh() {
   const gioHopLe = khop !== null && gioSo >= 0 && gioSo <= 23 && phutSo >= 0 && phutSo <= 59;
 
   const choPhepTiep = chinhXac ? gioHopLe : khung !== null;
+  const kieuNhap = useKieuONhapLon(gioHopLe);
 
   const tiep = () => {
     if (chinhXac && gioHopLe) {
@@ -61,20 +64,23 @@ export default function BuocGioSinh() {
     router.push('/onboarding/gioi-tinh');
   };
 
+  const cap = Array.from({ length: KHOI_GIO.length / 2 }, (_, i) => KHOI_GIO.slice(i * 2, i * 2 + 2));
+
   return (
     <KhungBuoc
       buoc={3}
+      eyebrow={t.onboarding.gioEyebrow}
       tieuDe={t.onboarding.gioTieuDe}
       moTa={t.onboarding.gioMo}
       choPhepTiep={choPhepTiep}
       onTiep={tiep}
     >
       {chinhXac ? (
-        <View style={{ gap: KHOANG.x2 }}>
+        <View style={{ gap: KHOANG.x3 }}>
           <ONhap
             value={gio}
-            onChangeText={(v) => {
-              const so = v.replace(/\D/g, '').slice(0, 4);
+            onChangeText={(chu) => {
+              const so = chu.replace(/\D/g, '').slice(0, 4);
               setGio(so.length <= 2 ? so : `${so.slice(0, 2)}:${so.slice(2)}`);
             }}
             placeholder="09:35"
@@ -82,78 +88,77 @@ export default function BuocGioSinh() {
             maxLength={5}
             autoFocus
             accessibilityLabel={t.onboarding.gioNhan}
+            style={[kieuNhap, { letterSpacing: 1 }]}
           />
           {gioHopLe && (
-            <Chu kieu="bodySm">
-              {dien(t.onboarding.gioSuyRa, {
-                gio: `${haiSo(gioSo)}:${haiSo(phutSo)}`,
-                chi: CHI[hourToChi(gioSo)],
-              })}
-            </Chu>
+            <View
+              style={{
+                alignSelf: 'flex-start',
+                minHeight: 32,
+                paddingHorizontal: KHOANG.x3,
+                borderRadius: BO_GOC.vien,
+                borderWidth: 1,
+                borderColor: `rgba(${v.rgb},0.40)`,
+                backgroundColor: `rgba(${v.rgb},0.16)`,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <Icon ten="clock" size={14} net={2.2} mau={v.sang} />
+              <Text style={{ fontFamily: FONT.thanRatDam, fontSize: 13, color: v.sang }}>
+                {dien(t.onboarding.gioSuyRa, {
+                  gio: `${haiSo(gioSo)}:${haiSo(phutSo)}`,
+                  chi: CHI[hourToChi(gioSo)],
+                })}
+              </Text>
+            </View>
           )}
-          <NutChu nhan={t.onboarding.gioThuGon} onPress={() => setChinhXac(false)} />
+          <NutChu nhan={t.onboarding.gioThuGon} mauChu={v.mau} onPress={() => setChinhXac(false)} />
         </View>
       ) : (
         <View style={{ gap: KHOANG.x2 }}>
-          {/* Danh sách chọn một — mỗi dòng là một vùng chạm đủ 48px */}
-          <View
-            accessibilityRole="radiogroup"
-            style={{
-              borderWidth: 1,
-              borderColor: mau.vien,
-              borderRadius: BO_GOC.oNhap,
-              overflow: 'hidden',
-            }}
-          >
-            {KHOI_GIO.map((k, i) => {
-              const dangChon = khung === k.batDau;
-              return (
-                <Pressable
-                  key={k.chiIndex}
-                  onPress={() => setKhung(k.batDau)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: dangChon }}
-                  style={({ pressed }) => ({
-                    minHeight: CHAM_TOI_THIEU + 4,
-                    paddingHorizontal: KHOANG.x4,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: KHOANG.x3,
-                    backgroundColor: dangChon ? mau.theAm : pressed ? mau.theNoi : mau.the,
-                    borderTopWidth: i === 0 ? 0 : 1,
-                    borderTopColor: mau.vien,
-                  })}
-                >
-                  <View
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: 9,
-                      borderWidth: dangChon ? 5 : 1.5,
-                      borderColor: dangChon ? mau.chu : mau.vien,
-                    }}
+          {/* Lưới chọn một, hai cột — giờ đồng hồ trước, tên chi sau */}
+          <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
+            {cap.map((hang) => (
+              <View key={hang[0].chiIndex} style={{ flexDirection: 'row', gap: 10 }}>
+                {hang.map((k) => (
+                  <OChon
+                    key={k.chiIndex}
+                    nhan={`${haiSo(k.batDau)}:00 – ${haiSo(k.ketThuc)}:59`}
+                    phu={dien(t.onboarding.gioKhung, { chi: CHI[k.chiIndex] })}
+                    dangChon={khung === k.batDau}
+                    onPress={() => setKhung(k.batDau)}
+                    style={{ flex: 1 }}
                   />
-                  <Text style={[CHU.body, { flex: 1, color: mau.chu, fontFamily: dangChon ? FONT.thanDam : FONT.than }]}>
-                    {`${haiSo(k.batDau)}:00 – ${haiSo(k.ketThuc)}:59`}
-                    <Text style={{ color: mau.chuMo, fontFamily: FONT.than }}>
-                      {` · ${dien(t.onboarding.gioKhung, { chi: CHI[k.chiIndex] })}`}
-                    </Text>
-                  </Text>
-                </Pressable>
-              );
-            })}
+                ))}
+              </View>
+            ))}
           </View>
-          <NutChu nhan={t.onboarding.gioBiet} onPress={() => setChinhXac(true)} />
+          <NutChu nhan={t.onboarding.gioBiet} mauChu={v.mau} onPress={() => setChinhXac(true)} />
         </View>
       )}
 
-      <View style={{ gap: KHOANG.x2 }}>
-        <NutChu nhan={t.onboarding.khongNhoGio} onPress={() => setMoGiup((v) => !v)} />
+      {/* Không nhớ giờ: chỉ giải thích và chỉ chỗ tìm, KHÔNG cho đi tiếp với giờ đoán */}
+      <BeMatKinh style={{ borderRadius: 16, paddingHorizontal: KHOANG.x4 }}>
+        <HangDanhSach
+          icon="clock"
+          mauIcon={v.mau}
+          nhan={t.onboarding.khongNhoGio}
+          phu={t.onboarding.khongNhoGioPhu}
+          onPress={() => setMoGiup((m) => !m)}
+          phai={
+            <View style={{ transform: [{ rotate: moGiup ? '-90deg' : '90deg' }] }}>
+              <Icon ten="chev" size={18} net={2} mau={mau.chuNhat} />
+            </View>
+          }
+        />
         {moGiup && (
           <View
             style={{
               gap: KHOANG.x2,
               paddingTop: KHOANG.x3,
+              paddingBottom: KHOANG.x4,
               borderTopWidth: 1,
               borderTopColor: mau.vien,
             }}
@@ -166,7 +171,7 @@ export default function BuocGioSinh() {
             </Chu>
           </View>
         )}
-      </View>
+      </BeMatKinh>
     </KhungBuoc>
   );
 }

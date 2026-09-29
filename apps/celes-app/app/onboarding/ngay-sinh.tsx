@@ -2,18 +2,23 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Chu, ONhap } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import { Icon } from '@/giao-dien/icon-aurora';
+import { KhungBuoc, useKieuONhapLon } from '@/giao-dien/khung-buoc';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
-import { useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
+import { dien, useT } from '@/i18n/context';
+import { useMau, useVung } from '@/thiet-ke/theme';
 import { KHOANG } from '@/thiet-ke/token';
+import { canChiCuaNam } from '@tuvi/ansao';
+import { solarToLunar } from '@tuvi/lunar';
 
 /**
  * Bước 2 — ngày sinh.
  *
  * Nhập tay theo NN/TT/NNNN thay vì mở lịch hệ thống: người dùng phải cuộn lùi
  * vài chục năm trên bánh xe chọn ngày, rất mệt. Gõ tám chữ số nhanh hơn nhiều,
- * và tự chèn dấu gạch để không phải căn tay.
+ * và tự chèn dấu gạch để không phải căn tay. (Bản thiết kế Aurora vẽ bánh xe
+ * + công tắc Dương/Âm lịch; giữ ô gõ vì lý do trên, chỉ hiện dòng quy đổi âm
+ * lịch để người dùng soát lại ngày theo lịch họ nhớ.)
  */
 
 function chuanHoa(nhap: string) {
@@ -45,7 +50,9 @@ export default function BuocNgaySinh() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
+  const v = useVung('khoiDau');
   const { banNhap, dat } = useBanNhap();
+  const ten = banNhap.ten.trim() || t.onboarding.banMacDinh;
 
   const [hienThi, setHienThi] = useState(() => {
     if (!banNhap.ngaySinh) return '';
@@ -55,11 +62,26 @@ export default function BuocNgaySinh() {
 
   const iso = doiSangISO(hienThi);
   const daGoDu = hienThi.replace(/\D/g, '').length === 8;
+  const kieuNhap = useKieuONhapLon(!!iso);
+
+  // Chỉ để hiển thị — lá số vẫn tính từ ngày dương lịch người dùng gõ
+  let amLich: string | null = null;
+  if (iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const al = solarToLunar(d, m, y);
+    amLich = dien(t.onboarding.ngayAmLich, {
+      ngay: al.day,
+      thang: al.month,
+      nhuan: al.isLeapMonth ? t.onboarding.ngayNhuan : '',
+      canChi: canChiCuaNam(al.year),
+    });
+  }
 
   return (
     <KhungBuoc
       buoc={2}
-      tieuDe={t.onboarding.ngayTieuDe}
+      eyebrow={t.onboarding.ngayEyebrow}
+      tieuDe={dien(t.onboarding.ngayTieuDe, { ten })}
       moTa={t.onboarding.ngayMoTa}
       choPhepTiep={!!iso}
       onTiep={() => {
@@ -77,7 +99,16 @@ export default function BuocNgaySinh() {
           autoFocus
           maxLength={10}
           accessibilityLabel={t.onboarding.ngayNhan}
+          style={[kieuNhap, { letterSpacing: 1 }]}
         />
+        {amLich && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Icon ten="moon" size={16} net={2} mau={v.mau} />
+            <Chu kieu="bodySm" mo style={{ flex: 1 }}>
+              {amLich}
+            </Chu>
+          </View>
+        )}
         {daGoDu && !iso && (
           <Chu kieu="caption" style={{ color: mau.xau }}>
             {t.onboarding.ngayLoi}

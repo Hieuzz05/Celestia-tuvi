@@ -1,13 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { MAU_THEO_THEME, type BoMau, type TenTheme } from './token';
+import { MAU_THEO_THEME, VUNG, VUNG_SANG, type BoMau, type TenTheme, type TenVung, type Vung } from './token';
 
 /**
  * Theme sáng/tối.
  *
- * Mặc định đi theo hệ điều hành; người dùng đổi được ở `Tôi → Cài đặt`, và lựa
- * chọn đó thắng cài đặt máy cho tới khi họ chọn lại "Theo máy".
+ * Mặc định là theme TỐI (hệ Aurora, 29/09/2026) — màu vùng chỉ đọc rõ trên nền
+ * đêm. Người dùng đổi được ở `Tài khoản → Giao diện`: Tối / Sáng / Theo máy.
  */
 
 type LuaChon = 'tu-dong' | TenTheme;
@@ -24,7 +24,7 @@ const Ctx = createContext<BoiCanh | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const cuaMay = useColorScheme();
-  const [luaChon, setLuaChon] = useState<LuaChon>('tu-dong');
+  const [luaChon, setLuaChon] = useState<LuaChon>('toi');
 
   useEffect(() => {
     AsyncStorage.getItem(KHOA)
@@ -59,4 +59,9 @@ export function useTheme(): BoiCanh {
 /** Lối tắt khi component chỉ cần bảng màu */
 export function useMau(): BoMau {
   return useTheme().mau;
+}
+
+/** Màu vùng của một luồng — theme sáng dùng chung một nhấn fuchsia */
+export function useVung(ten: TenVung): Vung {
+  return useTheme().theme === 'toi' ? VUNG[ten] : VUNG_SANG;
 }

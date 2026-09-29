@@ -1,8 +1,26 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Chu, Eyebrow, NutChinh, NutChu, NutPhu, ONhap, Pill, The } from '@/giao-dien/co-ban';
+import {
+  AnhDaiDien,
+  Chu,
+  ChuNhan,
+  DauVung,
+  Eyebrow,
+  Giong,
+  NenVung,
+  NutChinh,
+  NutChu,
+  NutPhu,
+  ONhap,
+  OrbCeles,
+  The,
+  TheHero,
+  useDemDayTab,
+} from '@/giao-dien/co-ban';
+import { Icon } from '@/giao-dien/icon-aurora';
 import { DangDoc, TheCanDangNhap } from '@/giao-dien/luan-giai';
 import {
   docKetNoi,
@@ -16,8 +34,8 @@ import { useHoSo } from '@/du-lieu/ho-so';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { dien, useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
-import { BO_GOC, KHOANG, LE_NGANG } from '@/thiet-ke/token';
+import { useMau, useTheme, useVung } from '@/thiet-ke/theme';
+import { BO_GOC, CHAM_TOI_THIEU, FONT, KHOANG, LE_NGANG } from '@/thiet-ke/token';
 
 /**
  * Mối quan hệ — bản app của /hop-tuoi trên web.
@@ -27,11 +45,14 @@ import { BO_GOC, KHOANG, LE_NGANG } from '@/thiet-ke/token';
  * chủ đọc cung khác và trả mục khác, nên ý định đi trước nút bấm.
  *
  * KHÔNG chấm một điểm tổng kiểu 82/100. Kết luận trước, bảng kỹ thuật sau và
- * đóng sẵn — giống web.
+ * đóng sẵn — giống web. Hai ô số dưới thẻ chính chỉ ĐẾM tiêu chí thuận / dễ va
+ * chạm mà engine đã so, không quy đổi thành điểm.
  *
  * Quyền: web chặn khách ở cả trang, máy chủ chặn ở API (401) và chỉ mở cho
  * người ủng hộ (402). Thanh toán TẠM ẨN trên iOS nên 402 ra thẻ khoá không có
  * nút mua. Máy chủ còn trả tên model — `docKetNoi` đã bỏ nó đi.
+ *
+ * Giao diện: Aurora bản 8 (`docs/thiet-ke/celes-ios/aurora/gen.py`, mục 3b).
  */
 
 type TrangThai =
@@ -41,11 +62,19 @@ type TrangThai =
   | { loai: 'can-dang-nhap' }
   | { loai: 'loi' };
 
+/** Nền chữ cái đầu của từng người — pastel cố định, chữ mực đậm đọc được ở cả hai theme */
+const MAU_NGUOI = ['#FFF1BD', '#BBF7D0', '#E6DDEA', '#BAE6FD', '#FFD6CF'];
+const MUC_DAM = '#240029';
+
+const chuCai = (ten?: string) => (ten?.trim()[0] ?? '·').toUpperCase();
+
 export default function ManKetNoi() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
+  const v = useVung('moiQuanHe');
   const le = useSafeAreaInsets();
+  const demDay = useDemDayTab();
   const { hoSo, nguoi, laCuaToi } = useHoSo();
   const { phien } = useTaiKhoan();
 
@@ -104,7 +133,7 @@ export default function ManKetNoi() {
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: KHOANG.x3 }}>
-            <Chu kieu="bodySm" style={{ fontWeight: '600', flex: 1 }}>
+            <Chu kieu="bodySm" dam style={{ flex: 1 }}>
               {tc.ten}
             </Chu>
             <Chu kieu="caption" mo>
@@ -126,7 +155,32 @@ export default function ManKetNoi() {
     </View>
   );
 
-  const ketQuaXong = (ketQua: KetQuaKetNoi) => {
+  /** Hai ô đếm: tiêu chí thuận và tiêu chí dễ va chạm */
+  const HaiODem = ({ ketQua }: { ketQua: KetQuaKetNoi }) => {
+    const thuan = ketQua.soSanh.tieuChi.filter((tc) => tc.mucDo === 'thuan');
+    const nghich = ketQua.soSanh.tieuChi.filter((tc) => tc.mucDo === 'nghich');
+    const o = (so: number, mauSo: string, nhan: string, ten: string[]) => (
+      <The style={{ flex: 1, padding: 14, gap: 2 }}>
+        <Text style={{ fontFamily: FONT.display, fontSize: 34, lineHeight: 36, color: mauSo }}>{so}</Text>
+        <Chu kieu="bodySm" dam>
+          {nhan}
+        </Chu>
+        {ten.length > 0 && (
+          <Chu kieu="caption" mo numberOfLines={2}>
+            {ten.join(' · ')}
+          </Chu>
+        )}
+      </The>
+    );
+    return (
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {o(thuan.length, mau.tot2.chu, t.ketNoi.hopNhau, thuan.map((x) => x.ten))}
+        {o(nghich.length, mau.canY.chu, t.ketNoi.canNhuong, nghich.map((x) => x.ten))}
+      </View>
+    );
+  };
+
+  const chiTietXong = (ketQua: KetQuaKetNoi) => {
     const { soSanh, ketNoi } = ketQua;
     if (!ketNoi)
       return (
@@ -134,28 +188,22 @@ export default function ManKetNoi() {
           <Chu kieu="bodySm" mo>
             {t.ketNoi.aiChuaXong}
           </Chu>
-          <NutChu nhan={t.ketNoi.thuLaiDienGiai} onPress={so} style={{ alignSelf: 'flex-start' }} />
+          <NutChu nhan={t.ketNoi.thuLaiDienGiai} mauChu={v.mau} onPress={so} style={{ alignSelf: 'flex-start' }} />
           <The>
             <BangKyThuat ketQua={ketQua} />
           </The>
         </View>
       );
 
-    return (
-      <View style={{ gap: KHOANG.x6 }}>
-        <View style={{ gap: KHOANG.x2 }}>
-          <Eyebrow>{`${soSanh.tenA} & ${soSanh.tenB} · ${cauHinh.nhan}`}</Eyebrow>
-          <Chu kieu="h3">{ketNoi.dangChuY.tieuDe}</Chu>
-          <Chu kieu="body">{ketNoi.dangChuY.noiDung}</Chu>
-        </View>
+    const cauTiep = dien(t.ketNoi.cauHoiTiep, { a: soSanh.tenA, b: soSanh.tenB });
 
+    return (
+      <View style={{ gap: KHOANG.x5 }}>
         {ketNoi.muc
           .filter((m) => m.noiDung)
           .map((m) => (
             <View key={m.id} style={{ gap: KHOANG.x2 }}>
-              <Chu kieu="body" style={{ fontWeight: '600' }}>
-                {m.tieuDe}
-              </Chu>
+              <Chu kieu="h3">{m.tieuDe}</Chu>
               <Chu kieu="body">{m.noiDung}</Chu>
               {!!m.luongNguoc && (
                 <Chu kieu="bodySm" mo>
@@ -167,7 +215,7 @@ export default function ManKetNoi() {
 
         {ketNoi.cauHoiCuaBan && (
           <The am style={{ gap: KHOANG.x2 }}>
-            <Eyebrow>{t.ketNoi.cauHoiCuaBan}</Eyebrow>
+            <Eyebrow mauChu={v.mau}>{t.ketNoi.cauHoiCuaBan}</Eyebrow>
             <Chu kieu="bodySm" mo>
               {ketNoi.cauHoiCuaBan.cauHoi}
             </Chu>
@@ -179,6 +227,7 @@ export default function ManKetNoi() {
         <View style={{ gap: KHOANG.x3 }}>
           <NutChu
             nhan={moCanCu ? t.ketNoi.viSaoDong : t.ketNoi.viSao}
+            mauChu={v.mau}
             onPress={() => {
               const moi = !moCanCu;
               setMoCanCu(moi);
@@ -219,15 +268,30 @@ export default function ManKetNoi() {
           )}
         </View>
 
-        <NutChinh
-          nhan={t.ketNoi.hoiThem}
-          onPress={() =>
-            router.push({
-              pathname: '/(tabs)/celes',
-              params: { q: dien(t.ketNoi.cauHoiTiep, { a: soSanh.tenA, b: soSanh.tenB }) },
-            })
-          }
-        />
+        {/* Lối sang Celes — dạng liên kết, vì nút fuchsia của màn đã là nút so */}
+        <The style={{ flexDirection: 'row', gap: KHOANG.x3, alignItems: 'flex-start', paddingVertical: 14 }}>
+          <OrbCeles size={28} sang={false} />
+          <View style={{ flex: 1, gap: KHOANG.x1 }}>
+            <Text style={{ fontFamily: FONT.thanDam, fontSize: 13, lineHeight: 18, color: v.mau }}>
+              {t.ketNoi.celesGoiY}
+            </Text>
+            <Giong co={17}>{`“${cauTiep}”`}</Giong>
+            <Pressable
+              onPress={() => router.push({ pathname: '/(tabs)/celes', params: { q: cauTiep } })}
+              accessibilityRole="button"
+              style={({ pressed }) => ({
+                minHeight: CHAM_TOI_THIEU,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text style={{ fontFamily: FONT.thanDam, fontSize: 14, color: v.mau }}>{t.ketNoi.hoiVeHaiNguoi}</Text>
+              <Icon ten="arrow" size={16} net={2.2} mau={v.mau} />
+            </Pressable>
+          </View>
+        </The>
 
         <View style={{ gap: KHOANG.x3 }}>
           <NutChu
@@ -249,6 +313,21 @@ export default function ManKetNoi() {
     );
   };
 
+  const dauMan = (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+      <View style={{ flex: 1, gap: KHOANG.x1 }}>
+        <DauVung vung="moiQuanHe" ten={t.tab.ketNoi} />
+        <Chu kieu="h1">
+          {t.ketNoi.tieuDeDau} <ChuNhan vung="moiQuanHe">{t.ketNoi.tieuDeNhan}</ChuNhan>
+        </Chu>
+        <Chu kieu="bodySm" mo>
+          {t.ketNoi.moTaNgan}
+        </Chu>
+      </View>
+      <AnhDaiDien ten={hoSo?.ten} onPress={() => router.push('/toi')} nhan={t.tab.moTaiKhoan} />
+    </View>
+  );
+
   const noiDung = () => {
     if (!hoSo)
       return (
@@ -258,72 +337,126 @@ export default function ManKetNoi() {
       );
     if (!phien) return <TheCanDangNhap moTa={t.ketNoi.moiDangNhap} />;
 
+    const ketQuaXong = tt?.loai === 'xong' ? tt.kq : null;
+    const tenA = hoSo.ten || t.ketNoi.khongTen;
+    const tenB = b ? b.hoTen || t.ketNoi.khongTen : null;
+
     return (
       <>
-        {/* Hai người */}
-        <View style={{ gap: KHOANG.x3 }}>
-          <The style={{ gap: KHOANG.x1 }}>
-            <Eyebrow>{t.ketNoi.ban}</Eyebrow>
-            <Chu kieu="body">{hoSo.ten || t.ketNoi.khongTen}</Chu>
-          </The>
+        {/* Hàng người: bạn cố định, người kia chọn được, và lối thêm người */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: -LE_NGANG }}
+          contentContainerStyle={{ paddingHorizontal: LE_NGANG, gap: KHOANG.x3 }}
+        >
+          <ONguoi chu={chuCai(hoSo.ten)} nen="#FFBDD3" nhan={t.ketNoi.ban} />
+          {nguoiKhac.map((n, i) => (
+            <ONguoi
+              key={n.id}
+              chu={chuCai(n.hoTen)}
+              nen={MAU_NGUOI[i % MAU_NGUOI.length]}
+              nhan={n.hoTen || t.ketNoi.khongTen}
+              dangChon={n.id === b?.id}
+              onPress={() => setIdB(n.id)}
+              moTa={dien(t.ketNoi.chonNguoi, { ten: n.hoTen || t.ketNoi.khongTen })}
+            />
+          ))}
+          <ONguoi them nhan={t.ketNoi.them} onPress={() => router.push('/nguoi-cua-toi')} moTa={t.ketNoi.themNguoi} />
+        </ScrollView>
+        {nguoiKhac.length > 0 && (
+          <NutChu
+            nhan={t.ketNoi.quanLyNguoi}
+            onPress={() => router.push('/nguoi-cua-toi')}
+            style={{ alignSelf: 'flex-start', marginTop: -KHOANG.x2 }}
+          />
+        )}
+
+        {!b && (
           <The style={{ gap: KHOANG.x3 }}>
-            <Eyebrow>{t.ketNoi.nguoiKia}</Eyebrow>
-            {nguoiKhac.length === 0 ? (
-              <>
-                <Chu kieu="bodySm" mo>
-                  {t.ketNoi.chuaCoNguoi}
-                </Chu>
-                <NutPhu nhan={t.ketNoi.themNguoi} onPress={() => router.push('/nguoi-cua-toi')} />
-              </>
-            ) : (
-              <>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KHOANG.x2 }}>
-                  {nguoiKhac.map((n) => (
-                    <Pill
-                      key={n.id}
-                      nhan={`${n.hoTen || t.ketNoi.khongTen} · ${n.ngay}/${n.thang}/${n.nam}`}
-                      dangChon={n.id === b?.id}
-                      onPress={() => setIdB(n.id)}
-                    />
-                  ))}
-                </View>
-                <NutChu
-                  nhan={t.ketNoi.quanLyNguoi}
-                  onPress={() => router.push('/nguoi-cua-toi')}
-                  style={{ alignSelf: 'flex-start' }}
-                />
-              </>
-            )}
+            <Chu kieu="bodySm" mo>
+              {t.ketNoi.chuaCoNguoi}
+            </Chu>
+            <NutPhu nhan={t.ketNoi.themNguoi} icon="plus" onPress={() => router.push('/nguoi-cua-toi')} />
           </The>
-        </View>
+        )}
 
         {b && (
           <>
+            {/* Thẻ chính: cặp đang xem — kết luận khi đã có, lời mời khi chưa */}
+            <TheHero vung="moiQuanHe" style={{ padding: 18, gap: KHOANG.x2 }}>
+              <View accessible={false} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={[kieuCap.tron, { borderColor: mau.nen, backgroundColor: 'rgba(211,34,152,0.85)' }]}>
+                  <Text style={[kieuCap.chu, { color: '#FFFFFF' }]}>{chuCai(hoSo.ten)}</Text>
+                </View>
+                <View style={[kieuCap.tron, { borderColor: mau.nen, marginLeft: -14, backgroundColor: VUNG_MAU_B }]}>
+                  <Text style={[kieuCap.chu, { color: '#2A0A06' }]}>{chuCai(b.hoTen)}</Text>
+                </View>
+                <View style={{ flex: 1, marginLeft: KHOANG.x3 }}>
+                  <Eyebrow mauChu={v.mau}>{`${tenA} & ${tenB}`}</Eyebrow>
+                </View>
+              </View>
+              {ketQuaXong?.ketNoi ? (
+                <>
+                  <Chu kieu="h2">{ketQuaXong.ketNoi.dangChuY.tieuDe}</Chu>
+                  <Chu kieu="bodySm" mo>
+                    {ketQuaXong.ketNoi.dangChuY.noiDung}
+                  </Chu>
+                  <Chu kieu="caption" nhat>
+                    {cauHinh.nhan}
+                  </Chu>
+                </>
+              ) : (
+                <>
+                  <Chu kieu="h2">{t.ketNoi.tieuDe}</Chu>
+                  <Chu kieu="bodySm" mo>
+                    {t.ketNoi.moTa}
+                  </Chu>
+                </>
+              )}
+            </TheHero>
+
+            {ketQuaXong && <HaiODem ketQua={ketQuaXong} />}
+            {ketQuaXong && chiTietXong(ketQuaXong)}
+
             {/* Ý định */}
             <View style={{ gap: KHOANG.x3 }}>
               <Chu kieu="h3">{t.ketNoi.yDinhTieuDe}</Chu>
               {Y_DINH_KET_NOI.map((y) => {
                 const chon = y === yDinh;
                 return (
-                  <The
+                  <Pressable
                     key={y}
                     onPress={() => {
                       setYDinh(y);
                       ghiSuKien('connection_intent_selected', { yDinh: y });
                     }}
-                    style={{
-                      gap: KHOANG.x1,
-                      borderWidth: 1.5,
-                      borderColor: chon ? mau.hanhDong : 'transparent',
-                    }}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: chon }}
+                    style={({ pressed }) => ({
+                      minHeight: 56,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: KHOANG.x3,
+                      paddingHorizontal: KHOANG.x4,
+                      paddingVertical: KHOANG.x3,
+                      borderRadius: BO_GOC.the,
+                      borderWidth: 1,
+                      borderColor: chon ? `rgba(${v.rgb},0.45)` : mau.vienKinh,
+                      backgroundColor: chon ? `rgba(${v.rgb},0.12)` : mau.the,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
                   >
-                    <Chu kieu="body" style={{ fontWeight: '600' }}>
-                      {t.ketNoi.yDinh[y].nhan}
-                    </Chu>
-                    <Chu kieu="caption" mo>
-                      {t.ketNoi.yDinh[y].moTa}
-                    </Chu>
-                  </The>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Chu kieu="body" dam style={chon ? { color: v.sang } : undefined}>
+                        {t.ketNoi.yDinh[y].nhan}
+                      </Chu>
+                      <Chu kieu="caption" mo>
+                        {t.ketNoi.yDinh[y].moTa}
+                      </Chu>
+                    </View>
+                    {chon && <Icon ten="check" size={18} net={2.4} mau={v.sang} />}
+                  </Pressable>
                 );
               })}
             </View>
@@ -375,7 +508,6 @@ export default function ManKetNoi() {
                 <NutPhu nhan={t.chung.thuLai} onPress={so} />
               </View>
             )}
-            {tt?.loai === 'xong' && ketQuaXong(tt.kq)}
           </>
         )}
       </>
@@ -384,23 +516,121 @@ export default function ManKetNoi() {
 
   return (
     <View style={{ flex: 1, backgroundColor: mau.nen }}>
+      <NenVung vung="moiQuanHe" />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingTop: le.top + KHOANG.x5,
+          paddingTop: le.top + 12,
           paddingHorizontal: LE_NGANG,
-          paddingBottom: KHOANG.x12,
-          gap: KHOANG.x6,
+          paddingBottom: demDay,
+          gap: KHOANG.x4,
         }}
       >
-        <View style={{ gap: KHOANG.x2 }}>
-          <Chu kieu="h2">{t.ketNoi.tieuDe}</Chu>
-          <Chu kieu="bodySm" mo>
-            {t.ketNoi.moTa}
-          </Chu>
-        </View>
+        {dauMan}
         {noiDung()}
       </ScrollView>
     </View>
+  );
+}
+
+/** Màu chữ cái người thứ hai trong thẻ cặp — cùng sắc vùng Mối quan hệ */
+const VUNG_MAU_B = '#FF8F80';
+
+const kieuCap = {
+  tron: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 3,
+    borderColor: '#17141B',
+  },
+  chu: { fontFamily: FONT.display, fontSize: 19 },
+};
+
+/** Một người trong hàng chọn: vòng màu vùng khi đang chọn, viền đứt cho ô "Thêm" */
+function ONguoi({
+  chu,
+  nen,
+  nhan,
+  dangChon,
+  onPress,
+  them,
+  moTa,
+}: {
+  chu?: string;
+  nen?: string;
+  nhan: string;
+  dangChon?: boolean;
+  onPress?: () => void;
+  them?: boolean;
+  moTa?: string;
+}) {
+  const mau = useMau();
+  const { theme } = useTheme();
+  const v = useVung('moiQuanHe');
+
+  const tron = them ? (
+    <View
+      style={{
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+        borderWidth: 1.5,
+        borderStyle: 'dashed',
+        borderColor: theme === 'toi' ? 'rgba(255,255,255,0.22)' : 'rgba(36,0,41,0.22)',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Icon ten="plus" size={20} net={2} mau={mau.chu} />
+    </View>
+  ) : (
+    <LinearGradient
+      colors={dangChon ? [v.sang, v.mau, '#E23BA8'] : [mau.vienKinh, mau.vienKinh]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ width: 58, height: 58, borderRadius: 29, padding: 3 }}
+    >
+      <View
+        style={{
+          flex: 1,
+          borderRadius: 26,
+          borderWidth: 3,
+          borderColor: mau.nen,
+          backgroundColor: nen,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ fontFamily: FONT.display, fontSize: 19, color: MUC_DAM }}>{chu}</Text>
+      </View>
+    </LinearGradient>
+  );
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={moTa ?? nhan}
+      accessibilityState={onPress && !them ? { selected: !!dangChon } : undefined}
+      style={({ pressed }) => ({ width: 64, alignItems: 'center', gap: 6, opacity: pressed ? 0.75 : 1 })}
+    >
+      {tron}
+      <Text
+        numberOfLines={1}
+        style={{
+          fontFamily: dangChon ? FONT.thanRatDam : FONT.thanVua,
+          fontSize: 13,
+          lineHeight: 17,
+          color: dangChon ? mau.chu : mau.chuMo,
+          maxWidth: 64,
+        }}
+      >
+        {nhan}
+      </Text>
+    </Pressable>
   );
 }

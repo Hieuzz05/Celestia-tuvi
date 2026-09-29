@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { Pill } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import type { TenIcon } from '@/giao-dien/icon-aurora';
+import { KhungBuoc, OChon } from '@/giao-dien/khung-buoc';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
 import type { BanKhoan } from '@/du-lieu/ho-so';
-import { useT } from '@/i18n/context';
-import { KHOANG } from '@/thiet-ke/token';
+import { dien, useT } from '@/i18n/context';
 
 /**
  * Bước 5 — điều đang khiến người dùng nghĩ nhiều nhất.
@@ -19,20 +18,29 @@ import { KHOANG } from '@/thiet-ke/token';
 
 const TOI_DA = 2;
 
-const THU_TU: BanKhoan[] = [
-  'congViec',
-  'tinhCam',
-  'banThan',
-  'giaDinh',
-  'taiChinh',
-  'quyetDinh',
-  'chuaRo',
+const ICON: Record<BanKhoan, TenIcon> = {
+  congViec: 'briefcase',
+  tinhCam: 'heart',
+  banThan: 'sparkle',
+  giaDinh: 'home',
+  taiChinh: 'coin',
+  quyetDinh: 'sign',
+  chuaRo: 'eye',
+};
+
+// Lưới hai cột; "Chưa rõ" chữ dài và loại trừ các ô khác nên nằm riêng một hàng
+const HANG: BanKhoan[][] = [
+  ['congViec', 'tinhCam'],
+  ['banThan', 'giaDinh'],
+  ['taiChinh', 'quyetDinh'],
+  ['chuaRo'],
 ];
 
 export default function BuocBanKhoan() {
   const router = useRouter();
   const t = useT();
   const { banNhap, dat } = useBanNhap();
+  const ten = banNhap.ten.trim() || t.onboarding.banMacDinh;
 
   const doiChon = (b: BanKhoan) => {
     const dang = banNhap.banKhoan;
@@ -52,20 +60,29 @@ export default function BuocBanKhoan() {
   return (
     <KhungBuoc
       buoc={5}
+      eyebrow={dien(t.onboarding.banKhoanEyebrow, { ten })}
       tieuDe={t.onboarding.banKhoanTieuDe}
       moTa={t.onboarding.banKhoanMoTa}
       nhanTiep={t.onboarding.banKhoanCta}
+      ghiChu={t.onboarding.banKhoanGhiChu}
       choPhepTiep={banNhap.banKhoan.length > 0}
       onTiep={() => router.push('/dang-tao')}
     >
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KHOANG.x2 }}>
-        {THU_TU.map((b) => (
-          <Pill
-            key={b}
-            nhan={t.onboarding.banKhoan[b]}
-            dangChon={banNhap.banKhoan.includes(b)}
-            onPress={() => doiChon(b)}
-          />
+      <View style={{ gap: 10 }}>
+        {HANG.map((hang) => (
+          <View key={hang[0]} style={{ flexDirection: 'row', gap: 10 }}>
+            {hang.map((b) => (
+              <OChon
+                key={b}
+                nhieu
+                icon={ICON[b]}
+                nhan={t.onboarding.banKhoan[b]}
+                dangChon={banNhap.banKhoan.includes(b)}
+                onPress={() => doiChon(b)}
+                style={{ flex: 1 }}
+              />
+            ))}
+          </View>
         ))}
       </View>
     </KhungBuoc>

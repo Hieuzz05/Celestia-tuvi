@@ -46,17 +46,20 @@ app/                    màn hình (expo-router)
   quick-read.tsx        giá trị đầu tiên, trước khi hỏi tài khoản
   dang-ky.tsx           đăng ký mềm, luôn có đường "Để sau"
   ban-do.tsx            mệnh bàn đầy đủ như web, một phiên bản
-  (tabs)/               5 tab: Hôm nay · Hành trình · Celes · Kết nối · Tôi
+  toi.tsx               Tài khoản — mở từ ảnh đại diện, KHÔNG phải tab
+  (tabs)/               5 tab: Hôm nay · Lá số · Celes · Hành trình · Mối quan hệ
 src/
-  thiet-ke/             token màu, chữ, khoảng cách, theme sáng/tối
-  giao-dien/            component dùng lại + bộ icon + tương tác "Vì sao?"
+  thiet-ke/             token Aurora: màu vùng, chữ, bo góc, theme tối/sáng
+  giao-dien/            component dùng lại (co-ban.tsx), icon-aurora.tsx,
+                        thanh-tab.tsx (thanh tab nổi), tương tác "Vì sao?"
   i18n/                 VI/EN, vi.ts là nguồn chân lý cấu trúc khoá
   du-lieu/              hồ sơ, bản nháp onboarding, gọi API, ghi sự kiện
 ```
 
 ## Quy tắc không được phá
 
-1. **Đúng năm tab.** Không đưa "Luận giải chi tiết", "Hỏi đáp", "Hồ sơ", "Quản
+1. **Đúng năm tab: Hôm nay · Lá số · Celes · Hành trình · Mối quan hệ** (Aurora,
+   29/09/2026). Tài khoản mở từ ảnh đại diện góc phải-trên. Không đưa "Luận giải chi tiết", "Hỏi đáp", "Hồ sơ", "Quản
    trị" lên điều hướng chính.
 2. **Mỗi màn đúng một nút hành động nổi trội.** Hồng Fuchsia chỉ dành cho nó.
 3. **Mệnh bàn (`ban-do.tsx`) là MỘT phiên bản đầy đủ, không chia mức.** Quyết
@@ -77,7 +80,15 @@ src/
 6. **Quick Read không có tường chắn.** Đăng ký chỉ được mời sau khi đã đọc.
 7. **"Muốn biết vì sao không?"** luôn miễn phí, luôn có mặt, và luôn hiện lời
    đời thường trước thuật ngữ.
-8. **Theme tối giữ nền Aubergine `#240029`**, không đổi sang đen hay navy.
+8. **Giao diện theo thiết kế Aurora bản 8** (`docs/thiet-ke/celes-ios/aurora/gen.py`,
+   29/09/2026 — thay luật nền Aubergine cũ). Theme tối là mặc định, nền `#0B0A0D`;
+   mỗi tab một màu vùng (`VUNG` trong `token.ts`) cho quầng sáng, icon tab đang
+   chọn và nhãn. Nút chính vẫn là gradient Fuchsia `#D32298`. Bo góc: thẻ 20,
+   thẻ hero 24, nút và ô nhập 14. Chữ: Bricolage Grotesque (tiêu đề), Be Vietnam
+   Pro (thân), Newsreader nghiêng (giọng Celes), JetBrains Mono (số) — riêng app,
+   web chưa đổi. Không có blur/masked-view: chữ gradient trong thiết kế vẽ bằng
+   màu vùng đặc (`ChuNhan`). Thanh tab nổi: đo đệm đáy bằng `useDemDayTab()`,
+   đừng tự cộng số.
 
 ## Chưa làm
 

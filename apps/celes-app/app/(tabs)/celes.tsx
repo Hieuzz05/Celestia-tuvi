@@ -1,17 +1,32 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
+  Text,
+  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Chu, Eyebrow, NutChinh, NutChu, ONhap, Pill, The } from '@/giao-dien/co-ban';
-import { IconCeles, IconGui, MAU_LINH_VUC } from '@/giao-dien/icon';
+import {
+  BeMatKinh,
+  Chu,
+  Giong,
+  NenVung,
+  NutChinh,
+  NutChu,
+  NutIcon,
+  OrbCeles,
+  The,
+  useDemDayTab,
+} from '@/giao-dien/co-ban';
+import { Icon } from '@/giao-dien/icon-aurora';
 import { Markdown } from '@/giao-dien/markdown';
 import {
   hoiCeles,
@@ -26,8 +41,16 @@ import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { tuyenApp } from '@/du-lieu/tuyen-web';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { dien, useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
-import { BO_GOC, CHAM_TOI_THIEU, KHOANG, LE_NGANG } from '@/thiet-ke/token';
+import { useMau, useTheme, useVung } from '@/thiet-ke/theme';
+import {
+  BO_GOC,
+  CHAM_TOI_THIEU,
+  FONT,
+  GRADIENT_NUT,
+  GRADIENT_NUT_DIEM,
+  KHOANG,
+  LE_NGANG,
+} from '@/thiet-ke/token';
 
 /**
  * Celes — tính năng chữ ký.
@@ -60,7 +83,10 @@ type ThongBao = { loai: 'dang-nhap' } | { loai: 'het-luot'; gioiHan?: number };
 export default function ManCeles() {
   const t = useT();
   const mau = useMau();
+  const { theme } = useTheme();
+  const v = useVung('celes');
   const le = useSafeAreaInsets();
+  const demDay = useDemDayTab();
   const { hoSo } = useHoSo();
   const router = useRouter();
   const { q } = useLocalSearchParams<{ q?: string }>();
@@ -75,9 +101,22 @@ export default function ManCeles() {
   const [khoa, setKhoa] = useState<string | null>(null);
   const danhSach = useRef<FlatList<TinNhan>>(null);
   const userId = phien?.user.id;
+  // iOS: bàn phím che luôn thanh tab nổi, nên lúc bàn phím mở ô nhập bỏ khoảng
+  // chừa cho thanh tab (Android co cửa sổ lại, thanh tab vẫn nằm trên bàn phím).
+  const [banPhimMo, setBanPhimMo] = useState(false);
 
   useEffect(() => {
     ghiSuKien('celes_opened');
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const mo = Keyboard.addListener('keyboardWillShow', () => setBanPhimMo(true));
+    const dong = Keyboard.addListener('keyboardWillHide', () => setBanPhimMo(false));
+    return () => {
+      mo.remove();
+      dong.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -187,34 +226,56 @@ export default function ManCeles() {
 
   const rong = tin.length === 0;
   const cuoi = tin[tin.length - 1];
+  const toi = theme === 'toi';
+  // Chip gợi ý tiếp chỉ hiện dưới lượt CUỐI của Celes — nằm ngay trên ô nhập như bản thiết kế
+  const goiYCuoi =
+    !dangCho && cuoi?.vaiTro === 'tro-ly' && !cuoi.loi && cuoi.goiYTiep?.length ? cuoi.goiYTiep : [];
+  const coTheGui = !!nhap.trim() && !dangCho;
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
       style={{ flex: 1, backgroundColor: mau.nen }}
     >
-      {/* Đầu màn: tên và trạng thái, kèm bản đồ đang dùng làm bối cảnh */}
+      <NenVung vung="celes" />
+
+      {/* Đầu màn: quả cầu, tên, bản đồ đang dùng làm bối cảnh */}
       <View
         style={{
           paddingTop: le.top + KHOANG.x3,
           paddingHorizontal: LE_NGANG,
           paddingBottom: KHOANG.x3,
-          borderBottomWidth: 1,
-          borderColor: mau.vien,
           flexDirection: 'row',
           alignItems: 'center',
           gap: KHOANG.x3,
         }}
       >
-        <IconCeles size={28} mau={MAU_LINH_VUC.celes} />
-        <View style={{ flex: 1 }}>
-          <Chu kieu="h3">{t.celes.tieuDe}</Chu>
-          <Chu kieu="caption" mo>
-            {hoSo ? dien(t.celes.dangDungBanDo, { ten: hoSo.ten }) : t.celes.phu}
-          </Chu>
+        <OrbCeles size={48} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text
+            style={{ fontFamily: FONT.display, fontSize: 24, lineHeight: 26, letterSpacing: -0.7, color: mau.chu }}
+          >
+            {t.celes.tieuDe}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor: '#4ADE80',
+                shadowColor: '#4ADE80',
+                shadowOpacity: 0.9,
+                shadowRadius: 4,
+                shadowOffset: { width: 0, height: 0 },
+              }}
+            />
+            <Chu kieu="caption" mo numberOfLines={1} style={{ flexShrink: 1, fontSize: 13 }}>
+              {hoSo ? dien(t.celes.dangDungBanDo, { ten: hoSo.ten }) : t.celes.phu}
+            </Chu>
+          </View>
         </View>
-        {!rong && !dangCho && <NutChu nhan={t.celes.xoaNut} mauChu={mau.chuMo} onPress={xoa} />}
+        {!rong && !dangCho && <NutIcon ten="trash" nhan={t.celes.xoaNut} onPress={xoa} />}
       </View>
 
       {rong ? (
@@ -227,10 +288,12 @@ export default function ManCeles() {
           }}
           keyboardShouldPersistTaps="handled"
         >
-          <Chu kieu="h2">{t.celes.rongTieuDe}</Chu>
+          <Giong co={24} style={{ lineHeight: 30 }}>
+            {t.celes.rongTieuDe}
+          </Giong>
           <View style={{ gap: KHOANG.x2 }}>
             {t.celes.goiY.map((g) => (
-              <Pill key={g} nhan={g} onPress={() => gui(g)} style={{ alignSelf: 'flex-start' }} />
+              <ChipGoiY key={g} nhan={g} onPress={() => gui(g)} />
             ))}
           </View>
         </ScrollView>
@@ -239,60 +302,73 @@ export default function ManCeles() {
           ref={danhSach}
           data={tin}
           keyExtractor={(m) => m.id}
-          contentContainerStyle={{ padding: LE_NGANG, gap: KHOANG.x4 }}
+          contentContainerStyle={{ paddingHorizontal: LE_NGANG, paddingVertical: KHOANG.x2, gap: KHOANG.x4 }}
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => danhSach.current?.scrollToEnd({ animated: false })}
           renderItem={({ item }) =>
             item.vaiTro === 'nguoi-dung' ? (
-              <View
+              <LinearGradient
+                colors={[...GRADIENT_NUT]}
+                locations={[0, 0.6, 1]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={{
                   alignSelf: 'flex-end',
-                  maxWidth: '85%',
-                  backgroundColor: mau.bongNguoiDung,
-                  borderRadius: BO_GOC.the,
+                  maxWidth: '82%',
+                  borderTopLeftRadius: 22,
+                  borderTopRightRadius: 22,
+                  borderBottomLeftRadius: 22,
+                  borderBottomRightRadius: 6,
                   paddingHorizontal: KHOANG.x4,
                   paddingVertical: KHOANG.x3,
                 }}
               >
-                <Chu kieu="body" style={{ color: mau.chuBongNguoiDung }}>
+                <Text style={{ fontFamily: FONT.than, fontSize: 15, lineHeight: 22, color: mau.chuBongNguoiDung }}>
                   {item.noiDung}
-                </Chu>
-              </View>
+                </Text>
+              </LinearGradient>
             ) : (
-              <View style={{ gap: KHOANG.x3 }}>
-                <The am style={{ gap: KHOANG.x3 }}>
-                  <Eyebrow mauChu={MAU_LINH_VUC.celes}>{t.celes.tieuDe}</Eyebrow>
-                  {item.loi ? (
-                    <Chu kieu="body" style={{ color: mau.xau }}>
-                      {item.noiDung}
-                    </Chu>
-                  ) : (
-                    <Markdown noiDung={item.noiDung} />
-                  )}
-                </The>
+              <View style={{ gap: KHOANG.x2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+                  <OrbCeles size={28} tho={false} sang={false} />
+                  <BeMatKinh
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      borderTopLeftRadius: 6,
+                      borderTopRightRadius: 22,
+                      borderBottomLeftRadius: 22,
+                      borderBottomRightRadius: 22,
+                      paddingHorizontal: KHOANG.x4,
+                      paddingVertical: 14,
+                    }}
+                  >
+                    {item.loi ? (
+                      <Chu kieu="body" style={{ color: mau.xau }}>
+                        {item.noiDung}
+                      </Chu>
+                    ) : (
+                      <Markdown noiDung={item.noiDung} giong />
+                    )}
+                  </BeMatKinh>
+                </View>
 
-                {item === cuoi && !dangCho && !!item.goiYTiep?.length && (
-                  <View style={{ gap: KHOANG.x2 }}>
-                    {item.goiYTiep.map((g) => (
-                      <Pill
-                        key={g}
-                        nhan={g}
-                        onPress={() => gui(g, true)}
-                        style={{ alignSelf: 'flex-start' }}
-                      />
-                    ))}
+                {item === cuoi && !dangCho && (
+                  <View style={{ paddingLeft: 38 }}>
+                    <LoiDiTiep ds={item.loiDi} mauChu={v.mau} />
                   </View>
                 )}
-
-                {item === cuoi && !dangCho && <LoiDiTiep ds={item.loiDi} />}
               </View>
             )
           }
           ListFooterComponent={
             dangCho ? (
-              <Chu kieu="bodySm" mo>
-                {t.celes.dangNghi}
-              </Chu>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: KHOANG.x4 }}>
+                <OrbCeles size={28} sang={false} />
+                <Chu kieu="bodySm" mo style={{ flex: 1 }}>
+                  {t.celes.dangNghi}
+                </Chu>
+              </View>
             ) : null
           }
         />
@@ -328,51 +404,121 @@ export default function ManCeles() {
         </View>
       )}
 
+      {/* Đáy: chip gợi ý + ô nhập, đặt TRÊN thanh tab nổi (không bị orb giữa che) */}
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'flex-end',
-          gap: KHOANG.x2,
-          paddingHorizontal: LE_NGANG,
+          gap: 10,
           paddingTop: KHOANG.x2,
-          paddingBottom: KHOANG.x2,
-          borderTopWidth: 1,
-          borderColor: mau.vien,
+          marginBottom: banPhimMo ? KHOANG.x2 : demDay + KHOANG.x2,
         }}
       >
-        <ONhap
-          value={nhap}
-          onChangeText={setNhap}
-          placeholder={t.celes.oNhap}
-          multiline
-          maxLength={800}
-          style={{ flex: 1, maxHeight: 120, paddingTop: KHOANG.x3 }}
-          accessibilityLabel={t.celes.oNhap}
-        />
-        <Pressable
-          onPress={() => gui(nhap)}
-          disabled={!nhap.trim() || dangCho}
-          accessibilityRole="button"
-          accessibilityLabel={t.celes.guiNhan}
+        {goiYCuoi.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingHorizontal: LE_NGANG, gap: KHOANG.x2 }}
+          >
+            {goiYCuoi.map((g) => (
+              <ChipGoiY key={g} nhan={g} onPress={() => gui(g, true)} />
+            ))}
+          </ScrollView>
+        )}
+
+        <View
           style={{
-            width: CHAM_TOI_THIEU + 4,
-            height: CHAM_TOI_THIEU + 4,
-            borderRadius: BO_GOC.vien,
-            backgroundColor: mau.hanhDong,
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: !nhap.trim() || dangCho ? 0.4 : 1,
+            marginHorizontal: LE_NGANG,
+            minHeight: 54,
+            borderRadius: 18,
+            backgroundColor: toi ? 'rgba(20,18,24,0.94)' : mau.theNoi,
+            borderWidth: 1,
+            borderColor: `rgba(${v.rgb},0.30)`,
+            flexDirection: 'row',
+            alignItems: 'flex-end',
+            gap: 4,
+            paddingLeft: KHOANG.x4,
+            paddingRight: 5,
+            paddingVertical: 4,
           }}
         >
-          <IconGui size={22} mau={mau.chuTrenHanhDong} />
-        </Pressable>
+          <TextInput
+            value={nhap}
+            onChangeText={setNhap}
+            placeholder={t.celes.oNhap}
+            placeholderTextColor={mau.chuNhat}
+            multiline
+            maxLength={800}
+            accessibilityLabel={t.celes.oNhap}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: CHAM_TOI_THIEU,
+              maxHeight: 120,
+              paddingTop: 12,
+              paddingBottom: 10,
+              fontFamily: FONT.than,
+              fontSize: 16,
+              color: mau.chu,
+            }}
+          />
+          <Pressable
+            onPress={() => gui(nhap)}
+            disabled={!coTheGui}
+            accessibilityRole="button"
+            accessibilityLabel={t.celes.guiNhan}
+            accessibilityState={{ disabled: !coTheGui }}
+            style={({ pressed }) => ({ opacity: !coTheGui ? 0.4 : pressed ? 0.85 : 1 })}
+          >
+            <LinearGradient
+              colors={[...GRADIENT_NUT]}
+              locations={[...GRADIENT_NUT_DIEM]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                width: CHAM_TOI_THIEU,
+                height: CHAM_TOI_THIEU,
+                borderRadius: BO_GOC.nut,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Icon ten="up" size={20} net={2.3} mau={mau.chuTrenHanhDong} />
+            </LinearGradient>
+          </Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
+/** Chip gợi ý câu hỏi: viền và nền hồng vùng Celes, cao 40 (vùng chạm nới thêm bằng hitSlop) */
+function ChipGoiY({ nhan, onPress }: { nhan: string; onPress: () => void }) {
+  const v = useVung('celes');
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      hitSlop={4}
+      style={({ pressed }) => ({
+        alignSelf: 'flex-start',
+        minHeight: 40,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: BO_GOC.vien,
+        borderWidth: 1,
+        borderColor: `rgba(${v.rgb},0.35)`,
+        backgroundColor: `rgba(${v.rgb},0.08)`,
+        justifyContent: 'center',
+        opacity: pressed ? 0.75 : 1,
+      })}
+    >
+      <Text style={{ fontFamily: FONT.thanVua, fontSize: 14, lineHeight: 19, color: v.sang }}>{nhan}</Text>
+    </Pressable>
+  );
+}
+
 /** "Rời khỏi đây" — nhẹ hơn chip một bậc. Lối nào app chưa có màn thì ẩn. */
-function LoiDiTiep({ ds }: { ds?: LoiDi[] }) {
+function LoiDiTiep({ ds, mauChu }: { ds?: LoiDi[]; mauChu?: string }) {
   const router = useRouter();
   const loi = (ds ?? [])
     .map((l) => ({ nhan: l.nhan, tuyen: tuyenApp(l.duong) }))
@@ -381,7 +527,7 @@ function LoiDiTiep({ ds }: { ds?: LoiDi[] }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: KHOANG.x4 }}>
       {loi.map((l) => (
-        <NutChu key={l.nhan} nhan={l.nhan} onPress={() => router.push(l.tuyen!)} />
+        <NutChu key={l.nhan} nhan={l.nhan} mauChu={mauChu} onPress={() => router.push(l.tuyen!)} />
       ))}
     </View>
   );
