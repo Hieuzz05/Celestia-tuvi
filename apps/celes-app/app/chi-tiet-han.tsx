@@ -1,17 +1,16 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Chu, Eyebrow, NutChinh, NutChu, NutPhu, The } from '@/giao-dien/co-ban';
-import { IconQuayLai } from '@/giao-dien/icon';
+import { Chu, DauVung, Eyebrow, NenVung, NutChinh, NutChu, NutIcon, NutPhu, The, TheHero } from '@/giao-dien/co-ban';
 import { DangDoc, TheCanDangNhap } from '@/giao-dien/luan-giai';
 import { docLuanHan, LoiCanDangNhap, type KetQuaLuanHan } from '@/du-lieu/api';
 import { useHoSo } from '@/du-lieu/ho-so';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { dien, useNgonNgu } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
-import { CHAM_TOI_THIEU, KHOANG, LE_NGANG } from '@/thiet-ke/token';
+import { useMau, useVung } from '@/thiet-ke/theme';
+import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
 import { thangAmHienTai } from '@tuvi/bay-gio';
 import type { CapLuanHan } from '@tuvi/luan-han';
 import { KHUON } from '@tuvi/quick-read-noi-dung';
@@ -26,11 +25,15 @@ import { KHUON } from '@tuvi/quick-read-noi-dung';
  * Chưa mở quyền (`day = false`): máy chủ chỉ trả tiêu đề và chủ đề chính. Thanh
  * toán đang TẠM ẨN trên iOS nên thẻ khoá chỉ nói phần này dành cho ai, không có
  * nút mua.
+ *
+ * Giao diện: Aurora bản 8 — vùng màu Hành trình, một nút fuchsia duy nhất là
+ * lối sang Celes ở cuối bài.
  */
 export default function ManChiTietHan() {
   const router = useRouter();
   const { t, ngonNgu } = useNgonNgu();
   const mau = useMau();
+  const v = useVung('hanhTrinh');
   const le = useSafeAreaInsets();
   const { hoSo } = useHoSo();
   const { phien } = useTaiKhoan();
@@ -97,7 +100,7 @@ export default function ManChiTietHan() {
     return (
       <>
         <View style={{ gap: KHOANG.x2 }}>
-          <Chu kieu="h2">{bai.tieuDe}</Chu>
+          <Chu kieu="h1">{bai.tieuDe}</Chu>
           <Chu kieu="bodySm" mo>
             {bai.subline}
           </Chu>
@@ -105,7 +108,7 @@ export default function ManChiTietHan() {
 
         {!day && (
           <The am style={{ gap: KHOANG.x3 }}>
-            <Eyebrow>{k.chuDeChinh}</Eyebrow>
+            <Eyebrow mauChu={v.mau}>{k.chuDeChinh}</Eyebrow>
             <Chu kieu="body">{bai.chuDeChinh}</Chu>
             <Chu kieu="h3">{t.chiTietHan.khoaTieuDe}</Chu>
             <Chu kieu="bodySm" mo>
@@ -124,39 +127,39 @@ export default function ManChiTietHan() {
               ] as const
             ).map(([nhan, cd]) => (
               <The key={nhan} style={{ gap: KHOANG.x2 }}>
-                <Eyebrow>{nhan}</Eyebrow>
+                <Eyebrow mauChu={v.mau}>{nhan}</Eyebrow>
                 {!!cd.tieuDe && <Chu kieu="h3">{cd.tieuDe}</Chu>}
                 <Chu kieu="bodySm" mo>
                   {cd.noiDung}
                 </Chu>
               </The>
             ))}
-            <The am style={{ gap: KHOANG.x2 }}>
-              <Eyebrow>{k.nhomTongHop}</Eyebrow>
+            <TheHero vung="hanhTrinh" style={{ gap: KHOANG.x2 }}>
+              <Eyebrow mauChu={v.mau}>{k.nhomTongHop}</Eyebrow>
               <Chu kieu="body">{ai.ghepLai}</Chu>
-            </The>
+            </TheHero>
           </View>
         )}
 
         {day && (
           <View style={{ gap: KHOANG.x3 }}>
             <The style={{ gap: KHOANG.x2 }}>
-              <Eyebrow>{k.chuDeChinh}</Eyebrow>
+              <Eyebrow mauChu={v.mau}>{k.chuDeChinh}</Eyebrow>
               <Chu kieu="body">{bai.chuDeChinh}</Chu>
             </The>
             <The style={{ gap: KHOANG.x2 }}>
-              <Eyebrow>{k.nhipHanhDong}</Eyebrow>
+              <Eyebrow mauChu={v.mau}>{k.nhipHanhDong}</Eyebrow>
               <Chu kieu="h3">{bai.nhip.nhan}</Chu>
               <Chu kieu="bodySm" mo>
                 {bai.nhip.mo}
               </Chu>
             </The>
             <The style={{ gap: KHOANG.x3 }}>
-              <Eyebrow>{k.tanDung}</Eyebrow>
+              <Eyebrow mauChu={v.mau}>{k.tanDung}</Eyebrow>
               <DanhSach ds={bai.tanDung} trong={k.tanDungTrong} />
             </The>
             <The style={{ gap: KHOANG.x3 }}>
-              <Eyebrow>{k.luuY}</Eyebrow>
+              <Eyebrow mauChu={v.mau}>{k.luuY}</Eyebrow>
               <DanhSach ds={bai.luuY} trong={k.luuYTrong} />
             </The>
           </View>
@@ -167,7 +170,7 @@ export default function ManChiTietHan() {
             <Chu kieu="h3">{t.chiTietHan.theoLinhVuc}</Chu>
             {bai.linhVuc.map((lv) => (
               <The key={lv.id} style={{ gap: KHOANG.x2 }}>
-                <Chu kieu="body" style={{ fontWeight: '600' }}>
+                <Chu kieu="body" dam>
                   {lv.nhan}
                 </Chu>
                 {/* Model viết nếu có; không thì rơi về khuôn câu của lớp luật */}
@@ -186,6 +189,7 @@ export default function ManChiTietHan() {
           <View style={{ gap: KHOANG.x3 }}>
             <NutChu
               nhan={moCanCu ? t.chiTietHan.viSaoDong : t.chiTietHan.viSao}
+              mauChu={v.mau}
               onPress={() => {
                 const moi = !moCanCu;
                 setMoCanCu(moi);
@@ -222,32 +226,29 @@ export default function ManChiTietHan() {
   };
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: mau.nen }}
-      contentContainerStyle={{
-        paddingTop: le.top + KHOANG.x2,
-        paddingHorizontal: LE_NGANG,
-        paddingBottom: le.bottom + KHOANG.x12,
-        gap: KHOANG.x6,
-      }}
-    >
-      <View style={{ gap: KHOANG.x2 }}>
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel={t.chung.quayLai}
-          hitSlop={8}
-          style={{ width: CHAM_TOI_THIEU, height: CHAM_TOI_THIEU, justifyContent: 'center', marginLeft: -KHOANG.x3 }}
-        >
-          <IconQuayLai size={22} mau={mau.chu} />
-        </Pressable>
-        <Eyebrow>
-          {[t.chiTietHan.quayLai, String(nam), cap === 'thang' ? dien(KHUON[ngonNgu].hanhTrinh.thangNhan, { thang }) : null]
-            .filter(Boolean)
-            .join(' › ')}
-        </Eyebrow>
-      </View>
-      {noiDung()}
-    </ScrollView>
+    <View style={{ flex: 1, backgroundColor: mau.nen }}>
+      <NenVung vung="hanhTrinh" />
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: le.top + 12,
+          paddingHorizontal: LE_NGANG,
+          paddingBottom: le.bottom + 48,
+          gap: KHOANG.x5,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: KHOANG.x3 }}>
+          <NutIcon ten="back" nhan={t.chung.quayLai} onPress={() => router.back()} />
+          <View style={{ flex: 1 }}>
+            <DauVung
+              vung="hanhTrinh"
+              ten={[t.chiTietHan.quayLai, String(nam), cap === 'thang' ? dien(KHUON[ngonNgu].hanhTrinh.thangNhan, { thang }) : null]
+                .filter(Boolean)
+                .join(' › ')}
+            />
+          </View>
+        </View>
+        {noiDung()}
+      </ScrollView>
+    </View>
   );
 }

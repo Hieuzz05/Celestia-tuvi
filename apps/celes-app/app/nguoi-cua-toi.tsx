@@ -1,25 +1,28 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ChonPhanDoan,
   Chu,
+  DauVung,
   Eyebrow,
+  NenVung,
   NutChinh,
   NutChu,
+  NutIcon,
   NutPhu,
   ONhap,
   Pill,
   The,
 } from '@/giao-dien/co-ban';
-import { IconQuayLai } from '@/giao-dien/icon';
+import { Icon } from '@/giao-dien/icon-aurora';
 import { thongTinSinh, useHoSo } from '@/du-lieu/ho-so';
 import { khungGio, type NguoiLuu, type NguoiMoi } from '@/du-lieu/la-so-luu';
 import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { dien, useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
-import { CHAM_TOI_THIEU, KHOANG, LE_NGANG } from '@/thiet-ke/token';
+import { useMau, useVung } from '@/thiet-ke/theme';
+import { FONT, KHOANG, LE_NGANG } from '@/thiet-ke/token';
 import { CHI } from '@tuvi/constants';
 import type { GioiTinh } from '@tuvi/ansao';
 import { doiSangISO } from './onboarding/ngay-sinh';
@@ -34,10 +37,29 @@ import { doiSangISO } from './onboarding/ngay-sinh';
  * Form thêm người gọn hơn onboarding: chỉ chọn khung giờ (12 chi), vì đây là lá
  * số người khác mà ít ai nhớ tới phút. Giờ lưu là giờ đầu khung, đúng như ô chọn
  * khung giờ bên web lưu.
+ *
+ * Giao diện: Aurora bản 8 — vùng màu Mối quan hệ. Nút fuchsia duy nhất là
+ * "Lưu" trong form; ngoài form chỉ có nút phụ "Thêm người".
  */
 
 const KHUNG = Array.from({ length: 12 }, (_, i) => (23 + i * 2) % 24);
 const hai = (n: number) => String(n).padStart(2, '0');
+
+/** Nền chữ cái đầu — cùng dãy pastel với hàng người ở tab Mối quan hệ */
+const MAU_NGUOI = ['#FFF1BD', '#BBF7D0', '#E6DDEA', '#BAE6FD', '#FFD6CF'];
+
+function ChuCaiDau({ ten, nen }: { ten: string; nen: string }) {
+  return (
+    <View
+      accessible={false}
+      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: nen, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Text style={{ fontFamily: FONT.display, fontSize: 18, color: '#240029' }}>
+        {(ten.trim()[0] ?? '·').toUpperCase()}
+      </Text>
+    </View>
+  );
+}
 
 function chuanHoaNgay(nhap: string) {
   const so = nhap.replace(/\D/g, '').slice(0, 8);
@@ -50,6 +72,7 @@ export default function ManNguoiCuaToi() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
+  const v = useVung('moiQuanHe');
   const le = useSafeAreaInsets();
   const { coTaiKhoan, email } = useTaiKhoan();
   const { hoSo, nguoi, laCuaToi, themNguoi, xoaNguoi, datLamCuaToi } = useHoSo();
@@ -116,31 +139,23 @@ export default function ManNguoiCuaToi() {
       style={{ flex: 1, backgroundColor: mau.nen }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <NenVung vung="moiQuanHe" />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingTop: le.top + KHOANG.x2,
+          paddingTop: le.top + 12,
           paddingHorizontal: LE_NGANG,
-          paddingBottom: le.bottom + KHOANG.x12,
-          gap: KHOANG.x6,
+          paddingBottom: le.bottom + 48,
+          gap: KHOANG.x5,
         }}
       >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: KHOANG.x3 }}>
+          <NutIcon ten="back" nhan={t.chung.quayLai} onPress={() => router.back()} />
+          <DauVung vung="moiQuanHe" ten={t.tab.ketNoi} />
+        </View>
+
         <View style={{ gap: KHOANG.x2 }}>
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel={t.chung.quayLai}
-            hitSlop={8}
-            style={{
-              width: CHAM_TOI_THIEU,
-              height: CHAM_TOI_THIEU,
-              justifyContent: 'center',
-              marginLeft: -KHOANG.x3,
-            }}
-          >
-            <IconQuayLai size={22} mau={mau.chu} />
-          </Pressable>
-          <Chu kieu="h2">{t.nguoi.tieuDe}</Chu>
+          <Chu kieu="h1">{t.nguoi.tieuDe}</Chu>
           <Chu kieu="bodySm" mo>
             {t.nguoi.moTa}
           </Chu>
@@ -153,32 +168,42 @@ export default function ManNguoiCuaToi() {
 
         {hoSo && (
           <View style={{ gap: KHOANG.x3 }}>
-            <Eyebrow>{t.nguoi.cuaToi}</Eyebrow>
-            <The onPress={() => router.push('/ban-do')} style={{ gap: KHOANG.x1 }}>
-              <Chu kieu="h3">{hoSo.ten.trim() || t.nguoi.cuaToi}</Chu>
-              <Chu kieu="caption" mo>
-                {moTaSinh(thongTinSinh(hoSo))}
-              </Chu>
+            <Eyebrow mauChu={v.mau}>{t.nguoi.cuaToi}</Eyebrow>
+            <The onPress={() => router.push('/ban-do')} style={{ flexDirection: 'row', alignItems: 'center', gap: KHOANG.x3 }}>
+              <ChuCaiDau ten={hoSo.ten || t.nguoi.cuaToi} nen="#FFBDD3" />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Chu kieu="h3">{hoSo.ten.trim() || t.nguoi.cuaToi}</Chu>
+                <Chu kieu="caption" mo>
+                  {moTaSinh(thongTinSinh(hoSo))}
+                </Chu>
+              </View>
+              <Icon ten="chev" size={18} net={2} mau={mau.chuNhat} />
             </The>
           </View>
         )}
 
         <View style={{ gap: KHOANG.x3 }}>
-          <Eyebrow>{t.nguoi.nguoiKhac}</Eyebrow>
+          <Eyebrow mauChu={v.mau}>{t.nguoi.nguoiKhac}</Eyebrow>
           {khac.length === 0 && !moForm && (
             <Chu kieu="bodySm" mo>
               {t.nguoi.rong}
             </Chu>
           )}
-          {khac.map((n) => (
-            <The key={n.id} style={{ gap: KHOANG.x1 }}>
-              <Chu kieu="h3">{n.hoTen}</Chu>
-              <Chu kieu="caption" mo>
-                {moTaSinh(n)}
-              </Chu>
+          {khac.map((n, i) => (
+            <The key={n.id} style={{ gap: KHOANG.x2 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: KHOANG.x3 }}>
+                <ChuCaiDau ten={n.hoTen} nen={MAU_NGUOI[i % MAU_NGUOI.length]} />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Chu kieu="h3">{n.hoTen}</Chu>
+                  <Chu kieu="caption" mo>
+                    {moTaSinh(n)}
+                  </Chu>
+                </View>
+              </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: KHOANG.x4 }}>
                 <NutChu
                   nhan={t.nguoi.xem}
+                  mauChu={v.mau}
                   onPress={() => router.push({ pathname: '/ban-do', params: { id: n.id } })}
                 />
                 <NutChu nhan={t.nguoi.datCuaToi} onPress={() => hoiDat(n)} />
@@ -203,7 +228,7 @@ export default function ManNguoiCuaToi() {
               </Chu>
               <ONhap
                 value={ngay}
-                onChangeText={(v) => setNgay(chuanHoaNgay(v))}
+                onChangeText={(s) => setNgay(chuanHoaNgay(s))}
                 placeholder={t.onboarding.ngayVD}
                 keyboardType="number-pad"
                 maxLength={10}
@@ -225,6 +250,7 @@ export default function ManNguoiCuaToi() {
                     key={bd}
                     nhan={`${CHI[i]} ${hai(bd)}–${hai((bd + 1) % 24)}`}
                     dangChon={gio === bd}
+                    vung="moiQuanHe"
                     onPress={() => setGio(bd)}
                   />
                 ))}
@@ -236,6 +262,7 @@ export default function ManNguoiCuaToi() {
                 {t.nguoi.gioiTinhNhan}
               </Chu>
               <ChonPhanDoan<GioiTinh>
+                vung="moiQuanHe"
                 giaTri={gioiTinh}
                 onChange={setGioiTinh}
                 muc={[
@@ -257,7 +284,7 @@ export default function ManNguoiCuaToi() {
             </View>
           </The>
         ) : (
-          <NutPhu nhan={t.nguoi.them} onPress={() => setMoForm(true)} />
+          <NutPhu nhan={t.nguoi.them} icon="plus" onPress={() => setMoForm(true)} />
         )}
       </ScrollView>
     </KeyboardAvoidingView>

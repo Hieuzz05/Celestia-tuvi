@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, View, useWindowDimensions } from 'react-native';
-import { Chu } from '@/giao-dien/co-ban';
-import { DauCelestia, MAU_THUONG_HIEU } from '@/giao-dien/icon';
+import Svg, { Circle, G } from 'react-native-svg';
+import { Giong, NenVung } from '@/giao-dien/co-ban';
+import { DauCelestia } from '@/giao-dien/icon';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
 import { useHoSo } from '@/du-lieu/ho-so';
 import { useT } from '@/i18n/context';
-import { useMau, useTheme } from '@/thiet-ke/theme';
+import { useMau, useVung } from '@/thiet-ke/theme';
 import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
 
 /**
@@ -30,8 +31,9 @@ export default function ManDangTao() {
   const { thanhHoSo, xoaTrang } = useBanNhap();
   const { luuHoSo } = useHoSo();
   const { width } = useWindowDimensions();
-  const { theme } = useTheme();
+  const v = useVung('khoiDau');
   const coDau = Math.min(96, width * 0.24);
+  const coVong = coDau * 2.3;
 
   const [cau, setCau] = useState(0);
   const cacCau = [t.dangTao.buoc1, t.dangTao.buoc2, t.dangTao.buoc3];
@@ -80,35 +82,38 @@ export default function ManDangTao() {
   const goc = xoay.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: mau.nen,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: LE_NGANG,
-        gap: KHOANG.x10,
-      }}
-      accessibilityLiveRegion="polite"
-    >
-      {/* Trên nền sáng ô nền đứng yên, chỉ dấu xoay — cả ô vuông xoay thì trông như lỗi */}
+    <View style={{ flex: 1, backgroundColor: mau.nen }} accessibilityLiveRegion="polite">
+      <NenVung vung="khoiDau" />
       <View
-        style={
-          theme === 'sang'
-            ? { borderRadius: coDau * 0.22, backgroundColor: MAU_THUONG_HIEU.nenDau }
-            : undefined
-        }
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: LE_NGANG,
+          gap: KHOANG.x10,
+        }}
       >
-        <Animated.View style={{ transform: [{ rotate: goc }] }}>
-          <DauCelestia size={coDau} nen="toi" />
+        {/* Dấu đứng yên, chỉ quỹ đạo quanh nó xoay — dấu thương hiệu xoay trông như lỗi */}
+        <View style={{ width: coVong, height: coVong, alignItems: 'center', justifyContent: 'center' }}>
+          <Animated.View style={{ position: 'absolute', transform: [{ rotate: goc }] }}>
+            <Svg width={coVong} height={coVong} viewBox="0 0 200 200">
+              <G fill="none" stroke={v.mau} strokeOpacity={0.28}>
+                <Circle cx={100} cy={100} r={64} strokeDasharray="2 6" />
+                <Circle cx={100} cy={100} r={94} />
+              </G>
+              <Circle cx={194} cy={100} r={5} fill={v.mau} />
+              <Circle cx={100} cy={36} r={3.5} fill={v.sang} fillOpacity={0.7} />
+            </Svg>
+          </Animated.View>
+          <DauCelestia size={coDau} />
+        </View>
+
+        <Animated.View style={{ opacity: hienRa, minHeight: 56, justifyContent: 'center' }}>
+          <Giong co={20} style={{ textAlign: 'center' }}>
+            {cacCau[cau]}
+          </Giong>
         </Animated.View>
       </View>
-
-      <Animated.View style={{ opacity: hienRa }}>
-        <Chu kieu="h3" giua mo>
-          {cacCau[cau]}
-        </Chu>
-      </Animated.View>
     </View>
   );
 }

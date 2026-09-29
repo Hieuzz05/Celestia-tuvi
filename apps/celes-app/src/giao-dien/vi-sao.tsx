@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import type { CanCu } from '@tuvi/quick-read';
 import { Chu, Eyebrow, NutChu, Pill } from '@/giao-dien/co-ban';
 import { useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
+import { useMau, useVung } from '@/thiet-ke/theme';
 import { BO_GOC, CHAM_TOI_THIEU, KHOANG, LE_NGANG } from '@/thiet-ke/token';
 
 /**
@@ -37,6 +37,7 @@ export function BangViSao({
 }) {
   const t = useT();
   const mau = useMau();
+  const vCeles = useVung('celes');
   const sheet = useRef<BottomSheet>(null);
   const [moKyThuat, setMoKyThuat] = useState(false);
 
@@ -44,7 +45,7 @@ export function BangViSao({
 
   const nenMo = useCallback(
     (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.35} />
+      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.55} />
     ),
     []
   );
@@ -59,11 +60,14 @@ export function BangViSao({
       onClose={onDong}
       backdropComponent={nenMo}
       backgroundStyle={{
-        backgroundColor: mau.the,
+        // Bề mặt ĐẶC: nền kính trong suốt của thẻ để lộ màn phía sau, chữ khó đọc
+        backgroundColor: mau.theNoi,
+        borderWidth: 1,
+        borderColor: mau.vienKinh,
         borderTopLeftRadius: BO_GOC.bottomSheet,
         borderTopRightRadius: BO_GOC.bottomSheet,
       }}
-      handleIndicatorStyle={{ backgroundColor: mau.vien, width: 40 }}
+      handleIndicatorStyle={{ backgroundColor: mau.chuNhat, width: 40 }}
     >
       <BottomSheetScrollView
         contentContainerStyle={{
@@ -78,7 +82,7 @@ export function BangViSao({
         {tomTat && <Chu kieu="body">{tomTat}</Chu>}
 
         <View style={{ gap: KHOANG.x3 }}>
-          <Eyebrow>{t.viSao.mucDiem}</Eyebrow>
+          <Eyebrow mauChu={vCeles.mau}>{t.viSao.mucDiem}</Eyebrow>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: KHOANG.x2 }}>
             {canCu.map((c) => (
               <Pill key={c.nhan} nhan={c.nhan} />
@@ -99,7 +103,7 @@ export function BangViSao({
             paddingTop: KHOANG.x3,
           }}
         >
-          <Chu kieu="bodySm" style={{ color: mau.hanhDong }}>
+          <Chu kieu="bodySm" dam style={{ color: vCeles.mau }}>
             {moKyThuat ? t.viSao.dongKyThuat : t.viSao.moKyThuat}
           </Chu>
         </Pressable>
@@ -108,7 +112,7 @@ export function BangViSao({
           <View style={{ gap: KHOANG.x4 }}>
             {canCu.map((c) => (
               <View key={c.nhan} style={{ gap: KHOANG.x1 }}>
-                <Chu kieu="bodySm" style={{ fontWeight: '600' }}>
+                <Chu kieu="bodySm" dam>
                   {c.nhan}
                 </Chu>
                 <Chu kieu="bodySm" mo>

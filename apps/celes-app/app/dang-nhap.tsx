@@ -2,10 +2,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Chu, NutChu, ONhap } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import { KhungBuoc, useKieuONhapLon } from '@/giao-dien/khung-buoc';
 import { useTaiKhoan, type LoiTaiKhoan } from '@/du-lieu/tai-khoan';
 import { dien, useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
+import { useMau, useVung } from '@/thiet-ke/theme';
 import { KHOANG } from '@/thiet-ke/token';
 
 /**
@@ -25,6 +25,7 @@ export default function ManDangNhap() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
+  const v = useVung('khoiDau');
   const { sau } = useLocalSearchParams<{ sau?: string }>();
   const { guiMa, xacNhanMa } = useTaiKhoan();
 
@@ -34,6 +35,8 @@ export default function ManDangNhap() {
   const [dangLam, setDangLam] = useState(false);
   const [loi, setLoi] = useState<LoiTaiKhoan | null>(null);
   const [conLai, setConLai] = useState(0);
+  const kieuEmail = useKieuONhapLon(EMAIL_HOP_LE.test(email.trim()));
+  const kieuMa = useKieuONhapLon(ma.length >= 6);
 
   useEffect(() => {
     if (conLai <= 0) return;
@@ -85,6 +88,7 @@ export default function ManDangNhap() {
   if (!daGui) {
     return (
       <KhungBuoc
+        eyebrow={t.dangNhap.emailEyebrow}
         tieuDe={t.dangNhap.emailTieuDe}
         moTa={t.dangNhap.emailMoTa}
         nhanTiep={dangLam ? t.dangNhap.dangGui : t.dangNhap.guiMa}
@@ -108,6 +112,8 @@ export default function ManDangNhap() {
             returnKeyType="send"
             onSubmitEditing={() => EMAIL_HOP_LE.test(email.trim()) && gui()}
             accessibilityLabel={t.dangNhap.emailTieuDe}
+            // Email dài: giữ viền ấm và chiều cao ô lớn, nhưng chữ thân cỡ thường để không tràn
+            style={{ minHeight: kieuEmail.minHeight, borderColor: kieuEmail.borderColor }}
           />
           {dongLoi}
         </View>
@@ -117,6 +123,7 @@ export default function ManDangNhap() {
 
   return (
     <KhungBuoc
+      eyebrow={t.dangNhap.maEyebrow}
       tieuDe={t.dangNhap.maTieuDe}
       moTa={dien(t.dangNhap.maMoTa, { email: email.trim().toLowerCase() })}
       nhanTiep={t.dangNhap.xacNhan}
@@ -136,7 +143,7 @@ export default function ManDangNhap() {
           textContentType="oneTimeCode"
           autoComplete="one-time-code"
           maxLength={10}
-          style={{ letterSpacing: 4 }}
+          style={[kieuMa, { letterSpacing: 4 }]}
           accessibilityLabel={t.dangNhap.maNhan}
         />
         {dongLoi}
@@ -148,7 +155,7 @@ export default function ManDangNhap() {
             {dien(t.dangNhap.guiLaiSau, { giay: String(conLai) })}
           </Chu>
         ) : (
-          <NutChu nhan={t.dangNhap.guiLai} onPress={gui} />
+          <NutChu nhan={t.dangNhap.guiLai} mauChu={v.mau} onPress={gui} />
         )}
         <NutChu
           nhan={t.dangNhap.doiEmail}

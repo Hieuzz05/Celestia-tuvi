@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { Chu, ONhap } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import { KhungBuoc, useKieuONhapLon } from '@/giao-dien/khung-buoc';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
 import { useT } from '@/i18n/context';
 import { KHOANG } from '@/thiet-ke/token';
@@ -11,10 +11,12 @@ export default function BuocTen() {
   const router = useRouter();
   const t = useT();
   const { banNhap, dat } = useBanNhap();
+  const kieuNhap = useKieuONhapLon(banNhap.ten.trim().length > 0);
 
   return (
     <KhungBuoc
       buoc={1}
+      eyebrow={t.onboarding.tenEyebrow}
       tieuDe={t.onboarding.tenTieuDe}
       onTiep={() => router.push('/onboarding/ngay-sinh')}
       choPhepTiep={banNhap.ten.trim().length > 0}
@@ -28,8 +30,9 @@ export default function BuocTen() {
           autoCapitalize="words"
           returnKeyType="next"
           accessibilityLabel={t.onboarding.tenNhan}
+          style={kieuNhap}
         />
-        <Chu kieu="caption" mo>
+        <Chu kieu="bodySm" mo>
           {t.onboarding.tenGoiY}
         </Chu>
       </View>

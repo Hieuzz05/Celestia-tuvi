@@ -1,10 +1,8 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { Pill } from '@/giao-dien/co-ban';
-import { KhungBuoc } from '@/giao-dien/khung-buoc';
+import { KhungBuoc, OChon } from '@/giao-dien/khung-buoc';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
-import { useT } from '@/i18n/context';
-import { KHOANG } from '@/thiet-ke/token';
+import { dien, useT } from '@/i18n/context';
 import type { GioiTinh } from '@tuvi/ansao';
 
 /**
@@ -18,26 +16,31 @@ export default function BuocGioiTinh() {
   const router = useRouter();
   const t = useT();
   const { banNhap, dat } = useBanNhap();
+  const ten = banNhap.ten.trim() || t.onboarding.banMacDinh;
 
   return (
     <KhungBuoc
       buoc={4}
+      eyebrow={dien(t.onboarding.gioiTinhEyebrow, { ten })}
       tieuDe={t.onboarding.gioiTinhTieuDe}
+      moTa={t.onboarding.gioiTinhMoTa}
       onTiep={() => router.push('/onboarding/ban-khoan')}
     >
-      <View style={{ flexDirection: 'row', gap: KHOANG.x3 }}>
+      <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 10 }}>
         {(
           [
             ['nam', t.onboarding.nam],
             ['nu', t.onboarding.nu],
           ] as [GioiTinh, string][]
         ).map(([gt, nhan]) => (
-          <Pill
+          <OChon
             key={gt}
             nhan={nhan}
+            nhanLon
+            cao={120}
             dangChon={banNhap.gioiTinh === gt}
             onPress={() => dat('gioiTinh', gt)}
-            style={{ flex: 1, alignItems: 'center' }}
+            style={{ flex: 1 }}
           />
         ))}
       </View>

@@ -125,9 +125,11 @@ RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt s
 `apps/celes-app/` (Expo + expo-router) mở lại ngày 27/09/2026: chủ dự án chọn dựng app riêng
 (không PWA), iOS trước, một bộ code cho cả Android. Luồng và giao diện ĐÃ DUYỆT nằm trên canvas
 "Celes iOS — luồng app" (12 màn, kèm ghi chú token và ba giọng viết). Chốt:
-- Cùng design system với web: bo góc thẻ 14 / nút 8 / ô nhập 6, nút `#D32298`, pill chỉ cho lựa
-  chọn. Lá số hiện ĐẦY ĐỦ như web (cỡ chữ chế độ ô hẹp), mạnh–yếu có biểu đồ radar như web.
-- Tab thứ tư tên "Mối quan hệ" (web cũng đổi theo).
+- Từ 29/09/2026 app theo thiết kế **Aurora bản 8** (`docs/thiet-ke/celes-ios/aurora/gen.py`,
+  bản dựng thử https://celes-thiet-ke.vercel.app): theme tối mặc định nền `#0B0A0D`, mỗi tab một
+  màu vùng, thẻ bo 20 / nút 14, nút chính vẫn gradient `#D32298`, font riêng của app. Web CHƯA
+  đổi theo. Lá số hiện ĐẦY ĐỦ như web, mạnh–yếu có biểu đồ radar.
+- Năm tab: Hôm nay · Lá số · Celes · Hành trình · Mối quan hệ. Tài khoản mở từ ảnh đại diện.
 - Thanh toán TẠM ẨN trên iOS; mở lại thì dùng mua trong app (quy định 3.1.1), không PayOS.
 - Làm bản nội bộ trước (Expo Go → TestFlight khi có tài khoản Apple Developer).
 
