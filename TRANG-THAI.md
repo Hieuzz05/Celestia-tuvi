@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Dựng giao diện app di động theo bản thiết kế iOS Aurora bản 8 (nền gần đen, mỗi luồng một vùng màu) | `viec/app-aurora` | `apps/celes-app/**` (thiết kế, giao diện, các màn) | 29/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -30,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-169 app di động theo Aurora bản 8: 21 màn, thanh tab nổi, tab Lá số (Lá số / Tổng quan / Chuyên sâu / Mạnh–yếu radar) thay tab Tài khoản (nay mở từ ảnh đại diện, có chọn Tối/Sáng/Theo máy), font riêng của app. Web chưa đổi. Chưa soát bằng mắt trên máy thật | `ec4a8bf` (gộp `viec/app-aurora`) | 29/09/2026 |
 | Logo mới (trăng khuyết + sao bốn cánh) trên web và app, màn Chào bản thiết kế iOS dùng dấu mới; gộp kèm bản thiết kế iOS bản 8 | `ff0fef3` (gộp `viec/logo-2909`) | 29/09/2026 |
 | Gộp `viec/app-gd1` (CEL-154..163) + `viec/thiet-ke-app-ios` (bản thiết kế iOS trong `docs/thiet-ke/celes-ios/`) vào main, production chạy `7989d76`. Backlog: logic app đánh số lại L19..L25 vì main đã dùng L18. Còn chờ chủ dự án: SMTP riêng trên Supabase để sửa mẫu email có `{{ .Token }}` | `7989d76` | 29/09/2026 |
 | CEL-164..168 cứng hoá production: test engine tự đối chiếu + 60 mẫu đóng băng, chặn ngày không có thật (form + 11 route), admin đóng khi ADMIN_EMAILS rỗng trên production, trang lỗi/not-found, giới hạn tốc độ route AI trong `proxy.ts`, CI GitHub Actions. Đã gộp main | `aa51751`, `da9c0ce` | 28/09/2026 |
