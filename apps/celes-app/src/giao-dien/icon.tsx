@@ -1,7 +1,7 @@
 import { useId } from 'react';
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { View, type ColorValue } from 'react-native';
-import { useMau } from '@/thiet-ke/theme';
+import { useMau, useTheme } from '@/thiet-ke/theme';
 import { BANG_MAU, CHU, FONT } from '@/thiet-ke/token';
 import { Text } from 'react-native';
 
@@ -127,13 +127,16 @@ export const IconSach = (p: IconProps) => (
   </Khung>
 );
 
-/** Mã màu của bộ nhận diện — chỉ dùng cho dấu thương hiệu và biểu tượng ứng dụng */
+/** Mã màu của bộ nhận diện (bộ logo 29/09/2026) — chỉ dùng cho dấu thương hiệu và biểu tượng ứng dụng */
 export const MAU_THUONG_HIEU = {
-  gold: '#D4AF37',
-  goldSang: '#EBD489',
-  goldTram: '#B08B24',
-  midnightIndigo: '#0F172A',
-  midnightIndigoSau: '#0A0E1A',
+  /** Ba điểm dừng của dải màu trăng: tím ở chân, đào ở giữa, kem ở ngọn */
+  tim: '#9B6BFF',
+  dao: '#F6C38A',
+  kem: '#FFF1CC',
+  /** Lõi sáng của ngôi sao */
+  kemSang: '#FFF8DD',
+  /** Nền biểu tượng ứng dụng, splash và ô nền của dấu trên bề mặt sáng */
+  nenDau: '#111126',
   softWhite: '#F8FAFC',
 } as const;
 
@@ -141,59 +144,80 @@ export const MAU_THUONG_HIEU = {
 export const TI_LE_DAU = 1.2;
 
 /**
- * Dấu thương hiệu: ngôi sao năm cánh lồng trong vành trăng khuyết, nét vàng kim.
- *
- * Dùng ở splash, màn giới thiệu và header. Vàng kim là màu của RIÊNG dấu này —
- * không phải màu hành động của sản phẩm; nút chuyển đổi vẫn là hồng Fuchsia.
+ * Hai bản hình của designer, cùng hình với `components/Logo.tsx` bên web — sửa
+ * một bên thì sửa cả bên kia. Tệp gốc khoét trăng bằng mask; ở đây trăng là một
+ * path hai cung tròn cho cùng hình, vì Mask của react-native-svg không ổn định.
+ * Bản "nhỏ" (trăng dày, sao to) dùng khi dấu dưới 40px.
  */
-export function DauCelestia({ size = 40, mau }: IconProps) {
+const HINH = {
+  thuong: {
+    trang: 'M528.92 237.52A275 275 0 1 0 528.92 786.48A300 300 0 0 1 528.92 237.52Z',
+    sao: 'M535 421C555.02 491.98 555.02 491.98 626 512C555.02 532.02 555.02 532.02 535 603C514.98 532.02 514.98 532.02 444 512C514.98 491.98 514.98 491.98 535 421Z',
+    dai: { x1: 319.5, y1: 787, x2: 666, y2: 264.5 },
+    tam: [431.5, 512],
+    canh: 580,
+  },
+  nho: {
+    trang: 'M549.21 229.44A285 285 0 1 0 549.21 794.56A300 300 0 0 1 549.21 229.44Z',
+    sao: 'M535 407C558.1 488.9 558.1 488.9 640 512C558.1 535.1 558.1 535.1 535 617C511.9 535.1 511.9 535.1 430 512C511.9 488.9 511.9 488.9 535 407Z',
+    dai: { x1: 312.5, y1: 797, x2: 671.6, y2: 255.5 },
+    tam: [433.5, 512],
+    canh: 600,
+  },
+} as const;
+
+/**
+ * Dấu thương hiệu: trăng khuyết ôm một ngôi sao bốn cánh.
+ *
+ * Dùng ở splash, màn giới thiệu và header. Ngôi sao màu kem gần như biến mất
+ * trên nền sáng, nên trên bề mặt sáng dấu nằm trong ô bo góc màu nền biểu
+ * tượng ứng dụng; trên nền tối dấu đứng trần. Mặc định theo theme; màn nào có
+ * nền cố định (VD gradient pastel của màn giới thiệu) thì truyền `nen`.
+ */
+export function DauCelestia({ size = 40, mau, nen }: IconProps & { nen?: 'sang' | 'toi' }) {
   // Nhiều dấu cùng nằm trên một màn (header + khối brand) thì id gradient phải
   // khác nhau, bằng không react-native-svg lấy nhầm định nghĩa của cái vẽ trước.
-  const id = `celestia-gold-${useId().replace(/:/g, '')}`;
-  const net = mau ?? `url(#${id})`;
+  const id = `celestia-dau-${useId().replace(/:/g, '')}`;
+  const { theme } = useTheme();
+  const coO = (nen ?? theme) === 'sang';
+  const h = size < 40 ? HINH.nho : HINH.thuong;
+
+  // Khung nhìn rộng hơn hình 30% để ô nền (nếu có) chừa lề quanh dấu
+  const canh = h.canh * 1.3;
+  const x0 = h.tam[0] - canh / 2;
+  const y0 = h.tam[1] - canh / 2;
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+    <Svg width={size} height={size} viewBox={`${x0} ${y0} ${canh} ${canh}`} fill="none">
       {!mau && (
         <Defs>
-          <LinearGradient id={id} x1="8" y1="6" x2="40" y2="42" gradientUnits="userSpaceOnUse">
-            <Stop stopColor={MAU_THUONG_HIEU.goldSang} />
-            <Stop offset="0.5" stopColor={MAU_THUONG_HIEU.gold} />
-            <Stop offset="1" stopColor={MAU_THUONG_HIEU.goldTram} />
+          <LinearGradient id={`${id}-trang`} {...h.dai} gradientUnits="userSpaceOnUse">
+            <Stop stopColor={MAU_THUONG_HIEU.tim} />
+            <Stop offset="0.47" stopColor={MAU_THUONG_HIEU.dao} />
+            <Stop offset="1" stopColor={MAU_THUONG_HIEU.kem} />
           </LinearGradient>
+          <RadialGradient id={`${id}-sao`}>
+            <Stop stopColor={MAU_THUONG_HIEU.kemSang} />
+            <Stop offset="0.55" stopColor={MAU_THUONG_HIEU.kem} />
+            <Stop offset="1" stopColor={MAU_THUONG_HIEU.dao} />
+          </RadialGradient>
         </Defs>
       )}
 
-      {/* Vành trăng khuyết, hở phía trên để ngọn sao vươn ra ngoài */}
-      <Path d="M15.4 13.7A15 15 0 1 0 32.6 13.7" stroke={net} strokeWidth={1.6} strokeLinecap="round" />
-
-      {/* Nét trong, gợi lại chuyển động của quỹ đạo */}
-      <Path
-        d="M13.6 21.1A11.5 11.5 0 0 0 28.9 36.4"
-        stroke={net}
-        strokeWidth={1.2}
-        strokeLinecap="round"
-        opacity={0.75}
-      />
-
-      {/* Ngôi sao năm cánh, vẽ nét chứ không tô đặc */}
-      <Path
-        d="M24 8 27.1 16.8 36.4 17 29 22.6 31.6 31.5 24 26.2 16.4 31.5 19.1 22.6 11.6 17 20.9 16.8Z"
-        stroke={net}
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      />
+      {coO && <Rect x={x0} y={y0} width={canh} height={canh} rx={canh * 0.22} fill={MAU_THUONG_HIEU.nenDau} />}
+      <Path d={h.trang} fill={mau ?? `url(#${id}-trang)`} />
+      <Path d={h.sao} fill={mau ?? `url(#${id}-sao)`} />
     </Svg>
   );
 }
 
 /** Dấu + chữ CELESTIA, áp đúng tỉ lệ 1.2 lần chiều cao chữ */
-export function LogoCelestia({ size = 22, mau }: IconProps) {
+export function LogoCelestia({ size = 22, mau, nen }: IconProps & { nen?: 'sang' | 'toi' }) {
   const bangMau = useMau();
   const mauChu = mau ?? bangMau.chu;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <DauCelestia size={size * TI_LE_DAU} />
+      <DauCelestia size={size * TI_LE_DAU} nen={nen} />
       <Text
         style={{
           fontFamily: FONT.display,

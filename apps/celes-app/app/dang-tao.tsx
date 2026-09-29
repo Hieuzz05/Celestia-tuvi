@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, View, useWindowDimensions } from 'react-native';
 import { Chu } from '@/giao-dien/co-ban';
-import { DauCelestia } from '@/giao-dien/icon';
+import { DauCelestia, MAU_THUONG_HIEU } from '@/giao-dien/icon';
 import { useBanNhap } from '@/du-lieu/ban-nhap';
 import { useHoSo } from '@/du-lieu/ho-so';
 import { useT } from '@/i18n/context';
-import { useMau } from '@/thiet-ke/theme';
+import { useMau, useTheme } from '@/thiet-ke/theme';
 import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
 
 /**
@@ -30,6 +30,8 @@ export default function ManDangTao() {
   const { thanhHoSo, xoaTrang } = useBanNhap();
   const { luuHoSo } = useHoSo();
   const { width } = useWindowDimensions();
+  const { theme } = useTheme();
+  const coDau = Math.min(96, width * 0.24);
 
   const [cau, setCau] = useState(0);
   const cacCau = [t.dangTao.buoc1, t.dangTao.buoc2, t.dangTao.buoc3];
@@ -89,9 +91,18 @@ export default function ManDangTao() {
       }}
       accessibilityLiveRegion="polite"
     >
-      <Animated.View style={{ transform: [{ rotate: goc }] }}>
-        <DauCelestia size={Math.min(96, width * 0.24)} />
-      </Animated.View>
+      {/* Trên nền sáng ô nền đứng yên, chỉ dấu xoay — cả ô vuông xoay thì trông như lỗi */}
+      <View
+        style={
+          theme === 'sang'
+            ? { borderRadius: coDau * 0.22, backgroundColor: MAU_THUONG_HIEU.nenDau }
+            : undefined
+        }
+      >
+        <Animated.View style={{ transform: [{ rotate: goc }] }}>
+          <DauCelestia size={coDau} nen="toi" />
+        </Animated.View>
+      </View>
 
       <Animated.View style={{ opacity: hienRa }}>
         <Chu kieu="h3" giua mo>

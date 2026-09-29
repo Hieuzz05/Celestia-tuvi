@@ -129,6 +129,19 @@ def ic(name, size=22, sw=1.75, color="currentColor"):
             f'stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{IC[name]}</svg>')
 
 
+# ---------- dấu thương hiệu (bộ logo 29/09/2026, cùng hình với components/Logo.tsx) ----------
+def dau_celestia(size, glow=True):
+    """Trăng khuyết + sao bốn cánh; khung nhìn cắt sát hình rồi nới 30%, căn giữa theo hình"""
+    canh = 580 * 1.3; x0 = 431.5 - canh / 2; y0 = 512 - canh / 2
+    g = "filter: drop-shadow(0 0 22px rgba(246,195,138,0.35)) drop-shadow(0 0 48px rgba(155,107,255,0.35));" if glow else ""
+    return (f'<svg aria-hidden="true" width="{size}" height="{size}" viewBox="{x0} {y0} {canh} {canh}" style="display: block; flex-shrink: 0; {g}">'
+            '<defs><linearGradient id="dau-trang" x1="319.5" y1="787" x2="666" y2="264.5" gradientUnits="userSpaceOnUse">'
+            '<stop stop-color="#9B6BFF"/><stop offset="0.47" stop-color="#F6C38A"/><stop offset="1" stop-color="#FFF1CC"/></linearGradient>'
+            '<radialGradient id="dau-sao"><stop stop-color="#FFF8DD"/><stop offset="0.55" stop-color="#FFF1CC"/><stop offset="1" stop-color="#F6C38A"/></radialGradient></defs>'
+            '<path fill="url(#dau-trang)" d="M528.92 237.52A275 275 0 1 0 528.92 786.48A300 300 0 0 1 528.92 237.52Z"/>'
+            '<path fill="url(#dau-sao)" d="M535 421C555.02 491.98 555.02 491.98 626 512C555.02 532.02 555.02 532.02 535 603C514.98 532.02 514.98 532.02 444 512C514.98 491.98 514.98 491.98 535 421Z"/></svg>')
+
+
 def orb(size, anim=True, glow=True):
     a = "animation: celes-tho 7s ease-in-out infinite;" if anim else ""
     g = f"box-shadow: 0 0 {size//2}px rgba(255,139,208,0.55), inset -{size//8}px -{size//8}px {size//4}px rgba(90,10,94,0.55);" if glow else ""
@@ -420,7 +433,7 @@ def wheel(cols):
 # màn chào
 body_chao = f"""
 <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; margin-top: -60px">
-<span style="display: block; width: 116px; height: 116px; border-radius: 999px; box-shadow: 0 0 90px rgba({ZR},0.35)">{orb(116)}</span>
+{dau_celestia(136)}
 <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
 {eyebrow('Celestia')}
 <h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.04em">Chào bạn,<br>mình là <span style="{GRADTEXT}">Celes</span>.</h1>

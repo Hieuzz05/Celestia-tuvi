@@ -45,7 +45,7 @@ export default function ManGioiThieu() {
         </View>
 
         <View style={{ flex: 1, justifyContent: 'center', gap: KHOANG.x6 }}>
-          <LogoCelestia size={20} mau={muc} />
+          <LogoCelestia size={20} mau={muc} nen="sang" />
 
           <View style={{ gap: KHOANG.x4 }}>
             <Eyebrow mauChu={muc}>{t.gioiThieu.eyebrow}</Eyebrow>

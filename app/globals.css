@@ -152,10 +152,14 @@
   --tier-manh: var(--color-forest);
   --tier-binh: var(--fg-muted);
   --tier-gang: #b45f06;
+  /* Ô nền của dấu thương hiệu: sao màu kem mất hút trên nền sáng, nên ở theme Ngày
+     dấu nằm trong ô màu nền biểu tượng ứng dụng. Theme Đêm và dải tối để trong suốt. */
+  --dau-nen: #111126;
 }
 
 :root[data-theme="night"] {
   --bg: var(--color-aubergine);
+  --dau-nen: transparent;
   --surface-card: #2d0334;
   --surface-panel: #1a001e;
   --surface-wash: #2d0334;
@@ -591,6 +595,7 @@ body {
 /* Gradient hoàng hôn: chỉ dùng cho dải hero tràn màn, không bao giờ cho thẻ/nút/icon */
 .hero-band {
   background: var(--gradient-hero);
+  --dau-nen: #111126;
 
   --bg: var(--color-canvas);
   --surface-card: var(--color-canvas);
@@ -620,6 +625,7 @@ body {
 
 .dark-band {
   background: var(--color-aubergine);
+  --dau-nen: transparent;
 
   --bg: var(--color-aubergine);
   --surface-card: #2d0334;
