@@ -3,10 +3,11 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+      "@/lib/*": ["../../lib/*"],
       "@/*": ["./src/*"],
       "@tuvi/*": ["../../lib/tuvi/*"],
       "@khung-v3": ["../../lib/rag/v3/khung.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "../../lib/tuvi/**/*.ts", "../../lib/rag/v3/khung.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "../../lib/tuvi/**/*.ts", "../../lib/rag/v3/khung.ts", "../../lib/rag/v3/du-kien.ts", "../../lib/rag/thuc-the.ts"]
 }

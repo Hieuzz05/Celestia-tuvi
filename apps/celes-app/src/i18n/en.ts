@@ -127,9 +127,12 @@ export const en: TuDienApp = {
   tab: {
     homNay: 'Today',
     hanhTrinh: 'Journey',
+    laSo: 'Chart',
     celes: 'Celes',
     ketNoi: 'Relationships',
-    toi: 'Me',
+    toi: 'Account',
+    moTaiKhoan: 'My account',
+    dieuHuong: 'Main navigation',
   },
 
   homNay: {

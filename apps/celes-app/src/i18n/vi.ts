@@ -129,9 +129,12 @@ export const vi = {
   tab: {
     homNay: 'Hôm nay',
     hanhTrinh: 'Hành trình',
+    laSo: 'Lá số',
     celes: 'Celes',
     ketNoi: 'Mối quan hệ',
-    toi: 'Tôi',
+    toi: 'Tài khoản',
+    moTaiKhoan: 'Tài khoản của tôi',
+    dieuHuong: 'Điều hướng chính',
   },
 
   homNay: {

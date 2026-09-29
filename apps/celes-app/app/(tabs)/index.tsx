@@ -173,7 +173,7 @@ export default function ManHomNay() {
               { nhan: t.homNay.khamPha.banDo, icon: IconBanDo, di: '/ban-do' as const },
               { nhan: t.homNay.khamPha.ketNoi, icon: IconKetNoi, di: '/(tabs)/ket-noi' as const },
               { nhan: t.homNay.khamPha.chuDe, icon: IconCeles, di: '/luan-giai' as const },
-              { nhan: t.homNay.khamPha.hoc, icon: IconSach, di: '/(tabs)/toi' as const },
+              { nhan: t.homNay.khamPha.hoc, icon: IconSach, di: '/toi' as const },
             ].map((m) => (
               <The
                 key={m.nhan}
