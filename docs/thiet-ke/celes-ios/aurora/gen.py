@@ -260,6 +260,12 @@ def avatar(th=DARK):
             f'<span style="flex-grow: 1; border-radius: 999px; border: 2px solid {th["base"]}; background: {"#1F1B24" if th is DARK else "#FFBDD3"}; color: {TEXT if th is DARK else INK}; display: flex; align-items: center; justify-content: center; {DISPLAY}; font-weight: 800; font-size: 16px">M</span></a>')
 
 
+# Màn có thanh tab: nội dung dừng trên đỉnh orb Celes (844 - 22 đáy - 64 nav - 18 orb nhô = 740),
+# chừa 8px thở; phần dài hơn coi như cuộn, mờ dần ở mép thay vì chui xuống nav.
+SAFE_TAB = 732
+MASK_TAB = "; overflow: hidden; -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent)"
+
+
 def page(name, title, body, tab=None, gap=16, glows=True, pad="60px 20px 0", th=DARK, fade=True, suffix="", extra=""):
     root = (f'<div style="width: 390px; height: 844px; position: relative; overflow: hidden; {th["bg"]}; box-sizing: border-box; '
             f'font-family: \'Be Vietnam Pro\', system-ui, sans-serif; color: {th["text"]}">')
@@ -276,7 +282,7 @@ def page(name, title, body, tab=None, gap=16, glows=True, pad="60px 20px 0", th=
 {root}
 {th["glows"] if glows else ''}
 {zone_deco(ZCUR) if th is DARK else ''}
-<div style="position: relative; z-index: 1; box-sizing: border-box; height: 844px; padding: {pad}; display: flex; flex-direction: column; gap: {gap}px">
+<div style="position: relative; z-index: 1; box-sizing: border-box; height: {SAFE_TAB if tab else 844}px; padding: {pad}; display: flex; flex-direction: column; gap: {gap}px{MASK_TAB if tab else ''}">
 {body}
 </div>
 {extra}
@@ -414,7 +420,7 @@ def wheel(cols):
 # màn chào
 body_chao = f"""
 <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; margin-top: -60px">
-<span style="border-radius: 999px; box-shadow: 0 0 90px rgba({ZR},0.35)">{orb(116)}</span>
+<span style="display: block; width: 116px; height: 116px; border-radius: 999px; box-shadow: 0 0 90px rgba({ZR},0.35)">{orb(116)}</span>
 <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
 {eyebrow('Celestia')}
 <h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.04em">Chào bạn,<br>mình là <span style="{GRADTEXT}">Celes</span>.</h1>
@@ -683,7 +689,7 @@ body4 = f"""
 <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.077); padding-top: 4px"><span style="{MONO}; font-size: 11px; color: {MUTED}">Sự nghiệp · Quãng 35–44</span><button type="button" aria-label="Lưu câu trả lời" style="width: 44px; height: 36px; border: none; background: transparent; color: {TEXT}; display: flex; align-items: center; justify-content: center; padding: 0">{ic('bookmark', 18)}</button></div>
 </div>
 </div>
-<div style="position: absolute; left: 20px; right: 0; bottom: 122px; display: flex; flex-direction: column; gap: 10px; z-index: 5">
+<div style="position: absolute; left: 20px; right: 0; bottom: 30px; display: flex; flex-direction: column; gap: 10px; z-index: 5">
 <div style="display: flex; gap: 8px; overflow: hidden">{suggchips}</div>
 <div style="margin-right: 20px; height: 54px; border-radius: 18px; background: rgba(20,18,24,0.94); border: 1px solid rgba(242,138,201,0.30); box-shadow: 0 0 0 4px rgba(242,138,201,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; gap: 4px; padding: 0 5px 0 16px">
 <input type="text" aria-label="Tin nhắn cho Celes" placeholder="Hỏi Celes điều bạn đang nghĩ…" style="flex-grow: 1; min-width: 0; height: 50px; border: none; outline: none; background: transparent; font-family: inherit; font-size: 16px; color: {TEXT}">
@@ -956,7 +962,7 @@ DAI_HAN = 35
 INFO = [("Năm", "1990 · Canh Ngọ"), ("Tháng", "3 (2 âm) · Kỷ Mão"), ("Ngày", "12 (16 âm) · Bính Tý"), ("Giờ", "9h–10h59 · Quý Tỵ"),
         ("Năm xem", "2026 · Bính Ngọ · 37t"), ("Âm dương", "Dương Nam · thuận lý"), ("Mệnh", "Lộ Bàng Thổ"), ("Cục", "Thổ Ngũ Cục"),
         ("Mệnh chủ", "Lộc Tồn"), ("Thân chủ", "Hỏa Tinh")]
-ROW_H = 126
+ROW_H = 120
 PHU_FS = 7
 
 
@@ -1023,9 +1029,9 @@ def laso_grid(th, link=True):
 def laso_controls(th):
     G, T, M = th["glass"], th["text"], th["muted"]
     return f"""<div style="display: flex; gap: 8px; align-items: center; white-space: nowrap">
-<button type="button" aria-label="Đổi năm xem, đang là 2026" style="height: 44px; padding: 0 10px 0 14px; border-radius: 14px; {G}; color: {T}; display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; white-space: nowrap"><span style="color: {M}; font-weight: 500">Năm xem</span>2026{ic('caret', 16, 2.2)}</button>
-<button type="button" aria-pressed="true" style="height: 44px; padding: 0 14px; border-radius: 14px; border: 1px solid {th['tgold'][1]}; background: {th['tgold'][0]}; color: {T}; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; white-space: nowrap"><span style="width: 9px; height: 9px; border-radius: 3px; background: {GOLD}; box-shadow: 0 0 8px {GOLD}"></span>Tam phương</button>
-<button type="button" style="margin-left: auto; height: 44px; padding: 0 4px; border: none; background: transparent; color: {th['accent']}; font-size: 13px; font-weight: 600; white-space: nowrap">Chú giải</button>
+<button type="button" aria-label="Đổi năm xem, đang là 2026" style="height: 40px; padding: 0 10px 0 14px; border-radius: 14px; {G}; color: {T}; display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; white-space: nowrap"><span style="color: {M}; font-weight: 500">Năm xem</span>2026{ic('caret', 16, 2.2)}</button>
+<button type="button" aria-pressed="true" style="height: 40px; padding: 0 14px; border-radius: 14px; border: 1px solid {th['tgold'][1]}; background: {th['tgold'][0]}; color: {T}; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; white-space: nowrap"><span style="width: 9px; height: 9px; border-radius: 3px; background: {GOLD}; box-shadow: 0 0 8px {GOLD}"></span>Tam phương</button>
+<button type="button" style="margin-left: auto; height: 40px; padding: 0 4px; border: none; background: transparent; color: {th['accent']}; font-size: 13px; font-weight: 600; white-space: nowrap">Chú giải</button>
 </div>"""
 
 
