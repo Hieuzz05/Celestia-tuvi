@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Nhắc mỗi sáng</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Inter+Tight:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Inter',system-ui,sans-serif;color:#240029;background:#FFFDF9}
+a{color:#240029}a:hover{color:#b62b8b}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFFDF9; box-sizing: border-box; padding: 56px 20px 0; display: flex; flex-direction: column; gap: 22px; font-family: 'Inter', system-ui, sans-serif; color: #240029">
+<div style="border-radius: 16px; padding: 28px 16px 16px; background: linear-gradient(145deg, #FFBDD3 0%, #FFF1BD 48%, #FFCB0F 100%); display: flex; flex-direction: column; align-items: center; gap: 22px">
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" aria-hidden="true">
+<circle cx="36" cy="36" r="33" stroke="#240029" stroke-width="1.5" stroke-dasharray="3 5"></circle>
+<circle cx="36" cy="36" r="21" stroke="#240029" stroke-width="1.75"></circle>
+<circle cx="36" cy="36" r="6" fill="#240029"></circle>
+<circle cx="57" cy="36" r="4" fill="#D32298"></circle>
+</svg>
+<div style="width: 100%; box-sizing: border-box; border-radius: 14px; background: rgba(255, 255, 255, 0.94); padding: 12px; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 6px 20px rgba(36, 0, 41, 0.10)">
+<div style="width: 36px; height: 36px; border-radius: 9px; background: #240029; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="2.2" fill="#FFFFFF"></circle><circle cx="12" cy="12" r="6.5"></circle></svg></div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+<div style="display: flex; justify-content: space-between"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #4a2a4a">CELESTIA</span><span style="font-size: 12px; color: #4a2a4a">7:30</span></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.4; color: #240029">Minh ơi, hôm nay hợp để chốt việc đang dở hơn là mở việc mới. Ghé Celes xem vì sao.</p>
+</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Inter Tight', 'Inter', sans-serif; font-weight: 700; font-size: 27px; line-height: 1.15; letter-spacing: -0.02em">Muốn Celes nhắc bạn mỗi sáng?</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #6d526d">Một câu ngắn về điều đáng để ý trong ngày, ưu tiên công việc và tiền bạc — hai điều bạn vừa chọn.</p>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; font-weight: 600">Nhắc lúc</span>
+<div style="display: flex; gap: 8px" role="group" aria-label="Giờ nhắc">
+<button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #D4CCD4; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; color: #240029">6:30</button>
+<button type="button" aria-pressed="true" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #240029; background: #240029; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: #FFFFFF">7:30</button>
+<button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #D4CCD4; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; color: #240029">8:30</button>
+<button type="button" aria-pressed="false" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #D4CCD4; background: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; color: #240029">Giờ khác</button>
+</div>
+</div>
+
+<div style="position: absolute; left: 20px; right: 20px; bottom: 34px; display: flex; flex-direction: column; gap: 6px">
+<a href="HomNay.dc.html" style="height: 52px; border-radius: 8px; background: #D32298; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; text-decoration: none; box-shadow: 0 6px 16px rgba(211, 34, 152, 0.26)">Nhắc tôi lúc 7:30</a>
+<a href="HomNay.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; color: #6d526d; text-decoration: none">Để sau</a>
+<p style="margin: 0; font-size: 13px; text-align: center; color: #6d526d">Đổi giờ hoặc tắt trong Tôi › Thông báo.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
