@@ -1,0 +1,220 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "BaiDoc.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4d · Bài đọc chuyên sâu",
+      "w": 390,
+      "x": 1410,
+      "y": 4032
+    },
+    "Celes.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2c · Trò chuyện với Celes",
+      "w": 390,
+      "x": 940,
+      "y": 1544
+    },
+    "ChuDe.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2b · Khám phá sâu hơn",
+      "w": 390,
+      "x": 470,
+      "y": 1544
+    },
+    "HanhTrinh.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "3a · Hành trình của riêng bạn",
+      "w": 390,
+      "x": 0,
+      "y": 2788
+    },
+    "HomNay.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2a · Hôm nay",
+      "w": 390,
+      "x": 0,
+      "y": 1544
+    },
+    "LaSo.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4b · Bản đồ — Lá số",
+      "w": 390,
+      "x": 470,
+      "y": 4032
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "1a · Điều bạn đang bận tâm",
+      "w": 390,
+      "x": 0,
+      "y": 300
+    },
+    "ManhYeu.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4c · Bản đồ — Biểu đồ mạnh–yếu",
+      "w": 390,
+      "x": 940,
+      "y": 4032
+    },
+    "NhacSang.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "1c · Nhắc mỗi sáng",
+      "w": 390,
+      "x": 940,
+      "y": 300
+    },
+    "QuickRead.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "1b · Ba điều Celes thấy ở bạn",
+      "w": 390,
+      "x": 470,
+      "y": 300
+    },
+    "Toi.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "3b · Tôi — Celes nhớ gì về bạn",
+      "w": 390,
+      "x": 470,
+      "y": 2788
+    },
+    "TongQuan.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4a · Bản đồ — Tổng quan",
+      "w": 390,
+      "x": 0,
+      "y": 4032
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-27T11:30:14.743Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "n1": {
+      "fill": "purple",
+      "maxH": 844,
+      "text": "Cá nhân hoá từ phút đầu\n\n• Hỏi tên và điều đang bận tâm ngay khi mở app. Hai câu trả lời này quyết định thứ tự nội dung ở mọi màn sau.\n• Giá trị trước, tài khoản sau: đọc xong ba điều mới mời lưu (Apple / Google / Email), luôn có \"Để sau\".\n• Xin quyền thông báo SAU khi người dùng đã thấy giá trị, kèm bản xem trước đúng câu nhắc họ sẽ nhận.\n\nTham khảo: Co-Star (lời nhắc mỗi ngày), Headspace (mỗi màn một câu hỏi), Duolingo (hỏi quyền đúng lúc).",
+      "w": 420,
+      "x": 1410,
+      "y": 300
+    },
+    "n2": {
+      "fill": "teal",
+      "maxH": 844,
+      "text": "Lý do mở app mỗi ngày — thứ bậc Hôm nay\n\n1. Nhận định hôm nay (thẻ gradient, trọng tâm tuyệt đối).\n2. Celes nhớ chuyện đang dang dở — USP: \"Lần trước bạn kể… chuyện đó thế nào rồi?\", sau này nhắc cả mốc: \"Bạn từng hỏi chuyển việc vào tháng này, giờ đã gần tới mốc đó.\"\n3. Tiếp tục: Bản đồ của Minh (có nhãn rõ, không còn icon lưới) + Đọc tiếp.\n4. Tâm trạng: một hàng nhẹ ở cuối, chỉ để Celes chỉnh giọng — Celes không phải app theo dõi cảm xúc.\n\nKhám phá sâu: đặt câu hỏi trước tên chủ đề. Chat: tách rõ lá số thấy gì → liên hệ chuyện bạn kể → điều lá số không biết.",
+      "w": 420,
+      "x": 1410,
+      "y": 1544
+    },
+    "n3": {
+      "fill": "orange",
+      "maxH": 844,
+      "text": "Sẵn sàng lên App Store / CH Play — làm từ đầu, sau không phải sửa\n\n• Có đăng nhập Google thì bắt buộc có đăng nhập Apple (quy định 4.8).\n• Xoá tài khoản ngay trong app (5.1.1).\n• \"Celes nhớ gì\": người dùng xem, sửa, xoá được — minh bạch dữ liệu.\n• Thanh toán: TẠM ẨN trên iOS (chủ dự án chốt 27/09). Khi mở lại phải dùng mua trong app (3.1.1), không dùng PayOS.\n• Chính sách quyền riêng tư + nhãn dữ liệu (ngày sinh, nội dung trò chuyện).\n• Nút báo nội dung trên câu trả lời của Celes.\n\nTham khảo: ChatGPT (bộ nhớ xem & xoá được), Stoic (nhật ký), Co-Star (người của tôi).",
+      "w": 420,
+      "x": 940,
+      "y": 2788
+    },
+    "n4": {
+      "fill": "blue",
+      "maxH": 844,
+      "text": "Lá số & luận giải trên điện thoại\n\n• Một chỗ: Bản đồ của Minh — Tổng quan · Lá số · Mạnh – yếu. Vào từ thẻ có nhãn ở Hôm nay, hoặc ở trang Tôi.\n• Tổng quan: \"Ba điều nên biết trước\" (thẻ vuốt ngang), 8 câu còn lại mở tại chỗ.\n• Lá số (chủ dự án chốt 27/09): ĐẦY ĐỦ như web — tràn bề ngang, mỗi ô có can chi, tên cung, đại vận, chính tinh + độ sáng, Tứ Hóa, phụ tinh hai cột (cát trái / hung phải / vòng sao nhạt), Tràng sinh; ô giữa đủ thông tin sinh; Tuần/Triệt đặt trên đường ranh. Dùng đúng cỡ chữ chế độ ô hẹp của web (phụ tinh 8px). Tô sáng cung đang chọn + tam phương, số đại vận hiện tại màu xanh. Chạm ô → bảng giải nghĩa.\n• Mạnh – yếu: biểu đồ radar như web (12 trục bắt đầu từ Mệnh, vòng nét đứt = mức giữa, chấm theo mức) + thẻ vì sao + danh sách thanh lệch hai phía bên dưới.\n• Bài chuyên sâu: chế độ đọc, chữ 16px.\n\nLá số và biểu đồ do engine thật tính trên một lá số tổng hợp (không phải người thật).",
+      "w": 420,
+      "x": 1880,
+      "y": 4032
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 1330,
+      "text": "1 · Lần đầu mở app",
+      "w": 240,
+      "x": 0,
+      "y": 40
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 1330,
+      "text": "2 · Mỗi ngày",
+      "w": 240,
+      "x": 0,
+      "y": 1284
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 860,
+      "text": "3 · Của riêng bạn",
+      "w": 240,
+      "x": 0,
+      "y": 2528
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "4 · Lá số & luận giải",
+      "w": 240,
+      "x": 0,
+      "y": 3772
+    },
+    "n0": {
+      "fill": "gray",
+      "maxH": 844,
+      "w": 440,
+      "x": -540,
+      "y": 300,
+      "text": "Design system app = design system web (chốt sau phản biện 27/09)\n\nMàu: giữ nguyên bảng màu web. Aubergine = chữ & khung; nền trắng/kem; gradient hồng–vàng CHỈ cho khoảnh khắc nhận định (thẻ Hôm nay, Quick Read, câu dẫn Tổng quan); Fuchsia #D32298 = hành động (tối đa 1 nút nổi/màn); xanh/hổ phách/đỏ chỉ cho dữ liệu.\n\nBo góc: thẻ 14 (thẻ nhận định 16) · nút 8 · ô nhập 6 · pill 999 CHỈ cho lựa chọn/tag/bộ lọc, không cho hành động.\n\nChữ: tiêu đề trang Inter Tight 26–28 · tiêu đề mục Inter Tight 20–22 · tiêu đề thẻ Inter 16–17/600 · thân 15–16 · phụ 14 · meta 12–13 · eyebrow JetBrains Mono 12 · tab 12. Không chữ nào dưới 11px — TRỪ lá số: dùng cỡ chế độ ô hẹp của web (chủ dự án chốt 27/09).\n\nPermanent Marker: tối đa 1 chỗ/màn, chỉ để chú thích (Quick Read).\n\nKhi code: sửa apps/celes-app/src/thiet-ke/token.ts cho khớp (hiện đang 18/22/12/12 theo spec di động 16/09, và nút dùng #DF37A7 thay vì #D32298)."
+    },
+    "n5": {
+      "fill": "green",
+      "maxH": 844,
+      "w": 440,
+      "x": -540,
+      "y": 1544,
+      "text": "Ba giọng viết — không trộn\n\n1. Hệ thống (nhãn, trạng thái): ngắn, trung tính. \"Đã đọc 3/8\", \"Chưa đọc\", \"Thứ Hai, 28 tháng 9\".\n\n2. Celes (lời trò chuyện, nhắc, hỏi lại): tự nhiên, có ngữ cảnh, gọi tên. \"Minh ơi…\", \"Lần trước bạn kể… chuyện đó thế nào rồi?\"\n\n3. Luận giải (bài đọc, thẻ nhận định): rõ, cụ thể, có lý do, không phán tuyệt đối; câu ngắn vừa phải, mỗi đoạn một ý (chuẩn giọng văn 27/09). Tiêu đề nói bằng người, số liệu để ở dòng meta: \"Bạn đang ở một quãng thiên về dựng nền\" + \"35–44 tuổi\".\n\nNguyên tắc tin cậy xuyên suốt: \"Celes chỉ nhớ điều bạn tự kể.\"\n\nThứ bậc sản phẩm: Celes = người đồng hành · Bản đồ = nền hiểu bạn · Hành trình = thời gian · Hôm nay = điểm chạm mỗi ngày · Khám phá sâu = câu hỏi lớn. Lá số là dữ liệu đứng sau trải nghiệm, không phải sản phẩm chính."
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "QuickRead.dc.html",
+    "NhacSang.dc.html",
+    "HomNay.dc.html",
+    "ChuDe.dc.html",
+    "Celes.dc.html",
+    "HanhTrinh.dc.html",
+    "Toi.dc.html",
+    "TongQuan.dc.html",
+    "LaSo.dc.html",
+    "ManhYeu.dc.html",
+    "BaiDoc.dc.html"
+  ],
+  "pages": [],
+  "title": "Celes iOS — luồng app"
+}

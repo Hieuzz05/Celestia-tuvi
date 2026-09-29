@@ -1,0 +1,260 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "HeThong.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "0 · Hệ thiết kế Celes Aurora",
+      "w": 390,
+      "x": 0,
+      "y": 300
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "1a · Điều bạn đang bận tâm",
+      "w": 390,
+      "x": 470,
+      "y": 300
+    },
+    "QuickRead.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "1b · Ba điều Celes thấy ở bạn",
+      "w": 390,
+      "x": 940,
+      "y": 300
+    },
+    "HomNay.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2a · Hôm nay",
+      "w": 390,
+      "x": 0,
+      "y": 1544
+    },
+    "Celes.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2b · Trò chuyện với Celes",
+      "w": 390,
+      "x": 470,
+      "y": 1544
+    },
+    "HanhTrinh.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "2c · Hành trình",
+      "w": 390,
+      "x": 940,
+      "y": 1544
+    },
+    "MoiQuanHe.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "3a · Mối quan hệ",
+      "w": 390,
+      "x": 0,
+      "y": 2788
+    },
+    "Toi.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "3b · Tài khoản (chạm avatar)",
+      "w": 390,
+      "x": 470,
+      "y": 2788
+    },
+    "LaSo.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4a · Lá số 12 cung",
+      "w": 390,
+      "x": 0,
+      "y": 4032
+    },
+    "CungChiTiet.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4b · Chạm một cung",
+      "w": 390,
+      "x": 470,
+      "y": 4032
+    },
+    "TongQuan.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4c · Tổng quan (đọc cả lá số)",
+      "w": 390,
+      "x": 940,
+      "y": 4032
+    },
+    "ChuyenSau.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4d · Chuyên sâu — 14 chủ đề",
+      "w": 390,
+      "x": 1410,
+      "y": 4032
+    },
+    "BaiDoc.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4e · Đọc một chủ đề",
+      "w": 390,
+      "x": 1880,
+      "y": 4032
+    },
+    "ManhYeu.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "4f · Mạnh – yếu",
+      "w": 390,
+      "x": 2350,
+      "y": 4032
+    },
+    "HomNaySang.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "5a · Hôm nay — chế độ sáng",
+      "w": 390,
+      "x": 0,
+      "y": 5276
+    },
+    "LaSoSang.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 44,
+      "title": "5b · Lá số — chế độ sáng",
+      "w": 390,
+      "x": 470,
+      "y": 5276
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-29T04:28:58.211Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 1330,
+      "w": 240,
+      "x": 0,
+      "y": 40,
+      "text": "1 · Hệ thiết kế & lần đầu mở app"
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 1330,
+      "w": 240,
+      "x": 0,
+      "y": 1284,
+      "text": "2 · Mỗi ngày"
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 1330,
+      "w": 240,
+      "x": 0,
+      "y": 2528,
+      "text": "3 · Người thân, của riêng bạn"
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 2800,
+      "w": 240,
+      "x": 0,
+      "y": 3772,
+      "text": "4 · Lá số & luận giải (tab mới)"
+    },
+    "t5": {
+      "kind": "title1",
+      "maxW": 1330,
+      "w": 240,
+      "x": 0,
+      "y": 5016,
+      "text": "5 · Chế độ sáng"
+    },
+    "n4": {
+      "fill": "purple",
+      "maxH": 844,
+      "w": 440,
+      "x": 2820,
+      "y": 4032,
+      "text": "Tab Lá số: xem lá số → tổng quan → chuyên sâu (đi theo đúng web /la-so)\n\nBốn chế độ xem trong tab: Lá số · Tổng quan · Chuyên sâu · Mạnh – yếu.\n\n1. Lá số (4a): 12 cung đầy đủ như web. Phụ tinh chia HAI CỘT: cát/trung tính bên trái, hung/sát bên phải; vòng Thái Tuế / Lộc Tồn nằm chung hai cột, màu tím nhạt. Chạm một cung → tấm trượt (4b).\n2. Tổng quan (4c) = đọc CẢ lá số. Gồm: Đánh giá chung (điểm nổi bật · điều cần lưu ý · giai đoạn hiện tại), rồi Bức tranh chung (khoảng 6 câu hỏi, mỗi câu có 'Muốn biết vì sao không?'). Cuối bài là thẻ 'Đọc tiếp phần chuyên sâu' → nút 'Xem 14 chủ đề'.\n3. Chuyên sâu (4d) = 14 chủ đề, mỗi chủ đề 2–4 câu hỏi về chính bạn. Ô nào cũng có nhãn Mạnh / Bình / Cần gắng và trạng thái đã đọc.\n4. Đọc một chủ đề (4e): hàng chip để nhảy giữa 14 chủ đề ('Đã đọc 3/14'); câu hỏi mở đầu, các câu trả lời đánh số, 'Tóm lại' ở cuối, rồi 'Đọc tiếp: chủ đề sau'. Bài được viết khi người dùng mở chủ đề lần đầu (hiện 'Celes đang viết tiếp…'), sau đó được lưu, mở lại là có ngay.\n\nLối vào khác của phần chuyên sâu: ô 'Đọc tiếp' ở Hôm nay, nút sách trong tấm trượt của một cung, và 'Đọc chuyên sâu' ở Mạnh – yếu.\n\nChuyên sâu cần đăng nhập (giống web). Chữ trong lá số được phép nhỏ (6.5–9.5px) — ngoại lệ duy nhất của luật 'không chữ dưới 11px'."
+    },
+    "n5": {
+      "fill": "teal",
+      "maxH": 844,
+      "w": 420,
+      "x": 940,
+      "y": 5276,
+      "text": "Chế độ sáng — cùng bố cục, chỉ đổi token\n\n• App đi theo cài đặt của máy (Tài khoản → Giao diện: Theo máy / Đêm / Sáng).\n• Nền sáng #FFF8FB (giống web) với quầng hồng – vàng mờ; thẻ trắng mờ đổ bóng tím rất nhẹ thay cho kính tối.\n• Thẻ nhận định hồng–vàng giữ nguyên ở cả hai chế độ — đó là dấu nhận diện.\n• Chữ gradient đổi sang fuchsia → cam đậm để đủ tương phản trên nền sáng; chữ nhấn dùng #B8157F thay #FF8BD0.\n• Trạng thái: xanh đậm / cam đậm trên nền nhạt (thay vì chữ sáng trên nền tối).\n\nBấm Play ở 5a: thanh tab dẫn sang Lá số bản sáng. Các màn khác sẽ sinh bản sáng tự động từ cùng bộ token khi code."
+    },
+    "n1": {
+      "fill": "purple",
+      "maxH": 844,
+      "w": 420,
+      "x": 1410,
+      "y": 300,
+      "text": "Celes Aurora — cùng màu web, cách thể hiện mới\n\n• Nền đêm làm mặc định: aubergine sâu #1A001E, ba quầng sáng mờ (hồng, vàng, fuchsia) trôi chậm phía sau. Màu vẫn là màu Celes, chỉ đổi từ 'giấy trắng' sang 'bầu trời đêm có ánh sáng'.\n• Gradient hồng–vàng vẫn chỉ dành cho khoảnh khắc nhận định (thẻ Hôm nay, ba điều Celes thấy, cặp đôi). Trên nền tối nó sáng như một vật phát quang — đó là điểm 'wow'.\n• Celes có hình hài: một quả cầu sáng thở nhẹ, xuất hiện ở tab giữa, đầu trò chuyện và mọi lời Celes nói.\n\nKiểu chữ: Bricolage Grotesque (tiêu đề, có cá tính, dấu tiếng Việt gọn) + Be Vietnam Pro (thân bài, làm riêng cho tiếng Việt) + Newsreader nghiêng (chỉ cho câu Celes nói) + JetBrains Mono (nhãn nhỏ). Bỏ Inter."
+    },
+    "n2": {
+      "fill": "teal",
+      "maxH": 844,
+      "w": 420,
+      "x": 1410,
+      "y": 1544,
+      "text": "Kỹ thuật dùng\n\n• Thẻ kính mờ (glass) trên nền có ánh sáng, viền 1px sáng mờ.\n• Thanh tab nổi, bo 24, mờ nền; Celes nhô lên ở giữa như nút chính.\n• Bento: ô thông tin nhỏ xếp lưới (giờ thuận, nhịp ngày, bản đồ, đọc tiếp).\n• Chữ tiêu đề lớn, khoảng chữ âm, một cụm chữ phủ gradient để dẫn mắt.\n• Biểu đồ phát sáng: đường đời có quãng đã qua sáng / quãng tới nét đứt; radar tô gradient hồng→vàng.\n• Chuyển động nhẹ: quả cầu thở, quầng sáng trôi, vòng quỹ đạo quay chậm. Tắt hết khi máy bật Giảm chuyển động.\n• Icon: một bộ nét 1.75 bo tròn tự vẽ, không emoji.\n\nBấm Play ở từng khung: các nút chuyển màn đã nối (1a → 1b → Hôm nay, thanh tab)."
+    },
+    "n3": {
+      "fill": "orange",
+      "maxH": 844,
+      "w": 420,
+      "x": 940,
+      "y": 2788,
+      "text": "Cần anh/chị duyệt\n\n1. Thanh tab mới: Hôm nay · Lá số · Celes · Hành trình · Mối quan hệ; 'Tôi' thành avatar góc phải. Đây là đổi so với luồng đã duyệt trước — nếu muốn giữ tab 'Tôi' thì Mối quan hệ phải vào trong Hôm nay.\n2. Bo góc lớn hơn web: thẻ 20–24, nút 14, ô nhập 14 (web đang 14 / 8 / 6).\n3. Nền đêm là mặc định khi máy đang tối; máy sáng thì dùng bản sáng (hàng 5).\n4. Font mới chỉ áp cho app, hay đổi luôn cả web cho đồng bộ?\n\nGiữ nguyên các luật đã chốt: tối đa một nút fuchsia nổi mỗi màn, pill chỉ cho lựa chọn và tag, vùng chạm ≥ 44px, không chữ dưới 11px (trừ lá số), không nhắc 'AI' hay tên model.\n\nChưa vẽ lại: Nhắc mỗi sáng, Khám phá sâu hơn."
+    }
+  },
+  "order": [
+    "HeThong.dc.html",
+    "Main.dc.html",
+    "QuickRead.dc.html",
+    "HomNay.dc.html",
+    "Celes.dc.html",
+    "HanhTrinh.dc.html",
+    "MoiQuanHe.dc.html",
+    "Toi.dc.html",
+    "LaSo.dc.html",
+    "CungChiTiet.dc.html",
+    "TongQuan.dc.html",
+    "ChuyenSau.dc.html",
+    "BaiDoc.dc.html",
+    "ManhYeu.dc.html",
+    "HomNaySang.dc.html",
+    "LaSoSang.dc.html"
+  ],
+  "pages": [],
+  "title": "Celes iOS — giao diện Aurora"
+}
