@@ -1,4 +1,9 @@
+import { namAmHienTai, thangAmHienTai } from '@tuvi/bay-gio';
+import type { KetQuaSoSanh } from '@tuvi/hoptuoi';
+import type { CapLuanHan, LuanHan } from '@tuvi/luan-han';
 import type { HoSo } from './ho-so';
+import type { NguoiLuu } from './la-so-luu';
+import { tokenHienTai } from './supabase';
 
 /**
  * Gọi sang dịch vụ của Celestia.
@@ -16,51 +21,328 @@ const GOC =
 /** Ném ra khi máy chủ không trả lời được — màn hình tự đổi sang thông điệp của Celes */
 export class LoiCeles extends Error {}
 
+/**
+ * Máy chủ trả 401 kèm `canDangNhap` — chưa đăng nhập hoặc phiên đã hết hạn.
+ * Tách riêng để màn hình mời đăng nhập thay vì báo "Celes chưa hoàn thành được".
+ */
+export class LoiCanDangNhap extends LoiCeles {}
+
+/**
+ * Máy chủ trả 402: hết lượt miễn phí hôm nay, hoặc tính năng cần bậc cao hơn.
+ * Thanh toán đang TẠM ẨN trên iOS (quy định 3.1.1) nên app chỉ báo, không mở cổng.
+ */
+export class LoiHetLuot extends LoiCeles {
+  constructor(public gioiHan?: number) {
+    super('het-luot');
+  }
+}
+
 export interface TinNhanGui {
   vaiTro: 'nguoi-dung' | 'tro-ly';
   noiDung: string;
 }
 
-function tachNgay(ngaySinh: string) {
+export function tachNgay(ngaySinh: string) {
   const [nam, thang, ngay] = ngaySinh.split('-').map(Number);
   return { ngay, thang, nam };
 }
 
-export async function hoiCeles(
-  hoSo: HoSo,
-  cauHoi: string,
-  lichSu: TinNhanGui[]
-): Promise<string> {
-  const { ngay, thang, nam } = tachNgay(hoSo.ngaySinh);
-  const bayGio = new Date();
+/** Phần lá số mọi tuyến đều cần — cùng hình dạng body của web */
+export function thanLaSo(hoSo: HoSo) {
+  return { ...tachNgay(hoSo.ngaySinh), gio: hoSo.gio, gioiTinh: hoSo.gioiTinh, hoTen: hoSo.ten };
+}
+
+/**
+ * Một lượt POST JSON tới máy chủ, gắn Bearer nếu đã đăng nhập.
+ * 401 `canDangNhap` / 429 `gioiHanKhach` → LoiCanDangNhap, 402 → LoiHetLuot, còn lại → LoiCeles.
+ */
+export async function goiApi<T>(duong: string, body: unknown): Promise<T> {
+  // App không có cookie như trình duyệt — máy chủ đọc phiên từ header Bearer
+  const token = await tokenHienTai();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   let res: Response;
   try {
-    res = await fetch(`${GOC}/api/hoi-dap`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ngay,
-        thang,
-        nam,
-        gio: hoSo.gio,
-        gioiTinh: hoSo.gioiTinh,
-        hoTen: hoSo.ten,
-        namXem: bayGio.getFullYear(),
-        thangXem: bayGio.getMonth() + 1,
-        cauHoi,
-        // Chỉ gửi vài lượt gần nhất: đủ giữ mạch mà không phình yêu cầu
-        lichSu: lichSu.slice(-6),
-      }),
-    });
+    res = await fetch(`${GOC}${duong}`, { method: 'POST', headers, body: JSON.stringify(body) });
   } catch {
     throw new LoiCeles('khong-ket-noi-duoc');
   }
 
-  if (!res.ok) throw new LoiCeles(`http-${res.status}`);
+  const data = (await res.json().catch(() => ({}))) as T & {
+    loi?: string;
+    canDangNhap?: boolean;
+    freeLimit?: number;
+  };
+  if (res.status === 401 && data.canDangNhap) throw new LoiCanDangNhap('can-dang-nhap');
+  // Khách đã xem đủ lá số mới trong ngày (tổng quan luận giải) — lối ra cũng là đăng nhập
+  if (res.status === 429 && (data as { gioiHanKhach?: boolean }).gioiHanKhach) {
+    throw new LoiCanDangNhap('gioi-han-khach');
+  }
+  if (res.status === 402) throw new LoiHetLuot(data.freeLimit);
+  if (!res.ok) throw new LoiCeles(data.loi ?? `http-${res.status}`);
+  return data;
+}
 
-  const data = (await res.json()) as { noiDung?: string; loi?: string };
-  if (!data.noiDung) throw new LoiCeles(data.loi ?? 'khong-co-noi-dung');
+/** Lối đi tiếp do máy chủ dựng — `duong` là đường dẫn WEB, màn hình tự đổi sang tuyến app */
+export interface LoiDi {
+  nhan: string;
+  duong: string;
+}
 
-  return data.noiDung;
+export interface TraLoiCeles {
+  traLoi: string;
+  model?: string;
+  goiYTiep: string[];
+  loiDi: LoiDi[];
+}
+
+/** Trần lịch sử gửi lên — khớp trần 60 của `/api/hoi-dap` */
+const TRAN_LICH_SU = 60;
+
+export async function hoiCeles(
+  hoSo: HoSo,
+  cauHoi: string,
+  lichSu: TinNhanGui[],
+  tuChip = false
+): Promise<TraLoiCeles> {
+  const bayGio = new Date();
+  const data = await goiApi<Partial<TraLoiCeles>>('/api/hoi-dap', {
+    ...thanLaSo(hoSo),
+    namXem: namAmHienTai(bayGio),
+    thangXem: thangAmHienTai(bayGio),
+    cauHoi,
+    lichSu: lichSu.slice(-TRAN_LICH_SU),
+    // Câu bấm từ chip gợi ý — máy chủ dùng cờ này để biết chắc đây là lượt nối tiếp
+    tuChip,
+  });
+
+  // Máy chủ trả `traLoi` (không phải `noiDung`) — đọc nhầm tên này là Celes im lặng
+  if (!data.traLoi) throw new LoiCeles('khong-co-noi-dung');
+  return {
+    traLoi: data.traLoi,
+    model: data.model,
+    goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
+    loiDi: Array.isArray(data.loiDi) ? data.loiDi : [],
+  };
+}
+
+/* ------------------------------------------------------------ Luận giải */
+
+/** Một câu của luận giải chuyên sâu — khuôn `CauV3` của web */
+export interface CauV3 {
+  id: string;
+  cauHoi: string;
+  luanGiai: string;
+  /** Căn cứ trên lá số — viết bằng tên sao, tên cung; màn hình ẩn mặc định */
+  viSao: string;
+  chuaViet: boolean;
+}
+
+/**
+ * Năm xem của luận giải: năm DƯƠNG hiện tại, đúng như trang web gửi. Khoá bài
+ * đệm trên máy chủ có năm xem — lệch một năm là trượt bài web đã viết, tốn một
+ * lượt viết mới cho cùng nội dung.
+ */
+export const namXemLuanGiai = () => new Date().getFullYear();
+
+function thanV3(hoSo: HoSo) {
+  const { ngay, thang, nam, gio, gioiTinh } = thanLaSo(hoSo);
+  return { ngay, thang, nam, gio, gioiTinh, namXem: namXemLuanGiai() };
+}
+
+/** Chỉ giữ trường màn hình dùng — phần còn lại (độ rõ, dấu vết kho) không lên giao diện */
+const gonCau = (c: Partial<CauV3>): CauV3 => ({
+  id: String(c.id ?? ''),
+  cauHoi: String(c.cauHoi ?? ''),
+  luanGiai: String(c.luanGiai ?? ''),
+  viSao: String(c.viSao ?? ''),
+  chuaViet: Boolean(c.chuaViet) || !c.luanGiai,
+});
+
+/**
+ * Các câu `chi` của một nhóm (`tong-quan` hoặc id chủ đề). Tổng quan mở cho
+ * khách; nhóm khác cần đăng nhập. Không trừ hạn mức — bài được đệm dùng chung.
+ */
+export async function docNhomV3(hoSo: HoSo, nhom: string, chi: string[]): Promise<CauV3[]> {
+  const data = await goiApi<{ cau?: Partial<CauV3>[] }>('/api/luan-giai-v3', {
+    ...thanV3(hoSo),
+    nhom,
+    chi,
+  });
+  return Array.isArray(data.cau) ? data.cau.map(gonCau) : [];
+}
+
+/** Phần "Tóm lại" của một chủ đề — chỉ xin khi đã đủ các câu */
+export async function docTomLaiV3(hoSo: HoSo, nhom: string): Promise<string | null> {
+  try {
+    const data = await goiApi<{ tomLai?: string | null }>('/api/luan-giai-v3', {
+      ...thanV3(hoSo),
+      nhom,
+      tomLai: true,
+    });
+    return data.tomLai ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface BucTranh {
+  bucTranh: string | null;
+  soChuDe: number;
+  canToiThieu?: number;
+}
+
+/** Bức tranh lớn: ghép phần tóm lại của các chủ đề đã đọc */
+export async function docBucTranhV3(hoSo: HoSo): Promise<BucTranh> {
+  const data = await goiApi<Partial<BucTranh>>('/api/luan-giai-v3', {
+    ...thanV3(hoSo),
+    nhom: 'tinh-cach',
+    bucTranh: true,
+  });
+  return {
+    bucTranh: data.bucTranh ?? null,
+    soChuDe: Number(data.soChuDe ?? 0),
+    canToiThieu: data.canToiThieu,
+  };
+}
+
+/* ------------------------------------------------------------ Hành trình */
+
+type NgonNgu = 'vi' | 'en';
+
+export interface ChuyenDongAi {
+  tieuDe: string;
+  noiDung: string;
+}
+
+/** Ba chuyển động do model viết — đang mở / đang căng / cần chờ, kèm đoạn ghép lại */
+export interface NhipAi {
+  dangMo: ChuyenDongAi;
+  dangCang: ChuyenDongAi;
+  canCho: ChuyenDongAi;
+  ghepLai: string;
+  /** Chỉ có ở bài chi tiết: id lĩnh vực → đoạn văn model viết */
+  linhVuc?: Record<string, string>;
+}
+
+function thanHanhTrinh(hoSo: HoSo) {
+  const { ngay, thang, nam, gio, gioiTinh } = thanLaSo(hoSo);
+  return { ngay, thang, nam, gio, gioiTinh };
+}
+
+/**
+ * Chữ model viết cho các mốc của một lớp (id mốc → câu). Máy chủ tự dựng danh
+ * sách mốc từ engine nên chỉ cần gửi lá số và năm xem (năm ÂM, như web).
+ * Hỏng hay 204 thì trả rỗng — màn hình giữ câu tất định của engine.
+ */
+export async function docMoc(
+  hoSo: HoSo,
+  loai: 'giai-doan' | 'nam' | 'thang',
+  namXem: number,
+  ngonNgu: NgonNgu
+): Promise<Record<string, string>> {
+  try {
+    const d = await goiApi<{ moc?: Record<string, string> }>('/api/moc', {
+      ...thanHanhTrinh(hoSo),
+      namXem,
+      loai,
+      ngonNgu,
+    });
+    return d.moc ?? {};
+  } catch {
+    return {};
+  }
+}
+
+/** Nhịp tháng đang chọn — thẻ đầu Hành trình. Hỏng thì null, thẻ tất định vẫn đứng */
+export async function docNhip(
+  hoSo: HoSo,
+  namXem: number,
+  thangXem: number,
+  ngonNgu: NgonNgu
+): Promise<NhipAi | null> {
+  try {
+    const d = await goiApi<Partial<NhipAi>>('/api/nhip', {
+      ...thanHanhTrinh(hoSo),
+      cap: 'thang',
+      namXem,
+      thangXem,
+      ngonNgu,
+    });
+    return d.dangMo && d.dangCang && d.canCho ? (d as NhipAi) : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface KetQuaLuanHan {
+  /** Đã mở quyền đọc sâu chưa — chưa thì `bai` chỉ còn tiêu đề và chủ đề chính */
+  day: boolean;
+  ai: NhipAi | null;
+  bai: LuanHan;
+}
+
+/** Luận hạn chi tiết — tầng hai của Hành trình, dựng ở máy chủ vì là phần trả phí */
+export async function docLuanHan(
+  hoSo: HoSo,
+  cap: CapLuanHan,
+  namXem: number,
+  thangXem: number,
+  ngonNgu: NgonNgu
+): Promise<KetQuaLuanHan> {
+  const d = await goiApi<Partial<KetQuaLuanHan>>('/api/luan-han', {
+    ...thanLaSo(hoSo),
+    cap,
+    namXem,
+    thangXem,
+    ngonNgu,
+  });
+  if (!d.bai) throw new LoiCeles('khong-co-noi-dung');
+  return { day: Boolean(d.day), ai: d.ai ?? null, bai: d.bai };
+}
+
+/* ---------------------------------------------------------------- Mối quan hệ */
+
+/** Cùng bộ id với `lib/ket-noi/y-dinh.ts` — máy chủ chọn cung và mục theo id này */
+export type YDinhKetNoi = 'tinh-cam' | 'lam-an' | 'ban-be' | 'gia-dinh' | 'khac';
+export const Y_DINH_KET_NOI: YDinhKetNoi[] = ['tinh-cam', 'lam-an', 'ban-be', 'gia-dinh', 'khac'];
+
+export interface KetNoiAi {
+  yDinh: YDinhKetNoi;
+  dangChuY: { tieuDe: string; noiDung: string };
+  muc: { id: string; tieuDe: string; noiDung: string; luongNguoc?: string }[];
+  cauHoiCuaBan?: { cauHoi: string; traLoi: string };
+  canCu: {
+    duKien: { id: string; noiDung: string }[];
+    cachNoi?: string | null;
+    coNguon: boolean;
+    phuongPhap: string;
+  };
+}
+
+/**
+ * Bảng so của engine luôn có; phần diễn giải `ketNoi` có thể vắng khi phía AI
+ * hỏng. Máy chủ còn trả tên model / lý do lỗi — cố ý KHÔNG nhận vào đây, để
+ * không màn nào lỡ hiện ra.
+ */
+export interface KetQuaKetNoi {
+  soSanh: KetQuaSoSanh;
+  ketNoi: KetNoiAi | null;
+}
+
+/** So hai lá số theo một ý định. 402 (chưa mở quyền) đi ra thành LoiHetLuot */
+export async function docKetNoi(
+  hoSo: HoSo,
+  b: NguoiLuu,
+  yDinh: YDinhKetNoi,
+  cauHoi: string
+): Promise<KetQuaKetNoi> {
+  const d = await goiApi<{ soSanh?: KetQuaSoSanh; ketNoi?: KetNoiAi }>('/api/hop-tuoi', {
+    a: thanLaSo(hoSo),
+    b: { ngay: b.ngay, thang: b.thang, nam: b.nam, gio: b.gio, gioiTinh: b.gioiTinh, hoTen: b.hoTen },
+    comparison: { intent: yDinh, question: cauHoi.trim() || undefined },
+  });
+  if (!d.soSanh) throw new LoiCeles('khong-co-noi-dung');
+  return { soSanh: d.soSanh, ketNoi: d.ketNoi ?? null };
 }

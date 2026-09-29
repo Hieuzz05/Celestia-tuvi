@@ -107,6 +107,8 @@ export const CHU = {
   bodySm: { fontSize: 14, lineHeight: 20, fontWeight: '400' as const },
   caption: { fontSize: 12, lineHeight: 17, fontWeight: '400' as const },
   eyebrow: { fontSize: 12, lineHeight: 15, fontWeight: '400' as const },
+  // Cỡ chữ siêu nhỏ của mệnh bàn KHÔNG nằm ở đây — khai báo riêng trong
+  // `app/ban-do.tsx` để không màn nào khác vô tình dùng.
 };
 
 /** Tên font đã nạp — heading và body tách họ, eyebrow dùng mono */

@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Chu, NutChinh, NutChu, NutPhu } from '@/giao-dien/co-ban';
+import { Chu, NutChinh, NutChu } from '@/giao-dien/co-ban';
 import { DauCelestia } from '@/giao-dien/icon';
+import { useTaiKhoan } from '@/du-lieu/tai-khoan';
 import { useT } from '@/i18n/context';
 import { useMau } from '@/thiet-ke/theme';
 import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
@@ -13,14 +14,17 @@ import { KHOANG, LE_NGANG } from '@/thiet-ke/token';
  * "Để sau" luôn có mặt và luôn đi tiếp được. Spec cấm chặn trải nghiệm giá trị
  * đầu tiên sau tài khoản, nên màn này là lời mời, không phải cổng.
  *
- * Các nút mạng xã hội hiện chưa nối — nối thật cần Supabase Auth cùng khoá OAuth
- * riêng cho ứng dụng di động, là việc cấu hình phía người vận hành.
+ * Từ 28/09/2026 chỉ có email (mã 6 số). Nút Apple/Google ĐÃ GỠ: trước đó chúng
+ * chỉ lặng lẽ "để sau", người dùng tưởng đã đăng nhập rồi mới bị Celes chặn.
+ * Thêm lại khi nối thật — cần khoá OAuth riêng cho app (Google Cloud; Apple cần
+ * tài khoản Developer). Khoá i18n `apple`/`google` giữ sẵn cho lúc đó.
  */
 export default function ManDangKy() {
   const router = useRouter();
   const t = useT();
   const mau = useMau();
   const le = useSafeAreaInsets();
+  const { coTaiKhoan } = useTaiKhoan();
 
   const deSau = () => router.replace('/(tabs)');
 
@@ -43,13 +47,9 @@ export default function ManDangKy() {
       </View>
 
       <View style={{ gap: KHOANG.x3 }}>
-        {Platform.OS === 'ios' && <NutChinh nhan={t.dangKy.apple} onPress={deSau} />}
-        {Platform.OS === 'ios' ? (
-          <NutPhu nhan={t.dangKy.google} onPress={deSau} />
-        ) : (
-          <NutChinh nhan={t.dangKy.google} onPress={deSau} />
+        {coTaiKhoan && (
+          <NutChinh nhan={t.dangKy.email} onPress={() => router.push('/dang-nhap')} />
         )}
-        <NutPhu nhan={t.dangKy.email} onPress={deSau} />
         <NutChu
           nhan={t.chung.deSau}
           mauChu={mau.chuMo}

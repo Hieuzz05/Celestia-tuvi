@@ -4,8 +4,9 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@tuvi/*": ["../../lib/tuvi/*"]
+      "@tuvi/*": ["../../lib/tuvi/*"],
+      "@khung-v3": ["../../lib/rag/v3/khung.ts"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "../../lib/tuvi/**/*.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "../../lib/tuvi/**/*.ts", "../../lib/rag/v3/khung.ts"]
 }

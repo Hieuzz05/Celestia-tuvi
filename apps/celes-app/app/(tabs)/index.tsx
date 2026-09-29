@@ -4,13 +4,14 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chu, Eyebrow, NenGradient, NutChu, Pill, The } from '@/giao-dien/co-ban';
 import { BangViSao } from '@/giao-dien/vi-sao';
-import { IconBanDo, IconKetNoi, IconMuiTenPhai, IconSach, MAU_LINH_VUC } from '@/giao-dien/icon';
+import { IconBanDo, IconCeles, IconKetNoi, IconMuiTenPhai, IconSach, MAU_LINH_VUC } from '@/giao-dien/icon';
 import { useHoSo } from '@/du-lieu/ho-so';
 import { ghiSuKien } from '@/du-lieu/su-kien';
 import { dien, useT } from '@/i18n/context';
 import { useMau } from '@/thiet-ke/theme';
 import { BANG_MAU, BO_GOC, DO_NOI, KHOANG, LE_NGANG } from '@/thiet-ke/token';
 import { cungDaiVan } from '@tuvi/ansao';
+import { namAmHienTai } from '@tuvi/bay-gio';
 
 /**
  * Hôm nay — lý do mở app mỗi ngày.
@@ -44,7 +45,7 @@ export default function ManHomNay() {
   const chinh = gocNhin[0];
   const giaiDoan = useMemo(() => {
     if (!laSo || !hoSo) return null;
-    const tuoiAm = new Date().getFullYear() - laSo.thongTin.amLich.nam + 1;
+    const tuoiAm = namAmHienTai() - laSo.thongTin.amLich.nam + 1;
     return cungDaiVan(laSo, tuoiAm) ?? null;
   }, [laSo, hoSo]);
 
@@ -89,7 +90,11 @@ export default function ManHomNay() {
                   mauChu={BANG_MAU.aubergine}
                   onPress={() => {
                     ghiSuKien('daily_insight_opened');
-                    router.push('/(tabs)/celes');
+                    // Chỉ điền sẵn câu hỏi — người dùng tự bấm gửi (mỗi lượt tính hạn mức)
+                    router.push({
+                      pathname: '/(tabs)/celes',
+                      params: { q: dien(t.homNay.cauHoiVe, { tieuDe: chinh.tieuDe }) },
+                    });
                   }}
                 />
                 <NutChu
@@ -167,6 +172,7 @@ export default function ManHomNay() {
             {[
               { nhan: t.homNay.khamPha.banDo, icon: IconBanDo, di: '/ban-do' as const },
               { nhan: t.homNay.khamPha.ketNoi, icon: IconKetNoi, di: '/(tabs)/ket-noi' as const },
+              { nhan: t.homNay.khamPha.chuDe, icon: IconCeles, di: '/luan-giai' as const },
               { nhan: t.homNay.khamPha.hoc, icon: IconSach, di: '/(tabs)/toi' as const },
             ].map((m) => (
               <The

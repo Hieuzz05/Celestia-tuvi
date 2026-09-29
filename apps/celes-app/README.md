@@ -13,6 +13,12 @@ npm run kiem-tra        # tsc --noEmit
 npx expo export --platform android --output-dir /tmp/kiem   # thử bundle
 ```
 
+Đăng nhập (mã 6 số qua email) cần `.env.local`: chép `.env.example` rồi điền URL
+và khoá **công khai** của Supabase — giống `NEXT_PUBLIC_SUPABASE_*` của web. Thiếu
+thì app vẫn chạy, chỉ ẩn mọi lối đăng nhập. Đổi `.env.local` phải khởi động lại
+`npx expo start -c`. Mẫu email "Confirm signup" và "Magic Link" trên Supabase phải
+chứa `{{ .Token }}`, không thì thư chỉ có link và người dùng không có mã để nhập.
+
 ## Điểm kiến trúc quan trọng nhất
 
 **App KHÔNG có bản sao engine an sao.** Nó đọc thẳng `lib/tuvi/` ở gốc kho mã qua
@@ -39,7 +45,7 @@ app/                    màn hình (expo-router)
   dang-tao.tsx          nhịp chờ có chủ đích trước khi hiện kết quả
   quick-read.tsx        giá trị đầu tiên, trước khi hỏi tài khoản
   dang-ky.tsx           đăng ký mềm, luôn có đường "Để sau"
-  ban-do.tsx            bản đồ: Dễ hiểu / Cổ điển / Chuyên sâu
+  ban-do.tsx            mệnh bàn đầy đủ như web, một phiên bản
   (tabs)/               5 tab: Hôm nay · Hành trình · Celes · Kết nối · Tôi
 src/
   thiet-ke/             token màu, chữ, khoảng cách, theme sáng/tối
@@ -53,8 +59,17 @@ src/
 1. **Đúng năm tab.** Không đưa "Luận giải chi tiết", "Hỏi đáp", "Hồ sơ", "Quản
    trị" lên điều hướng chính.
 2. **Mỗi màn đúng một nút hành động nổi trội.** Hồng Fuchsia chỉ dành cho nó.
-3. **Không thu nhỏ mệnh bàn 920px của web.** Chế độ Cổ điển dựng lưới riêng cho
-   di động, ô đủ lớn để chạm.
+3. **Mệnh bàn (`ban-do.tsx`) là MỘT phiên bản đầy đủ, không chia mức.** Quyết
+   định đổi 27/09/2026: bỏ Dễ hiểu/Cổ điển/Chuyên sâu, dựng lưới 4×4 riêng cho
+   di động (không copy CSS Grid 920px của web), vừa khít bề ngang màn hình,
+   không cuộn ngang. 28/09/2026: ô cung hiện ĐỦ nội dung như `PalaceCell` của
+   web — tứ hoá, toàn bộ phụ tinh + vòng sao chia hai cột cát/hung, tiểu hạn,
+   nguyệt hạn, tràng sinh, Tuần/Triệt trên biên, tam phương tứ chính khi chạm,
+   bảng giữa như `CenterPanel`, đổi năm xem, bật sao lưu năm. Chiều cao từng
+   hàng tính theo ô nhiều sao nhất (thà dài hơn một màn còn hơn cắt sao); chữ
+   sao tự co cho vừa cột thay vì gãy giữa tên. Cỡ chữ của lưới khai báo ngay
+   trong `ban-do.tsx`, không dùng ở màn khác. Màu: vạch ngũ hành theo địa chi
+   cung — KHÔNG tô theo hành của từng sao khi engine chưa có bảng đó.
 4. **Không hiện tên model, nhà cung cấp, hay từ "AI"** ở bất cứ đâu người dùng
    nhìn thấy. Lỗi thì nói bằng giọng Celes, không phải mã lỗi.
 5. **Không đoán giờ sinh.** Người chọn "Tôi không chắc" phải được giải thích vì

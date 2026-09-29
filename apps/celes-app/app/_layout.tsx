@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BanNhapProvider } from '@/du-lieu/ban-nhap';
 import { HoSoProvider } from '@/du-lieu/ho-so';
+import { TaiKhoanProvider } from '@/du-lieu/tai-khoan';
 import { NgonNguProvider } from '@/i18n/context';
 import { ThemeProvider, useTheme } from '@/thiet-ke/theme';
 
@@ -46,17 +47,19 @@ export default function VoNgoai() {
       <SafeAreaProvider>
         <ThemeProvider>
           <NgonNguProvider>
-            <HoSoProvider>
-              <BanNhapProvider>
-                <ThanhTrangThai />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    animation: 'slide_from_right',
-                  }}
-                />
-              </BanNhapProvider>
-            </HoSoProvider>
+            <TaiKhoanProvider>
+              <HoSoProvider>
+                <BanNhapProvider>
+                  <ThanhTrangThai />
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                    }}
+                  />
+                </BanNhapProvider>
+              </HoSoProvider>
+            </TaiKhoanProvider>
           </NgonNguProvider>
         </ThemeProvider>
       </SafeAreaProvider>
