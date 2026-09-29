@@ -1,23 +1,21 @@
-<!-- Dấu thương hiệu Celestia trên nền Midnight Indigo — biểu tượng tab trình duyệt.
-     Giữ đồng bộ với components/Logo.tsx: sửa nét ở đây thì sửa cả bên đó. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+<!-- Dấu thương hiệu Celestia trên nền #111126 — biểu tượng tab trình duyệt.
+     Dùng bản hình "nhỏ" (trăng dày, sao to) vì favicon hiện ở 16–32px.
+     Giữ đồng bộ với components/Logo.tsx: sửa hình ở đây thì sửa cả bên đó. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="67.5 146.0 732.0 732.0">
   <defs>
-    <linearGradient id="vang" x1="10" y1="9" x2="38" y2="39" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#EBD489" />
-      <stop offset="0.5" stop-color="#D4AF37" />
-      <stop offset="1" stop-color="#B08B24" />
+    <linearGradient id="trang" x1="312.5" y1="797" x2="671.6" y2="255.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9B6BFF" />
+      <stop offset="0.47" stop-color="#F6C38A" />
+      <stop offset="1" stop-color="#FFF1CC" />
     </linearGradient>
-    <linearGradient id="nen" x1="0" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0F172A" />
-      <stop offset="1" stop-color="#0A0E1A" />
-    </linearGradient>
+    <radialGradient id="sao">
+      <stop stop-color="#FFF8DD" />
+      <stop offset="0.55" stop-color="#FFF1CC" />
+      <stop offset="1" stop-color="#F6C38A" />
+    </radialGradient>
   </defs>
 
-  <rect width="48" height="48" rx="10" fill="url(#nen)" />
-
-  <g transform="translate(24 24) scale(0.74) translate(-24 -24)">
-    <path d="M15.4 13.7A15 15 0 1 0 32.6 13.7" stroke="url(#vang)" stroke-width="2.2" stroke-linecap="round" />
-    <path d="M24 8 27.1 16.8 36.4 17 29 22.6 31.6 31.5 24 26.2 16.4 31.5 19.1 22.6 11.6 17 20.9 16.8Z"
-      stroke="url(#vang)" stroke-width="2.2" stroke-linejoin="round" />
-  </g>
+  <rect x="67.5" y="146.0" width="732.0" height="732.0" rx="153.7" fill="#111126" />
+  <path d="M549.21 229.44A285 285 0 1 0 549.21 794.56A300 300 0 0 1 549.21 229.44Z" fill="url(#trang)" />
+  <path d="M535 407C558.1 488.9 558.1 488.9 640 512C558.1 535.1 558.1 535.1 535 617C511.9 535.1 511.9 535.1 430 512C511.9 488.9 511.9 488.9 535 407Z" fill="url(#sao)" />
 </svg>
