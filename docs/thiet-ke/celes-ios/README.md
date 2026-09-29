@@ -15,8 +15,12 @@ hai canvas không có bình luận, không có tệp tải lên. Phần còn l�
 
 ## Xem trên web (chia sẻ cho người khác)
 
-`aurora/index.html` là trang mục lục 17 màn, sinh cùng `gen.py`. Deploy tĩnh lên Vercel với
-Root Directory = `docs/thiet-ke/celes-ios/aurora`, Framework = Other (không có bước build).
+**https://celes-thiet-ke.vercel.app** — dự án Vercel `celes-thiet-ke` của tài khoản duyhieu24082000
+(không dính mail it-ba), công khai, ai có link cũng xem được.
+
+`aurora/index.html` là trang mục lục 16 màn, sinh cùng `gen.py`. Cập nhật sau khi sửa thiết kế:
+chép `index.html` + `project/*.dc.html` sang một thư mục trống rồi `npx vercel deploy --prod --name celes-thiet-ke`
+(không deploy thẳng từ repo để khỏi đẩy lên gen.py, shot.sh).
 
 ## Sửa và sinh lại `aurora/`
 
