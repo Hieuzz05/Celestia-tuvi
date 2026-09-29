@@ -343,7 +343,7 @@ body0 = f"""
 <div style="display: flex; flex-direction: column; gap: 10px">
 {eyebrow('Thành phần', MUTED)}
 <div style="display: flex; gap: 10px">
-<a href="Main.dc.html" style="{CTA}; flex-grow: 1">Bắt đầu {ic('arrow', 18, 2.2)}</a>
+<a href="Chao.dc.html" style="{CTA}; flex-grow: 1">Bắt đầu {ic('arrow', 18, 2.2)}</a>
 <button type="button" style="height: 56px; padding: 0 18px; border-radius: 14px; {GLASS}; color: {TEXT}; font-size: 15px; font-weight: 600">Để sau</button>
 </div>
 <div style="display: flex; gap: 8px; flex-wrap: wrap">
@@ -369,6 +369,120 @@ tiles = [("briefcase", "Công việc", True), ("coin", "Tiền bạc", True), ("
          ("sparkle", "Bản thân", False), ("leaf", "Sức khoẻ", False), ("sign", "Quyết định sắp tới", False), ("eye", "Hiểu mình hơn", False)]
 set_zone("khoidau")
 ZR = ZONES["khoidau"][3]
+
+# =====================================================================
+# 1 · Khởi đầu — màn chào và bốn bước lập lá số (thêm ở bản 8 để prototype đi được từ đầu)
+# =====================================================================
+def ob_head(n, back):
+    seg = "".join(
+        f'<div style="height: 5px; border-radius: 3px; background: {ACCENT}; box-shadow: 0 0 10px rgba({ZR},0.5)"></div>' if i < n
+        else '<div style="height: 5px; border-radius: 3px; background: rgba(255,255,255,0.10)"></div>' for i in range(5))
+    return (f'<div style="display: flex; align-items: center; gap: 12px">{icon_btn("back", "Quay lại", href=back)}'
+            f'<div aria-label="Bước {n} trên 5" style="flex-grow: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">{seg}</div>'
+            f'<span style="{MONO}; font-size: 12px; color: {MUTED}">{n}/5</span></div>')
+
+
+def ob_title(eb, h1, p):
+    return (f'<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px">{eyebrow(eb)}'
+            f'<h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 32px; line-height: 1.04; letter-spacing: -0.035em">{h1}</h1>'
+            f'<p style="margin: 0; font-size: 15px; line-height: 1.5; color: {MUTED}">{p}</p></div>')
+
+
+def ob_cta(label, href, note=""):
+    n = f'<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {MUTED}; text-align: center">{note}</p>' if note else ""
+    return (f'<div style="position: absolute; left: 20px; right: 20px; bottom: 34px; display: flex; flex-direction: column; gap: 12px">{n}'
+            f'<a href="{href}" style="{CTA}">{label} {ic("arrow", 18, 2.2)}</a></div>')
+
+
+def wheel(cols):
+    # bánh xe chọn kiểu iOS: mỗi cột (nhãn, [giá trị], chỉ số đang chọn)
+    out = []
+    for lab, vals, k in cols:
+        rows = []
+        for i, v in enumerate(vals):
+            d = abs(i - k)
+            op = [1, 0.42, 0.18][min(d, 2)]
+            fs = [24, 19, 16][min(d, 2)]
+            wt = 700 if d == 0 else 500
+            rows.append(f'<span style="height: 44px; display: flex; align-items: center; justify-content: center; {DISPLAY}; font-size: {fs}px; font-weight: {wt}; opacity: {op}">{v}</span>')
+        out.append(f'<div style="display: flex; flex-direction: column; align-items: stretch"><span style="{EYEBROW}; font-size: 11px; color: {MUTED}; text-align: center; margin-bottom: 6px">{lab}</span>{"".join(rows)}</div>')
+    band = f'<div aria-hidden="true" style="position: absolute; left: 10px; right: 10px; top: {27 + 44 * 2}px; height: 44px; border-radius: 12px; background: rgba({ZR},0.10); box-shadow: inset 0 0 0 1px rgba({ZR},0.35)"></div>'
+    return (f'<div style="position: relative; border-radius: 20px; padding: 10px 8px 12px; {GLASS}">{band}'
+            f'<div style="position: relative; display: grid; grid-template-columns: repeat({len(cols)}, minmax(0, 1fr))">{"".join(out)}</div></div>')
+
+
+# màn chào
+body_chao = f"""
+<div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; margin-top: -60px">
+<span style="border-radius: 999px; box-shadow: 0 0 90px rgba({ZR},0.35)">{orb(116)}</span>
+<div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+{eyebrow('Celestia')}
+<h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.04em">Chào bạn,<br>mình là <span style="{GRADTEXT}">Celes</span>.</h1>
+<p style="margin: 0; max-width: 300px; font-size: 16px; line-height: 1.5; color: {MUTED}">Mình đọc lá số tử vi của bạn, rồi cùng bạn nghĩ về công việc, tình cảm và những quyết định sắp tới.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px">
+{''.join(f'<div style="display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 14px; border-radius: 14px; {GLASS}; text-align: left"><span style="color: {ACCENT}; display: flex">{ic(i, 18, 2)}</span><span style="font-size: 14px; font-weight: 500">{t}</span></div>' for i, t in [('clock', 'Hai phút để lập lá số'), ('sparkle', 'Chỉ cần tên, ngày và giờ sinh'), ('compass', 'Gợi ý để bạn tự quyết, không phán số')])}
+</div>
+</div>
+<div style="position: absolute; left: 20px; right: 20px; bottom: 34px; display: flex; flex-direction: column; gap: 6px">
+<a href="OnbTen.dc.html" style="{CTA}">Bắt đầu {ic('arrow', 18, 2.2)}</a>
+<a href="HomNay.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; color: {MUTED}; text-decoration: none">Tôi đã có tài khoản</a>
+</div>
+"""
+page("Chao.dc.html", "Chào bạn, mình là Celes", body_chao, gap=14)
+
+# bước 1 — tên
+body_ten = f"""
+{ob_head(1, 'Chao.dc.html')}
+{ob_title('Làm quen', f'Celes nên <span style="{GRADTEXT}">gọi bạn</span> là gì?', 'Tên thân mật là đủ, không cần họ tên đầy đủ.')}
+<label style="display: flex; align-items: center; gap: 10px; height: 60px; border-radius: 14px; background: #141117; border: 1px solid rgba({ZR},0.6); box-shadow: 0 0 0 4px rgba({ZR},0.10); padding: 0 16px">
+<span style="{DISPLAY}; font-size: 22px; font-weight: 700; flex-grow: 1">Minh<span style="display: inline-block; width: 2px; height: 24px; margin-left: 2px; vertical-align: -4px; background: {ACCENT}; animation: celes-nhip 1s steps(2) infinite"></span></span>
+{ic('check', 20, 2.4, ACCENT)}
+</label>
+{ob_cta('Tiếp tục', 'OnbGioiTinh.dc.html')}
+"""
+page("OnbTen.dc.html", "Bước 1 — Tên", body_ten, gap=14)
+
+# bước 2 — giới tính
+def gt_tile(lab, on):
+    st = (f"border: 1px solid rgba({ZR},0.55); background: linear-gradient(160deg, rgba({ZR},0.16), rgba({ZR},0.05)), #141117" if on else GLASS)
+    chk = (f'<span style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 999px; background: {ACCENT}; color: #2A1405; display: flex; align-items: center; justify-content: center">{ic("check", 13, 3)}</span>' if on else "")
+    return (f'<button type="button" aria-pressed="{"true" if on else "false"}" style="position: relative; height: 120px; border-radius: 20px; {st}; color: {TEXT}; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 4px; padding: 16px">{chk}'
+            f'<span style="{DISPLAY}; font-size: 24px; font-weight: 800">{lab}</span></button>')
+body_gt = f"""
+{ob_head(2, 'OnbTen.dc.html')}
+{ob_title('Minh ơi', f'Bạn là <span style="{GRADTEXT}">nam hay nữ</span>?', 'Lá số cần điều này để tính các giai đoạn trong đời bạn theo đúng chiều.')}
+<div role="group" aria-label="Giới tính" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">{gt_tile('Nam', True)}{gt_tile('Nữ', False)}</div>
+{ob_cta('Tiếp tục', 'OnbNgay.dc.html')}
+"""
+page("OnbGioiTinh.dc.html", "Bước 2 — Giới tính", body_gt, gap=14)
+
+# bước 3 — ngày sinh
+seg_lich = (f'<div role="tablist" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; {GLASS}">'
+            f'<button type="button" role="tab" aria-selected="true" style="height: 40px; border-radius: 10px; border: none; {zone_on()}; font-size: 15px; font-weight: 700">Dương lịch</button>'
+            f'<button type="button" role="tab" aria-selected="false" style="height: 40px; border-radius: 10px; border: none; background: transparent; color: {MUTED}; font-size: 15px; font-weight: 500">Âm lịch</button></div>')
+body_ngay = f"""
+{ob_head(3, 'OnbGioiTinh.dc.html')}
+{ob_title('Ngày sinh', f'Minh sinh <span style="{GRADTEXT}">ngày nào</span>?', 'Chọn theo lịch bạn nhớ rõ nhất. Celes tự quy đổi sang lịch còn lại.')}
+{seg_lich}
+{wheel([('Ngày', ['12', '13', '14', '15', '16'], 2), ('Tháng', ['04', '05', '06', '07', '08'], 2), ('Năm', ['1988', '1989', '1990', '1991', '1992'], 2)])}
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: {MUTED}">{ic('moon', 16, 2, ACCENT)}Âm lịch: 22 tháng Năm, Canh Ngọ</div>
+{ob_cta('Tiếp tục', 'OnbGio.dc.html')}
+"""
+page("OnbNgay.dc.html", "Bước 3 — Ngày sinh", body_ngay, gap=14)
+
+# bước 4 — giờ sinh
+body_gio = f"""
+{ob_head(4, 'OnbNgay.dc.html')}
+{ob_title('Giờ sinh', f'Bạn sinh <span style="{GRADTEXT}">lúc mấy giờ</span>?', 'Giờ sinh quyết định vị trí các cung. Hỏi người nhà hoặc xem giấy chứng sinh nếu có.')}
+{wheel([('Giờ', ['05', '06', '07', '08', '09'], 2), ('Phút', ['20', '25', '30', '35', '40'], 2)])}
+<div style="display: flex; align-items: center; gap: 10px"><span style="height: 32px; padding: 0 12px; border-radius: 999px; {zone_on()}; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700">{ic('clock', 14, 2.2)}Giờ Thìn · 7:00–8:59</span></div>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; {GLASS}; color: {TEXT}; text-decoration: none">
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 15px; font-weight: 600">Tôi không nhớ giờ sinh</span><span style="font-size: 13px; line-height: 1.4; color: {MUTED}">Celes vẫn đọc được phần lớn và đánh dấu chỗ nào còn phụ thuộc giờ.</span></span>{ic('chev', 18, 2)}</a>
+{ob_cta('Tiếp tục', 'Main.dc.html')}
+"""
+page("OnbGio.dc.html", "Bước 4 — Giờ sinh", body_gio, gap=14)
+
 tl = []
 for icn, lab, on in tiles:
     if on:
@@ -385,7 +499,7 @@ for icn, lab, on in tiles:
 seg = "".join(f'<div style="height: 5px; border-radius: 3px; background: {ACCENT}; box-shadow: 0 0 10px rgba({ZR},0.5)"></div>' for _ in range(5))
 body1 = f"""
 <div style="display: flex; align-items: center; gap: 12px">
-{icon_btn('back', 'Quay lại')}
+{icon_btn('back', 'Quay lại', href='OnbGio.dc.html')}
 <div aria-label="Bước 5 trên 5" style="flex-grow: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">{seg}</div>
 <span style="{MONO}; font-size: 12px; color: {MUTED}">5/5</span>
 </div>
@@ -1087,11 +1201,12 @@ page("BaiDoc.dc.html", "Chuyên sâu — Sự nghiệp", body_bd, gap=14)
 # =====================================================================
 # canvas.json
 # =====================================================================
-X = [0, 470, 940, 1410, 1880, 2350]
+X = [0, 470, 940, 1410, 1880, 2350, 2820, 3290]
 ROWY = [300, 1544, 2788, 4032, 5276]
 boards = {}
 layout = [
-    [("HeThong.dc.html", "0 · Hệ thiết kế Celes Aurora"), ("Main.dc.html", "1a · Điều bạn đang bận tâm"), ("QuickRead.dc.html", "1b · Ba điều Celes thấy ở bạn")],
+    [("HeThong.dc.html", "0 · Hệ thiết kế Celes Aurora"), ("Chao.dc.html", "1 · Chào"), ("OnbTen.dc.html", "1.1 · Tên"), ("OnbGioiTinh.dc.html", "1.2 · Giới tính"),
+     ("OnbNgay.dc.html", "1.3 · Ngày sinh"), ("OnbGio.dc.html", "1.4 · Giờ sinh"), ("Main.dc.html", "1a · Điều bạn đang bận tâm"), ("QuickRead.dc.html", "1b · Ba điều Celes thấy ở bạn")],
     [("HomNay.dc.html", "2a · Hôm nay"), ("Celes.dc.html", "2b · Trò chuyện với Celes"), ("HanhTrinh.dc.html", "2c · Hành trình")],
     [("MoiQuanHe.dc.html", "3a · Mối quan hệ"), ("Toi.dc.html", "3b · Tài khoản (chạm avatar)")],
     [("LaSo.dc.html", "4a · Lá số 12 cung"), ("CungChiTiet.dc.html", "4b · Chạm một cung"), ("TongQuan.dc.html", "4c · Tổng quan (đọc cả lá số)"),
@@ -1128,7 +1243,7 @@ notes = {
   "• Chữ gradient đổi sang fuchsia → cam đậm để đủ tương phản trên nền sáng; chữ nhấn dùng #B8157F thay #FF8BD0.\n"
   "• Trạng thái: xanh đậm / cam đậm trên nền nhạt (thay vì chữ sáng trên nền tối).\n\n"
   "Bấm Play ở 5a: thanh tab dẫn sang Lá số bản sáng. Các màn khác sẽ sinh bản sáng tự động từ cùng bộ token khi code."},
- "n1": {"fill": "purple", "maxH": 844, "w": 420, "x": 1410, "y": 300, "text":
+ "n1": {"fill": "purple", "maxH": 844, "w": 420, "x": 3760, "y": 300, "text":
   "Celes Aurora bản 8 — nền gần đen, mỗi luồng một vùng màu\n\n"
   "• Vì sao đổi (góp ý senior UI/UX 29/09): bản 7 nền tím #1A001E quá sáng cho chế độ tối, và mọi luồng cùng một nền nên người dùng không biết mình đang ở đâu — onboarding xong vào app nền vẫn y như cũ.\n"
   "• Nền: #0B0A0D gần đen, thẻ kính tối viền trắng 7–8%. Màu chỉ còn ở một quầng sáng mờ nơi góc màn và ở chỗ cần nhấn.\n"
@@ -1198,13 +1313,15 @@ h2{{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;
 .khung iframe{{width:390px;height:844px;border:0;transform:scale(.5);transform-origin:0 0;pointer-events:none}}
 .o:hover .khung,.o:focus-visible .khung{{border-color:#FF8BD0}}
 .nhan{{font-size:14px;font-weight:500;line-height:1.4}}
+.proto{{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border-radius:8px;background:#D32298;color:#fff;font-weight:600;font-size:15px;text-decoration:none;margin:8px 0 4px}}
 @media (max-width:640px){{.luoi{{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}}.khung{{width:100%;height:auto;aspect-ratio:390/844}}.khung iframe{{position:absolute;left:0;top:0}}}}
 </style>
 </head>
 <body>
 <main>
 <h1>Celes — thiết kế app iOS</h1>
-<p class="dan">Bản 8 · 29/09/2026 — nền gần đen, mỗi luồng một vùng màu. Chạm một màn để mở cỡ thật; trong màn, thanh tab và các nút đều bấm được như app. Dùng nút quay lại của trình duyệt để về mục lục. Xem đẹp nhất trên điện thoại.</p>
+<p class="dan">Bản 8 · 29/09/2026 — nền gần đen, mỗi luồng một vùng màu. Muốn đi thử cả luồng như app thật, mở prototype. Chạm một màn bên dưới để xem riêng màn đó ở cỡ thật. Dùng nút quay lại của trình duyệt để về mục lục. Xem đẹp nhất trên điện thoại.</p>
+<p><a class="proto" href="prototype.html">Bấm thử luồng app (prototype) →</a></p>
 <p class="dan">Dữ liệu trong thiết kế là dữ liệu mẫu.</p>
 {''.join(the)}
 </main>
