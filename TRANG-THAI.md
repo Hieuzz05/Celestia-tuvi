@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Thay logo mới (trăng khuyết + sao bốn cánh, bảng màu đào–tím) trên web và app | `viec/logo-2909` | `components/Logo.tsx`, `app/icon.svg`, `app/favicon.ico`, `app/apple-icon.png`, `app/opengraph-image.png`, `apps/celes-app/src/giao-dien/icon.tsx`, `apps/celes-app/assets/*`, `apps/celes-app/app.json` | 29/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -30,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| Logo mới (trăng khuyết + sao bốn cánh) trên web và app, màn Chào bản thiết kế iOS dùng dấu mới; gộp kèm bản thiết kế iOS bản 8 | `ff0fef3` (gộp `viec/logo-2909`) | 29/09/2026 |
 | Gộp `viec/app-gd1` (CEL-154..163) + `viec/thiet-ke-app-ios` (bản thiết kế iOS trong `docs/thiet-ke/celes-ios/`) vào main, production chạy `7989d76`. Backlog: logic app đánh số lại L19..L25 vì main đã dùng L18. Còn chờ chủ dự án: SMTP riêng trên Supabase để sửa mẫu email có `{{ .Token }}` | `7989d76` | 29/09/2026 |
 | CEL-164..168 cứng hoá production: test engine tự đối chiếu + 60 mẫu đóng băng, chặn ngày không có thật (form + 11 route), admin đóng khi ADMIN_EMAILS rỗng trên production, trang lỗi/not-found, giới hạn tốc độ route AI trong `proxy.ts`, CI GitHub Actions. Đã gộp main | `aa51751`, `da9c0ce` | 28/09/2026 |
 | CEL-163 app di động: tab Mối quan hệ so hai lá số thật — chọn người trong Người của tôi, chọn ý định + câu hỏi, gọi `/api/hop-tuoi`; kết luận trước, bảng kỹ thuật sau, không điểm tổng; chưa ủng hộ thì thẻ khoá không nút mua. Nhánh `viec/app-gd1`, đã gộp main 29/09 (`7989d76`) | `6293adb` | 28/09/2026 |
