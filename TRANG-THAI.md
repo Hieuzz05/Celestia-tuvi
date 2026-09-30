@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Luận giải v3: sửa mâu thuẫn prompt, khung 9 chủ đề trung tính giới, trạng thái duyên, chống lặp, trang quản trị "Cấu hình luận giải", bối cảnh người dùng | viec/luan-giai-tinh-gon | lib/rag/v3/**, app/admin/luan-giai, app/api/admin/cau-hinh, app/luan-giai/sau, components/luangiai, lib/i18n, apps/celes-app (màn luận giải) | 30/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -30,6 +29,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| CEL-170..175 luận giải v3 thế hệ đệm 8 (mọi lá số viết lại khi mở lần đầu): sửa mâu thuẫn, khung Tình duyên / Con cái trung tính giới, trạng thái duyên, tách dữ kiện / nguồn; nút "Viết lại (quản trị)"; trang `/admin/luan-giai` chỉnh độ dài; Hỏi Celes đọc sổ kết luận bài v3; chip bối cảnh người đọc + mục ở /ho-so; `dung-thu-vien.ts --chu-de --dem`. **Chờ chủ dự án:** chạy `supabase/va-boi-canh-la-so.sql`; duyệt tiêu ~905 lượt model để dựng thư viện 7 chủ đề còn lại | `e75ebe0` (gộp `viec/luan-giai-tinh-gon`) | 30/09/2026 |
 | CEL-169 app di động theo Aurora bản 8: 21 màn, thanh tab nổi, tab Lá số (Lá số / Tổng quan / Chuyên sâu / Mạnh–yếu radar) thay tab Tài khoản (nay mở từ ảnh đại diện, có chọn Tối/Sáng/Theo máy), font riêng của app. Web chưa đổi. Chưa soát bằng mắt trên máy thật | `ec4a8bf` (gộp `viec/app-aurora`) | 29/09/2026 |
 | Logo mới (trăng khuyết + sao bốn cánh) trên web và app, màn Chào bản thiết kế iOS dùng dấu mới; gộp kèm bản thiết kế iOS bản 8 | `ff0fef3` (gộp `viec/logo-2909`) | 29/09/2026 |
 | Gộp `viec/app-gd1` (CEL-154..163) + `viec/thiet-ke-app-ios` (bản thiết kế iOS trong `docs/thiet-ke/celes-ios/`) vào main, production chạy `7989d76`. Backlog: logic app đánh số lại L19..L25 vì main đã dùng L18. Còn chờ chủ dự án: SMTP riêng trên Supabase để sửa mẫu email có `{{ .Token }}` | `7989d76` | 29/09/2026 |
