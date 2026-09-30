@@ -1,14 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  LUA_CHON,
-  TRUONG_THEO_CHU_DE,
-  canHoiXungHo,
-  tomTatBoiCanh,
-  type BoiCanhDoc,
-  type TruongBoiCanh,
-} from '@/lib/rag/v3/boi-canh-doc';
+import { LUA_CHON, TRUONG_THEO_CHU_DE, canHoiXungHo, type BoiCanhDoc, type TruongBoiCanh } from '@/lib/rag/v3/boi-canh-doc';
+import { dien, useT } from '@/lib/i18n/context';
 
 /**
  * HỎI BỐI CẢNH (30/09/2026) — lần đầu mở Tình duyên / Con cái / Sự nghiệp, Celes hỏi vài chip
@@ -28,18 +22,23 @@ export function HoiBoiCanh({
   gon?: boolean;
   onXong: (bc: BoiCanhDoc) => void;
 }) {
+  const tt = useT().boiCanh;
+  const tenChon = (id: string) => (tt.chon as Record<string, string>)[id] ?? id;
   const [nhap, setNhap] = useState<BoiCanhDoc>(boiCanh);
   const [mo, setMo] = useState(!gon);
   const truong = (TRUONG_THEO_CHU_DE[chuDe] ?? []).filter((t) => t !== 'xungHo' || canHoiXungHo(nhap));
   if (!truong.length) return null;
 
   if (!mo) {
-    const tt = tomTatBoiCanh(boiCanh, chuDe);
+    const tom = (TRUONG_THEO_CHU_DE[chuDe] ?? [])
+      .filter((t) => boiCanh[t] && (t !== 'xungHo' || canHoiXungHo(boiCanh)))
+      .map((t) => (t === 'xungHo' ? dien(tt.goiLa, { ten: tenChon(boiCanh[t]!).toLowerCase() }) : tenChon(boiCanh[t]!)))
+      .join(' · ');
     return (
       <p className="caption flex flex-wrap items-center gap-[8px]">
-        <span>Celes đang viết theo hoàn cảnh: {tt || 'bạn chưa kể'}</span>
+        <span>{dien(tt.dangViet, { tt: tom || tt.chuaKe })}</span>
         <button type="button" className="link-text" onClick={() => { setNhap(boiCanh); setMo(true); }}>
-          Đổi
+          {tt.doi}
         </button>
       </p>
     );
@@ -62,16 +61,15 @@ export function HoiBoiCanh({
     <section className="card flex flex-col gap-[16px]" aria-labelledby="hoi-boi-canh">
       <div className="flex flex-col gap-[4px]">
         <h2 id="hoi-boi-canh" className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
-          Trước khi Celes viết
+          {tt.tieuDe}
         </h2>
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Cho Celes biết hoàn cảnh hiện tại để bài nói đúng chỗ bạn đang đứng. Lá số không đổi theo câu trả lời — chỉ
-          cách Celes nói với bạn đổi.
+          {tt.moTa}
         </p>
       </div>
       {truong.map((t) => (
         <fieldset key={t} className="flex flex-col gap-[8px]">
-          <legend className="caption mb-[8px]">{LUA_CHON[t].hoi}</legend>
+          <legend className="caption mb-[8px]">{tt.hoi[t]}</legend>
           <div className="flex flex-wrap gap-[8px]">
             {LUA_CHON[t].chon.map((c) => {
               const dang = nhap[t] === c.id;
@@ -89,7 +87,7 @@ export function HoiBoiCanh({
                     fontWeight: dang ? 600 : 400,
                   }}
                 >
-                  {c.ten}
+                  {tenChon(c.id)}
                 </button>
               );
             })}
@@ -98,10 +96,10 @@ export function HoiBoiCanh({
       ))}
       <div className="flex flex-wrap items-center gap-[12px]">
         <button type="button" className="btn-primary" disabled={!du} onClick={() => xong(nhap)}>
-          Đọc tiếp
+          {tt.docTiep}
         </button>
         <button type="button" className="btn-outline" onClick={boQua}>
-          Bỏ qua
+          {tt.boQua}
         </button>
       </div>
     </section>

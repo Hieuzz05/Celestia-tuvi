@@ -119,13 +119,3 @@ export function khoiBoiCanh(bc: BoiCanhDoc, chuDe: string): string {
     .join('\n');
 }
 
-/** Một dòng tóm tắt cho người đọc: "Đã kết hôn · gọi là vợ" */
-export function tomTatBoiCanh(bc: BoiCanhDoc, chuDe: string): string {
-  return (TRUONG_THEO_CHU_DE[chuDe] ?? [])
-    .filter((t) => bc[t] && (t !== 'xungHo' || canHoiXungHo(bc)))
-    .map((t) => {
-      const ten = LUA_CHON[t].chon.find((c) => c.id === bc[t])?.ten ?? '';
-      return t === 'xungHo' ? `gọi là “${ten.toLowerCase()}”` : ten;
-    })
-    .join(' · ');
-}
