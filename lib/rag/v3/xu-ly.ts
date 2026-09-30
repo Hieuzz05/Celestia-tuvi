@@ -70,6 +70,14 @@ const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
  */
 export const THU_VIEN_THEO_CHU_DE: Record<string, { dot: string; cau: string[] }> = {
   'su-nghiep': { dot: 'sn-2,sn-2b', cau: ['SN01', 'SN02', 'SN04', 'SN05'] },
+  // BẬT 01/10/2026 theo chủ dự án — đợt lượt 1 mỗi chủ đề, chỉ các câu không hỏi thời điểm
+  'tinh-duyen': { dot: 'td-1', cau: ['TD01', 'TD03'] },
+  'con-cai': { dot: 'cc-1', cau: ['CC02', 'CC03'] },
+  'tien-bac': { dot: 'tb-1', cau: ['TB01', 'TB02', 'TB04'] },
+  'gia-dinh': { dot: 'gd-1', cau: ['GD01', 'GD02'] },
+  'suc-khoe': { dot: 'sk-1', cau: ['SK01'] },
+  'ra-ngoai': { dot: 'rn-1', cau: ['RN02'] },
+  'tinh-cach': { dot: 'tc-1', cau: ['TC02', 'TC03'] },
 };
 export const CAU_THU_VIEN = new Set<string>(Object.values(THU_VIEN_THEO_CHU_DE).flatMap((t) => t.cau));
 const dotCuaCau = (id: string) => Object.values(THU_VIEN_THEO_CHU_DE).find((t) => t.cau.includes(id))?.dot;
