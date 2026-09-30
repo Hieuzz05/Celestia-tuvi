@@ -13,6 +13,7 @@ import {
 import { dien, useT } from '@/lib/i18n/context';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
+import { BoiCanhHoSo } from '@/components/luangiai/BoiCanhHoSo';
 
 /**
  * Danh sách lá số (trước đây gọi là "Người của tôi").
@@ -170,6 +171,7 @@ export default function TrangDanhSachLaSo() {
                   {t.danhSach.xoa}
                 </NutVien>
               </div>
+              <BoiCanhHoSo laSo={h} />
             </div>
           );
         })}

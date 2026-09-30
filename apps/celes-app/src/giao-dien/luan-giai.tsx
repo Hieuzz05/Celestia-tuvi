@@ -129,7 +129,7 @@ export function useBaiLuan(nhom: string) {
 
 /* ============================================================== Giao diện */
 
-/** Icon của 14 chủ đề — theo bảng chủ đề của Aurora bản 8 */
+/** Icon của 9 chủ đề — theo bảng chủ đề của Aurora bản 8 */
 export const ICON_CHU_DE: Record<string, TenIcon> = {
   'tinh-cach': 'sparkle',
   'su-nghiep': 'briefcase',
@@ -137,13 +137,8 @@ export const ICON_CHU_DE: Record<string, TenIcon> = {
   'tinh-duyen': 'heart',
   'con-cai': 'baby',
   'gia-dinh': 'tree',
-  'anh-em': 'users',
-  'quy-nhan': 'rel',
-  'phuc-duc': 'moon',
   'suc-khoe': 'leaf',
-  'nha-cua': 'home',
   'ra-ngoai': 'compass',
-  'hoc-van': 'cap',
   'van-han': 'path',
 };
 

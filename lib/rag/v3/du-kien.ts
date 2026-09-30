@@ -12,6 +12,7 @@ import { TU_HOA } from '@/lib/tuvi/constants';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
+import { dongTrangThaiDuyen } from './trang-thai-duyen';
 
 /**
  * DỮ KIỆN CHO MỘT CÂU HỎI v3 — engine đọc lá số theo ma trận cung.
@@ -24,7 +25,7 @@ import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.7';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.8';
 
 export interface DuKienV3 {
   id: string;
@@ -218,10 +219,8 @@ function tenSao(s: { ten: string; doSang?: string | null }): string {
  * "tôi hợp nghề gì". Người đọc đi hết một chủ đề thấy cùng một mốc năm lần.
  */
 export function hoiThoiDiem(q: CauHoiV3): boolean {
-  return (
-    q.van.length > 0 ||
-    /khi nào|giai đoạn|sớm hay muộn|năm nào|năm nay|tuổi|đỉnh|lộ trình|mốc|về già|tuổi già/i.test(`${q.cauHoi} ${q.nhanDuoc}`)
-  );
+  // 30/09/2026: đọc trường thoiDiem của khung thay cho regex trên câu chữ (regex bắt nhầm "đỉnh", "tuổi" trong phần mô tả)
+  return q.thoiDiem !== 'khong';
 }
 
 function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true, gon = false): { noiDung: string; sao: string[] } {
@@ -409,6 +408,12 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     if (q.loai === 'chuyen-sau' && cc.cung !== cd?.cungChinh && !cachCucHopChuDe(cc.ten, q.chuDe)) continue;
     void vaiCung;
     them('cách cục', `Cách cục ${cc.ten} (tại ${cc.cung}). ${cc.dieuKien}`, [...cc.sao], cc.cung);
+  }
+
+  // Duyên sớm / muộn / mỏng — engine gộp luật sách (trang-thai-duyen.ts), để mọi lượt cùng một kết luận
+  if (q.chuDe === 'tinh-duyen' || q.id === 'TQ07') {
+    const d = dongTrangThaiDuyen(laSo);
+    if (d) them('trạng thái duyên (engine tổng hợp theo luật sách)', d.noiDung, d.sao, 'Phu Thê');
   }
 
   // Lớp vận

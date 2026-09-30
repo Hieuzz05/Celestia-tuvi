@@ -13,6 +13,10 @@ import { ghiSuKien } from '@/lib/analytics';
 import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
 import { QuayLai } from '@/components/QuayLai';
 import { XuatLuanGiai, type BaiDaDoc } from '@/components/luangiai/XuatLuanGiai';
+import { VietLaiQuanTri } from '@/components/luangiai/VietLaiQuanTri';
+import { HoiBoiCanh } from '@/components/luangiai/HoiBoiCanh';
+import { TRUONG_THEO_CHU_DE, conThieu, khoaBoiCanh, type BoiCanhDoc } from '@/lib/rag/v3/boi-canh-doc';
+import { docBoiCanhDoc, luuBoiCanhDoc } from '@/lib/store/boi-canh-doc';
 
 /**
  * LUẬN GIẢI CHUYÊN SÂU v3 (CEL-119) — 14 chủ đề, 61 câu hỏi.
@@ -45,20 +49,15 @@ const DAN_CHU_DE: Record<string, string> = {
   'tinh-duyen': 'Bạn yêu theo kiểu nào, dễ gặp người ra sao, và điều gì quyết định một cuộc hôn nhân bền với bạn?',
   'con-cai': 'Duyên con cái đến sớm hay muộn, và quan hệ giữa bạn với con thay đổi thế nào theo năm tháng?',
   'gia-dinh': 'Gia đình gốc là nền tựa hay là phần bạn phải tự gánh — và nó theo bạn tới đâu?',
-  'anh-em': 'Anh chị em có dựa được vào nhau không, và chuyện tiền bạc, tài sản chung nên đặt thế nào?',
-  'quy-nhan': 'Ai là người thường nâng bạn lên, và kiểu người nào dễ kéo bạn vào rắc rối?',
-  'phuc-duc': 'Khi gặp chuyện khó, bạn có hay tìm được đường thoát — và càng về sau đời có nhẹ đi không?',
   'suc-khoe': 'Thể trạng của bạn bền đến đâu, vùng nào đáng để ý hơn, và giai đoạn nào cần giữ sức hơn?',
-  'nha-cua': 'Bạn có duyên tạo dựng nhà cửa không, nhà đến từ đâu, và khi nào mới an cư?',
   'ra-ngoai': 'Ra ngoài, đi xa có làm vận của bạn sáng hơn không — hay chỗ quen mới là chỗ bạn đứng vững?',
-  'hoc-van': 'Học hành, thi cử và bằng cấp có phải thứ quyết định con đường của bạn không?',
   'van-han': 'Đời bạn lên xuống theo những chặng nào, bạn đang đứng ở đâu, và vài năm tới đang dẫn tới đâu?',
 };
 
 /** `tomLai`: phần ghép các câu thành một câu chuyện — `dangTom` khi đang viết */
 type TrangThai =
   | { dang: true }
-  | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean; banMoi?: boolean };
+  | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean; banMoi?: boolean; vietLaiHong?: string[] };
 
 function TrangSau() {
   const { duocVao, dangDoc } = useTaiKhoan();
@@ -84,6 +83,15 @@ function TrangSau() {
   });
   const [bai, setBai] = useState<Record<string, TrangThai>>({});
   const [lanBucTranh, setLanBucTranh] = useState(0);
+  // Bức tranh lớn, quản trị viết lại: key đổi thì component tải lại, lần này mang vietLai.
+  // Đếm số lần bấm + lanBucTranh lúc bấm: mở lại bức tranh sau khi đọc thêm chủ đề thì không viết lại cưỡng bức nữa
+  const [bucVietLai, setBucVietLai] = useState({ lan: 0, tai: -1 });
+  // Bối cảnh người đọc của lá số này (boi-canh-doc.ts); null = đang đọc từ trình duyệt / tài khoản
+  const [boiCanh, setBoiCanh] = useState<BoiCanhDoc | null>(null);
+  useEffect(() => {
+    if (!coLaSo) return;
+    docBoiCanhDoc({ ngay, thang, nam, gio, gioiTinh }).then(setBoiCanh);
+  }, [coLaSo, ngay, thang, nam, gio, gioiTinh]);
 
   // Điện thoại: mục lục là hàng chip cuộn ngang — mở thẳng một chủ đề ở cuối
   // danh sách (từ Bản đồ mạnh–yếu) thì chip đang chọn phải cuộn vào tầm nhìn.
@@ -101,11 +109,16 @@ function TrangSau() {
   const [daGui] = useState(() => new Set<string>());
   // Chủ đề người đọc vừa bấm "Tạo bản mới" — lượt gửi kế tiếp mang taoMoi
   const [lamMoi] = useState(() => new Set<string>());
+  // Chủ đề quản trị vừa bấm "Viết lại (quản trị)" — lượt gửi kế tiếp mang vietLai (bỏ qua đệm)
+  const [vietLaiCho] = useState(() => new Set<string>());
   useEffect(() => {
     if (chon === BUC_TRANH || !duocVao || !coLaSo || bai[chon] || daGui.has(chon)) return;
+    // Chủ đề có hỏi bối cảnh: chờ đọc xong bối cảnh, và chờ người đọc trả lời (hoặc bỏ qua) trước khi viết
+    if (TRUONG_THEO_CHU_DE[chon] && (!boiCanh || conThieu(boiCanh, chon).length)) return;
     daGui.add(chon);
     const chuDe = chon;
     const taoMoi = lamMoi.delete(chuDe);
+    const vietLai = vietLaiCho.delete(chuDe);
     ghiSuKien('deep_read_cta', { viTri: 'chuyen-sau-v3', chuDe });
     /*
      * HAI LƯỢT NỐI TIẾP (25/09/2026): nửa đầu các câu của chủ đề, rồi nửa sau.
@@ -120,7 +133,7 @@ function TrangSau() {
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi, taoMoi }),
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi, taoMoi, vietLai, boiCanh }),
       }).then(async (res) => ({ ok: res.ok, d: await res.json() }));
     const loiMang = 'Không kết nối được. Thử lại sau ít phút.';
     // Đủ các câu rồi mới xin phần "Tóm lại" — route không viết tóm lại từ bài dở dang
@@ -128,7 +141,7 @@ function TrangSau() {
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, tomLai: true, taoMoi }),
+        body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, tomLai: true, taoMoi, vietLai, boiCanh }),
       })
         .then((r) => r.json())
         .then((d) => d?.tomLai ?? null)
@@ -145,7 +158,7 @@ function TrangSau() {
         setBai((cu) => ({
           ...cu,
           [chuDe]: ok
-            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0, banMoi: Boolean(d.banMoi) }
+            ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0, banMoi: Boolean(d.banMoi), vietLaiHong: d.vietLaiHong }
             : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
         }));
         if (ok && !conLai.length) return layTomLai();
@@ -162,6 +175,7 @@ function TrangSau() {
                 loi: ok2 ? undefined : d2?.loi ?? 'Celes chưa viết xong phần còn lại.',
                 dangTom: ok2,
                 banMoi: Boolean((truoc && !truoc.dang && truoc.banMoi) || d2?.banMoi),
+                vietLaiHong: [...((truoc && !truoc.dang && truoc.vietLaiHong) || []), ...(d2?.vietLaiHong ?? [])],
               },
             };
           });
@@ -176,7 +190,7 @@ function TrangSau() {
           return { ...cu, [chuDe]: { dang: false, cau: null, loi: loiMang } };
         });
       });
-  }, [duocVao, coLaSo, chon, bai, daGui, lamMoi, ngay, thang, nam, gio, gioiTinh, namXem]);
+  }, [duocVao, coLaSo, chon, bai, daGui, lamMoi, vietLaiCho, boiCanh, ngay, thang, nam, gio, gioiTinh, namXem]);
 
   if (dangDoc) {
     return (
@@ -261,6 +275,29 @@ function TrangSau() {
       return moi;
     });
   };
+  const vietLaiQuanTri = () => {
+    vietLaiCho.add(chon);
+    daGui.delete(chon);
+    setBai((cu) => {
+      const moi = { ...cu };
+      delete moi[chon];
+      return moi;
+    });
+  };
+  // Đổi bối cảnh: chủ đề nào có khoá đệm đổi theo thì bỏ bài đang hiện, lượt gửi sau lấy đúng bản
+  const doiBoiCanh = (moi: BoiCanhDoc) => {
+    const cu = boiCanh ?? {};
+    luuBoiCanhDoc({ ngay, thang, nam, gio, gioiTinh }, moi);
+    const doi = Object.keys(TRUONG_THEO_CHU_DE).filter((id) => khoaBoiCanh(cu, id) !== khoaBoiCanh(moi, id));
+    for (const id of doi) daGui.delete(id);
+    setBai((b) => {
+      const ra = { ...b };
+      for (const id of doi) delete ra[id];
+      return ra;
+    });
+    setBoiCanh(moi);
+  };
+  const canHoiBoiCanh = !laBuc && Boolean(TRUONG_THEO_CHU_DE[chuDe.id]) && boiCanh !== null && conThieu(boiCanh, chuDe.id).length > 0;
   const thuLai = () => {
     daGui.delete(chon);
     setBai((cu) => {
@@ -393,13 +430,22 @@ function TrangSau() {
 
           {laBuc && (
             <BucTranhLon
-              key={lanBucTranh}
+              key={`${lanBucTranh}-${bucVietLai.lan}`}
               thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem }}
+              vietLai={bucVietLai.lan > 0 && bucVietLai.tai === lanBucTranh}
+              boiCanh={boiCanh ?? undefined}
+              onVietLai={() => setBucVietLai((x) => ({ lan: x.lan + 1, tai: lanBucTranh }))}
               onMoChuDe={() => moChuDe(CHU_DE_V3[0].id)}
             />
           )}
 
-          {laBuc ? null : !trangThai || trangThai.dang ? (
+          {!laBuc && TRUONG_THEO_CHU_DE[chuDe.id] && boiCanh && !canHoiBoiCanh && (
+            <HoiBoiCanh key={`gon-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} gon onXong={doiBoiCanh} />
+          )}
+
+          {laBuc ? null : canHoiBoiCanh && boiCanh ? (
+            <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
+          ) : !trangThai || trangThai.dang ? (
             <DangDocV3 key={chon} />
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
@@ -440,6 +486,9 @@ function TrangSau() {
                     Tạo bản mới
                   </button>
                 </div>
+              )}
+              {!trangThai.conCho && !trangThai.dangTom && (
+                <VietLaiQuanTri phan={`chủ đề ${chuDe.ten}`} onVietLai={vietLaiQuanTri} ketQua={trangThai.vietLaiHong} />
               )}
               {trangThai.loi && (
                 <div className="flex flex-col gap-[12px]">

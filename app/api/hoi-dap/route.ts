@@ -5,7 +5,7 @@ import { chotCauHoi, datChoCauHoi, hoanCauHoi } from '@/lib/support/quota';
 import { quyenHienTai } from '@/lib/support/entitlements';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
-import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
+import { bamLaSo, ghiVetTraLoi, veGioLaSo } from '@/lib/rag/nhat-ky';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -125,6 +125,8 @@ export async function POST(req: Request) {
       requestId,
       // Để Celes biết bảng tám lĩnh vực đã nói gì với chính người này
       chartHash,
+      // …và bài luận giải đã kết luận gì (khoá v3 băm theo giờ lá số)
+      chartHashLaSo: bamLaSo(body.ngay!, body.thang!, body.nam!, veGioLaSo(body.gio!), body.gioiTinh as string),
     });
 
     // Ghi vết trước khi rẽ nhánh: nhật ký hỏng không được làm mất dấu vết để chẩn đoán sau này,

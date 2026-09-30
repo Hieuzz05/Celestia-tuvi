@@ -295,13 +295,13 @@ export function dungPromptCoCanCu(
   const phanYDinh = THEO_Y_DINH[goi.yDinh] ? `\n\n${THEO_Y_DINH[goi.yDinh]}` : '';
 
   const phanDaNoi = daNoiTruoc.length
-    ? `\n\nĐÃ NÓI VỚI NGƯỜI NÀY TRONG BÀI TỔNG QUAN (giữ nhất quán, đừng nói ngược lại, cũng đừng lặp lại nguyên văn)\n${daNoiTruoc
+    ? `\n\nĐÃ NÓI VỚI NGƯỜI NÀY TRONG CÁC BÀI LUẬN CỦA CELES (giữ nhất quán, đừng nói ngược lại, cũng đừng lặp lại nguyên văn)\n${daNoiTruoc
         .map((d) => `- ${d}`)
         .join('\n')}\n\nĐây KHÔNG phải dữ kiện lá số — không trích mã cho nó.
 
 NHIỆM VỤ CỦA BẠN VỚI KHỐI NÀY LÀ ĐI TIẾP, KHÔNG PHẢI NHẮC LẠI.
 Không câu nào trong bài được trùng một mệnh đề với khối trên. Người đọc đã đọc những câu đó rồi; gặp lại nguyên văn ở đây thì họ hiểu là Celes không có gì để nói thêm.
-Được phép viết "như đã nói trong bài tổng quan của bạn…" rồi NÓI THÊM điều bài đó chưa nói: nó lộ ra ở tình huống nào, nó đổi gì khi gặp đúng câu hỏi đang hỏi, chỗ nào nó quay ra làm khó.`
+Được phép viết "như Celes đã nói trong bài luận của bạn…" rồi NÓI THÊM điều bài đó chưa nói: nó lộ ra ở tình huống nào, nó đổi gì khi gặp đúng câu hỏi đang hỏi, chỗ nào nó quay ra làm khó.`
     : '';
 
   /*

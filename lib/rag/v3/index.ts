@@ -13,6 +13,7 @@ import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 import { heThongV3 } from './mau-giong';
+import { docCauHinhV3 } from './cau-hinh';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -109,16 +110,16 @@ const TU_KHOA_TONG_QUAN: Record<string, string> = {
  * của cả năm. Chia phạm vi bằng mã rẻ hơn gộp mười một câu vào một lượt gọi.
  */
 const PHAM_VI_TONG_QUAN: Record<string, string> = {
-  TQ01: 'Chỉ nói con người: tính khí, cách ứng xử, mặt trong và mặt ngoài. Không bàn nghề, tiền, tình duyên, quý nhân Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
-  TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và kết bằng cách dùng điểm mạnh ấy cho đúng chỗ. Không kể thêm điểm yếu Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
-  TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
+  TQ01: 'Chỉ nói con người: tính khí, cách ứng xử, mặt trong và mặt ngoài. Không bàn nghề, tiền, tình duyên, quý nhân. Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
+  TQ02: 'Chỉ MỘT điểm mạnh lớn nhất, nó hiện ra thế nào trong đời, và điều kiện để nó phát huy. Không kể thêm điểm yếu. Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
+  TQ03: 'Chỉ MỘT điều cần lưu ý nhất (kiểu sai lặp lại hoặc mặt đời yếu nhất) và dấu hiệu nhận ra. Không nhắc lại điểm mạnh. Ví dụ lấy từ đời sống rộng (gia đình, bạn bè, tình cảm, lúc một mình) — công việc tối đa một ví dụ phụ, không mô tả bằng phong cách làm việc.',
   // Bản đồ mạnh – yếu trên trang đã liệt kê đủ ba nhóm; bài kể lại danh sách thì hết chữ cho phần "vì sao" (giám khảo 3/5, 25/09/2026)
-  TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — không kể lại đủ mười hai mặt. Mở bằng tên hai mặt mạnh nhất và hai mặt cần chăm chút nhất (để đoạn văn tự đứng được khi đọc riêng), rồi nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi kết bằng một lời khuyên dùng mặt mạnh để đỡ mặt yếu.',
+  TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — không kể lại đủ mười hai mặt. Mở bằng tên hai mặt mạnh nhất và hai mặt cần chăm chút nhất (để đoạn văn tự đứng được khi đọc riêng), rồi nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi khép lại bằng chỗ mặt mạnh đỡ được mặt yếu (lời khuyên, nếu có, viết vào goiY).',
   TQ05: 'Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên.',
-  TQ06: 'Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính, mốc thay đổi nếu dữ kiện có.',
+  TQ06: 'Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính. Không nêu mốc tuổi hay năm.',
   TQ07: 'Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp.',
   TQ08: 'Chỉ nói giai đoạn 10 năm đang chạy: tên gọi giai đoạn, chủ đề chính, một lưu ý.',
-  TQ09: 'Chỉ nói năm xem: chủ đề năm, một hai việc nên làm và nên tránh, dựa trên vận năm trong dữ kiện.',
+  TQ09: 'Chỉ nói năm xem: chủ đề năm, cơ hội và rủi ro nổi nhất, dựa trên vận năm trong dữ kiện; việc nên làm và nên tránh viết vào goiY.',
   TQ10: 'Kể đường đời theo BA chặng lớn — tiền vận, trung vận, hậu vận — mỗi chặng một hai câu về xu hướng chung và điều đổi khác giữa các chặng. KHÔNG liệt kê từng giai đoạn 10 năm (phần đó thuộc Vận hạn chuyên sâu).',
   TQ11: 'Chỉ gợi ý 2–3 phần nên xem sâu trước và lý do ngắn cho từng phần.',
 };
@@ -136,15 +137,32 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
  * sáng nhất" — mỗi câu đều nhận chuỗi đại vận. Chỉ câu này kể đủ các mốc; câu
  * khác trong chủ đề nêu tối đa một mốc trả lời đúng câu hỏi của nó.
  */
-// Cập nhật 26/09/2026 theo khung mới (khung 2026.09.3)
+// Cập nhật 30/09/2026 theo khung tinh gọn (khung 2026.09.5)
 const CAU_GIU_MOC: Record<string, string> = {
-  'tinh-cach': 'TC08', 'su-nghiep': 'SN07', 'tien-bac': 'TB06', 'tinh-duyen': 'TD06', 'con-cai': 'CC02',
-  'gia-dinh': 'GD05', 'anh-em': 'AE02', 'quy-nhan': 'QN03', 'phuc-duc': 'PD05', 'suc-khoe': 'SK05',
-  'nha-cua': 'NC05', 'ra-ngoai': 'RN02', 'hoc-van': 'HV06', 'van-han': 'VH02',
+  'tinh-cach': 'TC01', 'su-nghiep': 'SN03', 'tien-bac': 'TB03', 'tinh-duyen': 'TD02', 'con-cai': 'CC01',
+  'gia-dinh': 'GD03', 'suc-khoe': 'SK02', 'ra-ngoai': 'RN01', 'van-han': 'VH01',
 };
+
+/**
+ * Câu hỏi THẲNG về thời điểm ("Khi nào…", "năm nào", "sớm hay muộn"). Chạy thử 30/09/2026 lá
+ * Hiếu: TD02 "Khi nào tôi dễ kết hôn?" mở bằng hai câu tả tính chất duyên, mốc nằm tận đoạn hai.
+ */
+const HOI_KHI_NAO = /khi nào|năm nào|sớm hay muộn/i;
+const MO_BANG_MOC =
+  'Câu hỏi hỏi THỜI ĐIỂM: câu đầu tiên phải nêu luôn mốc trả lời (khoảng tuổi hoặc giai đoạn đại vận, như một xu hướng) — không mở bằng câu tả tính chất rồi mới tới mốc.';
+
+const MOC_PHU =
+  'Mốc thời gian ở câu này chỉ là phần PHỤ: nêu tối đa một mốc khi dữ kiện vận chỉ rõ, trọng tâm vẫn là bản chất câu hỏi.';
 
 function luatMoc(q: CauHoiV3): string {
   if (!hoiThoiDiem(q)) return '';
+  // câu giữ dòng thời gian của chủ đề (CAU_GIU_MOC) thì không bị giới hạn một mốc
+  const moDau = q.thoiDiem === 'phu' ? (CAU_GIU_MOC[q.chuDe] === q.id ? '' : MOC_PHU) : HOI_KHI_NAO.test(q.cauHoi) ? MO_BANG_MOC : '';
+  const than = luatMocThan(q);
+  return [moDau, than].filter(Boolean).join(' ');
+}
+
+function luatMocThan(q: CauHoiV3): string {
   const giu = CAU_GIU_MOC[q.chuDe];
   if (giu === q.id) {
     return q.chuDe === 'van-han'
@@ -168,17 +186,14 @@ function luatMoc(q: CauHoiV3): string {
 const LANG_KINH: Record<string, string> = {
   'tinh-cach':
     'Nói về CON NGƯỜI khi bỏ hết nghề nghiệp, chức danh và trách nhiệm ra ngoài: điều họ sống vì, cần gì để thấy yên, dễ tổn thương bởi gì, cách đối xử với chính mình và với người khác. Ví dụ phải trải qua nhiều nơi — gia đình, bạn bè, tình yêu, tiền bạc, lúc ở một mình, khi gặp biến cố. Công việc tối đa MỘT ví dụ phụ trong cả bài; KHÔNG dùng từ vựng quản lý (điều phối, quyền quyết định, nguồn lực, đầu mối, tiến độ, giao việc, cả nhóm).',
-  'tien-bac': 'Nói về chuyện TIỀN: kiếm, giữ, tiêu, hao, tích sản. Công việc chỉ xuất hiện như một nguồn tiền; không phân tích phong cách làm việc hay tính cách chung.',
-  'tinh-duyen': 'Nói về đời sống TÌNH CẢM và hôn nhân: cách yêu, người đi cùng, những gì xảy ra giữa hai người. Công việc chỉ nhắc khi câu hỏi hỏi về ảnh hưởng qua lại.',
+  'su-nghiep': 'Nói về CÔNG DANH: nghề, cách làm, đường lên, người nâng và điều cản trong công việc, học hành bằng cấp như một phần của con đường ấy. Không tả lại tính cách chung.',
+  'tien-bac': 'Nói về chuyện TIỀN và TÀI SẢN: kiếm, giữ, tiêu, hao, tích sản, nhà cửa. Công việc chỉ xuất hiện như một nguồn tiền; không phân tích phong cách làm việc hay tính cách chung.',
+  'tinh-duyen': 'Nói về đời sống TÌNH CẢM và chuyện gắn bó lâu dài: cách yêu, người đi cùng, những gì xảy ra giữa hai người. Không mặc định người đọc đã hay sẽ kết hôn. Công việc chỉ nhắc khi câu hỏi hỏi về ảnh hưởng qua lại.',
   'con-cai': 'Nói về CON CÁI và quan hệ cha mẹ – con; không tả lại tính cách chung của người đọc.',
-  'gia-dinh': 'Nói về CHA MẸ và gia đình gốc; không tả lại tính cách chung hay chuyện công việc của người đọc.',
-  'anh-em': 'Nói về ANH CHỊ EM; không tả lại tính cách chung của người đọc.',
-  'quy-nhan': 'Nói về NHỮNG NGƯỜI XUNG QUANH: ai giúp, ai kéo, vì sao; không tả lại tính cách chung.',
-  'phuc-duc': 'Nói về NỀN PHÚC, đường thoát khi gặp khó và hậu vận; không kéo sang công việc.',
+  'gia-dinh': 'Nói về GIA ĐÌNH GỐC: cha mẹ, anh chị em, nền phúc dòng họ và hậu vận; không tả lại tính cách chung hay chuyện công việc của người đọc.',
   'suc-khoe': 'Nói về THỂ TRẠNG và các vùng sức khỏe; không kéo sang tính cách hay công việc, trừ khi đó là nguyên nhân trực tiếp của một rủi ro vừa luận.',
-  'nha-cua': 'Nói về NHÀ CỬA, nơi ở và tài sản cố định; không kéo sang tính cách chung.',
   'ra-ngoai': 'Nói về chuyện ĐI XA, ra ngoài xã hội và sống ở nơi khác; công việc chỉ nhắc như một lý do đi.',
-  'hoc-van': 'Nói về HỌC HÀNH, thi cử, bằng cấp; không biến thành lời khuyên phương pháp học hay tư vấn nghề.',
+  'van-han': 'Nói về NHỊP ĐỜI theo thời gian: chặng nào mở, chặng nào chững, năm nào đổi. Mỗi mốc chỉ gọi tên mặt đời nổi nhất ở mốc ấy — không tả lại tính cách, không luận lại từng chủ đề.',
 };
 
 function phamViChuyenSau(q: CauHoiV3): string {
@@ -213,8 +228,106 @@ function datAnToan(q: CauHoiV3, bai: BaiV3): BaiV3 {
   // Sức khỏe: KHÔNG gắn câu an toàn vào từng câu nữa (26/09/2026 — sáu câu cùng một đuôi là đúng kiểu lời chung chủ dự án chê);
   // trang chuyên sâu hiện MỘT dòng lưu ý ở đầu chủ đề Sức khỏe
   void AN_TOAN_SUC_KHOE;
-  if (/đầu tư/.test(q.cauHoi.toLowerCase()) && !s.includes('tư vấn tài chính')) luan = `${luan.trim()} ${AN_TOAN_TAI_CHINH}`;
+  // 30/09/2026: khung 2026.09.5 không còn câu nào có chữ "đầu tư" nên câu an toàn không bao giờ gắn —
+  // nay xét theo chủ đề tiền bạc + bài có nói tới đầu tư / vay / chứng khoán
+  const veTien = q.chuDe === 'tien-bac' || q.id === 'TQ06';
+  const noiDauTu = /đầu tư|vay |vay\.|cho vay|cổ phiếu|chứng khoán|tiền số|tiền ảo|lướt sóng|đòn bẩy/.test(s);
+  if (veTien && noiDauTu && !s.includes('tư vấn tài chính')) luan = `${luan.trim()} ${AN_TOAN_TAI_CHINH}`;
   return { ...bai, luanGiai: luan };
+}
+
+export interface ChuanBiCau {
+  duKien: DuKienV3[];
+  tv: ReturnType<typeof dungKhoiThuVien> | null;
+  nguon: DoanV3[];
+  msTruyHoi: number;
+  /** Cung chính để đánh dấu nguồn khớp: cung chính của chủ đề (chuyên sâu) hoặc cung đầu danh sách câu */
+  cungChinhCau?: string;
+}
+
+/** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
+export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
+  const { q } = vao;
+  const duKien = dungDuKien(vao.laSo, q, vao.namXem);
+  const cungChuDe = q.loai === 'chuyen-sau' ? (q.cungChinh ?? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh) : undefined;
+  const tv = vao.thuVien?.length
+    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
+    : null;
+  const tRag = Date.now();
+  const nguon = await truyHoiChoCau({
+    chuDe: q.chuDe,
+    chuDeTuKhoa: q.tuKhoa ?? TU_KHOA_TONG_QUAN[q.id],
+    cungUuTien: cungChuDe,
+    cauHoi: q.cauHoi,
+    duKien,
+    nho: vao.nho,
+    // Thư viện đã khớp đủ thì bớt đoạn sách thô — giữ độ dài prompt (mục 8.7)
+    soDoan: tv && tv.daChon.length >= 6 ? 4 : undefined,
+  });
+  const cungChinhCau =
+    cungChuDe ??
+    duKien.find((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)'))?.cung;
+  return { duKien, tv, nguon, msTruyHoi: Date.now() - tRag, cungChinhCau };
+}
+
+/*
+ * CHIA NGUỒN GIỮA CÁC CÂU CÙNG NHÓM (30/09/2026). Các câu của một chủ đề đọc chung cung chính nên
+ * truy hồi trả về gần cùng một bộ đoạn sách; mỗi câu lại "dùng nguồn" (DUNG_NGUON) nên cùng một câu
+ * sách thành cùng một nhận định ở ba, bốn câu. Chia tất định: đoạn trùng thuộc về câu mà nó KHỚP CUNG
+ * CHÍNH, không thì câu xếp nó cao nhất, hoà thì câu đứng trước. Câu khác bỏ đoạn ấy, miễn còn đủ
+ * TOI_THIEU_NGUON đoạn — thiếu nguồn còn tệ hơn lặp.
+ */
+const TOI_THIEU_NGUON = 4;
+
+export function chiaNguon(ds: { q: CauHoiV3; cb: ChuanBiCau }[]): void {
+  const chu = new Map<string, number>();
+  const hang = (j: number, chunkId: string) => ds[j].cb.nguon.findIndex((n) => n.chunkId === chunkId);
+  const khopChinh = (j: number, chunkId: string) => {
+    const n = ds[j].cb.nguon.find((x) => x.chunkId === chunkId);
+    return Boolean(n?.khopCung && n.khopCung === ds[j].cb.cungChinhCau);
+  };
+  ds.forEach((x, j) => {
+    for (const n of x.cb.nguon) {
+      const cu = chu.get(n.chunkId);
+      if (cu === undefined) { chu.set(n.chunkId, j); continue; }
+      const hon = (khopChinh(j, n.chunkId) && !khopChinh(cu, n.chunkId)) ||
+        (khopChinh(j, n.chunkId) === khopChinh(cu, n.chunkId) && hang(j, n.chunkId) < hang(cu, n.chunkId));
+      if (hon) chu.set(n.chunkId, j);
+    }
+  });
+  ds.forEach((x, j) => {
+    const giu = x.cb.nguon.filter((n) => chu.get(n.chunkId) === j || khopChinh(j, n.chunkId));
+    const bo = x.cb.nguon.filter((n) => !giu.includes(n));
+    // Bỏ từ đoạn xếp thấp nhất lên, dừng khi chạm mức tối thiểu
+    const conLai = [...x.cb.nguon];
+    for (const n of [...bo].reverse()) {
+      if (conLai.length <= TOI_THIEU_NGUON) break;
+      conLai.splice(conLai.indexOf(n), 1);
+    }
+    x.cb.nguon = conLai;
+  });
+}
+
+/*
+ * CUNG "NỀN" (30/09/2026): trong một chủ đề, mỗi cung có một câu CHỦ — câu liệt kê cung ấy sớm nhất
+ * (vị trí thấp nhất trong danh sách cung, hoà thì câu đứng trước). Các câu khác vẫn nhận dữ kiện cung
+ * đó, nhưng nhãn ghi "nền" để model không luận lại điều câu chủ đã luận.
+ */
+function cungNen(q: CauHoiV3): Set<string> {
+  if (q.loai !== 'chuyen-sau') return new Set();
+  const cd = CHU_DE_V3.find((c) => c.id === q.chuDe);
+  const cungCua = (x: CauHoiV3) => (x.cung.length ? x.cung : [x.cungChinh ?? cd?.cungChinh ?? '']);
+  const anhEm = CAU_HOI_V3.filter((x) => x.loai === 'chuyen-sau' && x.chuDe === q.chuDe);
+  const nen = new Set<string>();
+  cungCua(q).forEach((cung, viTri) => {
+    if (viTri === 0) return; // cung đầu danh sách của chính câu này luôn là của nó
+    const chu = anhEm
+      .map((x, thuTu) => ({ x, viTri: cungCua(x).indexOf(cung), thuTu }))
+      .filter((o) => o.viTri >= 0)
+      .sort((a, b) => a.viTri - b.viTri || a.thuTu - b.thuTu)[0];
+    if (chu && chu.x.id !== q.id) nen.add(cung);
+  });
+  return nen;
 }
 
 export async function luanMotCau(vao: {
@@ -236,31 +349,18 @@ export async function luanMotCau(vao: {
   daNoi?: MucDaNoi[];
   /** Thư viện tri thức (KIEN-TRUC-LUAN-GIAI.md mục 8) — chỉ truyền cho câu thuộc lát cắt đã bật */
   thuVien?: MucThuVien[];
+  /** Dữ kiện + nguồn đã chuẩn bị sẵn (luanNhieuCau chia nguồn giữa các câu trước khi viết) */
+  chuanBi?: ChuanBiCau;
+  /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
+  boiCanh?: string;
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
-  const duKien = dungDuKien(vao.laSo, q, vao.namXem);
-  const cungChuDe = q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined;
-  const tv = vao.thuVien?.length
-    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
-    : null;
-  const tRag = Date.now();
-  const nguon = await truyHoiChoCau({
-    chuDe: q.chuDe,
-    chuDeTuKhoa: TU_KHOA_TONG_QUAN[q.id],
-    cungUuTien: cungChuDe,
-    cauHoi: q.cauHoi,
-    duKien,
-    nho: vao.nho,
-    // Thư viện đã khớp đủ thì bớt đoạn sách thô — giữ độ dài prompt (mục 8.7)
-    soDoan: tv && tv.daChon.length >= 6 ? 4 : undefined,
-  });
-  const msTruyHoi = Date.now() - tRag;
+  const { duKien, tv, nguon, msTruyHoi, cungChinhCau } = vao.chuanBi ?? (await chuanBiCau(vao));
   const phep = saoDuocPhep(duKien);
-  // Cung chính để đánh dấu nguồn khớp: cung chính của chủ đề (chuyên sâu) hoặc cung đầu danh sách câu
-  const cungChinhCau =
-    (q.loai === 'chuyen-sau' ? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh : undefined) ??
-    duKien.find((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)'))?.cung;
+  const nen = cungNen(q);
+  const cauHinh = await docCauHinhV3();
+  const doDai = cauHinh.doDai[q.loai];
 
   /*
    * THỨ TỰ = TIỀN TỐ ĐỆM (26/09/2026): mọi khối CỐ ĐỊNH theo câu hỏi đứng liền sau phần luật, trước
@@ -269,7 +369,7 @@ export async function luanMotCau(vao: {
    * Bản trước để sổ ý chen giữa, cắt tiền tố ngay trước "YẾU TỐ NÊN XÉT". Nội dung không đổi.
    */
   const user = [
-    khoiDoDai(q.loai),
+    khoiDoDai(q.loai, doDai),
     `CÂU HỎI CỦA NGƯỜI ĐỌC: ${q.cauHoi}`,
     `NGƯỜI ĐỌC CẦN NHẬN ĐƯỢC: ${q.nhanDuoc}`,
     PHAM_VI_TONG_QUAN[q.id]
@@ -279,10 +379,17 @@ export async function luanMotCau(vao: {
 ${phamViChuyenSau(q)}`
         : '',
     q.yeuToThem ? `YẾU TỐ NÊN XÉT: ${q.yeuToThem}` : '',
+    q.chiTiet
+      ? `CHI TIẾT CỤ THỂ — CÓ NGUỒN THÌ NÓI: ${q.chiTiet}. Chỉ nêu khi một đoạn NGUỒN THAM CHIẾU nói rõ chi tiết ấy cho đúng tổ hợp khớp DỮ KIỆN LÁ SỐ, và ghi mã E của đoạn đó ở ý tương ứng trong dàn ý. Không có đoạn như vậy thì bỏ chi tiết ấy — không bịa, không đoán cho đủ.`
+      : '',
     q.khongDuoc ? `KHÔNG ĐƯỢC: ${q.khongDuoc}` : '',
     vao.thuNghiem?.themVao?.(vao.laSo, q) ?? '',
+    // Đổi theo người đọc nên đứng SAU mọi khối cố định theo câu hỏi (giữ tiền tố đệm của nhà cung cấp)
+    vao.boiCanh ?? '',
     khoiDaNoi(q, vao.daNoi ?? []),
-    `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => `${d.id} [${d.vaiTro}] ${d.noiDung}`).join('\n')}`,
+    `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien
+      .map((d) => `${d.id} [${d.vaiTro}${d.cung && nen.has(d.cung) ? ' — NỀN: câu khác của chủ đề đi sâu cung này, ở đây chỉ dùng để đỡ ý' : ''}] ${d.noiDung}`)
+      .join('\n')}`,
     tv?.khoi ?? '',
     `NGUỒN THAM CHIẾU (trích sách, chỉ dùng đoạn nói đúng tổ hợp sao – cung của lá số này):\n${
       nguon.length
@@ -354,8 +461,13 @@ ${phamViChuyenSau(q)}`
       ? [{ ma: 'lo-luat-ngam', moTa: 'Bài nhắc tới "chuyên gia" / "ghi chú" / "nội bộ" — đoạn LUẬT NGẦM chỉ để định hướng, không được gọi tên hay nhắc tới. Nói thẳng nhận định như điều lá số cho thấy.', chan: true, cum }]
       : [];
   };
+  // Năm được phép nêu: năm xem + mọi năm có trong dữ kiện và nguồn của câu này (kiem-v3 chặn năm ngoài tập)
+  const namDuocNeu = new Set([
+    String(vao.namXem),
+    ...[...`${duKien.map((d) => d.noiDung).join(' ')} ${nguon.map((n) => n.noiDung).join(' ')} ${tv?.khoi ?? ''}`.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => m[0]),
+  ]);
   const kiem = (b: BaiV3) => [
-    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai }),
+    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai, namDuocNeu, doDai, tranGoiY: cauHinh.tranGoiY }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
     ...kiemLapCum(b.luanGiai, vao.daNoi ?? [], q.loai === 'chuyen-sau' ? q.chuDe : 'tong-quan'),
     ...kiemTenSach(b),
@@ -493,10 +605,19 @@ export async function luanNhieuCau(vao: {
   khiXong?: (k: KetQuaCauV3) => void;
   /** Thư viện tri thức + các câu được dùng nó (lát cắt đã bật) */
   thuVien?: { muc: MucThuVien[]; cau: Set<string> };
+  /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
+  boiCanh?: string;
 }): Promise<KetQuaCauV3[]> {
   const nho: BoNhoTruyHoi = new Map();
   const ds = vao.ids.map((id) => CAU_HOI_V3.find((q) => q.id === id)).filter((q): q is CauHoiV3 => !!q);
   const ra: KetQuaCauV3[] = new Array(ds.length);
+  const thuVienCua = (q: CauHoiV3) => (vao.thuVien?.cau.has(q.id) ? vao.thuVien.muc : undefined);
+  // Chuẩn bị cả nhóm trước (không gọi model viết) để chia nguồn tất định; hỏng ở câu nào thì câu đó tự truy hồi lại
+  const chuanBi: (ChuanBiCau | undefined)[] = await Promise.all(
+    ds.map((q) => chuanBiCau({ laSo: vao.laSo, q, namXem: vao.namXem, nho, thuVien: thuVienCua(q) }).catch(() => undefined))
+  );
+  const du = ds.map((q, j) => ({ q, cb: chuanBi[j] })).filter((x): x is { q: CauHoiV3; cb: ChuanBiCau } => Boolean(x.cb));
+  if (du.length > 1) chiaNguon(du);
   let i = 0;
   const tho = async () => {
     while (i < ds.length) {
@@ -504,7 +625,7 @@ export async function luanNhieuCau(vao: {
       try {
         ra[j] = await luanMotCau({
           laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi,
-          thuVien: vao.thuVien?.cau.has(ds[j].id) ? vao.thuVien.muc : undefined,
+          thuVien: thuVienCua(ds[j]), chuanBi: chuanBi[j], boiCanh: vao.boiCanh,
         });
       } catch (e) {
         ra[j] = {

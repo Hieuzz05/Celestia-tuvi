@@ -218,7 +218,7 @@ export const en: TuDien = {
     tiepManhYeu: 'Or see strengths and weak spots',
     hoiTieuDe: 'Still wondering about something?',
     hoiMo: 'Ask Celes a question of your own',
-    sauNoiBatTieuDe: 'Deep interpretation across 14 topics',
+    sauNoiBatTieuDe: 'Deep interpretation across 9 topics',
     sauNoiBatMo: 'Personality, work, money, love, family, health… Each topic is a set of concrete questions, each read from several palaces of your chart.',
     sauNoiBatCta: 'Read the deep interpretation',
     sauNoiBatKhamPha: 'Explore topic by topic →',
@@ -387,7 +387,7 @@ export const en: TuDien = {
         moTa: 'Each topic is its own reading, drawn from your map. A free account opens them and saves them.',
         diem: [
           'Work, money, love, family, health — pick what is on your mind',
-          'Deep readings across 14 topics, each read from several palaces',
+          'Deep readings across 9 topics, each read from several palaces',
           'Readings are saved and open instantly next time',
         ],
       },
