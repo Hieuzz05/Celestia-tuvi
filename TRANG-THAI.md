@@ -16,6 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1) | Luận giải v3: sửa mâu thuẫn prompt, khung 9 chủ đề trung tính giới, trạng thái duyên, chống lặp, trang quản trị "Cấu hình luận giải", bối cảnh người dùng | viec/luan-giai-tinh-gon | lib/rag/v3/**, app/admin/luan-giai, app/api/admin/cau-hinh, app/luan-giai/sau, components/luangiai, lib/i18n, apps/celes-app (màn luận giải) | 30/09/2026 |
 
 ## Đang vướng — đừng đụng vào
 
