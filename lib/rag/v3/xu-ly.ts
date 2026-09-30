@@ -59,21 +59,27 @@ const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
  * đây khi lát cắt của nó đã đạt đủ ngưỡng 11.2 — đo bằng scripts/do-thu-vien.ts và
  * scripts/so-sanh-v3.ts --du. Rỗng = thư viện chưa chạy cho người dùng.
  */
-export const CAU_THU_VIEN = new Set<string>(['SN01', 'SN02', 'SN04', 'SN05']);
-
-/**
- * BẬT 26/09/2026 theo quyết định chủ dự án ("đẩy thư viện lên, tôi tự check trên lá số") — dù
+/*
+ * Sự nghiệp BẬT 26/09/2026 theo quyết định chủ dự án ("đẩy thư viện lên, tôi tự check trên lá số") — dù
  * lát cắt chưa đạt ngưỡng 11.2 / 11.7 (KIEN-TRUC-LUAN-GIAI.md, QĐ-16). Chỉ các câu Sự nghiệp
  * không hỏi thời điểm; chỉ đợt trích lượt 2.
+ *
+ * Chủ đề khác (30/09/2026): dựng bằng `scripts/dung-thu-vien.ts --chu-de <id> --dot <đợt>` rồi thêm
+ * một dòng ở đây. CHƯA có gói đợt trong Supabase thì đừng thêm — dấu kho đổi, nút "Tạo bản mới"
+ * hiện ra mà bài viết lại không có gì mới.
  */
-export const DOT_THU_VIEN = 'sn-2,sn-2b';
+export const THU_VIEN_THEO_CHU_DE: Record<string, { dot: string; cau: string[] }> = {
+  'su-nghiep': { dot: 'sn-2,sn-2b', cau: ['SN01', 'SN02', 'SN04', 'SN05'] },
+};
+export const CAU_THU_VIEN = new Set<string>(Object.values(THU_VIEN_THEO_CHU_DE).flatMap((t) => t.cau));
+const dotCuaCau = (id: string) => Object.values(THU_VIEN_THEO_CHU_DE).find((t) => t.cau.includes(id))?.dot;
 
 /**
  * Dấu kho MONG ĐỢI của một câu: câu dùng thư viện mang thêm đợt thư viện. Nhờ vậy câu Sự nghiệp
  * đã viết trước khi bật thư viện hiện nút "Tạo bản mới" — và CHỈ năm câu ấy (+ tóm lại) được viết
  * lại, không đụng câu hay chủ đề khác.
  */
-const khoMongDoi = (kho: string | null, id?: string) => (kho && id && CAU_THU_VIEN.has(id) ? `${kho}|tv:${DOT_THU_VIEN}` : kho);
+const khoMongDoi = (kho: string | null, id?: string) => (kho && id && CAU_THU_VIEN.has(id) ? `${kho}|tv:${dotCuaCau(id)}` : kho);
 
 export interface BodyV3 {
   ngay?: number;
@@ -391,7 +397,8 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
     const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
 
-    const thuVien = thieu.some((id) => CAU_THU_VIEN.has(id)) ? { muc: await mt.docThuVien(nhom, DOT_THU_VIEN), cau: CAU_THU_VIEN } : undefined;
+    const tvNhom = THU_VIEN_THEO_CHU_DE[nhom];
+    const thuVien = tvNhom && thieu.some((id) => tvNhom.cau.includes(id)) ? { muc: await mt.docThuVien(nhom, tvNhom.dot), cau: new Set(tvNhom.cau) } : undefined;
     const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi, thuVien, khiXong: mt.quanSat, boiCanh: khoiBoiCanh(boiCanh, nhom) });
     /*
      * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
