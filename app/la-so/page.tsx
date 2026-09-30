@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BaTheDauV3, TongQuanV3, useTongQuanV3 } from '@/components/luangiai/TongQuanV3';
+import { VietLaiQuanTri } from '@/components/luangiai/VietLaiQuanTri';
 import { BanDoManhYeu } from '@/components/luangiai/BanDoManhYeu';
 import { ChuyenSauChuDe } from '@/components/luangiai/ChuyenSauChuDe';
 import { HoiCelesDong } from '@/components/laso/HoiCelesDong';
@@ -594,6 +595,10 @@ function TrangLaSo() {
                 Tạo bản mới
               </button>
             </div>
+          )}
+
+          {dungV3 && laSo && !canBangCu && duocVao && !tongQuan.dangDoc && !tongQuan.dangDocDanhSach && (
+            <VietLaiQuanTri phan="phần tổng quan" onVietLai={tongQuan.vietLaiQuanTri} />
           )}
 
           {canBangCu && dangDocSau && !baiSau && (

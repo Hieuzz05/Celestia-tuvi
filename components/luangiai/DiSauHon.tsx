@@ -13,13 +13,8 @@ const TO_MO: Record<string, string[]> = {
   'tinh-duyen': ['Người tôi đang quen có hợp để đi lâu dài không?', 'Năm nào tôi dễ gặp người quan trọng?', 'Hôn nhân của tôi có dễ gặp người thứ ba không?'],
   'con-cai': ['Con tôi có hợp với tôi không?', 'Giai đoạn nào thuận để có con?', 'Con tôi hợp học theo hướng nào?'],
   'gia-dinh': ['Tôi có được nhờ cha mẹ không?', 'Về sau trách nhiệm với cha mẹ có nặng không?', 'Tôi nên sống gần hay xa gia đình?'],
-  'anh-em': ['Anh chị em có giúp được tôi lúc khó không?', 'Có nên chung vốn với anh chị em không?'],
-  'quy-nhan': ['Quý nhân của tôi thường xuất hiện lúc nào?', 'Kiểu người nào tôi nên dè chừng?', 'Tôi có hợp làm việc nhóm không?'],
-  'phuc-duc': ['Khi gặp chuyện khó tôi có hay được giúp không?', 'Hậu vận của tôi có an nhàn không?'],
   'suc-khoe': ['Năm nay sức khỏe tôi cần chú ý gì?', 'Giai đoạn nào tôi dễ mệt nhất?', 'Tôi có dễ gặp tai nạn khi đi lại không?'],
-  'nha-cua': ['Bao giờ tôi mua được nhà?', 'Tôi có hợp đầu tư đất không?', 'Có nên chuyển chỗ ở trong vài năm tới không?'],
   'ra-ngoai': ['Tôi có nên đi nước ngoài làm việc không?', 'Đi xa có làm tôi khá lên không?', 'Tôi có định cư ở nơi khác không?'],
-  'hoc-van': ['Tôi có nên học thêm một bằng nữa không?', 'Năm nào thuận cho thi cử?', 'Tôi có hợp du học không?'],
   'van-han': ['Năm nay việc lớn nhất của tôi là gì?', 'Ba năm tới tôi nên chuẩn bị gì?', 'Tháng nào trong năm cần cẩn thận nhất?'],
 };
 

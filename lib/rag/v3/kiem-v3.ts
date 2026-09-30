@@ -40,7 +40,19 @@ export const TU_CAM = [
 const THUAT_NGU = [
   'đại vận', 'tiểu hạn', 'lưu niên', 'nguyệt hạn', 'tam hợp', 'xung chiếu', 'vô chính diệu', 'chính tinh',
   'phụ tinh', 'miếu địa', 'hãm địa', 'tọa thủ', 'thân cư', 'cách cục', 'lá số tử vi',
+  // 30/09/2026: thêm các chữ rà được trong bài chạy thật
+  'lưu thái tuế', 'tứ hóa', 'tứ hoá', 'hóa kỵ', 'hoá kỵ', 'tuần triệt', 'bị tuần', 'bị triệt', 'đắc địa', 'vượng địa',
+  'cung mệnh', 'cung thân', 'cung quan', 'cung tài', 'cung phu', 'cung phúc', 'sát tinh', 'bàng tinh',
 ];
+
+/**
+ * Mặc định giới của bạn đời / tình trạng hôn nhân (30/09/2026, chủ dự án: khung trung tính giới).
+ * Chỉ bắt kiểu gọi người đi cùng của CHÍNH người đọc — "vợ chồng" nói chung vẫn là lời thường.
+ */
+// \b của JS không hiểu chữ có dấu ("vợ" kết bằng "ợ") — dùng lookaround theo \p{L}
+const GIOI_MAC_DINH = /(?<!\p{L})((vợ|chồng) (của )?bạn|nửa (vợ|chồng)|(anh ấy|cô ấy) (sẽ|thường|dễ|là)|người (vợ|chồng) (tương lai|sau này))(?!\p{L})/giu;
+const NAM_CU_THE = /\b(?:19|20)\d{2}\b/g;
+export const TRAN_GOI_Y = 30;
 
 const TU_NOI = [
   'Cũng vì vậy', 'Vì vậy', 'Điều này khiến', 'Mặt khác', 'Bởi thế', 'Bởi vậy', 'Nhưng điểm đáng chú ý',
@@ -97,10 +109,19 @@ export function kiemBai(vao: {
   hoiThoiDiem?: boolean;
   /** Bộ thử nghiệm nới độ dài (vd 1.5) — sản phẩm không truyền */
   heSoDoDai?: number;
+  /**
+   * Các năm (4 chữ số) có trong dữ kiện + nguồn của câu này. Truyền vào thì bài nêu năm ngoài tập này
+   * bị chặn — model từng tự thêm "năm 2028" cho câu kết hôn khi dữ kiện chỉ có năm xem.
+   */
+  namDuocNeu?: Set<string>;
+  /** Độ dài theo trang Cấu hình luận giải (cau-hinh.ts) — thiếu thì mặc định trong mã */
+  doDai?: { luan: readonly [number, number]; viSao: readonly [number, number]; doan: readonly [number, number] };
+  tranGoiY?: number;
 }): LoiV3[] {
   const { bai, loai } = vao;
   const loi: LoiV3[] = [];
-  const g = DO_DAI_V3[loai];
+  const g = vao.doDai ?? DO_DAI_V3[loai];
+  const tranGoiY = vao.tranGoiY ?? TRAN_GOI_Y;
   const h = vao.heSoDoDai ?? 1;
   const d = { ...g, luan: [g.luan[0], Math.round(g.luan[1] * h)] as const, viSao: g.viSao };
   const luan = bai.luanGiai.trim();
@@ -196,6 +217,29 @@ export function kiemBai(vao: {
     const cauCuoi = luan.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).pop() ?? '';
     if (/^(vì vậy,?\s*|do đó,?\s*|vì thế,?\s*)?(bạn\s+(nên|hãy|cần|có thể thử)|hãy\s|đừng\s|nên\s)/iu.test(cauCuoi)) {
       loi.push({ ma: 'ket-loi-khuyen', moTa: 'Bài kết bằng lời khuyên — đổi câu cuối thành một điểm cần lưu ý hoặc câu khép ý; chuyển lời khuyên sang trường "goiY".', chan: true });
+    }
+  }
+
+  const goiY = (bai.goiY ?? '').trim();
+  if (goiY) {
+    // Trường goiY: luật C nói "tối đa 30 từ" nhưng chưa ai đếm — trang gom gợi ý thành danh sách, câu 60 từ làm vỡ nhịp
+    const ng = demTu(goiY);
+    if (ng > tranGoiY) loi.push({ ma: 'goi-y-dai', moTa: `Gợi ý dài ${ng} từ, tối đa ${tranGoiY} từ — rút lại thành một việc.`, chan: ng > tranGoiY * 1.5 });
+    const loGoiY = tenRiengLo(goiY);
+    if (loGoiY.length) loi.push({ ma: 'lo-ten-goi-y', moTa: `Gợi ý nêu tên sao/cung: ${loGoiY.join(', ')} — gợi ý nói bằng lời thường.`, chan: true, cum: loGoiY });
+    const camGoiY = [...TU_CAM, ...THUAT_NGU].filter((t) => goiY.toLowerCase().includes(t));
+    if (camGoiY.length) loi.push({ ma: 'tu-cam-goi-y', moTa: `Gợi ý dùng từ cấm / thuật ngữ: ${camGoiY.join(', ')}.`, chan: true, cum: camGoiY });
+  }
+
+  const gioi = [...new Set([...`${luan} ${goiY}`.matchAll(GIOI_MAC_DINH)].map((m) => m[0]))];
+  if (gioi.length) {
+    loi.push({ ma: 'gioi-mac-dinh', moTa: `Mặc định giới hoặc tình trạng hôn nhân của người đọc ("${gioi.join('", "')}") — gọi là "bạn đời", "người ấy", "nửa kia".`, chan: true, cum: gioi });
+  }
+
+  if (vao.namDuocNeu) {
+    const nam = [...new Set([...`${luan} ${goiY}`.matchAll(NAM_CU_THE)].map((m) => m[0]))].filter((x) => !vao.namDuocNeu!.has(x));
+    if (nam.length) {
+      loi.push({ ma: 'nam-khong-can-cu', moTa: `Bài nêu năm ${nam.join(', ')} mà dữ kiện và nguồn của câu này không có năm đó — bỏ năm, nói bằng giai đoạn hoặc khoảng tuổi có trong dữ kiện.`, chan: true, cum: nam });
     }
   }
 

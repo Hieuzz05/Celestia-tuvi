@@ -1,12 +1,16 @@
 /**
  * DỰNG THƯ VIỆN TRI THỨC — một chủ đề, offline (KIEN-TRUC-LUAN-GIAI.md mục 7, 11).
  *
- *   npx tsx scripts/dung-thu-vien.ts --dot sn-1 [--gioi-han 1200] [--lo 6] [--song-song 4] [--thu]
+ *   npx tsx scripts/dung-thu-vien.ts --dot sn-1 [--chu-de su-nghiep] [--gioi-han 1200] [--lo 6] [--song-song 4] [--thu] [--dem]
  *                                    [--bao-cao <tệp.json ngoài repo>]
  *
  * Chọn đoạn sách liên quan sự nghiệp → model trích mục theo lược đồ → KIỂM TẤT
  * ĐỊNH (lib/rag/thu-vien/kiem.ts) → gộp → phát hiện mâu thuẫn → gán đích cho mục
  * khác add → lưu (lib/rag/thu-vien/kho.ts). `--thu`: không lưu.
+ *
+ * `--chu-de` (30/09/2026): chủ đề của thư viện — mặc định su-nghiep (lời nhắc giữ NGUYÊN như các
+ * đợt sn-*). Các chủ đề khác ở CHU_DE_TV dưới. `--dem`: chỉ đếm đoạn sẽ đọc rồi dừng, KHÔNG gọi
+ * model — ước lượng số lượt gọi trước khi tiêu hạn mức dùng chung.
  *
  * Câu trích là văn sách có bản quyền: chỉ lưu vào Supabase. Báo cáo chi tiết
  * (có câu trích) phải ghi RA NGOÀI repo — repo công khai.
@@ -28,6 +32,85 @@ const thamSo = (ten: string, macDinh = '') => {
   return i > 0 ? process.argv[i + 1] : macDinh;
 };
 
+/**
+ * Mỗi chủ đề: nhãn tìm đoạn (đề mục hoặc nội dung, đã bỏ dấu), các cung KHÔNG liên quan (bỏ khỏi tập
+ * tổ hợp / độ sáng), và các câu trong lời nhắc trích. Sự nghiệp là bản gốc (đợt sn-1, sn-2, sn-2b).
+ */
+const CHU_DE_TV: Record<string, { nhan: RegExp; cungKhac: RegExp; moTa: string; viDuCung: string; ten: string; dacTinh: string; chiTrich: string }> = {
+  'su-nghiep': {
+    nhan: /(quan loc|cong danh|su nghiep|lam quan|nghe nghiep|chuc vu|quyen chuc)/,
+    cungKhac: /(phu the|tu tuc|huynh de|phu mau|phuc duc|dien trach|tat ach|no boc)/,
+    moTa: 'SỰ NGHIỆP (công danh, nghề, vị trí, quyền chức, cách làm việc, quý nhân / trở ngại trong công việc)',
+    viDuCung: 'Sách nói "Quan Lộc có…" → ["Quan Lộc"]; "Mệnh có… thì công danh…" → ["Mệnh"]',
+    ten: 'sự nghiệp',
+    dacTinh: '${cfg.dacTinh}',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về sự nghiệp / công danh / năng lực làm việc (quy tắc ở cung Mệnh nói "phú quý", "quyền chức", "hiển đạt", "làm nên" cũng tính).',
+  },
+  'tien-bac': {
+    nhan: /(tai bach|tien bac|tien tai|tai loc|cua cai|giau co|kiem tien|hao tai|pha tai|tu tai)/,
+    cungKhac: /(phu the|tu tuc|huynh de|phu mau|phuc duc|tat ach|no boc)/,
+    moTa: 'TIỀN BẠC (cách kiếm tiền, giữ tiền, tích sản, hao tán, nguồn tiền)',
+    viDuCung: 'Sách nói "Tài Bạch có…" → ["Tài Bạch"]; "Mệnh có… thì giàu…" → ["Mệnh"]',
+    ten: 'tiền bạc',
+    dacTinh: '"y" nói CÁCH tiền đến, giữ hay hao mà sao cho thấy; con số, món đầu tư cụ thể chỉ nêu khi chính câu trích nêu.',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về tiền tài / của cải / hao tán (quy tắc ở cung Mệnh nói "giàu", "phú", "tán tài" cũng tính).',
+  },
+  'tinh-duyen': {
+    nhan: /(phu the|hon nhan|vo chong|tinh duyen|nhan duyen|lay vo|lay chong|gia that|ket hon)/,
+    cungKhac: /(quan loc|tai bach|tu tuc|huynh de|phu mau|dien trach|tat ach|no boc)/,
+    moTa: 'TÌNH DUYÊN (cách yêu, kiểu người bạn đời, hòa hợp hay trắc trở trong hôn nhân, duyên sớm muộn)',
+    viDuCung: 'Sách nói "Phu Thê có…" → ["Phu Thê"]; "Mệnh có… thì vợ chồng…" → ["Mệnh"]',
+    ten: 'tình duyên',
+    dacTinh: '"y" nói NÉT của mối quan hệ mà sao cho thấy; không phán "bỏ nhau", "góa bụa" — nói thành trắc trở, xa cách, cần giữ gìn.',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về tình duyên / hôn nhân / người phối ngẫu.',
+  },
+  'con-cai': {
+    nhan: /(tu tuc|con cai|sinh con|hiem muon|con trai|con gai|sinh no)/,
+    cungKhac: /(quan loc|tai bach|phu the|huynh de|phu mau|dien trach|no boc)/,
+    moTa: 'CON CÁI (duyên con sớm muộn, tính con, quan hệ cha mẹ – con)',
+    viDuCung: 'Sách nói "Tử Tức có…" → ["Tử Tức"]',
+    ten: 'con cái',
+    dacTinh: '"y" nói DUYÊN con và nét quan hệ với con; không nói số con cụ thể, không phán con "khó nuôi", "yểu".',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về con cái.',
+  },
+  'gia-dinh': {
+    nhan: /(phu mau|cha me|dien trach|gia dinh|huynh de|anh em|to nghiep|nha cua)/,
+    cungKhac: /(quan loc|tai bach|phu the|tu tuc|tat ach|no boc)/,
+    moTa: 'GIA ĐÌNH (cha mẹ, anh chị em, nhà cửa, nền nếp và chỗ dựa gia đình)',
+    viDuCung: 'Sách nói "Phụ Mẫu có…" → ["Phụ Mẫu"]; "Điền Trạch có…" → ["Điền Trạch"]; "Huynh Đệ có…" → ["Huynh Đệ"]',
+    ten: 'gia đình',
+    dacTinh: '"y" nói NÉT quan hệ gia đình / nhà cửa mà sao cho thấy; không phán sinh tử của cha mẹ, anh em.',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về cha mẹ / anh em / nhà cửa / gia đình.',
+  },
+  'suc-khoe': {
+    nhan: /(tat ach|benh|suc khoe|tai nan|than the|tat benh)/,
+    cungKhac: /(quan loc|tai bach|phu the|tu tuc|huynh de|dien trach|no boc)/,
+    moTa: 'SỨC KHỎE (thể trạng, nhóm cơ quan cần lưu ý, tai nạn, sức bền)',
+    viDuCung: 'Sách nói "Tật Ách có…" → ["Tật Ách"]',
+    ten: 'sức khỏe',
+    dacTinh: '"y" nói XU HƯỚNG thể trạng, nhóm cơ quan cần để ý; không chẩn đoán bệnh, không nói "chết", "yểu", "nan y".',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về sức khỏe / bệnh tật / tai nạn.',
+  },
+  'ra-ngoai': {
+    nhan: /(thien di|xuat ngoai|di xa|ly huong|ra ngoai|no boc|ban be|giao du)/,
+    cungKhac: /(tai bach|phu the|tu tuc|phu mau|dien trach|tat ach)/,
+    moTa: 'RA NGOÀI (đi xa, môi trường bên ngoài, quan hệ xã hội, bạn bè, cộng sự)',
+    viDuCung: 'Sách nói "Thiên Di có…" → ["Thiên Di"]; "Nô Bộc có…" → ["Nô Bộc"]',
+    ten: 'ra ngoài và quan hệ xã hội',
+    dacTinh: '"y" nói NÉT của người khi ra ngoài / với bạn bè mà sao cho thấy.',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về đi xa / ra ngoài / bạn bè / cộng sự.',
+  },
+  'tinh-cach': {
+    nhan: /(tinh tinh|tinh cach|tinh net|cung menh|menh vien|than cu|con nguoi)/,
+    cungKhac: /(quan loc|tai bach|phu the|tu tuc|huynh de|phu mau|dien trach|tat ach|no boc)/,
+    moTa: 'TÍNH CÁCH (tính nết, cách nghĩ, cách hành xử, điểm mạnh – yếu của con người)',
+    viDuCung: 'Sách nói "Mệnh có…" → ["Mệnh"]; "Thân cư…" → ["Mệnh"] kèm ngữ cảnh',
+    ten: 'tính cách',
+    dacTinh: '"y" nói ĐẶC TÍNH con người mà sao cho thấy, lời thường, không dán nhãn đạo đức ("gian", "ác").',
+    chiTrich: 'CHỈ trích quy tắc có điều kiện sao cụ thể và nói về tính nết / con người.',
+  },
+};
+
 /** Nhóm dự phòng khi model vẫn ghi danh sách dài thành "phải có đủ": [tên, sao, số tối thiểu] */
 const NHOM_DU_PHONG: [string, string[], number][] = [
   ['lục sát', ['Kình Dương', 'Đà La', 'Hỏa Tinh', 'Linh Tinh', 'Địa Không', 'Địa Kiếp', 'Hóa Kỵ'], 1],
@@ -39,6 +122,10 @@ type Doan = { id: string; document_id: string; duong_de_muc: string | null; noi_
 
 async function main() {
   const dot = thamSo('dot', 'sn-1');
+  const chuDeTv = thamSo('chu-de', 'su-nghiep');
+  const cfg = CHU_DE_TV[chuDeTv];
+  if (!cfg) throw new Error(`--chu-de phải là một trong: ${Object.keys(CHU_DE_TV).join(', ')}`);
+  const chiDem = process.argv.includes('--dem');
   const gioiHan = Number(thamSo('gioi-han', '1200'));
   const loKyTu = Number(thamSo('lo-ky-tu', '7000'));
   const loToiDa = Number(thamSo('lo', '6'));
@@ -92,7 +179,7 @@ async function main() {
   const theoViTri = new Map(tatCa.map((c) => [`${c.document_id}#${c.thu_tu}`, c]));
   const nguCanhTruoc = (c: Doan) => theoViTri.get(`${c.document_id}#${(c.thu_tu ?? 0) - 1}`)?.noi_dung.slice(-400) ?? '';
 
-  const NHAN_SN = /(quan loc|cong danh|su nghiep|lam quan|nghe nghiep|chuc vu|quyen chuc)/;
+  const NHAN_SN = cfg.nhan;
   const deMuc = (c: Doan) => NHAN_SN.test(boDau(c.duong_de_muc ?? ''));
   const sach = (c: Doan) =>
     !/readme/i.test(c.tieuDe) &&
@@ -106,7 +193,7 @@ async function main() {
    * Phủ gặp Tả Hữu thì phú quý" ở phần bàn cung Mệnh bị bỏ (0 mục Liêm Phủ + lục cát).
    * Bỏ đoạn thuộc mục của cung không liên quan sự nghiệp.
    */
-  const CUNG_KHAC = /(phu the|tu tuc|huynh de|phu mau|phuc duc|dien trach|tat ach|no boc)/;
+  const CUNG_KHAC = cfg.cungKhac;
   const CHINH = ['Tử Vi', 'Thiên Cơ', 'Thái Dương', 'Vũ Khúc', 'Thiên Đồng', 'Liêm Trinh', 'Thiên Phủ', 'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân'];
   const DI_KEM = /(ta phu|huu bat|ta huu|van xuong|van khuc|xuong khuc|thien khoi|thien viet|khoi viet|kinh duong|da la|kinh da|hoa tinh|linh tinh|hoa linh|dia khong|dia kiep|khong kiep|hoa loc|hoa quyen|hoa khoa|hoa ky|khoa quyen|loc ton|thien ma|loc ma|tuan|triet)/;
   const doanToHop = themToHop
@@ -141,7 +228,7 @@ async function main() {
     chon.splice(0, chon.length, ...chon.filter((c) => !daDoc.has(c.id)));
     console.log(`Trích tăng dần: bỏ ${truoc - chon.length} đoạn đã đọc ở ${boQuaTep}`);
   }
-  console.log(`Đoạn trong kho ${tatCa.length} → chọn ${chon.length} (sự nghiệp ${suNghiep.length}, đề mục sự nghiệp ${suNghiep.filter(deMuc).length}; tổ hợp ${doanToHop.length}; độ sáng ${doanDoSang.length})`);
+  console.log(`Đoạn trong kho ${tatCa.length} → chọn ${chon.length} (${cfg.ten} ${suNghiep.length}, đề mục ${cfg.ten} ${suNghiep.filter(deMuc).length}; tổ hợp ${doanToHop.length}; độ sáng ${doanDoSang.length})`);
 
   // Lô theo số ký tự, tối đa `loToiDa` đoạn
   const lo: Doan[][] = [];
@@ -151,15 +238,19 @@ async function main() {
     if (!cuoi || cuoi.length >= loToiDa || dai + c.noi_dung.length > loKyTu) lo.push([c]);
     else cuoi.push(c);
   }
+  if (chiDem) {
+    console.log(`--dem: ${lo.length} lô = ${lo.length} lượt gọi model (chưa kể lượt lỗi thử lại). Không gọi model.`);
+    return;
+  }
 
   // ---------- 2. Trích ----------
   const dict = [...tuDienSao()].sort();
-  const system = `Bạn trích QUY TẮC TỬ VI từ đoạn sách thành dữ liệu có cấu trúc, cho một thư viện tri thức về SỰ NGHIỆP (công danh, nghề, vị trí, quyền chức, cách làm việc, quý nhân / trở ngại trong công việc).
+  const system = `Bạn trích QUY TẮC TỬ VI từ đoạn sách thành dữ liệu có cấu trúc, cho một thư viện tri thức về ${cfg.moTa}.
 
 MỖI QUY TẮC = điều kiện máy đọc được + một câu nghĩa + câu trích NGUYÊN VĂN.
 
 ĐIỀU KIỆN neo vào MỘT cung gốc (cung đang xét):
-- "cung": các cung gốc được phép (chọn trong: ${TEN_CUNG.join(', ')}). Sách nói "Quan Lộc có…" → ["Quan Lộc"]; "Mệnh có… thì công danh…" → ["Mệnh"]; không nói cung → [].
+- "cung": các cung gốc được phép (chọn trong: ${TEN_CUNG.join(', ')}). ${cfg.viDuCung}; không nói cung → [].
 - "chi": nếu sách nói "tại Dần Thân", "ở Tý Ngọ"… → ["Dần","Thân"]; không thì bỏ.
 - "sao": mỗi sao PHẢI CÓ: {"ten": tên đúng như danh sách dưới, "quanHe": một trong ${QUAN_HE.join(' | ')}, "doSang": ["M"|"V"|"D"|"B"|"H"] nếu sách nói miếu/vượng/đắc/bình/hãm}.
   o-cung = ngay tại cung gốc (đồng cung, thủ, tọa); xung = cung xung chiếu; tam-hop = hai cung tam hợp; tam-phuong = bất kỳ đâu trong tam phương tứ chính ("hội", "gặp", "chiếu" chung chung); giap = kẹp hai bên cung gốc; muon-tu = cung vô chính diệu mượn sao cung xung.
@@ -171,7 +262,7 @@ MỖI QUY TẮC = điều kiện máy đọc được + một câu nghĩa + câu
 TÊN SAO HỢP LỆ (chỉ dùng đúng các tên này; "Xương Khúc" = hai sao Văn Xương + Văn Khúc; "Tả Hữu" = Tả Phù + Hữu Bật; "Khôi Việt" = Thiên Khôi + Thiên Việt; "Kình Đà" = Kình Dương + Đà La; "Không Kiếp" = Địa Không + Địa Kiếp; "Hỏa Linh" = Hỏa Tinh + Linh Tinh; "Lộc" có thể là Lộc Tồn hoặc Hóa Lộc — chọn theo văn cảnh):
 ${dict.join(', ')}
 
-"y": MỘT câu nghĩa trung tính về sự nghiệp, 8–40 chữ, lời thường hiện đại, mức ôn hòa (bỏ phán quyết cực đoan kiểu "tù tội", "yểu"). Không "bạn", không "nên / hãy", không kể chuyện.
+"y": MỘT câu nghĩa trung tính về ${cfg.ten}, 8–40 chữ, lời thường hiện đại, mức ôn hòa (bỏ phán quyết cực đoan kiểu "tù tội", "yểu"). Không "bạn", không "nên / hãy", không kể chuyện.
 "chieu": "cat" | "hung" | "trung". "muc": "manh" | "vua" | "nhe".
 "cheDo": "add" (mặc định) | "modify" | "neutralize" | "override". Chỉ khác "add" khi câu trích NÓI RÕ tổ hợp làm đổi / hoá giải / lật nghĩa (vd. "phản vi kỳ cách", "lại thành tốt", "giải được", "phá cách").
 "trich": câu (hoặc vế câu) NGUYÊN VĂN trong đoạn làm căn cứ, chép đúng từng chữ, 12–300 ký tự.
@@ -187,7 +278,7 @@ ${dict.join(', ')}
 "A hay B", "A hoặc B" là HAI quy tắc riêng — tách ra, mỗi quy tắc một sao; chỉ gộp vào một quy tắc khi sách nói các sao phải CÙNG có mặt.
 "y" nói ĐẶC TÍNH làm việc / công danh mà sao cho thấy; tên một nghề cụ thể chỉ là ví dụ và chỉ nêu khi chính câu trích nêu nghề đó.
 
-CHỈ trích quy tắc có điều kiện sao cụ thể và nói về sự nghiệp / công danh / năng lực làm việc (quy tắc ở cung Mệnh nói "phú quý", "quyền chức", "hiển đạt", "làm nên" cũng tính). Bỏ lời bàn chung, lịch sử, cách an sao. Không bịa: đoạn không có quy tắc nào thì trả mảng rỗng.
+${cfg.chiTrich} Bỏ lời bàn chung, lịch sử, cách an sao. Không bịa: đoạn không có quy tắc nào thì trả mảng rỗng.
 
 Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao": [...], "nhom": [...], "khong": [...], "thuocTinh": {...}, "gioiTinh": "...", "y": "...", "chieu": "...", "muc": "...", "cheDo": "...", "trich": "..."} ]}`;
 
@@ -326,13 +417,13 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
     dat.push({
       id: '',
       schemaVersion: SCHEMA_THU_VIEN,
-      chuDe: ['su-nghiep'],
+      chuDe: [chuDeTv],
       dieuKien,
       y,
       nhan: {
         chieu: (['cat', 'hung', 'trung'].includes(String(t.chieu)) ? t.chieu : 'trung') as MucThuVien['nhan']['chieu'],
         muc: (['manh', 'vua', 'nhe'].includes(String(t.muc)) ? t.muc : 'vua') as MucThuVien['nhan']['muc'],
-        linhVuc: ['su-nghiep'],
+        linhVuc: [chuDeTv],
       },
       cheDo: kq.cheDo,
       canCu: [{ chunkId: doan.id, documentId: doan.document_id, trich }],

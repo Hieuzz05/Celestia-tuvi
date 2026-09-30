@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DangDocV3 } from './CauTraLoiV3';
+import { VietLaiQuanTri } from './VietLaiQuanTri';
 
 /**
  * BỨC TRANH LỚN CỦA CUỘC ĐỜI (26/09/2026) — tầng cuối của luận giải chuyên sâu.
@@ -14,9 +15,17 @@ type Ket = { dang: true } | { dang: false; bucTranh: string | null; soChuDe?: nu
 export function BucTranhLon({
   thongTin,
   onMoChuDe,
+  vietLai,
+  onVietLai,
+  boiCanh,
 }: {
   thongTin: { ngay: number; thang: number; nam: number; gio: number; gioiTinh: string; namXem: number };
   onMoChuDe: () => void;
+  /** Quản trị: lượt tải này bỏ qua đệm (route kiểm quyền) */
+  vietLai?: boolean;
+  onVietLai?: () => void;
+  /** Bối cảnh người đọc — chọn đúng bản "Tóm lại" của từng chủ đề */
+  boiCanh?: unknown;
 }) {
   const [ket, setKet] = useState<Ket>({ dang: true });
   const { ngay, thang, nam, gio, gioiTinh, namXem } = thongTin;
@@ -26,7 +35,7 @@ export function BucTranhLon({
     fetch('/api/luan-giai-v3', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: 'tinh-cach', bucTranh: true }),
+      body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: 'tinh-cach', bucTranh: true, vietLai, boiCanh }),
     })
       .then(async (r) => ({ ok: r.ok, d: await r.json() }))
       .then(({ ok, d }) => {
@@ -43,7 +52,7 @@ export function BucTranhLon({
     return () => {
       huy = true;
     };
-  }, [ngay, thang, nam, gio, gioiTinh, namXem]);
+  }, [ngay, thang, nam, gio, gioiTinh, namXem, vietLai]);
 
   if (ket.dang) return <DangDocV3 chu="Celes đang ghép các phần bạn đã đọc thành một bức tranh" />;
   if (ket.bucTranh) {
@@ -60,6 +69,7 @@ export function BucTranhLon({
         <p className="caption">
           Ghép từ phần tổng quan và {ket.soChuDe} chủ đề bạn đã đọc. Đọc thêm chủ đề, bức tranh sẽ đầy đủ hơn.
         </p>
+        {onVietLai && <VietLaiQuanTri phan="bức tranh lớn" onVietLai={onVietLai} />}
       </section>
     );
   }

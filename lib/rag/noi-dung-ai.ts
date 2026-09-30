@@ -45,7 +45,9 @@ export type BeMat =
   /** KHÔNG phải nội dung — mục thư viện tri thức, tạm lưu ở đây (lib/rag/thu-vien/kho.ts, QĐ-13) */
   | 'thu-vien'
   /** KHÔNG phải nội dung — mẫu giọng văn chủ dự án sửa tay cho system prompt v3 (lib/rag/v3/mau-giong.ts) */
-  | 'mau-giong';
+  | 'mau-giong'
+  /** KHÔNG phải nội dung — số độ dài quản trị chỉnh ở /admin/luan-giai (lib/rag/v3/cau-hinh.ts) */
+  | 'cau-hinh-v3';
 
 export interface BanGhiNoiDung<T> {
   noiDung: T;

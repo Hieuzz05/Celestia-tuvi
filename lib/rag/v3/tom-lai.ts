@@ -17,17 +17,20 @@ import { GIONG_VAN } from './prompt-v3';
  * lá số + năm + nhóm như các câu.
  */
 
+// 30/09/2026: theo 9 chủ đề của khung 2026.09.5 (bỏ nha-cua, thêm con-cai / gia-dinh / ra-ngoai); tình duyên trung tính
 const MACH: Record<string, string> = {
-  'tinh-cach': 'bạn là kiểu người nào → điểm mạnh nhất → điều dễ khiến bạn trả giá → khi trưởng thành thay đổi ra sao → cuối cùng thường trở thành người thế nào',
-  'su-nghiep': 'bạn tạo giá trị bằng gì → hợp đứng ở vị trí nào → đường đi lên thường ra sao → dễ mắc ở đâu → đỉnh của cái gì, khi nào → hiện tại đang ở chặng nào',
-  'tien-bac': 'tiền đến bằng cách nào → có giữ được không → rủi ro hao tài lớn nhất ở đâu → khi nào bắt đầu tích được tài sản → hậu vận tài chính',
-  'tinh-duyen': 'bạn yêu thế nào → dễ gặp và hợp với ai → người đi cùng lâu dài thường thế nào → khi nào duyên mạnh → thử thách lớn nhất → hôn nhân ảnh hưởng đời bạn ra sao',
-  'suc-khoe': 'thể trạng chung → vùng cần lưu ý nhất → vấn đề thường theo kiểu nào (âm ỉ, tái phát hay đột ngột) → giai đoạn cần chú ý hơn',
-  'nha-cua': 'duyên nhà cửa → nhà đến từ đâu → an cư sớm hay muộn → giai đoạn dễ có chuyện lớn về nhà đất',
+  'tinh-cach': 'bạn là kiểu người nào → điểm mạnh nhất → điều dễ khiến bạn trả giá → khi áp lực bạn thành người thế nào → theo tuổi thay đổi ra sao',
+  'su-nghiep': 'bạn tạo giá trị bằng gì → hợp đứng ở vị trí nào → ai nâng, điều gì cản → đường đi lên và đỉnh của cái gì → học hành góp phần thế nào',
+  'tien-bac': 'tiền đến bằng cách nào → có giữ được không → rủi ro hao tài lớn nhất ở đâu → khi nào tích được tài sản, nhà cửa',
+  'tinh-duyen': 'bạn yêu thế nào → người đi cùng lâu dài thường thế nào → duyên đến sớm hay muộn → thử thách lớn nhất khi gắn bó',
+  'con-cai': 'duyên con thuận hay cần thời gian → con dễ là người thế nào → quan hệ cha mẹ – con về sau',
+  'gia-dinh': 'gia đình gốc là chỗ dựa hay gánh → anh chị em giúp hay vướng → phúc đức và hậu vận',
+  'suc-khoe': 'thể trạng chung → vùng cần lưu ý nhất → vấn đề thường theo kiểu nào (kéo dài, tái phát hay đột ngột) → giai đoạn cần chú ý hơn',
+  'ra-ngoai': 'duyên đi xa mạnh hay nhẹ → ra ngoài được gì, mất gì → ở lại nơi xa hay trở về',
   'van-han': 'kiểu cuộc đời theo thời gian → chặng hiện tại mang chủ đề gì → năm nay và vài năm tới đang dẫn tới đâu',
 };
 const MACH_CHUNG = 'bức tranh chung → điểm thuận → điểm dễ vướng → diễn biến theo thời gian → điều đáng nhớ nhất';
-const NGAN = new Set(['con-cai', 'anh-em', 'gia-dinh']);
+const NGAN = new Set(['con-cai', 'gia-dinh', 'ra-ngoai']);
 
 export async function viTomLai(vao: {
   chuDe: string;
@@ -46,6 +49,7 @@ LUẬT:
 - Chỉ dùng những gì các câu trả lời đã nói — không thêm nhận định, mốc tuổi hay sự kiện mới.
 - Không liệt kê lại từng câu theo thứ tự; nối chúng bằng quan hệ nhân quả ("vì… nên…", "chính điều đó…").
 - KHÔNG nêu tên sao, tên cung, thuật ngữ tử vi. Không lời khuyên, không đặt hạn, không "bạn nên".
+- Không mặc định giới tính của bạn đời, không mặc định người đọc đã hay sẽ kết hôn, có con.
 - Câu cuối nói điều quan trọng nhất về chủ đề này với riêng người đọc, bằng lời thường — không đúc kết đạo lý.
 
 ${GIONG_VAN}

@@ -2,7 +2,7 @@
  * Bộ đo cố định của lát cắt "Sự nghiệp — lá số gốc" (KIEN-TRUC-LUAN-GIAI.md mục 11)
  * — dùng chung cho do-thu-vien.ts và do-nhan-dien.ts để hai script đo đúng một bộ.
  */
-export const CAU_LAT_CAT = ['SN01', 'SN02', 'SN03', 'SN05', 'SN06'];
+export const CAU_LAT_CAT = ['SN01', 'SN02', 'SN04', 'SN05'];
 
 /** 12 lá số TỔNG HỢP cố định — LCG, chạy lại ra đúng bộ này. Không phải lá số thật. */
 export function boLaSo(n: number) {

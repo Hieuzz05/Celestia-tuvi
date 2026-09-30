@@ -19,6 +19,7 @@ const TAB = [
   { href: '/admin', nhan: 'Tổng quan' },
   { href: '/admin/models', nhan: 'Model' },
   { href: '/admin/knowledge', nhan: 'Kho tri thức' },
+  { href: '/admin/luan-giai', nhan: 'Cấu hình luận giải' },
   { href: '/admin/retrieval-lab', nhan: 'Retrieval Lab' },
   { href: '/admin/support', nhan: 'Ủng hộ' },
 ];

@@ -53,6 +53,8 @@ export interface DauVaoTraLoi {
    * nói gì với nhau.
    */
   chartHash?: string;
+  /** Băm theo GIỜ LÁ SỐ (veGioLaSo) — khoá bài luận giải v3, để đọc sổ kết luận chung (v3/so-ket-luan.ts) */
+  chartHashLaSo?: string;
   /**
    * Cho phép planner gọi model khi luật không kết luận được chủ đề.
    *
@@ -273,7 +275,13 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
         });
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
-  const daNoiTruoc = await ketLuanBaiTongQuan(vao.chartHash, vao.namXem);
+  // Sổ kết luận chung: bài luận giải v3 đã kết luận gì, rồi bảng tám lĩnh vực (bản cũ). Tám câu là trần —
+  // nhiều hơn thì khối này lấn át chính dữ kiện lá số.
+  const [soV3, bangCu] = await Promise.all([
+    import('./v3/so-ket-luan').then((m) => m.soKetLuanV3(vao.chartHashLaSo, vao.namXem)).catch(() => [] as string[]),
+    ketLuanBaiTongQuan(vao.chartHash, vao.namXem),
+  ]);
+  const daNoiTruoc = [...soV3, ...bangCu].slice(0, 8);
 
   /*
    * Hướng nghiêng chỉ tính cho câu CẦN một câu trả lời thẳng.

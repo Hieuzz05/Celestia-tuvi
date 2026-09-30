@@ -42,6 +42,8 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
    * tải chạy lại với taoMoi — route chỉ viết lại câu viết với kho tri thức cũ.
    */
   const [lanMoi, setLanMoi] = useState(0);
+  // Lượt tải nào là "Viết lại (quản trị)" — route bỏ qua đệm, không chỉ câu viết với kho cũ
+  const [lanVietLai, setLanVietLai] = useState(-1);
   const khoa = laSo
     ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}|${lanMoi}`
     : null;
@@ -75,7 +77,7 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi, taoMoi: lanMoi > 0 }),
+        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi, taoMoi: lanMoi > 0, vietLai: lanVietLai === lanMoi }),
       })
         .then((r) => (r.ok || r.status === 429 ? r.json() : null))
         .then((d) => {
@@ -121,6 +123,11 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
     /** Có câu viết với kho tri thức cũ — người đã đăng nhập được "Tạo bản mới" */
     banMoi: Boolean(khoa) && banMoi === khoa && !dangDocDau && !dangDocSau,
     taoBanMoi: () => setLanMoi((n) => n + 1),
+    /** Chỉ quản trị viên — route kiểm quyền */
+    vietLaiQuanTri: () => {
+      setLanVietLai(lanMoi + 1);
+      setLanMoi(lanMoi + 1);
+    },
   };
 }
 
