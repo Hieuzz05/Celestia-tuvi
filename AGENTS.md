@@ -142,6 +142,21 @@ cùng đổi. Không mở song song cặp này.
 
 Chưa xong mà phải dừng: ghi trạng thái ra tệp trong thư mục tạm trước khi đóng.
 
+### Trước khi đóng phiên: ghi ra tệp
+
+Ngữ cảnh phiên không phải nơi lưu trữ. Phiên đóng là thứ chưa ghi ra tệp coi như
+chưa từng có — đọc lại bản ghi `.jsonl` tốn kém hơn làm lại.
+
+| Loại | Ghi vào | Có commit? |
+|---|---|---|
+| Quyết định chiến lược, định hướng | `.md` / `.xlsx` trong kho | Có |
+| Phân tích đối thủ | `docs/doi-thu/<tên>.md` | Có |
+| Trạng thái việc đang dở | thư mục tạm của phiên, hoặc nhánh chưa commit | Không |
+| Số liệu nghiên cứu có nguồn | kèm luôn vào tệp quyết định | Có |
+
+Khi chủ dự án nói "tóm tắt trạng thái để phiên sau tiếp", AI ghi ra tệp trong thư
+mục tạm **và in đường dẫn ra màn hình** — không in thì chủ dự án không tìm lại được.
+
 ### Bảng tra nhanh
 
 | Subagent | Dùng khi | Ai gọi |
