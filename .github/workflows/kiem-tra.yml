@@ -51,6 +51,8 @@ jobs:
         run: npx tsx scripts/test-12-cung.ts
       - name: Bối cảnh người đọc + cấu hình luận giải
         run: npx tsx scripts/test-boi-canh-doc.ts
+      - name: Độ phủ dữ kiện (mọi sao, xung chiếu)
+        run: npx tsx scripts/test-phu-du-kien.ts
 
       - name: Build
         run: npx next build

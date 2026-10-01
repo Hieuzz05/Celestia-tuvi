@@ -197,6 +197,7 @@ npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — khôn
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
 npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
+npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
 npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
@@ -209,7 +210,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng

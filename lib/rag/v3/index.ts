@@ -2,7 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
 import { CAU_HOI_V3, CHU_DE_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
-import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
+import { dungDuKien, hoiThoiDiem, maCanNhac, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
@@ -476,7 +476,7 @@ ${phamViChuyenSau(q)}`
     ...[...`${duKien.map((d) => d.noiDung).join(' ')} ${nguon.map((n) => n.noiDung).join(' ')} ${tv?.khoi ?? ''}`.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => m[0]),
   ]);
   const kiem = (b: BaiV3) => [
-    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai, namDuocNeu, doDai, tranGoiY: cauHinh.tranGoiY }),
+    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai, namDuocNeu, doDai, tranGoiY: cauHinh.tranGoiY, maCanNhac: maCanNhac(duKien) }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
     ...kiemLapCum(b.luanGiai, vao.daNoi ?? [], q.loai === 'chuyen-sau' ? q.chuDe : 'tong-quan'),
     ...kiemTenSach(b),

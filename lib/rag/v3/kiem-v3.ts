@@ -117,6 +117,8 @@ export function kiemBai(vao: {
   /** Độ dài theo trang Cấu hình luận giải (cau-hinh.ts) — thiếu thì mặc định trong mã */
   doDai?: { luan: readonly [number, number]; viSao: readonly [number, number]; doan: readonly [number, number] };
   tranGoiY?: number;
+  /** Mã F### của cung chính / xung chiếu có sao hung nặng — bài nên trích ít nhất một mã mỗi cung */
+  maCanNhac?: string[];
 }): LoiV3[] {
   const { bai, loai } = vao;
   const loi: LoiV3[] = [];
@@ -264,6 +266,11 @@ export function kiemBai(vao: {
   if (saiMa.length) loi.push({ ma: 'ma-sai', moTa: `Dàn ý trích mã không tồn tại: ${[...new Set(saiMa)].join(', ')}.`, chan: false });
   const khongMa = bai.danY.filter((y) => !y.canCu.length).length;
   if (khongMa) loi.push({ ma: 'y-khong-ma', moTa: `${khongMa} ý trong dàn ý không có mã căn cứ.`, chan: false });
+
+  // Độ phủ: cung chính / xung chiếu có sao hung nặng mà dàn ý không trích tới — đo, chưa chặn
+  const daTrich = new Set(bai.danY.flatMap((y) => y.canCu));
+  const bo = (vao.maCanNhac ?? []).filter((m) => !daTrich.has(m));
+  if (bo.length) loi.push({ ma: 'bo-luc-hung', moTa: `Dàn ý chưa xét cung có sao hung nặng (${bo.join(', ')}) — cần một ý về lực kéo ấy.`, chan: false });
 
   return loi;
 }

@@ -8,7 +8,7 @@ import {
   type LaSo,
 } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
-import { TU_HOA } from '@/lib/tuvi/constants';
+import { CHINH_TINH as DS_CHINH_TINH, TU_HOA } from '@/lib/tuvi/constants';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
@@ -25,7 +25,7 @@ import { dongTrangThaiDuyen } from './trang-thai-duyen';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.09.8';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.10.1';
 
 export interface DuKienV3 {
   id: string;
@@ -233,23 +233,143 @@ const CHU_NGU_NGANG_HANG: Record<string, string> = {
   'Phụ Mẫu': 'cha mẹ, người đi trước',
   'Huynh Đệ': 'anh chị em',
   'Nô Bộc': 'bạn bè, người cộng tác',
+  'Phu Thê': 'người phối ngẫu và mối gắn bó đôi lứa',
+  'Tử Tức': 'con cái, người mình nuôi dạy',
 };
+
+/*
+ * SAO Ở CUNG NÀO THÌ NÓI VỀ CHUYỆN CỦA CUNG ẤY (01/10/2026, chủ dự án: "Tả Hữu ở Phu Thê mà
+ * luận như Tả Hữu ở Mệnh thì sai hoàn toàn"). Câu nghĩa trong KHUON viết cho "bạn"; trước đây
+ * chỉ ba cung ngang hàng có nhãn đổi chủ ngữ, các cung khác chỉ có "(diễn giải theo phần đời
+ * của cung này)" ở chính tinh và KHÔNG có nhãn nào ở phụ tinh — model chép thẳng thành tính
+ * cách người đọc. Giờ mọi cung ≠ Mệnh/Thân đều có nhãn, cho cả chính tinh lẫn phụ tinh.
+ */
+const CHU_NGU_VIEC: Record<string, string> = {
+  'Tài Bạch': 'chuyện tiền bạc — cách tiền đến, giữ và đi',
+  'Quan Lộc': 'chuyện công việc, sự nghiệp',
+  'Điền Trạch': 'chuyện nhà cửa, gia sản, nơi ở',
+  'Phúc Đức': 'chuyện bên trong — thứ khiến người ta thấy yên, và nếp nhà, họ hàng',
+  'Tật Ách': 'chuyện sức khoẻ và mức năng lượng',
+  'Thiên Di': 'chuyện ra ngoài, người ngoài và môi trường bên ngoài',
+};
+
+/** Nhãn đổi chủ ngữ cho các nét viết cho "bạn" — rỗng ở Mệnh/Thân */
+function nhanChuNgu(c: Cung, docLaThan = false): string {
+  if (c.tenCung === 'Mệnh' || (c.laCungThan && docLaThan)) return '';
+  const nguoi = CHU_NGU_NGANG_HANG[c.tenCung];
+  // celes-domain 01/10: đổi chủ ngữ máy móc làm Thiên Riêu ở Phu Thê thành "bạn đời dễ sa vào điều không nên"
+  // — nên chỉ chuyển TÍNH CHẤT, cấm suy ra ngoại tình / bệnh / mất mát / tai nạn của người khác
+  if (nguoi)
+    return `ở cung này sao tả ${nguoi}, KHÔNG tả bạn; chữ "bạn" trong nét dưới đọc là "${nguoi}" — chỉ giữ tính chất chung của nét (thuận hay vướng, gần hay xa, có người đỡ hay không), không suy ra ngoại tình, bệnh tật, mất mát hay tai nạn của người ấy`;
+  const viec = CHU_NGU_VIEC[c.tenCung];
+  return viec
+    ? `ở cung này sao nói về ${viec} — chỉ chuyển tính chất chung của nét dưới (thuận hay vướng, nhanh hay chậm, giữ được hay hao) sang chuyện ấy, KHÔNG thành tính cách bạn và không tự thêm chi tiết cụ thể mà dữ kiện, nguồn không nói`
+    : '(diễn giải theo phần đời của cung này)';
+}
+
+/*
+ * SAO NẶNG / SAO NHẸ. Mọi sao của cung chính đều vào dữ kiện (chủ dự án 01/10: "mọi chính,
+ * phụ tinh đều được xét"); nhưng đổ cả 15 sao ngang hàng thì 78% câu thành danh sách sao
+ * (docs/bay/ai-rag.md). Nên chia hai tầng: sao nặng dựng ý, sao nhẹ chỉ làm sắc thái.
+ * Sao nặng = cát/hung có trọng số chấm điểm + tứ hóa + nhóm đào hoa/cô quả/khốc hư (đổi hẳn
+ * nghĩa một cung) + sao chủ đề của câu.
+ */
+const NANG_THEM = new Set(['Thiên Khốc', 'Thiên Hư', 'Đào Hoa', 'Hồng Loan', 'Thiên Hỷ', 'Cô Thần', 'Quả Tú', 'Thiên Không', 'Lưu Hà', 'Phá Toái']);
+export function laSaoNang(s: { ten: string; loai: string }, saoChuDe: Set<string> = new Set()): boolean {
+  if (s.loai === 'chinh-tinh' || s.loai === 'tu-hoa') return true;
+  return CAT[s.ten] !== undefined || HUNG[s.ten] !== undefined || NANG_THEM.has(s.ten) || saoChuDe.has(s.ten);
+}
+
+/** Theo TÊN (truy hồi chỉ có tên): chính tinh, tứ hóa, cát/hung có trọng số, nhóm đào hoa/cô quả/khốc hư */
+const CHINH_TINH = new Set<string>(DS_CHINH_TINH);
+export function laTenSaoNang(ten: string): boolean {
+  return CHINH_TINH.has(ten) || ten.startsWith('Hóa ') || CAT[ten] !== undefined || HUNG[ten] !== undefined || NANG_THEM.has(ten);
+}
+
+/**
+ * Mã F### của cung chính và cung xung chiếu có sao hung nặng (hoặc Hóa Kỵ) — bài nên có ít nhất một ý
+ * trích những mã này. Dùng cho cảnh báo độ phủ của kiem-v3 (đo, chưa chặn).
+ */
+export function maCanNhac(dk: DuKienV3[]): string[] {
+  return dk
+    .filter((d) => d.noiDung.startsWith('Cung ') && (d.vaiTro === 'cung chính' || d.vaiTro.startsWith('xung chiếu')))
+    // Hung tinh đắc địa được ghi "(đắc địa: …)" trước dấu hai chấm — chỉ hung tinh KHÔNG đắc mới đòi một ý lực kéo
+    .filter((d) => d.sao.some((t) => HUNG[t] !== undefined && d.noiDung.includes(`${t}: `)))
+    .map((d) => d.id);
+}
+
+/** Độ sáng của PHỤ tinh đổi chiều nghĩa — KHUON chỉ có nét lúc bình thường */
+function dauSangPhu(s: { ten: string; doSang?: string | null }): string {
+  if (HUNG[s.ten] !== undefined && ['M', 'V', 'D'].includes(s.doSang ?? '')) return ' (đắc địa: bớt hại, có khi thành lực)';
+  if ((s.ten === 'Thiên Khốc' || s.ten === 'Thiên Hư') && ['M', 'V', 'D'].includes(s.doSang ?? '')) return ' (đắc địa: trước vất vả sau thành, buồn lo hoá động lực)';
+  if (CAT[s.ten] !== undefined && s.doSang === 'H') return ' (hãm: nét tốt yếu đi nhiều)';
+  return '';
+}
+const dauHam = (s: { doSang?: string | null }) => (s.doSang === 'H' ? ' (HÃM: nét dưới yếu đi hoặc lệch — nói mặt kém, không tả như khi sáng)' : '');
+
+/** Vai của một cung trong gói dữ kiện: cung chính đọc đủ, xung chiếu tác động mạnh thứ hai, tam hợp đỡ/kéo */
+type CheDoCung = 'chinh' | 'xung' | 'tam-hop';
+
+/*
+ * GIÁP CUNG — hai cung liền kề kẹp cung chính. Trước 01/10 dữ kiện không có, nên "Tả Hữu giáp
+ * Phu Thê" hay "Kình Đà giáp Mệnh" không bao giờ tới được model.
+ */
+const CAP_GIAP: [string, string, 'cát' | 'hung'][] = [
+  ['Tả Phù', 'Hữu Bật', 'cát'],
+  ['Văn Xương', 'Văn Khúc', 'cát'],
+  ['Thiên Khôi', 'Thiên Việt', 'cát'],
+  ['Thái Dương', 'Thái Âm', 'cát'],
+  ['Tử Vi', 'Thiên Phủ', 'cát'],
+  ['Hóa Lộc', 'Hóa Quyền', 'cát'],
+  ['Hóa Khoa', 'Hóa Quyền', 'cát'],
+  ['Lộc Tồn', 'Hóa Lộc', 'cát'],
+  ['Kình Dương', 'Đà La', 'hung'],
+  ['Địa Không', 'Địa Kiếp', 'hung'],
+  ['Hỏa Tinh', 'Linh Tinh', 'hung'],
+];
+function giapCung(laSo: LaSo, c: Cung): { noiDung: string; sao: string[] } | null {
+  const truoc = laSo.cungs[mod(c.chiIndex - 1, 12)];
+  const sau = laSo.cungs[mod(c.chiIndex + 1, 12)];
+  const co = (x: Cung, t: string) => x.sao.some((s) => s.ten === t);
+  const sang = (t: string) => [truoc, sau].some((x) => x.sao.some((s) => s.ten === t && ['M', 'V', 'D'].includes(s.doSang ?? '')));
+  const thay = CAP_GIAP.filter(([a, b]) => (co(truoc, a) && co(sau, b)) || (co(truoc, b) && co(sau, a)))
+    // Nhật Nguyệt giáp chỉ là cách tốt khi cả hai sao sáng
+    .filter(([a]) => a !== 'Thái Dương' || (sang('Thái Dương') && sang('Thái Âm')));
+  if (!thay.length) return null;
+  const mat = LINH_VUC_CUNG[c.tenCung] ?? c.tenCung;
+  const cat = thay.filter((t) => t[2] === 'cát').map(([a, b]) => `${a}–${b}`);
+  const hung = thay.filter((t) => t[2] === 'hung').map(([a, b]) => `${a}–${b}`);
+  return {
+    noiDung:
+      `Giáp cung: ${c.tenCung} nằm giữa hai cung liền kề (${truoc.tenCung}, ${sau.tenCung}), đọc theo mặt đời ${mat} — lực nhẹ hơn sao trong cung và tam phương: ` +
+      [
+        cat.length ? `giáp cát ${cat.join(', ')} — được nâng đỡ từ hai phía` : '',
+        // Kình Đà luôn giáp Lộc Tồn (Kình = Lộc Tồn + 1, Đà = Lộc Tồn − 1): cái bị kẹp là phần lộc
+        hung.length ? `giáp hung ${hung.join(', ')} — bị kẹp, áp lực dồn từ hai phía${hung.includes('Kình Dương–Đà La') && co(c, 'Lộc Tồn') ? '; Kình Đà kẹp Lộc Tồn: có lộc mà khó giữ trọn' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join('; ') +
+      '.',
+    sao: thay.flatMap(([a, b]) => [a, b]),
+  };
+}
 
 function moTaCung(
   laSo: LaSo,
   c: Cung,
   saoChuDe: Set<string>,
   coMoc = true,
-  gon = false,
-  ngangHang = false
+  cheDo: CheDoCung = 'chinh',
+  ngangHang = false,
+  cungGoc?: Cung,
+  docLaThan = false
 ): { noiDung: string; sao: string[] } {
+  const gon = cheDo !== 'chinh';
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const hoa = c.sao.filter((s) => s.loai === 'tu-hoa');
-  const phu = c.sao.filter(
-    (s) =>
-      (s.loai === 'phu-tinh' || s.loai === 'vong-sao') &&
-      (CAT[s.ten] !== undefined || HUNG[s.ten] !== undefined || saoChuDe.has(s.ten))
-  );
+  const phuMoi = c.sao.filter((s) => s.loai === 'phu-tinh' || s.loai === 'vong-sao');
+  const phu = phuMoi.filter((s) => laSaoNang(s, saoChuDe));
+  const nhe = phuMoi.filter((s) => !laSaoNang(s, saoChuDe));
   const phan: string[] = [];
   if (chinh.length) {
     phan.push(`chính tinh ${chinh.map(tenSao).join(', ')}`);
@@ -262,6 +382,8 @@ function moTaCung(
   }
   if (hoa.length) phan.push(`tứ hóa ${hoa.map((s) => s.ten).join(', ')}`);
   if (phu.length) phan.push(`phụ tinh ${phu.map(tenSao).join(', ')}`);
+  if (nhe.length) phan.push(`sao nhẹ ${nhe.map(tenSao).join(', ')}`);
+  if (c.trangSinh && cheDo === 'chinh') phan.push(`vòng Tràng Sinh ở ${c.trangSinh}`);
   if (c.coTuan) phan.push('gặp Tuần');
   if (c.coTriet) phan.push('gặp Triệt');
   if (c.laCungThan && c.tenCung !== 'Mệnh') phan.push('là cung an Thân');
@@ -271,7 +393,13 @@ function moTaCung(
    * CHỈ cho Mệnh và Thân: câu nghĩa nền viết cho con người, gắn vào cung khác
    * thì thành "Tử Vi ở Tài Bạch khiến tiền bạc cần tự quyết" — đo được ở lượt 2.
    */
-  const nen = (c.tenCung === 'Mệnh' || c.laCungThan ? chinh : [])
+  /*
+   * 01/10/2026: cung an Thân chỉ đọc như CON NGƯỜI khi câu hỏi gọi nó với tư cách cung Thân
+   * (TQ01…). Thân cư Phu Thê mà câu hỏi về bạn đời thì sao ở đó vẫn tả người phối ngẫu — bản
+   * trước cấp Nghĩa nền con người cho mọi cung an Thân, đúng lỗi "sao Phu Thê luận như Mệnh".
+   */
+  const laMenhThan = c.tenCung === 'Mệnh' || (c.laCungThan && docLaThan);
+  const nen = (laMenhThan ? chinh : [])
     .map((s) => KHUON.vi.netSao[s.ten])
     .filter(Boolean)
     .map((n, i) => `${chinh[i].ten}: ${n.manhCau ?? n.manh}`)
@@ -283,14 +411,17 @@ function moTaCung(
    * được cấp, tức vi phạm luật AGENTS "không lấp học thuyết bằng trí nhớ".
    * Cấp luôn nghĩa đã biên tập thì phần "Vì sao" có chỗ dựa kiểm được.
    */
-  const laMenhThan = c.tenCung === 'Mệnh' || c.laCungThan;
-  const ham = (s: { doSang?: string | null }) => (ngangHang && s.doSang === 'H' ? ' (HÃM: nét dưới yếu đi hoặc lệch — nói mặt kém, không tả như khi sáng)' : '');
-  const netChung = (laMenhThan ? [] : chinh)
-    .map((s) => (KHUON.vi.netSao[s.ten] ? `${s.ten}${ham(s)}: ${KHUON.vi.netSao[s.ten].manh}` : ''))
+  // Ở cung xung chiếu, Mệnh/Thân cũng không cấp Nghĩa nền — nét chính tinh đọc như lực chiếu vào cung chính
+  const netChung = (laMenhThan && cheDo === 'chinh' ? [] : chinh)
+    .map((s) => (KHUON.vi.netSao[s.ten] ? `${s.ten}${dauHam(s)}: ${KHUON.vi.netSao[s.ten].manh}` : ''))
     .filter(Boolean);
-  const netPhu = [...hoa, ...phu]
-    .map((s) => (KHUON.vi.netPhuTinh[s.ten] ? `${s.ten}: ${KHUON.vi.netPhuTinh[s.ten]}` : ''))
-    .filter(Boolean);
+  const nghiaPhu = (ds: typeof phu) =>
+    ds.map((s) => (KHUON.vi.netPhuTinh[s.ten] ? `${s.ten}${dauSangPhu(s)}: ${KHUON.vi.netPhuTinh[s.ten]}` : '')).filter(Boolean);
+  // Tam hợp: chỉ tứ hóa và sao nặng nhất (trọng số ≥ 1) có nghĩa — cung ấy là lực đỡ/kéo, không phải chủ thể
+  const netPhu = nghiaPhu(cheDo === 'tam-hop' ? [...hoa, ...phu.filter((s) => (CAT[s.ten] ?? HUNG[s.ten] ?? 0) >= 1)] : [...hoa, ...phu]);
+  const netNhe = cheDo === 'chinh' ? nghiaPhu(nhe) : [];
+  const netTs = cheDo === 'chinh' && c.trangSinh && KHUON.vi.netTrangSinh[c.trangSinh] ? `${c.trangSinh}: ${KHUON.vi.netTrangSinh[c.trangSinh]}` : '';
+  const nhan = nhanChuNgu(c, docLaThan);
   const tuanTriet = [
     c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở tiền vận (khoảng trước 30 tuổi)' : ''}` : '',
     c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
@@ -302,37 +433,54 @@ function moTaCung(
    */
   const vuong = [
     ...chinh.filter((s) => s.doSang === 'H').map((s) => `${s.ten} hãm`),
-    ...hoa.filter((s) => s.ten === 'Hóa Kỵ').map((s) => s.ten),
+    ...hoa.filter((s) => s.ten === 'Hóa Kỵ' && !['M', 'V', 'D'].includes(s.doSang ?? '')).map((s) => s.ten),
     // hung tinh đắc / miếu / vượng chỉ kéo nửa (như diemTungCung) — không bắt nói thành chỗ vướng
     ...phu.filter((s) => HUNG[s.ten] !== undefined && !['M', 'V', 'D'].includes(s.doSang ?? '')).map(tenSao),
     ...(c.coTriet ? ['Triệt'] : []),
     ...(c.coTuan ? ['Tuần'] : []),
   ];
-  const nghia = [
-    netChung.length && !gon
-      ? ngangHang && CHU_NGU_NGANG_HANG[c.tenCung]
-        ? `Nét chung của chính tinh — ở cung này sao tả ${CHU_NGU_NGANG_HANG[c.tenCung]}, KHÔNG tả bạn; chữ "bạn" trong nét dưới đọc là "${CHU_NGU_NGANG_HANG[c.tenCung]}" — ${netChung.join('; ')}.`
-        : `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.`
-      : '',
-    netPhu.length && !gon ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
-    tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
-    ngangHang && vuong.length
-      ? `BẮT BUỘC có một ý nói chỗ vướng của nhóm này (dù nhóm có sao tốt): ${vuong.join(', ')}.`
-      : '',
-  ].filter(Boolean).join(' ');
   /*
-   * GỌN (25/09/2026): cung chỉ đứng ở tam phương (xung chiếu / tam hợp) của cung
-   * chính thì không kèm đoạn diễn nghĩa. Rà lá số A: câu "tiền hay hao ở đâu"
-   * nhận nguyên Nghĩa nền tính cách của Mệnh (tam hợp của Tài Bạch) và nét Hỏa
-   * Linh của Phúc Đức (xung chiếu) — nên câu nào cũng kể lại tính cách và "phản
-   * ứng nhanh khi bị thúc ép". Cung ấy vẫn có tên sao, độ sáng, tứ hóa để luận
-   * tam phương; nghĩa của nó thuộc về câu mà nó là cung chính.
+   * GỌN (25/09/2026) → TAM PHƯƠNG CÓ NGHĨA (01/10/2026). Bản 25/09 bỏ hẳn nghĩa ở cung
+   * xung chiếu / tam hợp vì Nghĩa nền tính cách của Mệnh (tam hợp của Tài Bạch) và nét
+   * Hỏa Linh của Phúc Đức (xung chiếu) làm câu nào cũng kể lại tính cách. Cái giá: cung
+   * đối diện — lực mạnh thứ hai theo sách — tới model chỉ còn tên sao, model hoặc bỏ qua
+   * hoặc tự nhớ nghĩa. Giờ cấp lại nghĩa, nhưng gắn nhãn đọc là LỰC CHIẾU VÀO cung chính,
+   * và vẫn không cấp Nghĩa nền con người ở đây.
    */
+  const matGoc = cungGoc ? (LINH_VUC_CUNG[cungGoc.tenCung] ?? cungGoc.tenCung) : '';
+  const nghiaChinh = [
+    netChung.length && cheDo !== 'tam-hop' ? `chính tinh — ${netChung.join('; ')}` : '',
+    netPhu.length ? `phụ tinh/tứ hóa — ${netPhu.join('; ')}` : '',
+  ].filter(Boolean);
+  const nghia =
+    cheDo === 'chinh'
+      ? [
+          // Nhãn chủ ngữ nói MỘT lần cho cả cung — lặp ở từng nhóm sao là ba lần cùng một câu
+          nhan && (netChung.length || netPhu.length || netNhe.length) ? `Đọc mọi nét dưới đây: ${nhan}.` : '',
+          netChung.length ? `Nét chung của chính tinh — ${netChung.join('; ')}.` : '',
+          netPhu.length ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
+          netNhe.length || netTs
+            ? `Sao nhẹ (chỉ làm sắc thái: dùng khi cùng chiều với sao nặng ở trên hoặc chạm thẳng câu hỏi, không dựng ý riêng từ một sao nhẹ) — ${[...netNhe, ...(netTs ? [`vòng Tràng Sinh ${netTs}`] : [])].join('; ')}.`
+            : '',
+          tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
+          ngangHang && vuong.length ? `BẮT BUỘC có một ý nói chỗ vướng của nhóm này (dù nhóm có sao tốt): ${vuong.join(', ')}.` : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : [
+          cheDo === 'xung'
+            ? `Cung này CHIẾU THẲNG vào cung ${cungGoc?.tenCung} (${matGoc}) — tác động mạnh thứ hai sau cung chính: đọc các nét dưới là lực tác động lên ${matGoc}, KHÔNG tả tính cách bạn và không kể chuyện riêng của mặt đời ${LINH_VUC_CUNG[c.tenCung] ?? c.tenCung}.`
+            : `Cung tam hợp của ${cungGoc?.tenCung} (${matGoc}) — chỉ nâng hoặc kéo nhẹ thêm cho cung chính, yếu hơn cung chính và cung xung chiếu; không dựng ý riêng từ cung này, không tả tính cách bạn.`,
+          nghiaChinh.length ? `Nét để đọc lực ấy: ${nghiaChinh.join('. ')}.` : '',
+          tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
   const nenHien = nen && !gon;
   return {
-    noiDung: `Cung ${c.tenCung} — mặt đời ${LINH_VUC_CUNG[c.tenCung] ?? c.tenCung} (${c.can} ${c.chi}${dv}): ${phan.join('; ')}.${nenHien ? ` Nghĩa nền (nói về CON NGƯỜI, không phải nghĩa của phần đời cung này) — ${nen}` : ''}${nghia ? ` ${nghia}` : ''}${gon ? ' (Cung tam phương: chỉ dùng làm lực đỡ hay kéo cho cung chính; nghĩa riêng của cung này thuộc phần khác.)' : ''}`,
+    noiDung: `Cung ${c.tenCung} — mặt đời ${LINH_VUC_CUNG[c.tenCung] ?? c.tenCung} (${c.can} ${c.chi}${dv}): ${phan.join('; ')}.${nenHien ? ` Nghĩa nền (nói về CON NGƯỜI, không phải nghĩa của phần đời cung này) — ${nen}` : ''}${nghia ? ` ${nghia}` : ''}`,
     // Thứ tự có nghĩa: truy hồi lấy mấy sao đầu làm truy vấn, nên sao nặng ký phải đứng trước
-    sao: [...new Set([...chinh, ...hoa, ...phu, ...c.sao].map((s) => s.ten))],
+    sao: [...new Set([...chinh.map((s) => s.ten), ...hoa.map((s) => s.ten), ...phu.map((s) => s.ten), ...nhe.map((s) => s.ten), ...c.sao.map((s) => s.ten), ...(cheDo === 'chinh' && c.trangSinh ? [c.trangSinh] : [])])],
   };
 }
 
@@ -388,33 +536,40 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
   // Danh sách cung phải đọc, kèm vai trò
   const daCo = new Set<string>();
   const cungVai: { c: Cung; vai: string }[] = [];
-  const dua = (c: Cung | undefined, vai: string) => {
+  const docThan = new Set<string>();
+  const dua = (c: Cung | undefined, vai: string, laThan = false) => {
     if (!c || daCo.has(c.tenCung)) return;
     daCo.add(c.tenCung);
+    if (laThan) docThan.add(c.tenCung);
     cungVai.push({ c, vai });
   };
   const chinhDs = q.cung.length ? q.cung : [cd?.cungChinh ?? 'Mệnh'];
   const goc = timCung(laSo, chinhDs[0], namXem);
-  dua(goc, chinhDs[0] === 'DV' ? 'cung đại vận đang chạy (chính)' : chinhDs[0] === 'TH' ? `cung tiểu hạn năm ${namXem} (chính)` : 'cung chính');
+  dua(goc, chinhDs[0] === 'DV' ? 'cung đại vận đang chạy (chính)' : chinhDs[0] === 'TH' ? `cung tiểu hạn năm ${namXem} (chính)` : 'cung chính', chinhDs[0] === 'THAN');
   if (goc && !q.ngangHang) {
     const { xungChieu, tamHop } = tamPhuongTuChinh(goc.chiIndex);
     dua(laSo.cungs[xungChieu], `xung chiếu của ${goc.tenCung}`);
     dua(laSo.cungs[tamHop[0]], `tam hợp của ${goc.tenCung}`);
     dua(laSo.cungs[tamHop[1]], `tam hợp của ${goc.tenCung}`);
   }
-  for (const t of chinhDs.slice(1)) dua(timCung(laSo, t, namXem), 'cung chính (cùng xét)');
+  for (const t of chinhDs.slice(1)) dua(timCung(laSo, t, namXem), 'cung chính (cùng xét)', t === 'THAN');
   // Tổng quan chỉ đọc đúng các cung khung đã chỉ — thêm phụ trợ của chủ đề là
   // biến một câu 60–110 từ thành bài đọc nửa lá số.
   for (const p of q.loai === 'chuyen-sau' ? (cd?.phuTro ?? []) : []) {
     for (const ten of p.cung.split('/').map((x) => x.trim())) {
-      if (ten === 'Thân') dua(timCung(laSo, 'THAN', namXem), `phụ trợ — ${p.vaiTro}`);
+      if (ten === 'Thân') dua(timCung(laSo, 'THAN', namXem), `phụ trợ — ${p.vaiTro}`, true);
       else if (LINH_VUC_CUNG[ten]) dua(timCung(laSo, ten, namXem), `phụ trợ — ${p.vaiTro}`);
     }
   }
-  const laTamPhuong = (vai: string) => vai.startsWith('xung chiếu') || vai.startsWith('tam hợp');
+  const cheDo = (vai: string): CheDoCung => (vai.startsWith('xung chiếu') ? 'xung' : vai.startsWith('tam hợp') ? 'tam-hop' : 'chinh');
   for (const { c, vai } of cungVai) {
-    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q), laTamPhuong(vai), !!q.ngangHang);
+    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q), cheDo(vai), !!q.ngangHang, goc, docThan.has(c.tenCung));
     them(vai, m.noiDung, m.sao, c.tenCung);
+  }
+  // Giáp của cung chính (và các cung chính cùng xét của câu ngang hàng)
+  for (const { c, vai } of cungVai.filter((x) => x.vai.startsWith('cung'))) {
+    const g = giapCung(laSo, c);
+    if (g) them(`giáp ${vai === 'cung chính (cùng xét)' ? 'cung cùng xét' : 'cung chính'}`, g.noiDung, g.sao, c.tenCung);
   }
 
   // Sao toàn cục của chủ đề: vị trí trên cả lá
@@ -437,7 +592,16 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
 
   // Cách cục có dính tới các cung đang đọc
   const xetHan = q.van.some((v) => v === 'th' || v === 'th3' || v === 'dv');
-  for (const cc of nhanDangCachCuc(laSo)) {
+  /*
+   * Cách cục xét quanh CẢ cung chính của câu (01/10/2026). nhanDangCachCuc luôn đặt Mệnh trước và
+   * bỏ trùng theo mã, nên "Tả Hữu" của tam phương Phu Thê bị bản của Mệnh nuốt mất. Engine chỉ đọc
+   * menhIndex để chọn cung gốc (cach-cuc.ts:442), nên xoay gốc về cung chính là đủ — không sửa engine.
+   */
+  const dsCachCuc = [...nhanDangCachCuc(laSo), ...(goc && goc.chiIndex !== laSo.menhIndex ? nhanDangCachCuc({ ...laSo, menhIndex: goc.chiIndex }) : [])];
+  const daCoCc = new Set<string>();
+  for (const cc of dsCachCuc) {
+    if (daCoCc.has(`${cc.ma}|${cc.cung}`)) continue;
+    daCoCc.add(`${cc.ma}|${cc.cung}`);
     if (cc.loai === 'han' && !xetHan) continue;
     // Cách cục chỉ vào khi nó nằm trên một cung đang đọc — cách cục của Mệnh không
     // phải căn cứ cho câu về năm nay hay chuyện nhà cửa.
@@ -447,7 +611,18 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     // TD01 "yêu kiểu nào" đọc Mệnh trước, và bốn cách cục của Mệnh theo vào chủ đề tình duyên), hoặc khi liên quan
     if (q.loai === 'chuyen-sau' && cc.cung !== cd?.cungChinh && !cachCucHopChuDe(cc.ten, q.chuDe)) continue;
     void vaiCung;
-    them('cách cục', `Cách cục ${cc.ten} (tại ${cc.cung}). ${cc.dieuKien}`, [...cc.sao], cc.cung);
+    // Cung Thân được hỏi như con người thì cách cục ở đó vẫn là tính cách; cách cục của Mệnh khi Mệnh không phải
+    // cung chính chỉ là lực chiếu vào câu đang hỏi
+    const laThanDoc = laSo.cungs.some((x) => x.tenCung === cc.cung && x.laCungThan && docThan.has(x.tenCung));
+    const docTheo =
+      cc.cung === 'Mệnh' || laThanDoc
+        ? goc && goc.tenCung !== cc.cung
+          ? ` Cách cục này ở ${cc.cung}, không ở cung chính — chỉ là lực chiếu vào ${LINH_VUC_CUNG[goc.tenCung] ?? goc.tenCung}, không phải nhận định chính của câu.`
+          : ''
+        : LINH_VUC_CUNG[cc.cung]
+          ? ` Câu trên viết cho người đọc; ở đây chỉ giữ tính chất chung (thuận hay vướng, có người đỡ hay không) và áp vào ${LINH_VUC_CUNG[cc.cung]} của cung ${cc.cung}, không thành tính cách bạn, không thêm chi tiết dữ kiện không có.`
+          : '';
+    them('cách cục', `Cách cục ${cc.ten} (tại ${cc.cung}). ${cc.dieuKien}${docTheo}`, [...cc.sao], cc.cung);
   }
 
   // Duyên sớm / muộn / mỏng — engine gộp luật sách (trang-thai-duyen.ts), để mọi lượt cùng một kết luận
@@ -461,14 +636,19 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
     const dv = cungDaiVan(laSo, ta);
     if (dv?.daiVan) {
       const { xungChieu, tamHop } = tamPhuongTuChinh(dv.chiIndex);
+      // 01/10/2026: kèm phụ tinh nặng — trước đây tam phương cung vận chỉ có chính tinh và tứ hóa
+      const tomCung = (c: Cung) => {
+        const nang = c.sao.filter((s) => (s.loai === 'phu-tinh' || s.loai === 'vong-sao') && laSaoNang(s, saoChuDe)).map(tenSao);
+        return `${c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh'}${c.sao.some((s) => s.loai === 'tu-hoa') ? ` (${c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten).join(', ')})` : ''}${nang.length ? `; phụ tinh ${nang.join(', ')}` : ''}${c.coTuan ? '; Tuần' : ''}${c.coTriet ? '; Triệt' : ''}`;
+      };
       const tp = [xungChieu, ...tamHop]
         .map((i) => laSo.cungs[i])
-        .map((c) => `${c.tenCung}: ${c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh'}${c.sao.some((s) => s.loai === 'tu-hoa') ? ` (${c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten).join(', ')})` : ''}`)
+        .map((c) => `${c.tenCung}: ${tomCung(c)}`)
         .join('; ');
       them(
         'đại vận đang chạy',
-        `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (âm) chạy qua cung ${dv.tenCung}. Tam phương của cung vận — ${tp}.`,
-        [...dv.sao.map((s) => s.ten), ...[xungChieu, ...tamHop].flatMap((i) => laSo.cungs[i].sao.filter((s) => s.loai !== 'vong-sao').map((s) => s.ten))],
+        `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (âm) chạy qua cung ${dv.tenCung} (${tomCung(dv)}). Tam phương của cung vận — ${tp}.`,
+        [...dv.sao.map((s) => s.ten), ...[xungChieu, ...tamHop].flatMap((i) => laSo.cungs[i].sao.map((s) => s.ten))],
         dv.tenCung
       );
     }
@@ -486,6 +666,10 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
       });
     if (q.van.includes('chuoi')) them('chuỗi đại vận (tuổi âm)', chuoi.join('\n'), laSo.cungs.flatMap((c) => c.sao.filter((s) => s.loai !== 'vong-sao').map((s) => s.ten)));
   }
+  const phuNangCua = (c: Cung) => {
+    const nang = c.sao.filter((s) => (s.loai === 'phu-tinh' || s.loai === 'vong-sao') && laSaoNang(s, saoChuDe)).map(tenSao);
+    return `${nang.length ? `; phụ tinh ${nang.join(', ')}` : ''}${c.coTuan ? '; Tuần' : ''}${c.coTriet ? '; Triệt' : ''}`;
+  };
   const moTaNam = (nam: number) => {
     const c = laSo.cungs[cungTieuHan(laSo, tuoiAm(laSo, nam))];
     const can = mod(nam + 6, 10);
@@ -502,7 +686,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
       c,
       noiDung:
         `Năm ${nam} (${CAN[can]} ${CHI[mod(nam + 8, 12)]}, ${tuoiAm(laSo, nam)} tuổi âm): tiểu hạn tại cung ${c.tenCung} ` +
-        `(${c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh'}${c.sao.some((s) => s.loai === 'tu-hoa') ? '; ' + c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten).join(', ') : ''}). ` +
+        `(${c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh'}${c.sao.some((s) => s.loai === 'tu-hoa') ? '; ' + c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten).join(', ') : ''}${phuNangCua(c)}). ` +
         `Lưu tứ hóa theo can năm: ${[nghiaHoa('Hóa Lộc', loc), nghiaHoa('Hóa Quyền', quyen), nghiaHoa('Hóa Khoa', khoa), nghiaHoa('Hóa Kỵ', ky)].join('; ')}. ` +
         `Lưu tinh: ${luu}. Nghĩa: Thái Tuế — ${KHUON.vi.netPhuTinh['Thái Tuế'] ?? ''}.`,
       sao: [...c.sao.map((s) => s.ten), loc, quyen, khoa, ky, 'Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa', 'Hóa Kỵ', 'Thái Tuế', 'Lộc Tồn', 'Kình Dương', 'Đà La', 'Thiên Mã', 'Thiên Khốc', 'Thiên Hư'],
