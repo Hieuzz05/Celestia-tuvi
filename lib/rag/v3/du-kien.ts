@@ -223,7 +223,26 @@ export function hoiThoiDiem(q: CauHoiV3): boolean {
   return q.thoiDiem !== 'khong';
 }
 
-function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true, gon = false): { noiDung: string; sao: string[] } {
+/*
+ * Câu ngang hàng (TQ12, 01/10/2026): nét chính tinh trong KHUON viết cho "bạn", nên ở
+ * cung Phụ Mẫu nó thành "Thái Dương: bạn dễ kéo nhóm đi" — model chép nguyên thành tính
+ * của người đọc, luật trong phạm vi câu hỏi không cãi lại được dữ kiện. Ở các cung này
+ * nhãn phải nói rõ sao tả AI, và sao hãm phải được đánh dấu (KHUON chỉ có nét lúc sáng).
+ */
+const CHU_NGU_NGANG_HANG: Record<string, string> = {
+  'Phụ Mẫu': 'cha mẹ, người đi trước',
+  'Huynh Đệ': 'anh chị em',
+  'Nô Bộc': 'bạn bè, người cộng tác',
+};
+
+function moTaCung(
+  laSo: LaSo,
+  c: Cung,
+  saoChuDe: Set<string>,
+  coMoc = true,
+  gon = false,
+  ngangHang = false
+): { noiDung: string; sao: string[] } {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
   const hoa = c.sao.filter((s) => s.loai === 'tu-hoa');
   const phu = c.sao.filter(
@@ -265,8 +284,9 @@ function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true, gon 
    * Cấp luôn nghĩa đã biên tập thì phần "Vì sao" có chỗ dựa kiểm được.
    */
   const laMenhThan = c.tenCung === 'Mệnh' || c.laCungThan;
+  const ham = (s: { doSang?: string | null }) => (ngangHang && s.doSang === 'H' ? ' (HÃM: nét dưới yếu đi hoặc lệch — nói mặt kém, không tả như khi sáng)' : '');
   const netChung = (laMenhThan ? [] : chinh)
-    .map((s) => (KHUON.vi.netSao[s.ten] ? `${s.ten}: ${KHUON.vi.netSao[s.ten].manh}` : ''))
+    .map((s) => (KHUON.vi.netSao[s.ten] ? `${s.ten}${ham(s)}: ${KHUON.vi.netSao[s.ten].manh}` : ''))
     .filter(Boolean);
   const netPhu = [...hoa, ...phu]
     .map((s) => (KHUON.vi.netPhuTinh[s.ten] ? `${s.ten}: ${KHUON.vi.netPhuTinh[s.ten]}` : ''))
@@ -276,7 +296,11 @@ function moTaCung(laSo: LaSo, c: Cung, saoChuDe: Set<string>, coMoc = true, gon 
     c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
   ].filter(Boolean);
   const nghia = [
-    netChung.length && !gon ? `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.` : '',
+    netChung.length && !gon
+      ? ngangHang && CHU_NGU_NGANG_HANG[c.tenCung]
+        ? `Nét chung của chính tinh — ở cung này sao tả ${CHU_NGU_NGANG_HANG[c.tenCung]}, KHÔNG tả bạn; chữ "bạn" trong nét dưới đọc là "${CHU_NGU_NGANG_HANG[c.tenCung]}" — ${netChung.join('; ')}.`
+        : `Nét chung của chính tinh (diễn giải theo phần đời của cung này) — ${netChung.join('; ')}.`
+      : '',
     netPhu.length && !gon ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
     tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
   ].filter(Boolean).join(' ');
@@ -356,7 +380,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
   const chinhDs = q.cung.length ? q.cung : [cd?.cungChinh ?? 'Mệnh'];
   const goc = timCung(laSo, chinhDs[0], namXem);
   dua(goc, chinhDs[0] === 'DV' ? 'cung đại vận đang chạy (chính)' : chinhDs[0] === 'TH' ? `cung tiểu hạn năm ${namXem} (chính)` : 'cung chính');
-  if (goc) {
+  if (goc && !q.ngangHang) {
     const { xungChieu, tamHop } = tamPhuongTuChinh(goc.chiIndex);
     dua(laSo.cungs[xungChieu], `xung chiếu của ${goc.tenCung}`);
     dua(laSo.cungs[tamHop[0]], `tam hợp của ${goc.tenCung}`);
@@ -373,7 +397,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
   }
   const laTamPhuong = (vai: string) => vai.startsWith('xung chiếu') || vai.startsWith('tam hợp');
   for (const { c, vai } of cungVai) {
-    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q), laTamPhuong(vai));
+    const m = moTaCung(laSo, c, saoChuDe, hoiThoiDiem(q), laTamPhuong(vai), !!q.ngangHang);
     them(vai, m.noiDung, m.sao, c.tenCung);
   }
 

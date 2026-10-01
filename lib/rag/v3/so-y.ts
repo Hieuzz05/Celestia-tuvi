@@ -34,7 +34,7 @@ export interface MucDaNoi {
 
 /** Câu tổng quan nào là bản TÓM TẮT của chủ đề chuyên sâu nào */
 export const TONG_QUAN_CUA_CHU_DE: Record<string, string> = {
-  TQ01: 'tinh-cach', TQ02: 'tinh-cach', TQ03: 'tinh-cach',
+  TQ01: 'tinh-cach', TQ02: 'tinh-cach', TQ03: 'tinh-cach', TQ12: 'gia-dinh',
   TQ05: 'su-nghiep', TQ06: 'tien-bac', TQ07: 'tinh-duyen',
   TQ08: 'van-han', TQ09: 'van-han', TQ10: 'van-han',
 };

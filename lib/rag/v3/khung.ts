@@ -50,6 +50,14 @@ export interface CauHoiV3 {
    * regex trên câu hỏi nên SN01 "hợp nghề gì" lại bị cho nói mốc.
    */
   thoiDiem: 'co' | 'khong' | 'phu';
+  /**
+   * Các cung trong `cung` NGANG HÀNG, không có cung gốc (01/10/2026, TQ12). Mặc định
+   * cung đầu là gốc và tam phương của nó vào trước với vai "gọn" (không kèm nghĩa sao);
+   * TQ12 liệt kê Phụ Mẫu rồi Nô Bộc — mà Nô Bộc là tam hợp của Phụ Mẫu, nên nó vào
+   * với vai gọn và bài luận bạn bè không có chỗ dựa, còn Tử Tức lọt vào làm nhiễu.
+   * Bật cờ này: mọi cung liệt kê đều là cung chính, không kéo tam phương của cung đầu.
+   */
+  ngangHang?: true;
 }
 
 export const PHIEN_BAN_KHUNG_V3 = '2026.09.6';
@@ -71,6 +79,9 @@ export const CAU_HOI_V3: CauHoiV3[] = [
   { id: "TQ01", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tôi là người như thế nào?", nhanDuoc: "Một câu định danh + một câu về mặt bên trong", yBatBuoc: "Mệnh (chính) + tam hợp Tài Bạch, Quan Lộc + xung Thiên Di; Thân; Tật Ách, Phúc Đức cho mặt bên trong", cung: ["Mệnh", "THAN", "Tật Ách", "Phúc Đức"], yeuToThem: "", van: [], khongDuoc: "" },
   { id: "TQ02", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Điểm mạnh nổi bật nhất của tôi?", nhanDuoc: "Một năng lực + một lợi thế trong đời", yBatBuoc: "Cách cục cát mạnh nhất; cung có chính tinh miếu vượng + cát tinh; vị trí Hóa Lộc / Quyền / Khoa", cung: ["Mệnh", "Quan Lộc", "Tài Bạch"], yeuToThem: "", van: ["diem"], khongDuoc: "" },
   { id: "TQ03", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Điều tôi cần lưu ý nhất?", nhanDuoc: "Một kiểu sai lặp lại hoặc một mặt yếu của đời", yBatBuoc: "Cung yếu nhất (chính tinh hãm + sát tinh + Hóa Kỵ); sát tinh ở Mệnh, Thân, Phúc Đức", cung: ["Mệnh", "Phúc Đức"], yeuToThem: "", van: ["diem"], khongDuoc: "" },
+  // TQ12 (01/10/2026, góp ý "đọc tổng quan vẫn không biết mối quan hệ của mình ra sao"): trước đó tổng quan chỉ có
+  // tình duyên (TQ07) — cha mẹ, anh chị em, bạn bè không có câu nào. Đứng ngay sau ba câu về con người để đọc liền mạch.
+  { id: "TQ12", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tôi thế nào với những người quanh mình?", nhanDuoc: "Mỗi nhóm người gần (người đi trước, anh chị em, bạn bè) một nhận định: họ thấy bạn thế nào, ai là chỗ dựa", yBatBuoc: "Phụ Mẫu (cha mẹ, người đi trước) + Huynh Đệ (anh chị em) + Nô Bộc (bạn bè, người cộng tác) + Thiên Di (người ngoài nhìn mình); Tả Hữu, Khôi Việt cho quý nhân", cung: ["Nô Bộc", "Phụ Mẫu", "Huynh Đệ", "Thiên Di"], ngangHang: true, yeuToThem: "", van: [], khongDuoc: "Không bàn bạn đời, tình duyên (đã có câu riêng). Không tả lại tính cách chung. Không mặc định người đọc có anh chị em hay đã gặp một người cụ thể" },
   { id: "TQ04", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Lá số mạnh ở mặt nào, yếu ở mặt nào?", nhanDuoc: "Xếp 12 mặt đời vào 3 nhóm Thuận lợi / Ổn định / Cần chăm chút", yBatBuoc: "Chấm từng cung theo luật: chính tinh + độ sáng + cát/sát tinh + tứ hóa + Tuần/Triệt (engine chấm, không dùng LLM)", cung: ["Mệnh"], yeuToThem: "", van: ["diem"], khongDuoc: "" },
   { id: "TQ05", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tôi hợp hướng nghề nào?", nhanDuoc: "Một dòng: nhóm nghề + vai trò", yBatBuoc: "Quan Lộc + tam phương", cung: ["Quan Lộc"], yeuToThem: "", van: [], khongDuoc: "" },
   { id: "TQ06", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tiền bạc của tôi nói chung thế nào?", nhanDuoc: "Mức kiếm / mức giữ + nguồn chính", yBatBuoc: "Tài Bạch + tam phương + Phúc Đức (xung) + Điền Trạch", cung: ["Tài Bạch", "Phúc Đức", "Điền Trạch"], yeuToThem: "", van: [], khongDuoc: "" },
