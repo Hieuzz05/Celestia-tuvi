@@ -32,6 +32,8 @@ export interface Bangchung {
   hePhai: string;
   mucTinCay: string;
   noiDung: string;
+  /** Luật ngầm — xem `DoanUngVien.an` */
+  an: boolean;
 }
 
 export interface GoiBangChung {
@@ -52,10 +54,41 @@ export interface GoiBangChung {
   };
 }
 
-/** T1, T2… theo thứ tự tài liệu xuất hiện — ngắn hơn uuid và đủ để model phân biệt */
-function maTaiLieuNgan(id: string, tatCa: string[]): string {
-  return `T${[...new Set(tatCa)].indexOf(id) + 1}`;
+/**
+ * T1, T2… theo thứ tự tài liệu xuất hiện — ngắn hơn uuid và đủ để model phân biệt.
+ * Nguồn luật ngầm đánh dãy riêng N1, N2…: model vẫn biết hai đoạn cùng một nguồn
+ * (luật "một tiếng nói"), mà mã không trỏ về được tài liệu nào.
+ */
+export function danhMaTaiLieu(doan: { documentId: string; an: boolean }[]): Map<string, string> {
+  const ma = new Map<string, string>();
+  let t = 0;
+  let n = 0;
+  for (const d of doan) {
+    if (!ma.has(d.documentId)) ma.set(d.documentId, d.an ? `N${++n}` : `T${++t}`);
+  }
+  return ma;
 }
+
+/**
+ * Nhãn một nguồn trong prompt. Luật ngầm không mang đề mục: đề mục của một ghi
+ * chú chuyên gia hay tự xưng tên, và model chép lại được.
+ */
+export function nhanNguon(e: { mucTinCay: string; an: boolean; duongDeMuc: string | null }, ma?: string): string {
+  const muc = `mức: ${NHAN_TIN_CAY[e.mucTinCay] ?? e.mucTinCay}`;
+  if (e.an) return `[${muc} · LUẬT NGẦM${ma ? ` ${ma}` : ''}]`;
+  return `[${muc}${ma ? ` · tài liệu ${ma}` : ''}${e.duongDeMuc ? ` · mục "${e.duongDeMuc}"` : ''}]`;
+}
+
+/**
+ * Luật cho nguồn ngầm — chỉ chèn khi gói có ít nhất một nguồn ngầm, để prompt
+ * của bài không có nguồn ngầm giữ nguyên từng chữ (không phá đệm prompt).
+ * Cùng ý với luật 13 của luận giải v3 (lib/rag/v3/prompt-v3.ts).
+ */
+export const LUAT_NGUON_NGAM =
+  'NGUỒN GHI [LUẬT NGẦM] dùng để định hướng và cân nhắc như mọi nguồn khác, cùng mức chắc chắn theo mức tin cậy của nó, ' +
+  'và vẫn ghi mã E### của nó vào phần căn cứ. Nhưng KHÔNG để lộ là có một nguồn như vậy: không trích lại lời nó, ' +
+  'không nói "theo chuyên gia", "theo kinh nghiệm", "ghi chú", "nội bộ", "luật ngầm". ' +
+  'Viết nhận định bằng chính dữ kiện lá số đỡ nó, như với nguồn sách.';
 
 export function dungGoiBangChung(
   cauHoi: string,
@@ -63,6 +96,7 @@ export function dungGoiBangChung(
   duKien: DuKienLaSo[],
   doan: DoanUngVien[]
 ): GoiBangChung {
+  const maTaiLieu = danhMaTaiLieu(doan);
   return {
     cauHoi,
     chuDe: NHAN_CHU_DE[keHoach.chuDe],
@@ -72,10 +106,7 @@ export function dungGoiBangChung(
     duKien,
     bangChung: doan.map((d, i) => ({
       id: `E${String(i + 1).padStart(3, '0')}`,
-      maTaiLieu: maTaiLieuNgan(
-        d.documentId,
-        doan.map((x) => x.documentId)
-      ),
+      maTaiLieu: maTaiLieu.get(d.documentId)!,
       chunkId: d.chunkId,
       documentId: d.documentId,
       versionId: d.versionId,
@@ -85,6 +116,7 @@ export function dungGoiBangChung(
       hePhai: d.hePhai,
       mucTinCay: d.mucTinCay,
       noiDung: d.noiDung,
+      an: d.an,
     })),
     phienBan: {
       engine: PHUONG_PHAP.id,
@@ -105,10 +137,7 @@ export function dungKhoiChoPrompt(goi: GoiBangChung): string {
   // một sách chỉ là một tiếng nói chứ không phải ba nguồn đồng thuận.
   const bangChung = goi.bangChung.length
     ? goi.bangChung
-        .map(
-          (e) =>
-            `${e.id}. [mức: ${NHAN_TIN_CAY[e.mucTinCay] ?? e.mucTinCay} · tài liệu ${e.maTaiLieu}${e.duongDeMuc ? ` · mục "${e.duongDeMuc}"` : ''}]\n${e.noiDung}`
-        )
+        .map((e) => `${e.id}. ${nhanNguon(e, e.maTaiLieu)}\n${e.noiDung}`)
         .join('\n\n')
     : '(Không có nguồn nào trong kho tri thức khớp với câu hỏi này.)';
 
@@ -125,6 +154,7 @@ export function dungKhoiChoPrompt(goi: GoiBangChung): string {
     bangChung,
     '',
     luatUuTienNguon(),
+    ...(goi.bangChung.some((e) => e.an) ? ['', LUAT_NGUON_NGAM] : []),
   ].join('\n');
 }
 

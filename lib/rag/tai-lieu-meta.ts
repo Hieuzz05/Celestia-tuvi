@@ -15,6 +15,10 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 export interface MetaTaiLieu {
   mucTinCay: string;
   loaiNguon: string;
+  /** Có bản đang xuất bản và tài liệu không bị lưu trữ — thư viện chỉ dẫn được tài liệu như vậy */
+  dangXuatBan: boolean;
+  /** Id các bản đang xuất bản (rỗng khi lưu trữ) — câu trích mang versionId khác là trỏ bản đã thay */
+  banXuatBan: string[];
 }
 
 /**
@@ -23,6 +27,15 @@ export interface MetaTaiLieu {
  * nhưng bài không được nhắc tới, trích lại, hay gọi tên nó.
  */
 export const LOAI_NGUON_AN = new Set(['ghi-chu-chuyen-gia', 'noi-bo']);
+
+/**
+ * Một tài liệu có phải luật ngầm không. ĐÓNG khi không biết: map rỗng (đọc kho
+ * hỏng) hay tài liệu chưa có trong map (vừa nạp, đệm chưa kịp) đều coi là ngầm.
+ */
+export function laNguonAn(meta: Map<string, MetaTaiLieu>, documentId: string): boolean {
+  const m = meta.get(documentId);
+  return !m || LOAI_NGUON_AN.has(m.loaiNguon);
+}
 
 const HAN_MS = 60_000;
 let dem: { luc: number; meta: Map<string, MetaTaiLieu>; phienBanKho: string } | null = null;
@@ -46,8 +59,8 @@ async function napLai(): Promise<NonNullable<typeof dem> | null> {
     const meta = new Map<string, MetaTaiLieu>();
     const dauVet: string[] = [];
     for (const d of data as DongTaiLieu[]) {
-      meta.set(d.id, { mucTinCay: d.muc_tin_cay, loaiNguon: d.loai_nguon });
       const xb = (d.knowledge_document_versions ?? []).filter((v) => v.trang_thai === 'da_xuat_ban').map((v) => v.id);
+      meta.set(d.id, { mucTinCay: d.muc_tin_cay, loaiNguon: d.loai_nguon, dangXuatBan: !d.luu_tru && xb.length > 0, banXuatBan: d.luu_tru ? [] : xb });
       if (!d.luu_tru && xb.length) dauVet.push(`${d.id}:${xb.sort().join(',')}:${d.muc_tin_cay}:${d.loai_nguon}`);
     }
     const phienBanKho = createHash('sha256').update(dauVet.sort().join('|')).digest('hex').slice(0, 12);

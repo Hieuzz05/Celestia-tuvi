@@ -39,6 +39,20 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Hai nguồn RAG nói ngược nhau thì theo `lib/rag/uu-tien-nguon.ts`**: mức tin cậy phân xử, nhưng
   chỉ khi hai đoạn đã ngang nhau về độ liên quan (băng dung sai 5%). Mức tin cậy không được thay
   thế độ liên quan — một nguồn "cốt lõi" lạc đề vẫn là lạc đề.
+- **Kho tri thức KHÔNG lọc theo hệ phái** (chốt 01/10/2026). Mọi phái cùng vào truy hồi, mức tin
+  cậy phân xử. "Nam phái làm chuẩn" chỉ áp cho engine an sao, không áp cho kho.
+- **Luật ngầm (`ghi-chu-chuyen-gia`, `noi-bo`) áp cho MỌI đường trả lời, nhưng không bao giờ được
+  gọi tên.** Trong prompt nó mang nhãn `N#` không đề mục (`nhanNguon` trong `bang-chung.ts`, dùng
+  chung cho cả `ket-noi/tra-loi.ts`), kèm `LUAT_NGUON_NGAM`. Nhận diện là fail-closed: thiếu meta
+  thì coi là ngầm. Cổng ngôn ngữ có luật `lo-luat-ngam` bắt "theo chuyên gia", "tài liệu nội bộ"…
+  Thêm đường trả lời mới mà tự định dạng nguồn là phải dùng `nhanNguon`, đừng tự viết nhãn.
+- **Thư viện phải theo bản xuất bản MỚI NHẤT.** Xuất bản lại cấp id mới cho mọi đoạn, nên
+  `phien-ban/route.ts` gọi `dongBoThuVien` sau khi xuất bản: dời câu trích sang đoạn của bản mới,
+  mục mất dù MỘT câu trích là bỏ CẢ mục (câu nghĩa viết trên đủ căn cứ — giữ lại là thư viện khẳng
+  điều nguồn không còn đỡ), mục lật mất hết đích cũng bỏ. Bước này chỉ BỚT, không thêm — đoạn mới chưa đọc chỉ được
+  đếm vào sổ (`thu-vien-da-doc`). Lưu trữ KHÔNG gỡ mục (có thể xuất bản lại); `conDuocDan` trong
+  `cho-prompt.ts` ẩn mục dẫn tài liệu không xuất bản, hoặc dẫn bản đã bị thay, lúc dựng prompt. Chỉ xoá hẳn tài liệu mới
+  gỡ vĩnh viễn.
 - **Nhiều đoạn cùng một tài liệu chỉ là MỘT tiếng nói.** `mucChacChan` đếm số tài liệu khác nhau,
   không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
 - **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc

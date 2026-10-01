@@ -314,6 +314,14 @@ console.log('\n== CỔNG NGÔN NGỮ KHÔNG ĐƯỢC BẮT NHẦM ==\n');
   coBat('Hai người chắc chắn sẽ không hợp nhau.', 'phan-quyet', 'Vẫn bắt được phán quyết thật');
   coBat('Theo tài liệu Tử Vi Đẩu Số, sao này chủ về tiền bạc.', 'lo-nguon-rag', 'Vẫn bắt được rò rỉ nguồn');
   coBat('Bạn là người sâu sắc, nhạy cảm, mạnh mẽ.', 'tinh-tu-barnum', 'Vẫn bắt được tính từ chung chung');
+  coBat('Theo chuyên gia, giai đoạn này nên giữ tiền mặt.', 'lo-luat-ngam', 'Bắt được lời lộ luật ngầm');
+  coBat('Theo kinh nghiệm của Celes, năm này nên giữ tiền mặt.', 'lo-luat-ngam', 'Bắt được lời gán nguồn ngầm cho Celes');
+  kiem(
+    'Lời khuyên "hỏi ý kiến chuyên gia" không bị coi là lộ luật ngầm',
+    !soatNgonNgu('Trước khi ký, bạn nên hỏi ý kiến của chuyên gia tài chính.', ['x']).loi.some(
+      (l) => l.ma === 'lo-luat-ngam'
+    )
+  );
 }
 
 /*

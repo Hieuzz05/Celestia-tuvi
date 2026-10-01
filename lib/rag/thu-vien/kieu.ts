@@ -51,6 +51,11 @@ export interface CanCuMuc {
   documentId: string;
   /** Câu nguyên văn — đã kiểm tất định là có trong đoạn */
   trich: string;
+  /**
+   * Phiên bản tài liệu chứa `chunkId`. Mục dựng trước 01/10/2026 không có —
+   * lần đồng bộ đầu tiên (lib/rag/thu-vien/dong-bo.ts) điền vào.
+   */
+  versionId?: string;
 }
 
 export interface MucThuVien {

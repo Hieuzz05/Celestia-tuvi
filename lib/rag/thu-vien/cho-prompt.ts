@@ -47,6 +47,25 @@ export interface KetQuaThuVienCau {
   nguocChieu: [string, string][];
 }
 
+/**
+ * Bỏ mục có câu trích dẫn tài liệu không còn bản xuất bản (bị lưu trữ, bị hạ,
+ * bị xoá), hoặc dẫn một bản đã bị bản khác thay mà đồng bộ chưa chạy xong.
+ * Bỏ CẢ mục chứ không chỉ câu trích đó: câu nghĩa `y` được viết trên đủ các câu
+ * trích, mất một câu là có thể mất đúng vế đỡ nó. Không gỡ vĩnh viễn — xuất bản
+ * lại là mục trở về (xem lib/rag/thu-vien/dong-bo.ts). Không đọc được kho (map
+ * rỗng) thì để nguyên: mất cả thư viện vì một lần đọc hỏng tệ hơn sót một bản vừa hạ.
+ */
+export function conDuocDan(thuVien: MucThuVien[], meta: Map<string, MetaTaiLieu>): MucThuVien[] {
+  if (!meta.size) return thuVien;
+  const conDan = (c: MucThuVien['canCu'][number]) => {
+    const m = meta.get(c.documentId);
+    return Boolean(m?.dangXuatBan) && (!c.versionId || m!.banXuatBan.includes(c.versionId));
+  };
+  const bo = new Set(thuVien.filter((m) => !m.canCu.every(conDan)).map((m) => m.id));
+  // Mục lật / hoá giải chỉ có nghĩa khi đích của nó còn
+  return thuVien.filter((m) => !bo.has(m.id) && !(m.dich?.length && m.dich.every((d) => bo.has(d))));
+}
+
 export function dungKhoiThuVien(vao: {
   laSo: LaSo;
   duKien: DuKienV3[];
@@ -60,7 +79,7 @@ export function dungKhoiThuVien(vao: {
       ...vao.duKien.filter((d) => d.cung && d.noiDung.startsWith('Cung ')).map((d) => d.cung!),
     ]),
   ];
-  const khopHet = khopThuVien(vao.laSo, vao.thuVien, cungDoc);
+  const khopHet = khopThuVien(vao.laSo, conDuocDan(vao.thuVien, vao.meta), cungDoc);
   if (!khopHet.length) return { khoi: '', daChon: [], khopHet, nguocChieu: [] };
 
   const tinCay = (m: MucThuVien) => {

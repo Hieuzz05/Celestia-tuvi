@@ -5,7 +5,7 @@
  * kiểm được offline. Lớp nào cần mạng mới kiểm được thì lớp đó đã sai chỗ.
  */
 
-import { dungGoiBangChung } from '../lib/rag/bang-chung';
+import { dungGoiBangChung, dungKhoiChoPrompt, LUAT_NGUON_NGAM } from '../lib/rag/bang-chung';
 import { chonBoiCanh } from '../lib/rag/boi-canh-la-so';
 import { docObjectJson } from '../lib/rag/doc-json';
 import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
@@ -15,6 +15,9 @@ import { lapKeHoach } from '../lib/rag/planner';
 import { cumVietHoa, tachTuKhoa } from '../lib/rag/cum-tu-khoa';
 import { chonDaDang, doTrung, mucChacChan, NGUONG_TRUNG } from '../lib/rag/uu-tien-nguon';
 import type { DoanUngVien } from '../lib/rag/truy-hoi';
+import { conDuocDan } from '../lib/rag/thu-vien/cho-prompt';
+import { dongBoTrongBoNho, type DoanTaiLieu } from '../lib/rag/thu-vien/dong-bo';
+import type { MucThuVien } from '../lib/rag/thu-vien/kieu';
 import { nhanDangThucThe, TEN_SAO_TRONG_TU_DIEN, TU_DIEN_THUC_THE, traThucThe } from '../lib/rag/thuc-the';
 import { lapLaSo } from '../lib/tuvi/ansao';
 
@@ -392,6 +395,7 @@ console.log('\n== ĐOẠN TRÙNG GIỮA CÁC TÀI LIỆU ==');
     phienBanTaiLieu: '1',
     diemRRF: diem,
     duocChon: false,
+    an: false,
   });
 
   kiem('Cùng câu phú, khác chỗ cắt đoạn → trùng', doTrung(PHU, `Cung Huynh Đệ. ${PHU} Xét thêm Hoá Kỵ.`) >= NGUONG_TRUNG);
@@ -423,6 +427,120 @@ console.log('\n== ĐOẠN TRÙNG GIỮA CÁC TÀI LIỆU ==');
     'Đồng thuận giả không còn: ba cuốn chép một câu là MỘT tiếng nói',
     mucChacChan(chon.filter((u) => u.noiDung.includes('dị bào'))) === 'yeu'
   );
+}
+
+console.log('\n== NGUỒN LUẬT NGẦM TRONG PROMPT ==');
+{
+  const goc: DoanUngVien = {
+    chunkId: 'n1',
+    documentId: 'ghi-chu-X',
+    versionId: 'v-X',
+    noiDung: 'Thất Sát gặp Lộc Tồn thì nên giữ tiền, chưa vội mở rộng.',
+    duongDeMuc: 'Ghi chú của thầy X — tiền bạc',
+    tieuDe: 'Sổ tay thầy X',
+    hePhai: 'chung',
+    mucTinCay: 'chuyen-gia',
+    phienBanTaiLieu: '1',
+    diemRRF: 0.03,
+    duocChon: true,
+    an: true,
+  };
+  const sach: DoanUngVien = { ...goc, chunkId: 's1', documentId: 'sach-A', duongDeMuc: 'Cung Tài Bạch', tieuDe: 'Sách A', an: false };
+
+  const khoiNgam = dungKhoiChoPrompt(dungGoiBangChung('Tiền bạc năm nay?', keHoach, duKien, [goc, sach]));
+  kiem('Nguồn ngầm mang nhãn LUẬT NGẦM', khoiNgam.includes('LUẬT NGẦM N1'));
+  kiem('Nguồn ngầm không lộ đề mục / tên tài liệu', !khoiNgam.includes('thầy X'));
+  kiem('Nguồn công khai vẫn đánh mã T#', khoiNgam.includes('tài liệu T1 · mục "Cung Tài Bạch"'));
+  kiem('Có nguồn ngầm thì chèn luật nguồn ngầm', khoiNgam.includes(LUAT_NGUON_NGAM));
+
+  const khoiSach = dungKhoiChoPrompt(dungGoiBangChung('Tiền bạc năm nay?', keHoach, duKien, [sach]));
+  kiem('Không có nguồn ngầm thì không chèn luật đó', !khoiSach.includes(LUAT_NGUON_NGAM));
+}
+
+console.log('\n== THƯ VIỆN ĐỒNG BỘ VỚI BẢN XUẤT BẢN ==');
+{
+  const A = 'Tử Vi là đế tinh, chủ về quyền uy và khả năng lãnh đạo, gặp Tả Hữu thì được người phò tá.';
+  const B = 'Thái Dương miếu vượng ở Ngọ thì sáng sủa rộng rãi, làm việc công khai, được tiếng tốt.';
+  const C = 'Thất Sát gặp Lộc Tồn thì nên giữ tiền, chưa vội mở rộng việc làm ăn.';
+  const doanTL: DoanTaiLieu[] = [
+    { id: 'c1', versionId: 'v1', thuTu: 1, noiDung: A, hoatDong: true },
+    { id: 'c2', versionId: 'v1', thuTu: 2, noiDung: B, hoatDong: true },
+    { id: 'c3', versionId: 'v1', thuTu: 3, noiDung: C, hoatDong: true },
+    { id: 'n1', versionId: 'v2', thuTu: 1, noiDung: A, hoatDong: true },
+    // B được biên tập lại nhưng câu trích vẫn nguyên văn; C bị bỏ khỏi bản mới
+    { id: 'n2', versionId: 'v2', thuTu: 2, noiDung: `Bản hiệu đính. ${B} Thêm một ý mới về Thái Âm.`, hoatDong: true },
+    { id: 'n3', versionId: 'v2', thuTu: 3, noiDung: 'Phần hoàn toàn mới về Thiên Đồng ở cung Phúc Đức.', hoatDong: true },
+  ];
+  const muc = (id: string, canCu: MucThuVien['canCu'], them: Partial<MucThuVien> = {}): MucThuVien => ({
+    id,
+    schemaVersion: 1,
+    chuDe: ['su-nghiep'],
+    dieuKien: { cung: [], sao: [{ ten: 'Tử Vi', quanHe: 'o-cung' }] },
+    y: 'Một câu nghĩa.',
+    nhan: { chieu: 'cat', muc: 'vua', linhVuc: ['su-nghiep'] },
+    cheDo: 'add',
+    canCu,
+    truongPhai: 'chung',
+    duyet: 'chua',
+    dotTrich: 'sn-1',
+    ...them,
+  });
+  const goi = () => [
+    {
+      dot: 'sn-1',
+      ds: [
+        muc('m1', [{ chunkId: 'c1', documentId: 'D', trich: 'Tử Vi là đế tinh, chủ về quyền uy' }]),
+        muc('m2', [{ chunkId: 'c2', documentId: 'D', trich: 'Thái Dương miếu vượng ở Ngọ thì sáng sủa rộng rãi' }]),
+        muc('m3', [{ chunkId: 'c3', documentId: 'D', trich: 'Thất Sát gặp Lộc Tồn thì nên giữ tiền' }]),
+        muc('m4', [
+          { chunkId: 'c3', documentId: 'D', trich: 'Thất Sát gặp Lộc Tồn thì nên giữ tiền' },
+          { chunkId: 'x9', documentId: 'E', trich: 'câu của một sách khác vẫn còn nguyên' },
+        ]),
+        muc('m5', [{ chunkId: 'x8', documentId: 'E', trich: 'câu lật lại ý của m3 trong sách khác' }], { cheDo: 'override', dich: ['m3'] }),
+        muc('m6', [{ chunkId: 'n1', documentId: 'D', versionId: 'v2', trich: 'Tử Vi là đế tinh, chủ về quyền uy' }]),
+        muc('m7', [{ chunkId: 'x7', documentId: 'E', trich: 'câu hoá giải cả m3 lẫn m1' }], { cheDo: 'neutralize', dich: ['m3', 'm1'] }),
+        muc('m8', [{ chunkId: 'c1', documentId: 'D', versionId: 'v1', trich: 'Tử Vi là đế tinh, chủ về quyền uy' }]),
+      ],
+    },
+  ];
+
+  const g = goi();
+  const { ketQua, thayDoi } = dongBoTrongBoNho(g, 'D', doanTL, 'v2');
+  const ds = g[0].ds;
+  const lay = (id: string) => ds.find((m) => m.id === id);
+  kiem('Đoạn còn nguyên văn → dời theo dấu băm', lay('m1')?.canCu[0].chunkId === 'n1' && lay('m1')?.canCu[0].versionId === 'v2');
+  kiem('Đoạn bị biên tập mà câu trích còn → tìm thấy trong bản mới', lay('m2')?.canCu[0].chunkId === 'n2');
+  kiem('Câu trích không còn trong bản mới → mục hết căn cứ bị bỏ', !lay('m3'));
+  kiem('Mục mất MỘT câu trích → bỏ cả mục, không giữ câu nghĩa trên căn cứ thiếu', !lay('m4'));
+  kiem('Mục lật mà mọi đích đã bỏ → bỏ luôn, không đứng riêng thành add', !lay('m5'));
+  kiem('Mục lật còn đích → chỉ gỡ đích đã bỏ', lay('m7')?.dich?.join() === 'm1' && lay('m7')?.cheDo === 'neutralize');
+  kiem('Câu trích đã ở bản mới thì không ghi lại', !thayDoi.get('sn-1')?.doi.some((m) => m.id === 'm6'));
+  kiem('Đếm đúng', ketQua.doiCho === 3 && ketQua.go === 2 && ketQua.boMuc === 3 && ketQua.giuNguyen === 1, ketQua);
+  kiem('Dòng bỏ khớp với gói', thayDoi.get('sn-1')?.xoa.join() === 'm3,m4,m5');
+  {
+    // Câu trích ngắn không được tìm nguyên văn trên cả bản: dễ dính sang đoạn khác ngữ cảnh
+    const g3 = [{ dot: 'x', ds: [muc('k1', [{ chunkId: 'c9', documentId: 'D', trich: 'giữ tiền' }])] }];
+    dongBoTrongBoNho(g3, 'D', [...doanTL, { id: 'c9', versionId: 'v1', thuTu: 40, noiDung: 'Một đoạn cũ: giữ tiền.', hoatDong: true }], 'v2');
+    kiem('Câu trích ngắn, đoạn cũ đã mất → không khớp bừa', !g3[0].ds.length);
+  }
+
+  const g2 = goi();
+  dongBoTrongBoNho(g2, 'D', [], null);
+  kiem('Xoá hẳn tài liệu → không còn câu trích nào của nó', !g2[0].ds.some((m) => m.canCu.some((c) => c.documentId === 'D')));
+  kiem('Xoá hẳn tài liệu → mục lật trỏ vào mục đã bỏ cũng đi theo', !g2[0].ds.some((m) => m.id === 'm5' || m.id === 'm7'));
+
+  const meta = (banD: string[]) =>
+    new Map([
+      ['D', { mucTinCay: 'tham-khao', loaiNguon: 'sach', dangXuatBan: banD.length > 0, banXuatBan: banD }],
+      ['E', { mucTinCay: 'tham-khao', loaiNguon: 'sach', dangXuatBan: true, banXuatBan: ['e1'] }],
+    ]);
+  const conLai = conDuocDan(goi()[0].ds, meta([]));
+  kiem('Tài liệu bị lưu trữ → mục dẫn nó không vào prompt, kể cả mục dẫn kèm sách khác', !conLai.some((m) => ['m1', 'm4'].includes(m.id)));
+  kiem('Tài liệu bị lưu trữ → mục lật mất hết đích cũng không vào', conLai.map((m) => m.id).join() === '');
+  const theoBan = conDuocDan(goi()[0].ds, meta(['v2'])).map((m) => m.id);
+  kiem('Câu trích trỏ bản đã bị thay (đồng bộ chưa xong) → mục không vào', !theoBan.includes('m8') && theoBan.includes('m6'));
+  kiem('Câu trích chưa ghi bản → vẫn vào (thư viện dựng trước 01/10)', theoBan.includes('m1'));
+  kiem('Đọc kho hỏng (meta rỗng) → giữ nguyên thư viện', conDuocDan(goi()[0].ds, new Map()).length === 8);
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);

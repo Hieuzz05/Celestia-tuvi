@@ -37,6 +37,29 @@ interface TaiLieu {
   the_chu_de: string[];
   cap_nhat_luc: string;
   knowledge_document_versions: PhienBan[];
+  /** Sổ đã đọc của thư viện — null khi chưa đồng bộ lần nào */
+  thu_vien: { versionId: string; chuaDoc: number } | null;
+}
+
+interface KetQuaDongBo {
+  giuNguyen: number;
+  doiCho: number;
+  go: number;
+  boMuc: number;
+  chuaDoc: number;
+}
+
+/** Một câu cho kết quả đồng bộ thư viện — số 0 thì bỏ, đừng bắt người đọc dò */
+function moTaDongBo(k: KetQuaDongBo): string {
+  const doi = [
+    k.doiCho ? `dời ${k.doiCho} câu trích sang bản mới` : '',
+    k.go ? `gỡ ${k.go} câu trích không còn trong bản mới` : '',
+    k.boMuc ? `bỏ ${k.boMuc} ý không còn đủ căn cứ` : '',
+  ].filter(Boolean);
+  return (
+    `Thư viện: ${doi.length ? doi.join(', ') : 'không có gì cần cập nhật'}` +
+    (k.chuaDoc ? `; còn ${k.chuaDoc} đoạn mới chưa được đọc vào.` : '.')
+  );
 }
 
 const HE_PHAI = [
@@ -210,11 +233,33 @@ export default function TrangKhoTriThuc() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ versionId, hanhDong }),
     });
-    const d = await res.json();
+    const d: { loi?: string; thuVien?: KetQuaDongBo; loiThuVien?: string } = await res.json();
     setThongBao(
-      res.ok
-        ? { loai: 'ok', noiDung: hanhDong === 'xuat-ban' ? 'Đã xuất bản. Celes sẽ dùng bản này.' : 'Đã chuyển sang lưu trữ.' }
-        : { loai: 'loi', noiDung: d.loi ?? 'Không đổi được trạng thái' }
+      !res.ok
+        ? { loai: 'loi', noiDung: d.loi ?? 'Không đổi được trạng thái' }
+        : hanhDong === 'luu-tru'
+          ? { loai: 'ok', noiDung: 'Đã chuyển sang lưu trữ. Thư viện sẽ không dùng các ý từ tài liệu này cho tới khi có một bản được xuất bản lại.' }
+          : d.loiThuVien
+            ? { loai: 'loi', noiDung: `Đã xuất bản, nhưng chưa đồng bộ được thư viện (${d.loiThuVien}). Bấm "Đồng bộ thư viện" ở tài liệu này để thử lại.` }
+            : { loai: 'ok', noiDung: `Đã xuất bản. Celes sẽ dùng bản này. ${d.thuVien ? moTaDongBo(d.thuVien) : ''}` }
+    );
+    if (res.ok) void tai();
+  }
+
+  const [dangDongBo, setDangDongBo] = useState<string | null>(null);
+  async function dongBoThuVien(documentId: string) {
+    setDangDongBo(documentId);
+    const res = await fetch('/api/admin/knowledge/phien-ban', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hanhDong: 'dong-bo-thu-vien', documentId }),
+    });
+    const d: { loi?: string; thuVien?: KetQuaDongBo } = await res.json().catch(() => ({}));
+    setDangDongBo(null);
+    setThongBao(
+      res.ok && d.thuVien
+        ? { loai: 'ok', noiDung: moTaDongBo(d.thuVien) }
+        : { loai: 'loi', noiDung: d.loi ?? 'Không đồng bộ được thư viện' }
     );
     if (res.ok) void tai();
   }
@@ -298,6 +343,8 @@ export default function TrangKhoTriThuc() {
         ))}
       </div>
 
+      <UuTienNguon />
+
       {thongBao && (
         <p
           className="body-sm"
@@ -347,12 +394,18 @@ export default function TrangKhoTriThuc() {
                       {nhan(HE_PHAI, t.he_phai)}
                       {t.tac_gia ? ` · ${t.tac_gia}` : ''}
                     </p>
+                    <TrangThaiThuVien
+                      t={t}
+                      dangChay={dangDongBo === t.id}
+                      onDongBo={() => dongBoThuVien(t.id)}
+                    />
                     {/*
                       Gán lại được sau khi đã tải lên (26/09/2026). Mức tin cậy có
-                      tác dụng thật: cộng điểm khi chọn đoạn, gắn nhãn cho Celes, và
-                      đoạn "Bổ trợ" không được là căn cứ duy nhất của một ý.
-                      "Ghi chú chuyên gia" / "Nội bộ" là luật ngầm: Celes dùng nhưng
-                      không bao giờ nhắc tới trong bài.
+                      tác dụng thật: cộng điểm khi chọn đoạn ở bài luận chủ đề, phân
+                      xử khi hai đoạn khớp ngang nhau ở các đường còn lại, gắn nhãn
+                      cho Celes, và đoạn "Bổ trợ" không được là căn cứ duy nhất.
+                      "Ghi chú chuyên gia" / "Nội bộ" là luật ngầm ở MỌI đường luận:
+                      Celes dùng nhưng không nhắc tới trong bài. Xem UuTienNguon.
                     */}
                     <div className="mt-[8px] flex flex-wrap gap-[8px]">
                       <select
@@ -501,6 +554,127 @@ export default function TrangKhoTriThuc() {
 }
 
 /**
+ * Thư viện đã khớp bản đang xuất bản chưa. Sổ ghi bản khác (hay chưa có sổ) là
+ * chưa đối chiếu — hiện nút để chạy. Không gọi model, chỉ dời / gỡ câu trích.
+ */
+function TrangThaiThuVien({ t, dangChay, onDongBo }: { t: TaiLieu; dangChay: boolean; onDongBo: () => void }) {
+  const xb = t.knowledge_document_versions.find((v) => v.trang_thai === 'da_xuat_ban');
+  if (!xb) return null;
+  const khop = t.thu_vien?.versionId === xb.id;
+  return (
+    <p className="caption mt-[4px]" style={{ color: 'var(--fg-muted)' }}>
+      {khop && t.thu_vien!.chuaDoc > 0
+        ? `Thư viện: còn ${t.thu_vien!.chuaDoc} đoạn mới chưa được đọc vào`
+        : khop
+          ? 'Thư viện đã khớp bản đang xuất bản'
+          : 'Thư viện chưa đối chiếu với bản đang xuất bản'}
+      {!khop && (
+        <>
+          {' · '}
+          <button onClick={onDongBo} disabled={dangChay} className="caption underline">
+            {dangChay ? 'Đang đồng bộ…' : 'Đồng bộ thư viện'}
+          </button>
+        </>
+      )}
+    </p>
+  );
+}
+
+/**
+ * Ghi chú "Celes ưu tiên nguồn thế nào" cho người quản trị kho.
+ *
+ * Không ghi con số (điểm cộng, ngưỡng): con số đổi theo mã, ghi chú thì không ai
+ * nhớ sửa theo. Phải nói thật rằng có HAI đường chọn nguồn khác nhau — gộp làm
+ * một là người quản trị kỳ vọng sai về tác dụng của mức tin cậy.
+ * Nguồn sự thật: lib/rag/uu-tien-nguon.ts, lib/rag/truy-hoi.ts, lib/rag/v3/truy-hoi-v3.ts.
+ */
+function UuTienNguon() {
+  const muc = { color: 'var(--fg)' } as const;
+  return (
+    <details className="rounded-[var(--radius-cards)] border p-[16px]" style={{ borderColor: 'var(--line)' }}>
+      <summary className="cursor-pointer text-[15px] font-semibold" style={muc}>
+        Celes ưu tiên nguồn thế nào
+      </summary>
+      <div className="body-sm mt-[12px] flex flex-col gap-[12px]" style={{ color: 'var(--fg-muted)' }}>
+        <p>
+          <strong style={muc}>Chỉ bản Đã xuất bản mới được dùng.</strong> Nháp, Cần duyệt và Lưu trữ không
+          bao giờ vào bài. Mỗi tài liệu chỉ có một bản xuất bản tại một thời điểm.
+        </p>
+
+        <div>
+          <p style={muc} className="font-semibold">Thứ bậc khi viết bài</p>
+          <ol className="mt-[4px] list-decimal pl-[20px]">
+            <li>Dữ kiện lá số do engine tính (vị trí sao, cung, Tứ Hoá, hạn). Không tài liệu nào sửa được.</li>
+            <li>Thư viện tri thức — các ý đã đúc sẵn từ tài liệu (khác với đoạn gốc trong kho). Hiện chỉ bài luận theo chủ đề dùng thư viện.</li>
+            <li>Đoạn tài liệu gốc tìm được cho câu hỏi đó.</li>
+            <li>Kiến thức chung của model — chỉ để diễn đạt, không làm căn cứ chuyên môn.</li>
+          </ol>
+        </div>
+
+        <div>
+          <p style={muc} className="font-semibold">Hệ phái không lọc nguồn</p>
+          <p className="mt-[4px]">
+            Mọi tài liệu đều được dùng như nhau, bất kể nhãn ghi Nam phái, Bắc phái hay Dùng chung. Thứ
+            quyết định là mức tin cậy. Nhãn hệ phái chỉ để ghi nhận nguồn gốc. Riêng phần an sao của engine vẫn theo Nam phái.
+          </p>
+        </div>
+
+        <div>
+          <p style={muc} className="font-semibold">Mức tin cậy, từ cao xuống thấp</p>
+          <p className="mt-[4px]">Quy tắc cốt lõi → Chuyên gia đã duyệt → Tham khảo → Bổ trợ.</p>
+          <ul className="mt-[4px] list-disc pl-[20px]">
+            <li>
+              <strong style={muc}>Bài luận theo chủ đề:</strong> mức tin cậy cộng hoặc trừ điểm khi chọn đoạn,
+              nên nguồn cao hơn được ưu tiên kể cả khi khớp câu hỏi kém hơn một chút.
+            </li>
+            <li>
+              <strong style={muc}>Các phần còn lại</strong> (Hỏi Celes, bảng lĩnh vực, bản đọc sâu, mốc Hành
+              trình, so hai người): chọn trước theo độ khớp với câu hỏi; mức tin cậy chỉ phân xử khi hai đoạn
+              khớp gần ngang nhau.
+            </li>
+            <li>
+              Khi các nguồn nói ngược nhau: khác mức thì theo mức cao hơn; cùng mức thì Celes nêu cả hai cách
+              đọc. Nguồn Bổ trợ không được làm căn cứ duy nhất cho một ý.
+            </li>
+            <li>Nhiều sách chép cùng một câu phú chỉ tính là một tiếng nói, không thành &quot;đồng thuận&quot;.</li>
+          </ul>
+        </div>
+
+        <div>
+          <p style={muc} className="font-semibold">Luật ngầm: Ghi chú chuyên gia và Nội bộ</p>
+          <p className="mt-[4px]">
+            Áp cho mọi phần luận giải. Celes dùng để định hướng và cân nhắc như mọi nguồn, nhưng không nhắc tới,
+            không trích lời, không nói &quot;theo chuyên gia&quot;. Bài nào lỡ để lộ sẽ bị bộ soát chất lượng gắn cảnh báo.
+          </p>
+        </div>
+
+        <div>
+          <p style={muc} className="font-semibold">Đoạn bị bỏ qua ở bài luận theo chủ đề</p>
+          <p className="mt-[4px]">
+            Đoạn là bảng tra, mục lục hay cách an sao; đoạn quá ngắn; đoạn viết riêng cho giới tính khác với
+            người xem.
+          </p>
+        </div>
+
+        <div>
+          <p style={muc} className="font-semibold">Sửa tài liệu thì thư viện đổi theo</p>
+          <p className="mt-[4px]">
+            Xuất bản bản mới, lưu trữ hay xoá một tài liệu thì thư viện tự gỡ những ý mà câu trích của nó không
+            còn trong bản đang xuất bản. Phần nội dung mới thêm vào chưa có trong thư viện cho tới khi được đọc
+            vào — mỗi tài liệu ghi rõ còn bao nhiêu đoạn mới chưa đọc.
+          </p>
+        </div>
+
+        <p>
+          Muốn xem một câu hỏi cụ thể kéo về đoạn nào và vì sao:{' '}
+          <Link href="/admin/retrieval-lab" className="link-text">Retrieval Lab</Link>.
+        </p>
+      </div>
+    </details>
+  );
+}
+
+/**
  * Biểu mẫu nạp nguồn.
  *
  * Tách thành component riêng và chỉ gắn vào cây khi mở: giữ nó luôn tồn tại rồi
@@ -515,7 +689,8 @@ function DangNap({
 }) {
   const [tieuDe, setTieuDe] = useState('');
   const [phienBan, setPhienBan] = useState('1.0');
-  const [hePhai, setHePhai] = useState('nam-phai');
+  // Kho không lọc theo hệ phái (chủ dự án chốt 01/10/2026) — nhãn chỉ ghi nhận nguồn gốc
+  const [hePhai, setHePhai] = useState('chung');
   const [loaiNguon, setLoaiNguon] = useState('sach');
   const [mucTinCay, setMucTinCay] = useState('tham-khao');
   const [tacGia, setTacGia] = useState('');

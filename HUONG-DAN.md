@@ -483,7 +483,9 @@ Trên Vercel khai báo kiểu **Secret**, **không** có tiền tố `NEXT_PUBLI
 > phải lọt trong một request — tài liệu hơn 60 đoạn là không nạp nổi.
 
 **3. Nạp nguồn.** Vào `/admin` → *Kho tri thức* → **Thêm nguồn**. Khai tiêu đề, phiên bản, hệ phái,
-loại nguồn và mức tin cậy, rồi chọn tệp `.txt`/`.md` hoặc dán nội dung.
+loại nguồn và mức tin cậy, rồi chọn tệp `.txt`/`.md` hoặc dán nội dung. Hệ phái chỉ là nhãn ghi
+nguồn gốc — kho KHÔNG lọc theo hệ phái, mức tin cậy phân xử (chốt 01/10/2026,
+`docs/quyet-dinh/2026-10-01-kho-tri-thuc.md`).
 
 **3b. Chờ sinh vector.** Nạp xong đoạn, trang tự chạy tiếp phần sinh vector và hiện tiến độ.
 Đừng đóng tab — vòng lặp chạy từ trình duyệt.
@@ -526,6 +528,10 @@ Vòng đời một phiên bản:
 | Đã xuất bản | **Có** | Bản đang dùng thật |
 | Thất bại | Không | Hỏng ở bước nào đó, có ghi lỗi |
 | Lưu trữ | Không | Giữ vết nhưng không còn dùng |
+
+Xuất bản bản mới tự đồng bộ **thư viện tri thức** theo bản đó (dời câu trích, bỏ mục mất căn cứ);
+lưu trữ chỉ ẩn mục khỏi prompt, xoá hẳn tài liệu mới gỡ vĩnh viễn. Mỗi tài liệu có dòng trạng thái
+thư viện và nút **Đồng bộ thư viện** ở trang Kho tri thức.
 
 **5. Kiểm tra bằng Retrieval Lab.** `/admin/retrieval-lab` chạy đúng bộ lập kế hoạch và truy hồi mà
 Celes dùng, nhưng **không gọi model**. Nhập câu hỏi rồi xem:

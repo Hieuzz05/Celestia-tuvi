@@ -4,6 +4,7 @@ import { LoiNap, napTaiLieu } from '@/lib/rag/nap-tai-lieu';
 import { ghiNhatKyQuanTri } from '@/lib/rag/nhat-ky';
 import { LOI_CHUA_CAU_HINH, taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { xoaDemMeta } from '@/lib/rag/tai-lieu-meta';
+import { docSoChuaDoc } from '@/lib/rag/thu-vien/kho';
 
 export const maxDuration = 60;
 
@@ -43,7 +44,11 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ taiLieu: data ?? [] });
+  // Sổ đã đọc của thư viện: tài liệu chưa có sổ (chưa xuất bản lần nào kể từ 01/10/2026) thì không có số
+  const soChuaDoc = await docSoChuaDoc().catch(() => new Map<string, { versionId: string; chuaDoc: number }>());
+  return NextResponse.json({
+    taiLieu: (data ?? []).map((t) => ({ ...t, thu_vien: soChuaDoc.get(t.id) ?? null })),
+  });
 }
 
 /** Nạp một phiên bản mới (nguồn mới hoặc bản mới của nguồn đã có) */

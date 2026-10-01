@@ -2,6 +2,7 @@ import { embedTruyVan } from '@/lib/ai/embedding';
 import { ghiSuCo } from '@/lib/ai/su-co';
 import { AiRetryableError } from '@/lib/ai/types';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { docMetaTaiLieu, laNguonAn } from './tai-lieu-meta';
 import { tachTuKhoa } from './cum-tu-khoa';
 import type { ThucThe } from './thuc-the';
 import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
@@ -82,6 +83,13 @@ export interface DoanUngVien {
   diemRRF: number;
   duocChon: boolean;
   /**
+   * Nguồn LUẬT NGẦM ("Ghi chú chuyên gia" / "Nội bộ"): Celes dùng nhưng không
+   * nhắc, không trích, và prompt không thấy đề mục của nó. Đọc tươi từ
+   * knowledge_documents; đọc hỏng thì coi là ngầm — giấu nhầm một đề mục rẻ hơn
+   * để lộ một luật ngầm ra bài.
+   */
+  an: boolean;
+  /**
    * Đoạn này gần như chép lại một đoạn đã được chọn (thường là cùng câu phú
    * trong hai cuốn sách khác nhau) — mang mã đoạn kia, và không vào gói bằng
    * chứng. Xem `chonDaDang`.
@@ -126,6 +134,7 @@ function veUngVien(d: DongSql): DoanUngVien {
     phienBanTaiLieu: d.phien_ban,
     diemRRF: 0,
     duocChon: false,
+    an: true,
   };
 }
 
@@ -259,6 +268,9 @@ export async function truyHoi(
   // Xếp theo độ liên quan; mức tin cậy chỉ phân xử khi hai đoạn ngang ngửa. Rồi
   // bỏ đoạn chép lại đoạn đã chọn, và giới hạn số đoạn mỗi tài liệu để gói bằng
   // chứng có nhiều tiếng nói — xem lib/rag/uu-tien-nguon.ts.
+  const meta = await docMetaTaiLieu();
+  for (const u of gop.values()) u.an = laNguonAn(meta, u.documentId);
+
   const ungVien = xepTheoUuTien([...gop.values()]);
   const daChon = chonDaDang(ungVien, cauHinh.soCuoi);
   for (const u of daChon) u.duocChon = true;

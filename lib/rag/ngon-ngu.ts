@@ -218,6 +218,33 @@ const RO_RI_RAG = [
 ];
 
 /**
+ * Lời viết để lộ đang dựa vào một ghi chú chuyên gia / luật nội bộ (luật ngầm).
+ * Chỉ CẢNH BÁO, không chặn: đường chặn trả null và bài không vào đệm, mỗi lần
+ * mở trang lại sinh lại. Cụm phải gắn chữ "theo / ghi chú / kinh nghiệm…" với
+ * "chuyên gia", vì "nên hỏi ý kiến của chuyên gia tài chính" là lời khuyên đúng.
+ */
+const LO_LUAT_NGAM = [
+  'theo chuyen gia',
+  'theo cac chuyen gia',
+  'theo mot chuyen gia',
+  'ghi chu chuyen gia',
+  'ghi chu cua chuyen gia',
+  'kinh nghiem chuyen gia',
+  'kinh nghiem cua chuyen gia',
+  'goc nhin chuyen gia',
+  'goc nhin cua chuyen gia',
+  'nhan dinh chuyen gia',
+  'nhan dinh cua chuyen gia',
+  'chuyen gia da duyet',
+  'luat ngam',
+  'luat noi bo',
+  'tai lieu noi bo',
+  'ghi chu noi bo',
+  'theo kinh nghiem cua celes',
+  'kinh nghiem rieng cua celes',
+];
+
+/**
  * Mọi cụm 1–5 từ có trong văn bản.
  *
  * Khớp theo TỪ chứ không theo chuỗi con. Bộ soát bản đầu dùng `includes` nên
@@ -539,6 +566,16 @@ export function soatNgonNgu(
       mucDo: 'chan',
       moTa: 'Nhắc tới tài liệu, hệ phái hoặc độ liên quan — những thứ chỉ được nằm ở trace quản trị.',
       viDu: roRi.join(', '),
+    });
+  }
+
+  const loNgam = dem(cum, LO_LUAT_NGAM);
+  if (loNgam.length) {
+    loi.push({
+      ma: 'lo-luat-ngam',
+      mucDo: 'canh-bao',
+      moTa: 'Nhắc tới ghi chú chuyên gia hay luật nội bộ — nguồn ngầm chỉ được định hướng, không được hiện ra lời.',
+      viDu: loNgam.join(', '),
     });
   }
 

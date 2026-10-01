@@ -123,3 +123,121 @@ export async function xoaDotTrich(dot: string): Promise<void> {
   await supabase.from('noi_dung_ai').delete().eq('chart_hash', CHART_HASH).eq('be_mat', BE_MAT).eq('khoa_ky', khoaGoi(dot));
   dem.clear();
 }
+
+/** Mọi gói đợt. Đồng bộ phải đọc hết: một mục có thể dẫn câu trích từ nhiều tài liệu */
+export async function docMoiGoi(): Promise<{ dot: string; ds: MucThuVien[] }[]> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('noi_dung_ai')
+    .select('khoa_ky, noi_dung')
+    .eq('chart_hash', CHART_HASH)
+    .eq('be_mat', BE_MAT)
+    .eq('ngon_ngu', 'vi')
+    .like('khoa_ky', 'goi:%');
+  if (error) throw new Error(`Không đọc được gói thư viện: ${error.message}`);
+  return (data ?? [])
+    .filter((d) => Array.isArray(d.noi_dung))
+    .map((d) => ({ dot: String(d.khoa_ky).slice('goi:'.length), ds: d.noi_dung as MucThuVien[] }));
+}
+
+/**
+ * Ghi thay đổi của MỘT đợt: dòng mục đã sửa, dòng mục bị bỏ, rồi gói. Không đi
+ * qua `dongGoi` — nó đọc lại mọi dòng của mọi đợt, quá chậm cho một request.
+ * Gói là bản `ds` đã sửa trong bộ nhớ, nên dòng và gói khớp nhau.
+ */
+export async function ghiDot(dot: string, ds: MucThuVien[], doi: MucThuVien[], xoa: string[]): Promise<void> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) throw new Error('Chưa cấu hình Supabase');
+  for (let i = 0; i < doi.length; i += 200) {
+    const lo = doi.slice(i, i + 200).map((m) => ({
+      chart_hash: CHART_HASH,
+      be_mat: BE_MAT,
+      khoa_ky: m.id,
+      ngon_ngu: 'vi',
+      noi_dung: m,
+      phien_ban: { schema: String(m.schemaVersion), dot: m.dotTrich },
+    }));
+    const { error } = await supabase.from('noi_dung_ai').upsert(lo, { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' });
+    if (error) throw new Error(`Không lưu được mục thư viện: ${error.message}`);
+  }
+  for (let i = 0; i < xoa.length; i += 200) {
+    const { error } = await supabase
+      .from('noi_dung_ai')
+      .delete()
+      .eq('chart_hash', CHART_HASH)
+      .eq('be_mat', BE_MAT)
+      .in('khoa_ky', xoa.slice(i, i + 200));
+    if (error) throw new Error(`Không xoá được mục thư viện: ${error.message}`);
+  }
+  const { error } = await supabase.from('noi_dung_ai').upsert(
+    { chart_hash: CHART_HASH, be_mat: BE_MAT, khoa_ky: khoaGoi(dot), ngon_ngu: 'vi', noi_dung: ds, phien_ban: { goi: dot, so: String(ds.length) } },
+    { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' }
+  );
+  if (error) throw new Error(`Không lưu được gói ${dot}: ${error.message}`);
+  dem.clear();
+}
+
+/*
+ * SỔ "ĐÃ ĐỌC" của từng tài liệu: dấu băm nội dung các đoạn thư viện đã đọc qua.
+ *
+ * Bề mặt riêng, KHÔNG phải BE_MAT: docTungDong coi mọi dòng của BE_MAT là một
+ * mục thư viện. Đoạn mới của bản xuất bản = đoạn có dấu băm chưa nằm trong sổ —
+ * khớp theo nội dung chứ không theo id, vì xuất bản lại là cấp id mới cho mọi đoạn.
+ */
+const BE_MAT_DA_DOC = 'thu-vien-da-doc';
+
+export interface SoDaDoc {
+  bam: string[];
+  /** Bản đang xuất bản lúc ghi sổ */
+  versionId: string;
+  /** Số đoạn của bản đó chưa được đọc vào thư viện */
+  chuaDoc: number;
+  luc: string;
+}
+
+export async function docSoDaDoc(documentId: string): Promise<SoDaDoc | null> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from('noi_dung_ai')
+    .select('noi_dung')
+    .eq('chart_hash', CHART_HASH)
+    .eq('be_mat', BE_MAT_DA_DOC)
+    .eq('khoa_ky', documentId)
+    .eq('ngon_ngu', 'vi')
+    .maybeSingle();
+  return (data?.noi_dung as SoDaDoc | undefined) ?? null;
+}
+
+export async function ghiSoDaDoc(documentId: string, so: SoDaDoc): Promise<void> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return;
+  const { error } = await supabase.from('noi_dung_ai').upsert(
+    { chart_hash: CHART_HASH, be_mat: BE_MAT_DA_DOC, khoa_ky: documentId, ngon_ngu: 'vi', noi_dung: so, phien_ban: { versionId: so.versionId } },
+    { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' }
+  );
+  if (error) throw new Error(`Không lưu được sổ đã đọc: ${error.message}`);
+}
+
+export async function xoaSoDaDoc(documentId: string): Promise<void> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return;
+  await supabase.from('noi_dung_ai').delete().eq('chart_hash', CHART_HASH).eq('be_mat', BE_MAT_DA_DOC).eq('khoa_ky', documentId);
+}
+
+/** Số đoạn chưa đọc của mọi tài liệu có sổ — cho trang quản trị kho */
+export async function docSoChuaDoc(): Promise<Map<string, { versionId: string; chuaDoc: number }>> {
+  const ra = new Map<string, { versionId: string; chuaDoc: number }>();
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return ra;
+  const { data } = await supabase
+    .from('noi_dung_ai')
+    .select('khoa_ky, versionId:noi_dung->>versionId, chuaDoc:noi_dung->chuaDoc')
+    .eq('chart_hash', CHART_HASH)
+    .eq('be_mat', BE_MAT_DA_DOC);
+  for (const d of (data ?? []) as { khoa_ky: string; versionId: string; chuaDoc: number }[]) {
+    ra.set(d.khoa_ky, { versionId: d.versionId, chuaDoc: Number(d.chuaDoc) || 0 });
+  }
+  return ra;
+}

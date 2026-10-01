@@ -1,6 +1,7 @@
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import { docObjectJson } from '@/lib/rag/doc-json';
-import { mucChacChan, luatUuTienNguon, NHAN_TIN_CAY, type MucChacChan } from '@/lib/rag/uu-tien-nguon';
+import { mucChacChan, luatUuTienNguon, type MucChacChan } from '@/lib/rag/uu-tien-nguon';
+import { danhMaTaiLieu, nhanNguon, LUAT_NGUON_NGAM } from '@/lib/rag/bang-chung';
 import { soatNgonNgu, type KetQuaNgonNgu } from '@/lib/rag/ngon-ngu';
 import { QUY_TAC_LUAN_GIAI } from '@/lib/rag/quy-tac-luan-giai';
 import { truyHoi, type DoanUngVien } from '@/lib/rag/truy-hoi';
@@ -67,11 +68,13 @@ function dungPrompt(
   const cauHinh = CAU_HINH_Y_DINH[yDinh];
 
   const khoiDuKien = duKien.map((d) => `${d.id}. ${d.noiDung}`).join('\n');
+  // Chỉ nguồn ngầm mới cần mã N#: model biết hai đoạn cùng một nguồn mà mã không trỏ về tài liệu
+  const maTaiLieu = danhMaTaiLieu(doan);
   const khoiNguon = doan.length
     ? doan
         .map(
           (d, i) =>
-            `E${String(i + 1).padStart(3, '0')}. [mức: ${NHAN_TIN_CAY[d.mucTinCay] ?? d.mucTinCay}${d.duongDeMuc ? ` · mục "${d.duongDeMuc}"` : ''}]\n${d.noiDung}`
+            `E${String(i + 1).padStart(3, '0')}. ${nhanNguon(d, d.an ? maTaiLieu.get(d.documentId) : undefined)}\n${d.noiDung}`
         )
         .join('\n\n')
     : '(Không có nguồn nào trong kho tri thức khớp với chủ đề này.)';
@@ -109,7 +112,7 @@ CÁCH VIẾT RIÊNG CHO PHẦN SO HAI NGƯỜI (theo sau bộ quy tắc chung �
 - Tránh từ kịch tính và tính từ chung chung kiểu "sâu sắc", "mạnh mẽ" nếu không có hành vi cụ thể đi kèm.
 - Với mỗi mục, nếu có dữ kiện kéo ngược lại nhận định thì phải nói ra ở "luongNguoc".
 
-${luatUuTienNguon()}
+${luatUuTienNguon()}${doan.some((d) => d.an) ? `\n\n${LUAT_NGUON_NGAM}` : ''}
 
 Nếu không đủ căn cứ cho một mục, hãy viết ngắn và nói rõ là chưa đủ căn cứ, thay vì viết dài cho đầy.
 

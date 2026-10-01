@@ -118,7 +118,7 @@ const NHOM_DU_PHONG: [string, string[], number][] = [
   ['tam hoá', ['Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa', 'Lộc Tồn'], 2],
 ];
 
-type Doan = { id: string; document_id: string; duong_de_muc: string | null; noi_dung: string; thu_tu?: number; tieuDe: string; hePhai: string; loaiNguon: string };
+type Doan = { id: string; document_id: string; version_id: string; duong_de_muc: string | null; noi_dung: string; thu_tu?: number; tieuDe: string; hePhai: string; loaiNguon: string };
 
 async function main() {
   const dot = thamSo('dot', 'sn-1');
@@ -163,7 +163,7 @@ async function main() {
   for (let tu = 0; ; tu += 1000) {
     const { data, error } = await sb
       .from('knowledge_chunks')
-      .select('id, document_id, duong_de_muc, noi_dung, thu_tu')
+      .select('id, document_id, version_id, duong_de_muc, noi_dung, thu_tu')
       .in('version_id', banXuat)
       .eq('trang_thai', 'hoat_dong')
       .order('id')
@@ -426,7 +426,7 @@ Trả MỘT object JSON: {"muc": [ {"doan": 1, "cung": [...], "chi": [...], "sao
         linhVuc: [chuDeTv],
       },
       cheDo: kq.cheDo,
-      canCu: [{ chunkId: doan.id, documentId: doan.document_id, trich }],
+      canCu: [{ chunkId: doan.id, documentId: doan.document_id, versionId: doan.version_id, trich }],
       truongPhai: doan.loaiNguon === 'ghi-chu-chuyen-gia' ? 'celes' : doan.hePhai === 'nam-phai' ? 'nam-phai' : doan.hePhai === 'bac-phai' ? 'bac-phai' : 'chung',
       duyet: 'chua',
       dotTrich: dot,
