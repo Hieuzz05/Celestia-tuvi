@@ -186,6 +186,8 @@ IC["cap"] = '<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5v4c1.5 1.
 IC["baby"] = '<circle cx="12" cy="12" r="8.5"/><path d="M9.5 15c1.4 1.1 3.6 1.1 5 0M12 3.5c-1 1.2-1 2.3 0 3"/><circle cx="9.3" cy="11" r="0.7"/><circle cx="14.7" cy="11" r="0.7"/>'
 IC["tree"] = '<circle cx="12" cy="5.5" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M12 8v4M6 15.5V12h12v3.5"/>'
 IC["caret"] = '<path d="M7 10l5 5 5-5"/>'
+IC["nam"] = '<circle cx="10" cy="14" r="5.5"/><path d="M14 10l6-6M15 4h5v5"/>'
+IC["nu"] = '<circle cx="12" cy="9" r="5.5"/><path d="M12 14.5V21M9 18h6"/>'
 
 # ---------- hai chế độ: đêm (mặc định) và sáng ----------
 DARK = dict(
@@ -439,9 +441,9 @@ body_chao = f"""
 <h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.04em">Chào bạn,<br>mình là <span style="{GRADTEXT}">Celes</span>.</h1>
 <p style="margin: 0; max-width: 300px; font-size: 16px; line-height: 1.5; color: {MUTED}">Mình đọc lá số tử vi của bạn, rồi cùng bạn nghĩ về công việc, tình cảm và những quyết định sắp tới.</p>
 </div>
-<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px">
-{''.join(f'<div style="display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 14px; border-radius: 14px; {GLASS}; text-align: left"><span style="color: {ACCENT}; display: flex">{ic(i, 18, 2)}</span><span style="font-size: 14px; font-weight: 500">{t}</span></div>' for i, t in [('clock', 'Hai phút để lập lá số'), ('sparkle', 'Chỉ cần tên, ngày và giờ sinh'), ('compass', 'Gợi ý để bạn tự quyết, không phán số')])}
-</div>
+<ul aria-label="Celes có gì" style="list-style: none; margin: 10px 0 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
+{''.join(f'<li style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 6px; {"border-left: 1px solid " + LINE + ";" if k else ""}"><span style="color: {ACCENT}; display: flex">{ic(i, 22, 1.8)}</span><span style="{DISPLAY}; font-size: 15px; font-weight: 700; line-height: 1.1">{a}</span><span style="font-size: 12px; line-height: 1.35; color: {MUTED}">{b}</span></li>' for k, (i, a, b) in enumerate([('clock', '2 phút', 'là có lá số'), ('sparkle', '4 câu hỏi', 'là đủ để bắt đầu'), ('compass', 'Bạn quyết', 'Celes chỉ gợi ý')]))}
+</ul>
 </div>
 <div style="position: absolute; left: 20px; right: 20px; bottom: 34px; display: flex; flex-direction: column; gap: 6px">
 <a href="OnbTen.dc.html" style="{CTA}">Bắt đầu {ic('arrow', 18, 2.2)}</a>
@@ -463,15 +465,16 @@ body_ten = f"""
 page("OnbTen.dc.html", "Bước 1 — Tên", body_ten, gap=14)
 
 # bước 2 — giới tính
-def gt_tile(lab, on):
+def gt_tile(lab, on, icn):
     st = (f"border: 1px solid rgba({ZR},0.55); background: linear-gradient(160deg, rgba({ZR},0.16), rgba({ZR},0.05)), #141117" if on else GLASS)
     chk = (f'<span style="position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 999px; background: {ACCENT}; color: #2A1405; display: flex; align-items: center; justify-content: center">{ic("check", 13, 3)}</span>' if on else "")
-    return (f'<button type="button" aria-pressed="{"true" if on else "false"}" style="position: relative; height: 120px; border-radius: 20px; {st}; color: {TEXT}; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 4px; padding: 16px">{chk}'
+    return (f'<button type="button" aria-pressed="{"true" if on else "false"}" style="position: relative; height: 140px; border-radius: 20px; {st}; color: {TEXT}; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 4px; padding: 16px">{chk}'
+            f'<span style="width: 44px; height: 44px; border-radius: 14px; margin-bottom: auto; background: {f"rgba({ZR},0.18)" if on else "rgba(255,255,255,0.06)"}; color: {ACCENT if on else TEXT}; display: flex; align-items: center; justify-content: center">{ic(icn, 24, 2)}</span>'
             f'<span style="{DISPLAY}; font-size: 24px; font-weight: 800">{lab}</span></button>')
 body_gt = f"""
 {ob_head(2, 'OnbTen.dc.html')}
 {ob_title('Minh ơi', f'Bạn là <span style="{GRADTEXT}">nam hay nữ</span>?', 'Lá số cần điều này để tính các giai đoạn trong đời bạn theo đúng chiều.')}
-<div role="group" aria-label="Giới tính" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">{gt_tile('Nam', True)}{gt_tile('Nữ', False)}</div>
+<div role="group" aria-label="Giới tính" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">{gt_tile('Nam', True, 'nam')}{gt_tile('Nữ', False, 'nu')}</div>
 {ob_cta('Tiếp tục', 'OnbNgay.dc.html')}
 """
 page("OnbGioiTinh.dc.html", "Bước 2 — Giới tính", body_gt, gap=14)
@@ -598,12 +601,18 @@ def homnay(th, suffix=""):
     return f"""
 <div style="display: flex; align-items: flex-end; gap: 10px">
 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px">
-{zone_mark() if th is DARK else ''}{eyebrow('Thứ Ba · 29 tháng 9', th['muted'] if th is DARK else th['accent'])}
-<h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -0.03em">Chào buổi sáng,<br><span style="{th['gradtext']}">Minh</span></h1>
+{eyebrow('Thứ Ba · 29 tháng 9', th['accent'])}
+<h1 style="margin: 0; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 500; line-height: 1.2; color: {M}">Chào buổi sáng,</span><span style="{DISPLAY}; font-weight: 800; font-size: 34px; line-height: 1; letter-spacing: -0.035em; {th['gradtext']}">Minh</span></h1>
 </div>
 {bell}
 {avatar(th)}
 </div>
+<section aria-label="Lời nhắc từ Celes" style="position: relative; border-radius: 18px; padding: 10px 6px 10px 12px; {G}; display: flex; align-items: center; gap: 10px">
+{orb(30)}
+<a href="Celes.dc.html" style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: {T}"><span style="font-size: 12px; font-weight: 600; color: {th['accent']}">Celes vẫn nhớ · tuần trước</span><span style="{VOICE}; font-size: 15.5px; line-height: 1.25; color: {th['voice']}">“Lời mời làm việc tới đâu rồi?”</span></a>
+<a href="Celes.dc.html" aria-label="Kể tiếp với Celes" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; background: linear-gradient(135deg, #E23BA8, {FUCHSIA} 55%, #A8157E); color: #FFFFFF; display: flex; align-items: center; justify-content: center">{ic('arrow', 18, 2.2)}</a>
+<button type="button" aria-label="Ẩn lời nhắc" style="width: 44px; height: 44px; margin-right: -8px; flex-shrink: 0; border: 0; background: transparent; color: {M}; display: flex; align-items: center; justify-content: center; padding: 0">{ic('x', 16, 2)}</button>
+</section>
 <article style="position: relative; overflow: hidden; border-radius: 24px; padding: 18px; {hs}; display: flex; flex-direction: column; gap: 8px">
 {hg}
 <div style="display: flex; justify-content: space-between; align-items: center; position: relative"><span style="{EYEBROW}; color: {hk}">Nhận định hôm nay</span><span style="height: 28px; padding: 0 10px; border-radius: 999px; {hc}; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600">{ic('briefcase', 14, 2)}Công việc</span></div>
@@ -614,14 +623,6 @@ def homnay(th, suffix=""):
 <div style="border-radius: 14px; padding: 9px 12px; {hb}; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: {hl}">{ic('wave', 14, 2)}Nhịp ngày</span><span style="{DISPLAY}; font-size: 17px; font-weight: 700; white-space: nowrap; letter-spacing: -0.01em">Chậm mà chắc</span></div>
 </div>
 </article>
-<section style="border-radius: 20px; padding: 14px 16px; {G}; display: flex; flex-direction: column; gap: 10px">
-<div style="display: flex; align-items: center; gap: 10px">{orb(30)}<span style="font-size: 13px; font-weight: 600; color: {th['accent']}">Celes vẫn nhớ</span><span style="margin-left: auto; font-size: 12px; color: {M}">Tuần trước</span></div>
-<p style="margin: 0; {VOICE}; font-size: 17px; line-height: 1.32; color: {th['voice']}">“Bạn kể đang cân nhắc một lời mời làm việc. Chuyện đó tới đâu rồi?”</p>
-<div style="display: flex; gap: 10px">
-<a href="Celes.dc.html" style="flex-grow: 1; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #E23BA8, {FUCHSIA} 55%, #A8157E); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 8px 22px rgba(211,34,152,0.4); color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; text-decoration: none">Kể tiếp với Celes</a>
-<button type="button" style="height: 44px; padding: 0 16px; border-radius: 14px; border: 1px solid {th['line']}; background: transparent; color: {T}; font-size: 15px; font-weight: 500">Để sau</button>
-</div>
-</section>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
 <a href="LaSo{suffix}.dc.html" style="border-radius: 18px; padding: 12px; {G}; display: flex; align-items: center; gap: 10px; text-decoration: none; color: {T}">
 <span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; background: {th['tgold'][0]}; color: {th['tgold'][1]}; display: flex; align-items: center; justify-content: center">{ic('laso', 20)}</span>
@@ -773,7 +774,6 @@ miles = "".join(
 body5 = f"""
 <div style="display: flex; align-items: flex-start; gap: 10px">
 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
-{zone_mark()}
 <h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.05">Hành trình <span style="{GRADTEXT}">của bạn</span></h1>
 <span style="font-size: 13px; color: {MUTED}; white-space: nowrap">Mỗi quãng mười năm có một nhịp riêng.</span>
 </div>
@@ -849,7 +849,7 @@ def laso_header(th, active, suffix="", sub="Chạm một cung để đọc giả
         for k, h, l in tabs)
     share = (f'<button type="button" aria-label="Chia sẻ lá số" style="width: 44px; height: 44px; border-radius: 14px; {th["glass"]}; display: flex; align-items: center; justify-content: center; color: {T}; padding: 0; flex-shrink: 0">{ic("share", 20, 2)}</button>')
     return f"""<div style="display: flex; align-items: center; gap: 10px">
-<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">{zone_mark() if th is DARK else ''}<h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 24px; letter-spacing: -0.03em; line-height: 1.05">Lá số của <span style="{th['gradtext']}">Minh</span></h1><span style="font-size: 12px; color: {M}; white-space: nowrap">{sub}</span></div>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px"><h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 24px; letter-spacing: -0.03em; line-height: 1.05">Lá số của <span style="{th['gradtext']}">Minh</span></h1><span style="font-size: 12px; color: {M}; white-space: nowrap">{sub}</span></div>
 {share}
 {avatar(th)}
 </div>
@@ -887,7 +887,6 @@ prow.append(f'<a href="#" style="display: flex; flex-direction: column; align-it
 body7 = f"""
 <div style="display: flex; align-items: flex-start; gap: 10px">
 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
-{zone_mark()}
 <h1 style="margin: 0; {DISPLAY}; font-weight: 800; font-size: 26px; letter-spacing: -0.03em; line-height: 1.05">Mối <span style="{GRADTEXT}">quan hệ</span></h1>
 <span style="font-size: 13px; color: {MUTED}; white-space: nowrap">Hiểu người thân qua lá số của hai người</span>
 </div>
@@ -1107,29 +1106,47 @@ body_ct = f"""
 page("CungChiTiet.dc.html", "Cung Mệnh — giải nghĩa", body_ct, gap=8, pad="52px 20px 0", extra=sheet)
 
 # ---------- 4c · Tổng quan: đọc cả lá số (như tab Tổng quan trên web /la-so) ----------
-DG = [("sparkle", "good", "Điểm nổi bật", "Bạn đời và người đi trước là chỗ dựa."),
-      ("shield", "warn", "Điều cần lưu ý", "Nói thẳng nên kèm lý do, kẻo bị hiểu lầm."),
-      ("path", "tgold", "Giai đoạn hiện tại", "35–44 tuổi: dựng nền, chắc từng bước.")]
+# Đánh giá chung: 3 điểm Celes thấy rõ nhất — mỗi câu phải là chuyện CỦA người này, không phải tính từ
+DG = [("sparkle", "good", "Điểm nổi bật", "Giữ lời. Người đi trước hay giao việc khó cho bạn."),
+      ("shield", "warn", "Điều cần lưu ý", "Nói thẳng mà thiếu lý do, người nhà dễ tự ái.")]
 dg_rows = "".join(
-    f'<div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; {"border-bottom: 1px solid rgba(255,255,255,0.055);" if i < 2 else ""}">'
+    f'<div style="display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.055)">'
     f'<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: {DARK[k][0]}; color: {DARK[k][1]}; display: flex; align-items: center; justify-content: center">{ic(icn, 18, 1.9)}</span>'
-    f'<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: {DARK[k][1]}">{lab}</span><span style="font-size: 14px; line-height: 1.4; white-space: nowrap">{txt}</span></span></div>'
-    for i, (icn, k, lab, txt) in enumerate(DG))
+    f'<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: {DARK[k][1]}">{lab}</span><span style="font-size: 14px; line-height: 1.4">{txt}</span></span></div>'
+    for icn, k, lab, txt in DG)
+# giai đoạn hiện tại là một hàng chạm được (→ Hành trình), cao 52px
+dg_rows += (f'<a href="HanhTrinh.dc.html" style="min-height: 52px; display: flex; gap: 12px; align-items: center; padding: 8px 10px 8px 14px; text-decoration: none; color: {TEXT}">'
+            f'<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: {DARK["tgold"][0]}; color: {DARK["tgold"][1]}; display: flex; align-items: center; justify-content: center">{ic("path", 18, 1.9)}</span>'
+            f'<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: {DARK["tgold"][1]}">Giai đoạn hiện tại · 35–44 tuổi</span><span style="font-size: 14px; line-height: 1.4">Dựng nền: chọn ít việc, làm cho chắc.</span></span>'
+            f'<span style="color: {MUTED}; display: flex">{ic("chev", 16, 2)}</span></a>')
+
+# Khối nối các mặt đời: bạn trong từng mối quan hệ gần nhất (góp ý 30/09 — "không biết mối quan hệ của mình ra sao")
+NQ = [("heart", "Với bạn đời", "Cần bạn nói ra điều đang lo, đừng tự gánh một mình."),
+      ("tree", "Với gia đình", "Gần mẹ hơn. Bố hiểu bạn qua việc làm hơn lời nói."),
+      ("rel", "Với bạn bè", "Ít nhưng lâu. Người lớn tuổi hơn hay kéo bạn lên.")]
+nq_rows = "".join(
+    f'<li style="display: flex; gap: 10px; align-items: flex-start"><span style="color: {ACCENT}; display: flex; margin-top: 2px">{ic(icn, 16, 2)}</span>'
+    f'<span style="font-size: 14px; line-height: 1.4"><b style="font-weight: 700">{lab}.</b> <span style="color: rgba(243,241,244,0.82)">{txt}</span></span></li>'
+    for icn, lab, txt in NQ)
 
 body_tq = f"""
 {laso_header(DARK, 'tongquan', sub='Đọc cả lá số trong vài phút')}
 <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: -4px">{eyebrow('Đánh giá chung', GOLD)}<span style="font-size: 12px; color: {MUTED}">3 điểm Celes thấy rõ nhất</span></div>
 <section style="border-radius: 20px; {GLASS}; display: flex; flex-direction: column">{dg_rows}</section>
+<section aria-label="Bạn giữa những người quanh mình" style="border-radius: 20px; padding: 13px 16px 14px; {zone_hero()}; display: flex; flex-direction: column; gap: 9px">
+{eyebrow('Bạn giữa những người quanh mình')}
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">{nq_rows}</ul>
+</section>
 <div style="display: flex; align-items: baseline; justify-content: space-between; margin: 2px 0 -4px">{eyebrow('Bức tranh chung')}<span style="font-size: 12px; color: {MUTED}">Câu 1 / 6</span></div>
-<article style="border-radius: 20px; padding: 14px 16px; {GLASS}; display: flex; flex-direction: column; gap: 8px">
+<article style="border-radius: 20px; padding: 14px 16px 6px; {GLASS}; display: flex; flex-direction: column; gap: 6px">
 <div style="display: flex; gap: 10px; align-items: flex-start"><span style="{MONO}; font-size: 13px; font-weight: 500; color: {ACCENT}; margin-top: 3px">01</span>
-<h2 style="margin: 0; {DISPLAY}; font-size: 18px; font-weight: 700; line-height: 1.25; letter-spacing: -0.02em">Tôi là người thế nào khi đứng trước lựa chọn lớn?</h2></div>
-<p style="margin: 0; font-size: 15px; line-height: 1.5; color: {TEXT}">Bạn soi kỹ chỗ chưa ổn rồi mới quyết. Chậm lúc đầu nhưng ít phải quay lại, nhất là khi có người tin cậy cùng nghĩ.</p>
-<a href="#" style="height: 36px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: {ACCENT}; text-decoration: none">Muốn biết vì sao không? {ic('caret', 16, 2.2)}</a>
+<h2 style="margin: 0; {DISPLAY}; font-size: 18px; font-weight: 700; line-height: 1.25; letter-spacing: -0.02em">Tôi quyết việc lớn theo kiểu nào?</h2></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: {TEXT}">Bạn hỏi ý hai, ba người rồi vẫn tự quyết. Chậm hơn người khác vài tuần, nhưng hiếm khi phải quay lại.</p>
+<a href="#" style="height: 44px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: {ACCENT}; text-decoration: none">Muốn biết vì sao không? {ic('caret', 16, 2.2)}</a>
 </article>
 <a href="ChuyenSau.dc.html" style="border-radius: 20px; text-decoration: none; color: {TEXT}">
-<span style="border-radius: 20px; padding: 12px 12px 12px 16px; {zone_hero()}; display: flex; align-items: center; gap: 10px">
-<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">{eyebrow('Chuyên sâu')}<span style="{DISPLAY}; font-size: 16px; font-weight: 700; line-height: 1.2; white-space: nowrap">Đọc phần chuyên sâu</span><span style="font-size: 12px; color: {MUTED}; white-space: nowrap">14 chủ đề · 42 câu hỏi</span></span>
+<span style="border-radius: 20px; padding: 12px 12px 12px 16px; {GLASS}; display: flex; align-items: center; gap: 10px">
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px"><span style="{DISPLAY}; font-size: 16px; font-weight: 700; line-height: 1.2; white-space: nowrap">Đọc phần chuyên sâu</span><span style="font-size: 12px; color: {MUTED}; white-space: nowrap">14 chủ đề · 42 câu hỏi</span></span>
 <span style="{CTA}; height: 44px; padding: 0 14px; font-size: 14px; flex-shrink: 0; white-space: nowrap">Xem 14 chủ đề</span>
 </span></a>
 """
@@ -1249,7 +1266,7 @@ notes = {
   "Tab Lá số: xem lá số → tổng quan → chuyên sâu (đi theo đúng web /la-so)\n\n"
   "Bốn chế độ xem trong tab: Lá số · Tổng quan · Chuyên sâu · Mạnh – yếu.\n\n"
   "1. Lá số (4a): 12 cung đầy đủ như web. Phụ tinh chia HAI CỘT: cát/trung tính bên trái, hung/sát bên phải; vòng Thái Tuế / Lộc Tồn nằm chung hai cột, màu tím nhạt. Chạm một cung → tấm trượt (4b).\n"
-  "2. Tổng quan (4c) = đọc CẢ lá số. Gồm: Đánh giá chung (điểm nổi bật · điều cần lưu ý · giai đoạn hiện tại), rồi Bức tranh chung (khoảng 6 câu hỏi, mỗi câu có 'Muốn biết vì sao không?'). Cuối bài là thẻ 'Đọc tiếp phần chuyên sâu' → nút 'Xem 14 chủ đề'.\n"
+  "2. Tổng quan (4c) = đọc CẢ lá số. Gồm: Đánh giá chung (điểm nổi bật · điều cần lưu ý · giai đoạn hiện tại — hàng cuối chạm → Hành trình); khối 'Bạn giữa những người quanh mình' (bạn đời · gia đình · bạn bè, mỗi dòng một câu); Bức tranh chung (khoảng 6 câu hỏi, mỗi câu có 'Muốn biết vì sao không?'); cuối bài 'Đọc phần chuyên sâu' → 'Xem 14 chủ đề'. Góp ý 30/09 'chung chung' được sửa ở PHẦN SINH NỘI DUNG (mỗi câu phải là chuyện của chính người đó), không phải bằng đổi bố cục.\n"
   "3. Chuyên sâu (4d) = 14 chủ đề, mỗi chủ đề 2–4 câu hỏi về chính bạn. Ô nào cũng có nhãn Mạnh / Bình / Cần gắng và trạng thái đã đọc.\n"
   "4. Đọc một chủ đề (4e): hàng chip để nhảy giữa 14 chủ đề ('Đã đọc 3/14'); câu hỏi mở đầu, các câu trả lời đánh số, 'Tóm lại' ở cuối, rồi 'Đọc tiếp: chủ đề sau'. Bài được viết khi người dùng mở chủ đề lần đầu (hiện 'Celes đang viết tiếp…'), sau đó được lưu, mở lại là có ngay.\n\n"
   "Lối vào khác của phần chuyên sâu: ô 'Đọc tiếp' ở Hôm nay, nút sách trong tấm trượt của một cung, và 'Đọc chuyên sâu' ở Mạnh – yếu.\n\n"
@@ -1267,7 +1284,7 @@ notes = {
   "• Vì sao đổi (góp ý senior UI/UX 29/09): bản 7 nền tím #1A001E quá sáng cho chế độ tối, và mọi luồng cùng một nền nên người dùng không biết mình đang ở đâu — onboarding xong vào app nền vẫn y như cũ.\n"
   "• Nền: #0B0A0D gần đen, thẻ kính tối viền trắng 7–8%. Màu chỉ còn ở một quầng sáng mờ nơi góc màn và ở chỗ cần nhấn.\n"
   "• Vùng màu: Khởi đầu cam bình minh (quầng hắt từ dưới lên) · Hôm nay vàng · Lá số tím chàm (có bầu sao) · Hành trình xanh ngọc (vòng quỹ đạo) · Mối quan hệ san hô · Celes hồng · Tài khoản xám trung tính. Màu vùng đi vào: quầng nền, chữ nhấn, thẻ chính, tab con đang chọn, tab dưới đang chọn.\n"
-  "• Đầu mỗi màn tab có dấu vùng (chấm màu + TÊN VÙNG kiểu mono), như breadcrumb của dashboard tham khảo.\n"
+  "• Đầu mỗi màn tab có dấu vùng (chấm màu + TÊN VÙNG kiểu mono), như breadcrumb của dashboard tham khảo. Đổi 01/10: màn TAB không có dấu vùng (tab dưới đã nói đang ở đâu); chỉ màn con có nút quay lại mới giữ dấu vùng để biết mình đang ở trong vùng nào.\n"
   "• Fuchsia #D32298 vẫn là màu duy nhất cho nút hành động, ở mọi vùng.\n"
   "• Celes có hình hài: một quả cầu sáng thở nhẹ, xuất hiện ở tab giữa, đầu trò chuyện và mọi lời Celes nói.\n\n"
   "Kiểu chữ: Bricolage Grotesque (tiêu đề, có cá tính, dấu tiếng Việt gọn) + Be Vietnam Pro (thân bài, làm riêng cho tiếng Việt) + Newsreader nghiêng (chỉ cho câu Celes nói) + JetBrains Mono (nhãn nhỏ). Bỏ Inter."},
