@@ -23,6 +23,7 @@ import {
   SO_KHAN_CAP,
   type MucAnToan,
 } from '../lib/rag/an-toan';
+import { gomDieuTuKe } from '../lib/rag/tiep-noi';
 
 interface Ca {
   nhom: string;
@@ -285,6 +286,37 @@ const lan1 = datMienTruTamLy(van);
 const lan2 = datMienTruTamLy(lan1);
 if (lan1 === van) loiKhac.push('datMienTruTamLy không nối gì vào bài chưa có miễn trừ');
 if (lan2 !== lan1) loiKhac.push('datMienTruTamLy nối hai lần — phép dò trùng hỏng');
+
+/*
+ * Câu khủng hoảng KHÔNG được lọt vào trí nhớ hội thoại.
+ *
+ * gomDieuTuKe chạy trên MỌI lượt chat và kết quả của nó được dán vào prompt
+ * dưới nhãn "ĐIỀU NGƯỜI ĐỌC TỰ KỂ":
+ *   app/api/hoi-dap → prompt-co-can-cu.ts:275 → tiep-noi.ts:212 → prompt
+ * Mẫu `\btôi muốn\b` nhặt "Tôi muốn chết" y như nhặt "Tôi muốn đổi nghề". Không
+ * lọc thì một câu nói lúc gục nhất thành dữ kiện thường trực, dán lại ở mọi
+ * lượt sau — kể cả khi người ta quay lại hỏi chuyện công việc.
+ */
+const CAU_KHUNG_HOANG = [
+  'Tôi muốn chết',
+  'Tôi muốn chết quá, mệt lắm rồi',
+  'Tôi muốn tự tử',
+  'Tôi không muốn sống nữa',
+];
+for (const c of CAU_KHUNG_HOANG) {
+  const nho = gomDieuTuKe([{ vaiTro: 'nguoi-dung', noiDung: c }] as never);
+  if (nho.length) {
+    loiKhac.push(`Câu khủng hoảng lọt vào ĐIỀU NGƯỜI ĐỌC TỰ KỂ: ${JSON.stringify(c)} → ${JSON.stringify(nho)}`);
+  }
+}
+
+// Mặt kia: lọc không được nuốt câu kể bình thường cũng mở đầu bằng "tôi muốn"
+const nhoThuong = gomDieuTuKe([
+  { vaiTro: 'nguoi-dung', noiDung: 'Tôi muốn đổi nghề sang làm thiết kế' },
+] as never);
+if (!nhoThuong.length) {
+  loiKhac.push('Bộ lọc CRITICAL nuốt luôn câu kể bình thường "Tôi muốn đổi nghề…"');
+}
 
 if (loiKhac.length) {
   console.log('HỎNG (hằng an toàn):');
