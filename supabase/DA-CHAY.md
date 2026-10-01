@@ -31,6 +31,7 @@ Nó là nguồn đáng tin hơn bảng dưới, vì bảng dưới do người g
 | `schema-support.sql` | Quyền, thanh toán, hạn mức: `user_entitlements`, `support_payments`, `usage_events` | rồi |
 | `schema-ai-models.sql` | `ai_model_configs` — chuỗi model quản lý được từ `/admin/models` | rồi |
 | `schema-noi-dung-ai.sql` | `noi_dung_ai` — bộ nhớ đệm nội dung do AI sinh | rồi |
+| `va-danh-gia-bai.sql` | `danh_gia_bai_luan` — quản trị viên chấm bài luận (Hay/Chưa hay, 1–5, nhận xét, gợi ý cách viết). Chưa chạy thì nút Lưu ở thẻ chấm báo lỗi, trang người dùng không ảnh hưởng | **chưa** |
 
 `chat_messages` nằm trong `schema.sql` từ đầu dự án nhưng mãi tới 19/09/2026 mới
 có mã dùng tới (trí nhớ hội thoại, CEL-088). **Không cần chạy thêm SQL nào** —

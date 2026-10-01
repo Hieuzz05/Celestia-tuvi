@@ -559,7 +559,14 @@ thắt ở KHÂU VIẾT, không ở tri thức. Thí nghiệm: bản **O** = lu�
 - **≤ 70%** → nút thắt là KHÂU VIẾT / khuôn bài (độ dài, phạm vi, cách dàn ý) — thêm tri thức không lên.
 - Ở giữa → cả hai.
 
-**Chưa có kết quả (26/09/2026):** tài khoản OpenAI HẾT CREDIT giữa lúc sinh bản O (`insufficient_quota`) — 0 / 60
+**Kết quả 01/10/2026** (mã 7318e4d, giám khảo gpt-4o-mini qua kiểm: cài lỗi 10/12, nhất quán 98,5%): **O = 71,2%**
+KT (bắt buộc đạt 76,9%, 0 điểm sai), A = 50,6% (bản A sinh 26/09). O chỉ chấm được 36 bài: lát cắt nay còn 4 câu
+(SN01 SN02 SN04 SN05), đáp án soạn cho bộ cũ nên SN04 không có đáp án. **Đọc: sát vạch 70 → nút thắt chủ yếu ở
+KHÂU VIẾT**; có đủ tri thức trong prompt, bài vẫn bỏ gần 30% điểm. Hệ quả: chưa làm B3 (bảng sao×cung từ sách) —
+thêm tri thức không tự lên bài; ưu tiên khâu viết (dàn ý buộc phủ điểm bắt buộc, độ dài). Lượt sinh O tốn
+~1,29 tr token (~0,25 USD), chấm ~0,22 tr token.
+
+**Trước đó (26/09/2026):** tài khoản OpenAI HẾT CREDIT giữa lúc sinh bản O (`insufficient_quota`) — 0 / 60
 bài, lượt chấm hỏng theo. Chạy lại khi nạp credit:
 `npx tsx scripts/do-tran-kien-thuc.ts <thư mục>` rồi `npx tsx scripts/do-kien-thuc.ts <thư mục> --ban A,O`.
 

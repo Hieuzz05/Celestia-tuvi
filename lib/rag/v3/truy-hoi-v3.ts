@@ -2,7 +2,7 @@ import { boDau, nhanDangThucThe } from '../thuc-the';
 import { truyHoi, type DoanUngVien } from '../truy-hoi';
 import { doTrung, NGUONG_TRUNG } from '../uu-tien-nguon';
 import { docMetaTaiLieu, LOAI_NGUON_AN } from '../tai-lieu-meta';
-import type { DuKienV3 } from './du-kien';
+import { laTenSaoNang, type DuKienV3 } from './du-kien';
 
 /**
  * TRUY HỒI THEO CUNG cho luồng v3.
@@ -18,7 +18,7 @@ import type { DuKienV3 } from './du-kien';
  * có điểm RRF cao mà chẳng dùng được.
  */
 
-export const PHIEN_BAN_TRUY_HOI_V3 = '2026.09.6';
+export const PHIEN_BAN_TRUY_HOI_V3 = '2026.10.1';
 
 /**
  * MỨC TIN CẬY CÓ TÁC DỤNG THẬT (2026.09.6, chủ dự án 26/09/2026: "mức độ tin
@@ -70,19 +70,26 @@ export function laDoanRac(d: { tieuDe: string; duongDeMuc: string | null; noiDun
   return hoa > 0.5 && cham < 2;
 }
 
+/*
+ * Bí danh cung khi lọc "đoạn có nói đúng cung này không". 01/10/2026: bỏ bí danh MỘT âm tiết
+ * ('the', 'tai', 'quan', 'di', 'no', 'phuc', 'dien', 'tat', 'ach', 'bao', 'huynh', 'mang') — sau
+ * khi bỏ dấu, "thê" trùng "thế/thể", "tài" trùng "tài năng", "di" trùng "di chuyển": gần như đoạn
+ * nào cũng "khớp cung", nên bộ lọc theo cung không lọc gì. Giữ dạng hai âm tiết sách hay dùng.
+ * 'menh' giữ: là tên đầy đủ của cung.
+ */
 export const BI_DANH_CUNG: Record<string, string[]> = {
-  'Mệnh': ['menh', 'mang'],
+  'Mệnh': ['menh', 'menh cung', 'cung menh'],
   'Phụ Mẫu': ['phu mau'],
-  'Phúc Đức': ['phuc duc', 'phuc'],
-  'Điền Trạch': ['dien trach', 'dien'],
-  'Quan Lộc': ['quan loc', 'quan'],
-  'Nô Bộc': ['no boc', 'no'],
-  'Thiên Di': ['thien di', 'di'],
-  'Tật Ách': ['tat ach', 'tat', 'ach'],
-  'Tài Bạch': ['tai bach', 'tai'],
+  'Phúc Đức': ['phuc duc', 'cung phuc', 'phuc cung'],
+  'Điền Trạch': ['dien trach', 'cung dien', 'dien cung'],
+  'Quan Lộc': ['quan loc', 'cung quan', 'quan cung'],
+  'Nô Bộc': ['no boc', 'cung no', 'no cung'],
+  'Thiên Di': ['thien di', 'cung di', 'di cung'],
+  'Tật Ách': ['tat ach', 'cung tat', 'tat cung'],
+  'Tài Bạch': ['tai bach', 'cung tai', 'tai cung'],
   'Tử Tức': ['tu tuc'],
-  'Phu Thê': ['phu the', 'vo chong', 'the'],
-  'Huynh Đệ': ['huynh de', 'bao', 'huynh'],
+  'Phu Thê': ['phu the', 'vo chong', 'cung the', 'the cung'],
+  'Huynh Đệ': ['huynh de', 'cung bao', 'bao cung', 'anh em'],
 };
 
 /**
@@ -263,7 +270,8 @@ export async function truyHoiChoCau(vao: {
     const hoi = (chinhHoa.length ? chinhHoa : cungCo).slice(0, 3);
     return {
       cung: d.cung!,
-      sao: cungCo.slice(0, 6),
+      // Chấm khớp bằng MỌI sao nặng của cung (01/10/2026) — bản trước chỉ 6 sao đầu, phụ tinh thứ 7 trở đi không bao giờ được tính
+      sao: cungCo.filter(laTenSaoNang),
       q: `${hoi.join(' ')} cung ${d.cung} ${tuKhoa}`.trim(),
       // "Tử Vi" còn là tên môn học, đứng ở tiêu đề của gần như mọi đoạn trong kho:
       // đưa nó vào nhánh từ khoá là xếp hạng theo tên sách. Nhánh từ khoá hỏi bằng
@@ -272,6 +280,28 @@ export async function truyHoiChoCau(vao: {
       laCung: true,
     };
   });
+  /*
+   * PHỤ TINH CỦA CUNG CHÍNH có truy vấn riêng (01/10/2026). Truy vấn cung chỉ hỏi chính tinh, nên
+   * "Tả Phù Hữu Bật ở Phu Thê" không bao giờ được hỏi — sách bàn bộ đôi ấy ở cung ấy thì vẫn không
+   * tới. Tách riêng, NGẮN (≤ 3 sao, bộ đôi đi cùng nhau), đặt ngay sau truy vấn cung chính để có
+   * chỗ ở vòng chọn đầu. Không nhồi vào truy vấn chính (bài học lượt 3: làm loãng nghĩa).
+   */
+  if (truyVan.length) {
+    const t0 = truyVan[0];
+    const phuNang = t0.sao.filter((s) => !CHINH_TINH_TEN.has(s) && !s.startsWith('Hóa '));
+    const CAP: [string, string][] = [['Tả Phù', 'Hữu Bật'], ['Văn Xương', 'Văn Khúc'], ['Thiên Khôi', 'Thiên Việt'], ['Kình Dương', 'Đà La'], ['Địa Không', 'Địa Kiếp'], ['Hỏa Tinh', 'Linh Tinh'], ['Thiên Khốc', 'Thiên Hư'], ['Hồng Loan', 'Thiên Hỷ'], ['Cô Thần', 'Quả Tú']];
+    const caDoi = CAP.filter(([a, b]) => phuNang.includes(a) && phuNang.includes(b)).flat();
+    const hoiPhu = [...new Set([...caDoi, ...phuNang])].slice(0, 3);
+    if (hoiPhu.length) {
+      truyVan.splice(1, 0, {
+        cung: t0.cung,
+        sao: hoiPhu,
+        q: `${hoiPhu.join(' ')} cung ${t0.cung} ${tuKhoa}`.trim(),
+        k: `${hoiPhu.slice(0, 2).join(' ')} ${t0.cung}`.trim(),
+        laCung: true,
+      });
+    }
+  }
   const cachCuc = vao.duKien.filter((d) => d.vaiTro === 'cách cục').slice(0, 2);
   for (const c of cachCuc) {
     const ten = c.noiDung.match(/^Cách cục (.+?) \(/)?.[1];

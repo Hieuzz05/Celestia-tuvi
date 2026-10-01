@@ -117,6 +117,8 @@ export function kiemBai(vao: {
   /** Độ dài theo trang Cấu hình luận giải (cau-hinh.ts) — thiếu thì mặc định trong mã */
   doDai?: { luan: readonly [number, number]; viSao: readonly [number, number]; doan: readonly [number, number] };
   tranGoiY?: number;
+  /** Mã F### của cung chính / xung chiếu có sao hung nặng — bài nên trích ít nhất một mã mỗi cung */
+  maCanNhac?: string[];
 }): LoiV3[] {
   const { bai, loai } = vao;
   const loi: LoiV3[] = [];
@@ -183,6 +185,18 @@ export function kiemBai(vao: {
     .filter((t) => [t.ten, ...t.biDanh].some((x) => vs.includes(x)));
   const ngoai = saoVs.filter((t) => !vao.saoDuocPhep.has(t.ten) && !t.biDanh.some((b) => vao.saoDuocPhep.has(b)));
   if (ngoai.length) loi.push({ ma: 'sao-ngoai', moTa: `viSao nêu sao không có trong dữ kiện câu này: ${ngoai.map((t) => t.ten).join(', ')}.`, chan: true, cum: ngoai.flatMap((t) => [t.ten, ...t.biDanh]).filter((x) => vs.includes(x)) });
+
+  /*
+   * CÂU CỤT (01/10/2026): chủ dự án đọc được bài tổng quan dừng giữa câu ("…cách gây dựng qua từng"). JSON cắt
+   * cụt thì không đọc được, nên đoạn cụt đến từ model hoặc vòng sửa — trước đây không bộ kiểm nào bắt. Kèm `cum`
+   * là chính câu cuối để đi đường sửa cục bộ (rẻ, vẫn chạy được khi sắp hết giờ).
+   */
+  for (const [truong, van] of [['luanGiai', luan], ['viSao', vs]] as const) {
+    const cuoi = van.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…])\s+/).pop() ?? '';
+    if (cuoi && !/[.!?…"”'’)\]»]$/.test(cuoi)) {
+      loi.push({ ma: 'cau-cut', moTa: `Câu cuối của ${truong === 'luanGiai' ? 'bài luận' : 'phần vì sao'} bị cụt, chưa hết ý — viết trọn câu đó.`, chan: true, cum: [cuoi.slice(-40)] });
+    }
+  }
 
   // "Bạn A. Bạn B. Bạn C." — giọng đọc kết quả mà quy tắc cấm
   const cau = luan.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
@@ -252,6 +266,11 @@ export function kiemBai(vao: {
   if (saiMa.length) loi.push({ ma: 'ma-sai', moTa: `Dàn ý trích mã không tồn tại: ${[...new Set(saiMa)].join(', ')}.`, chan: false });
   const khongMa = bai.danY.filter((y) => !y.canCu.length).length;
   if (khongMa) loi.push({ ma: 'y-khong-ma', moTa: `${khongMa} ý trong dàn ý không có mã căn cứ.`, chan: false });
+
+  // Độ phủ: cung chính / xung chiếu có sao hung nặng mà dàn ý không trích tới — đo, chưa chặn
+  const daTrich = new Set(bai.danY.flatMap((y) => y.canCu));
+  const bo = (vao.maCanNhac ?? []).filter((m) => !daTrich.has(m));
+  if (bo.length) loi.push({ ma: 'bo-luc-hung', moTa: `Dàn ý chưa xét cung có sao hung nặng (${bo.join(', ')}) — cần một ý về lực kéo ấy.`, chan: false });
 
   return loi;
 }

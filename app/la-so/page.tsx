@@ -6,6 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
 import { BaTheDauV3, TongQuanV3, useTongQuanV3 } from '@/components/luangiai/TongQuanV3';
 import { VietLaiQuanTri } from '@/components/luangiai/VietLaiQuanTri';
+import { useChamBaiTongQuan } from '@/components/luangiai/ChamBaiAdmin';
 import { BanDoManhYeu } from '@/components/luangiai/BanDoManhYeu';
 import { ChuyenSauChuDe } from '@/components/luangiai/ChuyenSauChuDe';
 import { HoiCelesDong } from '@/components/laso/HoiCelesDong';
@@ -258,17 +259,24 @@ function TrangLaSo() {
   const [gioiHanKhoa, setGioiHanKhoa] = useState<string | null>(null);
   const dungV3 = ngonNgu === 'vi';
   const canBangCu = !dungV3 || (khoaSau !== null && v3HongKhoa === khoaSau);
+  const laSoV3 = useMemo(
+    () =>
+      dungV3 && laSo && !canBangCu
+        ? {
+            ngay: laSo.thongTin.ngay,
+            thang: laSo.thongTin.thang,
+            nam: laSo.thongTin.nam,
+            gio: laSo.thongTin.gio,
+            gioiTinh: laSo.thongTin.gioiTinh,
+            namXem,
+          }
+        : null,
+    [dungV3, laSo, canBangCu, namXem]
+  );
+  // Chấm bài (quản trị) — null với người dùng thường, không render gì
+  const chamBai = useChamBaiTongQuan(laSoV3);
   const tongQuan = useTongQuanV3(
-    dungV3 && laSo && !canBangCu
-      ? {
-          ngay: laSo.thongTin.ngay,
-          thang: laSo.thongTin.thang,
-          nam: laSo.thongTin.nam,
-          gio: laSo.thongTin.gio,
-          gioiTinh: laSo.thongTin.gioiTinh,
-          namXem,
-        }
-      : null,
+    laSoV3,
     (gioiHanKhach) => {
       setV3HongKhoa(khoaSau);
       if (gioiHanKhach) setGioiHanKhoa(khoaSau);
@@ -553,7 +561,7 @@ function TrangLaSo() {
             )}
             {/* Ba thẻ đầu: v3 viết từ lá số; chỉ khi v3 hỏng mới lùi về thẻ khuôn cũ */}
             {!canBangCu ? (
-              <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} />
+              <BaTheDauV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDoc} cham={chamBai} />
             ) : (
               <>
                 {gocNhin[0] && (
@@ -584,7 +592,7 @@ function TrangLaSo() {
             </p>
           )}
 
-          {dungV3 && laSo && !canBangCu && <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} />}
+          {dungV3 && laSo && !canBangCu && <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} cham={chamBai} />}
 
           {dungV3 && laSo && !canBangCu && duocVao && tongQuan.banMoi && (
             <div className="card flex flex-col gap-[8px]">

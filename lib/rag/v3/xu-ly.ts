@@ -140,6 +140,9 @@ export interface CauTraRaV3 {
   kho?: string;
   /** Ý ghép nghĩa hai sao chưa có nguồn cho tổ hợp — sổ khuyết để bổ sung kho sau */
   ghep?: string[];
+  /** Phiên bản prompt + model viết RIÊNG câu này (01/10/2026) — một hàng đệm ghép câu của nhiều lượt, cột model của hàng chỉ đúng cho lượt cuối */
+  pb?: string;
+  model?: string;
 }
 
 interface KhoaDem {
@@ -175,6 +178,29 @@ export interface MoiTruongV3 {
 export type KetQuaXuLyV3 = { traThang: Response } | { status: number; json: Record<string, unknown> };
 
 const tra = (json: Record<string, unknown>, status = 200): KetQuaXuLyV3 => ({ status, json });
+/** pb / model chỉ ở trong đệm (trang chấm bài đọc) — không gửi ra trình duyệt: mặt trước không lộ tên model */
+const anNoiBo = (ds: CauTraRaV3[]) => ds.map(({ pb: _pb, model: _model, ...c }) => c);
+
+const khoaGocV3 = (namXem: number, nhom: string, boiCanh: ReturnType<typeof lamSachBoiCanh>) =>
+  `nam:${namXem}|nhom:${nhom}${khoaBoiCanh(boiCanh, nhom)}`;
+const khoaKyTheHe = (khoaGoc: string) => (THE_HE_DEM === 1 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM}`);
+
+/**
+ * Khoá đệm của một lượt xem — CÙNG công thức với xuLyLuanGiaiV3. Trang chấm bài của quản trị dùng
+ * để tự tính khoá ở máy chủ (không tin khoá client gửi) và đối chiếu bản chụp với bài đang đệm.
+ */
+export function khoaDemV3(body: Pick<BodyV3, 'ngay' | 'thang' | 'nam' | 'gio' | 'gioiTinh' | 'namXem' | 'nhom' | 'boiCanh'>): { chartHash: string; khoaKy: string; nhom: string } | null {
+  const { ngay, thang, nam, gio, gioiTinh } = body;
+  const so = (v: unknown, min: number, max: number) => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
+  if (!laNgayDuongCoThat(ngay, thang, nam) || !so(ngay, 1, 31) || !so(thang, 1, 12) || !so(nam, 1900, 2100) || !so(gio, 0, 23) || (gioiTinh !== 'nam' && gioiTinh !== 'nu')) return null;
+  const nhom = body.nhom ?? 'tong-quan';
+  const namXem = so(body.namXem, 1900, 2100) ? (body.namXem as number) : new Date().getFullYear();
+  return {
+    chartHash: bamLaSo(ngay!, thang!, nam!, veGioLaSo(gio!), gioiTinh),
+    khoaKy: khoaKyTheHe(khoaGocV3(namXem, nhom, lamSachBoiCanh(body.boiCanh))),
+    nhom,
+  };
+}
 
 export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<KetQuaXuLyV3> {
   // Trần 60 giây của Vercel, chừa 8 giây cho đệm và trả lời
@@ -232,7 +258,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
    * rồi ghép vào — không sinh lại cả nhóm.
    */
   const boiCanh = lamSachBoiCanh(body.boiCanh);
-  const khoaGoc = `nam:${namXem}|nhom:${nhom}${khoaBoiCanh(boiCanh, nhom)}`;
+  const khoaGoc = khoaGocV3(namXem, nhom, boiCanh);
   /*
    * Băm theo KHUNG giờ, không theo giờ thô (26/09/2026): cùng một người, máy
    * này lưu giờ 6, máy kia lưu giờ 5 — cùng lá số nhưng hai khoá, máy thứ hai
@@ -242,7 +268,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
   const khoa: KhoaDem = {
     chartHash: bamLaSo(ngay!, thang!, nam!, veGioLaSo(gio!), gioiTinh),
     beMat: 'luan-giai-v3',
-    khoaKy: THE_HE_DEM === 1 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM}`,
+    khoaKy: khoaKyTheHe(khoaGoc),
     ngonNgu: 'vi',
   };
 
@@ -423,6 +449,8 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         goiY: k.goiY || undefined,
         kho: khoMongDoi(kho, k.id) ?? undefined,
         ghep: k.danY.some((y) => y.ghep) ? k.danY.filter((y) => y.ghep && y.y).map((y) => y.y).slice(0, 5) : undefined,
+        pb: PHIEN_BAN_V3.prompt,
+        model: k.model || undefined,
       });
     }
     const cau: CauTraRaV3[] = ids.map(
@@ -451,7 +479,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     }
     // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
     if (cau.filter((c) => phamVi.includes(c.id)).every((c) => c.chuaViet)) {
-      if (cauTra.some((c) => !c.chuaViet)) return tra({ nhom, cau: cauTra, tuDem: true, ...(vietLai ? { vietLaiHong } : {}) });
+      if (cauTra.some((c) => !c.chuaViet)) return tra({ nhom, cau: anNoiBo(cauTra), tuDem: true, ...(vietLai ? { vietLaiHong } : {}) });
       return tra({ loi: 'Celes chưa viết được phần này. Bạn thử lại giúp.' }, 502);
     }
     const mot = kq.find((k) => k.model);
@@ -459,7 +487,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     // Câu viết lại hỏng không được mất bài ở đệm: ghi lại bản cũ cho câu đó
     await dem.luu(khoa, cau.map((c) => (c.chuaViet ? banCu.get(c.id) ?? c : c)), { provider, model, phienBan: PHIEN_BAN_V3 });
     if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoa.khoaKy, cau: thieu, hong: vietLaiHong });
-    return tra({ nhom, cau: cauTra, tuDem: false, banMoi: coBanMoi(cauTra), ...(vietLai ? { vietLaiHong } : {}) });
+    return tra({ nhom, cau: anNoiBo(cauTra), tuDem: false, banMoi: coBanMoi(cauTra), ...(vietLai ? { vietLaiHong } : {}) });
   } catch (e) {
     if (e instanceof KhongCoModelError) {
       return tra({ loi: e.message, chuaCauHinh: true }, 503);

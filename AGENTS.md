@@ -49,7 +49,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
 | Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
-| Giọng và cấu trúc câu trả lời của Celes | `NHAN_CACH_CELES` trong `lib/ai/prompt.ts` |
+| Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
 | An sao | `lib/tuvi/ansao.ts` + `lib/tuvi/constants.ts` |
@@ -65,6 +65,116 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 | `lib/tuvi/**`, `apps/celes-app/**` | `docs/bay/engine.md` |
 | `lib/rag/**`, `lib/ai/**`, `app/api/luan-giai*`, `app/api/hoi-dap`, `lib/ket-noi/**` | `docs/bay/ai-rag.md` |
 | Deploy, biến môi trường, sửa tệp bằng dòng lệnh | `docs/bay/moi-truong.md` |
+
+## Luồng làm việc — LUẬT, không phải gợi ý
+
+Dự án này có 9 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
+mọi AI làm trên repo, cả hai máy.
+
+### Mở phiên: chủ dự án đánh dấu loại việc
+
+`[CHIẾN LƯỢC]` · `[CODE]` · `[SỬA LỖI]`. Không có dấu thì AI hỏi lại một câu
+ngắn, đừng tự đoán rồi đi sai luồng.
+
+### Luồng A — `[CHIẾN LƯỢC]`
+
+```
+quet-doi-thu (nếu cần dữ liệu ngoài) → tổng hợp → phan-bien → trình bày → chủ
+dự án quyết → GHI QUYẾT ĐỊNH RA TỆP → đóng phiên
+```
+
+**Luật cứng: không trình bày một kết luận chiến lược nào mà chưa qua
+`phan-bien`.** Trình bày phải kèm mục "Sập / Lung lay / Đứng được".
+
+Phiên này **không chạm** `lib/`, `app/`, `components/`. Quyết xong thì mở phiên
+`[CODE]` mới.
+
+Quyết định không ghi ra tệp coi như chưa quyết — `/clear` một cái là mất, tuần
+sau nghiên cứu lại từ đầu.
+
+### Luồng B — `[CODE]`
+
+```
+git status → tạo nhánh viec/<tên> → researcher → trình phương án
+  → phan-bien ← TRƯỚC khi viết dòng code nào
+  → danh-gia-tac-dong ← cờ "CẦN CHỦ DỰ ÁN DUYỆT" bật thì DỪNG, trình trước
+  → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
+  → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
+  → soat-tai-lieu → cập nhật PRODUCT-BACKLOG.xlsx → commit
+  → chủ dự án nghiệm thu → push khi được bảo
+```
+
+Thêm `soat-chi-phi` khi thay đổi chạm dịch vụ ngoài, model AI, cron, hay thư
+viện mới.
+
+`danh-gia-tac-dong` trả lời câu khác `phan-bien`: không phải "ý này có sai không" mà
+"làm ý này thì cái gì đang chạy đổi theo" — bộ đệm, luật cốt lõi, app, chi phí, bộ đo.
+Chạy lại nó trên diff thật trước commit nếu code đã lệch khỏi phương án.
+
+**Phản biện phương án tốn hai phút; vứt code đã viết tốn cả buổi.** Đây là lý do
+`phan-bien` đứng trước bước viết code, không phải sau.
+
+### Luồng C — `[SỬA LỖI]`
+
+```
+researcher (tìm nguyên nhân gốc) → sửa → qa (+ celes-domain nếu chạm luận giải)
+  → commit → nghiệm thu → push
+```
+
+Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
+
+### Ba việc KHÔNG giao subagent
+
+1. **Viết code.** Subagent viết xong thì phiên chính không nắm được nó viết gì,
+   lần sửa sau mâu thuẫn với chính mình.
+2. **Ra quyết định sản phẩm.** Subagent chuẩn bị dữ liệu, chủ dự án quyết.
+3. **Nghiệm thu và push.** Luôn là người.
+
+### Nhiều phiên song song
+
+Tối đa 2–3 phiên, **mỗi phiên một nhánh**, và chúng phải ở **vùng mã tách biệt**.
+
+Cặp nguy hiểm nhất: một phiên sửa `lib/tuvi/**` trong khi phiên khác sửa
+`apps/celes-app/**` — app đọc thẳng engine qua `@tuvi/*`, sửa engine là cả hai
+cùng đổi. Không mở song song cặp này.
+
+### Đóng phiên
+
+Đóng khi: việc đã commit xanh và được nghiệm thu · chuyển sang việc khác vùng mã
+(kể cả đang giữa chừng) · phiên chạy quá ~2 giờ.
+
+`/clear` thay vì đóng khi vẫn cùng vùng mã nhưng sang việc khác.
+
+Chưa xong mà phải dừng: ghi trạng thái ra tệp trong thư mục tạm trước khi đóng.
+
+### Trước khi đóng phiên: ghi ra tệp
+
+Ngữ cảnh phiên không phải nơi lưu trữ. Phiên đóng là thứ chưa ghi ra tệp coi như
+chưa từng có — đọc lại bản ghi `.jsonl` tốn kém hơn làm lại.
+
+| Loại | Ghi vào | Có commit? |
+|---|---|---|
+| Quyết định chiến lược, định hướng | `.md` / `.xlsx` trong kho | Có |
+| Phân tích đối thủ | `docs/doi-thu/<tên>.md` | Có |
+| Trạng thái việc đang dở | thư mục tạm của phiên, hoặc nhánh chưa commit | Không |
+| Số liệu nghiên cứu có nguồn | kèm luôn vào tệp quyết định | Có |
+
+Khi chủ dự án nói "tóm tắt trạng thái để phiên sau tiếp", AI ghi ra tệp trong thư
+mục tạm **và in đường dẫn ra màn hình** — không in thì chủ dự án không tìm lại được.
+
+### Bảng tra nhanh
+
+| Subagent | Dùng khi | Ai gọi |
+|---|---|---|
+| `researcher` | Trước mọi thay đổi mã | AI tự |
+| `phan-bien` | Có kết luận / phương án / thiết kế cần đánh sập | AI tự theo luồng A, B |
+| `quet-doi-thu` | Cần biết đối thủ đang làm gì | AI tự |
+| `danh-gia-tac-dong` | Sau `phan-bien`, trước khi viết code: tác động lên phần đã có, cờ cần duyệt | AI tự theo luồng B |
+| `celes-domain` | Sau khi chạm `lib/tuvi`, `lib/rag`, prompt, nội dung luận | AI tự |
+| `qa` | Sau mọi thay đổi mã | AI tự |
+| `bien-tap-vi` | Sau khi đổi chữ mặt trước | AI tự |
+| `soat-tai-lieu` | Trước commit đổi tính năng / logic | AI tự |
+| `soat-chi-phi` | Trước khi thêm dịch vụ, cron, model, thư viện | AI tự |
 
 ## Tiết kiệm ngữ cảnh (mọi AI làm trên repo này)
 
@@ -87,9 +197,11 @@ npx tsx scripts/eval-planner.ts       # bộ vàng 62 câu, ĐANG 100% — khôn
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
 npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
+npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
 npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
+npx tsx scripts/eval-phu-du-kien.ts --sinh|--cham  # model thật: A/B mã cũ–mới trên dữ kiện cung chính/xung chiếu (xem đầu tệp)
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
@@ -99,7 +211,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng

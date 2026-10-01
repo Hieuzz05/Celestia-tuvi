@@ -129,9 +129,18 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Đọc JSON của model phải chịu được ngoặc đóng sớm.** Model dài hơi hay đóng object rồi mở object
   mới cho phần còn lại (`{...},{"ghepLai":...}`). Đo trên gpt-5.4-mini: bài đúng và sâu mà bị vứt cả
   vì một dấu ngoặc. `docJson` thử gộp `[...]` trước khi chịu thua.
-- **Dữ kiện lá số (F###) chỉ mang phụ tinh TRỌNG YẾU** (`PHU_TINH_TRONG_YEU`), không dump cả cung.
+- **(v2) Dữ kiện lá số (F###) chỉ mang phụ tinh TRỌNG YẾU** (`PHU_TINH_TRONG_YEU`), không dump cả cung.
   Đưa 6-8 phụ tinh vào dữ kiện là model chép nguyên danh sách ấy vào bài — đo được: 78% câu có tên
   sao, có câu kê 7 sao. Đây mới là gốc của "nêu sao dài dòng", không phải prompt.
+  **Cập nhật 01/10/2026 (CEL-179):** chủ dự án yêu cầu mọi sao đều được xét, nên cung chính nay mang
+  ĐỦ sao — nhưng chia hai tầng (`laSaoNang`): sao nặng dựng ý, sao nhẹ ghi "sao nhẹ … chỉ làm sắc thái".
+  Đừng gộp lại thành một danh sách phẳng; đó là thứ sinh ra con số 78%. `test-phu-du-kien.ts` khoá độ phủ.
+- **Nghĩa sao phải đọc theo cung nó đứng.** Câu nghĩa trong `KHUON` viết cho "bạn" (Mệnh). Ở cung khác,
+  dữ kiện mở bằng "Đọc mọi nét dưới đây: <mặt đời>" và KHÔNG có "Nghĩa nền (CON NGƯỜI)" — trừ cung Thân
+  khi câu hỏi gọi Thân. Bỏ nhãn này là quay lại lỗi "Tả Hữu ở Phu Thê luận như ở Mệnh".
+- **Xung chiếu có nghĩa, nhưng không có nghĩa nền.** Chế độ "gọn" (25/09, chỉ tên sao) đã bỏ: nó làm
+  model không biết lực đối diện. Cái cần chặn là nghĩa nền Mệnh lọt vào cung tam phương, không phải nghĩa sao.
+- **Bí danh cung không được một âm tiết** ("the", "di", "tai", "quan"…) — khớp nhầm mọi đoạn có chữ ấy.
 - **Bài kiểm tra offline không thay được `test-rag-toan-tuyen.ts`.** Ba lỗi nặng nhất của lớp RAG
   đều chỉ lộ ra khi chạm database thật: mã thực thể trùng làm chết lệnh upsert, hai chỗ nuốt lỗi
   giấu mất điều đó, và nhánh từ khoá không bao giờ khớp. Đổi schema hay đổi SQL thì phải chạy nó.

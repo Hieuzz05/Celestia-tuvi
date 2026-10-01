@@ -72,7 +72,9 @@ export function apCauSua(bai: BaiV3, sua: Map<string, string>): BaiV3 {
     t.doan.forEach((d, i) =>
       d.forEach((_, j) => {
         const moi = sua.get(`${truong}:${i}:${j}`)?.trim();
-        if (moi) {
+        // Câu sửa của bài luận / vì sao phải là câu trọn — không thì giữ câu gốc (goiY thường không có dấu chấm cuối)
+        const tron = truong === 'goiY' || /[.!?…"”'’)\]»]$/.test(moi ?? '');
+        if (moi && tron) {
           d[j] = moi;
           doi = true;
         }

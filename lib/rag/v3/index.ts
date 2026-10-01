@@ -2,7 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
 import { CAU_HOI_V3, CHU_DE_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
-import { dungDuKien, hoiThoiDiem, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
+import { dungDuKien, hoiThoiDiem, maCanNhac, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
 import { khoiDoDai, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
@@ -103,6 +103,14 @@ const TU_KHOA_TONG_QUAN: Record<string, string> = {
   TQ01: 'tinh-cach', TQ12: 'gia-dinh', TQ05: 'su-nghiep', TQ06: 'tien-bac', TQ07: 'tinh-duyen', TQ08: 'van-han', TQ09: 'van-han', TQ10: 'van-han',
 };
 
+/*
+ * GIAO Ý (01/10/2026): đo lá số B (do-chat-luong-v3, bản gốc) — "quyết đoán, hợp được giao quyền" lặp ở 4 câu,
+ * "người đi trước nâng đỡ" ở 5 câu, dù sổ ý đã đưa ba câu lượt đầu cho lượt sau. Chín câu lượt 2 sinh song song
+ * nên không thấy nhau; mỗi ý chung giao cho MỘT câu chủ, các câu khác chỉ được gợi nửa câu.
+ */
+const Y_DA_CO_CHU =
+  'Ý đã có câu riêng, ở đây chỉ được gợi nhiều nhất nửa câu: tính cách chung (câu "Tôi là người như thế nào?"), điểm mạnh và điều cần lưu ý chung (hai câu đầu trang), người đi trước / quý nhân nâng đỡ nói chung (câu về những người quanh mình) — sự nâng đỡ riêng của một năm hay một giai đoạn thì vẫn nói được.';
+
 /**
  * PHẠM VI của từng câu tổng quan. Mười một câu hiện trên một màn hình nhưng
  * sinh song song, nên không câu nào biết câu kia nói gì. Đo ở lượt 2: năm câu
@@ -116,12 +124,12 @@ const PHAM_VI_TONG_QUAN: Record<string, string> = {
   // Bản đồ mạnh – yếu trên trang đã liệt kê đủ ba nhóm; bài kể lại danh sách thì hết chữ cho phần "vì sao" (giám khảo 3/5, 25/09/2026)
   TQ04: 'Bản đồ trên trang đã liệt kê đủ ba nhóm Thuận lợi / Ổn định / Cần chăm chút — không kể lại đủ mười hai mặt. Mở bằng tên hai mặt mạnh nhất và hai mặt cần chăm chút nhất (để đoạn văn tự đứng được khi đọc riêng), rồi nói vì sao hai mặt mạnh nhất lại mạnh và hai mặt cần chăm chút nhất cần chăm (bằng phần đời, dựa dữ kiện "vì sao"), hai đầu ấy hiện ra thế nào trong đời, rồi khép lại bằng chỗ mặt mạnh đỡ được mặt yếu (lời khuyên, nếu có, viết vào goiY).',
   TQ12: 'Chỉ nói bạn trong các mối quan hệ gần NGOÀI tình duyên: với cha mẹ / người đi trước, với anh chị em, với bạn bè và người cộng tác — cả người ngoài / người mới gặp — mỗi nhóm một câu riêng (HỌ là người thế nào với bạn, ai là chỗ dựa, vướng ở đâu). Câu này tả NGƯỜI QUANH bạn, không tả tính bạn: sao ở các cung này là nét của họ. Nhóm nào lá số không nổi bật thì nói ngắn là bình thường. Sao ở cung cha mẹ / anh chị em tả CHÍNH những người ấy (cha mẹ ra sao, anh chị em ra sao), không phải tính của bạn. Một phụ tinh lẻ chỉ đủ cho "có thể", không đủ cho "thường" — áp cho cả ý chính và gợi ý. Nhóm nào (kể cả người ngoài) có Tuần, Triệt, Hóa Kỵ, chính tinh hãm hay Đại Hao, Tiểu Hao thì phải có một ý nói chỗ vướng của nhóm ấy, và chính tinh hãm không được tả như khi sáng. Không mặc định bạn có anh chị em ("nếu có anh chị em") hay đã gặp một người cụ thể. Không bàn bạn đời, nghề, tiền; không tả lại tính cách chung.',
-  TQ05: 'Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên.',
-  TQ06: 'Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính. Không nêu mốc tuổi hay năm.',
-  TQ07: 'Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp.',
+  TQ05: `Chỉ nói hướng nghề: nhóm nghề cụ thể và vai trò hợp. Không bàn tiền, tình duyên. ${Y_DA_CO_CHU}`,
+  TQ06: `Chỉ nói tiền bạc: kiếm dễ hay khó, giữ được không, nguồn chính. Không nêu mốc tuổi hay năm. ${Y_DA_CO_CHU}`,
+  TQ07: `Chỉ nói tình duyên: kiểu duyên, sớm hay muộn, người hợp. ${Y_DA_CO_CHU}`,
   TQ08: 'Chỉ nói giai đoạn 10 năm đang chạy: tên gọi giai đoạn, chủ đề chính, một lưu ý.',
-  TQ09: 'Chỉ nói năm xem: chủ đề năm, cơ hội và rủi ro nổi nhất, dựa trên vận năm trong dữ kiện; việc nên làm và nên tránh viết vào goiY.',
-  TQ10: 'Kể đường đời theo BA chặng lớn — tiền vận, trung vận, hậu vận — mỗi chặng một hai câu về xu hướng chung và điều đổi khác giữa các chặng. KHÔNG liệt kê từng giai đoạn 10 năm (phần đó thuộc Vận hạn chuyên sâu).',
+  TQ09: `Chỉ nói năm xem: chủ đề năm, cơ hội và rủi ro nổi nhất, dựa trên vận năm trong dữ kiện; việc nên làm và nên tránh viết vào goiY. ${Y_DA_CO_CHU}`,
+  TQ10: `Kể đường đời theo BA chặng lớn — tiền vận, trung vận, hậu vận — mỗi chặng một hai câu về xu hướng chung và điều đổi khác giữa các chặng. KHÔNG liệt kê từng giai đoạn 10 năm (phần đó thuộc Vận hạn chuyên sâu). ${Y_DA_CO_CHU}`,
   TQ11: 'Chỉ gợi ý 2–3 phần nên xem sâu trước và lý do ngắn cho từng phần.',
 };
 
@@ -468,7 +476,7 @@ ${phamViChuyenSau(q)}`
     ...[...`${duKien.map((d) => d.noiDung).join(' ')} ${nguon.map((n) => n.noiDung).join(' ')} ${tv?.khoi ?? ''}`.matchAll(/\b(?:19|20)\d{2}\b/g)].map((m) => m[0]),
   ]);
   const kiem = (b: BaiV3) => [
-    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai, namDuocNeu, doDai, tranGoiY: cauHinh.tranGoiY }),
+    ...kiemBai({ bai: b, loai: q.loai, maDuKien, maNguon, saoDuocPhep: phep, hoiThoiDiem: hoiThoiDiem(q), heSoDoDai: vao.thuNghiem?.heSoDoDai, namDuocNeu, doDai, tranGoiY: cauHinh.tranGoiY, maCanNhac: maCanNhac(duKien) }),
     ...kiemLapPhanKhac(b.luanGiai, vao.daNoi ?? [], q.id),
     ...kiemLapCum(b.luanGiai, vao.daNoi ?? [], q.loai === 'chuyen-sau' ? q.chuDe : 'tong-quan'),
     ...kiemTenSach(b),

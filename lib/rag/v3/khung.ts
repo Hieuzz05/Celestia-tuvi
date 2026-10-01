@@ -76,7 +76,7 @@ export const CHU_DE_V3: ChuDeV3[] = [
 ];
 
 export const CAU_HOI_V3: CauHoiV3[] = [
-  { id: "TQ01", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tôi là người như thế nào?", nhanDuoc: "Một câu định danh + một câu về mặt bên trong", yBatBuoc: "Mệnh (chính) + tam hợp Tài Bạch, Quan Lộc + xung Thiên Di; Thân; Tật Ách, Phúc Đức cho mặt bên trong", cung: ["Mệnh", "THAN", "Tật Ách", "Phúc Đức"], yeuToThem: "", van: [], khongDuoc: "" },
+  { id: "TQ01", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Tôi là người như thế nào?", nhanDuoc: "Hai hoặc ba nét tính cách rõ nhất, mỗi nét kèm một biểu hiện cụ thể (không mở bằng một nhãn một chữ cho cả con người) + một câu về mặt bên trong", yBatBuoc: "Mệnh (chính) + tam hợp Tài Bạch, Quan Lộc + xung Thiên Di; Thân; Tật Ách, Phúc Đức cho mặt bên trong", cung: ["Mệnh", "THAN", "Tật Ách", "Phúc Đức"], yeuToThem: "", van: [], khongDuoc: "" },
   { id: "TQ02", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Điểm mạnh nổi bật nhất của tôi?", nhanDuoc: "Một năng lực + một lợi thế trong đời", yBatBuoc: "Cách cục cát mạnh nhất; cung có chính tinh miếu vượng + cát tinh; vị trí Hóa Lộc / Quyền / Khoa", cung: ["Mệnh", "Quan Lộc", "Tài Bạch"], yeuToThem: "", van: ["diem"], khongDuoc: "" },
   { id: "TQ03", thoiDiem: "khong", loai: "tong-quan", chuDe: "tong-quan", cauHoi: "Điều tôi cần lưu ý nhất?", nhanDuoc: "Một kiểu sai lặp lại hoặc một mặt yếu của đời", yBatBuoc: "Cung yếu nhất (chính tinh hãm + sát tinh + Hóa Kỵ); sát tinh ở Mệnh, Thân, Phúc Đức", cung: ["Mệnh", "Phúc Đức"], yeuToThem: "", van: ["diem"], khongDuoc: "" },
   // TQ12 (01/10/2026, góp ý "đọc tổng quan vẫn không biết mối quan hệ của mình ra sao"): trước đó tổng quan chỉ có

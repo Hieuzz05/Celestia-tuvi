@@ -5,6 +5,7 @@ import { Eyebrow } from '@/components/ui';
 import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from './CauTraLoiV3';
 import { GoiYCeles } from './GoiYCeles';
+import { ChamBaiAdmin, type ChamBaiTongQuan } from './ChamBaiAdmin';
 
 export interface ThongTinLaSoV3 {
   ngay: number;
@@ -137,11 +138,13 @@ function TheDau({
   tieuDe,
   cau,
   lon,
+  cham,
 }: {
   nhan: string;
   tieuDe: string;
   cau: CauV3 | undefined;
   lon?: boolean;
+  cham?: ChamBaiTongQuan | null;
 }) {
   const [mo, setMo] = useState(false);
   return (
@@ -198,6 +201,7 @@ function TheDau({
               </p>
             </div>
           )}
+          <ChamBaiAdmin cau={cau} cham={cham ?? null} />
         </>
       )}
     </div>
@@ -205,15 +209,15 @@ function TheDau({
 }
 
 /** Ba thẻ đầu trang: thẻ lớn điểm nổi bật, hai thẻ nhỏ đứng cạnh nhau */
-export function BaTheDauV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boolean }) {
+export function BaTheDauV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDoc: boolean; cham?: ChamBaiTongQuan | null }) {
   const lay = (id: string) => (dangDoc ? undefined : cau?.find((c) => c.id === id));
   const [a, b, c] = THE_DAU;
   return (
     <>
-      <TheDau nhan={a.nhan} tieuDe={a.tieuDe} cau={lay(a.id)} lon />
+      <TheDau nhan={a.nhan} tieuDe={a.tieuDe} cau={lay(a.id)} lon cham={cham} />
       <div className="grid gap-[16px] md:grid-cols-2">
-        <TheDau nhan={b.nhan} tieuDe={b.tieuDe} cau={lay(b.id)} />
-        <TheDau nhan={c.nhan} tieuDe={c.tieuDe} cau={lay(c.id)} />
+        <TheDau nhan={b.nhan} tieuDe={b.tieuDe} cau={lay(b.id)} cham={cham} />
+        <TheDau nhan={c.nhan} tieuDe={c.tieuDe} cau={lay(c.id)} cham={cham} />
       </div>
     </>
   );
@@ -226,7 +230,7 @@ export function BaTheDauV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
  * một bức tường chữ, người đọc không biết mình đang ở câu nào (chủ dự án:
  * "làm nổi bật phần luận giải tổng quan, cho dễ nhìn hơn").
  */
-export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boolean }) {
+export function TongQuanV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDoc: boolean; cham?: ChamBaiTongQuan | null }) {
   // TQ04 (mạnh ở mặt nào, yếu ở mặt nào) đã nằm trong Bản đồ mạnh–yếu — không lặp ở danh sách
   const boQua = new Set([...THE_DAU.map((x) => x.id), 'TQ04']);
   const conLai = (cau ?? []).filter((c) => !boQua.has(c.id));
@@ -251,8 +255,9 @@ export function TongQuanV3({ cau, dangDoc }: { cau: CauV3[] | null; dangDoc: boo
         <>
           <ol className="flex flex-col gap-[16px]">
             {conLai.map((c, i) => (
-              <li key={c.id} className="card">
+              <li key={c.id} className="card flex flex-col gap-[12px]">
                 <CauTraLoiV3 cau={c} so={i + 1} />
+                <ChamBaiAdmin cau={c} cham={cham ?? null} />
               </li>
             ))}
           </ol>
