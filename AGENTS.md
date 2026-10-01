@@ -49,7 +49,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
 | Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
-| Giọng và cấu trúc câu trả lời của Celes | `NHAN_CACH_CELES` trong `lib/ai/prompt.ts` |
+| Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
 | An sao | `lib/tuvi/ansao.ts` + `lib/tuvi/constants.ts` |
