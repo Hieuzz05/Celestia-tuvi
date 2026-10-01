@@ -66,6 +66,95 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 | `lib/rag/**`, `lib/ai/**`, `app/api/luan-giai*`, `app/api/hoi-dap`, `lib/ket-noi/**` | `docs/bay/ai-rag.md` |
 | Deploy, biến môi trường, sửa tệp bằng dòng lệnh | `docs/bay/moi-truong.md` |
 
+## Luồng làm việc — LUẬT, không phải gợi ý
+
+Dự án này có 8 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
+mọi AI làm trên repo, cả hai máy.
+
+### Mở phiên: chủ dự án đánh dấu loại việc
+
+`[CHIẾN LƯỢC]` · `[CODE]` · `[SỬA LỖI]`. Không có dấu thì AI hỏi lại một câu
+ngắn, đừng tự đoán rồi đi sai luồng.
+
+### Luồng A — `[CHIẾN LƯỢC]`
+
+```
+quet-doi-thu (nếu cần dữ liệu ngoài) → tổng hợp → phan-bien → trình bày → chủ
+dự án quyết → GHI QUYẾT ĐỊNH RA TỆP → đóng phiên
+```
+
+**Luật cứng: không trình bày một kết luận chiến lược nào mà chưa qua
+`phan-bien`.** Trình bày phải kèm mục "Sập / Lung lay / Đứng được".
+
+Phiên này **không chạm** `lib/`, `app/`, `components/`. Quyết xong thì mở phiên
+`[CODE]` mới.
+
+Quyết định không ghi ra tệp coi như chưa quyết — `/clear` một cái là mất, tuần
+sau nghiên cứu lại từ đầu.
+
+### Luồng B — `[CODE]`
+
+```
+git status → tạo nhánh viec/<tên> → researcher → trình phương án
+  → phan-bien ← TRƯỚC khi viết dòng code nào
+  → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
+  → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
+  → soat-tai-lieu → cập nhật PRODUCT-BACKLOG.xlsx → commit
+  → chủ dự án nghiệm thu → push khi được bảo
+```
+
+Thêm `soat-chi-phi` khi thay đổi chạm dịch vụ ngoài, model AI, cron, hay thư
+viện mới.
+
+**Phản biện phương án tốn hai phút; vứt code đã viết tốn cả buổi.** Đây là lý do
+`phan-bien` đứng trước bước viết code, không phải sau.
+
+### Luồng C — `[SỬA LỖI]`
+
+```
+researcher (tìm nguyên nhân gốc) → sửa → qa (+ celes-domain nếu chạm luận giải)
+  → commit → nghiệm thu → push
+```
+
+Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
+
+### Ba việc KHÔNG giao subagent
+
+1. **Viết code.** Subagent viết xong thì phiên chính không nắm được nó viết gì,
+   lần sửa sau mâu thuẫn với chính mình.
+2. **Ra quyết định sản phẩm.** Subagent chuẩn bị dữ liệu, chủ dự án quyết.
+3. **Nghiệm thu và push.** Luôn là người.
+
+### Nhiều phiên song song
+
+Tối đa 2–3 phiên, **mỗi phiên một nhánh**, và chúng phải ở **vùng mã tách biệt**.
+
+Cặp nguy hiểm nhất: một phiên sửa `lib/tuvi/**` trong khi phiên khác sửa
+`apps/celes-app/**` — app đọc thẳng engine qua `@tuvi/*`, sửa engine là cả hai
+cùng đổi. Không mở song song cặp này.
+
+### Đóng phiên
+
+Đóng khi: việc đã commit xanh và được nghiệm thu · chuyển sang việc khác vùng mã
+(kể cả đang giữa chừng) · phiên chạy quá ~2 giờ.
+
+`/clear` thay vì đóng khi vẫn cùng vùng mã nhưng sang việc khác.
+
+Chưa xong mà phải dừng: ghi trạng thái ra tệp trong thư mục tạm trước khi đóng.
+
+### Bảng tra nhanh
+
+| Subagent | Dùng khi | Ai gọi |
+|---|---|---|
+| `researcher` | Trước mọi thay đổi mã | AI tự |
+| `phan-bien` | Có kết luận / phương án / thiết kế cần đánh sập | AI tự theo luồng A, B |
+| `quet-doi-thu` | Cần biết đối thủ đang làm gì | AI tự |
+| `celes-domain` | Sau khi chạm `lib/tuvi`, `lib/rag`, prompt, nội dung luận | AI tự |
+| `qa` | Sau mọi thay đổi mã | AI tự |
+| `bien-tap-vi` | Sau khi đổi chữ mặt trước | AI tự |
+| `soat-tai-lieu` | Trước commit đổi tính năng / logic | AI tự |
+| `soat-chi-phi` | Trước khi thêm dịch vụ, cron, model, thư viện | AI tự |
+
 ## Tiết kiệm ngữ cảnh (mọi AI làm trên repo này)
 
 - Một việc = một phiên. Xong việc thì xoá ngữ cảnh (`/clear`), đừng kéo một phiên qua nhiều ngày.

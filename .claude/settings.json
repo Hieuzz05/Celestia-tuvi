@@ -10,5 +10,23 @@
     ]
   },
   "autoCompactWindow": 200000,
-  "bashOutputMaxChars": 12000
+  "bashOutputMaxChars": 12000,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/truoc-commit.mjs"
+            ],
+            "timeout": 20,
+            "statusMessage": "Soát backlog trước khi commit"
+          }
+        ]
+      }
+    ]
+  }
 }
