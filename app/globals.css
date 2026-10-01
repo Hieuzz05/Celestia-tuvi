@@ -719,3 +719,35 @@ body {
     content: '...';
   }
 }
+
+/*
+ * CELES THỞ — chuyển động DUY NHẤT của linh vật.
+ *
+ * Mục 12 của celes-visual-character-system.md chốt: chỉ idle breathing,
+ * translateY 2–3px, chu kỳ ~3s. Không nhún nhảy, không xoay, không nảy.
+ *
+ * Tắt ở hai nơi, cố ý tách:
+ *   1. Người dùng tắt hiệu ứng ở hệ điều hành  → khối reduced-motion bên dưới.
+ *   2. Ngữ cảnh nghiêm túc (state `serious`, hoặc nơi gọi truyền `tatChuyenDong`)
+ *      → nơi gọi không gắn lớp này. Xem CelesMascot.tsx.
+ *      CHƯA NỐI `SafetyOverlay`: nó chưa tồn tại trong mã ở Phase 3. Khi có,
+ *      nối vào `tatChuyenDong` thì luật này mới chạy đủ.
+ *
+ * Hai lý do tắt khác nhau nên không gộp: cái trên là sở thích thiết bị,
+ * cái dưới là luật an toàn — an toàn thắng nhân vật, luôn luôn.
+ */
+.celes-tho {
+  animation: celes-tho 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes celes-tho {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celes-tho {
+    animation: none;
+  }
+}

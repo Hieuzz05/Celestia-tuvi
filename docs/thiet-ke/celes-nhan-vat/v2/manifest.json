@@ -1,0 +1,65 @@
+{
+  "version": "2.0",
+  "asset_policy": {
+    "background": "transparent",
+    "baked_text": false,
+    "format": "PNG RGBA",
+    "source_of_truth": "Concept 01 3D morphology",
+    "visual_scope": "cross-platform",
+    "initial_rollout": "app-first; web-compatible"
+  },
+  "phase3": {
+    "enabled_states": [
+      "DEFAULT",
+      "LISTENING",
+      "THINKING",
+      "FOUND_SOMETHING",
+      "SIDE_EYE",
+      "SERIOUS",
+      "CELEBRATE"
+    ],
+    "locked_states": {
+      "HAS_RECEIPTS": "Phase 4 only, after grounded H### memory exists",
+      "NOT_BUYING_IT": "Phase 3: chi mo khi co mau thuan TRONG CHINH luot hien tai, quan sat duoc tu van ban, Safety=NORMAL, va van tinh vao ngan sach 1 hook/cau tra loi + 1 hook/chu de/phien. Cam suy dong co an. Xem muc 5 celes-visual-character-system.md"
+    }
+  },
+  "character_hook_to_visual": {
+    "NONE": "DEFAULT (unless lifecycle/safety event selects another state)",
+    "INSIGHT_FOUND": "FOUND_SOMETHING",
+    "DRY_HUMOR": "DEFAULT",
+    "LIGHT_TEASE": "SIDE_EYE (only when playfulness=2 and safety=NORMAL)"
+  },
+  "non_hook_visual_events": {
+    "user_input": "LISTENING",
+    "reasoning": "THINKING",
+    "safety_sensitive_or_critical": "SERIOUS",
+    "meaningful_success": "CELEBRATE",
+    "memory_recall_phase4": "HAS_RECEIPTS"
+  },
+  "motion": {
+    "phase3": "No Rive/Lottie dependency. Web uses CSS transforms; app uses built-in React Native/Expo animation primitives where needed.",
+    "future": "Rive/Lottie only after explicit design + cost review."
+  },
+  "loading": {
+    "app": "Bundle only core state assets used by product screens. Extended expressions/poses remain design/social assets and should not be imported into the app bundle.",
+    "web": "Serve static assets and lazy-load non-critical character art.",
+    "social": "Keep social/meme assets outside production app bundle."
+  },
+  "measured_sizes": {
+    "source_png_49_kb": 8740,
+    "optimized_webp_49_kb": 1900,
+    "core_9_states_webp_kb": 352
+  },
+  "platform_decision": {
+    "scope": "Assets are cross-platform for Web + App.",
+    "rollout": "App-first because Aurora v8 is currently app-scoped; Web may reuse the same transparent assets without adopting the App visual theme.",
+    "motion_phase3": "No new Rive/Lottie dependency. Use static assets + CSS on Web; use built-in React Native/Expo animation primitives on App if a tiny transform is needed.",
+    "future_motion": "Rive/Lottie requires a separate design/cost review before adoption."
+  },
+  "asset_location": {
+    "repo_path": "docs/thiet-ke/celes-nhan-vat/v2/",
+    "committed": "ca PNG (ban goc) lan WebP",
+    "webp_encoding": "LOSSY (VP8X) - khong bao gio tai xuat tu WebP",
+    "public_dir": "KHONG copy vao public/ cho toi khi co ma tro toi"
+  }
+}

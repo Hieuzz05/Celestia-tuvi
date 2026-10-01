@@ -12,6 +12,7 @@ import type { HoSo } from '@/lib/store/hoso';
 import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 import { Eyebrow, NutVien, Shell, KhoiGap } from '@/components/ui';
+import { CelesMascot } from '@/components/CelesMascot';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
@@ -295,9 +296,14 @@ function TrangHoiDap() {
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} className="-mb-[16px]" />
-      <div>
-        <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
-        <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
+      {/* Celes 56px cạnh tiêu đề: đây là nơi người dùng đang TRÒ CHUYỆN. */}
+      <div className="flex items-center gap-[16px]">
+        {/* Phase 3: nối `characterHook` vào đây thay cho "default" cố định. */}
+        <CelesMascot trangThai="default" cao={56} />
+        <div className="min-w-0">
+          <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
+          <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
+        </div>
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -414,6 +420,9 @@ function TrangHoiDap() {
             >
               {tinNhan.length === 0 && !dangChay && (
                 <div className="flex flex-col gap-[16px]">
+                  {/* Trạng thái rỗng: Celes 80px, DEFAULT. */}
+                  <CelesMascot trangThai="default" cao={80} />
+
                   <div className="flex flex-col gap-[12px]">
                     <p className="eyebrow">{t.hoiCeles.khamPhaNhanhTieuDe}</p>
                     <div className="flex flex-wrap gap-[8px]">
@@ -496,9 +505,18 @@ function TrangHoiDap() {
               )}
 
               {dangChay && (
-                <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-                  {t.hoiCeles.dangTraLoi}
-                </p>
+                /*
+                 * Màn chờ: Celes 80px, THINKING.
+                 * KHÔNG thêm `dot-dang-doc` ở đây — chuỗi `dangTraLoi` đã kết
+                 * thúc bằng `…`, thêm lớp đó là ra dấu chấm lửng đôi. Con thỏ
+                 * đang thở đã đủ báo "đang chờ".
+                 */
+                <div className="flex items-center gap-[12px]">
+                  <CelesMascot trangThai="thinking" cao={80} />
+                  <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+                    {t.hoiCeles.dangTraLoi}
+                  </p>
+                </div>
               )}
 
               {loi && (
