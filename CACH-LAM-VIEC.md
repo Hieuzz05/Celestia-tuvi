@@ -7,7 +7,8 @@ Tệp này viết cho **chủ dự án**, không phải cho AI. Luật dành cho
 
 ## 1. Mở một phiên làm việc
 
-Mở terminal trong VS Code ở thư mục kho, gõ `claude`.
+Mở một tab Claude Code mới trong VS Code (biểu tượng tiện ích ở thanh bên).
+Không cần terminal, không cần gõ lệnh gì.
 
 Rồi gõ việc, **kèm dấu loại việc** ở đầu:
 
@@ -46,24 +47,45 @@ C:\Users\Dell\.claude\projects\d--SAPP-BA-tuvi-ai\
 
 ### Mở lại phiên cũ
 
-| Muốn gì | Gõ ở terminal |
-|---|---|
-| Tiếp phiên **gần nhất** | `claude --continue` |
-| Chọn trong danh sách phiên cũ | `claude --resume` |
-| Bắt đầu trắng | `claude` |
+**Máy này dùng tiện ích VS Code, KHÔNG cài CLI** — nên gõ `claude` ở terminal sẽ
+báo "not recognized". Đó là bình thường, không phải lỗi.
 
-`--resume` hiện danh sách, chọn bằng phím mũi tên.
+### Cách 1 — gõ ngay trong tab đang mở (dễ nhất)
 
-> **Chưa thử trên máy này.** `claude` không nằm trong PATH của Git Bash, nên hai
-> lệnh trên chưa được xác minh ở đây. Nếu gõ ra "command not found", dùng
-> PowerShell thay vì Git Bash, hoặc dùng nút lịch sử phiên của tiện ích VS Code.
-> Thử một lần rồi sửa lại dòng này cho đúng.
+```
+/resume
+```
+
+Hiện danh sách phiên cũ, chọn bằng phím mũi tên. Không cần terminal, không cần
+cài gì.
+
+### Cách 2 — từ terminal, nếu thật sự cần
+
+Tệp thực thi nằm trong tiện ích:
+
+```
+C:\Users\Dell\.vscode\extensions\anthropic.claude-code-<bản>-win32-x64\resources\native-binary\claude.exe
+```
+
+Gọi bằng đường dẫn đầy đủ (PowerShell cần `&` ở đầu):
+
+```powershell
+& "C:\Users\Dell\.vscode\extensions\anthropic.claude-code-2.1.285-win32-x64\resources\native-binary\claude.exe" --resume
+```
+
+Cờ dùng được: `-c` / `--continue` (tiếp phiên gần nhất), `--resume` (chọn trong
+danh sách), `--resume <session-id>` (mở đúng một phiên).
+
+Số bản `2.1.285` đổi khi tiện ích cập nhật — kiểm lại tên thư mục nếu lệnh hỏng.
+
+> Đã xác minh trên máy này ngày 01/10/2026: `claude.exe --version` trả
+> `2.1.285 (Claude Code)`, và `--help` có cả `--continue` lẫn `--resume`.
 
 ### Khi nào tiếp, khi nào mở mới
 
 | Tình huống | Làm gì |
 |---|---|
-| Việc chưa xong, cùng vùng mã | `claude --continue` |
+| Việc chưa xong, cùng vùng mã | `/resume` chọn đúng phiên đó |
 | Việc đã xong, sang việc mới | Mở phiên mới |
 | Phiên đã rất dài (chạy nhiều giờ) | Mở mới — phiên dài thì ngữ cảnh loãng, chậm, và tốn |
 | Cùng vùng mã nhưng sang việc khác | Giữ tab, gõ `/clear` |
