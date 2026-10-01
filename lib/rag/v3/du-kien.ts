@@ -295,6 +295,19 @@ function moTaCung(
     c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở tiền vận (khoảng trước 30 tuổi)' : ''}` : '',
     c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
   ].filter(Boolean);
+  /*
+   * Lượt 3 TQ12 (01/10/2026): Thiên Di có Triệt + Địa Không hãm, model vẫn chỉ kể
+   * Thiên Khôi "gặp người chỉ đường" — luật chung "có Triệt thì nói chỗ vướng" ở phạm
+   * vi câu hỏi không đủ. Câu ngang hàng liệt kê đích danh chỗ vướng ngay trong dữ kiện.
+   */
+  const vuong = [
+    ...chinh.filter((s) => s.doSang === 'H').map((s) => `${s.ten} hãm`),
+    ...hoa.filter((s) => s.ten === 'Hóa Kỵ').map((s) => s.ten),
+    // hung tinh đắc / miếu / vượng chỉ kéo nửa (như diemTungCung) — không bắt nói thành chỗ vướng
+    ...phu.filter((s) => HUNG[s.ten] !== undefined && !['M', 'V', 'D'].includes(s.doSang ?? '')).map(tenSao),
+    ...(c.coTriet ? ['Triệt'] : []),
+    ...(c.coTuan ? ['Tuần'] : []),
+  ];
   const nghia = [
     netChung.length && !gon
       ? ngangHang && CHU_NGU_NGANG_HANG[c.tenCung]
@@ -303,6 +316,9 @@ function moTaCung(
       : '',
     netPhu.length && !gon ? `Nghĩa phụ tinh/tứ hóa — ${netPhu.join('; ')}.` : '',
     tuanTriet.length ? `${tuanTriet.join('; ')}.` : '',
+    ngangHang && vuong.length
+      ? `BẮT BUỘC có một ý nói chỗ vướng của nhóm này (dù nhóm có sao tốt): ${vuong.join(', ')}.`
+      : '',
   ].filter(Boolean).join(' ');
   /*
    * GỌN (25/09/2026): cung chỉ đứng ở tam phương (xung chiếu / tam hợp) của cung
