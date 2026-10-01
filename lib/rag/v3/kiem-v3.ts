@@ -184,6 +184,18 @@ export function kiemBai(vao: {
   const ngoai = saoVs.filter((t) => !vao.saoDuocPhep.has(t.ten) && !t.biDanh.some((b) => vao.saoDuocPhep.has(b)));
   if (ngoai.length) loi.push({ ma: 'sao-ngoai', moTa: `viSao nêu sao không có trong dữ kiện câu này: ${ngoai.map((t) => t.ten).join(', ')}.`, chan: true, cum: ngoai.flatMap((t) => [t.ten, ...t.biDanh]).filter((x) => vs.includes(x)) });
 
+  /*
+   * CÂU CỤT (01/10/2026): chủ dự án đọc được bài tổng quan dừng giữa câu ("…cách gây dựng qua từng"). JSON cắt
+   * cụt thì không đọc được, nên đoạn cụt đến từ model hoặc vòng sửa — trước đây không bộ kiểm nào bắt. Kèm `cum`
+   * là chính câu cuối để đi đường sửa cục bộ (rẻ, vẫn chạy được khi sắp hết giờ).
+   */
+  for (const [truong, van] of [['luanGiai', luan], ['viSao', vs]] as const) {
+    const cuoi = van.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…])\s+/).pop() ?? '';
+    if (cuoi && !/[.!?…"”'’)\]»]$/.test(cuoi)) {
+      loi.push({ ma: 'cau-cut', moTa: `Câu cuối của ${truong === 'luanGiai' ? 'bài luận' : 'phần vì sao'} bị cụt, chưa hết ý — viết trọn câu đó.`, chan: true, cum: [cuoi.slice(-40)] });
+    }
+  }
+
   // "Bạn A. Bạn B. Bạn C." — giọng đọc kết quả mà quy tắc cấm
   const cau = luan.split(/(?<=[.!?])\s+/).filter((x) => x.trim());
   const moBan = cau.filter((x) => /^Bạn\s/.test(x.trim())).length;

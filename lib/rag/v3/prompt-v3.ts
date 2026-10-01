@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.09.22';
+export const PHIEN_BAN_PROMPT_V3 = '2026.10.01';
 
 /*
  * QUY_TAC_VIET là nguyên văn của chủ dự án và còn dùng ở các bề mặt khác, nên không sửa tại gốc.
@@ -20,13 +20,21 @@ export const PHIEN_BAN_PROMPT_V3 = '2026.09.22';
  * không câu nào kết bằng lời khuyên). Bản v3 thay đúng hai dòng ấy; thay hỏng (gốc đổi chữ) thì
  * scripts/test-luan-giai-v3.ts báo đỏ nhờ kiểm "lời khuyên" không còn trong SYSTEM_V3_KHUNG.
  */
-export const QUY_TAC_VIET_V3 = QUY_TAC_VIET.replace(
+/*
+ * 01/10/2026 (chủ dự án chê bài tổng quan "câu chưa gãy gọn": "khi nào nên gần, khi nào nên lùi", "lạnh hơn
+ * thực tế"): công thức tám bước + chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn viết cho bài nhiều đoạn.
+ * Bài tổng quan chỉ 4–5 câu, đi đủ chuỗi thì mỗi bước còn nửa câu và thành cụm nén. Dòng cuối nói rõ bài một
+ * đoạn làm gì — VẪN phải có điểm cần lưu ý (luật căn cứ 6). Nối vào cuối chứ không .replace: thay chuỗi hỏng
+ * thì im lặng mất luật, nối thì không hỏng được. Chuyên sâu 2–4 đoạn nên không chịu ảnh hưởng.
+ */
+export const QUY_TAC_VIET_V3 = `${QUY_TAC_VIET.replace(
   'giai đoạn → lời khuyên.',
   'giai đoạn → điểm cần lưu ý (gợi ý cho người đọc viết riêng vào trường goiY).'
 ).replace(
   'Bước 8: Kết bằng một điểm cần lưu ý hoặc lời khuyên thực tế.',
   'Bước 8: Kết bằng một điểm cần lưu ý rút ra từ phần luận; lời khuyên thực tế (nếu có) viết vào trường goiY.'
-);
+)}
+Bài chỉ có MỘT đoạn (luận giải tổng quan) thì không cần đi đủ tám bước hay đủ chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn. Câu đầu trả lời thẳng, tiếp theo một hai biểu hiện cụ thể người đọc nhận ra, rồi một điểm cần lưu ý. Ít ý mà nói trọn câu tốt hơn nhiều ý mà mỗi ý chỉ còn nửa câu. PHẠM VI riêng của từng câu hỏi (vd chỉ nói điểm mạnh, hay mỗi nhóm người một câu) đứng trên khuôn này.`;
 
 
 
@@ -111,6 +119,7 @@ export const GIONG_VAN = `GIỌNG VĂN — như một người thật đang ng�
 - Mỗi đoạn MỘT ý chính, 3–4 câu. Câu đầu đoạn nói thẳng ý đó; các câu sau giải thích, cho ví dụ đời thường, hoặc nói điều kiện. Hết ý thì sang đoạn mới.
 - Nối câu bằng từ thường: "nhưng", "vì vậy", "khi…", "nếu…". Không mở câu bằng "Tuy vậy,", "Ngược lại, nếu…", "Nhìn chung," lặp lại.
 - Rõ nghĩa, dùng từ thường ngày: "tiền về chậm", "được giao quyền", "dễ bực khi bị áp đặt", "mệt vì phải làm lại". KHÔNG dùng cụm mơ hồ, ẩn dụ hay chữ trừu tượng như "tác động cản trở", "mất lực", "bị tiêu hao", "dày lên", "mở lối", "nối lại thành kết quả", "lặp lại dưới hình thức khác", "câu chuyện", "hành trình", "năng lượng", "nhịp", "dòng chảy".
+- Viết từ đầy đủ như người Việt vẫn nói; chữ đứng một mình mà người đọc phải đoán nghĩa thì viết rõ ra. Mỗi câu phải hiểu được khi đọc riêng — không nén hai vế đối nhau thành cụm tắt kiểu "khi nào nên A, khi nào nên B" mà không nói A, B là gì.
 - Không hoa mỹ, không cố triết lý: không câu kết kiểu tổng kết đạo lý ("Vì vậy, sự ổn định của bạn đến từ…"), không câu cố gây ấn tượng ("Khoảnh khắc bạn…, khá đúng với đường này").
 - Không câu rào đón thừa ("đây chỉ là ví dụ, không phải giới hạn duy nhất"): muốn nói một nghề là ví dụ thì viết "chẳng hạn" là đủ.
 - Ví dụ tình huống (nếu có) kể bằng câu bình thường, tối đa một ví dụ mỗi đoạn.`;
@@ -165,6 +174,10 @@ const LUAN_SAU =
 // Thử 25/09 vòng 6 và BỎ: cho phép chỉ vào lá số bằng lời thường ("nhìn vào phần tiền bạc của bạn") tối đa hai lần mỗi bài — so mù thua 41% / 41%.
 // Thử 25/09 vòng 7 và BỎ: nới tổng quan 80–170 từ, 1–2 đoạn — so mù 55% / 45%, ngang nhiễu (cùng prompt tự so: 55% / 55%).
 // Thử 01/10 và BỎ: luật KHÔNG CHUNG CHUNG riêng cho tổng quan ("tả bằng việc người khác nhìn thấy, trong một quan hệ cụ thể, không bằng chuỗi tính từ") — lá số A: so từng cặp 27% / 55%, so cả phiên 3 giám khảo đều 50%. Góp ý "không biết mối quan hệ của mình ra sao" xử bằng câu TQ12 (khung), không bằng prompt.
+// Phản biện 01/10 và BỎ trước khi thử: (1) cặp câu đối chiếu "chưa hay → hay" lấy từ câu chủ dự án chê — câu "hay" là
+// nét tính cách cụ thể, model từng chép mẫu ("Nói thẳng, …", "Khoảnh khắc bạn…") và không validator nào bắt ý không ra từ
+// lá số; (2) nới luật mo-ban cho tổng quan — bài mẫu chủ dự án chỉ 17–25% câu mở bằng "Bạn"; (3) bỏ danh sách từ nối
+// của QUY_TAC_VIET — đếm trên 24 bài tổng quan chỉ 7 từ nối, không phải thủ phạm.
 // Thử 25/09 vòng 10 và BỎ: tổng quan kết bằng "1–2 việc làm được ngay" (như chuyên sâu) — so mù 3 giám khảo × 3 lá số ~50%.
 // Chỉ cho TỔNG QUAN: ở chuyên sâu, luật này cắt mất biện pháp thực tế (tách quỹ, lập giấy khi cho vay) mà người đọc đánh giá cao — so mù lá số C thua 31%
 const LOI_KHUYEN =
@@ -220,7 +233,7 @@ export function khoiDoDai(
   d: { luan: readonly [number, number]; muc: readonly [number, number]; viSao: readonly [number, number]; doan: readonly [number, number] } = DO_DAI_V3[loai]
 ): string {
   return loai === 'tong-quan'
-    ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, khoảng ${d.muc[0]}–${d.muc[1]} từ (không dưới ${d.luan[0]}, không quá ${d.luan[1]}), có ít nhất một chi tiết người đọc nhận ra được trong đời mình. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
+    ? `LOẠI BÀI: LUẬN GIẢI TỔNG QUAN — chỉ ra tổng quát vấn đề để người đọc nắm ý chính trong một lần đọc. Đúng 1 đoạn, khoảng ${d.muc[0]}–${d.muc[1]} từ (không dưới ${d.luan[0]}, không quá ${d.luan[1]}), có ít nhất một chi tiết người đọc nhận ra được trong đời mình. Thường bốn câu, mỗi câu một ý, phần lớn dưới 25 từ; câu nào phải chở hai ý thì tách làm hai, đừng nén. viSao ${d.viSao[0]}–${d.viSao[1]} từ.
 ${LUAN_SAU}
 ${LOI_KHUYEN}
 ${GIONG_GOI_Y}`

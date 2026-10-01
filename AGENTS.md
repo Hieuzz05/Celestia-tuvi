@@ -68,7 +68,7 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 
 ## Luồng làm việc — LUẬT, không phải gợi ý
 
-Dự án này có 8 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
+Dự án này có 9 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
 mọi AI làm trên repo, cả hai máy.
 
 ### Mở phiên: chủ dự án đánh dấu loại việc
@@ -97,6 +97,7 @@ sau nghiên cứu lại từ đầu.
 ```
 git status → tạo nhánh viec/<tên> → researcher → trình phương án
   → phan-bien ← TRƯỚC khi viết dòng code nào
+  → danh-gia-tac-dong ← cờ "CẦN CHỦ DỰ ÁN DUYỆT" bật thì DỪNG, trình trước
   → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
   → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
   → soat-tai-lieu → cập nhật PRODUCT-BACKLOG.xlsx → commit
@@ -105,6 +106,10 @@ git status → tạo nhánh viec/<tên> → researcher → trình phương án
 
 Thêm `soat-chi-phi` khi thay đổi chạm dịch vụ ngoài, model AI, cron, hay thư
 viện mới.
+
+`danh-gia-tac-dong` trả lời câu khác `phan-bien`: không phải "ý này có sai không" mà
+"làm ý này thì cái gì đang chạy đổi theo" — bộ đệm, luật cốt lõi, app, chi phí, bộ đo.
+Chạy lại nó trên diff thật trước commit nếu code đã lệch khỏi phương án.
 
 **Phản biện phương án tốn hai phút; vứt code đã viết tốn cả buổi.** Đây là lý do
 `phan-bien` đứng trước bước viết code, không phải sau.
@@ -164,6 +169,7 @@ mục tạm **và in đường dẫn ra màn hình** — không in thì chủ d�
 | `researcher` | Trước mọi thay đổi mã | AI tự |
 | `phan-bien` | Có kết luận / phương án / thiết kế cần đánh sập | AI tự theo luồng A, B |
 | `quet-doi-thu` | Cần biết đối thủ đang làm gì | AI tự |
+| `danh-gia-tac-dong` | Sau `phan-bien`, trước khi viết code: tác động lên phần đã có, cờ cần duyệt | AI tự theo luồng B |
 | `celes-domain` | Sau khi chạm `lib/tuvi`, `lib/rag`, prompt, nội dung luận | AI tự |
 | `qa` | Sau mọi thay đổi mã | AI tự |
 | `bien-tap-vi` | Sau khi đổi chữ mặt trước | AI tự |
