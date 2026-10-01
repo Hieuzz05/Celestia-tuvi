@@ -130,6 +130,13 @@ const GIA_DINH = /\b(?:nếu|giả sử|liệu|có nên|nên không)\b/i;
  * năm chuyện đáng nhớ (lương, quy mô đội, ngành, tình trạng gia đình, thâm
  * niên…). Vẫn hẹp: mỗi chuyện chỉ vài chục ký tự, tám chuyện vẫn rẻ hơn nhiều
  * so với dán nguyên văn tám lượt hỏi–đáp.
+ *
+ * TRƯỚC KHI NỐI HÀM NÀY VÀO PROMPT: lọc bỏ các lượt CRITICAL của lớp an toàn
+ * (`doAnToan` trong `lib/rag/an-toan.ts`). Mẫu `\btôi muốn\b` ở trên nhặt
+ * "Tôi muốn chết" và "Tôi muốn tự tử" thành một "điều đã biết" về người dùng,
+ * rồi dán vào prompt của những lượt sau — đã đo, không phải suy đoán. Hôm nay
+ * chưa hại vì hàm này CHƯA CÓ NƠI NÀO GỌI; ngày nối vào thì đây là thứ phải
+ * sửa trước, không phải sau.
  */
 export function gomDieuTuKe(lichSu: TinNhan[], toiDa = 8): string[] {
   const ra: string[] = [];

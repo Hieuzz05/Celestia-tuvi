@@ -15,6 +15,7 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { laChuoiJson } from './doc-json';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
+import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
@@ -42,6 +43,18 @@ export interface DauVaoTraLoi {
   lichSu?: TinNhan[];
   /** Câu hỏi này đến từ chip gợi ý (goiYTiep) do chính Celes vừa đề xuất — xem tiep-noi.ts */
   laTiepTuChip?: boolean;
+  /**
+   * Mức an toàn route đã đo được, truyền xuống để KHỎI đo lại.
+   *
+   * Route buộc phải gọi `doAnToan` trước `datChoCauHoi` (nhánh CRITICAL không
+   * được trừ hạn mức), nên tới đây là đã có kết quả. Đo lại lần hai thì rẻ và
+   * vẫn ra cùng đáp số hôm nay, nhưng nó tạo HAI chỗ gọi cùng một hàm trên
+   * cùng một câu — và ngày ai đó đổi chữ ký `doAnToan` (Phase 4 tính thêm lịch
+   * sử hội thoại vào), hai chỗ ấy lệch nhau mà không bài kiểm nào thấy.
+   *
+   * Thiếu thì tự đo — Lab và bộ eval gọi thẳng hàm này, không qua route.
+   */
+  mucAnToan?: MucAnToan;
   requestId?: string;
   cauHinhTruyHoi?: Partial<CauHinhTruyHoi>;
   /** Không ghi nhật ký khi chạy thử trong Lab hay eval */
@@ -414,7 +427,24 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * Chạy SAU lớp sửa tiếng lóng: lớp kia gọi model và có thể sinh ra tên cung
    * mới trong câu nó vừa viết, nên phải quét lại sau nó, không phải trước.
    */
-  const van = doiTenCung(vanDaSua);
+  const vanDaDoiTen = doiTenCung(vanDaSua);
+
+  /*
+   * Lời miễn trừ tâm lý cho câu hỏi SENSITIVE — NỐI SAU CÙNG.
+   *
+   * Cùng khuôn với `datMienTruYTe` ở `ban-doc-sau.ts`: câu chữ là HẰNG trong
+   * mã, không để model sinh. Một ràng buộc an toàn giao cho thứ không tất định
+   * thì nó đúng phần lớn các lần, và "phần lớn" không phải mức đủ ở đây.
+   *
+   * Nối sau `doiTenCung` chứ không sớm hơn. Hiện `suaCauTiengLong` chỉ viết lại
+   * những câu khớp regex tiếng lóng, nên một câu miễn trừ đặt trước nó vẫn đi
+   * qua nguyên vẹn — nhưng đó là bảo đảm dựa vào việc một biểu thức chính quy
+   * tiếp tục không khớp, và nó không mua lại được gì so với việc nối ở cuối.
+   *
+   * CRITICAL không đi qua đây: route đã dừng từ trước, không có bài nào để nối.
+   */
+  const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
+  const van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanDaDoiTen) : vanDaDoiTen;
 
   const ketQuaNgonNgu = soatNgonNgu(
     van,

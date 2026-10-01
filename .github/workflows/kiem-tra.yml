@@ -53,6 +53,8 @@ jobs:
         run: npx tsx scripts/test-boi-canh-doc.ts
       - name: Độ phủ dữ kiện (mọi sao, xung chiếu)
         run: npx tsx scripts/test-phu-du-kien.ts
+      - name: Lớp an toàn chat (bắt đúng, không bắt nhầm)
+        run: npx tsx scripts/test-an-toan.ts
 
       - name: Build
         run: npx next build

@@ -5,6 +5,7 @@ import {
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -517,17 +518,34 @@ function ChipGoiY({ nhan, onPress }: { nhan: string; onPress: () => void }) {
   );
 }
 
-/** "Rời khỏi đây" — nhẹ hơn chip một bậc. Lối nào app chưa có màn thì ẩn. */
+/**
+ * "Rời khỏi đây" — nhẹ hơn chip một bậc. Lối nào app chưa có màn thì ẩn.
+ *
+ * `tel:` XỬ LÝ RIÊNG, KHÔNG qua `tuyenApp`. `tuyenApp` ánh xạ đường dẫn web sang
+ * màn trong app; số điện thoại không phải một màn nào cả nên nó rơi vào
+ * `default: return null` và bị `.filter` loại — nút "Gọi 115" của lớp an toàn
+ * (CEL-180) biến mất im lặng trên app, đúng nền tảng gọi điện được dễ nhất.
+ */
 function LoiDiTiep({ ds, mauChu }: { ds?: LoiDi[]; mauChu?: string }) {
   const router = useRouter();
   const loi = (ds ?? [])
-    .map((l) => ({ nhan: l.nhan, tuyen: tuyenApp(l.duong) }))
-    .filter((l) => l.tuyen);
+    .map((l) => ({ nhan: l.nhan, duong: l.duong, tuyen: tuyenApp(l.duong) }))
+    .filter((l) => l.tuyen || l.duong.startsWith('tel:'));
   if (!loi.length) return null;
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: KHOANG.x4 }}>
       {loi.map((l) => (
-        <NutChu key={l.nhan} nhan={l.nhan} mauChu={mauChu} onPress={() => router.push(l.tuyen!)} />
+        <NutChu
+          key={l.nhan}
+          nhan={l.nhan}
+          mauChu={mauChu}
+          onPress={() => {
+            // Máy không gọi điện được (máy tính bảng, giả lập) thì nuốt lỗi:
+            // người đang khủng hoảng không cần thêm một hộp thoại lỗi.
+            if (l.duong.startsWith('tel:')) void Linking.openURL(l.duong).catch(() => {});
+            else router.push(l.tuyen!);
+          }}
+        />
       ))}
     </View>
   );

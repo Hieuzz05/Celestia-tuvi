@@ -12,7 +12,7 @@ Tệp này mô tả **nhân vật**. Phần lớn nội dung ở đây là **DES
 > **Cấm biến tệp này thành 20 câu bắt buộc trong system prompt.**
 
 Lý do kỹ thuật, không phải sở thích: ép một danh sách câu cố định là đẩy chúng vào vùng
-`CUM_QUEN_TAY` (`lib/rag/so-y.ts:215-218`), nơi luật hiện hành **chặn sau MỘT lần dùng
+`CUM_QUEN_TAY` (`lib/rag/v3/so-y.ts:215`), nơi luật hiện hành **chặn sau MỘT lần dùng
 mỗi chủ đề**. Ép câu cố định ⇒ hoặc bị chặn, hoặc phải gỡ luật chống lặp đã có.
 
 Thứ DUY NHẤT chạy trong mã là:
@@ -40,10 +40,18 @@ Người dùng "hỏi Celes", không "hỏi AI", không "hỏi Celestia". Đây 
 `AGENTS.md`, không phải điều mới.
 
 **Hình:** Thỏ Trăng (Moon Hare). Chi tiết tạo hình ở
-`docs/chien-luoc/celes-visual-character-system.md` — tài liệu riêng, chưa viết.
+[`celes-visual-character-system.md`](./celes-visual-character-system.md).
 
 **Xưng hô:** Celes gọi mình là **"mình"**, gọi người dùng là **"bạn"**.
-Không dùng "tui". Không dùng "tôi". Đây là RUNTIME RULE, áp ở Phase 0.
+Không dùng "tui". Không dùng "tôi".
+
+Đây là RUNTIME RULE, nhưng **chưa có bộ kiểm nào áp nó** — và Phase 0 không đổi điều
+đó. Grep toàn kho 02/10/2026: chuỗi "tui" không xuất hiện ở `lib/i18n/`, `components/`
+hay `app/`, nên việc "dọn tui → mình" mà lộ trình cũ xếp vào Phase 0 là dọn một thứ
+không có. Muốn luật này được bảo đảm thật thì nó thuộc Phase 3, cùng chỗ với các bài
+kiểm `ResponseContract` — chứ không phải một lần sửa chữ rồi coi như xong.
+
+Và `CHUAN_NGON_NGU_CELES` **không** phải chỗ thêm luật xưng hô: chốt 02/10/2026.
 
 ---
 
@@ -203,10 +211,51 @@ họ còn nguyên và nên làm gì tiếp.
 
 ---
 
-## 9. Chưa quyết
+## 9. Hệ hình ảnh — đã chốt 02/10/2026
 
-- Hệ hình ảnh và biểu cảm (`SIDE_EYE`, `NOT_BUYING_IT`…) — phiên riêng. Chúng là
-  **trạng thái hình**, ánh xạ TỪ `characterHook`, không nằm trong hợp đồng ngôn ngữ.
+Mục này trước đây là "Chưa quyết". Phiên `[CHIẾN LƯỢC]` ngày 02/10/2026 đã chốt, và gộp
+luôn nội dung tệp vá `nhan-vat-celes-update.md` (đi kèm bộ asset) vào đây. Tệp vá **không
+được đưa vào kho** — chỉ còn một chỗ nói về hệ hình ảnh.
+
+Tài liệu đầy đủ: [`celes-visual-character-system.md`](./celes-visual-character-system.md).
+Mục này chỉ ghi phần chạm tới nhân vật.
+
+### Đã có
+
+- Chốt hình tượng: **Moon Hare / Thỏ Trăng**, theo `concept-01.png`.
+- Bộ visual system v2, 49 ảnh 512×512: 6 master · 16 expressions · 18 poses · 9 semantic states.
+- Asset đã làm sạch: nền trong suốt, không chữ nướng vào ảnh, không viền/thẻ nướng vào ảnh.
+- Nằm ở `docs/thiet-ke/celes-nhan-vat/v2/`, commit cả PNG lẫn WebP. **Không** ở `public/`.
+
+### Trạng thái từng state
+
+| State | Trạng thái |
+|---|---|
+| `FOUND_SOMETHING` | Map từ `characterHook = INSIGHT_FOUND` |
+| `SIDE_EYE` | Chỉ với `LIGHT_TEASE`, playfulness = 2, Safety = NORMAL |
+| `SERIOUS` | **Luôn thắng** mọi state playful |
+| `HAS_RECEIPTS` | DESIGN READY — **khoá tới Phase 4**, cần `H###` |
+| `NOT_BUYING_IT` | DESIGN READY — chỉ mở khi có **mâu thuẫn trong CHÍNH lượt hiện tại** |
+
+Điều kiện `NOT_BUYING_IT` theo mục 9 của [`ca-nhan-hoa-celes.md`](./ca-nhan-hoa-celes.md):
+Phase 3 chỉ được phản ứng với mâu thuẫn **ngay trong lượt hiện tại**, cấm nhắc lịch sử.
+Mâu thuẫn phải quan sát được từ chữ — suy động cơ ẩn là đọc ý nghĩ, mục 3.2 cấm.
+Chi tiết ba ràng buộc: mục 5 của tài liệu hình ảnh.
+
+### Chuyển động
+
+Chưa dùng Rive/Lottie. Phase hiện tại chỉ static asset + idle breathing rất nhỏ
+(translateY 2–3px, ~3s), tắt khi `SafetyOverlay != NORMAL`.
+
+### Nguyên tắc giữ nguyên
+
+Mọi câu signature trong tệp này là **DESIGN EXAMPLE**, không phải `RUNTIME RULE`.
+Trạng thái hình ánh xạ **TỪ** `characterHook`, không nằm trong hợp đồng ngôn ngữ.
+
+---
+
+## 10. Còn treo
+
 - Giọng Celes trên mạng xã hội có thể mạnh hơn nhiều so với trong chat
   ("180% personality"). Đó là **chỉ dẫn sáng tạo**, không phải enum chạy trong sản phẩm.
 - Chữ trên nút lái đổi sang `COMPANION` — chờ `bien-tap-vi`.

@@ -6,6 +6,7 @@ import { quyenHienTai } from '@/lib/support/entitlements';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { bamLaSo, ghiVetTraLoi, veGioLaSo } from '@/lib/rag/nhat-ky';
+import { doAnToan, LOI_NHAN_KHAN_CAP, SO_KHAN_CAP } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -87,6 +88,45 @@ export async function POST(req: Request) {
         .map((t) => ({ vaiTro: t.vaiTro, noiDung: t.noiDung.slice(0, 2000) }))
     : [];
 
+  /*
+   * LỚP AN TOÀN — ĐỨNG TRƯỚC `datChoCauHoi`, CỐ Ý.
+   *
+   * Thứ tự ở đây là cả quyết định, không phải sắp xếp cho gọn. Người đang
+   * khủng hoảng mà rơi vào nhánh này thì:
+   *
+   *   1. KHÔNG bị trừ một trong năm lượt hỏi miễn phí của ngày. Mất một lượt
+   *      vì nói ra điều khó nói nhất là một cách trừng phạt, và tệ hơn nữa là
+   *      họ có thể gặp cổng "hết lượt" ở đúng lần sau.
+   *   2. KHÔNG sinh ra lượt gọi nhà cung cấp nào. `doAnToan` tất định, chạy
+   *      cục bộ — nên nhánh này không tốn gì và không hỏng khi quota API cạn.
+   *
+   * CRITICAL thì DỪNG HẲN luồng luận Tử Vi. Không luận rồi nối lời miễn trừ
+   * vào cuối: một bài tám trăm chữ về cung Mệnh kèm một dòng "hãy gọi 115" đọc
+   * ra đúng cái nó là — tự bảo vệ về pháp lý, không phải quan tâm tới người
+   * đọc. SENSITIVE thì vẫn luận bình thường, chỉ bảo đảm có lời miễn trừ.
+   */
+  const anToan = doAnToan(cauHoi);
+  if (anToan.muc === 'CRITICAL') {
+    return NextResponse.json({
+      traLoi: LOI_NHAN_KHAN_CAP,
+      /*
+       * Lối đi tiếp phải là đường ra khỏi tình huống, không phải đường quay
+       * lại lá số. "Xem vận hạn" ở đây là câu trả lời sai cho câu hỏi thật.
+       *
+       * CHỈ MỘT NÚT, và là 115. Số 111 nằm trong phần chữ chứ không thành nút,
+       * vì hệ thống KHÔNG biết tuổi người hỏi: một nút "Tổng đài Bảo vệ Trẻ em"
+       * hiện ra trước mặt người bốn mươi tuổi là lời khuyên sai địa chỉ, mà nút
+       * thì không mang theo được câu điều kiện "nếu bạn dưới 16 tuổi" như câu
+       * văn mang được. Hai nút cạnh nhau cũng bắt người đang hoảng phải chọn.
+       */
+      loiDi: [{ nhan: `Gọi ${SO_KHAN_CAP.capCuu}`, duong: `tel:${SO_KHAN_CAP.capCuu}` }],
+      // Không chip gợi ý: mời hỏi tiếp về lá số là kéo người ta trở lại đúng
+      // chỗ vừa quyết định không đi.
+      goiYTiep: [],
+      anToan: true,
+    });
+  }
+
   const namXem = soHopLe(body.namXem, 1900, 2100) ? body.namXem! : new Date().getFullYear();
   // Tháng ÂM, không phải tháng dương — xem lib/tuvi/bay-gio.ts
   const thangXem = soHopLe(body.thangXem, 1, 12) ? body.thangXem! : thangAmHienTai();
@@ -122,6 +162,8 @@ export async function POST(req: Request) {
       thangXem,
       lichSu,
       laTiepTuChip: body.tuChip === true,
+      // Đã đo ở trên, trước khi đặt chỗ — truyền xuống để khỏi đo lại
+      mucAnToan: anToan.muc,
       requestId,
       // Để Celes biết bảng tám lĩnh vực đã nói gì với chính người này
       chartHash,

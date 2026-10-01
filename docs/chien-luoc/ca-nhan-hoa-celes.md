@@ -108,7 +108,7 @@ Nhịp × Kiểu giữ nguyên.
 Đây là quyết định quan trọng nhất của bản chốt.
 
 **Không đưa** các câu đặc trưng ("Khoan.", "Mình không phán xét. Mình chỉ nhớ.") vào
-`CUM_QUEN_TAY` (`lib/rag/so-y.ts:215-218`). Vào đó thì luật hiện hành chặn sau MỘT lần
+`CUM_QUEN_TAY` (`lib/rag/v3/so-y.ts:215`). Vào đó thì luật hiện hành chặn sau MỘT lần
 dùng mỗi chủ đề — mâu thuẫn với việc muốn chúng tạo nhân dạng.
 
 Thay vào đó: `characterHook` là một **trường enum**. Schema chỉ có một trường ⇒ mỗi câu
@@ -336,9 +336,9 @@ Không bao giờ nói *"Celes đoán bạn thích kiểu này."*
 
 | Phase | Nội dung | Trạng thái |
 |---|---|---|
-| **0** | Dọn chữ: `tui` → `mình`/`bạn`, xưng hô, khoá EN, giọng vùng miền | Code được ngay |
-| **1** | `SafetyOverlay` hợp nhất + disclaimer cố định (hằng trong mã, không để model sinh) | Code được ngay |
-| **2** | Nút lái một trục + luật đếm 3-lần-đổi-mặc-định | Code được ngay |
+| **0** | Soát lại spec: sửa tham chiếu sai, đối chiếu mục 14/15 với mã | XONG 02/10/2026 |
+| **1** | Lớp an toàn thật: `QuyetDinhAnToan` (luồng) tách khỏi lời miễn trừ (trình bày), bộ dò tất định ba lớp, bộ kiểm trong CI | XONG 02/10/2026 |
+| **2** | Nút lái một trục + luật đếm 3-lần-đổi-mặc-định | HOÃN — chưa đủ dữ liệu, xem mục 17 |
 | **3** | `ResponseContract` + `characterHook` + hai cột `chat_messages` + bộ kiểm CI | Code được ngay |
 | **4** | Living Memory: `H###`, schema bộ nhớ, RLS, truy hồi, hết hạn, xung đột, `MEMORY_RECALL`, mâu thuẫn lịch sử | Chờ |
 | **5** | Cá nhân hoá liên tính năng: Hôm nay / Hành trình / hộp bối cảnh — **không đổi bài luận đã lưu** | Chờ |
@@ -352,6 +352,47 @@ Ký ức / claim lịch sử · Mâu thuẫn với lượt cũ
 ```
 
 Chỉ dùng: tin nhắn hiện tại + bối cảnh hiện tại + `F###`/`E###`.
+
+### 13b. Phase 1 đã làm gì — ghi lại 02/10/2026
+
+Lộ trình cũ gọi Phase 1 là "`SafetyOverlay` hợp nhất". Khi làm thật thì cái tên đó
+hỏng, và chỗ hỏng đáng ghi lại: **"overlay" là một khái niệm TRÌNH BÀY** — nó giả định
+bài luận vẫn được sinh ra, chỉ khoác thêm một lớp lên trên. Áp vào người đang nói
+chuyện tự hại thì nó có nghĩa là luận Tử Vi tám trăm chữ rồi nối một câu "hãy gọi 115"
+vào cuối. Người nhận đọc ra đúng cái đó là gì: tự bảo vệ pháp lý.
+
+Nên tách làm hai thứ, và chúng nằm ở hai tầng khác nhau:
+
+| | Quyết cái gì | Ở đâu |
+|---|---|---|
+| `QuyetDinhAnToan` | **Luồng** — còn được luận nữa không | `app/api/hoi-dap/route.ts`, trước `datChoCauHoi` |
+| `datMienTruTamLy` | **Trình bày** — bài đã luận có lời miễn trừ chưa | `lib/rag/tra-loi.ts`, sau `doiTenCung` |
+
+Ba mức: `CRITICAL` dừng hẳn luồng luận và trả lời nhắn hằng · `SENSITIVE` vẫn luận,
+bảo đảm có lời miễn trừ · `NORMAL` chạy bình thường.
+
+**Vị trí của lớp dò là một quyết định, không phải chuyện sắp xếp cho gọn.** Nó đứng
+TRƯỚC `datChoCauHoi` để người rơi vào nhánh `CRITICAL` không bị trừ một trong năm lượt
+hỏi của ngày, và không sinh lượt gọi nhà cung cấp nào. Mất lượt vì nói ra điều khó nói
+nhất là một cách trừng phạt; và nếu lượt đó bị trừ, lần sau họ có thể gặp cổng "hết
+lượt" đúng lúc không nên gặp.
+
+**Dò bằng luật, không bằng model** — vừa giữ "Ngân sách = 0", vừa để nhánh này chạy
+được cả khi quota API đã cạn. Ba lớp: cụm nguy cơ → loại trừ (phủ định, trích dẫn,
+ngôi thứ ba, quá khứ, giả định, nghĩa bóng) → dấu hiệu gấp.
+
+Số điện thoại: **115** (cấp cứu) và **111** (Tổng đài Quốc gia Bảo vệ Trẻ em, 24/7).
+**Cố ý không hardcode một "đường dây nóng tự sát" toàn quốc cho người lớn** — chưa tra
+ra nguồn chính thức chuyên biệt nào mô tả một số đúng chức năng đó. Quảng bá sai chức
+năng một số điện thoại trong đúng tình huống này là loại lỗi không sửa lại được.
+
+Bộ kiểm `scripts/test-an-toan.ts` (23 ca, trong CI) nặng về phía ca ÂM TÍNH, vì hai
+kiểu sai có giá khác hẳn nhau: bỏ sót là người cần giúp nhận về một bài Tử Vi; bắt nhầm
+là người hỏi chuyện bình thường bị chặn và bị nói những lời chỉ nên nói khi thật sự
+cần — vài lần như thế là họ không hỏi nữa. Bộ kiểm đã bắt được một lỗi thật khi làm:
+cụm `khong muon song nua` mở đầu bằng `khong muon`, mà `khong muon` nằm trong danh sách
+phủ định, nên cụm tự huỷ chính nó và **"Tôi không muốn sống nữa" rơi về `NORMAL`** —
+đúng câu nói thẳng nhất có thể. Nay phủ định chỉ xét ở phần câu NGOÀI cụm đã khớp.
 
 ---
 
@@ -385,15 +426,22 @@ ngân sách.
 
 ### Chỉ nới một lý do
 
-`canDangNhap(lyDo)` gác **năm** cửa:
+`canDangNhap(lyDo)` gác **chín** cửa (soát lại 02/10/2026 — bản trước ghi năm):
 
 | Tệp | `lyDo` |
 |---|---|
-| `app/api/hoi-dap/route.ts:36` | `ask_celes` ← **chỉ nới cái này** |
+| `app/api/hoi-dap/route.ts:37` | `ask_celes` ← **chỉ nới cái này** |
 | `app/api/ban-doc-sau/route.ts:63` | `deep_read` |
+| `app/api/luan-giai/route.ts:32` | `deep_read` |
+| `app/api/luan-giai-v3/route.ts:42` | `regenerate` hoặc `deep_read`, do `lib/rag/v3/xu-ly.ts:228` quyết |
 | `app/api/hop-tuoi/route.ts:52` | `connection` |
-| `app/api/diem-noi-bat/route.ts:30` | — |
-| `app/api/luan-giai/route.ts:32`, `luan-giai-v3/route.ts:41` | — |
+| `app/api/diem-noi-bat/route.ts:30` | `diem_noi_bat` |
+| `app/api/luan-han/route.ts:31` | `journey_detail` |
+| `app/api/moc/route.ts:55` | `moc_hanh_trinh` |
+| `app/api/nhip/route.ts:33` | `nhip_hanh_trinh` |
+
+**`deep_read` dùng chung bởi ba cửa** — ban-doc-sau, luan-giai và luan-giai-v3. Nới nó
+là mở cả ba cùng lúc, nên đừng nới.
 
 Nới chung là mở luôn luận giải sâu cho khách.
 
@@ -416,10 +464,17 @@ vừa rồi không?"* — **không tự chuyển.**
 response-contract-cannot-change-ketLuan
 ```
 
-**Bài quan trọng nhất của toàn hệ.** Cho `nghiengVe = A`, thì dù `PRACTICAL`,
-`ANALYTICAL` hay `COMPANION`, đầu ra vẫn phải nghiêng A.
+**Bài quan trọng nhất của toàn hệ.** Giữ nguyên dữ kiện đầu vào thì dù chế độ cá
+tính nào, đầu ra vẫn phải giữ nguyên `huong`.
 
-Chạy **offline** (so trên `nghiengVe` do engine tính, không gọi model) ⇒ đưa vào
+Tên thật trong mã (soát 02/10/2026 — bản trước viết `nghiengVe = A`, không có định
+danh nào như vậy): hàm `tinhNghiengVe` (`lib/rag/nghieng-ve.ts:297`) trả kiểu
+`NghiengVe`, trường `huong: HuongNghieng` nhận **năm** giá trị `thuan-ro` ·
+`thuan-nhe` · `can-bang` · `can-nhe` · `can-ro` (`:76`) — không phải A/B. Nó chỉ
+được tính khi `yDinh` là `quyet-dinh`, `co-khong` hoặc `thoi-diem`
+(`lib/rag/tra-loi.ts:292-296`), còn lại là `null`; bài kiểm phải tính đến điều đó.
+
+Chạy **offline** (so trên `huong` do engine tính, không gọi model) ⇒ đưa vào
 `.github/workflows/kiem-tra.yml` ngay từ Phase 3. **Đỏ bài này thì không gộp.**
 
 ### Các bài còn lại — Phase 3
@@ -465,10 +520,32 @@ Ghi ra để lần sau không phải kiểm lại:
 
 ## 17. Còn treo
 
-- Chữ trên nút lái thứ ba (đổi sang `COMPANION`) — chờ `bien-tap-vi`. Bỏ chữ
-  "Nói với tui một chút".
-- Trước khi làm lớp học dần (Phase 2 lớp 3), phải đo tỉ lệ phiên chat có quá 1 lượt và
-  quá 3 lượt. Ít quá thì lớp đó gần như không chạy.
+- Chữ trên nút lái thứ ba (đổi sang `COMPANION`) — chờ `bien-tap-vi`. (Bản trước dặn
+  bỏ chuỗi "Nói với tui một chút"; grep 02/10/2026 không thấy chuỗi đó ở đâu trong kho,
+  kể cả `lib/i18n/`. Không có việc gì để làm.)
+- **ĐÃ ĐO 02/10/2026 — Phase 2 hoãn.** `scripts/do-do-sau-phien-chat.ts` đếm lượt
+  NGƯỜI DÙNG trên `chat_messages`, ba cửa sổ 30 ngày / 90 ngày / toàn bộ lịch sử cho
+  kết quả **giống hệt nhau**, nghĩa là toàn bộ lịch sử chat chưa quá 30 ngày tuổi:
+
+  | Số lượt hỏi trong phiên | Số phiên | Tỉ lệ |
+  |---|---|---|
+  | 1 | 4 | 50,0% |
+  | 2 | 2 | 25,0% |
+  | 3 | 1 | 12,5% |
+  | 5 | 1 | 12,5% |
+  | **Tổng** | **8** | |
+
+  ≥2 lượt: 50% · ≥3 lượt: 25% · ≥4 lượt: 12,5%.
+
+  **n = 8. Đây KHÔNG phải cơ sở để quyết.** "25% phiên đạt ≥3 lượt" nghe như một tỉ lệ,
+  nhưng nó là HAI phiên; một người dùng đổi thói quen là con số nhảy sang 12% hoặc 37%.
+  Phép đo này chưa trả lời được câu mục 17 hỏi — nó chỉ cho biết chat còn quá mới để đo.
+  Đo lại khi có ít nhất vài trăm phiên.
+
+  Hai điều phép đo có nói được, và cả hai đều chống lại việc làm Phase 2 bây giờ:
+  một nửa số phiên dừng sau đúng một câu hỏi, nên lớp "học dần qua nhiều lượt" gần như
+  không có lượt nào để học; và hạn mức 5 câu/ngày (`lib/support/config.ts:25`) khiến
+  luật 3-lần-đổi-mặc-định cần tới 6 lượt bấm mới chạy xong — quá trần của một ngày.
 - Hệ hình ảnh nhân vật (`celes-visual-character-system.md`) — phiên riêng.
 - Pháp lý / riêng tư: Luật Trẻ em (dưới 16 tuổi) và Luật BVDLCN 91/2025/QH15 (hiệu lực
   01/01/2026, Điều 24: trẻ từ 7 tuổi cần cả đồng ý của chính mình lẫn của người giám hộ)

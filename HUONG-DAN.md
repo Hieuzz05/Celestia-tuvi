@@ -666,7 +666,7 @@ Vài điểm đáng biết:
 ### 3.5 Chỉ định tài khoản quản trị
 
 ```
-ADMIN_EMAILS=it-ba@sapp.edu.vn
+ADMIN_EMAILS=duyhieu24082000@gmail.com
 ```
 
 Nhiều email thì ngăn cách bằng dấu phẩy. Chỉ những email trong danh sách này mới vào được trang
@@ -752,6 +752,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | App Expo (`apps/celes-app/`) | **Tạm dừng** — chưa có dự định đẩy lên store |
 | Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
 | Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |
+| Lớp an toàn chat (CEL-180) | Xong — dò từ khoá tất định ở máy chủ, chạy TRƯỚC khi đặt chỗ hạn mức. CRITICAL: dừng luận, trả lời nhắn kèm 115, không trừ lượt, không gọi model. SENSITIVE: vẫn luận, nối lời miễn trừ tâm lý |
 | Khoá luận giải 8 lĩnh vực / Hành trình chi tiết theo bậc quyền | Xong — dựng ở máy chủ, không phải ẩn ở giao diện |
 | Trang quản trị `/admin/support` | Xong — chỉ đọc, vào bằng địa chỉ |
 | Tác vụ đối soát đơn định kỳ | Xong — Vercel Cron 15 phút/lần, **cần `CRON_SECRET`** |
