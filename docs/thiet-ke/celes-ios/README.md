@@ -59,6 +59,8 @@ Các thứ sau chỉ nằm trên claude.ai, mất quyền tài khoản là mất
 
 ## Việc chủ dự án cần tự rà (ngoài repo)
 
+- 30/09/2026: `ADMIN_EMAILS` trên Vercel (Production + Preview) và git user.email của repo đã
+  chuyển sang `duyhieu24082000@gmail.com`.
 - Tài khoản it-ba còn **23 artifact không thuộc Celes**. Cần tự sao lưu những cái còn dùng.
 - Kiểm tra Vercel (`celestia-tuvi`), Supabase, Google Cloud (OAuth của SSO) và GitHub
   đang gắn mail nào. Nếu là it-ba thì thêm một chủ sở hữu khác **trước khi** mất quyền mail.
