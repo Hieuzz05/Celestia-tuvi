@@ -9,4 +9,5 @@ export { NutChinh, NutVien, PillTag, NhanPill, HuyHieuOk, Truong, O, OChon } fro
 export { The, TheNoi, TheTrungBay, TheTrichDan, BuocSo, OIcon } from './cards';
 export { Eyebrow, GhiChuTay } from './text';
 export { KhoiGap } from './KhoiGap';
+export { TheTrangThaiCeles } from './TheTrangThaiCeles';
 export * from './icons';

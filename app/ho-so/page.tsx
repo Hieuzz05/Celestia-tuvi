@@ -115,7 +115,7 @@ export default function TrangDanhSachLaSo() {
           // Trạng thái rỗng cấp trang: Celes 80px, DEFAULT (mục 12). Chỉ ở nhánh
           // RỖNG — danh sách có lá số là nơi người ta đọc, không gắn ở đó.
           <div className="flex items-center gap-[16px]">
-            <CelesMascot trangThai="default" cao={80} />
+            <CelesMascot cho="rong" minhHoa="sitting-neutral" cao={80} />
             <p className="body-sm min-w-0" style={{ color: 'var(--fg-muted)' }}>
               {t.danhSach.trong}
             </p>

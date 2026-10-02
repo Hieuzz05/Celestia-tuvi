@@ -305,7 +305,7 @@ function TrangHoiDap() {
       <div className="flex items-center gap-[16px]">
         {/* Phase 3: nối `characterHook` vào đây thay cho "default" cố định.
             `serious` theo lượt mới nhất (mục 9) đã nối, không phụ thuộc Phase 3. */}
-        <CelesMascot trangThai={nghiem ? 'serious' : 'default'} cao={56} />
+        <CelesMascot cho="dau-trang" trangThai={nghiem ? 'serious' : 'default'} cao={56} />
         <div className="min-w-0">
           <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
           <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
@@ -402,7 +402,7 @@ function TrangHoiDap() {
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
             {/* Trạng thái rỗng (chưa chọn lá số): Celes 80px, DEFAULT — cùng dáng với rỗng có lá số. */}
-            <CelesMascot trangThai="default" cao={80} />
+            <CelesMascot cho="rong" trangThai="default" cao={80} />
             <h2 className="subheading">{t.hoiCeles.canBietAi}</h2>
             <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
               {t.hoiCeles.canBietAiMo}
@@ -429,7 +429,7 @@ function TrangHoiDap() {
               {tinNhan.length === 0 && !dangChay && (
                 <div className="flex flex-col gap-[16px]">
                   {/* Trạng thái rỗng: Celes 80px, DEFAULT. */}
-                  <CelesMascot trangThai="default" cao={80} />
+                  <CelesMascot cho="rong" trangThai="default" cao={80} />
 
                   <div className="flex flex-col gap-[12px]">
                     <p className="eyebrow">{t.hoiCeles.khamPhaNhanhTieuDe}</p>
@@ -520,7 +520,7 @@ function TrangHoiDap() {
                  * đang thở đã đủ báo "đang chờ".
                  */
                 <div className="flex items-center gap-[12px]">
-                  <CelesMascot trangThai={nghiem ? 'serious' : 'thinking'} cao={80} />
+                  <CelesMascot cho="cho" trangThai={nghiem ? 'serious' : 'thinking'} cao={80} />
                   <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
                     {t.hoiCeles.dangTraLoi}
                   </p>
