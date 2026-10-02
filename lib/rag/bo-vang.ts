@@ -140,4 +140,15 @@ export const BO_VANG_PLANNER: CauVang[] = [
   { cauHoi: 'Lộc Tồn ở Tài Bạch nghĩa là gì?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], yDinhBatBuoc: 'tra-cuu', the: ['finance', 'lookup', 'exact-term'] },
   { cauHoi: 'Vì sao tôi hay bỏ dở giữa chừng?', chuDe: 'tong-quan', cungBatBuoc: ['Mệnh'], yDinhBatBuoc: 'giai-thich', the: ['general', 'why'] },
   { cauHoi: 'Khi nào thì tôi ổn định được về tiền bạc?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['dai-van', 'luu-nien'], yDinhBatBuoc: 'thoi-diem', the: ['finance', 'timing'] },
+
+  /*
+   * ---------- Planner 2026.10.1 (CEL-186 P1) ----------
+   *
+   * Người đã cưới gọi bạn đời bằng "chồng tôi", "vợ mình" — trước đó rơi về
+   * 'tong-quan'. Và "vậy" bỏ dấu thành "vay": "sao vậy?" thành câu hỏi tiền.
+   */
+  { cauHoi: 'chồng tôi có phải Nguyễn Duy Hiếu ko?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], yDinhBatBuoc: 'co-khong', the: ['love', 'khong-dau'] },
+  { cauHoi: 'Vợ mình dạo này có giận mình không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], yDinhBatBuoc: 'co-khong', the: ['love'] },
+  { cauHoi: 'tại sao vậy?', chuDe: 'tong-quan', cungBatBuoc: ['Mệnh'], yDinhBatBuoc: 'giai-thich', the: ['general', 'why'] },
+  { cauHoi: 'tôi định vay 500 triệu', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], the: ['finance'] },
 ];

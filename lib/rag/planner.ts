@@ -17,7 +17,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.09.7';
+export const PHIEN_BAN_PLANNER = '2026.10.1';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -138,6 +138,15 @@ const TU_KHOA_CHU_DE: Record<Exclude<ChuDe, 'tong-quan'>, string[]> = {
     'de y', 'thich toi', 'don phuong', 'tim hieu', 'nguoi thuong',
     'duyen', 'tim duoc nguoi', 'gap duoc nguoi', 'tan tinh', 'theo duoi',
     'mai mot', 'cap ke',
+    /*
+     * Gọi người bạn đời bằng quan hệ sở hữu (2026.10.1).
+     *
+     * "chồng tôi có phải Nguyễn Duy Hiếu ko" rơi về 'tong-quan' vì bảng chỉ có
+     * dạng hành động ("lấy chồng", "vợ chồng"). Người đã cưới thì hỏi bằng
+     * "chồng tôi", "vợ mình" — đó là chuyện tình cảm, không phải gia đạo.
+     */
+    'chong toi', 'vo toi', 'chong minh', 'vo minh', 'chong em', 'vo em',
+    'chong cua toi', 'vo cua toi',
   ],
   'gia-dao': [
     'gia dinh', 'cha me', 'bo me', 'anh em', 'anh chi em', 'con cai',
@@ -257,6 +266,18 @@ const UU_TIEN_Y_DINH: Exclude<YDinh, 'mo-ta'>[] = [
  */
 function laCauCoKhong(tu: string[]): boolean {
   return tu.slice(-3).some((t) => t === 'khong' || t === 'chua');
+}
+
+/**
+ * Bỏ dấu câu hỏi để so từ khoá — nhưng giữ lại những chữ mà bỏ dấu là đổi nghĩa.
+ *
+ * "vậy" bỏ dấu thành "vay", và "vay" là từ khoá tài chính: "sao vậy?" thành câu
+ * hỏi tiền bạc. Chữ có dấu thì không mơ hồ, nên thay nó bằng một dấu không phải
+ * chữ TRƯỚC khi bỏ dấu. Người gõ không dấu ("sao vay") vẫn mơ hồ thật, và vẫn
+ * được tính là "vay" như trước.
+ */
+function boDauCauHoi(cauHoi: string): string {
+  return boDau(cauHoi.normalize('NFC').replace(/(?<![\p{L}\p{M}])vậy(?![\p{L}\p{M}])/giu, ' '));
 }
 
 /** Tách câu đã bỏ dấu thành từ, sau khi chuẩn hoá viết tắt chat */
@@ -568,7 +589,7 @@ function dungKeHoach(
   tenCachCuc?: string[],
   phanLoaiBangModel?: boolean
 ): KeHoachTruyVan {
-  const cum = cumTu(boDau(cauHoi));
+  const cum = cumTu(boDauCauHoi(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
   const cungGoiTen = thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
   const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
@@ -596,7 +617,7 @@ function dungKeHoach(
  * Nhánh model nằm ở `lapKeHoachDayDu` bên dưới.
  */
 export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): KeHoachTruyVan {
-  const cum = cumTu(boDau(cauHoi));
+  const cum = cumTu(boDauCauHoi(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
 
   // Cung gọi đích danh (kể cả qua bí danh như "công việc", "vợ chồng") là tín
@@ -610,7 +631,7 @@ export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): 
     cauHoi,
     saoTheoCung,
     chuDe,
-    doanYDinh(cum, tuCua(boDau(cauHoi))),
+    doanYDinh(cum, tuCua(boDauCauHoi(cauHoi))),
     theoTuKhoa.chacChan || cungGoiTen.length > 0,
     tenCachCuc
   );
