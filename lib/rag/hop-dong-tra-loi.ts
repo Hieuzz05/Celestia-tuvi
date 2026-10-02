@@ -80,6 +80,22 @@ const DA_CO_CHI_THI: ReadonlySet<YDinh> = new Set<YDinh>([
   'tra-cuu',
 ]);
 
+/** Ô này có nhận khối hợp đồng vào prompt không. Một nguồn cho cả `khoiHopDong` lẫn `boDanDat`. */
+function coKhoiHopDong(yDinh: YDinh): boolean {
+  return !DA_CO_CHI_THI.has(yDinh);
+}
+
+/**
+ * Prompt lượt này có bảo model "bỏ phần dẫn dắt" không.
+ *
+ * Đúng khi `khoiHopDong` phát chữ của nhịp COMPACT. Dấu ấn Celes đọc hàm này
+ * để không tự chèn lại đúng cái câu dẫn mà prompt vừa bảo model bỏ — xem
+ * `dau-an.ts`. Cùng điều kiện với `khoiHopDong`, nên hai bên không lệch nhau.
+ */
+export function boDanDat(h: HopDongTraLoi, yDinh: YDinh): boolean {
+  return coKhoiHopDong(yDinh) && h.nhip === 'COMPACT';
+}
+
 /**
  * Câu hỏi dài bao nhiêu thì người ta muốn nghe dài.
  *
@@ -198,6 +214,6 @@ const CHU_KIEU: Record<Kieu, string> = {
  * Có bài kiểm khoá thứ tự này.
  */
 export function khoiHopDong(h: HopDongTraLoi, yDinh: YDinh): string {
-  if (DA_CO_CHI_THI.has(yDinh)) return '';
+  if (!coKhoiHopDong(yDinh)) return '';
   return `CÁCH VIẾT LƯỢT NÀY\n${CHU_NHIP[h.nhip]}\n${CHU_KIEU[h.kieu]}`;
 }

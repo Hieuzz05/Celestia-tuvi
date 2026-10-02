@@ -16,16 +16,16 @@ import { laChuoiJson } from './doc-json';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
 import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
-import { chonDauAn, PHIEN_BAN_DAU_AN } from './dau-an';
+import { chonDauAn, PHIEN_BAN_DAU_AN, type DauAnLuot } from './dau-an';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
-import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type YDinh } from './planner';
+import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, type YDinh } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
-import { tinhHopDong } from './hop-dong-tra-loi';
+import { boDanDat, tinhHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
 
 /**
@@ -126,6 +126,34 @@ export interface NguCanhVan {
    * cách là đủ làm nó dính vào đoạn bên cạnh. Chèn ở đây thì không có gì để nuốt.
    */
   dauAn?: string;
+}
+
+/**
+ * Gom tín hiệu của một lượt thành đầu vào `chonDauAn`.
+ *
+ * Tách khỏi `traLoiCoCanCu` để bài kiểm `test-dau-an.ts` đi qua ĐÚNG đường nối
+ * mà route dùng, chứ không tự dựng lại `DauVaoDauAn` bằng tay — dựng tay là
+ * cách một cổng mới (như `boDanDat`) bị quên nối mà test vẫn xanh.
+ */
+export function dauAnChoLuot(vao: {
+  keHoach: Pick<KeHoachTruyVan, 'chuDe' | 'yDinh' | 'chacChan' | 'phanLoaiBangModel'>;
+  hopDong: HopDongTraLoi;
+  mucAnToan: MucAnToan;
+  laCauNoi: boolean;
+  traLoi: Pick<TraLoiCoCauTruc, 'ketLuan'>;
+  lichSu?: TinNhan[];
+}): DauAnLuot {
+  return chonDauAn({
+    chuDe: vao.keHoach.chuDe,
+    yDinh: vao.keHoach.yDinh,
+    mucAnToan: vao.mucAnToan,
+    chacChan: vao.keHoach.chacChan,
+    phanLoaiBangModel: vao.keHoach.phanLoaiBangModel,
+    laCauNoi: vao.laCauNoi,
+    coKetLuan: !!vao.traLoi.ketLuan?.trim(),
+    boDanDat: boDanDat(vao.hopDong, vao.keHoach.yDinh),
+    lichSu: vao.lichSu,
+  });
 }
 
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
@@ -442,16 +470,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * sửa chữ phía sau thấy nó như mọi đoạn khác.
    */
   const laCauNoi = vao.laTiepTuChip === true || laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []);
-  const dauAn = chonDauAn({
-    chuDe: keHoach.chuDe,
-    yDinh: keHoach.yDinh,
-    mucAnToan,
-    chacChan: keHoach.chacChan,
-    phanLoaiBangModel: keHoach.phanLoaiBangModel,
-    laCauNoi,
-    coKetLuan: !!daLoc.ketLuan?.trim(),
-    lichSu: vao.lichSu,
-  });
+  const dauAn = dauAnChoLuot({ keHoach, hopDong, mucAnToan, laCauNoi, traLoi: daLoc, lichSu: vao.lichSu });
 
   const vanTho = dungVan(daLoc, {
     yDinh: keHoach.yDinh,

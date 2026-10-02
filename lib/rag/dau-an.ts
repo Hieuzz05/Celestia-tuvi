@@ -16,7 +16,7 @@ import type { YDinh } from './planner';
  */
 
 /** Đổi câu trong thư viện hay đổi cách chọn thì tăng — ghi vào `phienBan` của mỗi lượt */
-export const PHIEN_BAN_DAU_AN = 'dau-an-v1';
+export const PHIEN_BAN_DAU_AN = 'dau-an-v2';
 
 export type TangDauAn = 'KHONG' | 'DAN_LUAN' | 'KHO_HAI';
 
@@ -97,33 +97,40 @@ export function khoaBienThe(chuDe: string, yDinh: YDinh): string {
  *
  * Thêm một luật viết: không khẳng định cũng không rào độ chắc. Câu đứng ngay
  * sau kết luận — "khá rõ" hay "còn tuỳ hoàn cảnh" đều là đổi giọng kết luận,
- * mà giọng chắc chắn do luật quyết (`haGiong`), không do tầng này.
+ * mà giọng chắc chắn do luật quyết (`haGiong`), không do tầng này. Rào bằng
+ * điều kiện cũng tính: "chỉ đáng tin khi…", "rất dễ đọc thiếu" (v1 đã dính).
+ *
+ * Từ v2 (02/10/2026): câu phải đứng được sau một kết luận CÂN BẰNG ("hai phía
+ * gần ngang nhau") — không giả định đã có phía nghiêng. Không dùng "dấu hiệu":
+ * prompt co-khong/thoi-diem dùng chữ đó cho dấu hiệu ngoài đời ngay đoạn kế.
+ * Câu giai-thich không giả định câu hỏi về tính cách, không nói lá số chứa
+ * "nguyên do" — ở `suc-khoe` đó là gợi nguyên nhân bệnh.
  */
 export const THU_VIEN_DAN_LUAN: Readonly<Record<Exclude<YDinh, 'tra-cuu'>, readonly string[]>> = {
   'quyet-dinh': [
     'Một quyết định rõ hơn khi biết mỗi phía đang dựa trên những căn cứ nào.',
-    'Điều đáng giữ lại không chỉ là kết luận, mà là vì sao các căn cứ dẫn tới kết luận đó.',
-    'Một dấu hiệu hiếm khi đủ để làm rõ một quyết định; cần nhìn cách nhiều căn cứ ghép lại.',
+    'Kết luận này được đọc từ những sao cụ thể trong lá số của bạn.',
+    'Cách cân hai phía ở đây đi từ chính các sao trong lá số của bạn.',
   ],
   'co-khong': [
-    'Dù kết luận là có hay không, câu trả lời chỉ đáng tin khi có đủ căn cứ.',
-    'Câu trả lời có hay không đến từ cách các dấu hiệu nghiêng về phía nào khi đặt cạnh nhau.',
-    'Câu trả lời ở đây nằm ở cách các dấu hiệu kết hợp với nhau, không ở một dấu hiệu đơn lẻ.',
+    'Câu trả lời này đi ra từ các sao và cung có liên quan trong lá số của bạn.',
+    'Câu trả lời này dựa vào chính những gì lá số của bạn đang có.',
+    'Bạn có thể đối chiếu câu trả lời này với các sao trong lá số.',
   ],
   'thoi-diem': [
-    'Thời điểm trong lá số hiện ra theo từng giai đoạn, không phải một ngày đẹp đứng riêng.',
-    'Mốc đáng chú ý thường xuất hiện khi nhiều dấu hiệu cùng thay đổi trong một giai đoạn.',
-    'Chuyện lúc nào chỉ rõ khi đặt vào đúng giai đoạn đang chạy, không tách khỏi nhịp chung của lá số.',
+    'Thời điểm trong lá số được đọc theo từng giai đoạn, không theo một ngày cụ thể.',
+    'Giai đoạn nhắc tới ở đây được chọn theo những cung gắn với điều bạn hỏi.',
+    'Câu trả lời về lúc nào dựa trên các đại vận (giai đoạn mười năm) và từng năm trong lá số của bạn.',
   ],
   'giai-thich': [
-    'Một điều lặp lại hiếm khi đứng một mình; nó thường là chỗ nhiều dấu hiệu cùng gặp nhau.',
-    'Điều nhìn thấy trước thường chỉ là phần nổi; nguyên do nằm ở cách các dấu hiệu trong lá số tác động lẫn nhau.',
-    'Một nét chỉ giải thích được khi đặt cạnh những phần còn lại của lá số, không đọc riêng một mảnh.',
+    'Những gì lá số cho thấy về điều này đến từ các sao và cung có liên hệ trực tiếp với nó.',
+    'Các sao trong những cung liên quan được đọc cùng nhau trong lá số của bạn.',
+    'Điều này đọc được từ những cung trong lá số nói tới chuyện bạn hỏi.',
   ],
   'mo-ta': [
-    'Cùng một nét có thể mang nghĩa khác khi đi cùng những dấu hiệu khác.',
-    'Mỗi nét ở đây chỉ đọc đúng khi đặt cạnh những nét còn lại.',
-    'Nhìn một nét thôi rất dễ đọc thiếu; ý nghĩa của nó rõ hơn khi đặt cùng những dấu hiệu khác.',
+    'Những nét này đọc từ các sao trong cung tương ứng của lá số bạn.',
+    'Mỗi nét được mô tả đều có sao và cung cụ thể trong lá số đứng sau.',
+    'Bức tranh này lấy từ những sao đang có mặt trong lá số của bạn.',
   ],
 };
 
@@ -141,6 +148,21 @@ export const CUM_FILLER_CAM: readonly string[] = [
   'không có câu trả lời đơn giản',
   'điều đáng chú ý là',
 ];
+
+/**
+ * Ẩn dụ chủ dự án đã bỏ (02/10/2026): "nền", "nhịp" (cả "nhịp chung", "đổi
+ * nhịp"), "phần nổi", "lớp bên dưới", "gốc sâu". Chúng nói về cách đọc Tử Vi
+ * thay vì bắc sang căn cứ, và "gốc sâu" ở câu giải thích gợi một nguyên nhân
+ * bệnh. Bắt theo nguyên âm tiết: "nhịp chung" dính, "nềnếp" thì không.
+ */
+const AN_DU_CAM = /(?<!\p{L})(?:nền|nhịp|phần nổi|lớp bên dưới|gốc sâu)(?!\p{L})/iu;
+
+/**
+ * Từ v2: "dấu hiệu" trùng chữ prompt co-khong/thoi-diem dùng cho dấu hiệu ngoài
+ * đời ở đoạn kế; "nguyên do" nói lá số chứa nguyên nhân — ở `suc-khoe` là gợi
+ * nguyên nhân bệnh.
+ */
+const TU_DE_HIEU_NHAM = /(?<!\p{L})(?:dấu hiệu|nguyên do|nguyên nhân)(?!\p{L})/iu;
 
 /** Bất biến (a): tên chủ đề và các cách gọi đời thường của nó */
 const CHU_DE_CAM =
@@ -165,6 +187,10 @@ export function kiemCauDauAn(cau: string): string[] {
   if (cd) loi.push(`nhắc chủ đề: "${cd[0]}"`);
   const bc = cau.match(HUA_BO_CUC);
   if (bc) loi.push(`hứa bố cục: "${bc[0]}"`);
+  const ad = cau.match(AN_DU_CAM);
+  if (ad) loi.push(`ẩn dụ đã bỏ: "${ad[0]}"`);
+  const hn = cau.match(TU_DE_HIEU_NHAM);
+  if (hn) loi.push(`dễ hiểu nhầm: "${hn[0]}"`);
   const dc = cau.match(DO_CHAC);
   if (dc) loi.push(`đổi độ chắc: "${dc[0]}"`);
   return loi;
@@ -177,6 +203,7 @@ export type LyDoKhong =
   | 'planner-khong-chac'
   | 'cau-noi'
   | 'khong-ket-luan'
+  | 'bo-dan-dat'
   | 'lap-lien-truoc';
 
 export interface DauAnLuot {
@@ -199,6 +226,8 @@ export interface DauVaoDauAn {
   laCauNoi: boolean;
   /** Bài model trả có `ketLuan` không rỗng — dấu ấn là cầu nối SAU kết luận */
   coKetLuan: boolean;
+  /** Prompt lượt này bảo model "bỏ phần dẫn dắt" — `boDanDat()` của `hop-dong-tra-loi.ts` */
+  boDanDat: boolean;
   /** Lịch sử hội thoại — chỉ đọc tin trợ lý LIỀN TRƯỚC, xem `daDungOLuotLienTruoc` */
   lichSu?: TinNhan[];
 }
@@ -221,7 +250,7 @@ export function daDungOLuotLienTruoc(lichSu: readonly TinNhan[], cau: string): b
 /**
  * Điểm vào duy nhất cho `tra-loi.ts`.
  *
- * Bốn cổng ngoài policy theo ý định (chủ dự án chốt 02/10/2026):
+ * Năm cổng ngoài policy theo ý định (chủ dự án chốt 02/10/2026):
  *
  * - `tong-quan:mo-ta` mà planner KHÔNG chắc → không có dấu ấn. Đó là ô mặc
  *   định hút mọi câu planner không hiểu ("hi", câu phân loại sai). Chèn một câu
@@ -236,6 +265,12 @@ export function daDungOLuotLienTruoc(lichSu: readonly TinNhan[], cau: string): b
  * - Không có `ketLuan` → không có dấu ấn. Thiếu kết luận thì câu dẫn thành câu
  *   mở bài, chiếm chỗ câu nghiêng hướng mà `co-khong`/`quyet-dinh` phải đặt
  *   đầu tiên. Áp cho mọi ý định, không riêng hai ý định đó.
+ * - Hợp đồng trả lời bảo "bỏ phần dẫn dắt" (câu ngắn ở ô nhận khối hợp đồng,
+ *   nhịp COMPACT) → không có dấu ấn. Dấu ấn chính là một câu dẫn; prompt vừa
+ *   bảo model bỏ dẫn dắt mà mã lại tự chèn một câu vào thì hai lớp cãi nhau.
+ *   Đọc đúng hàm quyết định phát chỉ thị đó, không tự đếm độ dài câu ở đây.
+ * - Câu đã có nguyên văn ở lượt trợ lý liền trước → không có dấu ấn
+ *   (`daDungOLuotLienTruoc`).
  */
 export function chonDauAn(vao: DauVaoDauAn): DauAnLuot {
   const khong = (lyDo: LyDoKhong): DauAnLuot => ({ tang: 'KHONG', bienThe: null, cau: null, lyDo });
@@ -246,6 +281,7 @@ export function chonDauAn(vao: DauVaoDauAn): DauAnLuot {
   }
   if (vao.laCauNoi) return khong('cau-noi');
   if (!vao.coKetLuan) return khong('khong-ket-luan');
+  if (vao.boDanDat) return khong('bo-dan-dat');
 
   const tang = chonTang(vao.yDinh, vao.mucAnToan);
   // KHO_HAI chưa có thư viện nên không tới được đây; tới được thì phải viết nhánh riêng.
