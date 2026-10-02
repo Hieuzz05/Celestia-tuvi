@@ -106,7 +106,7 @@ export const THU_VIEN_DAN_LUAN: Readonly<Record<Exclude<YDinh, 'tra-cuu'>, reado
     'Một dấu hiệu hiếm khi đủ để làm rõ một quyết định; cần nhìn cách nhiều căn cứ ghép lại.',
   ],
   'co-khong': [
-    'Một câu có hay không chỉ đứng vững khi có đủ căn cứ cho nó.',
+    'Dù kết luận là có hay không, câu trả lời chỉ đáng tin khi có đủ căn cứ.',
     'Câu trả lời có hay không đến từ cách các dấu hiệu nghiêng về phía nào khi đặt cạnh nhau.',
     'Câu trả lời ở đây nằm ở cách các dấu hiệu kết hợp với nhau, không ở một dấu hiệu đơn lẻ.',
   ],
