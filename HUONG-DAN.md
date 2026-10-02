@@ -752,7 +752,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | App Expo (`apps/celes-app/`) | **Tạm dừng** — chưa có dự định đẩy lên store |
 | Ủng hộ Celes (pay-what-you-want, payOS) | Xong phần sản phẩm — **cần khoá payOS mới nhận được tiền** |
 | Hạn mức Hỏi Celes + cổng ủng hộ | Xong — chặn ở máy chủ, đặt chỗ nguyên khối trong Postgres |
-| Lớp an toàn chat (CEL-180) | Xong — dò từ khoá tất định ở máy chủ, chạy TRƯỚC khi đặt chỗ hạn mức. CRITICAL: dừng luận, trả lời nhắn kèm 115, không trừ lượt, không gọi model. SENSITIVE: vẫn luận, nối lời miễn trừ tâm lý |
+| Lớp an toàn chat (CEL-180) | Xong — dò từ khoá tất định ở máy chủ, chạy TRƯỚC khi đặt chỗ hạn mức. CRITICAL: dừng luận, trả lời nhắn kèm 115, không trừ lượt, không gọi model. SENSITIVE: vẫn luận, nối lời miễn trừ tâm lý. Từ 02/10/2026: "chán sống / không thiết sống…" một mình là SENSITIVE, đi cùng "có nên tiếp tục / sống tiếp" là CRITICAL; câu hỏi tiên lượng sống chết ("bố tôi ung thư có qua khỏi không", "còn sống được bao lâu") không được luận bằng lá số — route trả lời nhắn hằng `LOI_NHAN_TIEN_LUONG` + 2 chip, không trừ lượt, không gọi model |
 | Khoá luận giải 8 lĩnh vực / Hành trình chi tiết theo bậc quyền | Xong — dựng ở máy chủ, không phải ẩn ở giao diện |
 | Trang quản trị `/admin/support` | Xong — chỉ đọc, vào bằng địa chỉ |
 | Tác vụ đối soát đơn định kỳ | Xong — Vercel Cron 15 phút/lần, **cần `CRON_SECRET`** |
