@@ -93,6 +93,24 @@ console.log('\n== PLANNER ==');
   kiem('Và đánh dấu là không chắc chắn', !k.chacChan);
 }
 
+console.log('\n== PLANNER: QUAN HỆ HIỆN TẠI VÀ "VẬY" (CEL-186 P1) ==');
+for (const c of ['chồng tôi có phải Nguyễn Duy Hiếu ko?', 'vợ tôi có phải người tốt không', 'chồng mình có thương mình không', 'vợ mình có giận không']) {
+  const k = lapKeHoach({ cauHoi: c });
+  kiem(`"${c}" → tinh-cam`, k.chuDe === 'tinh-cam', k.chuDe);
+}
+kiem(
+  '"chồng tôi có phải X ko?" → co-khong',
+  lapKeHoach({ cauHoi: 'chồng tôi có phải Nguyễn Duy Hiếu ko?' }).yDinh === 'co-khong'
+);
+for (const c of ['sao vậy?', 'tại sao vậy?', 'vậy thì sao', 'Vậy năm sau thì thế nào']) {
+  const k = lapKeHoach({ cauHoi: c });
+  kiem(`"${c}" không thành tai-chinh`, k.chuDe !== 'tai-chinh', k.chuDe);
+}
+for (const c of ['tôi có nên vay tiền không?', 'năm nay vay ngân hàng mua nhà có ổn không?', 'tôi định vay 500 triệu', 'toi co nen vay tien ko']) {
+  const k = lapKeHoach({ cauHoi: c });
+  kiem(`"${c}" vẫn là tai-chinh`, k.chuDe === 'tai-chinh', k.chuDe);
+}
+
 console.log('\n== BỐI CẢNH LÁ SỐ ==');
 const laSo = lapLaSo({ ngay: 12, thang: 5, nam: 1990, gio: 10, gioiTinh: 'nam', hoTen: 'Thử' });
 const keHoach = lapKeHoach({ cauHoi: 'Năm nay tôi có nên đổi việc không?' });
