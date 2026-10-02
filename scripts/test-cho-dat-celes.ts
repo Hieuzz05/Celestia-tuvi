@@ -39,7 +39,7 @@ const DANH_SACH: Record<string, readonly string[]> = {
   'components/hanhtrinh/TrangChiTietNoiDung.tsx': ['curious', 'thinking', 'concerned'],
   'components/auth/CongDangNhap.tsx': ['waving'],
   'components/support/TrangUngHo.tsx': ['tiny-smile'],
-  'components/support/TrangThanhToan.tsx': ['celebrate', 'concerned'],
+  'components/support/TrangThanhToan.tsx': ['celebrate', 'default', 'concerned'],
 };
 
 /** Vùng nội dung — không được import linh vật, kể cả khi ai đó thêm vào DANH_SACH. */
