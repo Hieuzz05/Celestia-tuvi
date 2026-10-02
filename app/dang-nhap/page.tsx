@@ -8,6 +8,7 @@ import { ghiSuKien } from '@/lib/analytics';
 import { dien, useT } from '@/lib/i18n/context';
 import { Shell } from '@/components/ui';
 import { QuayLai } from '@/components/QuayLai';
+import { CelesMascot } from '@/components/CelesMascot';
 
 type Che = 'dang-nhap' | 'dang-ky';
 
@@ -171,6 +172,8 @@ export default function DangNhapPage() {
           Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
       <div className="mx-auto grid w-full max-w-[940px] gap-[32px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <div className="w-full">
+      {/* Đầu cột form, trên nếp gấp → eager. */}
+      <CelesMascot cho="dau-trang" minhHoa="waving" cao={72} caoNho={64} ngay className="mb-[16px] block" />
       <h1 className="heading-sm">{che === 'dang-nhap' ? t.auth.tieuDe : t.auth.tieuDeDangKy}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
         {yDinh && LOI_ICH_THEO_Y_DINH[yDinh]

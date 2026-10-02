@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
 import { Eyebrow, IconKhien, The } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
+import { CelesMascot } from '@/components/CelesMascot';
 
 /**
  * Cổng đăng nhập theo ngữ cảnh (Gate 1 — miễn phí).
@@ -76,6 +77,9 @@ export function CongDangNhap({
   return (
     <The className={`flex flex-col gap-[16px] ${toanTrang ? 'mx-auto w-full max-w-[640px]' : ''}`}>
       {!toanTrang && <Eyebrow>{t.cong.eyebrow}</Eyebrow>}
+      {/* Chỉ bản toàn trang: bản nhúng nằm giữa nội dung trang khác. Trang
+          gọi cổng toàn trang tự nhường linh vật đầu trang của nó (mục 12). */}
+      {toanTrang && <CelesMascot cho="cong" minhHoa="waving" cao={80} caoNho={64} ngay />}
 
       <div className="flex items-start gap-[12px]">
         {!toanTrang && (

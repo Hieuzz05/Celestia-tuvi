@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LaSoMau } from '@/components/landing/LaSoMau';
+import { CelesMascot } from '@/components/CelesMascot';
 import {
   DarkBand,
   Eyebrow,
@@ -51,6 +52,9 @@ export function TrangChuNoiDung({
         {/* Cột hero rộng hơn cột chữ thường (1040px thay vì 800px): headline dài
             46 ký tự, để trong cột hẹp là xuống dòng ngay ở giữa mệnh đề. */}
         <Shell rong="hero" className="text-center">
+          {/* Hero canh giữa nên Celes đứng TRÊN tiêu đề, không cạnh: đặt cạnh
+              là bẻ dòng headline dài. Trên nếp gấp → eager. */}
+          <CelesMascot cho="dau-trang" minhHoa="tiny-smile" cao={80} caoNho={64} ngay className="mx-auto mb-[16px] block" />
           <Eyebrow className="mb-[16px]">{t.landing.eyebrow}</Eyebrow>
           <h1 className="display display-hero">{t.landing.tieuDe}</h1>
           <p className="body-lg mx-auto mt-[24px] max-w-[600px]" style={{ color: 'var(--fg)' }}>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { BuocSo, DarkBand, Section, SectionHeader, Shell, The } from '@/components/ui';
+import { CelesMascot } from '@/components/CelesMascot';
 import { useT } from '@/lib/i18n/context';
 
 /**
@@ -22,6 +23,8 @@ export function CachHoatDongNoiDung() {
     <>
       <Section>
         <Shell rong="hep">
+          {/* Trang nói về Celes: Celes đứng đầu trang, mặc định. */}
+          <CelesMascot cho="dau-trang" trangThai="default" cao={96} caoNho={72} ngay className="mb-[16px] block" />
           <SectionHeader
             cap="h1"
             eyebrow={t.cachHoatDong.eyebrow}
