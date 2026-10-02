@@ -1263,12 +1263,19 @@ policy là **6 chuDe × 5 yDinh = 30 khoá**, tức **6 khoá cho mỗi `yDinh`*
 
 ```
 3 bien the / yDinh (15 cau):  CHET 0/15   <-- sach
-4 bien the / yDinh (20 cau):  CHET 1/20
+4 bien the / yDinh (20 cau):  CHET 0/20
 5 bien the / yDinh (25 cau):  CHET 6/25
-6 bien the / yDinh (30 cau):  CHET 9/30
+6 bien the / yDinh (30 cau):  CHET 6/30
 ```
 
-Chín câu chết ở cấu hình 30 câu là **thật sự `UNREACHABLE`**, không phải thiếu dữ
+> **Sửa số 02/10/2026:** bản nháp ghi 4 → `1/20` và 6 → `9/30`. Số trên đo lại
+> bằng chính `stableIndex` trong `lib/rag/dau-an.ts` (FNV-1a 32-bit, khoá
+> `chuDe:yDinh`). Ở 3 biến thể, hai bản đo cùng ra 0, nên quyết định không đổi.
+> Tài liệu không được thắng code: nếu lệch nhau, lấy số của `scripts/do-coverage-dau-an.ts`.
+> 4 biến thể ra 0/20 là nhờ may với hàm băm hiện tại, không phải bảo đảm. Mỗi yDinh chỉ có 6 khoá, nên đổi câu hay
+> đổi khoá là phải đo lại.
+
+Các câu chết ở cấu hình 30 câu là **thật sự `UNREACHABLE`**, không phải thiếu dữ
 liệu: mỗi `yDinh` chỉ có đúng 6 khoá đầu vào, mà băm 6 khoá vào 6 ô thì va chạm
 là tất yếu (nghịch lý ngày sinh), không bao giờ phủ kín.
 
