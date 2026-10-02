@@ -249,6 +249,86 @@ Nói nghĩa chung trước, rồi mới nói nó ứng thế nào trên chính l
   'mo-ta': '',
 };
 
+/**
+ * Khối giọng hội thoại của Celes — CEL-186 mục 6.
+ *
+ * Hằng riêng, không dính độ sâu: 186a dùng cho QUICK, 186b sẽ dùng lại cho
+ * STANDARD. Chỉ thị viết bằng lời thường, không nhãn máy — nhãn máy là thứ
+ * model chép thẳng ra mặt trước.
+ *
+ * Phần tinh nghịch KHÔNG nằm ở đây: nó do mã bật/tắt từng lượt
+ * (`choPhepTinhNghich`), nên đi theo khối QUICK của lượt đó.
+ */
+export const KHOI_GIONG_CELES = `GIỌNG CELES TRONG LƯỢT NÀY — một người bạn đọc lá số giỏi đang nhắn tin, không phải bản báo cáo:
+- Chốt có quan điểm, nhưng đúng mức hướng đã chốt cho phép. Không bao giờ "chắc chắn", "nhất định".
+- Dịch dữ kiện ra hành vi đời thường ngay trong câu: người này làm gì, gặp gì, vướng ở đâu.
+- Không nói giọng báo cáo: "Dựa trên các dữ kiện", "Yếu tố này cho thấy", "Có thể thấy rằng", "Điểm cần nhìn là", "Tóm lại".
+- Được tò mò, tối đa một câu kiểu "chỗ Celes tò mò hơn là…". Không ra lệnh, không "bạn nên quan sát", không "trong tuần tới".
+- Không khẳng định điều đang xảy ra trong đời người hỏi ("bạn đang…", "bạn đã…") — lá số nói xu hướng, không thấy đời họ.`;
+
+/** Phần đầu SYSTEM dùng chung cho QUICK: nguồn sự thật, chuẩn ngôn ngữ, phạm vi. Cắt trước khuôn bài dài. */
+const SYSTEM_DAU = SYSTEM.slice(0, SYSTEM.indexOf('HÌNH DẠNG MỘT ĐOẠN'));
+
+const SYSTEM_QUICK = `${SYSTEM_DAU}${KHOI_GIONG_CELES}
+
+TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
+{
+  "ketLuan": "ĐÚNG MỘT câu trả lời thẳng câu vừa hỏi, theo hướng đã chốt. Không tên sao, không tên cách cục.",
+  "chieuCauChot": "thuan | ngang | vuong — câu ketLuan bạn vừa viết nói phần đời đang hỏi đang thuận, ngang hay vướng",
+  "tomTat": "0-2 câu nói tiếp, như nhắn tin: một phản ứng, một chỗ tò mò. Được để rỗng.",
+  "yChinh": [
+    {
+      "noiDung": "1-2 câu: MỘT căn cứ mạnh nhất, nêu tên rồi dịch ngay ra đời thường",
+      "maDuKien": ["F002"],
+      "maNguon": ["E001"],
+      "luongNguoc": "tối đa một mệnh đề kéo ngược lại, nếu có"
+    }
+  ],
+  "goiYTiep": ["2-3 câu NGƯỜI DÙNG sẽ gõ tiếp, ở ngôi của họ, tối đa 40 ký tự"]
+}
+
+"yChinh" có 0 hoặc 1 phần tử. KHÔNG có tiêu đề, KHÔNG có danh sách, KHÔNG hỏi ngược, KHÔNG kế hoạch hay cách tự kiểm.
+Toàn bài (không tính chip) khoảng 40–110 chữ. Dài hơn sẽ bị cắt bớt.
+Chip là lời người dùng bấm, không phải lời bạn dặn họ. Không đưa chip hỏi tên, họ của người khác — lá số không trả lời được.
+
+Ý không gắn mã nào sẽ bị loại bỏ trước khi tới người đọc.`;
+
+/** Cấu hình prompt QUICK của một lượt (CEL-186a). Không truyền = STANDARD, đúng từng byte như trước. */
+export interface CauHinhPromptQuick {
+  /** Câu hỏi danh tính bạn đời / người yêu — câu chốt do mã đặt (`ngoai-tam.ts`). */
+  ngoaiTam: boolean;
+  /** Mã đã cho phép một nhịp tinh nghịch ở lượt này. */
+  tinhNghich: boolean;
+}
+
+/** Bốn âm tiết mở đầu của 3 tin trợ lý gần nhất — để dặn model đừng mở lại y như thế. */
+export function moDauCu(lichSu: readonly TinNhan[]): string[] {
+  return lichSu
+    .filter((t) => t.vaiTro === 'tro-ly')
+    .slice(-3)
+    .map((t) => t.noiDung.trim().split(/\s+/).slice(0, 4).join(' '))
+    .filter((x) => x.length > 0);
+}
+
+function khoiQuick(q: CauHinhPromptQuick, lichSu: readonly TinNhan[]): string {
+  const dong: string[] = ['LƯỢT NÀY LÀ MỘT TIN NHẮN NGẮN: câu trả lời đứng đầu, rồi tối đa một căn cứ.'];
+  if (q.ngoaiTam) {
+    dong.push(
+      'Câu này hỏi danh tính một người (tên, họ, có phải người này không). Lá số không chứa tên ai, nên KHÔNG xác nhận hay bác bỏ cái tên nào, kể cả nói vòng.',
+      'Câu kết luận đã có sẵn — để "ketLuan" rỗng. Trong "tomTat", chuyển sang thứ lá số nói được: mẫu người hợp với người hỏi trong chuyện này.',
+      'Chip không hỏi lại tên hay họ của người đó.'
+    );
+  }
+  dong.push(
+    q.tinhNghich
+      ? 'Được phép MỘT nhịp tinh nghịch nhẹ và tối đa một emoji. Muốn trêu thì trêu bằng câu hỏi, không khẳng định điều gì về đời người hỏi.'
+      : 'Lượt này không đùa, không emoji. Vẫn là giọng nhắn tin, chỉ không trêu.'
+  );
+  const cu = moDauCu(lichSu);
+  if (cu.length) dong.push(`Mấy tin trước đã mở bằng: ${cu.map((c) => `"${c}…"`).join(', ')}. Đừng mở lại như vậy.`);
+  return dong.join('\n');
+}
+
 export function dungPromptCoCanCu(
   goi: GoiBangChung,
   lichSu: TinNhan[],
@@ -271,7 +351,13 @@ export function dungPromptCoCanCu(
    * Tuỳ chọn, mặc định không có: để các bề mặt gọi thẳng hàm này (eval, thử
    * nghiệm) chạy đúng như trước mà không phải dựng thêm gì.
    */
-  hopDong?: HopDongTraLoi
+  hopDong?: HopDongTraLoi,
+  /**
+   * Lượt QUICK (CEL-186a). Có thì khối QUICK THAY khối ý định và khối hợp
+   * đồng, không xếp chồng. Không truyền thì prompt giống từng byte như trước —
+   * `scripts/test-quick-answer.ts` khoá điều này.
+   */
+  quick?: CauHinhPromptQuick
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -335,6 +421,19 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
    * mở và câu khép chứ không phải mạch giữa bài. Xin đúng loại ấy thay vì xin
    * mẫu dài — mẫu dài ở đây chiếm chỗ của dữ kiện mà không dạy thêm gì.
    */
+  if (quick) {
+    // Không mẫu vàng: mẫu 'cau-khep' là câu khép của bài dài, kéo QUICK về giọng bài.
+    return {
+      system: SYSTEM_QUICK,
+      user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}
+
+${khoiQuick(quick, lichSu)}
+
+CÂU HỎI HIỆN TẠI
+${goi.cauHoi}`,
+    };
+  }
+
   const mauChat = khoiMauVang(chonMauVang({ beMat: 'chat', loai: ['cau-khep'], soLuong: 1 }));
 
   return {

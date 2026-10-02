@@ -68,6 +68,13 @@ const voiLichSu = (lichSu: TinNhan[]) => chonDauAn({ ...GOC, lichSu });
   kiem('1. liền trước chứa đúng câu → không dùng', r.cau === null && r.lyDo === 'lap-lien-truoc', `lyDo=${r.lyDo}`);
 }
 
+// 1b. Lượt QUICK (CEL-186a) → không dấu ấn; STANDARD tường minh giữ nguyên như cũ.
+{
+  const r = chonDauAn({ ...GOC, doSau: 'QUICK' });
+  kiem('1b. QUICK → không dấu ấn', r.cau === null && r.lyDo === 'do-sau-quick', `lyDo=${r.lyDo}`);
+  kiem('1b. STANDARD tường minh → như không truyền', chonDauAn({ ...GOC, doSau: 'STANDARD' }).cau === cau);
+}
+
 // 2. Trợ lý liền trước chứa một dấu ấn KHÁC → vẫn dùng.
 {
   const r = voiLichSu([

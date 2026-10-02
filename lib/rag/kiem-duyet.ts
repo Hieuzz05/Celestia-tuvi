@@ -363,7 +363,8 @@ export function kiemDuyet(traLoi: TraLoiCoCauTruc, goi: GoiBangChung): KetQuaKie
  */
 export function locYHong(
   traLoi: TraLoiCoCauTruc,
-  ketQua: KetQuaKiemDuyet
+  ketQua: KetQuaKiemDuyet,
+  tuyChon: { boHet?: boolean } = {}
 ): { traLoi: TraLoiCoCauTruc; soYBiBo: number } {
   const nhanHong = new Set(
     ketQua.loi.filter((l) => l.mucDo === 'chan' && l.tai).map((l) => l.tai!)
@@ -371,7 +372,9 @@ export function locYHong(
   if (nhanHong.size === 0) return { traLoi, soYBiBo: 0 };
 
   const giu = traLoi.yChinh.filter((y) => !nhanHong.has(y.tieuDe || y.noiDung.slice(0, 40)));
-  if (giu.length === 0) return { traLoi, soYBiBo: 0 };
+  // QUICK (CEL-186a): câu chốt đứng một mình vẫn là câu trả lời, nên bỏ hết ý
+  // hỏng không làm bài rỗng — không có lý do giữ lại ý đã bị chặn.
+  if (giu.length === 0 && !tuyChon.boHet) return { traLoi, soYBiBo: 0 };
 
   return { traLoi: { ...traLoi, yChinh: giu }, soYBiBo: traLoi.yChinh.length - giu.length };
 }

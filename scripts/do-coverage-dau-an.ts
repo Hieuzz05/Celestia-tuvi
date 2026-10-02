@@ -121,6 +121,7 @@ cong('tong-quan:mo-ta + phân loại bằng model', [
   },
 ]);
 cong('laCauNoi', moiKhoa.map((k) => ({ ...k, mucAnToan: 'NORMAL', ...LUOT_DAU, laCauNoi: true })));
+cong('độ sâu QUICK', moiKhoa.map((k) => ({ ...k, mucAnToan: 'NORMAL', ...LUOT_DAU, doSau: 'QUICK' as const })));
 // Mọi khoá lẽ ra CÓ dấu ấn (NORMAL, planner chắc, lượt đầu) — chỉ thiếu ketLuan.
 const khongKetLuan: DauVaoDauAn[] = CHU_DE.flatMap((c) =>
   Y_DINH.map((y) => ({ chuDe: c, yDinh: y, mucAnToan: 'NORMAL' as const, ...LUOT_DAU, coKetLuan: false }))

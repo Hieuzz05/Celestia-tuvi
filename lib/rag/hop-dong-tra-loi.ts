@@ -49,10 +49,22 @@
  * sức khoẻ ở mức NORMAL là đang hỏi bình thường — đẩy họ sang giọng tâm sự là
  * tự ý cho rằng họ đang lo. Nếu họ lo thật thì `doAnToan()` chấm SENSITIVE, và
  * luật (4) lo phần đó.
+ *
+ * ================== ĐỘ SÂU (CEL-186a) ==================
+ *
+ * `tinhDoSau` ở cuối tệp chọn QUICK / STANDARD / DEEP — trục RIÊNG với nhịp.
+ * Cùng ranh giới: nó nhận `coNghieng` và `cap`, KHÔNG nhận hướng, nên chỉ
+ * quyết bài dài hay ngắn. Luật nào đẩy về STANDARD (an toàn, chủ đề nặng, chip,
+ * nhiều yêu cầu, năm khác, chiều xấu, hỏi về người khác…) đều thắng QUICK.
+ * Cờ `CELES_QUICK_ANSWER` quyết độ sâu có được dùng thật không — xem
+ * `quickAnswerBat`.
  */
 
 import type { ChuDe, YDinh } from './planner';
 import type { MucAnToan } from './an-toan';
+import type { CapLuanHan } from '@/lib/tuvi/luan-han';
+import { coNamKhac, laCauChieuXau } from './chot-huong';
+import { boDau } from './thuc-the';
 
 /** Nhịp: bài dài bao nhiêu, dẫn dắt bao nhiêu. KHÔNG phải kết luận gì. */
 export type Nhip = 'COMPACT' | 'MEDIUM' | 'DEEP';
@@ -216,4 +228,194 @@ const CHU_KIEU: Record<Kieu, string> = {
 export function khoiHopDong(h: HopDongTraLoi, yDinh: YDinh): string {
   if (!coKhoiHopDong(yDinh)) return '';
   return `CÁCH VIẾT LƯỢT NÀY\n${CHU_NHIP[h.nhip]}\n${CHU_KIEU[h.kieu]}`;
+}
+
+/* ================================================================
+ * ĐỘ SÂU — CEL-186a
+ * ================================================================
+ *
+ * Trục thứ ba, TÁCH khỏi `Nhip`: `Nhip` chỉnh độ dài trong ô `mo-ta`, còn độ
+ * sâu chọn KHUÔN của cả lượt — QUICK là một tin nhắn ngắn có một câu chốt,
+ * STANDARD là đường hôm nay, DEEP là đường hôm nay cộng nhịp DEEP.
+ *
+ * Vẫn đúng ranh giới đầu tệp: hàm này KHÔNG nhận lá số và KHÔNG nhận hướng
+ * nghiêng. Nó chỉ cần biết engine CÓ hướng hay không (`coNghieng`) và hướng ấy
+ * thuộc lớp hạn nào (`cap`) — cả hai đều không nói hướng là gì.
+ *
+ * Luật xếp theo thứ tự cố định, luật nào khớp trước thì thắng. Mọi luật đẩy
+ * về STANDARD/DEEP đứng TRƯỚC luật cho QUICK, nên một tín hiệu nặng không bao
+ * giờ bị một tín hiệu nhẹ hơn ghi đè.
+ */
+
+export type DoSauTraLoi = 'QUICK' | 'STANDARD' | 'DEEP';
+
+/** Lý do chọn độ sâu — ghi vết, không đi vào prompt. */
+export type LyDoDoSau =
+  | 'an-toan'
+  | 'chu-de-nang'
+  | 'xin-sau'
+  | 'xin-them'
+  | 'tu-chip'
+  | 'giai-thich'
+  | 'nhieu-ve'
+  | 'ngoai-tam'
+  | 'y-dinh'
+  | 'a-hay-b'
+  | 'chu-de'
+  | 'khong-huong'
+  | 'giai-doan'
+  | 'nam-khac'
+  | 'chieu-xau'
+  | 'nguoi-khac'
+  | 'quick';
+
+/** Chủ đề được QUICK trong 186a (P2). Gia đạo, sức khoẻ, tổng quan: chưa. */
+const CHU_DE_QUICK: ReadonlySet<ChuDe> = new Set<ChuDe>(['su-nghiep', 'tai-chinh', 'tinh-cam']);
+
+/** Câu không có dấu tiếng Việt nào — người gõ không dấu. */
+const khongDau = (s: string) => boDau(s) === s.toLowerCase();
+
+/** Khớp cụm có dấu theo ranh giới từ; người gõ không dấu thì khớp bản bỏ dấu. */
+function khop(cauHoi: string, coDau: string, boDauMau: string): boolean {
+  const s = cauHoi.normalize('NFC');
+  if (new RegExp(`(?<![\\p{L}\\p{M}])(?:${coDau})(?![\\p{L}\\p{M}])`, 'iu').test(s)) return true;
+  return khongDau(s) && new RegExp(`(?:^|[^a-z])(?:${boDauMau})(?:$|[^a-z])`).test(boDau(s));
+}
+
+/**
+ * Chủ đề nặng (doc 16.6): cụm nhiều âm tiết, so có dấu. Bỏ "mất" trần và "qua
+ * khỏi" trần — tiên lượng đã chặn ở route. Nhầm về phía an toàn chấp nhận được.
+ */
+export function coChuDeNang(cauHoi: string): boolean {
+  return khop(
+    cauHoi,
+    'bệnh nặng|ung thư|phẫu thuật|tai nạn|sảy thai|qua đời|đã mất|vừa mất|đám tang|nằm viện',
+    'benh nang|ung thu|phau thuat|tai nan|say thai|qua doi|da mat|vua mat|dam tang|nam vien'
+  );
+}
+
+/** Người dùng xin phân tích sâu. */
+export function xinSau(cauHoi: string): boolean {
+  return khop(
+    cauHoi,
+    'phân tích|chi tiết|kỹ|kĩ|sâu hơn|cặn kẽ|cả đời|các đại vận|toàn bộ',
+    'phan tich|chi tiet|can ke|ca doi|cac dai van|toan bo'
+  );
+}
+
+/** Người dùng xin nói thêm về điều vừa nói. */
+export function xinThem(cauHoi: string): boolean {
+  return khop(
+    cauHoi,
+    'nói rõ hơn|rõ hơn|cụ thể hơn|giải thích thêm|nói thêm',
+    'noi ro hon|cu the hon|giai thich them|noi them'
+  );
+}
+
+/** Hỏi "vì sao" — cần lý lẽ, không phải câu chốt. */
+function hoiViSao(cauHoi: string): boolean {
+  return khop(cauHoi, 'tại sao|vì sao|sao vậy|lý do', 'tai sao|vi sao|sao vay|ly do');
+}
+
+/** Chuỗi bỏ dấu, chỉ còn chữ-số, có dấu cách hai đầu — để khớp theo từ. */
+const tuBoDau = (s: string) => ` ${boDau(s).replace(/[^a-z0-9]+/g, ' ').trim()} `;
+
+/**
+ * Hai vế hỏi độc lập: từ hai dấu "?" trở lên, hoặc "… và có … không".
+ * "Tôi và người yêu có cưới không" chỉ một vế: "và" nối chủ ngữ, không nối câu hỏi.
+ */
+export function nhieuVe(cauHoi: string): boolean {
+  if ((cauHoi.match(/\?/g) ?? []).length >= 2) return true;
+  return / (?:va|voi lai|con) (?:co|nen|bao gio|khi nao) /.test(tuBoDau(cauHoi));
+}
+
+/** "A hay B": hai lựa chọn. "… hay không / hay chưa" chỉ là đuôi câu hỏi. */
+export function laAHayB(cauHoi: string): boolean {
+  return / (?:hay|hoac) (?!(?:khong|ko|k|chua|thoi|la khong) )\S/.test(tuBoDau(cauHoi));
+}
+
+/**
+ * Câu hỏi về đời của NGƯỜI KHÁC: "bố tôi có…", "vợ tôi năm nay có thăng
+ * chức không", "anh ấy có yêu tôi không". Câu dự phòng nói về phần đời của
+ * người hỏi, nên với câu này nó sai chủ ngữ (doc mục 17, Lung lay).
+ *
+ * Chỉ bắt khi người kia đứng làm CHỦ NGỮ ở đầu câu, hoặc là đại từ ngôi ba.
+ * "Chuyện vợ chồng tôi…", "tôi với người yêu…" là chuyện của người hỏi.
+ */
+export function hoiVeNguoiKhac(cauHoi: string): boolean {
+  const s = tuBoDau(cauHoi);
+  const dau = s.trim().replace(/^(?:cho (?:em|toi|minh) hoi|xin hoi|celes oi|celes)\s+/, '');
+  const NGUOI =
+    '(?:bo|me|ba|ma|cha|ong|con|anh|chi|em|sep|ban|vo|chong|nguoi yeu|ban trai|ban gai|dong nghiep|anh trai|chi gai|em trai|em gai)';
+  if (new RegExp(`^${NGUOI} (?:toi|minh|cua toi|cua minh|nha toi)(?: |$)`).test(dau)) return true;
+  return / (?:anh ay|co ay|chi ay|ong ay|ba ay|nguoi do|nguoi ay) (?:co|se|da|dang|nam nay|bao gio) /.test(s);
+}
+
+export interface DauVaoDoSau {
+  yDinh: YDinh;
+  chuDe: ChuDe;
+  cauHoi: string;
+  namXem: number;
+  mucAnToan?: MucAnToan;
+  /** Lượt bấm từ chip gợi ý. TÁCH khỏi câu nối gõ tay. */
+  laTiepTuChip: boolean;
+  ngoaiTam: boolean;
+  /** Engine có chốt một hướng không — KHÔNG phải hướng nào. */
+  coNghieng: boolean;
+  /** Lớp hạn sâu nhất engine dùng; `null` khi không có hướng. */
+  cap: CapLuanHan | null;
+}
+
+/**
+ * Chọn độ sâu cho một lượt. Hàm thuần: không đọc env, không đọc đồng hồ.
+ * Cờ bật/tắt QUICK nằm ở `quickAnswerBat` — lớp gọi tự áp.
+ */
+export function tinhDoSau(v: DauVaoDoSau): { doSau: DoSauTraLoi; lyDo: LyDoDoSau } {
+  const S = (lyDo: LyDoDoSau) => ({ doSau: 'STANDARD' as const, lyDo });
+  const mucAnToan = v.mucAnToan ?? 'NORMAL';
+
+  if (mucAnToan !== 'NORMAL') return S('an-toan');
+  if (coChuDeNang(v.cauHoi)) return S('chu-de-nang');
+  if (xinSau(v.cauHoi)) return { doSau: 'DEEP', lyDo: 'xin-sau' };
+  if (xinThem(v.cauHoi)) return S('xin-them');
+  if (v.laTiepTuChip) return S('tu-chip');
+  if (v.yDinh === 'giai-thich' || v.yDinh === 'tra-cuu' || hoiViSao(v.cauHoi)) return S('giai-thich');
+  if (nhieuVe(v.cauHoi)) return S('nhieu-ve');
+
+  // Ngoại lệ duy nhất của P2: câu ngoài tầm không cần hướng — mã đặt kết luận.
+  // Trừ khi câu kèm chuyện xấu ("… có phải ngoại tình với X"): đó là câu nặng,
+  // không phải câu hỏi tên.
+  if (v.ngoaiTam) return laCauChieuXau(v.cauHoi) ? S('chieu-xau') : { doSau: 'QUICK', lyDo: 'ngoai-tam' };
+
+  if (v.yDinh !== 'co-khong' && v.yDinh !== 'quyet-dinh') return S('y-dinh');
+  if (laAHayB(v.cauHoi)) return S('a-hay-b');
+  if (!CHU_DE_QUICK.has(v.chuDe)) return S('chu-de');
+  if (!v.coNghieng) return S('khong-huong');
+  if (v.cap === 'giai-doan' || v.cap === null) return S('giai-doan');
+  if (coNamKhac(v.cauHoi, v.namXem)) return S('nam-khac');
+  if (laCauChieuXau(v.cauHoi)) return S('chieu-xau');
+  if (hoiVeNguoiKhac(v.cauHoi)) return S('nguoi-khac');
+  return { doSau: 'QUICK', lyDo: 'quick' };
+}
+
+/**
+ * Cờ `CELES_QUICK_ANSWER`: '1' bật, '0' tắt. Không đặt thì chỉ bật trên bản
+ * preview của Vercel (`VERCEL_ENV=preview`) — production không tự bật.
+ */
+export function quickAnswerBat(env: Record<string, string | undefined> = process.env): boolean {
+  const v = env.CELES_QUICK_ANSWER?.trim().toLowerCase();
+  if (v === '1' || v === 'true') return true;
+  if (v === '0' || v === 'false') return false;
+  return env.VERCEL_ENV === 'preview';
+}
+
+/**
+ * Cờ `CELES_TINH_NGHICH`: '1' bật, '0' tắt. Không đặt thì theo cờ QUICK.
+ * Tắt riêng được nhịp trêu mà không phải tắt QUICK.
+ */
+export function tinhNghichBat(env: Record<string, string | undefined> = process.env): boolean {
+  const v = env.CELES_TINH_NGHICH?.trim().toLowerCase();
+  if (v === '1' || v === 'true') return true;
+  if (v === '0' || v === 'false') return false;
+  return quickAnswerBat(env);
 }

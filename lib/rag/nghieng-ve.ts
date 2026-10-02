@@ -12,6 +12,7 @@ import {
 import { CHINH_TINH, type Sao } from '@/lib/tuvi/constants';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import type { ChuDe, LopHan } from './planner';
+import type { DoSauTraLoi } from './hop-dong-tra-loi';
 
 /**
  * DỮ KIỆN CỦA PHẦN ĐANG HỎI — thứ câu trả lời phải đứng lên trên.
@@ -466,8 +467,9 @@ const TEN_LOP: Record<LopDauMoc, (n: NghiengVe) => string> = {
  *   - nhãn hướng viết sẵn → nó ra mặt trước nguyên văn
  *   - tên cung            → luật cấm tên cung ở mọi dạng, và `phanDoi` thay được
  */
-export function khoiNghiengVe(n: NghiengVe | null): string {
+export function khoiNghiengVe(n: NghiengVe | null, doSau: DoSauTraLoi = 'STANDARD'): string {
   if (!n) return '';
+  if (doSau === 'QUICK') return khoiNghiengQuick(n);
 
   const moc: string[] = [];
   if (n.cham.daiVan && n.khoangTuoi) moc.push(`Đại vận ${n.khoangTuoi} CÓ đi qua phần này.`);
@@ -562,4 +564,53 @@ thuận", "tương quan", "hai lực ngang nhau", và mọi câu đếm dữ ki�
 yếu tố… so với hai yếu tố…". Người đọc không tra được chúng, không đối chiếu
 được với đời mình, và không có lý do nào để tin. Thay vào đó luôn luôn là TÊN
 của dữ kiện cộng nghĩa đời sống của nó.`;
+}
+
+/**
+ * Dải lời cho câu chốt QUICK — VÍ DỤ để model hiểu dải, không phải câu để chép
+ * (CEL-186 mục 6). Không có "CÓ / THUẬN": câu chốt QUICK nói phần đời đang
+ * thuận hay vướng, không nói có/không — "năm nay tôi có ly hôn không" mà đọc
+ * "CÓ" là đảo nghĩa (16.1).
+ */
+const DAI_LOI_QUICK: Record<HuongNghieng, string> = {
+  'thuan-ro': 'phần đời này đang khá thuận — kiểu lời "có cửa đấy", "khá sáng".',
+  'thuan-nhe': 'phần đời này nhỉnh về thuận nhưng còn điểm vướng — kiểu lời "nghiêng về thuận, nhưng…".',
+  'can-bang': 'thuận và vướng ngang nhau thật — kiểu lời "Celes chưa dám chốt", nói thẳng là ngang.',
+  'can-nhe': 'phần đời này nhỉnh về vướng nhưng chưa phải thế khó — kiểu lời "hơi khó", "còn vướng".',
+  'can-ro': 'phần đời này đang vướng nhiều — kiểu lời "hướng này khó".',
+};
+
+/**
+ * Bản QUICK (CEL-186a): một câu trả lời thẳng, MỘT căn cứ, lực ngược tối đa
+ * một mệnh đề. Không tự kiểm, không kế hoạch, không câu hỏi ngược, không bắt
+ * nêu cách cục ở câu kết luận — câu chốt QUICK không được chứa tên sao (16.4).
+ *
+ * Bản STANDARD ở trên giữ nguyên từng byte.
+ */
+function khoiNghiengQuick(n: NghiengVe): string {
+  const dong = (d: DauMoc) => `- ${d.ten} (${TEN_LOP[d.lop](n)}) — ${d.y}`;
+  const ben = (h: 'do' | 'can') => {
+    const ds = n.dauMoc.filter((d) => d.huong === h);
+    return ds.length ? ds.map(dong).join('\n') : '- (không có dữ kiện nào)';
+  };
+  return `
+
+DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG TỪ LÁ SỐ, KHÔNG ĐƯỢC ĐẢO:
+Phần đời đang hỏi: ${n.phanDoi}.
+
+Dữ kiện đang mở đường:
+${ben('do')}
+
+Dữ kiện đang cản lại:
+${ben('can')}
+${n.cachCuc.length ? `\nCÁCH CỤC đọc được ở phần này: ${n.cachCuc.join(', ')}` : ''}
+
+HƯỚNG ĐÃ CHỐT: ${DAI_LOI_QUICK[n.huong]}
+
+CÁCH VIẾT:
+1. "ketLuan" là MỘT câu trả lời thẳng theo hướng trên, bằng lời thường. KHÔNG có tên sao, tên cách cục hay tên lớp hạn trong câu này.
+2. Căn cứ: chọn MỘT dữ kiện ở trên (có cách cục thì ưu tiên cách cục) và dịch ngay ra hành vi đời thường. Một, không phải hai.
+3. Lực ngược, nếu có: tối đa một mệnh đề.
+
+CẤM tiếng lóng nội bộ: "đẩy tới", "đang đỡ", "yếu tố đỡ", "yếu tố cản", "lực đỡ", "tương quan", và mọi câu đếm dữ kiện.`;
 }

@@ -193,7 +193,9 @@ const viTriCauHoi = raMoTa.indexOf('CÂU HỎI HIỆN TẠI');
 kiem('khối hợp đồng nằm trước phần CÂU HỎI HIỆN TẠI', viTriHopDong > 0 && viTriHopDong < viTriCauHoi);
 
 const nguon = readFileSync('lib/rag/prompt-co-can-cu.ts', 'utf8');
-const mauUser = nguon.slice(nguon.indexOf('user: `'), nguon.indexOf('CÂU HỎI HIỆN TẠI'));
+// Mẫu `user` CUỐI là nhánh STANDARD; nhánh QUICK (CEL-186a) trả sớm phía trên và không có hai khối này.
+const dauMau = nguon.lastIndexOf('user: `');
+const mauUser = nguon.slice(dauMau, nguon.indexOf('CÂU HỎI HIỆN TẠI', dauMau));
 kiem(
   'mẫu prompt đặt ${khoiTruocYDinh} TRƯỚC ${phanYDinh}',
   mauUser.indexOf('${khoiTruocYDinh}') > 0 &&

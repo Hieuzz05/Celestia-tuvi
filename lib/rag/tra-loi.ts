@@ -25,7 +25,17 @@ import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, type YDinh } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
-import { boDanDat, tinhHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
+import {
+  boDanDat,
+  quickAnswerBat,
+  tinhDoSau,
+  tinhHopDong,
+  tinhNghichBat,
+  type DoSauTraLoi,
+  type HopDongTraLoi,
+} from './hop-dong-tra-loi';
+import { choPhepTinhNghich, kiemQuick } from './kiem-quick';
+import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
 
 /**
@@ -36,6 +46,18 @@ import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
  * chứ không chạy một bản sao gần giống. Hai đường đi gần giống nhau là cách chắc
  * chắn nhất để eval báo xanh còn người dùng gặp lỗi.
  */
+
+/**
+ * Lỗi kiểm duyệt không áp cho QUICK: bài QUICK cố ý không có tự kiểm, câu hỏi
+ * ngược, tiêu chí "nếu… thì", và được phép 0 ý (câu chốt đứng một mình).
+ */
+const LOI_KHONG_AP_CHO_QUICK = new Set([
+  'khong-co-y-nao',
+  'thieu-tu-kiem',
+  'tu-kiem-van-la-tu-vi',
+  'hoi-lai-sai-vai',
+  'neu-thi-khong-dieu-kien',
+]);
 
 export interface DauVaoTraLoi {
   laSo: LaSo;
@@ -126,6 +148,12 @@ export interface NguCanhVan {
    * cách là đủ làm nó dính vào đoạn bên cạnh. Chèn ở đây thì không có gì để nuốt.
    */
   dauAn?: string;
+  /**
+   * Độ sâu thực tế (CEL-186a). QUICK luôn dựng khuôn tin nhắn: ketLuan →
+   * tomTat → ý kèm lực ngược. Không tiêu đề, không dấu ấn, không `haGiong`
+   * (cụm mẫu "Một nét khá rõ là…" chính là giọng report), bỏ đoạn rỗng.
+   */
+  doSau?: DoSauTraLoi;
 }
 
 /**
@@ -142,8 +170,10 @@ export function dauAnChoLuot(vao: {
   laCauNoi: boolean;
   traLoi: Pick<TraLoiCoCauTruc, 'ketLuan'>;
   lichSu?: TinNhan[];
+  doSau?: DoSauTraLoi;
 }): DauAnLuot {
   return chonDauAn({
+    doSau: vao.doSau,
     chuDe: vao.keHoach.chuDe,
     yDinh: vao.keHoach.yDinh,
     mucAnToan: vao.mucAnToan,
@@ -157,6 +187,12 @@ export function dauAnChoLuot(vao: {
 }
 
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
+  if (nc.doSau === 'QUICK') {
+    return [t.ketLuan ?? '', t.tomTat, ...t.yChinh.flatMap((y) => [y.noiDung, y.luongNguoc ?? ''])]
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .join('\n\n');
+  }
   const tinNhan = nc.yDinh === 'tra-cuu' || nc.laCauNoi === true || t.yChinh.length <= 2;
 
   /*
@@ -343,10 +379,20 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * "Tính cách tôi thế nào" không có bên nào để nghiêng về, và ép một hướng
    * vào đó là bịa ra một câu hỏi người ta không hỏi.
    */
+  /*
+   * Câu ngoài tầm lá số (CEL-186a): danh tính bạn đời / người yêu. Nhận diện
+   * luôn chạy (hàm thuần, rẻ) để vết đo được cả khi cờ tắt; chỉ khi cờ QUICK
+   * bật nó mới đổi đường đi — không tính nghiêng, câu chốt do mã đặt.
+   */
+  const quickBat = quickAnswerBat();
+  const ngoaiTamNhan = nhanDangNgoaiTam(vao.cauHoi);
+  const ngoaiTam = quickBat ? ngoaiTamNhan : null;
+
   const canNghieng =
-    keHoach.yDinh === 'quyet-dinh' ||
-    keHoach.yDinh === 'co-khong' ||
-    keHoach.yDinh === 'thoi-diem';
+    !ngoaiTam &&
+    (keHoach.yDinh === 'quyet-dinh' ||
+      keHoach.yDinh === 'co-khong' ||
+      keHoach.yDinh === 'thoi-diem');
   const nghieng = canNghieng
     ? tinhNghiengVe({
         laSo: vao.laSo,
@@ -373,20 +419,68 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * Nó KHÔNG nhận lá số và KHÔNG nhận `nghieng`, nên không có đường nào chạm
    * tới hướng kết luận — xem ghi chú đầu `hop-dong-tra-loi.ts`.
    */
-  const hopDong = tinhHopDong({
+  const hopDongGoc = tinhHopDong({
     yDinh: keHoach.yDinh,
     chuDe: keHoach.chuDe,
     doDaiCauHoi: vao.cauHoi.length,
     mucAnToan,
   });
 
+  /*
+   * Độ sâu (CEL-186a) — tách khỏi nhịp, cũng là hàm thuần. Nó nhận `coNghieng`
+   * và `cap`, KHÔNG nhận hướng: độ sâu quyết bài dài hay ngắn, không chạm kết
+   * luận.
+   *
+   * Luôn tính để vết đo được tỉ lệ QUICK cả khi cờ tắt; cờ tắt thì độ sâu
+   * THỰC TẾ là STANDARD và mọi thứ chạy y như trước.
+   */
+  const deXuat = tinhDoSau({
+    yDinh: keHoach.yDinh,
+    chuDe: keHoach.chuDe,
+    cauHoi: vao.cauHoi,
+    namXem: vao.namXem,
+    mucAnToan,
+    laTiepTuChip: vao.laTiepTuChip === true,
+    ngoaiTam: !!ngoaiTamNhan,
+    coNghieng: !!nghieng,
+    cap: nghieng?.cap ?? null,
+  });
+  const doSau: DoSauTraLoi = quickBat ? deXuat.doSau : 'STANDARD';
+  const laQuick = doSau === 'QUICK';
+  // Người dùng xin phân tích sâu: nhịp DEEP thắng nhịp hợp đồng tự chọn.
+  const hopDong: HopDongTraLoi = doSau === 'DEEP' ? { ...hopDongGoc, nhip: 'DEEP' } : hopDongGoc;
+
+  const tinhNghich =
+    laQuick &&
+    choPhepTinhNghich({
+      doSau,
+      mucAnToan,
+      chuDe: keHoach.chuDe,
+      cauHoi: vao.cauHoi,
+      huong: nghieng?.huong ?? null,
+      ngoaiTam: !!ngoaiTam,
+      lichSu: vao.lichSu,
+      coBat: tinhNghichBat(),
+    });
+
+  const vetDoSau: Record<string, string> = {
+    doSau,
+    lyDoDoSau: deXuat.lyDo,
+    doSauDeXuat: deXuat.doSau,
+    quickBat: quickBat ? '1' : '0',
+    ngoaiTam: ngoaiTamNhan ? ngoaiTamNhan.loai : '0',
+    ...(laQuick ? { tinhNghich: tinhNghich ? '1' : '0' } : {}),
+  };
+
   const { system, user } = dungPromptCoCanCu(
     goi,
     vao.lichSu ?? [],
     daNoiTruoc,
-    khoiNghiengVe(nghieng),
+    khoiNghiengVe(nghieng, laQuick ? 'QUICK' : 'STANDARD'),
     vao.laTiepTuChip === true,
-    hopDong
+    // QUICK thay khối hợp đồng bằng khối của nó — không xếp chồng hai chỉ thị nhịp.
+    laQuick ? undefined : hopDong,
+    laQuick ? { ngoaiTam: !!ngoaiTam, tinhNghich } : undefined
   );
 
   const truocModel = Date.now();
@@ -402,7 +496,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * nguyên chuỗi JSON dở dang ra trước mặt người đọc.
    */
   let kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
-  let coCauTruc = docTraLoi(kq.text);
+  let coCauTruc = docTraLoi(kq.text, { choPhepTomTatRong: laQuick });
   /*
    * JSON gãy: thử lại NGUYÊN LƯỢT một lần, cùng cách `lib/rag/v3/index.ts` đã làm.
    *
@@ -414,7 +508,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    */
   if (!coCauTruc && laChuoiJson(kq.text)) {
     kq = await goiVoiFallback({ system, user, maxTokens: 6000 });
-    coCauTruc = docTraLoi(kq.text);
+    coCauTruc = docTraLoi(kq.text, { choPhepTomTatRong: laQuick });
   }
   const doTreModel = Date.now() - truocModel;
 
@@ -444,15 +538,13 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       model: kq.model,
       runId,
       khoTrong: kqTruyHoi.khoTrong,
-      phienBan: phienBanHienTai(),
+      phienBan: { ...phienBanHienTai(), ...vetDoSau },
       doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
     };
   }
 
   const daCham = chamDoChac(coCauTruc, goi);
-  const ketQuaKiem = kiemDuyet(daCham, goi);
-  const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
-  const daLoc = gomLoiKhuyen(daLocY, keHoach.yDinh);
+  const ketQuaKiemTho = kiemDuyet(daCham, goi);
 
   const loiDi = loiDiTiep({
     chuDe: keHoach.chuDe,
@@ -460,6 +552,66 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     yDinh: keHoach.yDinh,
     cungTrongTam: keHoach.cungLienQuan[0],
   });
+
+  /*
+   * Nhánh QUICK (CEL-186 doc 16.5): docTraLoi → chamDoChac → kiemDuyet →
+   * locYHong → kiemQuick → dungVan (khuôn QUICK) → doiTenCung.
+   *
+   * KHÔNG `suaCauTiengLong`: đó là lời gọi model thứ hai, viết lại theo giọng
+   * report và không qua validator. Tiếng lóng ở QUICK là luật BỎ CÂU trong
+   * `kiemQuick`; trúng câu chốt thì câu dự phòng vào thay.
+   */
+  if (laQuick) {
+    const loiQuick = ketQuaKiemTho.loi.filter(
+      (l) => !LOI_KHONG_AP_CHO_QUICK.has(l.ma) && !(ngoaiTam && l.ma === 'thieu-ket-luan')
+    );
+    const ketQuaKiem: KetQuaKiemDuyet = {
+      ...ketQuaKiemTho,
+      loi: loiQuick,
+      dat: !loiQuick.some((l) => l.mucDo === 'chan'),
+    };
+    const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem, { boHet: true });
+    const { traLoi: daLoc, vet } = kiemQuick(daLocY, {
+      yDinh: keHoach.yDinh,
+      chuDe: keHoach.chuDe,
+      cauHoi: vao.cauHoi,
+      namXem: vao.namXem,
+      goi,
+      huong: nghieng?.huong ?? null,
+      ketLuanCoDinh: ngoaiTam ? cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam) : undefined,
+      chieu: daLocY.chieuCauChot,
+      tinhNghich,
+      lichSu: vao.lichSu,
+    });
+    const vanQuick = doiTenCung(dungVan(daLoc, { yDinh: keHoach.yDinh, doSau }));
+    const van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanQuick) : vanQuick;
+    return {
+      van,
+      loiDi,
+      coCauTruc: daLoc,
+      goi,
+      kiemDuyet: ketQuaKiem,
+      ngonNgu: soatNgonNgu(van, daLoc.yChinh.map((y) => y.noiDung), [], daNoiTruoc),
+      soYBiBo: soYBiBo + vet.soYBo,
+      provider: kq.provider,
+      model: kq.model,
+      runId,
+      khoTrong: kqTruyHoi.khoTrong,
+      phienBan: {
+        ...phienBanHienTai(),
+        ...vetDoSau,
+        duPhong: vet.duPhong ?? '0',
+        // P3: thiếu trường chỉ ghi vết; lệch thì câu chốt đã bị thay.
+        chieuCauChot: ngoaiTam ? 'ma-dat' : vet.thieuChieu ? 'thieu' : vet.duPhong === 'nguoc-huong' ? 'lech' : 'khop',
+        amTiet: String(vet.amTiet),
+      },
+      doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
+    };
+  }
+
+  const ketQuaKiem = ketQuaKiemTho;
+  const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
+  const daLoc = gomLoiKhuyen(daLocY, keHoach.yDinh);
 
   /*
    * Dấu ấn Celes: một câu dẫn luận tất định theo `chuDe:yDinh`.
@@ -470,7 +622,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * sửa chữ phía sau thấy nó như mọi đoạn khác.
    */
   const laCauNoi = vao.laTiepTuChip === true || laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []);
-  const dauAn = dauAnChoLuot({ keHoach, hopDong, mucAnToan, laCauNoi, traLoi: daLoc, lichSu: vao.lichSu });
+  const dauAn = dauAnChoLuot({ keHoach, hopDong, mucAnToan, laCauNoi, traLoi: daLoc, lichSu: vao.lichSu, doSau });
 
   const vanTho = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
@@ -543,7 +695,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     model: kq.model,
     runId,
     khoTrong: kqTruyHoi.khoTrong,
-    phienBan: phienBanHienTai(),
+    phienBan: { ...phienBanHienTai(), ...vetDoSau },
     doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
   };
 }

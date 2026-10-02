@@ -41,7 +41,7 @@ const MO_DAU_SAO = [
 ];
 
 /** Cụm nối rỗng nghĩa — dấu hiệu rõ nhất của văn model */
-const CUM_AI = [
+export const CUM_AI = [
   'dieu nay cho thay rang',
   'co the noi rang',
   'nhin chung',
@@ -206,7 +206,7 @@ const CAU_DEM_YEU_TO =
  * tài liệu cho phép hiện nó trong phần "Muốn biết vì sao không?", vì nó nói bộ
  * quy tắc nào đã chạy chứ không tiết lộ nguồn nào được truy hồi.
  */
-const RO_RI_RAG = [
+export const RO_RI_RAG = [
   'theo tai lieu',
   'trong sach',
   'tai lieu cho biet',

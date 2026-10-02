@@ -4,6 +4,7 @@ import { luatUuTienNguon, mucChacChan, NHAN_TIN_CAY, type MucChacChan } from './
 import type { DuKienLaSo } from './boi-canh-la-so';
 import { NHAN_CHU_DE, NHAN_LOP_HAN, PHIEN_BAN_PLANNER, type KeHoachTruyVan } from './planner';
 import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
+import { docChieu } from './chot-huong';
 
 /**
  * Evidence Pack — ranh giới giữa tầng dữ liệu và tầng suy luận.
@@ -17,7 +18,7 @@ import { PHIEN_BAN_TRUY_HOI, type DoanUngVien } from './truy-hoi';
  * là phép so sánh chuỗi.
  */
 
-export const PHIEN_BAN_SCHEMA_OUTPUT = '1.4';
+export const PHIEN_BAN_SCHEMA_OUTPUT = '1.5';
 
 export interface Bangchung {
   id: string;
@@ -206,6 +207,12 @@ export interface TraLoiCoCauTruc {
    * được tỉ lệ tuân thủ.
    */
   tuKiem?: string;
+  /**
+   * QUICK (CEL-186a): model tự khai câu chốt nói phần đời đang thuận / ngang /
+   * vướng. Lưới PHỤ — mã so với nhóm hướng engine (`chot-huong.ts`); thiếu thì
+   * chỉ ghi vết, không thay câu.
+   */
+  chieuCauChot?: 'thuan' | 'ngang' | 'vuong';
 }
 
 /**
@@ -247,9 +254,10 @@ interface ThoTraLoi {
   tuKiem?: unknown;
   canNhac?: unknown;
   buocTiepTheo?: unknown;
+  chieuCauChot?: unknown;
 }
 
-export function docTraLoi(text: string): TraLoiCoCauTruc | null {
+export function docTraLoi(text: string, tuyChon: { choPhepTomTatRong?: boolean } = {}): TraLoiCoCauTruc | null {
   const sach = text
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -259,6 +267,11 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
   if (!d) return null;
 
   try {
+    // QUICK cho phép thiếu tomTat / yChinh: câu chốt một mình đã là câu trả lời.
+    if (tuyChon.choPhepTomTatRong) {
+      if (d.tomTat === undefined || d.tomTat === null) d.tomTat = '';
+      if (d.yChinh === undefined || d.yChinh === null) d.yChinh = [];
+    }
     if (typeof d?.tomTat !== 'string' || !Array.isArray(d?.yChinh)) return null;
     const chuoi = (x: unknown) => (typeof x === 'string' && x.trim() ? x.trim() : undefined);
     return {
@@ -280,13 +293,16 @@ export function docTraLoi(text: string): TraLoiCoCauTruc | null {
       goiYTiep: Array.isArray(d.goiYTiep)
         ? d.goiYTiep
             .filter((x: unknown): x is string => typeof x === 'string' && x.trim().length > 0)
-            .map((x: string) => x.trim().slice(0, 40))
+            // Chip dài hơn 40 ký tự thì BỎ, không cắt — cắt là ra mẩu câu cụt (§25).
+            .map((x: string) => x.trim())
+            .filter((x: string) => x.length <= 40)
             .slice(0, 3)
         : [],
       canNhac: Array.isArray(d.canNhac) ? d.canNhac.filter((x: unknown) => typeof x === 'string') : [],
       buocTiepTheo: Array.isArray(d.buocTiepTheo)
         ? d.buocTiepTheo.filter((x: unknown) => typeof x === 'string')
         : [],
+      chieuCauChot: docChieu(d.chieuCauChot),
     };
   } catch {
     return null;

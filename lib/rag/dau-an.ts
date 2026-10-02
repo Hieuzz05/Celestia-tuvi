@@ -2,6 +2,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import type { MucAnToan } from './an-toan';
 import { CUM_TIENG_LONG_CAM } from './chuan-ngon-ngu';
 import type { YDinh } from './planner';
+import type { DoSauTraLoi } from './hop-dong-tra-loi';
 
 /**
  * Dấu ấn Celes — tầng tính cách của một lượt chat (Character System v4).
@@ -204,7 +205,8 @@ export type LyDoKhong =
   | 'cau-noi'
   | 'khong-ket-luan'
   | 'bo-dan-dat'
-  | 'lap-lien-truoc';
+  | 'lap-lien-truoc'
+  | 'do-sau-quick';
 
 export interface DauAnLuot {
   tang: TangDauAn;
@@ -230,6 +232,8 @@ export interface DauVaoDauAn {
   boDanDat: boolean;
   /** Lịch sử hội thoại — chỉ đọc tin trợ lý LIỀN TRƯỚC, xem `daDungOLuotLienTruoc` */
   lichSu?: TinNhan[];
+  /** Độ sâu THỰC TẾ của lượt (CEL-186a). Thiếu = STANDARD như trước. */
+  doSau?: DoSauTraLoi;
 }
 
 /**
@@ -271,10 +275,13 @@ export function daDungOLuotLienTruoc(lichSu: readonly TinNhan[], cau: string): b
  *   Đọc đúng hàm quyết định phát chỉ thị đó, không tự đếm độ dài câu ở đây.
  * - Câu đã có nguyên văn ở lượt trợ lý liền trước → không có dấu ấn
  *   (`daDungOLuotLienTruoc`).
+ * - Lượt QUICK (CEL-186a) → không có dấu ấn: câu đầu phải là câu trả lời.
  */
 export function chonDauAn(vao: DauVaoDauAn): DauAnLuot {
   const khong = (lyDo: LyDoKhong): DauAnLuot => ({ tang: 'KHONG', bienThe: null, cau: null, lyDo });
   if (vao.mucAnToan !== 'NORMAL') return khong('an-toan');
+  // QUICK là một tin nhắn ngắn mở bằng câu trả lời; câu dẫn chiếm đúng chỗ đó.
+  if (vao.doSau === 'QUICK') return khong('do-sau-quick');
   if (vao.yDinh === 'tra-cuu') return khong('tra-cuu');
   if (vao.chuDe === 'tong-quan' && vao.yDinh === 'mo-ta' && (!vao.chacChan || vao.phanLoaiBangModel)) {
     return khong('planner-khong-chac');
