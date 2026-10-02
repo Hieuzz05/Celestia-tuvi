@@ -79,6 +79,100 @@ def _bo_bong(alpha, rgb):
     return np.where(bong & (alpha > 0), 0.0, alpha)
 
 
+# Nen tham chieu cua buoc tach matte va tong mau bong (vung san xa than).
+MATTE_NEN = np.array([246.0, 241.0, 232.0])   # #F6F1E8
+TONG_BONG = np.array([22.0, 16.0, 40.0])
+RIM = 12
+
+
+def _tach_lai_matte(alpha, rgb):
+    """Tach lai mau that va alpha o dai ria, so voi nen kem MATTE_NEN.
+
+    Vi sao: mat na tach nhan vat cat long, de lai mot dai matte sang (trang /
+    lavender nhat) 2-9px quanh mep va mot vet san duoi chan. Tren nen kem no hoa
+    vao nen nen ban sang trong dung; tren nen toi no thanh vien cham trang. Khong
+    sua duoc bang CSS, va KHONG duoc che bang bong.
+
+    Cach lam: coi moi pixel ria la tron giua mau that F (lay tu pixel loi gan
+    nhat) va nen B. Tu C = F*a + B*(1-a) giai ra a, roi C' = B - (B-C)/a.
+    Ghep C' len B voi alpha a la ra lai dung C, nen ban sang gan nhu khong doi;
+    tren nen toi phan "nen" da duoc tach ra khoi pixel nen het vien.
+
+    Tra ve (alpha, rgb, sel): sel la vung da ghi de, de buoc khu ria sau bo qua.
+    """
+    H = alpha.shape[0]
+    k = H / 512.0
+    A = alpha
+    B = MATTE_NEN
+    C = rgb
+    co = A > 0
+
+    mn = C.min(axis=2); mx = C.max(axis=2)
+    bgl = (mn >= 150) & ((mx - mn) <= 30) & co
+    dist = ndimage.distance_transform_edt(co)
+
+    hang = np.where(co.any(axis=1))[0]
+    san = np.zeros_like(co)
+    if hang.size:
+        y0, y1 = hang.min(), hang.max()
+        san[int(y1 - 0.12 * (y1 - y0 + 1)):, :] = True
+
+    allow = bgl & ((dist <= RIM * k) | san)
+    nhan, so = ndimage.label(allow)
+    cham_mep = np.unique(nhan[(dist <= 2) & allow])
+    cham_mep = cham_mep[cham_mep > 0]
+    sel = np.isin(nhan, cham_mep) & allow
+    sel |= co & (dist <= 3 * k)
+
+    core = ~sel & (A >= 250 / 255.0) & ~bgl
+    if not core.any():
+        return alpha, rgb, np.zeros_like(co)
+    d_core, (iy, ix) = ndimage.distance_transform_edt(~core, return_indices=True)
+    F = C[iy, ix].astype(float)
+    F[sel & san & (d_core > 2)] = TONG_BONG
+
+    D = B - C
+    BF = B - F
+    hop_le = BF > 8
+    ti = np.where(hop_le, D / np.where(hop_le, BF, 1.0), 0.0)
+    a = np.clip(ti.max(axis=2), 0.0, 1.0)
+    a = np.ceil(a * 255.0) / 255.0
+
+    C_moi = np.clip(B - D / np.maximum(a, 1e-6)[:, :, None], 0, 255)
+    A_moi = A * a
+
+    out_a = alpha.copy(); out_rgb = rgb.copy()
+    out_a[sel] = A_moi[sel]
+    out_rgb[sel] = C_moi[sel]
+    out_rgb[sel & (out_a <= 0)] = 0
+    return out_a, out_rgb, sel
+
+
+def _va_lo(alpha_goc, rgb_goc, alpha, rgb, sel):
+    """Lam dac lai pixel nam SAU trong than ma alpha < 1.
+
+    Vi sao: mat na tach theo nen kem nen an ca long kem that o mat va bung
+    (do 02/10/2026: ~7000 pixel ben trong than co alpha < 0.9 o moi state).
+    Tren nen kem khong thay; tren nen toi mat Celes loang xam vi nen lot qua.
+
+    Pixel cach mep than (da lap lo) qua RIM*k thi khong the la nen that — ghep
+    ban GOC len MATTE_NEN roi dat alpha = 1. Nen kem vi the khong doi mot pixel
+    nao. Dai RIM*k sat mep de nguyen cho buoc 1b: rac matte day toi 9px, lam
+    dac no la ve lai dung cai vien kem vua go.
+    """
+    k = alpha.shape[0] / 512.0
+    than = ndimage.binary_fill_holes(alpha_goc > 0.5)
+    sau = ndimage.distance_transform_edt(than) > RIM * k
+    lo = sau & (alpha_goc < 1.0)
+    a3 = alpha_goc[:, :, None]
+    ghep = rgb_goc * a3 + MATTE_NEN * (1 - a3)
+    out_a = alpha.copy()
+    out_rgb = rgb.copy()
+    out_a[lo] = 1.0
+    out_rgb[lo] = ghep[lo]
+    return out_a, out_rgb, sel | lo
+
+
 def lam_sach(duong_vao, duong_ra):
     im = Image.open(duong_vao).convert('RGBA')
     a = np.array(im).astype(float)
@@ -88,12 +182,21 @@ def lam_sach(duong_vao, duong_ra):
     # --- 1. Bo bong nen nuong vao anh ---
     alpha_moi = _bo_bong(alpha, rgb)
 
+    # --- 1b. Tach lai matte o ria (halo trang tren nen toi) ---
+    alpha_goc, rgb_goc = alpha_moi, rgb
+    alpha_moi, rgb, sel = _tach_lai_matte(alpha_moi, rgb)
+
+    # --- 1c. Va lo alpha trong than (mat / bung kem bi mat na an mat) ---
+    alpha_moi, rgb, sel = _va_lo(alpha_goc, rgb_goc, alpha_moi, rgb, sel)
+
     # --- 2. Khu nhiem mau nen o ria (un-premultiply) ---
     # observed = fg*alpha + NEN*(1-alpha)  =>  fg = (observed - NEN*(1-alpha)) / alpha
     # Chi ap trong dai alpha trung binh: alpha rat thap thi chia cho so nho,
     # sai so bi khuech dai thanh vien den ban.
+    # Bo qua vung `sel`: buoc 1b da tach mau that ra roi, khu them lan nua la
+    # tru nen hai lan.
     out_rgb = rgb.copy()
-    ap = (alpha_moi > 0.15) & (alpha_moi < 0.95)
+    ap = (alpha_moi > 0.15) & (alpha_moi < 0.95) & ~sel
     al3 = alpha_moi[:, :, None]
     goc = (out_rgb - NEN * (1 - al3)) / np.maximum(al3, 1e-6)
     out_rgb[ap] = np.clip(goc[ap], 0, 255)
