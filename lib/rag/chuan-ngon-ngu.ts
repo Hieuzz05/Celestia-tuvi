@@ -52,6 +52,27 @@ export interface KhoiLuat {
 }
 
 /**
+ * Tiếng lóng nội bộ cấm ra mặt trước — MỘT danh sách, khối `cam-tieng-long` in
+ * nó vào prompt, `kiemCauDauAn` (dau-an.ts) quét câu thư viện bằng nó. Sửa ở
+ * đây là đổi prompt, nên `PHIEN_BAN_CHU` đổi theo.
+ *
+ * Cổng `soatNgonNgu` KHÔNG dùng danh sách này: regex của nó chỉ bắt
+ * "yếu tố đang đỡ", không bắt "đang đỡ" trần. Nới cổng là đổi
+ * `PHIEN_BAN_NGON_NGU`, tức xả toàn bộ đệm — việc riêng, chủ dự án quyết.
+ */
+export const CUM_TIENG_LONG_CAM: readonly string[] = [
+  'đẩy tới',
+  'phía đẩy tới',
+  'đang đỡ',
+  'yếu tố đỡ',
+  'yếu tố cản',
+  'lực đỡ',
+  'nghiêng về phía thuận',
+  'hai lực ngang nhau',
+  'tương quan cát hung',
+];
+
+/**
  * Hai mươi khối. Khối đầu là bộ quy tắc luận giải chung (thêm 24/09/2026);
  * mười chín khối sau giữ ĐÚNG THỨ TỰ bản gốc. Đổi thứ tự là đổi prompt.
  */
@@ -100,7 +121,7 @@ Tên LỚP HẠN được gọi thẳng vì đó chính là cách trả lời c�
     nhom: 'ma-cuong-che',
     coSo: "cổng ngôn ngữ CHẶN mã 'tieng-long-engine', và suaCauTiengLong() sửa lại từng câu",
     van: `CẤM TUYỆT ĐỐI — tiếng lóng nội bộ của hệ thống, không phải tiếng Việt:
-"đẩy tới", "phía đẩy tới", "đang đỡ", "yếu tố đỡ", "yếu tố cản", "lực đỡ", "nghiêng về phía thuận", "hai lực ngang nhau", "tương quan cát hung", và mọi câu ĐẾM dữ kiện kiểu "bảy yếu tố đang đỡ so với hai yếu tố cản".
+${CUM_TIENG_LONG_CAM.map((c) => `"${c}"`).join(', ')}, và mọi câu ĐẾM dữ kiện kiểu "bảy yếu tố đang đỡ so với hai yếu tố cản".
 Hệ thống có đếm dữ kiện hai bên để tự chốt hướng, nhưng đó là sổ sách của nó. Con số ấy không phải bằng chứng — nó là kết quả của việc đọc bằng chứng. Đưa con số cho người đọc là đưa họ thứ duy nhất trong bài mà họ không kiểm được.
 Sai:  "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đỡ so với hai yếu tố cản ở phần tình cảm."
 Đúng: "Năm 2026 chuyện này nghiêng về phía có: tiểu hạn năm nay rơi đúng vào phần bạn đời, mà ở đó sẵn có Hồng Loan — chuyện đôi lứa đến theo đường tự nhiên, ít phải sắp đặt."`,
