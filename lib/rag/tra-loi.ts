@@ -16,6 +16,7 @@ import { laChuoiJson } from './doc-json';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
 import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
+import { chonDauAn, PHIEN_BAN_DAU_AN } from './dau-an';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
@@ -117,6 +118,14 @@ export interface NguCanhVan {
   yDinh?: YDinh;
   /** Câu hỏi hiện tại là câu nối tiếp mạch đang nói dở */
   laCauNoi?: boolean;
+  /**
+   * Câu dẫn luận của Celes (xem `dau-an.ts`) — chèn vào MẢNG, không qua mốc chuỗi.
+   *
+   * Mốc kiểu `[[CELES_DAU_AN]]` đã bị bác (mục 23 Lỗi 1): nó phải sống sót qua
+   * mọi lớp sửa chữ phía sau rồi mới được thay, và một lớp ráp câu bằng dấu
+   * cách là đủ làm nó dính vào đoạn bên cạnh. Chèn ở đây thì không có gì để nuốt.
+   */
+  dauAn?: string;
 }
 
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
@@ -131,6 +140,9 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
    */
   const phan: string[] = [];
   if (t.ketLuan) phan.push(t.ketLuan.trim());
+  // Dấu ấn đứng sau kết luận, trước phần giải thích: kết luận vẫn là dòng đầu
+  // khi có, còn khi không có thì dấu ấn là câu mở — đúng chỗ người ta nghe ra giọng.
+  if (nc.dauAn) phan.push(nc.dauAn.trim());
   phan.push(t.tomTat.trim());
 
   for (const y of t.yChinh) {
@@ -421,9 +433,29 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     cungTrongTam: keHoach.cungLienQuan[0],
   });
 
+  /*
+   * Dấu ấn Celes: một câu dẫn luận tất định theo `chuDe:yDinh`.
+   *
+   * Việc CHỌN câu không đọc lá số, lời người dùng hay lịch sử. Lịch sử chỉ
+   * dùng cho cổng chống lặp: tin trợ lý liền trước đã chứa đúng câu đó thì
+   * lượt này bỏ — xem `dau-an.ts`. Chèn vào mảng trong `dungVan`, nên các lớp
+   * sửa chữ phía sau thấy nó như mọi đoạn khác.
+   */
+  const laCauNoi = vao.laTiepTuChip === true || laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []);
+  const dauAn = chonDauAn({
+    chuDe: keHoach.chuDe,
+    yDinh: keHoach.yDinh,
+    mucAnToan,
+    chacChan: keHoach.chacChan,
+    phanLoaiBangModel: keHoach.phanLoaiBangModel,
+    laCauNoi,
+    lichSu: vao.lichSu,
+  });
+
   const vanTho = dungVan(daLoc, {
     yDinh: keHoach.yDinh,
-    laCauNoi: vao.laTiepTuChip === true || laCauNoiTiep(vao.cauHoi, vao.lichSu ?? []),
+    laCauNoi,
+    dauAn: dauAn.cau ?? undefined,
   });
 
   /*
@@ -508,5 +540,6 @@ export function phienBanHienTai(): Record<string, string> {
     validator: PHIEN_BAN_VALIDATOR,
     ngonNgu: PHIEN_BAN_NGON_NGU,
     uuTienNguon: PHIEN_BAN_UU_TIEN,
+    dauAn: PHIEN_BAN_DAU_AN,
   };
 }
