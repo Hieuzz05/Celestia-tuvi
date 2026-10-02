@@ -198,6 +198,7 @@ export const en: TuDien = {
     viSaoMo: 'That read rests on the following details in your map:',
     giuLai: 'Keep these',
     daGiu: 'Kept',
+    celesDaGiu: "I've kept this chart for you.",
     doiThongTin: 'Change details',
 
     sauTieuDe: 'Want to go deeper?',
@@ -412,6 +413,11 @@ export const en: TuDien = {
     },
   },
 
+  luanChuDe: {
+    dangDoc: "I'm reading {chuDe}… this takes about 15–45 seconds.",
+    chonChuDe: "Pick a topic above and I'll read it with you.",
+  },
+
   luanSau: {
     eyebrow: 'THE FULL PICTURE',
     tieuDe: 'And here is what Celes reads more closely',
@@ -593,6 +599,9 @@ export const en: TuDien = {
     ctaNut: 'Ask Celes about this stretch',
     chuaCoLaSo: 'No chart to read yet',
     chuaCoLaSoMo: 'Pick or create a chart first, then come back to this part.',
+    dangTai: "I'm putting this stretch's period layers together…",
+    loiTai: "I couldn't open this part yet. Your chart is safe — try again in a few minutes.",
+    thuLai: 'Try again',
   },
 
   cachHoatDong: {

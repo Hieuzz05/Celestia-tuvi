@@ -196,6 +196,7 @@ export const vi = {
     viSaoMo: 'Điều trên dựa vào những chi tiết sau trong bản đồ của bạn:',
     giuLai: 'Giữ lại những điều này',
     daGiu: 'Đã giữ lại',
+    celesDaGiu: 'Mình giữ lá số này cho bạn rồi.',
     doiThongTin: 'Đổi thông tin',
 
     sauTieuDe: 'Muốn hiểu sâu hơn?',
@@ -411,6 +412,11 @@ export const vi = {
     },
   },
 
+  luanChuDe: {
+    dangDoc: 'Mình đang đọc chủ đề {chuDe}… mất khoảng 15–45 giây.',
+    chonChuDe: 'Chọn một chủ đề ở trên, mình đọc cùng bạn.',
+  },
+
   luanSau: {
     eyebrow: 'BỨC TRANH ĐẦY ĐỦ',
     tieuDe: 'Còn đây là những gì Celes đọc kỹ hơn',
@@ -596,6 +602,9 @@ export const vi = {
     ctaNut: 'Hỏi Celes về giai đoạn này',
     chuaCoLaSo: 'Chưa có lá số nào để luận',
     chuaCoLaSoMo: 'Chọn hoặc lập một lá số trước, rồi quay lại phần này.',
+    dangTai: 'Mình đang ghép các lớp vận của giai đoạn này…',
+    loiTai: 'Mình chưa mở được phần này. Lá số của bạn vẫn còn nguyên — thử lại sau ít phút nhé.',
+    thuLai: 'Thử lại',
   },
 
   cachHoatDong: {

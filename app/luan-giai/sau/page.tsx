@@ -15,6 +15,7 @@ import { QuayLai } from '@/components/QuayLai';
 import { XuatLuanGiai, type BaiDaDoc } from '@/components/luangiai/XuatLuanGiai';
 import { VietLaiQuanTri } from '@/components/luangiai/VietLaiQuanTri';
 import { HoiBoiCanh } from '@/components/luangiai/HoiBoiCanh';
+import { CelesMascot } from '@/components/CelesMascot';
 import { TRUONG_THEO_CHU_DE, conThieu, khoaBoiCanh, type BoiCanhDoc } from '@/lib/rag/v3/boi-canh-doc';
 import { docBoiCanhDoc, luuBoiCanhDoc } from '@/lib/store/boi-canh-doc';
 
@@ -444,9 +445,17 @@ function TrangSau() {
           )}
 
           {laBuc ? null : canHoiBoiCanh && boiCanh ? (
-            <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
+            // Celes hỏi thêm trước khi đọc: màn vào, chưa có bài. Màn hẹp xếp
+            // dọc để form không bị bóp 96px.
+            <div className="flex flex-col gap-[16px] sm:flex-row sm:items-start">
+              <CelesMascot cho="rong" minhHoa="curious" cao={80} caoNho={64} />
+              <div className="min-w-0 flex-1">
+                <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
+              </div>
+            </div>
           ) : !trangThai || trangThai.dang ? (
-            <DangDocV3 key={chon} />
+            // Lần chờ ĐẦU của bài: có Celes. Hai chỗ "viết tiếp" bên dưới thì không.
+            <DangDocV3 key={chon} celes />
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
               {trangThai.cau.map((c, i) => (

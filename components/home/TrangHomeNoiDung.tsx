@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
+import { CelesMascot } from '@/components/CelesMascot';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import {
   Eyebrow,
@@ -212,16 +213,20 @@ export function TrangHomeNoiDung() {
 
         {/* Chưa có bản đồ nào thì việc tiếp theo chỉ có một, nói thẳng ra */}
         {!dangDoc && !boiCanh.dangTai && !chinh && (
-          <The className="flex flex-col gap-[12px]">
-            <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
-              {t.home.chuaCoTieuDe}
-            </h2>
-            <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-              {t.home.chuaCoMo}
-            </p>
-            <Link href="/la-so" className="btn-primary self-start">
-              {t.nav.batDauMienPhi}
-            </Link>
+          <The className="flex items-start gap-[16px]">
+            {/* CHỈ thẻ rỗng. Hôm nay có lá số vẫn KHÔNG có linh vật (mục 12). */}
+            <CelesMascot cho="rong" minhHoa="one-ear-up" cao={80} caoNho={64} />
+            <div className="flex min-w-0 flex-col gap-[12px]">
+              <h2 className="text-[20px] font-semibold" style={{ color: 'var(--fg)' }}>
+                {t.home.chuaCoTieuDe}
+              </h2>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                {t.home.chuaCoMo}
+              </p>
+              <Link href="/la-so" className="btn-primary self-start">
+                {t.nav.batDauMienPhi}
+              </Link>
+            </div>
           </The>
         )}
 

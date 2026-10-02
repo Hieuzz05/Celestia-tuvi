@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { CelesMascot } from '@/components/CelesMascot';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { DaiThoiGian } from '@/components/hanhtrinh/DaiThoiGian';
 import { GocNhinCard } from '@/components/insight/GocNhinCard';
@@ -216,7 +217,8 @@ export function TrangHanhTrinhNoiDung() {
     return (
       <Section gon>
         <Shell className="flex flex-col gap-[24px]">
-          <TieuDeTrang />
+          {/* Cổng toàn trang đã có Celes vẫy tay — đầu trang nhường (mục 12). */}
+          <TieuDeTrang celes={false} />
           <CongDangNhap nguon="journey" toanTrang />
         </Shell>
       </Section>
@@ -374,15 +376,19 @@ export function TrangHanhTrinhNoiDung() {
   );
 }
 
-function TieuDeTrang() {
+/** Celes đứng cạnh TIÊU ĐỀ, ngoài dòng thời gian — không bao giờ trong `Lop`. */
+function TieuDeTrang({ celes = true }: { celes?: boolean }) {
   const t = useT();
   return (
-    <div>
-      <Eyebrow className="mb-[12px]">{t.hanhTrinh.eyebrow}</Eyebrow>
-      <h1 className="heading-sm">{t.hanhTrinh.tieuDe}</h1>
-      <p className="body-sm mt-[8px] max-w-[640px]" style={{ color: 'var(--fg-muted)' }}>
-        {t.hanhTrinh.moTa}
-      </p>
+    <div className="flex items-center gap-[16px]">
+      {celes && <CelesMascot cho="dau-trang" minhHoa="moving" cao={72} caoNho={56} ngay />}
+      <div className="min-w-0">
+        <Eyebrow className="mb-[12px]">{t.hanhTrinh.eyebrow}</Eyebrow>
+        <h1 className="heading-sm">{t.hanhTrinh.tieuDe}</h1>
+        <p className="body-sm mt-[8px] max-w-[640px]" style={{ color: 'var(--fg-muted)' }}>
+          {t.hanhTrinh.moTa}
+        </p>
+      </div>
     </div>
   );
 }

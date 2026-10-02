@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { CelesMascot } from '@/components/CelesMascot';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
-import { Eyebrow, NhanPill, Section, Shell, The } from '@/components/ui';
+import { Eyebrow, NhanPill, NutVien, Section, Shell, The, TheTrangThaiCeles } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { dien, useNgonNgu } from '@/lib/i18n/context';
 import { useBoiCanh } from '@/lib/store/boi-canh';
@@ -84,10 +85,20 @@ export function TrangChiTietNoiDung() {
    */
   const [ai, setAi] = useState<NhipChiTietAi | null>(null);
   const [moCong, setMoCong] = useState(false);
+  /*
+   * Lỗi gắn với KHOÁ của lần hỏi, không phải một cờ chung: đổi tháng / đổi lá
+   * số / bấm thử lại là khoá mới, lỗi cũ tự hết hiệu lực mà không cần setState
+   * đồng bộ trong effect.
+   */
+  const [lanThu, setLanThu] = useState(0);
+  const [khoaLoi, setKhoaLoi] = useState<string | null>(null);
+  const khoaHoi = laSo ? `${laSo.thongTin.ngay}-${laSo.thongTin.thang}-${laSo.thongTin.nam}-${laSo.thongTin.gio}-${cap}-${nam}-${thang}-${ngonNgu}-${lanThu}` : null;
+  const loiTai = khoaHoi !== null && khoaLoi === khoaHoi;
 
   useEffect(() => {
     if (!laSo) return;
     let huy = false;
+    const khoa = khoaHoi;
     fetch('/api/luan-han', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -107,14 +118,24 @@ export function TrangChiTietNoiDung() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (huy) return;
-        setBai(d?.bai ?? null);
-        setDay(Boolean(d?.day));
-        setAi((d?.ai as NhipChiTietAi | null) ?? null);
+        if (!d?.bai) {
+          setKhoaLoi(khoa);
+          return;
+        }
+        setBai(d.bai);
+        setDay(Boolean(d.day));
+        setAi((d.ai as NhipChiTietAi | null) ?? null);
+      })
+      // Trước CEL-187 nhánh này thiếu: mất mạng là màn treo ở "chưa có lá số".
+      .catch(() => {
+        if (!huy) setKhoaLoi(khoa);
       });
     return () => {
       huy = true;
     };
-  }, [laSo, cap, nam, thang, ngonNgu]);
+    // khoaHoi gói đủ cap/nam/thang/ngonNgu/lanThu và ngày giờ sinh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [laSo, khoaHoi]);
 
   if (!dangDoc && !duocVao) {
     return (
@@ -126,17 +147,46 @@ export function TrangChiTietNoiDung() {
     );
   }
 
-  if (!bai) {
+  /*
+   * Ba nhánh trước khi có bài (CEL-187). Trước đây "đang tải" và "chưa có lá
+   * số" dùng chung một màn, nên mọi lần mở đều chớp chữ "chưa có lá số".
+   */
+  const chuaCoLaSo = !laSo && !dangDoc && !boiCanh.dangTai;
+  if (chuaCoLaSo || loiTai || !bai) {
     return (
       <Section gon>
         <Shell className="flex flex-col gap-[16px]">
-          <h1 className="heading-sm">{t.chiTietHan.chuaCoLaSo}</h1>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {t.chiTietHan.chuaCoLaSoMo}
-          </p>
-          <Link href="/la-so" className="btn-primary self-start">
-            {t.hanhTrinh.lapBanDo}
-          </Link>
+          {chuaCoLaSo ? (
+            <>
+              <h1 className="heading-sm">{t.chiTietHan.chuaCoLaSo}</h1>
+              <TheTrangThaiCeles
+                linhVat={<CelesMascot cho="rong" minhHoa="curious" cao={80} caoNho={64} ngay />}
+                moTa={t.chiTietHan.chuaCoLaSoMo}
+              >
+                <Link href="/la-so" className="btn-primary">
+                  {t.hanhTrinh.lapBanDo}
+                </Link>
+              </TheTrangThaiCeles>
+            </>
+          ) : loiTai ? (
+            <TheTrangThaiCeles
+              linhVat={<CelesMascot cho="loi" minhHoa="concerned" cao={80} caoNho={64} ngay />}
+              moTa={t.chiTietHan.loiTai}
+            >
+              <NutVien nho onClick={() => setLanThu((n) => n + 1)}>
+                {t.chiTietHan.thuLai}
+              </NutVien>
+            </TheTrangThaiCeles>
+          ) : (
+            // Chờ máy chủ dựng bài (có phần model viết) — hiện trễ 1 giây để
+            // bài đệm về nhanh không chớp linh vật.
+            <div className="celes-tre">
+              <TheTrangThaiCeles
+                linhVat={<CelesMascot cho="cho" trangThai="thinking" cao={80} caoNho={64} ngay />}
+                moTa={t.chiTietHan.dangTai}
+              />
+            </div>
+          )}
         </Shell>
       </Section>
     );

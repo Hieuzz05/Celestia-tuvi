@@ -74,6 +74,8 @@ function TrangHoiDap() {
   // gửi câu bình thường là tự về. Xem lib/linh-vat.ts.
   const nghiem = useMemo(() => linhVatNghiem(tinNhan), [tinNhan]);
   const [cauHoi, setCauHoi] = useState('');
+  // Ô nhập đang được gõ → đầu trang "listening". Chỉ đổi qua sự kiện focus/blur.
+  const [dangGo, setDangGo] = useState(false);
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
   const [hienFormSinh, setHienFormSinh] = useState(false);
@@ -303,9 +305,15 @@ function TrangHoiDap() {
       <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} className="-mb-[16px]" />
       {/* Celes 56px cạnh tiêu đề: đây là nơi người dùng đang TRÒ CHUYỆN. */}
       <div className="flex items-center gap-[16px]">
-        {/* Phase 3: nối `characterHook` vào đây thay cho "default" cố định.
-            `serious` theo lượt mới nhất (mục 9) đã nối, không phụ thuộc Phase 3. */}
-        <CelesMascot cho="dau-trang" trangThai={nghiem ? 'serious' : 'default'} cao={56} />
+        {/* Đầu trang chỉ serious > listening > default (P2). KHÔNG BAO GIỜ
+            thinking ở đây — lúc chờ, con 80px ở thân đã nghĩ, hai con cùng nghĩ
+            là lặp. `serious` theo lượt mới nhất (mục 9) thắng mọi thứ. */}
+        <CelesMascot
+          cho="dau-trang"
+          trangThai={nghiem ? 'serious' : dangGo && cauHoi.trim() ? 'listening' : 'default'}
+          cao={56}
+          ngay
+        />
         <div className="min-w-0">
           <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
           <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
@@ -559,6 +567,8 @@ function TrangHoiDap() {
               <input
                 value={cauHoi}
                 onChange={(e) => setCauHoi(e.target.value)}
+                onFocus={() => setDangGo(true)}
+                onBlur={() => setDangGo(false)}
                 placeholder={t.hoiCeles.oNhap}
                 maxLength={800}
                 className="field-input"

@@ -29,6 +29,7 @@ import { docNhanh } from '@/lib/tuvi/quick-read';
 import type { BaiLuanGiai } from '@/lib/tuvi/luan-giai-sau';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { themVe } from '@/components/QuayLai';
+import { CelesMascot } from '@/components/CelesMascot';
 
 /** Lá số mẫu cho liên kết "Xem một lá số mẫu" từ trang chủ */
 const MAU: ThongTinSinhForm = {
@@ -135,6 +136,9 @@ function TrangLaSo() {
   // gian bày ra chứ không phải một ô thả xuống.
   const thangXem = thangAmHienTai();
   const [daLuu, setDaLuu] = useState(false);
+  // Proud chỉ khi CHÍNH tay người dùng bấm "Giữ lại" và lưu xong. Lưu lúc rời
+  // trang (CanhBaoRoiTrang) và quay về sau đăng nhập KHÔNG bật cờ này.
+  const [vuaLuu, setVuaLuu] = useState(false);
 
   const [dangChay, setDangChay] = useState(false);
   const [ketQua, setKetQua] = useState<KetQuaLuanGiai | null>(null);
@@ -396,6 +400,17 @@ function TrangLaSo() {
     }
   };
 
+  const giuLai = async () => {
+    if (await luu()) setVuaLuu(true);
+  };
+
+  // Hiện 4 giây rồi tắt. setState nằm trong hẹn giờ, không chạy đồng bộ trong effect.
+  useEffect(() => {
+    if (!vuaLuu) return;
+    const id = setTimeout(() => setVuaLuu(false), 4000);
+    return () => clearTimeout(id);
+  }, [vuaLuu]);
+
   const docSau = async () => {
     if (!form) return;
     const { ngay, thang, nam } = tachNgay(form.ngaySinh);
@@ -504,6 +519,9 @@ function TrangLaSo() {
     return (
       <Shell className="py-[48px]">
         <div className="card mx-auto flex max-w-[560px] flex-col gap-[16px]">
+          {/* Vẫn là màn vào như form: ngày sai là lỗi nhập, không phải lỗi hệ
+              thống — KHÔNG đổi sang concerned (mục 12). */}
+          <CelesMascot cho="rong" minhHoa="leaning-closer" cao={80} caoNho={64} ngay />
           <h1 className="heading-sm">{t.quickRead.ngaySai}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {t.quickRead.ngaySaiMo}
@@ -716,6 +734,15 @@ function TrangLaSo() {
 
   return (
     <div className="flex flex-col gap-[24px] py-[32px]">
+      {/* Nổi ở góc, không nằm trong phần đọc, không chiếm chỗ (mục 12). */}
+      {vuaLuu && (
+        <div className="celes-noi" role="status">
+          <CelesMascot cho="su-kien" minhHoa="proud" cao={72} caoNho={56} ngay />
+          <span className="body-sm" style={{ color: 'var(--fg)' }}>
+            {t.quickRead.celesDaGiu}
+          </span>
+        </div>
+      )}
       <Shell className="flex flex-col gap-[24px]">
       <CanhBaoRoiTrang
         bat={chuaLuu}
@@ -766,7 +793,7 @@ function TrangLaSo() {
               hành động chính là kiểu phân tán mà bản audit chỉ ra. */}
           <div className="flex items-center gap-[12px]">
             {duocVao && !daCoTrongDanhSach && !daLuu && (
-              <NutVien nho onClick={luu}>
+              <NutVien nho onClick={giuLai}>
                 {t.quickRead.giuLai}
               </NutVien>
             )}
@@ -863,7 +890,15 @@ const SO_PHAN_TONG_QUAN = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && q.i
  * màn hình rồi bị bài đọc đẩy xuống — đo 27/09/2026: CLS 0,34 ("Kém") chỉ từ chân
  * trang. Cao một màn thì chân trang bắt đầu dưới mép màn, dịch ở đó không tính.
  */
-const KHUNG_CHO_LA_SO = <Shell className="min-h-[100svh] py-[48px]"><span /></Shell>;
+const KHUNG_CHO_LA_SO = (
+  <Shell className="min-h-[100svh] py-[48px]">
+    {/* Chỗ 80px giữ sẵn; ảnh hiện trễ bằng CSS nên khung chớp qua nhanh thì
+        không thấy linh vật. Không đặt trong phần đọc cạnh mệnh bàn. */}
+    <div className="celes-tre flex justify-center">
+      <CelesMascot cho="cho" trangThai="thinking" cao={80} ngay />
+    </div>
+  </Shell>
+);
 
 export default function TrangLaSoBoc() {
   return (

@@ -54,7 +54,8 @@ export function BucTranhLon({
     };
   }, [ngay, thang, nam, gio, gioiTinh, namXem, vietLai]);
 
-  if (ket.dang) return <DangDocV3 chu="Celes đang ghép các phần bạn đã đọc thành một bức tranh" />;
+  // Cùng chỗ với lần chờ đầu ở /luan-giai/sau (loại trừ nhau): có Celes.
+  if (ket.dang) return <DangDocV3 celes chu="Celes đang ghép các phần bạn đã đọc thành một bức tranh" />;
   if (ket.bucTranh) {
     return (
       <section className="card flex flex-col gap-[16px]" style={{ borderTop: '3px solid var(--accent)' }}>
