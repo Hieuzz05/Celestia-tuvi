@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Lam sach anh linh vat Celes: bo bong nen nuong vao anh, khu nhiem mau nen o ria,
+(nguon v2 cu) hoac chi bo bong san (nguon v2.3, mac dinh — xem lam_sach_v23),
 roi chuan hoa ca bo ve mot khung chung.
 
 Vi sao KHONG tach bong bang mau: da do tren anh that, mat na kem va bong CHONG
@@ -210,34 +211,97 @@ def lam_sach(duong_vao, duong_ra):
         alpha_moi = np.where(dac0 & (nhan0 != giu), 0.0, alpha_moi)
 
     out = Image.fromarray(np.dstack([out_rgb, alpha_moi * 255]).astype(np.uint8), 'RGBA')
-
-    # --- 3. Trim theo bbox alpha roi CHUAN HOA ve mot khung chung ---
-    # Vi sao phai chuan hoa: anh goc moi tep mot khung (default 768, con lai 512)
-    # va moi tep mot ti le chiem khung (83% voi default, 60% voi thinking).
-    # Cung truyen cao=56 ma con tho ra to nho khac nhau 1.4 lan.
-    dac = Image.fromarray((np.where(alpha_moi > 0.08, 255, 0)).astype(np.uint8), 'L')
-    bbox = dac.getbbox()
-    if bbox:
-        cat = out.crop(bbox)
-        w, h = cat.size
-        # Neo theo CHIEU CAO: con tho ngoi, chieu cao la thu mat doc thay truoc.
-        ty = (KHUNG * CHIEM) / h
-        if w * ty > KHUNG * 0.94:      # tu the qua be ngang thi moi neo theo ngang
-            ty = (KHUNG * 0.94) / w
-        w2 = max(1, int(round(w * ty))); h2 = max(1, int(round(h * ty)))
-        cat = cat.resize((w2, h2), Image.LANCZOS)
-        khung = Image.new('RGBA', (KHUNG, KHUNG), (0, 0, 0, 0))
-        khung.alpha_composite(cat, ((KHUNG - w2) // 2, (KHUNG - h2) // 2))
-        out = khung
-
+    out = _chuan_hoa_khung(out, alpha_moi)
     out.save(duong_ra, 'WEBP', quality=92, method=6)
     return out.size
 
 
+def _chuan_hoa_khung(out, alpha_moi):
+    """Trim theo bbox alpha roi CHUAN HOA ve mot khung chung.
+
+    Vi sao phai chuan hoa: anh goc moi tep mot khung (default 768, con lai 512)
+    va moi tep mot ti le chiem khung (83% voi default, 60% voi thinking).
+    Cung truyen cao=56 ma con tho ra to nho khac nhau 1.4 lan.
+
+    Luu y: cung `cao` thi cung chieu cao KHUNG NHAN VAT (bbox), khong cung chieu
+    cao THAN. Tu the ngang (concerned nam, leaning-closer, playing) bi neo theo
+    be ngang nen tho nho hon — chap nhan, ghi o muc 12.
+    """
+    dac = Image.fromarray((np.where(alpha_moi > 0.08, 255, 0)).astype(np.uint8), 'L')
+    bbox = dac.getbbox()
+    if not bbox:
+        return out
+    cat = out.crop(bbox)
+    w, h = cat.size
+    # Neo theo CHIEU CAO: con tho ngoi, chieu cao la thu mat doc thay truoc.
+    ty = (KHUNG * CHIEM) / h
+    if w * ty > KHUNG * 0.94:      # tu the qua be ngang thi moi neo theo ngang
+        ty = (KHUNG * 0.94) / w
+    w2 = max(1, int(round(w * ty))); h2 = max(1, int(round(h * ty)))
+    cat = cat.resize((w2, h2), Image.LANCZOS)
+    khung = Image.new('RGBA', (KHUNG, KHUNG), (0, 0, 0, 0))
+    khung.alpha_composite(cat, ((KHUNG - w2) // 2, (KHUNG - h2) // 2))
+    return khung
+
+
+# Dai chan: bong san chi nam trong 6% chieu cao tinh len tu hang dac thap nhat.
+DAI_CHAN = 0.06
+
+
+def lam_sach_v23(duong_vao, duong_ra):
+    """Nguon v2.3 (celes_character_system_v2_3_dark_halo_fix.html, 02/10/2026).
+
+    Nguon nay DA khu vien trang (RGB lop ria duoc decontaminate tu pixel loi),
+    nen KHONG chay 1b/1c/2 cua `lam_sach` — chay lai la khu nen hai lan.
+
+    Con lai mot viec: MOI anh v2.3 deu nuong bong san mo duoi chan (alpha < 0.6).
+    `_bo_bong` (cat theo HANG) cat mat chan sau cua `moving` -> khong dung.
+    Bo bong theo ALPHA + VI TRI: pixel mo (< 0.6), cach than dac (> 0.9) qua 3px,
+    VA nam trong dai chan. Ngoai dai chan la quang ngoi sao, qua cau, lap lanh,
+    long vien — khong cham. Da ghep mat na len ca 18 anh de kiem bang mat.
+
+    Bo manh vun: giu MOI manh >= 0.5% manh lon nhat (ngoi sao cua one-ear-up,
+    buom cua playing la manh roi), chi bo bui.
+    """
+    a = np.array(Image.open(duong_vao).convert('RGBA')).astype(float)
+    alpha = a[:, :, 3] / 255.0
+    rgb = a[:, :, :3]
+    H = alpha.shape[0]
+
+    dac = alpha > 0.9
+    xa_than = ndimage.distance_transform_edt(~dac)
+    y_day = np.where(dac.any(axis=1))[0].max()
+    trong_dai = (np.arange(H) > y_day - int(H * DAI_CHAN))[:, None]
+    bong = (alpha < 0.6) & (xa_than > 3) & trong_dai
+    alpha = np.where(bong, 0.0, alpha)
+
+    vun = alpha > 0.08
+    nhan, so = ndimage.label(vun)
+    if so > 1:
+        kich = ndimage.sum(vun, nhan, range(1, so + 1))
+        giu = np.isin(nhan, np.where(kich >= 0.005 * kich.max())[0] + 1)
+        alpha = np.where(vun & ~giu, 0.0, alpha)
+
+    out = Image.fromarray(np.dstack([rgb, alpha * 255]).astype(np.uint8), 'RGBA')
+    out = _chuan_hoa_khung(out, alpha)
+    out.save(duong_ra, 'WEBP', quality=92, method=6)
+    return out.size, int((bong & (a[:, :, 3] > 5)).sum())
+
+
+# 18 artwork chu du an chot 02/10/2026 (muc 12). 14 artwork khoa KHONG co o day:
+# them ten vao day ma chua co quyet dinh moi la mo khoa bang tay.
+TEN_V23 = [
+    # trang thai dong
+    'default', 'listening', 'thinking', 'serious', 'celebrate',
+    # minh hoa tinh
+    'tiny-smile', 'one-ear-up', 'leaning-closer', 'reading', 'moving', 'curious',
+    'sitting-neutral', 'neutral', 'proud', 'using-laptop', 'waving', 'concerned', 'playing',
+]
+
+
 if __name__ == '__main__':
-    TEN = ['default', 'listening', 'thinking', 'found-something',
-           'side-eye', 'serious', 'celebrate']
-    for t in TEN:
-        kt = lam_sach('docs/thiet-ke/celes-nhan-vat/v2/states/%s.png' % t,
-                      'public/celes/%s.webp' % t)
-        print('%-16s -> %s  %d KB' % (t, kt, os.path.getsize('public/celes/%s.webp' % t) // 1024))
+    for t in TEN_V23:
+        kt, so_bong = lam_sach_v23('docs/thiet-ke/celes-nhan-vat/v2-3/%s.png' % t,
+                                   'public/celes/%s.webp' % t)
+        print('%-16s -> %s  %d KB  bong da bo %d px' % (
+            t, kt, os.path.getsize('public/celes/%s.webp' % t) // 1024, so_bong))

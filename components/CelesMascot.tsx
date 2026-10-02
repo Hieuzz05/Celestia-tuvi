@@ -24,8 +24,6 @@ export type TrangThaiCeles =
   | 'default'
   | 'listening'
   | 'thinking'
-  | 'found-something'
-  | 'side-eye'
   | 'serious'
   | 'celebrate'
 
