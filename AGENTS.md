@@ -49,7 +49,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
 | Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
-| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-tho` trong `app/globals.css`. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt ở lá số, mệnh bàn, trang luận giải |
+| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt ở lá số, mệnh bàn, trang luận giải |
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |

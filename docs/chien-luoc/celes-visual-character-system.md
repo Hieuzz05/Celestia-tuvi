@@ -11,7 +11,9 @@ Tài liệu này chốt **hệ asset hình ảnh** của Celes Moon Hare sau vò
 
 Bộ bàn giao hiện có:
 
-- **49 PNG RGBA nền trong suốt**, không chữ nướng vào ảnh, 512×512:
+- **49 PNG RGBA nền trong suốt**, không chữ nướng vào ảnh, 512×512 (riêng `default`
+  768×768). Nền trong suốt nhưng **có bóng đổ nướng vào ảnh** và rìa nhiễm màu nền kem —
+  đó là lý do bảy tệp lên `public/` phải đi qua `scripts/lam-sach-anh-celes.py` trước:
   - 6 master views
   - 16 expressions
   - 18 poses
@@ -270,9 +272,17 @@ Khuyến nghị ban đầu là chỉ commit WebP (1.9MB) để tiết kiệm. Ph
 **Luật:** chỉ copy sang `public/` (web) hoặc `apps/celes-app/assets/` (app) **đúng những
 state đang thật sự dùng**, vào phiên thi công, khi có mã trỏ tới. Không copy trước.
 
-**Trạng thái 02/10/2026:** đã copy **7 tệp WebP** sang `public/celes/` (280KB) — đúng 7
+**Trạng thái 02/10/2026:** đã copy **7 tệp WebP** sang `public/celes/` (~290KB) — đúng 7
 state Phase 3, `HAS_RECEIPTS` và `NOT_BUYING_IT` vẫn nằm ngoài. `apps/celes-app/assets/`
-chưa có gì vì phía app chưa làm. Thêm state mới vào `public/` là lại phải qua luật trên.
+mới có icon/splash, chưa có tệp linh vật vì phía app chưa làm. Thêm state mới vào
+`public/` là lại phải qua luật trên.
+
+Bảy tệp đó **không phải bản copy thẳng** từ `v2/states/`: chúng đi qua
+`scripts/lam-sach-anh-celes.py`, bỏ bóng đổ nướng sẵn trong ảnh, khử màu nền kem bám ở
+rìa, rồi chuẩn hoá cả bảy về khung 512×512 với nhân vật cao 86% khung. Ảnh gốc mỗi tệp
+một khung (`default` 768, còn lại 512) và một tỉ lệ chiếm khung (83% so với 60%), nên
+nếu copy thẳng thì cùng một `cao` mà con thỏ ở màn chờ nhỏ hơn con thỏ đầu trang 1,4 lần.
+Thêm state mới thì chạy lại script đó, đừng copy tay.
 
 ---
 

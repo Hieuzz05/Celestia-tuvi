@@ -43,7 +43,8 @@ Cảm giác đích: **"quiet rabbit who already knows."**
 
 ## Bộ v2 — duyệt 02/10/2026
 
-Bước [1]–[3] đã xong bằng bộ **Celes Character System v2**, 49 ảnh 512×512, nằm ở
+Bước [1]–[3] đã xong bằng bộ **Celes Character System v2**, 49 ảnh 512×512 (riêng
+`default` 768×768), nằm ở
 [`v2/`](./v2/). Chủ dự án duyệt ngày 02/10/2026 sau khi đối chiếu với `concept-01.png`:
 soft 3D, tai cụp dày có trọng lượng, mắt nửa mí deadpan, mặt nạ kem hữu cơ, thân ngồi
 thấp, thiên văn chỉ trên tai dựng — identity khớp, không phải redraw hỏng như bản v2 cũ
@@ -129,6 +130,24 @@ background. No turnaround sheet, no expressions, no logos, no stickers yet.
 
 Trượt bất kỳ điểm nào thì sinh lại, đừng sửa tay — sửa tay là mở lại đúng cái cửa
 đã làm hỏng bản v2.
+
+## Nghiệm thu tệp — bảy câu trên là về HÌNH, đây là về TỆP
+
+Bộ v2 duyệt ngày 02/10/2026 chỉ qua bảy câu về hình dáng, nên ba khuyết tật kỹ thuật
+lọt thẳng lên production: bóng đổ nướng vào ảnh (nền tối thành vệt trắng dưới chân),
+rìa nhiễm màu nền kem, và mỗi tệp một khung với một tỉ lệ chiếm khung khác nhau
+(`default` 768px chiếm 83%, `thinking` 512px chiếm 60% — cùng một `cao` mà ra hai cỡ).
+Hình đúng vẫn hỏng nếu tệp sai. Soi thêm năm điểm này trước khi đưa vào `public/`:
+
+1. Đặt ảnh lên **bốn nền**: `#F7F3EA` · `#FFFFFF` · `#20002B` · `#0B0A0D`. Có vệt sáng
+   nào dưới chân trên hai nền tối không? Có là bóng đã bị nướng vào ảnh.
+2. Rìa nhân vật trên nền tối có **quầng sáng** không? Có là rìa còn nhiễm màu nền.
+3. Mọi state có **cùng kích thước khung** và **cùng tỉ lệ chiếm khung** không?
+4. Nhìn ở **đúng cỡ hiển thị thật** (56px và 80px), không phải cỡ gốc — khuyết tật ở
+   512px có thể vô hình, ở 56px lại thành thứ đập vào mắt, và ngược lại.
+5. Nền có thật sự **trong suốt**, không phải hình chữ nhật màu kem?
+
+Cách sửa khi trượt: chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc. Không sửa từ WebP.
 
 ## Thư mục
 

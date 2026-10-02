@@ -58,14 +58,18 @@ export function CelesMascot({
       width={cao}
       height={cao}
       /*
-       * Ảnh nguồn 512px vuông, nền trong suốt, không chữ nướng vào; hiển thị
-       * nhỏ hơn bằng CSS (56 hoặc 80px). Tắt tối ưu của Next: tệp tĩnh ~30KB,
-       * đi qua bộ biến đổi ảnh chỉ tốn hạn mức Vercel mà không nhẹ thêm —
-       * luật "Ngân sách = 0".
+       * Ảnh nguồn: 512px vuông, nền trong suốt, nhân vật cao 86% khung — cả
+       * bảy state đã chuẩn hoá cùng khung và cùng tỉ lệ bằng
+       * `scripts/lam-sach-anh-celes.py`, nên cùng một `cao` thì con thỏ ở mọi
+       * trạng thái ra bằng nhau. Bóng đổ KHÔNG nằm trong ảnh (xem `.celes-anh`
+       * trong globals.css): nướng bóng vào ảnh thì nền tối hiện ra vệt trắng.
+       *
+       * Tắt tối ưu của Next: tệp tĩnh 38–43KB, đi qua bộ biến đổi ảnh chỉ tốn
+       * hạn mức Vercel mà không nhẹ thêm — luật "Ngân sách = 0".
        */
       unoptimized
       draggable={false}
-      className={`${dungYen ? '' : 'celes-tho'} ${className}`}
+      className={`celes-anh ${dungYen ? '' : 'celes-tho'} ${className}`}
       /* width/height cố định để không đẩy layout — docs/bay/giao-dien.md, CLS. */
       style={{ width: cao, height: cao, flexShrink: 0 }}
     />

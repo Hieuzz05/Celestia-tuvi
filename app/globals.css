@@ -99,6 +99,10 @@
   --shadow-image: rgba(32, 0, 36, 0.01) 0 1px 1.5px 0, rgba(32, 0, 36, 0.02) 0 2px 3px 0,
     rgba(32, 0, 36, 0.03) 0 4px 6px 0, rgba(32, 0, 36, 0.04) 0 8px 12px 0,
     rgba(32, 0, 36, 0.05) 0 16px 24px 0;
+  /* Bóng cho linh vật. Phải tách khỏi --shadow-image: cái đó là box-shadow
+     (bóng của khung chữ nhật), linh vật là ảnh nền trong suốt nên cần
+     drop-shadow bám theo đường viền con thỏ. Giữ cùng tông tím của hệ bóng. */
+  --shadow-celes: drop-shadow(rgba(32, 0, 36, 0.16) 0 6px 10px);
 
   /* ---------- Token ngữ nghĩa — Ngày (mặc định, đúng theme gốc) ---------- */
   --bg: var(--color-canvas);
@@ -195,6 +199,10 @@
   --shadow-card: rgba(255, 255, 255, 0.11) 0 0 0 1px;
   --shadow-elevated: rgba(255, 255, 255, 0.11) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 16px 24px 0;
   --shadow-image: rgba(0, 0, 0, 0.35) 0 16px 24px 0;
+  /* Nền tối: bóng đen sâu hơn, thêm một lớp quầng tím rất nhạt để con thỏ
+     không bị dính bẹt vào nền. Ảnh KHÔNG còn bóng nướng sẵn — bóng nằm ở đây. */
+  --shadow-celes: drop-shadow(rgba(0, 0, 0, 0.38) 0 6px 12px)
+    drop-shadow(rgba(150, 125, 210, 0.14) 0 0 8px);
 }
 
 @theme inline {
@@ -736,6 +744,12 @@ body {
  * Hai lý do tắt khác nhau nên không gộp: cái trên là sở thích thiết bị,
  * cái dưới là luật an toàn — an toàn thắng nhân vật, luôn luôn.
  */
+/* Bóng của linh vật. Tách khỏi .celes-tho vì .celes-tho bị bỏ khi đứng yên
+ * (serious, hoặc khi tắt chuyển động) — bóng thì phải còn ở mọi trạng thái. */
+.celes-anh {
+  filter: var(--shadow-celes);
+}
+
 .celes-tho {
   animation: celes-tho 3s ease-in-out infinite;
   will-change: transform;
