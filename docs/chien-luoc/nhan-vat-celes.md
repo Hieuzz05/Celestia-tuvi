@@ -3,6 +3,14 @@
 **Ngày chốt:** 01/10/2026 · **Phiên:** `[CHIẾN LƯỢC]`
 **Đi kèm:** [`ca-nhan-hoa-celes.md`](./ca-nhan-hoa-celes.md) — tệp đó ghi phần CHẠY ĐƯỢC
 
+> **`characterHook` CHƯA TỒN TẠI TRONG MÃ (soát 02/10/2026).** Phase 3 chỉ làm
+> `nhip` và `kieu` (`lib/rag/hop-dong-tra-loi.ts`); `characterHook` và
+> `playfulness` đã HOÃN không ngày hẹn vì chúng là lời model tự khai, không
+> phải sự kiện đo được — xem mục 17.1 của
+> [`ca-nhan-hoa-celes.md`](./ca-nhan-hoa-celes.md). Mọi chỗ dưới đây nói
+> "nối dây `characterHook`" là BẢN THIẾT KẾ, chưa phải hiện trạng: nơi gọi
+> linh vật vẫn truyền tay một giá trị cố định.
+
 ---
 
 ## ĐỌC DÒNG NÀY TRƯỚC

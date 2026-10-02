@@ -24,6 +24,7 @@ import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type YDinh } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
+import { tinhHopDong } from './hop-dong-tra-loi';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
 
 /**
@@ -316,12 +317,36 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       })
     : null;
 
+  /*
+   * Đo an toàn MỘT LẦN cho cả lượt.
+   *
+   * Route đã đo trước `datChoCauHoi` và truyền xuống (`route.ts`), nên đường
+   * thật không gọi lại. Chỉ Lab và eval — vốn gọi thẳng hàm này — mới rơi vào
+   * nhánh `doAnToan`. Giữ đúng một chỗ gọi: hai chỗ đo là hai cơ hội cho hai
+   * kết quả khác nhau khi `doAnToan` sau này nhận thêm tham số.
+   */
+  const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
+
+  /*
+   * Nhịp và kiểu cho lượt này. Hàm thuần, không gọi model, không chạm mạng.
+   *
+   * Nó KHÔNG nhận lá số và KHÔNG nhận `nghieng`, nên không có đường nào chạm
+   * tới hướng kết luận — xem ghi chú đầu `hop-dong-tra-loi.ts`.
+   */
+  const hopDong = tinhHopDong({
+    yDinh: keHoach.yDinh,
+    chuDe: keHoach.chuDe,
+    doDaiCauHoi: vao.cauHoi.length,
+    mucAnToan,
+  });
+
   const { system, user } = dungPromptCoCanCu(
     goi,
     vao.lichSu ?? [],
     daNoiTruoc,
     khoiNghiengVe(nghieng),
-    vao.laTiepTuChip === true
+    vao.laTiepTuChip === true,
+    hopDong
   );
 
   const truocModel = Date.now();
@@ -443,7 +468,6 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    *
    * CRITICAL không đi qua đây: route đã dừng từ trước, không có bài nào để nối.
    */
-  const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
   const van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanDaDoiTen) : vanDaDoiTen;
 
   const ketQuaNgonNgu = soatNgonNgu(

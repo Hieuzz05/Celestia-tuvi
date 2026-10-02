@@ -44,6 +44,11 @@ better_option · positive/negative conclusion
 
 ## 2. `ResponseContract` — bản chốt Phase 3
 
+> **Chỉ hai trường đầu được làm (02/10/2026).** `playfulness` và `characterHook`
+> đã HOÃN không ngày hẹn — xem mục 17.1. Bản cài thật là `lib/rag/hop-dong-tra-loi.ts`
+> (tiếng Việt: `nhip` và `kieu`), không có kiểu `ResponseContract` nào trong mã.
+> Phần dưới là bản thiết kế, không phải mô tả hiện trạng.
+
 ```ts
 type ResponseContract = {
   rhythm: 'COMPACT' | 'MEDIUM' | 'DEEP';
@@ -254,6 +259,10 @@ phải từ metadata của hook.
 
 ## 10. Thay đổi cơ sở dữ liệu — DUY NHẤT của Phase 3
 
+> **ĐÃ HOÃN 02/10/2026, chưa chạy câu SQL nào.** Phase 3 lên nhánh chính
+> KHÔNG có thay đổi cơ sở dữ liệu. Lý do và điều kiện để mở lại: mục 17.1.
+> Phần dưới giữ lại làm bản thiết kế, không phải mô tả hiện trạng.
+
 ```sql
 alter table public.chat_messages
   add column if not exists character_hook text,
@@ -339,7 +348,7 @@ Không bao giờ nói *"Celes đoán bạn thích kiểu này."*
 | **0** | Soát lại spec: sửa tham chiếu sai, đối chiếu mục 14/15 với mã | XONG 02/10/2026 |
 | **1** | Lớp an toàn thật: `QuyetDinhAnToan` (luồng) tách khỏi lời miễn trừ (trình bày), bộ dò tất định ba lớp, bộ kiểm trong CI | XONG 02/10/2026 |
 | **2** | Nút lái một trục + luật đếm 3-lần-đổi-mặc-định | HOÃN — chưa đủ dữ liệu, xem mục 17 |
-| **3** | `ResponseContract` + `characterHook` + hai cột `chat_messages` + bộ kiểm CI | Code được ngay |
+| **3** | `rhythm` + `style` bằng hàm thuần `hop-dong-tra-loi.ts` + bộ kiểm CI | XONG 02/10/2026 — `characterHook`, `playfulness` và hai cột `chat_messages` HOÃN, xem 17.1 |
 | **4** | Living Memory: `H###`, schema bộ nhớ, RLS, truy hồi, hết hạn, xung đột, `MEMORY_RECALL`, mâu thuẫn lịch sử | Chờ |
 | **5** | Cá nhân hoá liên tính năng: Hôm nay / Hành trình / hộp bối cảnh — **không đổi bài luận đã lưu** | Chờ |
 | **6** | Chat cho khách — chỉ sau khi có hạn mức ẩn danh + chặn tần suất + trần ngân sách | Chờ |
@@ -458,6 +467,11 @@ vừa rồi không?"* — **không tự chuyển.**
 
 ## 15. Bộ kiểm — Phase 3
 
+> **Bài đã làm tên là `scripts/test-hop-dong-tra-loi.ts`** (02/10/2026), chạy
+> trong CI. Nó khoá: `quyet-dinh`/`co-khong` không bao giờ bị nén, khối hợp
+> đồng đứng trước `THEO_Y_DINH`, nhãn máy không lọt vào prompt, và hàm phủ đủ
+> 864 tổ hợp. Nó KHÔNG gọi model — xem ghi chú cuối mục này.
+
 ### Chặn gộp nhánh
 
 ```
@@ -550,3 +564,61 @@ Ghi ra để lần sau không phải kiểm lại:
 - Pháp lý / riêng tư: Luật Trẻ em (dưới 16 tuổi) và Luật BVDLCN 91/2025/QH15 (hiệu lực
   01/01/2026, Điều 24: trẻ từ 7 tuổi cần cả đồng ý của chính mình lẫn của người giám hộ)
   — chưa đánh giá, phải làm trước Phase 4 vì Living Memory lưu dữ liệu cá nhân.
+
+### 17.1 `characterHook`, `playfulness`, hai cột DB — HOÃN (02/10/2026)
+
+Phase 3 bản thiết kế có bốn trường: `rhythm`, `style`, `playfulness` (0|1|2),
+`characterHook` (NONE|INSIGHT_FOUND|DRY_HUMOR|LIGHT_TEASE), cộng hai cột
+`character_hook` và `chu_de` trên `public.chat_messages`.
+
+**Đã làm:** `rhythm` và `style`, bằng hàm thuần `lib/rag/hop-dong-tra-loi.ts`.
+**Đã hoãn:** `playfulness`, `characterHook`, cả hai cột. Không có ngày hẹn —
+chúng chỉ sinh giá trị ở Phase 4 (Living Memory), mà Phase 4 còn vướng mục 17.
+
+Ba lý do, xếp theo sức nặng.
+
+**S4 — lý do quyết định. `characterHook` là lời model tự khai, không phải sự
+kiện đo được.** Chủ ý ban đầu là "đếm theo trường enum thay vì đếm cụm từ", để
+phép đếm khỏi trôi khi câu chữ đổi. Nhưng một trường enum trong schema ĐẦU RA
+của model cũng là văn bản model sinh ra, chỉ ngắn hơn. Model có thể ghi
+`DRY_HUMOR` mà bài không có một câu hài nào, và không gì phát hiện được. Ghi nó
+xuống cơ sở dữ liệu là ghi lại một điều có thể đã không xảy ra — rồi Phase 4 đọc
+bảng ấy và tin.
+
+Dự án đã trả giá bốn lần cho đúng bài này: `gomLoiKhuyen` (đứng ở 75–79% sau ba
+lần sửa prompt), `CUM_BA_PHAI`, `catMoDauThua`, `suaCauTiengLong` — cả bốn cuối
+cùng đều phải ép bằng mã trên ĐẦU RA. Nếp là **ép bằng mã, đừng xin model**.
+Một trường enum tự khai vi phạm chính nếp đó.
+
+**S3 — thêm cột phải sửa hai nơi.** App có bản sao riêng của tầng hội thoại
+(`@/du-lieu/hoi-thoai` trong `apps/celes-app/`), tách khỏi `lib/store/hoi-thoai.ts`
+của web. Thêm cột là hai lần sửa, và quên một bên thì hai bề mặt ghi lệch nhau
+vào cùng một bảng — kiểu lệch không ai thấy cho tới lúc đọc bảng ra để phân tích.
+
+**S2 — đường ghi hiện tại nuốt lỗi.** `luuLuot` (`lib/store/hoi-thoai.ts:117`)
+chèn MỘT mảng hai dòng từ client và bọc trong `catch {}`. Cột mới sai kiểu, sai
+tên, hay vướng RLS thì cả hai dòng rơi im lặng — mất luôn nội dung chat, không
+chỉ mất trường mới.
+
+**Nếu sau này vẫn thêm cột: nối bằng `runId`, KHÔNG ghi qua client.**
+`runId` đã chạy sẵn từ `lib/rag/tra-loi.ts:283` ra `app/api/hoi-dap/route.ts:180`.
+Phía máy chủ đã có cả `chuDe` lẫn `runId` trong tay ở thời điểm sinh bài, nên
+`chat_messages` nối sang `retrieval_runs` bằng `runId` là đủ — không cần cột
+`chu_de` chép lại, và không cần tin một giá trị do trình duyệt gửi lên. Luật
+viết SQL khi hai máy dùng chung một DB: xem `AI-PHOI-HOP.md` §7.
+
+### 17.2 Khoảng trống `huong` ↔ `ketLuan` — chưa ai gác
+
+Hướng nghiêng do engine ĐẾM ở `lib/rag/nghieng-ve.ts` (`huong: huongTu(do_, can)`,
+dòng ~399) — số học thuần, tất định. Nó đi vào prompt qua `khoiNghiengVe`.
+
+`ketLuan` thì do MODEL viết. Giữa hai thứ đó không có bộ kiểm nào đối chiếu rằng
+kết luận model viết ra đi cùng hướng engine đếm được. Thứ duy nhất đứng ở đó là
+`CUM_BA_PHAI` — một lớp ép trên đầu ra, và nó chỉ chặn kiểu câu ba phải, không
+so dấu.
+
+Hợp đồng trả lời (`hop-dong-tra-loi.ts`) KHÔNG làm khoảng trống này rộng thêm:
+nó không nhận lá số, không có trường hướng, nên không có đường nào chạm tới
+`ketLuan`. Bài kiểm `scripts/test-hop-dong-tra-loi.ts` khoá điều đó. Nhưng cũng
+đừng nhầm là nó đã lấp — khoảng trống vẫn còn nguyên, và chỉ bài chạy model thật
+(`scripts/eval-chat-quyet-dinh.ts`) mới đo được.

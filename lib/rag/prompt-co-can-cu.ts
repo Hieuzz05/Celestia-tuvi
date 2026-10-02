@@ -4,6 +4,8 @@ import { dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
 import { CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { VAN_PHONG_CELES_CHAT } from './van-phong';
 import { chonMauVang, khoiMauVang } from './mau-vang';
+import { khoiHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
+import type { YDinh } from './planner';
 
 /**
  * Prompt cho luồng có căn cứ.
@@ -262,7 +264,14 @@ export function dungPromptCoCanCu(
   /** Khối hướng nghiêng do engine đếm — xem `nghieng-ve.ts`. Rỗng khi không tính được. */
   khoiNghieng = '',
   /** Câu hỏi này đến từ chip gợi ý của chính Celes — xem chonBoiCanhHoiThoai */
-  laTiepTuChip = false
+  laTiepTuChip = false,
+  /**
+   * Nhịp và kiểu cho lượt này — xem `hop-dong-tra-loi.ts`.
+   *
+   * Tuỳ chọn, mặc định không có: để các bề mặt gọi thẳng hàm này (eval, thử
+   * nghiệm) chạy đúng như trước mà không phải dựng thêm gì.
+   */
+  hopDong?: HopDongTraLoi
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -292,6 +301,21 @@ export function dungPromptCoCanCu(
     ? ''
     : '\n\nLƯU Ý: không có nguồn tham chiếu nào cho câu hỏi này. Chỉ được mô tả những gì dữ kiện lá số nói và nêu rõ phần học thuyết chưa có căn cứ trong kho. Không tự bổ sung quy tắc Tử Vi.';
 
+  /*
+   * Khối hợp đồng đứng TRƯỚC `phanYDinh`, không phải sau.
+   *
+   * `THEO_Y_DINH` giữ các luật cứng — bảy việc bắt buộc của câu quyết định,
+   * "3–6 câu" mỗi ý. Model nghiêng về chỉ thị đọc sau cùng, nên luật cứng phải
+   * là thứ đứng cuối. Đảo hai khối này là để một gợi ý về nhịp thắng một ràng
+   * buộc mà `kiem-duyet` sẽ loại bài nếu thiếu.
+   *
+   * `scripts/test-hop-dong-tra-loi.ts` khoá thứ tự này.
+   */
+  // `GoiBangChung.yDinh` là `string` (gói đi qua JSON); `khoiHopDong` chỉ đọc nó
+  // để tra một Set, ô lạ rơi vào nhánh "chưa ai nói" và vẫn phát khối hợp lệ.
+  const phanHopDong = hopDong ? khoiHopDong(hopDong, goi.yDinh as YDinh) : '';
+  const khoiTruocYDinh = phanHopDong ? `\n\n${phanHopDong}` : '';
+
   const phanYDinh = THEO_Y_DINH[goi.yDinh] ? `\n\n${THEO_Y_DINH[goi.yDinh]}` : '';
 
   const phanDaNoi = daNoiTruoc.length
@@ -315,7 +339,7 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
 
   return {
     system: SYSTEM,
-    user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${phanYDinh}${
+    user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${khoiTruocYDinh}${phanYDinh}${
       mauChat ? `\n\n${mauChat}` : ''
     }
 
