@@ -150,6 +150,9 @@ bản trên `main`, áp lại thay đổi của mình, đẩy lên.
 git pull origin main
 ```
 
+Trước khi quyết định gộp hay rebase, đọc luật `fetch` ở mục 9: nhánh kia có thể
+đã đổi chỗ, và rebase theo một ghi chú cũ là viết lại lịch sử người khác đã đẩy.
+
 Git báo `CONFLICT` ở tệp nào thì mở tệp đó ra. Nguyên tắc xử:
 
 - **Giữ cả hai ý.** Hai AI sửa cùng một tệp thường là sửa hai việc khác nhau, chứ
@@ -220,6 +223,32 @@ Tuyến đó trả mã commit mà máy chủ thật đang chạy, kèm số hi�
 luận giải. Đây là câu trả lời duy nhất đáng tin cho câu hỏi "đã lên chưa". Đừng
 đoán qua giao diện: phần lớn thay đổi gần đây nằm ở phía máy chủ nên gói gửi
 xuống trình duyệt không đổi một byte.
+
+### Máy kia đang ở đâu — và vì sao `TRANG-THAI.md` không trả lời được
+
+Ba lệnh trên nói về **máy này**. Tuyến `/api/phien-ban` nói về **máy chủ**. Không
+lệnh nào nói về **máy kia**, và đó là chỗ đã sai thật:
+
+```bash
+git fetch origin --prune                              # BẮT BUỘC, trước mọi câu kết luận
+git rev-parse origin/main main                        # remote và local có cùng chỗ không
+git worktree list                                     # worktree nào đang giữ nhánh nào
+git rev-list --left-right --count origin/main...HEAD  # `0 N` = gộp thẳng được
+```
+
+Hai luật rút ra sau một lần suýt rebase nhầm lịch sử đã đẩy (02/10/2026):
+
+- **`origin/main` chỉ đúng tại thời điểm `fetch` gần nhất.** Hai máy cùng đẩy thì
+  trạng thái đọc ở đầu phiên đã cũ khi tới giữa phiên. Mọi quyết định gộp hay
+  rebase phải mở đầu bằng `fetch`, không dùng lại kết quả của lượt trước.
+- **Ghi chú bàn giao cũ nhanh hơn mã.** `TRANG-THAI.md` từng dặn rebase CEL-185
+  lên base cũ và ghi "chưa push", trong khi nhánh đã rebase và đã đẩy xong. Khi
+  ghi chú lệch với `git` sau `fetch`, **`git` thắng** — và phải sửa ghi chú ngay,
+  vì phiên sau đọc nó rồi làm theo sẽ viết lại lịch sử người khác đã đẩy.
+
+Đừng suy trạng thái từ tệp đang mở trong thư mục làm việc: tệp đó thuộc nhánh
+đang đứng, không phải `main`. Muốn biết `main` có gì thì đọc thẳng:
+`git show origin/main:<tệp>`.
 
 ---
 
