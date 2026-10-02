@@ -502,7 +502,7 @@ export const vi = {
     xacNhanXoa: 'Xoá lá số của {ten}? Thao tác này không hoàn lại được.',
     khongXoaMacDinh:
       'Đây đang là "Lá số của tôi". Chọn một lá số khác làm mặc định trước khi xoá lá số này.',
-    trong: 'Chưa có lá số nào được giữ. Thêm lá số đầu tiên để Celes có thứ để đọc cùng bạn.',
+    trong: 'Chưa có lá số nào được giữ. Thêm lá số đầu tiên, rồi mình cùng đọc.',
     luuTheoTaiKhoan: 'Đang lưu theo tài khoản của bạn — mở ở máy nào cũng thấy.',
     luuTheoTrinhDuyet:
       'Đang lưu ngay trên trình duyệt này. Đăng nhập để giữ lại và dùng được trên mọi thiết bị.',
@@ -530,7 +530,7 @@ export const vi = {
     nguoiVuaNhap: '— Lá số vừa nhập —',
     hoiVeNguoiKhac: 'Hỏi về một lá số khác',
     hoiVeNguoiNay: 'Hỏi về lá số này',
-    canBietAi: 'Celes cần biết đang nói về lá số nào',
+    canBietAi: 'Mình đang nói về lá số nào nhỉ?',
     canBietAiMo:
       'Chọn một lá số đã lưu, hoặc điền ngày giờ sinh ở bên trái. Không có lá số thì câu trả lời chỉ còn là lời khuyên chung chung.',
     oNhap: 'Nói với Celes…',
