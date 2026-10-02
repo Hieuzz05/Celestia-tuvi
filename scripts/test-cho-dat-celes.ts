@@ -56,7 +56,7 @@ const CAM: readonly string[] = [
   'components/MarkdownLuanGiai.tsx',
 ];
 
-/** 14 artwork khoá có chủ đích (mục 12). Tên tệp kebab-case. */
+/** 14 artwork khoá có chủ đích (mục 12), kể cả bí danh (side-eye / looking-away…). Tên tệp kebab-case. */
 const KHOA: readonly string[] = [
   'side-eye',
   'looking-away',
@@ -70,6 +70,11 @@ const KHOA: readonly string[] = [
   'reading-focus',
   'excited',
   'found-something',
+  'sad',
+  'resting',
+  'stretching',
+  'lying-relaxed',
+  'sleeping',
 ];
 
 /** Định nghĩa component — không tính là nơi đặt. */

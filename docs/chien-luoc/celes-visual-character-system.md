@@ -280,10 +280,11 @@ Khuyến nghị ban đầu là chỉ commit WebP (1.9MB) để tiết kiệm. Ph
 **Luật:** chỉ copy sang `public/` (web) hoặc `apps/celes-app/assets/` (app) **đúng những
 state đang thật sự dùng**, vào phiên thi công, khi có mã trỏ tới. Không copy trước.
 
-**Trạng thái 02/10/2026:** đã copy **7 tệp WebP** sang `public/celes/` (~290KB) — đúng 7
-state Phase 3, `HAS_RECEIPTS` và `NOT_BUYING_IT` vẫn nằm ngoài. `apps/celes-app/assets/`
-mới có icon/splash, chưa có tệp linh vật vì phía app chưa làm. Thêm state mới vào
-`public/` là lại phải qua luật trên.
+**Trạng thái 02/10/2026 (CEL-187):** `public/celes/` có **18 tệp WebP** — đúng 18 ảnh
+đang dùng ở mục 12, trích từ nguồn v2.3. 14 ảnh khoá (gồm `HAS_RECEIPTS`, `NOT_BUYING_IT`)
+không có tệp. `apps/celes-app/assets/` chưa có tệp linh vật vì phía app chưa làm. Thêm
+ảnh mới vào `public/` là lại phải qua luật trên, và `scripts/test-cho-dat-celes.ts` đỏ
+cho đến khi mảng `TEN_ANH_CELES` khớp thư mục.
 
 Bảy tệp đó **không phải bản copy thẳng** từ `v2/states/`: chúng đi qua
 `scripts/lam-sach-anh-celes.py`, bỏ bóng đổ nướng sẵn trong ảnh, khử màu nền kem bám ở
@@ -294,111 +295,147 @@ Thêm state mới thì chạy lại script đó, đừng copy tay.
 
 ---
 
-## 12. Kế hoạch gắn lên giao diện — chốt 02/10/2026, WEB ĐÃ THI CÔNG
+## 12. Celes trên giao diện — chốt 02/10/2026 (CEL-187), WEB ĐÃ THI CÔNG
 
-> Mục này là **kế hoạch đã duyệt**. Phần **web** đã thi công 02/10/2026 (nhánh
-> `viec/linh-vat-web`, xem bảng "Đã thi công trên web" ngay dưới). Phần **app** chưa.
+> Thay bản chốt đầu ngày 02/10 (5 chỗ, chỉ /hoi-dap và /ho-so). Chủ dự án duyệt lại cùng
+> ngày: **18/32 artwork unique vào web ngay, 14/32 khoá có chủ đích.** Nguồn ảnh:
+> `celes_character_system_v2_3_dark_halo_fix.html` (v2.3, đã sửa quầng trắng), trích ra
+> `docs/thiet-ke/celes-nhan-vat/v2-3/` rồi chạy `scripts/lam-sach-anh-celes.py`. Phần
+> **app** chưa thi công.
 
-### Đã thi công trên web (02/10/2026)
+### Nguyên tắc đặt — vẫn giữ, phát biểu chặt hơn
 
-| Chỗ | Tệp | Kích thước | State |
-|---|---|---:|---|
-| Đầu trang Hỏi Celes | `app/hoi-dap/page.tsx` | 56px | `DEFAULT` (truyền tay, chờ `characterHook`) |
-| Hỏi Celes — rỗng, đã chọn lá số | `app/hoi-dap/page.tsx` | 80px | `DEFAULT` |
-| Hỏi Celes — rỗng, CHƯA chọn lá số | `app/hoi-dap/page.tsx` | 80px | `DEFAULT` |
-| Hỏi Celes — màn chờ trả lời | `app/hoi-dap/page.tsx` | 80px | `THINKING` |
-| Danh sách lá số — rỗng | `app/ho-so/page.tsx` | 80px | `DEFAULT` |
+> **Celes đứng ở đầu trang, màn vào / thẻ rỗng, màn chờ, cổng, lỗi và sự kiện.
+> KHÔNG đứng TRONG vùng nội dung** — mệnh bàn, bài luận, dòng thời gian, kết quả hợp tuổi,
+> danh sách lá số.
 
-**Luật an toàn (mục 9) trên web.** Lượt người dùng **mới nhất** có `doAnToan() != NORMAL`
-thì mọi linh vật trên trang Hỏi Celes đổi sang `SERIOUS` và tắt thở; gửi câu NORMAL tiếp
-theo hoặc xoá hội thoại là tự về. Chấm ở trình duyệt bằng đúng hàm máy chủ dùng
-(`lib/linh-vat.ts` → `lib/rag/an-toan.ts`), nên biết mức ngay lúc gửi, trước khi chờ.
+Lý do không đổi: lá số và bài luận là nơi người dùng **đọc** — con thỏ ở đó là cướp sự chú
+ý khỏi thứ họ đến để xem. Bản cũ nói "không có Celes ở tab Lá số / Hành trình / luận giải";
+bản này cho Celes vào các TRANG đó nhưng chỉ ở viền (đầu trang, lúc chờ, lúc rỗng), không
+bao giờ vào vùng nội dung.
+
+**Giữ bằng mã, không bằng lời:**
+- `tsc` giữ ảnh đúng LOẠI CHỖ: `ANH_THEO_CHO` trong `components/CelesMascot.tsx`
+  (`dau-trang` · `rong` · `cho` · `cong` · `loi` · `su-kien`). Đặt `proud` vào `rong` là đỏ.
+- `scripts/test-cho-dat-celes.ts` (CI) giữ ảnh đúng MÀN: danh sách trắng tệp → ảnh, danh
+  sách CẤM (TuViChart, PalaceCell, CenterPanel, PalaceDrawer, BangLuanGiai, CauTraLoiV3,
+  TongQuanV3, BucTranhLon, DaiThoiGian, MarkdownLuanGiai), mảng ảnh khớp 1-1 với
+  `public/celes/`, không ảnh khoá nào có tệp. **Danh sách là nguồn sự thật** — không có
+  luật "đúng N tệp". Đặt ở màn mới: sửa mục này trước, rồi danh sách.
+
+### 18 ảnh đang dùng
+
+| Màn / sự kiện | Ảnh | Khi nào | Chỗ | Cỡ (≥640 / <640) |
+|---|---|---|---|---|
+| `/` | tiny-smile | luôn | hero, trên eyebrow, canh giữa | 80 / 64 |
+| `/gioi-thieu` | default | luôn | hero | 96 / 72 |
+| `/home` | one-ear-up | **chỉ** khi chưa có lá số | thẻ rỗng | 80 / 64 |
+| `/la-so` nhập | leaning-closer | form nhập (kể cả báo ngày sai) | đầu thẻ form | 80 / 64 |
+| `/la-so` chờ | thinking | `KHUNG_CHO_LA_SO`, hiện trễ 1s | màn chờ | 80 |
+| `/la-so` giữ lại | proud | bấm "Giữ lại" và lưu thành công | nổi góc dưới, 4s | 72 / 56 |
+| `/luan-giai` | reading · thinking | rỗng · đang tải | thẻ | 80 / 64 |
+| `/luan-giai/sau` | thinking · curious | lần tải đầu (trễ 3s) · HoiBoiCanh | trước bài · cạnh câu hỏi | 80 / 64 |
+| Bức tranh lớn | thinking | lần tải đầu (trễ 3s), qua `DangDocV3` | trước bài | 80 / 64 |
+| Hành trình | moving | đầu trang (không ở nhánh cổng) | cạnh tiêu đề | 72 / 56 |
+| Chi tiết hạn | curious · thinking · concerned | chưa có lá số · đang tải (trễ 1s) · lỗi tải + nút thử lại | thẻ | 80 / 64 |
+| Hợp tuổi | curious · thinking | trước khi gửi (ẩn khi chạy / có kết quả) · đang tính | đầu trang · cạnh nút | 80 / 56 |
+| `/hoi-dap` đầu trang | serious > listening > default | lượt mới nhất nặng > ô nhập focus và có chữ > rảnh | cạnh tiêu đề | 56 |
+| `/hoi-dap` thân | default · thinking · serious | rỗng · đang trả lời · đang trả lời lượt nặng | thẻ rỗng / màn chờ | 80 |
+| `/ho-so` | sitting-neutral · neutral | chưa có lá số · đã có | thẻ rỗng · cạnh tiêu đề (giữ chỗ bằng visibility) | 80 · 56 |
+| `/tai-khoan` | using-laptop | luôn | cạnh tiêu đề | 64 / 56 |
+| `/dang-nhap`, cổng đăng nhập toàn trang | waving | luôn | trên form / tiêu đề | 72–80 / 64 |
+| `/support` | tiny-smile | luôn | **chỉ** đầu trang | 80 / 64 |
+| Thanh toán | celebrate · default · concerned | thành công lần đầu · thành công xem lại · lỗi / hết hạn / lỗi tải | thẻ trạng thái | 96 · 80 · 80 |
+| 404 | playing | luôn | giữa | 120 / 96 |
+| `error.tsx` | concerned | lỗi thử lại được | trên chữ lỗi | 96 / 80 |
+| `global-error.tsx` | concerned | lỗi toàn trang | trên chữ lỗi | 96 |
+
+`celebrate` chỉ một lần mỗi giao dịch (`localStorage` `celes-mung-<id>`; đọc hỏng thì coi
+như lần đầu). Tải lại trang thành công → `default`.
+
+### 14 ảnh khoá — kèm lý do
+
+| Ảnh | Vì sao khoá |
+|---|---|
+| Side-eye / Looking away, Really?, Not buying it, Suspicious, Caught you, Wink, Looking at user | Phán xét hoặc mỉa. Celes không phán xét người dùng — ở sản phẩm tử vi, một cái liếc dễ đọc thành "lá số anh xấu". |
+| Has receipts / Reading focus | Thuộc Phase 4 (trích dẫn có căn cứ); chưa có tính năng đứng sau thì ảnh nói dối. |
+| Excited / FOUND_SOMETHING | Chỉ hợp lệ khi có insight thật do engine phát hiện; đặt cố định là hứa hão. |
+| Sad, Resting, Stretching, Lying relaxed, Sleeping | Chưa có ngữ cảnh nào trên web cần. |
+
+Ảnh khoá **không có tệp** trong `public/celes/` và **không có tên** trong `TEN_ANH_CELES`.
+Mở khoá là quyết định của chủ dự án, không phải một dòng thêm vào mảng.
+
+### Động và tĩnh
+
+- **Động** (`TRANG_THAI_CELES`: default, listening, thinking, serious, celebrate) — đổi theo
+  tín hiệu lúc chạy. Không cùng enum với `characterHook` (mục 5); Phase 3 nối qua bảng ánh
+  xạ, không map thẳng.
+- **Tĩnh** (`MINH_HOA_CELES`: 13 ảnh còn lại) — gắn cố định theo ngữ cảnh màn. **KHÔNG chọn
+  theo sao, theo hạn hay theo kết quả của người dùng** (mục 10).
+
+### Luật hiển thị
+
+1. **Mỗi khung nhìn tối đa một con.** Ngoại lệ duy nhất: `/hoi-dap` (đầu trang + một con ở
+   thân). Đầu trang `/hoi-dap` **không bao giờ** `thinking` — lúc chờ con ở thân đã nghĩ, hai
+   con cùng nghĩ là lặp.
+2. **Màn chớp dưới 1 giây không có linh vật.** Màn chờ dùng `.celes-tre` (CSS, mặc định 1s;
+   bài sâu 3s): giữ chỗ từ đầu, ảnh chỉ hiện nếu màn chờ còn đó. Chạy bằng CSS nên đúng cả
+   với HTML tĩnh của khung Suspense.
+3. **Không nhảy layout.** Ảnh có width/height thật; ảnh ẩn theo điều kiện dùng `invisible`
+   (giữ chỗ), không gỡ khỏi cây. Sự kiện (`proud`) là `.celes-noi` — `position: fixed`, không
+   chiếm chỗ, không nhận chạm.
+4. **Proud chỉ khi người dùng CHỦ ĐỘNG bấm "Giữ lại" và lưu thành công.** Không ở lưu-khi-rời-
+   trang, không sau đăng nhập rồi quay lại.
+5. **`concerned` chỉ cho lỗi HỆ THỐNG / thanh toán.** Không cho lỗi nhập liệu (ngày sai vẫn
+   `leaning-closer`), không bao giờ phản ứng với nội dung lá số.
+6. **Ảnh là trang trí**: `alt=""`, `aria-hidden`, không là vùng chạm; chữ đi cùng phải tự đủ
+   nghĩa. Chữ trong thẻ là lời Celes, ngôi thứ nhất ("Mình đang…").
+7. **Ảnh trên nếp gấp** → `loading="eager"` (prop `ngay`). KHÔNG dùng `priority` (lỗi thời ở
+   Next 16). `unoptimized` — tệp tĩnh 30–44KB, bộ biến đổi ảnh chỉ tốn hạn mức.
+8. **Cỡ đổi bằng CSS** (`--celes-cao` / `--celes-cao-nho` dưới 640px), không bằng JS — SSR
+   khớp hydrate.
+
+**Chiều cao khung ≠ chiều cao thân.** Cả 18 ảnh chuẩn hoá về khung 512px, nhân vật cao 86%
+khung. Cùng `cao` thì cùng KHUNG, không cùng THÂN: tư thế nằm ngang (concerned,
+leaning-closer, playing) trông nhỏ hơn. Đã chấp nhận, không phóng riêng từng ảnh.
+
+### Luật an toàn (mục 9) trên web
+
+Lượt người dùng **mới nhất** có `doAnToan() != NORMAL` thì mọi linh vật trên `/hoi-dap` đổi
+sang `serious` và tắt thở; câu NORMAL tiếp theo hoặc xoá hội thoại là tự về. Chấm ở trình
+duyệt bằng đúng hàm máy chủ dùng (`lib/linh-vat.ts` → `lib/rag/an-toan.ts`).
 
 > **Bất biến (chủ dự án chốt):** `safety(lượt mới nhất) ≠ safety(mức nặng nhất cả hội
-> thoại)`. KHÔNG "dính" — người dùng đã chuyển chủ đề mà Celes vẫn nghiêm mãi là sai, và
-> đó là một định nghĩa an toàn thứ hai chỉ sống ở giao diện. Bài kiểm:
-> `scripts/test-linh-vat-an-toan.ts` (chạy trong CI).
+> thoại)`. KHÔNG "dính". Bài kiểm: `scripts/test-linh-vat-an-toan.ts` (CI).
 
-Tab Hôm nay: vẫn **KHÔNG** — chủ dự án xem lại 02/10/2026 và giữ nguyên, xem lại sau khi
-web dùng thật đủ lâu.
+`serious` và `concerned` tự đứng yên, không cần cờ.
 
-### Nguyên tắc đặt
+### Hôm nay — đã đảo, phạm vi hẹp
 
-> **Celes xuất hiện nơi người dùng đang CHỜ hoặc đang TRÒ CHUYỆN.
-> Không xuất hiện nơi người ta đang ĐỌC nội dung.**
+Bản đầu chốt "Tab Hôm nay: KHÔNG" và đánh dấu mở lại. CEL-187 đảo **chỉ cho thẻ rỗng**
+(chưa có lá số → `one-ear-up`). Màn Hôm nay khi đã có lá số vẫn **KHÔNG** — đó là nơi hiện
+nội dung chính của ngày.
 
-Lý do: **linh vật phải sống được cạnh chữ và thẻ thật, không lấn át content.** Lá số và
-bài luận giải là nơi người dùng **đọc** — thả con thỏ vào đó là cướp sự chú ý khỏi thứ
-họ trả tiền để xem.
+### Ngoại lệ và lệch có chủ đích
 
-> Bài test gốc của nguyên tắc này nằm ở `docs/thiet-ke/archive/rejected-v2/` mục F:
-> *"đặt cạnh chữ và thẻ thật — nhân vật có lấn át giao diện không? … đứng trong ngữ cảnh
-> nghiêm túc có lố không?"* Tài liệu đó **đã bị từ chối** vì phần tạo hình (flatten sang
-> SVG quá sớm), nhưng **bài test thì vẫn đúng** — nó kiểm vị trí, không kiểm hình dáng.
-> Giữ lại bài test, bỏ phần tạo hình.
-
-### Có Celes
-
-| Nơi | Nền tảng | Kích thước | State |
-|---|---|---:|---|
-| Tab Celes (khung chat) | app | 64px | theo `characterHook` |
-| Onboarding 5 màn (tên / ngày sinh / giờ sinh / giới tính / băn khoăn) | app | 120px | `DEFAULT` cố định |
-| Trang Hỏi Celes (`app/hoi-dap`) | web | 56px | theo `characterHook` |
-| Màn chờ khi đang luận | cả hai | 80px | `THINKING` |
-| Trạng thái rỗng | cả hai | 80px | `DEFAULT` |
-
-### Không có Celes
-
-```
-Tab Lá số · Tab Hành trình · Tab Mối quan hệ · Tab Hôm nay
-Mọi trang luận giải · Mệnh bàn
-```
-
-### Tab Hôm nay — điểm do dự, cố ý để mở
-
-Đây là chỗ chủ dự án do dự nhất khi chốt, và nó được ghi lại thay vì giấu đi.
-
-**Lý lẽ cho CÓ:** Hôm nay là màn **đầu tiên** người dùng thấy — rất hợp để Celes chào.
-**Lý lẽ cho KHÔNG:** nó cũng là nơi hiện **nội dung chính của ngày**, tức là nơi người ta
-đang đọc. Theo đúng nguyên tắc trên thì không được có.
-
-**Chốt: KHÔNG** — giữ nguyên tắc nhất quán, không phá lệ cho một màn.
-
-> **Xem lại sau khi thấy thật.** Đây là quyết định duy nhất trong mục 12 được đánh dấu
-> mở lại. Phiên thi công dựng xong màn Hôm nay thì trình chủ dự án xem, rồi quyết lần
-> hai. Không tự thêm Celes vào đó mà chưa hỏi.
-
-Ghi lại điểm do dự là có chủ đích: sáu tuần nữa, câu hỏi *"sao Hôm nay không có Celes?"*
-sẽ được trả lời bằng mục này, thay vì bằng một lần đoán lại từ đầu.
+- `/`: hero canh giữa nên Celes đứng **trên** eyebrow, không cạnh tiêu đề.
+- `/support`: chỉ đầu trang, không ở thẻ hay cổng ủng hộ.
+- Loading dưới 1 giây: không linh vật (luật 2), kể cả chỗ bảng trên ghi `thinking`.
 
 ### Chuyển động
 
-**Chỉ idle breathing.** Không có gì khác.
-
-- `translateY` 2–3px, chu kỳ ~3s;
-- Web: CSS;
-- App: `Animated` của React Native;
-- **KHÔNG Rive/Lottie** — thêm thư viện là kéo theo `soat-chi-phi` + `danh-gia-tac-dong`;
-- **TẮT khi `SafetyOverlay != NORMAL`** — nhất quán với mục 9.
+**Chỉ idle breathing** (`.celes-tho`: `translateY` 2–3px, ~3s, CSS). Không Rive/Lottie —
+thêm thư viện là kéo theo `soat-chi-phi` + `danh-gia-tac-dong`. Tắt khi an toàn ≠ NORMAL
+và dưới `prefers-reduced-motion` (`.celes-tre` giữ độ trễ, chỉ bỏ mờ dần).
 
 > **Con thỏ không được nhún nhảy khi người ta đang nói chuyện mất mát.**
 
-Đó là lý do luật tắt chuyển động nằm cùng chỗ với luật `SERIOUS`, không phải một tuỳ
-chọn giao diện rời.
+### App
 
-### Thứ tự thi công
-
-Trước Phase 3, `characterHook` **chưa tồn tại** trong mã. Nên:
-
-1. Phiên thi công làm **phần hiển thị trước**, truyền tay một giá trị cố định ở mỗi chỗ —
-   `DEFAULT` ở đầu trang và trạng thái rỗng, `THINKING` ở màn chờ. Màn chờ KHÔNG dùng
-   `DEFAULT`: ở đó người dùng đang đợi, trạng thái đúng là đang nghĩ. Xem lại bảng ở trên.
-2. Phase 3 chỉ **nối dây** `characterHook` → visual state, thay các giá trị cố định đó.
-
-Tách như vậy để phần hiển thị không bị chặn bởi Phase 3, và để Phase 3 không phải vừa
-làm hợp đồng ngôn ngữ vừa làm giao diện.
+Chưa thi công. Bảng trên là của web; app làm theo cùng nguyên tắc khi tới lượt (tab Celes
+64px theo `characterHook`, onboarding 120px `default`).
 
 ### Luật màn hẹp phải tuân
 
-Xem `docs/bay/giao-dien.md`: 390px không cuộn ngang, vùng chạm ≥ 44px. Ảnh Celes là
-trang trí — **không được** là vùng chạm, và không được đẩy nội dung ra khỏi 390px.
+Xem `docs/bay/giao-dien.md`: 390px không cuộn ngang, vùng chạm ≥ 44px. Ảnh Celes không
+được đẩy nội dung ra khỏi 390px.

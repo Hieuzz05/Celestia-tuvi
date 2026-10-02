@@ -49,7 +49,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
 | Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
-| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Linh vật đứng nghiêm khi câu MỚI NHẤT nặng: `lib/linh-vat.ts`. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt ở lá số, mệnh bàn, trang luận giải |
+| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Linh vật đứng nghiêm khi câu MỚI NHẤT nặng: `lib/linh-vat.ts`. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt TRONG vùng nội dung (mệnh bàn, bài luận, dòng thời gian); danh sách chỗ đặt + bài kiểm CI `scripts/test-cho-dat-celes.ts` |
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Nhịp và kiểu của MỘT lượt chat | `lib/rag/hop-dong-tra-loi.ts` — hàm thuần, chỉ đổi độ dài và lối nói, KHÔNG chạm kết luận |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
