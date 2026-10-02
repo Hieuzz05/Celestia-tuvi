@@ -50,13 +50,23 @@ import { boDau } from './thuc-the';
 export type MucAnToan = 'NORMAL' | 'SENSITIVE' | 'CRITICAL';
 
 /** Chủ đề nhạy cảm đã nhận ra; `null` khi NORMAL */
-export type ChuDeAnToan = 'tu-hai' | 'bao-luc' | 'suc-khoe-nguy-cap' | 'khung-hoang-tam-ly';
+export type ChuDeAnToan =
+  | 'tu-hai'
+  | 'bao-luc'
+  | 'suc-khoe-nguy-cap'
+  | 'khung-hoang-tam-ly'
+  | 'tien-luong-suc-khoe';
 
 export interface QuyetDinhAnToan {
   muc: MucAnToan;
   chuDe: ChuDeAnToan | null;
   /** Cụm đã khớp — để ghi vết và để bài kiểm chỉ đúng chỗ sai */
   cumKhop: string[];
+  /**
+   * Câu hỏi đòi đoán một người có qua khỏi bệnh / sống được bao lâu.
+   * Route trả `LOI_NHAN_TIEN_LUONG` thay vì luận — xem `laHoiTienLuong`.
+   */
+  tienLuong: boolean;
 }
 
 /* ========================================================================== */
@@ -70,7 +80,13 @@ export interface QuyetDinhAnToan {
  * làm. Mỗi cụm thêm vào phải kèm ít nhất một ca thật trong `test-an-toan.ts`,
  * cả ca bắt đúng lẫn ca KHÔNG được bắt.
  */
-const CUM_NGUY_CO: { cum: string[]; chuDe: ChuDeAnToan; tucThi: boolean }[] = [
+const CUM_NGUY_CO: {
+  cum: string[];
+  chuDe: ChuDeAnToan;
+  tucThi: boolean;
+  /** Lên CRITICAL khi cùng tin nhắn hỏi có nên sống tiếp — xem `HOI_SONG_TIEP` */
+  nangKhiHoiTiep?: boolean;
+}[] = [
   {
     chuDe: 'tu-hai',
     // `tucThi`: tự nó đã đủ nặng để lên CRITICAL khi không bị loại trừ
@@ -112,10 +128,82 @@ const CUM_NGUY_CO: { cum: string[]; chuDe: ChuDeAnToan; tucThi: boolean }[] = [
       'tram cam nang',
       'roi loan lo au',
       'khong ai can minh',
+    ],
+  },
+  {
+    /*
+     * Mất ý nghĩa sống (thêm 02/10/2026 — "tôi chán sống quá" từng ra NORMAL).
+     *
+     * Một mình: SENSITIVE — người nói "chán sống quá" cần được trò chuyện tử
+     * tế, không cần bị chặn. Đi cùng câu hỏi có nên sống tiếp: CRITICAL.
+     *
+     * "chán đời" cố ý KHÔNG có ở đây: trong tiếng nói hằng ngày nó là câu than
+     * nhẹ ("chán đời ghê, kẹt xe hoài"), xếp nó vào SENSITIVE là gắn lời miễn
+     * trừ tâm lý lên một câu đùa.
+     */
+    chuDe: 'khung-hoang-tam-ly',
+    tucThi: false,
+    nangKhiHoiTiep: true,
+    cum: [
+      'chan song',
+      'khong thiet song',
+      'song lam gi nua',
+      'song de lam gi',
+      'song chang con y nghia',
       'song khong con y nghia',
+      'song chi nua',
+      'dang song tiep khong',
     ],
   },
 ];
+
+/**
+ * Hỏi có nên / có đáng sống tiếp.
+ *
+ * KHÔNG phải cụm nguy cơ — chỉ là điều kiện nâng mức cho nhóm `nangKhiHoiTiep`.
+ * "Có nên tiếp tục công việc này không" là câu hỏi nghề nghiệp bình thường;
+ * nó chỉ thành tín hiệu khi đứng cùng "chán sống" trong một tin nhắn.
+ */
+const HOI_SONG_TIEP = [
+  'co nen tiep tuc',
+  'tiep tuc song',
+  'song tiep',
+  'co dang song',
+  'dang song tiep',
+];
+
+/**
+ * Nghĩa bóng của "chán sống": chán sống Ở đâu / CHUNG với ai.
+ *
+ * "Chán sống ở Hà Nội", "chán sống chung với mẹ chồng" là than về nơi ở, về
+ * người ở cùng — không phải về việc sống. Chỉ miễn khi MỌI lần xuất hiện của
+ * cụm trong câu đều đi liền một từ chỉ nơi chốn / người cùng ở.
+ *
+ * Nhưng "chán sống Ở trên đời này", "chán sống VỚI cuộc đời này" là than về
+ * chính việc sống — có chữ đời / cõi / thế gian / kiếp trong ba từ ngay sau
+ * thì KHÔNG miễn.
+ */
+const DUOI_NGHIA_BONG: Record<string, string[]> = {
+  'chan song': ['o', 'chung', 'voi', 'cung', 'tai', 'gan', 'xa'],
+};
+const NOI_LA_CUOC_DOI = ['doi', 'coi', 'gian', 'kiep'];
+
+function chiLaNghiaBong(cau: string, cum: string): boolean {
+  const duoi = DUOI_NGHIA_BONG[cum];
+  if (!duoi) return false;
+  const tu = cau.replace(/[^a-z0-9]+/g, ' ').trim().split(' ');
+  const dau = cum.split(' ');
+  let coLan = false;
+  for (let i = 0; i + dau.length <= tu.length; i++) {
+    if (dau.every((t, j) => tu[i + j] === t)) {
+      coLan = true;
+      if (!duoi.includes(tu[i + dau.length] ?? '')) return false;
+      const sau = tu.slice(i + dau.length + 1, i + dau.length + 4);
+      if (sau.some((t) => NOI_LA_CUOC_DOI.includes(t))) return false;
+    }
+  }
+  return coLan;
+}
 
 /* ========================================================================== */
 /* LỚP 2 — LOẠI TRỪ                                                           */
@@ -266,6 +354,7 @@ export function doAnToan(cauHoi: string): QuyetDinhAnToan {
   const khop: string[] = [];
   let chuDe: ChuDeAnToan | null = null;
   let coTucThi = false;
+  let coMatYNghia = false;
 
   for (const nhom of CUM_NGUY_CO) {
     for (const c of nhom.cum) {
@@ -287,20 +376,42 @@ export function doAnToan(cauHoi: string): QuyetDinhAnToan {
        * Nên chỉ xét phủ định ở phần câu NGOÀI cụm đã khớp.
        */
       const conHieuLuc = cauChua.some((x) => {
-        const ngoai = x.replace(/[^a-z0-9]+/g, ' ').split(` ${c} `).join(' ');
-        return !PHU_DINH.some((p) => coCum(ngoai, p)) && !LOAI_TRU.some((l) => coCum(ngoai, l));
+        if (chiLaNghiaBong(x, c)) return false;
+        const chuan = ` ${x.replace(/[^a-z0-9]+/g, ' ').trim()} `;
+        const ngoai = chuan.split(` ${c} `).join(' ');
+        /*
+         * Nhóm `nangKhiHoiTiep` chỉ xét phủ định ĐỨNG TRƯỚC cụm. "Tôi chán
+         * sống, không muốn làm gì nữa" — "không muốn" ở đây đang kể thêm nỗi
+         * mệt, không phủ định "chán sống"; xét cả câu thì nó tự huỷ cảnh báo.
+         * Các nhóm cũ giữ nguyên cách xét để không đổi hành vi đã kiểm.
+         */
+        const vungPhuDinh = nhom.nangKhiHoiTiep ? chuan.split(` ${c} `)[0] : ngoai;
+        // "Tôi không chán sống" — "không" trần không có trong PHU_DINH (nó quá
+        // rộng cho cả câu), nhưng đứng NGAY TRƯỚC cụm thì chắc chắn là phủ định.
+        const phuDinhSatTruoc = nhom.nangKhiHoiTiep && /\b(khong|chang|cha)$/.test(vungPhuDinh.trim());
+        return (
+          !phuDinhSatTruoc &&
+          !PHU_DINH.some((p) => coCum(vungPhuDinh, p)) &&
+          !LOAI_TRU.some((l) => coCum(ngoai, l))
+        );
       });
       if (!conHieuLuc) continue;
 
       khop.push(c);
       if (!chuDe) chuDe = nhom.chuDe;
       if (nhom.tucThi) coTucThi = true;
+      if (nhom.nangKhiHoiTiep) coMatYNghia = true;
     }
   }
 
-  if (!khop.length) return { muc: 'NORMAL', chuDe: null, cumKhop: [] };
+  if (!khop.length) {
+    return laHoiTienLuong(toanBo)
+      ? { muc: 'SENSITIVE', chuDe: 'tien-luong-suc-khoe', cumKhop: [], tienLuong: true }
+      : { muc: 'NORMAL', chuDe: null, cumKhop: [], tienLuong: false };
+  }
 
   const gap = DAU_HIEU_GAP.filter((d) => coCum(toanBo, d));
+  const hoiTiep = coMatYNghia ? HOI_SONG_TIEP.filter((d) => coCum(toanBo, d)) : [];
 
   /*
    * CRITICAL cần hai điều, không phải một.
@@ -310,10 +421,192 @@ export function doAnToan(cauHoi: string): QuyetDinhAnToan {
    * tắc, trầm cảm — chỉ lên CRITICAL khi đi kèm dấu hiệu gấp. Người nói "mình
    * thấy bế tắc quá" cần được nói chuyện tử tế, không cần bị chặn.
    */
-  const muc: MucAnToan = coTucThi || gap.length ? 'CRITICAL' : 'SENSITIVE';
+  const muc: MucAnToan = coTucThi || gap.length || hoiTiep.length ? 'CRITICAL' : 'SENSITIVE';
 
-  return { muc, chuDe, cumKhop: [...khop, ...gap] };
+  return { muc, chuDe, cumKhop: [...khop, ...gap, ...hoiTiep], tienLuong: laHoiTienLuong(toanBo) };
 }
+
+/* ========================================================================== */
+/* TIÊN LƯỢNG SỨC KHOẺ — KHÔNG DÙNG LÁ SỐ ĐỂ ĐOÁN SỐNG CHẾT                   */
+/* ========================================================================== */
+
+/*
+ * "Bố tôi bị ung thư, năm nay có qua khỏi không" từng đi thẳng vào luận có/
+ * không: prompt bắt model NGHIÊNG HẲN về một bên, có khi dựa trên cung Tật Ách
+ * của chính người con. Thêm lời miễn trừ rồi vẫn luận thì vẫn là đoán sống chết
+ * bằng lá số — nên nhánh này trả một câu do MÃ viết, như nhánh CRITICAL.
+ *
+ * Không phải CRITICAL: người hỏi không gặp nguy, họ đang lo cho người khác. Lời
+ * nhắn khẩn cấp "nếu bạn có ý định làm hại bản thân" là sai địa chỉ ở đây.
+ *
+ * Cần CẢ bệnh nặng LẪN câu hỏi sống còn. "Qua khỏi" một mình bắt nhầm "qua
+ * khỏi năm hạn"; "ung thư" một mình bắt nhầm "cung Tật Ách có dấu hiệu ung thư
+ * không" — câu đó luận được (xu hướng sức khoẻ), không phải đoán sống chết.
+ */
+const BENH_NANG = [
+  'ung thu',
+  'ung buou',
+  'u ac',
+  'benh nang',
+  'om nang',
+  'benh hiem ngheo',
+  'nguy kich',
+  // KHÔNG để 'hon me' trần: bỏ dấu trùng "hơn mẹ" ("con có sung sướng hơn mẹ không")
+  'bi hon me',
+  'dang hon me',
+  'hon me sau',
+  'dot quy',
+  'tai bien',
+  'suy than',
+  'suy tim',
+  'xo gan',
+  'giai doan cuoi',
+  'phau thuat',
+  'mo tim',
+  'hoa tri',
+  'cap cuu',
+  'tai nan',
+  'dang om',
+  'nam vien',
+  'nam liet',
+  'gia yeu',
+  'di can',
+  'khoi u',
+  'tho may',
+  'hoi suc',
+  'nhoi mau',
+  'suy ho hap',
+];
+
+const HOI_SONG_CON = [
+  'qua khoi khong',
+  'co qua khoi',
+  'qua duoc khong',
+  'qua noi khong',
+  'co chet khong',
+  'co qua doi khong',
+  'co qua noi',
+  'co ra di khong',
+  /*
+   * Neo vào đuôi câu hỏi. 'song duoc' / 'con song' trần bắt nhầm "sống được
+   * bằng nghề", "vợ chồng sống được với nhau", "giờ vẫn còn sống"; 'co mat
+   * khong' trùng "tiền có mất không", "có mặt không".
+   */
+  'con song khong',
+  'con song duoc khong',
+  'song duoc khong',
+  'song duoc nua khong',
+  'song them duoc',
+  'con duoc bao lau',
+  'keo dai duoc bao lau',
+  'co khoi khong',
+  'khoi benh khong',
+  'cuu duoc khong',
+];
+
+/** Hỏi thẳng tuổi thọ / ngày mất — đoán sống chết dù không nêu bệnh */
+const HOI_TUOI_THO = [
+  'song duoc bao lau',
+  'song them duoc bao lau',
+  'con song duoc bao lau',
+  'khi nao qua doi',
+  'nam nao qua doi',
+  'khi nao chet',
+  'nam nao chet',
+  'chet nam nao',
+];
+
+/**
+ * "Sống được bao lâu" còn là câu hỏi về công ty, cửa hàng, mối tình — chủ thể
+ * không phải người thì không phải câu tiên lượng. Chỉ dùng cụm nhiều âm tiết:
+ * 'nha', 'nghe', 'quan' đơn lẻ bỏ dấu trùng "nhá", "nghe", "quân".
+ */
+const CHU_THE_KHONG_PHAI_NGUOI = [
+  'cong ty',
+  'startup',
+  'doanh nghiep',
+  'du an',
+  'cua hang',
+  'quan an',
+  'thuong hieu',
+  'nghe nghiep',
+  'tinh yeu',
+  'moi quan he',
+  'hon nhan',
+  'cuoc tinh',
+];
+
+/**
+ * Người thân + "năm nay có qua được không", không nêu bệnh: với người Việt gần
+ * như luôn là câu hỏi sống chết. Có chữ hạn / Thái Tuế / thi cử / làm ăn thì
+ * là câu hỏi xu hướng năm, không chặn. KHÔNG dùng 'thi' trần — trùng "thì".
+ */
+const NGUOI_THAN = ['bo', 'me', 'cha', 'ong', 'ba', 'chong', 'vo'];
+const QUA_NAM_NAY = [
+  'qua khoi khong',
+  'qua duoc khong',
+  'qua noi khong',
+  'qua khoi nam nay',
+  'qua duoc nam nay',
+  'qua noi nam nay',
+];
+const QUA_VIEC_KHAC = [
+  'han',
+  'tam tai',
+  'thai tue',
+  'kim lau',
+  'hoang oc',
+  'ky thi',
+  'di thi',
+  'thi cu',
+  'kho khan',
+  'lam an',
+  'kinh doanh',
+];
+
+/** Nhận chuỗi ĐÃ bỏ dấu (`boDau`) */
+function laHoiTienLuong(khongDau: string): boolean {
+  if (
+    HOI_TUOI_THO.some((c) => coCum(khongDau, c)) &&
+    !CHU_THE_KHONG_PHAI_NGUOI.some((c) => coCum(khongDau, c))
+  ) {
+    return true;
+  }
+  if (
+    coCum(khongDau, 'nam nay') &&
+    NGUOI_THAN.some((c) => coCum(khongDau, c)) &&
+    QUA_NAM_NAY.some((c) => coCum(khongDau, c)) &&
+    !QUA_VIEC_KHAC.some((c) => coCum(khongDau, c))
+  ) {
+    return true;
+  }
+  return BENH_NANG.some((c) => coCum(khongDau, c)) && HOI_SONG_CON.some((c) => coCum(khongDau, c));
+}
+
+/**
+ * Câu trả lời cho câu hỏi tiên lượng — do MÃ đặt, không qua model.
+ *
+ * Câu đầu ghi nhận nỗi lo, như `LOI_NHAN_KHAN_CAP`. Không nói "người bệnh là
+ * bố bạn": hệ thống không biết người đó là ai, và người hỏi có thể đang hỏi về
+ * chính mình. Không phải ngõ cụt: câu cuối và chip mở về phần người hỏi tự lo
+ * được.
+ */
+export const LOI_NHAN_TIEN_LUONG = [
+  `Mình hiểu đây là một câu hỏi rất nặng lòng.`,
+  `Một người có qua khỏi hay không, sống thêm được bao lâu, Celes không dùng lá số để đoán. Nếu người ấy đang điều trị, bác sĩ theo dõi là người nói được rõ nhất, và bạn hoàn toàn có thể hỏi thẳng họ.`,
+  `Nếu bạn muốn, Celes vẫn ở đây để cùng bạn xem giai đoạn này bạn dễ bị kéo căng ở đâu, và nên giữ sức cho mình thế nào.`,
+].join('\n\n');
+
+/**
+ * Chip đi kèm — về phần người hỏi, không quay lại câu sống còn. KHÔNG mời hỏi
+ * gia đạo: lượt sau model đọc lịch sử còn câu "bố ung thư", và gia đạo là chỗ
+ * sách cổ nói chuyện tang chế — đoán sống chết qua cửa sau. Chip xưng "tôi"
+ * để khỏi lẫn với "Mình" là Celes trong cùng bong bóng.
+ */
+export const GOI_Y_TIEN_LUONG = [
+  'Năm nay tôi dễ căng thẳng ở đâu?',
+  'Năm nay tôi nên giữ sức thế nào?',
+];
 
 /* ========================================================================== */
 /* CÂU TRẢ LỜI CHO NHÁNH CRITICAL — HẰNG, KHÔNG QUA MODEL                     */

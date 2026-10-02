@@ -6,7 +6,13 @@ import { quyenHienTai } from '@/lib/support/entitlements';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { bamLaSo, ghiVetTraLoi, veGioLaSo } from '@/lib/rag/nhat-ky';
-import { doAnToan, LOI_NHAN_KHAN_CAP, SO_KHAN_CAP } from '@/lib/rag/an-toan';
+import {
+  doAnToan,
+  GOI_Y_TIEN_LUONG,
+  LOI_NHAN_KHAN_CAP,
+  LOI_NHAN_TIEN_LUONG,
+  SO_KHAN_CAP,
+} from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -124,6 +130,19 @@ export async function POST(req: Request) {
       // chỗ vừa quyết định không đi.
       goiYTiep: [],
       anToan: true,
+    });
+  }
+
+  /*
+   * Câu hỏi tiên lượng ("bố tôi bị ung thư, năm nay có qua khỏi không"): trả
+   * câu do mã viết, không luận. Lá số không được dùng để đoán một người sống
+   * hay chết — kể cả kèm lời miễn trừ. Cùng lý do với nhánh CRITICAL ở trên:
+   * không trừ lượt, không gọi model. Chip mở về phần người hỏi tự lo được.
+   */
+  if (anToan.tienLuong) {
+    return NextResponse.json({
+      traLoi: LOI_NHAN_TIEN_LUONG,
+      goiYTiep: GOI_Y_TIEN_LUONG,
     });
   }
 

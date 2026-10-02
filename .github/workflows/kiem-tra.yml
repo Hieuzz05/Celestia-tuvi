@@ -63,6 +63,8 @@ jobs:
         run: npx tsx scripts/test-dau-an.ts
       - name: Dấu ấn Celes — độ phủ thư viện và cổng (UNREACHABLE = 0)
         run: npx tsx scripts/do-coverage-dau-an.ts
+      - name: Linh vật nghiêm theo lượt mới nhất (không dính)
+        run: npx tsx scripts/test-linh-vat-an-toan.ts
 
       - name: Build
         run: npx next build

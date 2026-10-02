@@ -499,7 +499,7 @@ export const en: TuDien = {
     xacNhanXoa: 'Delete the chart for {ten}? This cannot be undone.',
     khongXoaMacDinh:
       'This one is currently "My chart". Pick another chart as the default before deleting it.',
-    trong: 'No charts kept yet. Add the first one so Celes has something to read with you.',
+    trong: 'No charts kept yet. Add your first one and we’ll read it together.',
     luuTheoTaiKhoan: 'Saved to your account — it shows up on any device.',
     luuTheoTrinhDuyet:
       'Saved on this browser only. Sign in to keep them and use them on every device.',
@@ -527,7 +527,7 @@ export const en: TuDien = {
     nguoiVuaNhap: '— The chart you just entered —',
     hoiVeNguoiKhac: 'Ask about a different chart',
     hoiVeNguoiNay: 'Ask about this chart',
-    canBietAi: 'Celes needs to know which chart this is about',
+    canBietAi: 'Which chart are we talking about?',
     canBietAiMo:
       'Pick a saved chart, or enter the birth details on the left. Without a chart the answer is only generic advice.',
     oNhap: 'Tell Celes…',
