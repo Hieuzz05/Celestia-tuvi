@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { CanCu, type CanCuTraLoi } from '@/components/CanCu';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
@@ -13,6 +13,7 @@ import { lapLaSo } from '@/lib/tuvi/ansao';
 import { CHI } from '@/lib/tuvi/constants';
 import { Eyebrow, NutVien, Shell, KhoiGap } from '@/components/ui';
 import { CelesMascot } from '@/components/CelesMascot';
+import { linhVatNghiem } from '@/lib/linh-vat';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
@@ -68,6 +69,10 @@ function TrangHoiDap() {
     gioiTinh: 'nam',
   });
   const [tinNhan, setTinNhan] = useState<TinNhan[]>([]);
+  // Lượt mới nhất của người dùng nặng (SENSITIVE/CRITICAL) → mọi linh vật trên
+  // trang đứng nghiêm, không thở. Suy ra, không phải state: xoá hội thoại hay
+  // gửi câu bình thường là tự về. Xem lib/linh-vat.ts.
+  const nghiem = useMemo(() => linhVatNghiem(tinNhan), [tinNhan]);
   const [cauHoi, setCauHoi] = useState('');
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
@@ -298,8 +303,9 @@ function TrangHoiDap() {
       <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} className="-mb-[16px]" />
       {/* Celes 56px cạnh tiêu đề: đây là nơi người dùng đang TRÒ CHUYỆN. */}
       <div className="flex items-center gap-[16px]">
-        {/* Phase 3: nối `characterHook` vào đây thay cho "default" cố định. */}
-        <CelesMascot trangThai="default" cao={56} />
+        {/* Phase 3: nối `characterHook` vào đây thay cho "default" cố định.
+            `serious` theo lượt mới nhất (mục 9) đã nối, không phụ thuộc Phase 3. */}
+        <CelesMascot trangThai={nghiem ? 'serious' : 'default'} cao={56} />
         <div className="min-w-0">
           <Eyebrow>{t.hoiCeles.eyebrow}</Eyebrow>
           <h1 className="heading mt-[10px]">{t.hoiCeles.tieuDe}</h1>
@@ -395,6 +401,8 @@ function TrangHoiDap() {
             className="flex min-h-[320px] flex-col items-center justify-center gap-[12px] rounded-[var(--radius-cards)] border p-[24px] text-center"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
+            {/* Trạng thái rỗng (chưa chọn lá số): Celes 80px, DEFAULT — cùng dáng với rỗng có lá số. */}
+            <CelesMascot trangThai="default" cao={80} />
             <h2 className="subheading">{t.hoiCeles.canBietAi}</h2>
             <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
               {t.hoiCeles.canBietAiMo}
@@ -512,7 +520,7 @@ function TrangHoiDap() {
                  * đang thở đã đủ báo "đang chờ".
                  */
                 <div className="flex items-center gap-[12px]">
-                  <CelesMascot trangThai="thinking" cao={80} />
+                  <CelesMascot trangThai={nghiem ? 'serious' : 'thinking'} cao={80} />
                   <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
                     {t.hoiCeles.dangTraLoi}
                   </p>

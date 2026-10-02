@@ -738,8 +738,8 @@ body {
  *   1. Người dùng tắt hiệu ứng ở hệ điều hành  → khối reduced-motion bên dưới.
  *   2. Ngữ cảnh nghiêm túc (state `serious`, hoặc nơi gọi truyền `tatChuyenDong`)
  *      → nơi gọi không gắn lớp này. Xem CelesMascot.tsx.
- *      CHƯA NỐI `SafetyOverlay`: nó chưa tồn tại trong mã ở Phase 3. Khi có,
- *      nối vào `tatChuyenDong` thì luật này mới chạy đủ.
+ *      Ở /hoi-dap, lượt người dùng mới nhất có Safety != NORMAL thì nơi gọi
+ *      đổi sang `serious` (lib/linh-vat.ts) — tắt thở đi cùng SERIOUS (mục 9).
  *
  * Hai lý do tắt khác nhau nên không gộp: cái trên là sở thích thiết bị,
  * cái dưới là luật an toàn — an toàn thắng nhân vật, luôn luôn.

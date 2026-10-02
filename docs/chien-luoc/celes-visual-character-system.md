@@ -286,10 +286,33 @@ Thêm state mới thì chạy lại script đó, đừng copy tay.
 
 ---
 
-## 12. Kế hoạch gắn lên giao diện — chốt 02/10/2026, THI CÔNG PHIÊN SAU
+## 12. Kế hoạch gắn lên giao diện — chốt 02/10/2026, WEB ĐÃ THI CÔNG
 
-> Mục này là **kế hoạch đã duyệt**, chưa thi công. Phiên này chỉ ghi tài liệu,
-> không chạm `lib/`, `app/`, `components/`, `apps/celes-app/`.
+> Mục này là **kế hoạch đã duyệt**. Phần **web** đã thi công 02/10/2026 (nhánh
+> `viec/linh-vat-web`, xem bảng "Đã thi công trên web" ngay dưới). Phần **app** chưa.
+
+### Đã thi công trên web (02/10/2026)
+
+| Chỗ | Tệp | Kích thước | State |
+|---|---|---:|---|
+| Đầu trang Hỏi Celes | `app/hoi-dap/page.tsx` | 56px | `DEFAULT` (truyền tay, chờ `characterHook`) |
+| Hỏi Celes — rỗng, đã chọn lá số | `app/hoi-dap/page.tsx` | 80px | `DEFAULT` |
+| Hỏi Celes — rỗng, CHƯA chọn lá số | `app/hoi-dap/page.tsx` | 80px | `DEFAULT` |
+| Hỏi Celes — màn chờ trả lời | `app/hoi-dap/page.tsx` | 80px | `THINKING` |
+| Danh sách lá số — rỗng | `app/ho-so/page.tsx` | 80px | `DEFAULT` |
+
+**Luật an toàn (mục 9) trên web.** Lượt người dùng **mới nhất** có `doAnToan() != NORMAL`
+thì mọi linh vật trên trang Hỏi Celes đổi sang `SERIOUS` và tắt thở; gửi câu NORMAL tiếp
+theo hoặc xoá hội thoại là tự về. Chấm ở trình duyệt bằng đúng hàm máy chủ dùng
+(`lib/linh-vat.ts` → `lib/rag/an-toan.ts`), nên biết mức ngay lúc gửi, trước khi chờ.
+
+> **Bất biến (chủ dự án chốt):** `safety(lượt mới nhất) ≠ safety(mức nặng nhất cả hội
+> thoại)`. KHÔNG "dính" — người dùng đã chuyển chủ đề mà Celes vẫn nghiêm mãi là sai, và
+> đó là một định nghĩa an toàn thứ hai chỉ sống ở giao diện. Bài kiểm:
+> `scripts/test-linh-vat-an-toan.ts` (chạy trong CI).
+
+Tab Hôm nay: vẫn **KHÔNG** — chủ dự án xem lại 02/10/2026 và giữ nguyên, xem lại sau khi
+web dùng thật đủ lâu.
 
 ### Nguyên tắc đặt
 

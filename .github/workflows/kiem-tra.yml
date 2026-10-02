@@ -55,6 +55,8 @@ jobs:
         run: npx tsx scripts/test-phu-du-kien.ts
       - name: Lớp an toàn chat (bắt đúng, không bắt nhầm)
         run: npx tsx scripts/test-an-toan.ts
+      - name: Linh vật nghiêm theo lượt mới nhất (không dính)
+        run: npx tsx scripts/test-linh-vat-an-toan.ts
 
       - name: Build
         run: npx next build
