@@ -12,6 +12,7 @@ import {
   LOI_NHAN_KHAN_CAP,
   LOI_NHAN_TIEN_LUONG,
   SO_KHAN_CAP,
+  vetAnToan,
 } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
@@ -112,7 +113,20 @@ export async function POST(req: Request) {
    * đọc. SENSITIVE thì vẫn luận bình thường, chỉ bảo đảm có lời miễn trừ.
    */
   const anToan = doAnToan(cauHoi);
+  // Mã lượt tạo NGAY ĐÂY, không đợi tới lúc đặt chỗ: hai nhánh dừng sớm bên
+  // dưới cũng phải để lại dấu vết (CEL-186 P4).
+  const requestId = randomUUID();
+
+  /*
+   * Ghi vết hai nhánh dừng sớm: chỉ mức, nhóm, cờ tiên lượng (`vetAnToan`).
+   * KHÔNG câu hỏi, KHÔNG cụm khớp, KHÔNG lá số — đủ để đếm "tuần này bao nhiêu
+   * lượt khủng hoảng", không đủ để đọc lại người ta đã nói gì.
+   */
+  const ghiVetDungSom = () =>
+    ghiVetTraLoi({ requestId, tinhNang: 'an-toan', phienBan: vetAnToan(anToan) });
+
   if (anToan.muc === 'CRITICAL') {
+    await ghiVetDungSom();
     return NextResponse.json({
       traLoi: LOI_NHAN_KHAN_CAP,
       /*
@@ -140,6 +154,7 @@ export async function POST(req: Request) {
    * không trừ lượt, không gọi model. Chip mở về phần người hỏi tự lo được.
    */
   if (anToan.tienLuong) {
+    await ghiVetDungSom();
     return NextResponse.json({
       traLoi: LOI_NHAN_TIEN_LUONG,
       goiYTiep: GOI_Y_TIEN_LUONG,
@@ -161,7 +176,6 @@ export async function POST(req: Request) {
 
   // Đặt chỗ NGAY TRƯỚC khi gọi model: câu thứ 6 không được phép chạm tới nhà
   // cung cấp. Kiểm ở React không tính là chặn — ai cũng gọi thẳng endpoint được.
-  const requestId = randomUUID();
   const cho = await datChoCauHoi(requestId);
   if (!cho.duocPhep) return cho.chan!;
 
@@ -197,7 +211,7 @@ export async function POST(req: Request) {
       chartHash,
       cauHoi,
       runId: kq.runId,
-      phienBan: kq.phienBan,
+      phienBan: { ...kq.phienBan, ...vetAnToan(anToan) },
       provider: kq.provider,
       model: kq.model,
       doTreMs: kq.doTreMs.tong,

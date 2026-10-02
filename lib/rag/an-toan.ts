@@ -339,6 +339,21 @@ function tachCau(s: string): string[] {
 }
 
 /**
+ * Phần của quyết định an toàn được phép ghi vào `ai_requests.phien_ban`.
+ *
+ * Chỉ mức, nhóm và cờ tiên lượng — KHÔNG `cumKhop`, vì cụm khớp là một mẩu
+ * nguyên văn của câu người ta vừa nói ra lúc khó khăn nhất. Đủ để đếm sau này
+ * "bao nhiêu lượt CRITICAL, nhóm nào", không đủ để đọc lại họ đã nói gì.
+ */
+export function vetAnToan(qd: QuyetDinhAnToan): Record<string, string> {
+  return {
+    mucAnToan: qd.muc,
+    ...(qd.chuDe ? { chuDeAnToan: qd.chuDe } : {}),
+    ...(qd.tienLuong ? { tienLuong: '1' } : {}),
+  };
+}
+
+/**
  * Đọc một tin nhắn, trả về quyết định an toàn.
  *
  * Chỉ nhìn tin nhắn HIỆN TẠI. Quét cả lịch sử hội thoại nghe có vẻ cẩn thận

@@ -24,6 +24,7 @@ import {
   LOI_NHAN_TIEN_LUONG,
   SO_KHAN_CAP,
   type MucAnToan,
+  vetAnToan,
 } from '../lib/rag/an-toan';
 import { gomDieuTuKe } from '../lib/rag/tiep-noi';
 
@@ -500,6 +501,26 @@ if (!LOI_NHAN_TIEN_LUONG.includes('bác sĩ') && !LOI_NHAN_TIEN_LUONG.includes('
 }
 if (GOI_Y_TIEN_LUONG.length < 1 || GOI_Y_TIEN_LUONG.some((g) => g.length > 40 || doAnToan(g).tienLuong)) {
   loiKhac.push('Chip tiên lượng rỗng, quá 40 ký tự, hoặc lại hỏi chuyện sống còn');
+}
+
+/*
+ * Vết ghi vào ai_requests (CEL-186 P4): đủ để đếm, không đủ để đọc lại.
+ * Không được mang cụm khớp hay bất kỳ mẩu nguyên văn nào của câu hỏi.
+ */
+{
+  const cau = 'tôi chán sống quá, có đáng sống tiếp không';
+  const qd = doAnToan(cau);
+  const vet = vetAnToan(qd);
+  if (vet.mucAnToan !== 'CRITICAL') loiKhac.push(`Vết an toàn sai mức: ${vet.mucAnToan}`);
+  const chuoi = JSON.stringify(vet);
+  if (qd.cumKhop.some((c) => chuoi.includes(c)) || chuoi.includes('song')) {
+    loiKhac.push('Vết an toàn chứa cụm khớp / nguyên văn câu hỏi');
+  }
+  const tl = vetAnToan(doAnToan('bố tôi bị ung thư, năm nay có qua khỏi không'));
+  if (tl.tienLuong !== '1') loiKhac.push('Vết an toàn không ghi cờ tiên lượng');
+  if (Object.keys(vetAnToan(doAnToan('năm nay tôi có nên đổi việc không'))).join() !== 'mucAnToan') {
+    loiKhac.push('Vết an toàn của câu bình thường phải chỉ có mucAnToan');
+  }
 }
 
 if (loiKhac.length) {
