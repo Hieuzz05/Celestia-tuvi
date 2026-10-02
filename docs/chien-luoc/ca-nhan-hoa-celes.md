@@ -91,7 +91,7 @@ Bậc 0 **do người dùng thích nghiêm túc** → vẫn được `INSIGHT_FO
 ```ts
 type SafetyOverlay = {
   seriousness: 'NORMAL' | 'SENSITIVE' | 'CRITICAL';
-  topic: SeriousTopic | null;
+  topic: ChuDeAnToan | null;   // tên thật trong mã: lib/rag/an-toan.ts:53
 };
 ```
 
