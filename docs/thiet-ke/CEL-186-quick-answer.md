@@ -532,20 +532,23 @@ QUICK: `docTraLoi` → `chamDoChac` → `kiemDuyet` → `locYHong` → **`kiemQu
 - **P4 — Ghi vết lượt CRITICAL / tiên lượng**: vé nhỏ riêng, `ghiVetTraLoi` → `ai_requests` (`tinh_nang='an-toan'`, `phien_ban={muc, nhom, tienLuong}`, `cau_hoi=null`), không SQL mới.
 - Các điểm S-a…S-e và Lung lay ở mục 17 coi như đã nhận, sẽ vào v5.
 
-### 17c. Bản nháp câu dự phòng v5 (chờ duyệt — P5)
+### 17c. Câu dự phòng — bảng §22 ĐÃ DUYỆT, đang chạy (thay bản nháp v5)
 
-- `{cum}` lấy từ `CUM_THAY_TEN_CUNG` (`sua-chua.ts:431`, export ra dùng chung) theo `nghieng.tenCung`: "phần công việc", "phần tiền bạc", "phần bạn đời". KHÔNG dùng `n.phanDoi` (bảng `chuDeCung` dài, dùng làm tiêu đề).
-- Không câu nào có "bạn" làm chủ ngữ, không "của bạn", không "có/không", không "nên/chưa nên". Chỉ dùng khi năm hỏi = `namXem` (P2 bảo đảm).
+Nguồn: `CO_KHONG` / `QUYET_DINH` trong `lib/rag/chot-huong.ts`, hàm `cauChotDuPhong`.
 
-| `huong` | `co-khong` | `quyet-dinh` (thời thế đỡ / cản) |
+- `{cum}` lấy từ `cumChoChuDe(chuDe, cauHoi)`: "công việc", "tiền bạc"; tình cảm thì "chuyện vợ chồng" (câu nói về vợ/chồng hiện tại), "mối quan hệ này" (câu nói tới MỘT người cụ thể có sở hữu: "người yêu tôi", "anh ấy"…), còn lại "chuyện tình cảm".
+- Tiền tố "Năm {nam}, " chỉ thêm khi người dùng THẬT SỰ hỏi về năm (`hoiVeNam`: có số năm = `namXem` hoặc "năm nay"). `namXem` route tự điền không tính.
+- `thoi-diem` không có bảng → `null` → không bao giờ QUICK (16.2).
+
+| `huong` | `co-khong` | `quyet-dinh` |
 |---|---|---|
-| `thuan-ro` | Năm {nam}, {cum} đang khá thuận và vững. | Năm {nam}, thời thế đang đỡ khá rõ cho {cum}. |
-| `thuan-nhe` | Năm {nam}, {cum} nghiêng về thuận, dù chưa hẳn trơn tru. | Năm {nam}, {cum} có thời thế đỡ, nhưng chưa nhiều. |
-| `can-bang` | Năm {nam}, {cum} thuận và vướng ngang nhau, Celes chưa nghiêng được về phía nào. | Năm {nam}, với {cum}, thời thế đỡ và cản ngang nhau. |
-| `can-nhe` | Năm {nam}, {cum} hơi vướng, chưa thật thuận. | Năm {nam}, {cum} gặp cản nhiều hơn được đỡ. |
-| `can-ro` | Năm {nam}, {cum} đang khá vướng. | Năm {nam}, {cum} đang gặp cản khá rõ. |
+| `thuan-ro` | {cum} đang khá thuận. | với {cum}, các điều kiện hiện tại khá ủng hộ lựa chọn này. |
+| `thuan-nhe` | {cum} có phần thuận lợi nhỉnh hơn, nhưng vẫn còn điểm vướng. | với {cum}, lựa chọn này đang có lợi thế nhẹ, nhưng chưa thật rõ. |
+| `can-bang` | {cum} có mặt thuận lợi và mặt vướng khá cân nhau. | với {cum}, điểm thuận lợi và điểm bất lợi đang khá cân nhau. |
+| `can-nhe` | {cum} có phần vướng nhỉnh hơn, nhưng chưa phải thế khó. | với {cum}, điểm bất lợi đang nhỉnh hơn một chút. |
+| `can-ro` | {cum} đang gặp khá nhiều điểm vướng. | với {cum}, các điều kiện hiện tại chưa ủng hộ lựa chọn này. |
 
-- Câu hỏi tình cảm của người chưa cưới vẫn ra "phần bạn đời" (cung Phu Thê) — chủ dự án xem có chấp nhận chữ này không.
+Không có tiền tố năm thì viết hoa chữ đầu ("Công việc đang khá thuận.", "Với công việc, …").
 
 ### 17d. Thứ tự tiếp theo
 
@@ -553,3 +556,40 @@ QUICK: `docTraLoi` → `chamDoChac` → `kiemDuyet` → `locYHong` → **`kiemQu
 2. Vé [CODE] ghi vết an toàn (P4) — nhỏ, độc lập.
 3. Vé [CODE] tinh gọn test local (`kiem-nhanh`, `smoke:safety`, `smoke:quick`) — đã duyệt trước.
 4. Viết v5 hoàn chỉnh (gộp mục 16–17 vào thân tài liệu), `phan-bien` một vòng ngắn trên phần đổi, rồi code CEL-186a theo 16.7 / thứ tự của danh-gia-tac-dong.
+
+## 18. Đã làm (CEL-186a, nhánh `viec/cel-186-quick`) — mô tả theo code thật
+
+Commit: P1 planner · P4 vết an toàn/độ sâu · P3 quick answer + giọng hội thoại · kiểm nhanh + smoke + CI.
+
+**Độ sâu** — `tinhDoSau` trong `lib/rag/hop-dong-tra-loi.ts`, thuần, tách khỏi `Nhip`. Thứ tự (cái đầu tiên khớp thắng):
+an toàn ≠ NORMAL → chủ đề nặng → xin sâu (DEEP) → xin thêm → lượt từ chip → giải thích / "vì sao" → nhiều vế →
+**ngoài tầm** (QUICK, trừ khi kèm chiều xấu) → ý định ∉ {co-khong, quyet-dinh} → "A hay B" → chủ đề ∉ {sự nghiệp, tài chính, tình cảm} →
+engine không chốt hướng → lớp giai đoạn → hỏi năm khác → chiều xấu → hỏi về người khác → QUICK.
+Lý do (`LyDoDoSau`) được ghi vào vết `ai_requests`, không ghi câu hỏi.
+
+**Ngoài tầm** — `lib/rag/ngoai-tam.ts`. Bắt câu hỏi danh tính bạn đời / người yêu (có tên riêng, hoặc "tên gì / họ gì").
+Tên không dấu, viết thường ("chong toi co phai le minh khong") KHÔNG bắt — thà mất QUICK còn hơn bắt nhầm "hiếu", "buồn".
+Kết luận = một trong ba câu `CAU_NGOAI_TAM`, chọn bằng FNV của câu hỏi; câu 2 ("người bạn sẽ cưới") không dùng cho người đã cưới.
+Không tính nghiêng, prompt không có "HƯỚNG ĐÃ CHỐT".
+
+**Hậu kỳ QUICK** — `lib/rag/kiem-quick.ts` (thuần), gọi trong `tra-loi.ts`:
+docTraLoi(cho phép tomTat rỗng) → chamDoChac → kiemDuyet (bỏ các lỗi không áp cho QUICK; ngoài tầm bỏ 'thieu-ket-luan') → locYHong →
+**kiemQuick** → dungVan(QUICK) → doiTenCung → miễn trừ tâm lý nếu SENSITIVE → soatNgonNgu. Không dấu ấn, không `suaCauTiengLong`.
+kiemQuick: bỏ heading / tiêu đề ý / canNhac / bước tiếp / tự kiểm / hỏi lại; tối đa 1 ý, 1 dữ kiện, lực ngược 1 mệnh đề;
+mục tiêu 40–110 âm tiết, trần mềm 150, cắt theo câu chứ không giữa câu; chip ≤ 40 ký tự, tối đa 3, không cắt, bỏ chip hỏi tên.
+Câu chốt lệch chiều engine / vượt độ chắc / phán quyết / giọng report / tên sao, tên bịa / khẳng định đời thật / tiếng lóng / self-help
+→ CHỈ thay câu chốt bằng câu dự phòng (17c), phần còn lại giữ. Thiếu `chieuCauChot` → chỉ ghi vết.
+
+**Prompt** — `dungPromptCoCanCu(..., { ngoaiTam, tinhNghich })`. Không truyền tuỳ chọn QUICK thì prompt STANDARD giống từng byte bản trước (khoá trong `test-quick-answer.ts`).
+
+**Cờ**
+- `CELES_QUICK_ANSWER`: '1'/'true' bật, '0'/'false' tắt, không đặt thì chỉ bật khi `VERCEL_ENV=preview`. Production không tự bật. Tắt → mọi lượt STANDARD, ngoài tầm = null.
+- `CELES_TINH_NGHICH`: không đặt thì theo cờ QUICK. Trêu (`choPhepTinhNghich`) chỉ khi: cờ bật + QUICK + NORMAL; không sức khoẻ, không chủ đề nặng, không chiều xấu, không từ nghiêm; không phải câu nối; hướng `thuan-ro` / `thuan-nhe` / `can-bang` (câu ngoài tầm bỏ qua điều kiện hướng); 3 lượt người dùng gần nhất đều NORMAL và không nặng.
+
+**Lệch so với phương án**
+- Chống lặp motif chưa loại 3-gram chứa danh từ chủ đề.
+- Ngoài tầm kèm chiều xấu ("chồng tôi ngoại tình có phải với …") → STANDARD (`chieu-xau`), không QUICK.
+- Câu quyết định RỜI BỎ (nghỉ việc, bỏ chồng, rút vốn, bán nhà…) coi là chiều xấu → STANDARD, vì hướng engine "thuận" sẽ bị hiểu thành "nên bỏ".
+- `eval-giong-quick` (20 ca model thật, mục 12) CHƯA viết, CHƯA chạy — không chặn push, phải chạy trước khi bật production.
+
+**Kiểm** — `npm run kiem-nhanh` (theo vùng đã đổi), `npm run smoke:safety`, `npm run smoke:quick`; CI chạy thêm test-do-sau, test-ngoai-tam, test-quick-answer, hai smoke.

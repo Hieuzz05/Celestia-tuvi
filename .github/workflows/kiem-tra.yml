@@ -66,5 +66,16 @@ jobs:
       - name: Linh vật nghiêm theo lượt mới nhất (không dính)
         run: npx tsx scripts/test-linh-vat-an-toan.ts
 
+      - name: Độ sâu trả lời (QUICK / STANDARD / DEEP, cờ)
+        run: npx tsx scripts/test-do-sau.ts
+      - name: Câu hỏi ngoài tầm lá số (bắt đúng, không bắt nhầm)
+        run: npx tsx scripts/test-ngoai-tam.ts
+      - name: Quick answer (prompt STANDARD nguyên byte, kiểm QUICK, câu dự phòng)
+        run: npx tsx scripts/test-quick-answer.ts
+      - name: Smoke an toàn
+        run: npx tsx scripts/smoke-safety.ts
+      - name: Smoke QUICK
+        run: npx tsx scripts/smoke-quick.ts
+
       - name: Build
         run: npx next build

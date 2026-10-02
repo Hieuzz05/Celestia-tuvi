@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "kiem-tra-sso": "node scripts/kiem-tra-sso.mjs"
+    "kiem-tra-sso": "node scripts/kiem-tra-sso.mjs",
+    "kiem-nhanh": "node scripts/kiem-nhanh.mjs",
+    "smoke:safety": "npx tsx scripts/smoke-safety.ts",
+    "smoke:quick": "npx tsx scripts/smoke-quick.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
