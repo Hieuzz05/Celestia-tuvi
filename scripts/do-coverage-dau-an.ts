@@ -11,7 +11,12 @@
  *      Cảnh báo khi một câu chiếm > 25%. Thiếu DB thì bỏ qua tập này, có báo.
  *
  * Cổng 1b, CHẶN: SENSITIVE / CRITICAL / tra-cuu / tong-quan:mo-ta khi planner
- * không chắc / câu nối tiếp — tất cả phải ra 0 dấu ấn.
+ * không chắc / câu nối tiếp / bài không có ketLuan — tất cả phải ra 0 dấu ấn.
+ *
+ * NO_KET_LUAN_GATE chỉ đo được trên đầu vào dựng (1b). Câu trả lời không lưu
+ * vào DB (`retrieval_runs`, `ai_requests` không giữ văn bản), nên tập 2 và 3
+ * giả định mọi lượt CÓ ketLuan — số ở đó là trần trên. Tụt độ phủ vì cổng
+ * này là tụt đúng, không phải hồi quy.
  *
  * Tập 2 và 3 in HAI thước đo tách riêng: phân bố chuDe:yDinh của PLANNER và phân
  * bố từng CÂU. Một câu > 25% thường là planner đang hút fallback, không phải
@@ -71,7 +76,7 @@ console.log(`  ${moiBienThe.length} câu, ${Y_DINH.length} yDinh × ${SO_BIEN_TH
 // Khoá hợp lệ = planner chắc + lượt đầu. Hai cổng chỉ BỎ dấu ấn, không mở thêm
 // khoá nào, nên tới được ở đây là tới được trên đường thật.
 console.log('\n=== 1. TOÀN KEYSPACE (chặn) ===');
-const LUOT_DAU = { chacChan: true, laCauNoi: false } as const;
+const LUOT_DAU = { chacChan: true, laCauNoi: false, coKetLuan: true } as const;
 const toiDuoc = new Set<string>();
 for (const y of Y_DINH) {
   const dong: string[] = [];
@@ -103,12 +108,27 @@ cong('SENSITIVE', moiKhoa.map((k) => ({ ...k, mucAnToan: 'SENSITIVE', ...LUOT_DA
 cong('CRITICAL', moiKhoa.map((k) => ({ ...k, mucAnToan: 'CRITICAL', ...LUOT_DAU })));
 cong('tra-cuu', CHU_DE.map((c) => ({ chuDe: c, yDinh: 'tra-cuu', mucAnToan: 'NORMAL', ...LUOT_DAU })));
 cong('tong-quan:mo-ta + !chacChan', [
-  { chuDe: 'tong-quan', yDinh: 'mo-ta', mucAnToan: 'NORMAL', chacChan: false, laCauNoi: false },
+  { chuDe: 'tong-quan', yDinh: 'mo-ta', mucAnToan: 'NORMAL', chacChan: false, laCauNoi: false, coKetLuan: true },
 ]);
 cong('tong-quan:mo-ta + phân loại bằng model', [
-  { chuDe: 'tong-quan', yDinh: 'mo-ta', mucAnToan: 'NORMAL', chacChan: true, phanLoaiBangModel: true, laCauNoi: false },
+  {
+    chuDe: 'tong-quan',
+    yDinh: 'mo-ta',
+    mucAnToan: 'NORMAL',
+    chacChan: true,
+    phanLoaiBangModel: true,
+    laCauNoi: false,
+    coKetLuan: true,
+  },
 ]);
-cong('laCauNoi', moiKhoa.map((k) => ({ ...k, mucAnToan: 'NORMAL', chacChan: true, laCauNoi: true })));
+cong('laCauNoi', moiKhoa.map((k) => ({ ...k, mucAnToan: 'NORMAL', chacChan: true, laCauNoi: true, coKetLuan: true })));
+// Mọi khoá lẽ ra CÓ dấu ấn (NORMAL, planner chắc, lượt đầu) — chỉ thiếu ketLuan.
+const khongKetLuan: DauVaoDauAn[] = CHU_DE.flatMap((c) =>
+  Y_DINH.map((y) => ({ chuDe: c, yDinh: y, mucAnToan: 'NORMAL' as const, ...LUOT_DAU, coKetLuan: false }))
+);
+cong('không ketLuan', khongKetLuan);
+const noKetLuanGate = khongKetLuan.filter((v) => chonDauAn(v).lyDo === 'khong-ket-luan').length;
+console.log(`  NO_KET_LUAN_GATE = ${noKetLuanGate}/${khongKetLuan.length} khoá bị cổng ketLuan chặn`);
 
 // ── Hai thước đo tách riêng: planner và câu ──────────────────────────────────
 function inPhanBo(nhan: string, dem: Map<string, number>, tong: number, canhBao: boolean) {
@@ -138,6 +158,8 @@ function doTap(ten: string, ds: Luot[], inTungLuot: boolean): Map<string, number
       chacChan: k.chacChan,
       phanLoaiBangModel: k.phanLoaiBangModel,
       laCauNoi: l.laCauNoi,
+      // Câu trả lời không lưu → không biết có ketLuan không; giả định có (trần trên).
+      coKetLuan: true,
     });
     tang(planner, `${k.chuDe}:${k.yDinh}${k.chacChan ? '' : ' (?)'}`);
     if (d.bienThe) {
@@ -150,7 +172,8 @@ function doTap(ten: string, ds: Luot[], inTungLuot: boolean): Map<string, number
       console.log(`  ${nhan.padEnd(22)} ${kh.padEnd(28)} «${l.cauHoi.replace(/\s+/g, ' ').slice(0, 50)}»`);
     }
   }
-  console.log(`  ${ten}: có dấu ấn ${co}/${ds.length} = ${phanTram(co, ds.length)}`);
+  console.log(`  ${ten}: có dấu ấn ${co}/${ds.length} = ${phanTram(co, ds.length)} (trần trên)`);
+  console.log('  NO_KET_LUAN_GATE = không đo được — câu trả lời không lưu vào DB');
   inPhanBo('Không dấu ấn, theo lý do', lyDo, ds.length - co, false);
   inPhanBo('PLANNER chuDe:yDinh — (?) = không chắc', planner, ds.length, true);
   inPhanBo('CÂU dấu ấn', cau, co, true);

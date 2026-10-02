@@ -140,9 +140,9 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
    */
   const phan: string[] = [];
   if (t.ketLuan) phan.push(t.ketLuan.trim());
-  // Dấu ấn đứng sau kết luận, trước phần giải thích: kết luận vẫn là dòng đầu
-  // khi có, còn khi không có thì dấu ấn là câu mở — đúng chỗ người ta nghe ra giọng.
-  if (nc.dauAn) phan.push(nc.dauAn.trim());
+  // Dấu ấn là cầu nối kết luận → căn cứ. Không có kết luận thì không chèn: câu
+  // dẫn đứng đầu tin là chiếm chỗ câu nghiêng hướng (`chonDauAn` cũng đã chặn).
+  if (nc.dauAn && t.ketLuan?.trim()) phan.push(nc.dauAn.trim());
   phan.push(t.tomTat.trim());
 
   for (const y of t.yChinh) {
@@ -449,6 +449,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     chacChan: keHoach.chacChan,
     phanLoaiBangModel: keHoach.phanLoaiBangModel,
     laCauNoi,
+    coKetLuan: !!daLoc.ketLuan?.trim(),
     lichSu: vao.lichSu,
   });
 

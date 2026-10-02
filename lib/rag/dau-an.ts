@@ -1,5 +1,6 @@
 import type { TinNhan } from '@/lib/ai/prompt';
 import type { MucAnToan } from './an-toan';
+import { CUM_TIENG_LONG_CAM } from './chuan-ngon-ngu';
 import type { YDinh } from './planner';
 
 /**
@@ -100,29 +101,29 @@ export function khoaBienThe(chuDe: string, yDinh: YDinh): string {
  */
 export const THU_VIEN_DAN_LUAN: Readonly<Record<Exclude<YDinh, 'tra-cuu'>, readonly string[]>> = {
   'quyet-dinh': [
-    'Một quyết định như thế này nên đặt lên nền của riêng bạn, không lên lời khuyên chung.',
-    'Lá số không chọn thay bạn, nhưng nó cho biết bạn đang đứng ở đâu khi chọn.',
-    'Điểm đáng nhìn ở đây không nằm ở một dấu hiệu riêng lẻ.',
+    'Một quyết định rõ hơn khi biết mỗi phía đang dựa trên những căn cứ nào.',
+    'Điều đáng giữ lại không chỉ là kết luận, mà là vì sao các căn cứ dẫn tới kết luận đó.',
+    'Một dấu hiệu hiếm khi đủ để làm rõ một quyết định; cần nhìn cách nhiều căn cứ ghép lại.',
   ],
   'co-khong': [
-    'Có một điểm trong câu hỏi này đáng để tách riêng ra.',
-    'Một chữ có hay không đáng tin hơn khi biết nó đứng trên điều gì.',
-    'Chữ có hay không ở đây là của riêng lá số bạn, không phải câu trả lời chung cho mọi người.',
+    'Một câu có hay không chỉ đứng vững khi có đủ căn cứ cho nó.',
+    'Câu trả lời có hay không đến từ cách các dấu hiệu nghiêng về phía nào khi đặt cạnh nhau.',
+    'Câu trả lời ở đây nằm ở cách các dấu hiệu kết hợp với nhau, không ở một dấu hiệu đơn lẻ.',
   ],
   'thoi-diem': [
-    'Chuyện lúc nào đọc theo nhịp từng giai đoạn, không theo một ngày đẹp riêng lẻ.',
-    'Cùng một việc, đặt vào hai giai đoạn khác nhau có thể là hai câu chuyện khác nhau.',
-    'Để trả lời chuyện lúc nào, cần xem bạn đang ở đoạn nào của nhịp chung.',
+    'Thời điểm trong lá số hiện ra theo từng giai đoạn, không phải một ngày đẹp đứng riêng.',
+    'Mốc đáng chú ý thường xuất hiện khi nhiều dấu hiệu cùng thay đổi trong một giai đoạn.',
+    'Chuyện lúc nào chỉ rõ khi đặt vào đúng giai đoạn đang chạy, không tách khỏi nhịp chung của lá số.',
   ],
   'giai-thich': [
-    'Một nét hay lặp lại ở bạn thường có gốc sâu hơn chính nó.',
-    'Điều này dễ thấy từ bên ngoài, còn lý do thì nằm ở lớp bên dưới.',
-    'Lý do thường rõ hơn khi nhìn nó trong cả con người bạn, không tách riêng ra.',
+    'Một điều lặp lại hiếm khi đứng một mình; nó thường là chỗ nhiều dấu hiệu cùng gặp nhau.',
+    'Điều nhìn thấy trước thường chỉ là phần nổi; nguyên do nằm ở cách các dấu hiệu trong lá số tác động lẫn nhau.',
+    'Một nét chỉ giải thích được khi đặt cạnh những phần còn lại của lá số, không đọc riêng một mảnh.',
   ],
   'mo-ta': [
-    'Điểm đáng giữ lại ở đây là nét riêng trong lá số này, không phải nhãn chung cho nhiều người.',
+    'Cùng một nét có thể mang nghĩa khác khi đi cùng những dấu hiệu khác.',
     'Mỗi nét ở đây chỉ đọc đúng khi đặt cạnh những nét còn lại.',
-    'Nếu chỉ nhìn bề mặt thì khá dễ hiểu sai chuyện này.',
+    'Nhìn một nét thôi rất dễ đọc thiếu; ý nghĩa của nó rõ hơn khi đặt cùng những dấu hiệu khác.',
   ],
 };
 
@@ -158,6 +159,8 @@ export function kiemCauDauAn(cau: string): string[] {
   const loi: string[] = [];
   const thuong = cau.toLowerCase();
   for (const cum of CUM_FILLER_CAM) if (thuong.includes(cum)) loi.push(`filler: "${cum}"`);
+  // Cùng danh sách khối `cam-tieng-long` in vào prompt — không giữ bản sao riêng.
+  for (const cum of CUM_TIENG_LONG_CAM) if (thuong.includes(cum)) loi.push(`tiếng lóng: "${cum}"`);
   const cd = cau.match(CHU_DE_CAM);
   if (cd) loi.push(`nhắc chủ đề: "${cd[0]}"`);
   const bc = cau.match(HUA_BO_CUC);
@@ -168,7 +171,13 @@ export function kiemCauDauAn(cau: string): string[] {
 }
 
 /** Vì sao lượt này không có dấu ấn — để bộ đo tách đúng nguyên nhân */
-export type LyDoKhong = 'an-toan' | 'tra-cuu' | 'planner-khong-chac' | 'cau-noi' | 'lap-lien-truoc';
+export type LyDoKhong =
+  | 'an-toan'
+  | 'tra-cuu'
+  | 'planner-khong-chac'
+  | 'cau-noi'
+  | 'khong-ket-luan'
+  | 'lap-lien-truoc';
 
 export interface DauAnLuot {
   tang: TangDauAn;
@@ -188,6 +197,8 @@ export interface DauVaoDauAn {
   phanLoaiBangModel?: boolean;
   /** Câu nối tiếp mạch đang nói — cùng cờ `laCauNoi` của `dungVan` */
   laCauNoi: boolean;
+  /** Bài model trả có `ketLuan` không rỗng — dấu ấn là cầu nối SAU kết luận */
+  coKetLuan: boolean;
   /** Lịch sử hội thoại — chỉ đọc tin trợ lý LIỀN TRƯỚC, xem `daDungOLuotLienTruoc` */
   lichSu?: TinNhan[];
 }
@@ -210,7 +221,7 @@ export function daDungOLuotLienTruoc(lichSu: readonly TinNhan[], cau: string): b
 /**
  * Điểm vào duy nhất cho `tra-loi.ts`.
  *
- * Ba cổng ngoài policy theo ý định (chủ dự án chốt 02/10/2026):
+ * Bốn cổng ngoài policy theo ý định (chủ dự án chốt 02/10/2026):
  *
  * - `tong-quan:mo-ta` mà planner KHÔNG chắc → không có dấu ấn. Đó là ô mặc
  *   định hút mọi câu planner không hiểu ("hi", câu phân loại sai). Chèn một câu
@@ -222,6 +233,9 @@ export function daDungOLuotLienTruoc(lichSu: readonly TinNhan[], cau: string): b
  *   tiếp cùng mạch là đọc lại đúng câu cũ. Dấu ấn là lớp trình bày; vào mạch rồi
  *   thì liền mạch quan trọng hơn. Muốn có lại ở lượt sau thì phải làm cách chọn
  *   CÓ đọc lịch sử, đừng bỏ cổng này với cách chọn hiện tại.
+ * - Không có `ketLuan` → không có dấu ấn. Thiếu kết luận thì câu dẫn thành câu
+ *   mở bài, chiếm chỗ câu nghiêng hướng mà `co-khong`/`quyet-dinh` phải đặt
+ *   đầu tiên. Áp cho mọi ý định, không riêng hai ý định đó.
  */
 export function chonDauAn(vao: DauVaoDauAn): DauAnLuot {
   const khong = (lyDo: LyDoKhong): DauAnLuot => ({ tang: 'KHONG', bienThe: null, cau: null, lyDo });
@@ -231,6 +245,7 @@ export function chonDauAn(vao: DauVaoDauAn): DauAnLuot {
     return khong('planner-khong-chac');
   }
   if (vao.laCauNoi) return khong('cau-noi');
+  if (!vao.coKetLuan) return khong('khong-ket-luan');
 
   const tang = chonTang(vao.yDinh, vao.mucAnToan);
   // KHO_HAI chưa có thư viện nên không tới được đây; tới được thì phải viết nhánh riêng.

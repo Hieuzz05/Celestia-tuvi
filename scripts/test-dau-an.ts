@@ -8,7 +8,7 @@
  * `scripts/eval-chat-quyet-dinh.ts` đo được.
  */
 import type { TinNhan } from '../lib/ai/prompt';
-import { chonDauAn, type DauVaoDauAn } from '../lib/rag/dau-an';
+import { chonDauAn, kiemCauDauAn, type DauVaoDauAn } from '../lib/rag/dau-an';
 
 const GOC: DauVaoDauAn = {
   chuDe: 'su-nghiep',
@@ -16,6 +16,7 @@ const GOC: DauVaoDauAn = {
   mucAnToan: 'NORMAL',
   chacChan: true,
   laCauNoi: false,
+  coKetLuan: true,
 };
 
 let loi = 0;
@@ -67,6 +68,20 @@ const voiLichSu = (lichSu: TinNhan[]) => chonDauAn({ ...GOC, lichSu });
     { vaiTro: 'nguoi-dung', noiDung: 'Hỏi nữa' },
   ]);
   kiem('3b. chỉ quét tin trợ lý liền trước', r.cau === cau, `lyDo=${r.lyDo}`);
+}
+
+// 4. Không có ketLuan → không dấu ấn, với MỌI ý định có thư viện.
+for (const yDinh of ['quyet-dinh', 'co-khong', 'thoi-diem', 'giai-thich', 'mo-ta'] as const) {
+  const r = chonDauAn({ ...GOC, yDinh, coKetLuan: false });
+  kiem(`4. ${yDinh} không ketLuan → không dùng`, r.cau === null && r.lyDo === 'khong-ket-luan', `lyDo=${r.lyDo}`);
+}
+
+// 5. Checker quét cùng danh sách tiếng lóng với prompt (CUM_TIENG_LONG_CAM).
+{
+  const hong = kiemCauDauAn('Một chữ có hay không đáng tin hơn khi biết những dấu hiệu nào đang đỡ lấy nó.');
+  kiem('5a. "đang đỡ" → checker bắt', hong.some((l) => l.includes('đang đỡ')), hong.join('; '));
+  const dung = kiemCauDauAn('Một chữ có hay không đáng tin hơn khi biết nó dựa vào những dấu hiệu nào.');
+  kiem('5b. "dựa vào những dấu hiệu nào" → qua', dung.length === 0, dung.join('; '));
 }
 
 console.log(loi === 0 ? '\nXANH' : `\nĐỎ: ${loi} lỗi`);
