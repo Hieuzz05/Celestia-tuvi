@@ -57,6 +57,8 @@ jobs:
         run: npx tsx scripts/test-an-toan.ts
       - name: Hợp đồng trả lời (không chạm kết luận, thứ tự khối)
         run: npx tsx scripts/test-hop-dong-tra-loi.ts
+      - name: Lớp sửa câu không làm sập xuống dòng
+        run: npx tsx scripts/test-sua-chua-tach.ts
 
       - name: Build
         run: npx next build
