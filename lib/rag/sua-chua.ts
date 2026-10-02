@@ -62,9 +62,150 @@ export function laCauKeSao(cau: string, tran = 2, boQua: readonly string[] = [])
 const TIENG_LONG_MOT_CAU =
   /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang (?:đỡ|cản)|(?:các|những|nhiều|một số|vài)\s+yếu\s+tố|lực đỡ|nghiêng về phía (?:thuận|cản)|hai lực ngang nhau/iu;
 
-/** Nhiều câu trong một chuỗi — tách theo dấu kết câu */
-function tachCau(doan: string): string[] {
-  return doan.split(/(?<=[.!?])\s+/).filter((c) => c.trim().length > 0);
+/**
+ * Một mảnh văn bản: hoặc là CÂU (được phép sửa), hoặc là PHẦN NGĂN CÁCH (không
+ * bao giờ được đụng tới).
+ *
+ * Vì sao phải giữ phần ngăn cách thành mảnh riêng: bản cũ tách câu bằng
+ * `split(/(?<=[.!?])\s+/)` rồi ráp bằng `join(' ')`. Phép tách vứt đi thứ nó
+ * cắt, nên phép ráp không còn cách nào biết chỗ đó từng là `\n\n`. Mọi xuống
+ * dòng thành một dấu cách: "kết luận đứng một mình" (`tra-loi.ts`) dính vào câu
+ * sau, khuôn BÁO CÁO mất tiêu đề và danh sách. Mà chỉ những bài có câu phải sửa
+ * mới bị, nên lỗi ấy im lặng.
+ *
+ * Bất biến của cặp hàm dưới: `rapManh(tachManh(x)) === x` với mọi x.
+ */
+export type ManhVanBan =
+  | { loai: 'NOI_DUNG'; text: string }
+  | { loai: 'PHAN_CACH'; text: string };
+
+/** Dấu đầu dòng của Markdown: tiêu đề, gạch đầu dòng, danh sách đánh số, trích dẫn */
+const DAU_DONG = /^[ \t]*(?:#{1,6}[ \t]+|[-*+][ \t]+|\d{1,3}[.)][ \t]+|>[ \t]?)?/;
+
+/**
+ * Ranh giới câu trong một khối chữ liền.
+ *
+ * Tính cả dấu đóng đứng ngay sau dấu kết câu — `.)`, `.”`, `.**` — vì model hay
+ * kết câu trong ngoặc hoặc trong chữ đậm, và cắt trước chúng là để lại một mảnh
+ * `)` hay `**` mồ côi ở đầu câu sau.
+ *
+ * KHÔNG tính `…`: trong văn Celes nó thường là quãng ngừng giữa câu ("có lúc…
+ * rồi lại"), và cắt ở đó là chia một câu kê sao thành hai nửa, mỗi nửa dưới
+ * ngưỡng `laCauKeSao`. Bản tách cũ cũng không cắt ở `…`.
+ */
+const RANH_GIOI_CAU = /((?<=[.!?]["”’)\]*_]*)\s+)/u;
+
+/**
+ * Cắt văn bản thành mảnh câu và mảnh ngăn cách, KHÔNG mất ký tự nào.
+ *
+ * Đi theo dòng. Dấu đầu dòng, khoảng trắng cuối dòng và ký tự xuống dòng đều là
+ * PHAN_CACH, với một ngoại lệ: một dòng xuống đơn giữa hai dòng chữ thường (không
+ * có dấu đầu dòng nào) là xuống dòng mềm của Markdown, tức vẫn là một đoạn. Giữ
+ * nó trong câu để câu bị ngắt giữa chừng — "các\nyếu tố" — vẫn được nhận ra.
+ */
+export function tachManh(van: string): ManhVanBan[] {
+  const dong = van.match(/[^\r\n]*(?:\r\n|\n|\r|$)/g) ?? [];
+  // Bỏ mảnh rỗng cuối cùng mà `$` luôn khớp thêm
+  if (dong.length && dong[dong.length - 1] === '') dong.pop();
+
+  const ra: ManhVanBan[] = [];
+  const day = (loai: ManhVanBan['loai'], text: string) => {
+    if (!text) return;
+    const cuoi = ra[ra.length - 1];
+    if (cuoi && cuoi.loai === 'PHAN_CACH' && loai === 'PHAN_CACH') cuoi.text += text;
+    else ra.push({ loai, text });
+  };
+
+  let khoi = '';
+  const xaKhoi = () => {
+    // Khoảng trắng đầu/cuối khối không thuộc câu nào
+    const m = khoi.match(/^(\s*)([\s\S]*?)(\s*)$/)!;
+    day('PHAN_CACH', m[1]);
+    m[2].split(RANH_GIOI_CAU).forEach((p, i) => day(i % 2 ? 'PHAN_CACH' : 'NOI_DUNG', p));
+    day('PHAN_CACH', m[3]);
+    khoi = '';
+  };
+
+  const phanTich = (d: string) => {
+    const [, than, het] = d.match(/^([^\r\n]*)(\r\n|\n|\r|)$/)!;
+    const dau = than.match(DAU_DONG)![0];
+    return { dau, noi: than.slice(dau.length), het, coDau: dau.trim().length > 0 };
+  };
+
+  dong.forEach((d, i) => {
+    const hien = phanTich(d);
+    if (hien.coDau) {
+      xaKhoi();
+      day('PHAN_CACH', hien.dau);
+      khoi += hien.noi;
+    } else {
+      // Chỉ thụt lề, không có dấu: vẫn là chữ của khối đang dở
+      khoi += hien.dau + hien.noi;
+    }
+    const sau = i + 1 < dong.length ? phanTich(dong[i + 1]) : null;
+    const xuongMem =
+      hien.het && hien.noi.trim() && !hien.coDau && sau && sau.noi.trim() && !sau.coDau;
+    if (xuongMem) {
+      khoi += hien.het;
+    } else {
+      xaKhoi();
+      day('PHAN_CACH', hien.het);
+    }
+  });
+  xaKhoi();
+  return ra;
+}
+
+/** Ráp lại đúng như cũ — nối thẳng, không chèn, không chuẩn hoá gì */
+export function rapManh(manh: readonly ManhVanBan[]): string {
+  return manh.map((m) => m.text).join('');
+}
+
+/**
+ * Câu model viết lại phải là MỘT câu trơn.
+ *
+ * Nó sẽ được đặt vào đúng chỗ của một mảnh NOI_DUNG, nên mọi cấu trúc nó tự mang
+ * theo — xuống dòng, tiền tố `C1.` lặp lại từ đề bài, gạch đầu dòng — sẽ chèn
+ * thêm cấu trúc vào bài. Đó là cùng loại lỗi đang sửa, chỉ theo chiều ngược lại.
+ */
+function lamSachCauMoi(moi: string, goc: string): string {
+  let ra = moi
+    // Xuống dòng — kèm luôn dấu đầu dòng model chèn sau nó — thành một dấu cách
+    .replace(/\s*[\r\n]+[ \t]*(?:(?:[-*+]|\d{1,3}[.)]|#{1,6}|>)[ \t]+)?/g, ' ')
+    .replace(/^(?:C\d+\.\s*|#{1,6}\s+|[-*+]\s+|\d{1,3}[.)]\s+)/i, '')
+    .trim();
+  /*
+   * Giữ lại dấu nhấn bị lẻ của câu gốc.
+   *
+   * `RANH_GIOI_CAU` cho dấu đóng đi theo câu, nên "**Hai. Ba.**" tách thành
+   * "**Hai." và "Ba.**" — mỗi mảnh mang MỘT nửa cặp. Model viết lại "Ba.**" mà
+   * bỏ `**` thì chữ đậm mở ở câu trước không bao giờ đóng và loang hết phần sau
+   * của bài. Câu gốc lẻ dấu nào thì câu mới phải lẻ đúng dấu ấy, cùng phía.
+   */
+  for (const dau of ['**', '__']) {
+    const le = (x: string) => x.split(dau).length % 2 === 0;
+    if (!le(goc) || le(ra)) continue;
+    ra = goc.trimStart().startsWith(dau) ? dau + ra : ra + dau;
+  }
+  return ra;
+}
+
+/**
+ * Mảnh câu này có phải nội dung một dòng tiêu đề không.
+ *
+ * Tiêu đề không có dấu kết câu nên đứng riêng một mảnh, mà tiêu đề model viết
+ * vẫn có thể khớp tiếng lóng ("### Các yếu tố đang cản"). Gửi nó đi viết lại
+ * như một câu thì nhận về một câu dài nằm sau `###` — tiêu đề thành đoạn văn.
+ * Để nguyên: cổng ngôn ngữ vẫn ghi nó vào trace.
+ */
+function laTieuDe(manh: readonly ManhVanBan[], i: number): boolean {
+  const truoc = manh[i - 1];
+  return !!truoc && truoc.loai === 'PHAN_CACH' && /#{1,6}[ \t]+$/.test(truoc.text);
+}
+
+/** Thay các mảnh câu theo vị trí, giữ nguyên mọi mảnh ngăn cách */
+function thayManh(manh: readonly ManhVanBan[], sua: ReadonlyMap<number, string>): string {
+  return rapManh(manh.map((m, i) => (m.loai === 'NOI_DUNG' && sua.has(i) ? { ...m, text: sua.get(i)! } : m)));
 }
 
 /**
@@ -109,12 +250,13 @@ export async function suaCauKeSao(
 
   // Gom mọi câu phạm luật của cả lượt sinh
   const viPham: { khoa: string; viTri: number; cau: string }[] = [];
-  const cauTheoKhoa = new Map<string, string[]>();
+  const manhTheoKhoa = new Map<string, ManhVanBan[]>();
   for (const [khoa, doan] of Object.entries(van)) {
-    const cs = tachCau(doan);
-    cauTheoKhoa.set(khoa, cs);
-    cs.forEach((c, i) => {
-      if (viPham.length < toiDa && laCauKeSao(c, tran, boQua)) viPham.push({ khoa, viTri: i, cau: c });
+    const manh = tachManh(doan);
+    manhTheoKhoa.set(khoa, manh);
+    manh.forEach((m, i) => {
+      if (m.loai !== 'NOI_DUNG' || laTieuDe(manh, i)) return;
+      if (viPham.length < toiDa && laCauKeSao(m.text, tran, boQua)) viPham.push({ khoa, viTri: i, cau: m.text });
     });
   }
   if (!viPham.length) return van;
@@ -154,7 +296,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
       if (typeof m.id !== 'string' || typeof m.moi !== 'string') continue;
       const so = Number(m.id.replace(/^C/i, ''));
       if (!viPham[so - 1]) continue;
-      const moi = m.moi.trim();
+      const moi = lamSachCauMoi(m.moi, viPham[so - 1].cau);
       // Sửa xong mà vẫn kê sao, cụt hơn hẳn câu gốc, hoặc thành rỗng nghĩa
       if (moi.length < 12 || laCauKeSao(moi, tran, boQua) || CAU_RONG_NGHIA.test(moi)) continue;
       sua[`${viPham[so - 1].khoa}|${viPham[so - 1].viTri}`] = moi;
@@ -166,8 +308,14 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   if (!Object.keys(sua).length) return van;
 
   const ra: Record<string, string> = {};
-  for (const [khoa, cs] of cauTheoKhoa) {
-    ra[khoa] = cs.map((c, i) => sua[`${khoa}|${i}`] ?? c).join(' ');
+  for (const [khoa, manh] of manhTheoKhoa) {
+    const suaKhoa = new Map<number, string>();
+    manh.forEach((_, i) => {
+      const moi = sua[`${khoa}|${i}`];
+      if (moi !== undefined) suaKhoa.set(i, moi);
+    });
+    // Khoá không có câu nào được sửa thì trả lại đúng chuỗi gốc
+    ra[khoa] = suaKhoa.size ? thayManh(manh, suaKhoa) : van[khoa];
   }
   return ra;
 }
@@ -197,10 +345,10 @@ export async function suaCauTiengLong(
   van: string,
   tenDuKien: string[]
 ): Promise<string> {
-  const cau = tachCau(van);
-  const pham = cau
-    .map((c, i) => ({ c, i }))
-    .filter(({ c }) => TIENG_LONG_MOT_CAU.test(c));
+  const manh = tachManh(van);
+  const pham = manh
+    .map((m, i) => ({ c: m.text, i, loai: m.loai }))
+    .filter(({ c, i, loai }) => loai === 'NOI_DUNG' && !laTieuDe(manh, i) && TIENG_LONG_MOT_CAU.test(c));
   if (!pham.length) return van;
 
   DEM_SUA.tiengLong.soLuotGoi += 1;
@@ -243,7 +391,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
       const so = Number(m.id.replace(/^C/i, ''));
       const goc = pham[so - 1];
       if (!goc) continue;
-      const moi = m.moi.trim();
+      const moi = lamSachCauMoi(m.moi, goc.c);
       // Sửa xong mà vẫn phạm, hoặc cụt hơn hẳn câu gốc, thì coi như hỏng
       if (moi.length < 15 || TIENG_LONG_MOT_CAU.test(moi)) continue;
       sua.set(goc.i, moi);
@@ -254,7 +402,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
   }
   if (!sua.size) return van;
 
-  return cau.map((c, i) => sua.get(i) ?? c).join(' ');
+  return thayManh(manh, sua);
 }
 
 /**
