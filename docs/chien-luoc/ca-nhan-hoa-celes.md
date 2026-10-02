@@ -1313,6 +1313,14 @@ Nếu chỉ nhìn bề mặt thì khá dễ hiểu sai chuyện này.
 Có một điểm trong câu hỏi này đáng để tách riêng ra.
 ```
 
+*(Bốn câu trên là ví dụ minh hoạ luật lúc chốt, KHÔNG phải bộ đang chạy — bộ 15
+câu đã duyệt nằm ở `THU_VIEN_DAN_LUAN` trong `lib/rag/dau-an.ts`.)*
+
+Hệ quả của `ketLuan` tuỳ chọn, chốt 02/10/2026: **không có `ketLuan` thì không có
+dấu ấn**, mọi ý định (`chonDauAn` trả `khong-ket-luan`, `dungVan` cũng chỉ chèn
+sau một kết luận không rỗng). Thiếu kết luận mà vẫn chèn thì câu dẫn thành câu
+mở bài, chiếm chỗ câu nghiêng hướng.
+
 Khuôn SAI — cấm, kể cả khi đọc hay:
 
 ```
