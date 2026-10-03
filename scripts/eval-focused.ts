@@ -244,6 +244,8 @@ interface Do {
   /** Số lần gọi model của lượt — phải ≤ 2 (thử lại đúng một lần) */
   lanGoi: number;
   duPhong: boolean;
+  /** Lý do guard thay câu chốt (để đọc vì sao dùng dự phòng) */
+  lyDoThayChot: string | null;
   latChieuTho: boolean;
   tenDaNeu: string[];
   tenLopNam: string[];
@@ -296,6 +298,7 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     lyDoThuLai: vet?.thuLai ?? null,
     lanGoi: vet?.lanGoi ?? 0,
     duPhong: !!vet?.dungDuPhong,
+    lyDoThayChot: vet?.lyDoThayChot ?? null,
     latChieuTho: !!vet?.lyDoThayChot && /nguoc|thieu-chieu/u.test(vet.lyDoThayChot),
     tenDaNeu,
     tenLopNam: tenDaNeu.filter((t) => tenLopNamTap.has(t)),
