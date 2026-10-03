@@ -12,7 +12,7 @@ import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
 import { chonBoiCanhHoiThoai, gomDieuTuKe, laCauNoiTiep } from '../lib/rag/tiep-noi';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
-import { chipSangNam } from '../lib/rag/tra-loi';
+import { canTinhNghieng, chipSangNam } from '../lib/rag/tra-loi';
 import { canChiCuaNam, namAmHienTai, namAmSapToi } from '../lib/tuvi/bay-gio';
 import { cumVietHoa, tachTuKhoa } from '../lib/rag/cum-tu-khoa';
 import { chonDaDang, doTrung, mucChacChan, NGUONG_TRUNG } from '../lib/rag/uu-tien-nguon';
@@ -498,10 +498,62 @@ kiem('"vài tháng tới" không kéo nguyệt hạn', !lapKeHoach({ cauHoi: 'v�
   const lh = lapKeHoach({ cauHoi: 'năm 2028 tôi có người yêu không?' }).lopHan;
   kiem('"năm 2028" có lưu niên + đại vận', lh.includes('luu-nien') && lh.includes('dai-van'), lh);
 }
-kiem(
-  'Bài dài "… của cả đời" (câu mô tả cố định) giữ nguyên lớp hạn cũ',
-  [...lapKeHoach({ cauHoi: 'Tôi là ai? Tính cách, năng lực nổi trội, thế mạnh và điểm cần lưu ý của cả đời' }).lopHan].sort().join() === 'ban-menh,luu-nien'
-);
+{
+  // Bất biến: chặng dài KHÔNG rơi về lưu niên / nguyệt hạn dự phòng — kể cả câu
+  // mô tả cố định của bài dài (đổi có chủ đích, lần nghiệm thu vé A thứ hai).
+  const lh = lapKeHoach({ cauHoi: 'Tôi là ai? Tính cách, năng lực nổi trội, thế mạnh và điểm cần lưu ý của cả đời' }).lopHan;
+  kiem('Bài dài "… của cả đời" không còn lưu niên dự phòng', [...lh].sort().join() === 'ban-menh', lh);
+  for (const c of ['sau này công việc của tôi thế nào?', 'về già tôi sống ra sao', 'tương lai tình cảm của tôi thế nào']) {
+    const k = lapKeHoach({ cauHoi: c, namXem: 2026, thangXem: 8 });
+    kiem(`"${c}" (giai-doan) không có lưu niên / nguyệt hạn`, k.phamViThoiGian === 'giai-doan' && !k.lopHan.includes('luu-nien') && !k.lopHan.includes('nguyet-han'), [k.phamViThoiGian, k.lopHan]);
+  }
+}
+
+console.log('\n== THÁNG MỤC TIÊU (CEL-186 vé A, lần 2) ==');
+{
+  const THANG: [string, number, number, number | undefined, number | undefined][] = [
+    // câu, năm xem, tháng xem, tháng mong, năm mong
+    ['tháng này tiền bạc có ổn không', 2026, 8, 8, undefined],
+    ['tháng tới tình cảm thế nào?', 2026, 8, 9, undefined],
+    ['tháng sau có nên ký hợp đồng không', 2026, 8, 9, undefined],
+    ['tháng 3 tiền bạc thế nào?', 2026, 8, 3, undefined],
+    ['tháng 3 năm 2028 tôi có cưới không?', 2026, 8, 3, 2028],
+    ['tháng tới tình cảm thế nào?', 2026, 12, 1, 2027],
+    ['vài tháng tới có tiền không', 2026, 8, undefined, undefined],
+    ['năm 2028 tôi có người yêu không?', 2026, 8, undefined, 2028],
+  ];
+  for (const [c, nam, thang, tMong, nMong] of THANG) {
+    const k = lapKeHoach({ cauHoi: c, namXem: nam, thangXem: thang });
+    kiem(
+      `"${c}" @${thang}/${nam} → tháng ${tMong ?? '—'}${nMong ? ` / năm ${nMong}` : ''}`,
+      k.thangMucTieu === tMong && k.namMucTieu === nMong,
+      [k.thangMucTieu, k.namMucTieu]
+    );
+  }
+  const k = lapKeHoach({ cauHoi: 'tháng 3 tiền bạc thế nào?', namXem: 2026, thangXem: 8 });
+  kiem('"tháng 3" → nguyệt hạn, phạm vi thang', k.phamViThoiGian === 'thang' && k.lopHan.includes('nguyet-han'), [k.phamViThoiGian, k.lopHan]);
+  kiem('Không truyền tháng đang xem thì "tháng tới" không đoán tháng', lapKeHoach({ cauHoi: 'tháng tới thế nào' }).thangMucTieu === undefined);
+}
+
+console.log('\n== HƯỚNG NGHIÊNG THEO MỐC THỜI GIAN, KHÔNG CHỈ THEO Ý ĐỊNH ==');
+{
+  const cv = lapKeHoach({ cauHoi: 'Công việc của tôi sắp tới thế nào?', namXem: 2026 });
+  kiem('Regression: "Công việc của tôi sắp tới thế nào?" → mo-ta + gan', cv.yDinh === 'mo-ta' && cv.phamViThoiGian === 'gan', [cv.yDinh, cv.phamViThoiGian]);
+  kiem('Regression: "Công việc của tôi sắp tới thế nào?" VẪN tính hướng nghiêng', canTinhNghieng(cv));
+  kiem('… và có lưu niên + đại vận để tính', cv.lopHan.includes('luu-nien') && cv.lopHan.includes('dai-van'), cv.lopHan);
+  const BANG: [string, boolean][] = [
+    ['Năm nay tình cảm của tôi thế nào?', true],
+    ['tháng 3 tiền bạc thế nào?', true],
+    ['tính cách tôi thế nào', false],
+    ['sau này công việc của tôi thế nào?', false],
+    ['bao giờ tôi có người yêu?', true],
+    ['Lộc Tồn ở Tài Bạch nghĩa là gì', false],
+  ];
+  for (const [c, mong] of BANG) {
+    const k = lapKeHoach({ cauHoi: c, namXem: 2026, thangXem: 8 });
+    kiem(`"${c}" (${k.yDinh} + ${k.phamViThoiGian}) → ${mong ? 'tính' : 'không tính'} hướng nghiêng`, canTinhNghieng(k) === mong);
+  }
+}
 
 console.log('\n== NĂM ÂM VÀ CHIP "SANG NĂM" (CEL-186 vé A) ==');
 kiem('20/01/2027 (trước Tết) vẫn là năm âm 2026', namAmHienTai(new Date('2027-01-20T12:00:00+07:00')) === 2026);

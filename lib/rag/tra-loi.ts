@@ -158,6 +158,23 @@ export function dauAnChoLuot(vao: {
 }
 
 /**
+ * Lượt này có cần hướng nghiêng của engine không.
+ *
+ * Câu CẦN một câu trả lời thẳng (quyết định, có/không, thời điểm) thì luôn cần.
+ * Câu mô tả thì tuỳ MỐC THỜI GIAN, không tuỳ ý định: "công việc sắp tới thế
+ * nào" hỏi về một quãng có lưu niên, nên có hướng để nói; "tính cách tôi thế
+ * nào" (không mốc) không có bên nào để nghiêng về, ép một hướng vào đó là bịa
+ * ra câu hỏi người ta không hỏi. Chặng dài cũng KHÔNG: hướng của một năm không
+ * đại diện được cho cả chặng.
+ */
+export function canTinhNghieng(keHoach: Pick<KeHoachTruyVan, 'yDinh' | 'phamViThoiGian'>): boolean {
+  if (keHoach.yDinh === 'quyet-dinh' || keHoach.yDinh === 'co-khong' || keHoach.yDinh === 'thoi-diem') return true;
+  if (keHoach.yDinh !== 'mo-ta') return false;
+  const pv = keHoach.phamViThoiGian;
+  return pv === 'gan' || pv === 'nam' || pv === 'thang';
+}
+
+/**
  * Chip "Sang năm <Can Chi> thì sao?" khi Tết đã gần (≤ 4 tháng âm).
  *
  * Chat neo năm âm hiện tại, nên tháng 10 âm hỏi "sắp tới" là đọc năm nay — dù
@@ -346,6 +363,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     saoTheoCung,
     tenCachCuc: tenCachCucCho(vao.laSo, so.cungLienQuan[0]),
     namXem: vao.namXem,
+    thangXem: vao.thangXem,
   };
   const keHoach =
     vao.dungModelPhanLoai === false
@@ -359,12 +377,15 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * nay, và sổ kết luận của năm nay bị dán vào một năm khác.
    */
   const namHieuLuc = keHoach.namMucTieu ?? vao.namXem;
+  // Cùng luật cho tháng: "tháng 3" thì dữ kiện nguyệt hạn và hướng nghiêng đọc
+  // tháng 3, không đọc tháng đang xem.
+  const thangHieuLuc = keHoach.thangMucTieu ?? vao.thangXem;
 
   const { duKien } = chonBoiCanh({
     laSo: vao.laSo,
     keHoach,
     namXem: namHieuLuc,
-    thangXem: vao.thangXem,
+    thangXem: thangHieuLuc,
   });
 
   const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
@@ -376,6 +397,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
           requestId: vao.requestId,
           cauHoi: vao.cauHoi,
           namHieuLuc,
+          thangHieuLuc,
         });
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
@@ -387,23 +409,13 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   ]);
   const daNoiTruoc = [...soV3, ...bangCu].slice(0, 8);
 
-  /*
-   * Hướng nghiêng chỉ tính cho câu CẦN một câu trả lời thẳng.
-   *
-   * "Tính cách tôi thế nào" không có bên nào để nghiêng về, và ép một hướng
-   * vào đó là bịa ra một câu hỏi người ta không hỏi.
-   */
-  const canNghieng =
-    keHoach.yDinh === 'quyet-dinh' ||
-    keHoach.yDinh === 'co-khong' ||
-    keHoach.yDinh === 'thoi-diem';
-  const nghieng = canNghieng
+  const nghieng = canTinhNghieng(keHoach)
     ? tinhNghiengVe({
         laSo: vao.laSo,
         chuDe: keHoach.chuDe,
         lopHan: keHoach.lopHan,
         namXem: namHieuLuc,
-        thangXem: vao.thangXem,
+        thangXem: thangHieuLuc,
       })
     : null;
 

@@ -64,13 +64,15 @@ for (const c of BO_VANG_PLANNER) {
   }
 
   // Trục thời gian: phạm vi, năm mục tiêu, và lớp hạn KHÔNG được kéo vào
-  if (c.phamViBatBuoc || c.namMucTieuBatBuoc !== undefined || c.lopHanCam?.length) {
+  if (c.phamViBatBuoc || c.namMucTieuBatBuoc !== undefined || c.thangMucTieuBatBuoc !== undefined || c.lopHanCam?.length) {
     soCoThoiGian += 1;
     const truoc = loi.length;
     if (c.phamViBatBuoc && k.phamViThoiGian !== c.phamViBatBuoc)
       loi.push(`phạm vi: mong ${c.phamViBatBuoc}, nhận ${k.phamViThoiGian}`);
     if (c.namMucTieuBatBuoc !== undefined && k.namMucTieu !== c.namMucTieuBatBuoc)
       loi.push(`năm mục tiêu: mong ${c.namMucTieuBatBuoc}, nhận ${k.namMucTieu ?? '—'}`);
+    if (c.thangMucTieuBatBuoc !== undefined && k.thangMucTieu !== c.thangMucTieuBatBuoc)
+      loi.push(`tháng mục tiêu: mong ${c.thangMucTieuBatBuoc}, nhận ${k.thangMucTieu ?? '—'}`);
     const thua = (c.lopHanCam ?? []).filter((x) => k.lopHan.includes(x));
     if (thua.length) loi.push(`lớp hạn không được có: ${thua.join(', ')}`);
     if (loi.length === truoc) dungThoiGian += 1;

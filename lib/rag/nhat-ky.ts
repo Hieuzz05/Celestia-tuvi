@@ -43,6 +43,7 @@ export async function ghiLanTruyHoi(
     nguoiChay?: string;
     /** Năm thật sự được đọc trong lượt (năm người hỏi gọi tên, hoặc năm đang xem) */
     namHieuLuc?: number;
+    thangHieuLuc?: number;
   }
 ): Promise<string | null> {
   const supabase = taoSupabaseAdmin();
@@ -63,6 +64,8 @@ export async function ghiLanTruyHoi(
           locThucThe: kq.cauHinh.locThucThe,
           phamViThoiGian: keHoach.phamViThoiGian,
           namHieuLuc: meta.namHieuLuc ?? null,
+          thangMucTieu: keHoach.thangMucTieu ?? null,
+          thangHieuLuc: meta.thangHieuLuc ?? null,
         },
         cau_hinh: kq.cauHinh,
         phien_ban: { planner: keHoach.phienBan, truyHoi: kq.phienBan },

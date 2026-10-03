@@ -17,7 +17,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.10.2';
+export const PHIEN_BAN_PLANNER = '2026.10.3';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -85,6 +85,13 @@ export interface KeHoachTruyVan {
    * `namHieuLuc` trong tra-loi.ts.
    */
   namMucTieu?: number;
+  /**
+   * Tháng (âm) người hỏi gọi đích danh: "tháng 3", hay "tháng này / tháng tới"
+   * khi biết tháng đang xem. Có thì nó thắng tháng đang xem ở dữ kiện nguyệt hạn
+   * và hướng nghiêng — xem `thangHieuLuc` trong tra-loi.ts. "Tháng tới" từ tháng
+   * 12 thì sang tháng 1 của năm sau, và `namMucTieu` tăng theo.
+   */
+  thangMucTieu?: number;
   phienBan: string;
 }
 
@@ -254,6 +261,9 @@ const PHAM_VI_THEO_CUM = new Map<string, Exclude<PhamViThoiGian, 'khong-ro'>>(
  */
 const UU_TIEN_PHAM_VI: Exclude<PhamViThoiGian, 'khong-ro'>[] = ['thang', 'nam', 'gan', 'giai-doan'];
 
+/** Tháng lệch so với tháng đang xem, cho những cụm nói tháng bằng lời */
+const LECH_THANG: Record<string, number> = { 'thang nay': 0, 'thang toi': 1, 'thang sau': 1 };
+
 /** Năm viết bằng số. "sinh năm 1990" là năm sinh, không phải năm được hỏi. */
 const LA_NAM_SO = /^(?:19|20)\d\d$/;
 
@@ -266,10 +276,12 @@ const LA_NAM_SO = /^(?:19|20)\d\d$/;
  */
 function doanPhamViThoiGian(
   tu: string[],
-  namXem?: number
-): { phamViThoiGian: PhamViThoiGian; namMucTieu?: number } {
+  namXem?: number,
+  thangXem?: number
+): { phamViThoiGian: PhamViThoiGian; namMucTieu?: number; thangMucTieu?: number } {
   const gap = new Set<Exclude<PhamViThoiGian, 'khong-ro'>>();
   let namMucTieu: number | undefined;
+  let thangMucTieu: number | undefined;
 
   for (let i = 0; i < tu.length; ) {
     if (LA_NAM_SO.test(tu[i]) && tu[i - 1] !== 'sinh' && !(tu[i - 1] === 'nam' && tu[i - 2] === 'sinh')) {
@@ -281,6 +293,7 @@ function doanPhamViThoiGian(
     // "tháng 3", "tháng 11" — một tháng cụ thể
     if (tu[i] === 'thang' && /^(?:[1-9]|1[0-2])$/.test(tu[i + 1] ?? '')) {
       gap.add('thang');
+      thangMucTieu ??= Number(tu[i + 1]);
       i += 2;
       continue;
     }
@@ -291,6 +304,13 @@ function doanPhamViThoiGian(
       if (!pv) continue;
       gap.add(pv);
       if (namXem !== undefined && cum in LECH_NAM) namMucTieu ??= namXem + LECH_NAM[cum];
+      if (thangXem !== undefined && cum in LECH_THANG && thangMucTieu === undefined) {
+        const t = thangXem + LECH_THANG[cum];
+        thangMucTieu = t > 12 ? t - 12 : t;
+        // Tháng tới của tháng 12 là tháng 1 NĂM SAU — không đổi năm thì nguyệt
+        // hạn rơi về tháng 1 của năm đang xem, tức là một tháng đã qua.
+        if (t > 12 && namXem !== undefined) namMucTieu ??= namXem + 1;
+      }
       khop = n;
       break;
     }
@@ -298,7 +318,11 @@ function doanPhamViThoiGian(
   }
 
   const phamViThoiGian = UU_TIEN_PHAM_VI.find((pv) => gap.has(pv)) ?? 'khong-ro';
-  return namMucTieu === undefined ? { phamViThoiGian } : { phamViThoiGian, namMucTieu };
+  return {
+    phamViThoiGian,
+    ...(namMucTieu === undefined ? {} : { namMucTieu }),
+    ...(thangMucTieu === undefined ? {} : { thangMucTieu }),
+  };
 }
 
 /*
@@ -599,7 +623,10 @@ function doanLopHan(
 
   // Hỏi chung chung, không mốc thời gian nào — mặc định nhìn năm đang xem, vì
   // đó cũng là thứ màn Hôm nay đang hiển thị.
-  if (ra.size === 1) ra.add('luu-nien');
+  //
+  // TRỪ câu hỏi về chặng dài: "sau này công việc thế nào" không hỏi năm nay, và
+  // lưu niên dự phòng ở đây là đúng thứ làm bài trả lời mở bằng "Năm 2026…".
+  if (ra.size === 1 && phamVi !== 'giai-doan') ra.add('luu-nien');
 
   return [...ra];
 }
@@ -662,6 +689,8 @@ export interface DauVaoPlanner {
    * `namMucTieu`. Năm viết bằng số thì không cần nó.
    */
   namXem?: number;
+  /** Tháng âm đang xem. Chỉ dùng để đổi "tháng này / tháng tới" thành một tháng cụ thể. */
+  thangXem?: number;
 }
 
 /**
@@ -757,12 +786,13 @@ function dungKeHoach(
   chacChan: boolean,
   tenCachCuc?: string[],
   phanLoaiBangModel?: boolean,
-  namXem?: number
+  namXem?: number,
+  thangXem?: number
 ): KeHoachTruyVan {
   const cum = cumTu(boDauCauHoi(cauHoi));
   // Tính ở đây, không ở lapKeHoach: nhánh model chỉ trả chủ đề và ý định, phạm
   // vi thời gian vẫn phải có cho nó.
-  const thoiGian = doanPhamViThoiGian(tuCua(boDauCauHoi(cauHoi)), namXem);
+  const thoiGian = doanPhamViThoiGian(tuCua(boDauCauHoi(cauHoi)), namXem, thangXem);
   const thucThe = nhanDangThucThe(cauHoi);
   const cungGoiTen = thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
   const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
@@ -790,7 +820,7 @@ function dungKeHoach(
  * và một hàm đồng bộ thì không có cách nào lỡ tay gọi model trong vòng lặp.
  * Nhánh model nằm ở `lapKeHoachDayDu` bên dưới.
  */
-export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem }: DauVaoPlanner): KeHoachTruyVan {
+export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem, thangXem }: DauVaoPlanner): KeHoachTruyVan {
   const cum = cumTu(boDauCauHoi(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
 
@@ -809,7 +839,8 @@ export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem }: DauVaoPl
     theoTuKhoa.chacChan || cungGoiTen.length > 0,
     tenCachCuc,
     undefined,
-    namXem
+    namXem,
+    thangXem
   );
 }
 
@@ -878,7 +909,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không giải thích:
       true,
       vao.tenCachCuc,
       true,
-      vao.namXem
+      vao.namXem,
+      vao.thangXem
     );
   } catch (e) {
     console.warn('[planner] phân loại bằng model hỏng:', e instanceof Error ? e.message : e);

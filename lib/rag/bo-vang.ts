@@ -22,7 +22,9 @@ import type { ChuDe, LopHan, PhamViThoiGian, YDinh } from './planner';
  *     vàng thành bản chép lại chính cái luật nó đang kiểm.
  *   - `lopHanCam`: lớp hạn KHÔNG được có — câu hỏi chặng dài mà kéo lưu niên vào
  *     là trả lời một câu người ta không hỏi.
- *   - `phamViBatBuoc`, `namMucTieuBatBuoc`: trục thời gian (planner 2026.10.2).
+ *   - `phamViBatBuoc`, `namMucTieuBatBuoc`, `thangMucTieuBatBuoc`: trục thời gian
+ *     (planner 2026.10.2; tháng từ 2026.10.3). Bộ eval chạy KHÔNG có năm/tháng
+ *     đang xem, nên chỉ năm/tháng viết bằng số mới có giá trị mục tiêu.
  */
 
 export interface CauVang {
@@ -35,13 +37,14 @@ export interface CauVang {
   lopHanCam?: LopHan[];
   phamViBatBuoc?: PhamViThoiGian;
   namMucTieuBatBuoc?: number;
+  thangMucTieuBatBuoc?: number;
   the: string[];
 }
 
 export const BO_VANG_PLANNER: CauVang[] = [
   // ---------- Sự nghiệp ----------
   { cauHoi: 'Năm nay tôi có nên đổi việc không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['luu-nien'], the: ['career', 'annual'] },
-  { cauHoi: 'Công việc của tôi sắp tới thế nào?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], the: ['career'] },
+  { cauHoi: 'Công việc của tôi sắp tới thế nào?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['dai-van', 'luu-nien'], phamViBatBuoc: 'gan', the: ['career'] },
   { cauHoi: 'Tôi hợp làm nghề gì?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc', 'Mệnh'], the: ['career'] },
   { cauHoi: 'Tôi có nên nghỉ việc để khởi nghiệp không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], the: ['career'] },
   { cauHoi: 'Năm nay tôi có được thăng chức không?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['luu-nien'], the: ['career', 'annual'] },
@@ -176,4 +179,8 @@ export const BO_VANG_PLANNER: CauVang[] = [
   { cauHoi: 'những năm tới tôi có giàu không', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['dai-van'], lopHanCam: ['luu-nien'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'giai-doan', the: ['finance', 'time'] },
   { cauHoi: 'vài tháng tới có tiền không', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['luu-nien'], lopHanCam: ['nguyet-han'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'gan', the: ['finance', 'time'] },
   { cauHoi: 'tôi sinh năm 1990, năm nay có đổi việc được không', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['luu-nien'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'nam', the: ['career', 'time'] },
+  { cauHoi: 'sau này công việc của tôi thế nào?', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanCam: ['luu-nien', 'nguyet-han'], phamViBatBuoc: 'giai-doan', the: ['career', 'time'] },
+  { cauHoi: 'tháng 3 tiền bạc thế nào?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['nguyet-han'], phamViBatBuoc: 'thang', thangMucTieuBatBuoc: 3, the: ['finance', 'time'] },
+  { cauHoi: 'tháng tới tình cảm thế nào?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['nguyet-han'], phamViBatBuoc: 'thang', the: ['love', 'time'] },
+  { cauHoi: 'tháng 3 năm 2028 tôi có cưới không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['nguyet-han'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'thang', namMucTieuBatBuoc: 2028, thangMucTieuBatBuoc: 3, the: ['love', 'time'] },
 ];
