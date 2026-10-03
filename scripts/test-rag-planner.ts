@@ -509,6 +509,28 @@ kiem('"vài tháng tới" không kéo nguyệt hạn', !lapKeHoach({ cauHoi: 'v�
   }
 }
 
+console.log('\n== NĂM SINH KHÔNG PHẢI NĂM ĐƯỢC HỎI (CEL-186 vé A, lần 3) ==');
+{
+  // Năm sinh lọt làm năm mục tiêu thì engine đọc tiểu hạn ở tuổi âm 1 hoặc âm.
+  const NAM: [string, number | undefined, number | undefined][] = [
+    // câu, năm xem, năm mục tiêu mong
+    ['Tôi 1995, năm nay có cưới không?', 2026, 2026],
+    ['sinh ngày 3/5/1995 năm nay có cưới không', 2026, 2026],
+    ['bố tôi 1965 năm nay sức khoẻ thế nào', 2026, 2026],
+    ['tôi tuổi 1995 năm 2027 có tốt không', 2026, 2027],
+    ['tôi 1995 có cưới không', 2026, undefined],
+    ['tôi 1995 có cưới không', undefined, undefined],
+    ['sinh năm 1990 thì năm 2027 thế nào', 2026, 2027],
+    ['2028 tôi có cưới không', 2026, 2028],
+    ['đến 2028 tôi có nhà không', 2026, 2028],
+    ['năm 2020 tôi gặp chuyện gì', 2026, 2020],
+  ];
+  for (const [c, nx, mong] of NAM) {
+    const k = lapKeHoach({ cauHoi: c, namXem: nx, thangXem: 8 });
+    kiem(`"${c}" @${nx ?? '—'} → năm mục tiêu ${mong ?? '—'}`, k.namMucTieu === mong, k.namMucTieu);
+  }
+}
+
 console.log('\n== THÁNG MỤC TIÊU (CEL-186 vé A, lần 2) ==');
 {
   const THANG: [string, number, number, number | undefined, number | undefined][] = [

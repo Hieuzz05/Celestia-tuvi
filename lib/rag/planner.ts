@@ -17,7 +17,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.10.3';
+export const PHIEN_BAN_PLANNER = '2026.10.4';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -268,6 +268,24 @@ const LECH_THANG: Record<string, number> = { 'thang nay': 0, 'thang toi': 1, 'th
 const LA_NAM_SO = /^(?:19|20)\d\d$/;
 
 /**
+ * Năm số đứng trần (không có chữ "năm" trước) thường là năm sinh: "Tôi 1995",
+ * "bố tôi 1965", "tuổi 1995", "3/5/1995". Năm sinh lọt vào làm năm mục tiêu thì
+ * engine đọc tiểu hạn ở tuổi âm 1 hoặc âm — dữ kiện vô nghĩa mang tiếng engine.
+ * Nên năm trần chỉ là năm được hỏi khi đứng đầu câu hoặc ngay sau một từ chỉ
+ * mốc (danh sách CHO PHÉP, không phải danh sách chặn — người, tuổi, ngày sinh
+ * viết theo vô số cách; "tới" vắng mặt vì bỏ dấu thì trùng "tôi"), và (khi
+ * biết năm đang xem) không lùi quá một năm.
+ * "năm N" viết rõ luôn thắng năm trần.
+ */
+const TRUOC_NAM_SINH = new Set(['sinh', 'tuoi']);
+const TRUOC_NAM_HOI = new Set(['den', 'vao', 'cuoi', 'dau', 'tu', 'truoc', 'sau', 'giua', 'khoang', 'nua']);
+
+function laNamTranDuocHoi(tu: string[], i: number, namXem?: number): boolean {
+  if (i > 0 && !TRUOC_NAM_HOI.has(tu[i - 1])) return false;
+  return namXem === undefined || Number(tu[i]) >= namXem - 1;
+}
+
+/**
  * Đọc phạm vi thời gian và năm mục tiêu từ các từ của câu (đã bỏ dấu, đã chuẩn
  * hoá viết tắt).
  *
@@ -283,10 +301,17 @@ function doanPhamViThoiGian(
   let namMucTieu: number | undefined;
   let thangMucTieu: number | undefined;
 
+  let namTran: number | undefined;
+
   for (let i = 0; i < tu.length; ) {
-    if (LA_NAM_SO.test(tu[i]) && tu[i - 1] !== 'sinh' && !(tu[i - 1] === 'nam' && tu[i - 2] === 'sinh')) {
-      gap.add('nam');
-      namMucTieu ??= Number(tu[i]);
+    if (LA_NAM_SO.test(tu[i])) {
+      if (tu[i - 1] === 'nam' && !TRUOC_NAM_SINH.has(tu[i - 2] ?? '')) {
+        gap.add('nam');
+        namMucTieu ??= Number(tu[i]);
+      } else if (laNamTranDuocHoi(tu, i, namXem)) {
+        gap.add('nam');
+        namTran ??= Number(tu[i]);
+      }
       i += 1;
       continue;
     }
@@ -316,6 +341,7 @@ function doanPhamViThoiGian(
     }
     i += khop || 1;
   }
+  namMucTieu ??= namTran;
 
   const phamViThoiGian = UU_TIEN_PHAM_VI.find((pv) => gap.has(pv)) ?? 'khong-ro';
   return {

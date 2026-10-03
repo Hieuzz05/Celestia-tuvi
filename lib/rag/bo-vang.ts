@@ -183,4 +183,6 @@ export const BO_VANG_PLANNER: CauVang[] = [
   { cauHoi: 'tháng 3 tiền bạc thế nào?', chuDe: 'tai-chinh', cungBatBuoc: ['Tài Bạch'], lopHanBatBuoc: ['nguyet-han'], phamViBatBuoc: 'thang', thangMucTieuBatBuoc: 3, the: ['finance', 'time'] },
   { cauHoi: 'tháng tới tình cảm thế nào?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['nguyet-han'], phamViBatBuoc: 'thang', the: ['love', 'time'] },
   { cauHoi: 'tháng 3 năm 2028 tôi có cưới không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['nguyet-han'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'thang', namMucTieuBatBuoc: 2028, thangMucTieuBatBuoc: 3, the: ['love', 'time'] },
+  { cauHoi: 'Tôi 1995, năm 2027 có cưới không?', chuDe: 'tinh-cam', cungBatBuoc: ['Phu Thê'], lopHanBatBuoc: ['luu-nien'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'nam', namMucTieuBatBuoc: 2027, the: ['love', 'time'] },
+  { cauHoi: 'bố tôi 1965, năm 2027 tôi có đổi việc không', chuDe: 'su-nghiep', cungBatBuoc: ['Quan Lộc'], lopHanBatBuoc: ['luu-nien'], yDinhBatBuoc: 'co-khong', phamViBatBuoc: 'nam', namMucTieuBatBuoc: 2027, the: ['career', 'time'] },
 ];

@@ -717,7 +717,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | Lưu hồ sơ theo tài khoản | Xong — cần tạo project Supabase |
 | Phân quyền trang quản trị | Xong — cần `ADMIN_EMAILS` |
 | Kho tri thức RAG | Xong — cần chạy `schema-rag-v2.sql` + service role key |
-| Từ điển thực thể + Query Planner | Xong — bộ vàng 62 câu đạt 100% |
+| Từ điển thực thể + Query Planner | Xong — bộ vàng 100 câu đạt 100% (03/10/2026) |
 | Truy hồi lai vector + từ khoá (RRF) | Xong — cần schema v2 |
 | Vòng đời nguồn: phiên bản, duyệt, xuất bản | Xong — `/admin/knowledge` |
 | Retrieval Lab | Xong — `/admin/retrieval-lab` |
