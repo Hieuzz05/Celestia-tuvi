@@ -215,7 +215,7 @@ export interface MocThang {
   trangThai: 'da-qua' | 'dang' | 'toi';
   /**
    * Năm có cả tháng X thường và X nhuận: `can-hoi` khi người dùng chưa nói rõ
-   * (mã hỏi lại bằng hai chip), `nhuan` / `thuong` khi đã nói. `null` khi năm
+   * (mã báo chưa luận tháng nhuận, chip mời đọc tháng thường), `nhuan` / `thuong` khi đã nói. `null` khi năm
    * không có nhuận ở tháng đó.
    */
   nhuan: 'can-hoi' | 'nhuan' | 'thuong' | null;

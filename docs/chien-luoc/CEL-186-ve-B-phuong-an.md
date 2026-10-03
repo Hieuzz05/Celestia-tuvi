@@ -524,7 +524,7 @@ dự án: `D:\Celestia\CEL-186-ve-B-bao-cao-eval.md`.
 
 Vòng 1 trượt phần lớn vì lỗi thước đo, xem Logic #12. Vòng 3 chỉ chạy Barnum.
 
-**Nợ, chưa sửa và chờ chủ dự án quyết:**
+**Nợ lúc đó, chờ chủ dự án quyết** (đã quyết và xử lý ở mục 17 — `tenKemNghia` đã bỏ):
 1. **Câu chốt dự phòng do mã viết** (`chot-huong.ts` `tenKemNghia`) lấy nét tính cách của sao (`nghieng-ve.ts`) mà không theo cung.
    - Ví dụ: hỏi tiền mà ra "Tang Môn cho thấy bạn dễ gặp chuyện phải chia tay, tiễn đi".
    - celes-domain FAIL: lệch ví dụ đã duyệt ở mục 7 (nghĩa theo phần đời đang hỏi).
@@ -538,3 +538,39 @@ Vòng 1 trượt phần lớn vì lỗi thước đo, xem Logic #12. Vòng 3 ch�
    - `cauHoiNhuan` và `cauThangDaQua` (cau-ma.ts);
    - khuôn D lộ chữ "dữ kiện".
 6. Người dùng EN vẫn nhận câu mã tiếng Việt.
+
+## 17. Chốt của chủ dự án 04/10/2026 và cách đã làm (focused-2026.10.4)
+
+Năm nợ ở mục 16 đã được chủ dự án quyết. Bảng dưới là cách xử lý từng nợ; chi tiết logic ở `PRODUCT-BACKLOG.xlsx`, Logic CEL-186 #13–#16.
+
+| Nợ | Quyết | Đã làm |
+|---|---|---|
+| 1. Dự phòng | Lỗi chặn; đổi cờ #1 được. Chỉ nêu nghĩa theo đúng phần đời đang hỏi; không có nghĩa đáng tin thì chỉ nêu tên. | Bỏ `tenKemNghia`, thay bằng `tenKemHuong`: "<sao> kéo phần này lại / đỡ cho phần này". Có test hồi quy cho Tang Môn ở tiền bạc, công việc, tình cảm và sức khỏe, cả VI lẫn EN. |
+| 2. Barnum 3 | Không hạ 80%. Tên càng hiếm càng nặng; hoà thì tính là chưa phân định; cổng tính trên ca phân định được. | `chamBarnum` mới. Chấm lại vòng 5: **10/10 = 100%** trên ca phân định được, **tỉ lệ phân định 27,8%** (10/36), 0 sai, cách cũ 61,1%. |
+| 3. Planner | Tách vé **CEL-190**. Không chặn merge khi cờ Production tắt; **chặn bật cờ Production**. | Đã mở vé, chưa sửa. |
+| 4. N1 | Bắt buộc ≥ 1 câu nguyệt hạn. Thiếu thì thử lại 1 lần, rồi 502 + hoàn lượt. Thử lại ≤ 15%. | Thêm `thieu-nguyet-han` trong `kiem.ts`, `chay.ts`. Eval tháng 24 ca: **N1 24/24, thử lại 4,2%, 502 0**, tốn $0.058. |
+| 5. Chữ câu mã | Dùng nguyên văn bản đã duyệt; bỏ "dữ kiện"; câu mã theo `ngonNgu`. | `cau-ma.ts`, `ngoai-tam.ts`, `ngon-ngu.ts`. Tháng nhuận còn một chip (tháng thường). |
+
+Ghi chú về Barnum 3: 26 ca chưa phân định đều là hoà, và lá số đúng luôn nằm trong nhóm đứng đầu. Hoà nhiều vì mỗi bài chỉ nêu 1–3 tên, và hai lá số mẫu 22/1/1944 với 24/1/1944 gần như trùng nhau.
+
+**Giới hạn của bản EN** (báo lên, không phải lỗi im lặng):
+- Planner, phân khuôn và các chốt kiểm khuyên / chắc chắn đều là regex tiếng Việt.
+- Người dùng EN chỉ nhận bằng EN những gì mã viết: câu mã, chip, lối đi, miễn trừ. Thân bài model viết vẫn bằng tiếng Việt.
+- Hỏi bằng tiếng Anh thì không phân được khuôn.
+
+Tổng chi eval sau mục này: ≈ **$0.83 / $2**.
+
+**Sau celes-domain 04/10 (eval tháng lần một):** gặp ba lỗi ở câu "tháng sau".
+- 3/6 ca lộ chữ "dữ kiện" ra câu trả lời.
+- Câu tự mâu thuẫn: "chưa có căn cứ cho tháng sau" rồi vẫn luận tháng 9.
+- Model mượn nghĩa tên cung nguyệt hạn (cha mẹ, nhà cửa) để nói sang chuyện tình cảm.
+
+Đã sửa:
+- Chốt kiểm bỏ câu có "dữ kiện". So khớp có dấu, vì bỏ dấu thì trùng "dự kiến".
+- Prompt nói rõ tháng tới chính là tháng đang đọc.
+- Prompt cấm mượn nghĩa tên cung tháng, và cấm lặp mốc sau câu tháng đã qua.
+- Luật nguyệt hạn chỉ đòi khi gói có mã nguyệt hạn, cùng điều kiện với prompt.
+
+Chạy lại eval tháng: 0 câu lộ "dữ kiện", 0 câu mâu thuẫn, N1 24/24, thử lại 4,2%, 502 0.
+- Còn lặp mốc "Tháng X âm năm N" ở 2/6 ca tháng đã qua. Lỗi nhỏ, chưa chặn.
+- Tổng chi eval ≈ **$0.89 / $2**.

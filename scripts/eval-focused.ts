@@ -11,6 +11,8 @@
  *   AI_GIA_VAO_USD, AI_GIA_RA_USD        giá model ghim, USD cho 1 triệu token vào / ra
  * Vượt trần → `VuotNganSachError` ném TRƯỚC lời gọi → script dừng cả bộ, in số tiền đã tính và ca
  * đang dở, ghi phần đã có ra tệp `--xuat`. Bộ đếm tiền sống trong TIẾN TRÌNH: chạy tách `--chi-ca` rồi
+ * `--chi-thang`: chỉ chạy bộ câu hỏi MỘT tháng × 6 lá số (luật ≥ 1 câu nguyệt hạn + tỉ lệ thử lại).
+ * `--cham-lai <tệp.json>`: chấm lại Barnum từ tệp `--xuat` đã có, KHÔNG gọi model, không cần ghim / trần.
  * `--chi-barnum` thì mỗi lần tính lại từ 0 — đặt AI_TRAN_USD mỗi lần sao cho TỔNG ≤ $2 (ví dụ 1 + 1).
  * Embedding truy hồi gọi thẳng, không qua trần (~$0,0001 cả bộ). Ghim model Gemini free tier sẽ vướng
  * hạn mức ngày (`lib/ai/usage.ts`) → "Tất cả model đều không dùng được". Model Production thật: xem /admin/models.
@@ -57,12 +59,14 @@ const arg = (k: string) => {
   return i !== -1 ? process.argv[i + 1] : null;
 };
 const xuat = arg('--xuat');
-const chayCa = !process.argv.includes('--chi-barnum');
-const chayBarnum = !process.argv.includes('--chi-ca');
+const chiThang = process.argv.includes('--chi-thang');
+const chayCa = !chiThang && !process.argv.includes('--chi-barnum');
+const chayBarnum = !chiThang && !process.argv.includes('--chi-ca');
+const chamLai = arg('--cham-lai');
 
 /* ------------------------------------------------------------- cổng chạy */
 
-const thieu = ['AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'].filter((k) => !process.env[k]?.trim());
+const thieu = chamLai ? [] : ['AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'].filter((k) => !process.env[k]?.trim());
 if (thieu.length) {
   console.error(`Thiếu ${thieu.join(', ')} — eval vé B phải ghim model Production và đặt trần tiền (cờ #8).`);
   process.exit(2);
@@ -85,7 +89,7 @@ const NGUONG = {
   /** Chủ dự án 03/10/2026: thử lại > 15% TỔNG số ca thì dừng trước Production, điều tra nguyên nhân */
   thuLai: 0.15,
   loi502: 0.03,
-  /** Barnum 3: ghép mù theo tên căn cứ */
+  /** Barnum 3: ghép mù theo tên căn cứ — tính trên ca PHÂN ĐỊNH ĐƯỢC (chủ dự án 04/10/2026, không hạ) */
   ghepMu: 0.8,
   /** Barnum 2: trùng 5-gram phần lời (đã bỏ tên) giữa hai lá số — "phải thấp" */
   trungLoi: 0.25,
@@ -196,6 +200,15 @@ const CA: Ca[] = [
   { ma: 'bs4-ban-than', cauHoi: 'bản thân tôi năm nay công việc có ổn không?', chuDe: 'su-nghiep' },
   { ma: 'bs8-thang-12', cauHoi: 'Tháng 12 sắp tới tiền bạc của tôi thế nào?', thang: true, bayGio: { nam: NAM, thang: 11, ngay: 20 } },
   { ma: 'bs9-nhuan', cauHoi: `Tháng ${NHUAN.thang} năm ${NHUAN.nam} công việc của tôi thế nào?`, namXem: NHUAN.nam },
+];
+
+// Bộ câu MỘT tháng (chủ dự án 04/10/2026): bản cuối phải còn ≥ 1 câu nguyệt hạn, thử lại ≤ 15%.
+const THANG_SAU = THANG < 12 ? THANG + 1 : 12;
+const CA_THANG: Ca[] = [
+  { ma: 'thang-sau', cauHoi: `Tháng ${THANG_SAU} công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
+  { ma: 'thang-nay', cauHoi: 'Tháng này tiền bạc của tôi ra sao?', thang: true, chuDe: 'tai-chinh' },
+  { ma: 'thang-tinh-cam', cauHoi: 'Tháng sau chuyện tình cảm của tôi thế nào?', thang: true, chuDe: 'tinh-cam' },
+  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} vừa rồi công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
 ];
 
 /* ----------------------------------------------------------- đo một bài */
@@ -362,7 +375,7 @@ const boTen = (d: Do) => {
 function chamBarnum(bai: Do[], doiNam: [Do, Do][]) {
   const theoCau = new Map<string, Do[]>();
   for (const d of bai) theoCau.set(d.cauHoi, [...(theoCau.get(d.cauHoi) ?? []), d]);
-  let truot = 0, tongTen = 0, dungMu = 0, tongMu = 0;
+  let truot = 0, tongTen = 0, dungMu = 0, saiMu = 0, chuaPhanDinh = 0, tongMu = 0, dungCu = 0;
   const trung: number[] = [];
   for (const nhom of theoCau.values()) {
     for (const a of nhom) {
@@ -374,11 +387,24 @@ function chamBarnum(bai: Do[], doiNam: [Do, Do][]) {
         tongTen += a.tenDaNeu.length;
         truot += a.tenDaNeu.filter((t) => !tapB.has(t)).length;
       }
-      // 3. Ghép mù: lá số nào chứa nhiều tên của bài nhất.
+      // 3. Ghép mù (chủ dự án 04/10/2026): mỗi tên nặng theo độ HIẾM giữa các lá số
+      //    ứng viên — log(n / số lá số có tên đó). Tên lá số nào cũng có nặng 0, không
+      //    phân biệt được gì. Không tên hiếm nào, hoặc hoà ở đỉnh có lá số đúng → "chưa
+      //    phân định" (không tính sai). Đỉnh duy nhất khác lá số đúng → sai.
       if (a.tenDaNeu.length) {
         tongMu += 1;
-        const diem = nhom.map((b) => a.tenDaNeu.filter((t) => b.tapTen.includes(t)).length / Math.max(1, b.tapTen.length));
-        if (nhom[diem.indexOf(Math.max(...diem))].laSo === a.laSo) dungMu += 1;
+        const n = nhom.length;
+        const nang = (t: string) => Math.log(n / Math.max(1, nhom.filter((b) => b.tapTen.includes(t)).length));
+        const diem = nhom.map((b) => a.tenDaNeu.filter((t) => b.tapTen.includes(t)).reduce((x, t) => x + nang(t), 0));
+        const dinh = Math.max(...diem);
+        const oDinh = nhom.filter((_, i) => diem[i] >= dinh - 1e-9);
+        const coDung = oDinh.some((b) => b.laSo === a.laSo);
+        if (dinh <= 1e-9 || (oDinh.length > 1 && coDung)) chuaPhanDinh += 1;
+        else if (coDung) dungMu += 1;
+        else saiMu += 1;
+        // Cách cũ (đếm tên / cỡ gói) giữ để so.
+        const cu = nhom.map((b) => a.tenDaNeu.filter((t) => b.tapTen.includes(t)).length / Math.max(1, b.tapTen.length));
+        if (nhom[cu.indexOf(Math.max(...cu))].laSo === a.laSo) dungCu += 1;
       }
     }
     // 2. Phần lời sau khi bỏ tên, từng cặp lá số.
@@ -391,7 +417,16 @@ function chamBarnum(bai: Do[], doiNam: [Do, Do][]) {
   return {
     tiLeTenTruotKhiDoiGoi: tongTen ? truot / tongTen : 0,
     trungLoiTrungBinh: trung.length ? trung.reduce((x, y) => x + y, 0) / trung.length : 0,
-    ghepMu: tongMu ? dungMu / tongMu : 0,
+    /** Trên ca phân định được: đúng / (đúng + sai) */
+    ghepMu: dungMu + saiMu ? dungMu / (dungMu + saiMu) : 0,
+    ghepMuDung: dungMu,
+    ghepMuSai: saiMu,
+    ghepMuChuaPhanDinh: chuaPhanDinh,
+    ghepMuTong: tongMu,
+    /** Tỉ lệ ca phân định được, báo riêng */
+    tiLePhanDinh: tongMu ? (dungMu + saiMu) / tongMu : 0,
+    /** Cách cũ (đếm tên chia cỡ gói, hoà lấy lá số đầu) — chỉ để so */
+    ghepMuCachCu: tongMu ? dungCu / tongMu : 0,
     doiNamCoTenLopNam: namDoi.length,
     doiNamGiongHet: namGiongHet,
   };
@@ -446,7 +481,16 @@ function tongKet(barnum: ReturnType<typeof chamBarnum> | null) {
   if (barnum) {
     them('Barnum 1: tên trượt khi đổi gói (cao = bài bám lá số)', `${(barnum.tiLeTenTruotKhiDoiGoi * 100).toFixed(1)}%`, true);
     them('Barnum 2: trùng lời đã bỏ tên', `${(barnum.trungLoiTrungBinh * 100).toFixed(1)}%`, barnum.trungLoiTrungBinh <= NGUONG.trungLoi);
-    them('Barnum 3: ghép mù', `${(barnum.ghepMu * 100).toFixed(1)}%`, barnum.ghepMu >= NGUONG.ghepMu);
+    them(
+      'Barnum 3: ghép mù (trên ca phân định được)',
+      `${barnum.ghepMuDung}/${barnum.ghepMuDung + barnum.ghepMuSai} = ${(barnum.ghepMu * 100).toFixed(1)}%`,
+      barnum.ghepMu >= NGUONG.ghepMu
+    );
+    them(
+      'Barnum 3: tỉ lệ phân định được (báo riêng)',
+      `${barnum.ghepMuDung + barnum.ghepMuSai}/${barnum.ghepMuTong} = ${(barnum.tiLePhanDinh * 100).toFixed(1)}% · cách cũ ${(barnum.ghepMuCachCu * 100).toFixed(1)}%`,
+      true
+    );
     them('Barnum 4: đổi năm mà tên lớp năm giữ nguyên', `${barnum.doiNamGiongHet}/${barnum.doiNamCoTenLopNam}`, barnum.doiNamGiongHet === 0);
   }
 
@@ -469,10 +513,31 @@ function ghi(barnum: unknown, dong: unknown, dung: string | null) {
   console.log(`Đã ghi ${xuat}`);
 }
 
+/** Chấm lại Barnum từ tệp đã xuất — không gọi model. */
+function chamLaiTuTep(tep: string) {
+  const cu = JSON.parse(readFileSync(tep, 'utf8')) as { ketQua: Do[] };
+  const bai = cu.ketQua.filter((d) => /^barnum-\d+$/.test(d.ma));
+  const doiNam: [Do, Do][] = cu.ketQua
+    .filter((d) => d.ma === 'doi-nam')
+    .map((b) => [bai.find((d) => d.laSo === b.laSo && d.cauHoi === BARNUM[1])!, b] as [Do, Do])
+    .filter(([a]) => !!a);
+  const kq = chamBarnum(bai, doiNam);
+  console.log(`Chấm lại Barnum từ ${tep} (${bai.length} bài, ${doiNam.length} cặp đổi năm) — không gọi model`);
+  console.log(JSON.stringify(kq, null, 2));
+  const dat = kq.ghepMu >= NGUONG.ghepMu && kq.trungLoiTrungBinh <= NGUONG.trungLoi && kq.doiNamGiongHet === 0;
+  console.log(`Barnum 3 ${kq.ghepMu >= NGUONG.ghepMu ? 'ĐẠT' : 'TRƯỢT'}: ${(kq.ghepMu * 100).toFixed(1)}% trên ${kq.ghepMuDung + kq.ghepMuSai} ca phân định được · tỉ lệ phân định ${(kq.tiLePhanDinh * 100).toFixed(1)}%`);
+  process.exit(dat ? 0 : 1);
+}
+
 async function main() {
+  if (chamLai) return chamLaiTuTep(chamLai);
   console.log(`Model ghim ${process.env.AI_GHIM_MODEL} · trần $${process.env.AI_TRAN_USD} · năm âm ${NAM} tháng ${THANG}`);
   let barnum: ReturnType<typeof chamBarnum> | null = null;
   try {
+    if (chiThang) {
+      console.log(`\n--- ${CA_THANG.length} câu một tháng × ${SAU_LA_SO.length} lá số ---`);
+      for (const ca of CA_THANG) for (const k of SAU_LA_SO) await chayMotCa(k, ca, ca.ma);
+    }
     if (chayCa) {
       console.log(`\n--- ${CA.length} ca trên lá số ${SAU_LA_SO[0]} ---`);
       for (const ca of CA) await chayMotCa(SAU_LA_SO[0], ca, ca.ma);

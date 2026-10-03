@@ -14,6 +14,7 @@ import {
   SO_KHAN_CAP,
 } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
+import { chonNgonNgu, COOKIE_NGON_NGU } from '@/lib/rag/focused/ngon-ngu';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
@@ -33,6 +34,23 @@ interface Body {
   lichSu?: TinNhan[];
   /** Câu hỏi này đến từ chip gợi ý (goiYTiep) do chính Celes vừa đề xuất ở lượt trước */
   tuChip?: boolean;
+  /** Ngôn ngữ giao diện ('vi' | 'en') — câu do mã viết ở đường Focused theo nó */
+  ngonNgu?: string;
+}
+
+/** Đọc một cookie từ header thô — route này không dùng gì khác của cookie. */
+function docCookie(req: Request, ten: string): string | null {
+  for (const phan of (req.headers.get('cookie') ?? '').split(';')) {
+    const i = phan.indexOf('=');
+    if (i > 0 && phan.slice(0, i).trim() === ten) {
+      try {
+        return decodeURIComponent(phan.slice(i + 1).trim());
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
 }
 
 const soHopLe = (v: unknown, min: number, max: number) =>
@@ -184,6 +202,7 @@ export async function POST(req: Request) {
       thangXem,
       lichSu,
       laTiepTuChip: body.tuChip === true,
+      ngonNgu: chonNgonNgu(body.ngonNgu, docCookie(req, COOKIE_NGON_NGU)),
       // Đã đo ở trên, trước khi đặt chỗ — truyền xuống để khỏi đo lại
       mucAnToan: anToan.muc,
       requestId,

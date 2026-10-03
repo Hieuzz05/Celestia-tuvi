@@ -18,6 +18,7 @@
  */
 
 import { stableIndex } from '../dau-an';
+import type { NgonNgu } from './ngon-ngu';
 import { boDau, nhanDangThucThe } from '../thuc-the';
 
 /** Bạn đời đã cưới ("chồng tôi") hay chưa ("người yêu", "chồng tương lai"). */
@@ -136,10 +137,17 @@ export const CAU_NGOAI_TAM = [
   'Tên của người bạn đời không phải điều lá số có thể xác nhận; Celes chỉ có thể xem người đó có hợp với mẫu bạn đời trong lá số đến đâu.',
 ] as const;
 
+/** Bản EN của `CAU_NGOAI_TAM`, cùng thứ tự, cùng ý. */
+export const CAU_NGOAI_TAM_EN = [
+  'A chart cannot confirm that your partner is a specific person just from a name.',
+  'Celes cannot use a chart to check whether a name belongs to the person you will marry.',
+  'A partner’s name is not something a chart can confirm; Celes can only look at how well that person fits the partner pattern in your chart.',
+] as const;
+
 /** Chọn câu kết luận ổn định theo FNV của câu hỏi (cùng câu hỏi → cùng câu). */
-export function cauKetLuanNgoaiTam(cauHoi: string, nt: NgoaiTam): string {
+export function cauKetLuanNgoaiTam(cauHoi: string, nt: NgoaiTam, nn: NgonNgu = 'vi'): string {
   const tap = nt.loai === 'chua-cuoi' ? [0, 1, 2] : [0, 2];
-  return CAU_NGOAI_TAM[tap[stableIndex(chuan(cauHoi), tap.length)]];
+  return (nn === 'en' ? CAU_NGOAI_TAM_EN : CAU_NGOAI_TAM)[tap[stableIndex(chuan(cauHoi), tap.length)]];
 }
 
 /**

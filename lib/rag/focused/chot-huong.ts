@@ -11,13 +11,16 @@
  *
  * Khác nhánh quick ở hai chỗ:
  *   - câu dự phòng LUÔN có (không còn nhánh `null` rồi giữ câu model hỏng);
- *   - câu dự phòng nêu 1–2 tên dữ kiện kèm nghĩa (domain A5): câu chốt chung
- *     chung là câu ai đọc cũng thấy đúng — đúng thứ Barnum đo.
+ *   - câu dự phòng nêu 1–2 tên mốc kèm HƯỚNG (đỡ / kéo lại), KHÔNG kèm nghĩa
+ *     (chủ dự án 04/10): engine không có nghĩa sao theo từng phần đời, nét sao
+ *     chung là nét tính cách — gắn vào câu tiền bạc thành "Tang Môn cho thấy
+ *     bạn dễ phải chia tay…", sai cả phần đời lẫn người.
  */
 
 import type { DauMoc, HuongNghieng, NghiengVe } from '../nghieng-ve';
 import type { ChuDe } from '../planner';
 import type { DoiTuongCauHoi } from './doi-tuong';
+import type { NgonNgu } from './ngon-ngu';
 
 export type NhomHuong = 'thuan' | 'ngang' | 'vuong';
 
@@ -40,61 +43,119 @@ const MOT_NGUOI_CU_THE = tu(
   '(?:người yêu|bạn trai|bạn gái|ny) (?:của )?(?:tôi|em|mình|tớ)|crush|người ấy|anh ấy|cô ấy|chị ấy|người này|người đó|mối quan hệ này|anh này|cô này'
 );
 
-const PHAN_CUA_VAI: Record<DoiTuongCauHoi['vai'], string> = {
-  'vo-chong': 'chuyện vợ chồng',
-  'nguoi-yeu': 'mối quan hệ này',
-  con: 'chuyện con cái',
-  'bo-me': 'quan hệ với cha mẹ',
-  'anh-chi-em': 'quan hệ với anh chị em',
-  'ban-be': 'quan hệ bạn bè',
-  'cap-tren': 'quan hệ với người trên',
+const PHAN_CUA_VAI: Record<NgonNgu, Record<DoiTuongCauHoi['vai'], string>> = {
+  vi: {
+    'vo-chong': 'chuyện vợ chồng',
+    'nguoi-yeu': 'mối quan hệ này',
+    con: 'chuyện con cái',
+    'bo-me': 'quan hệ với cha mẹ',
+    'anh-chi-em': 'quan hệ với anh chị em',
+    'ban-be': 'quan hệ bạn bè',
+    'cap-tren': 'quan hệ với người trên',
+  },
+  en: {
+    'vo-chong': 'your marriage',
+    'nguoi-yeu': 'this relationship',
+    con: 'matters with your children',
+    'bo-me': 'your relationship with your parents',
+    'anh-chi-em': 'your relationship with your siblings',
+    'ban-be': 'your friendships',
+    'cap-tren': 'your relationship with those above you',
+  },
+};
+
+type PhanDoi = 'cong-viec' | 'tien-bac' | 'vo-chong' | 'quan-he-nay' | 'tinh-cam' | 'gia-dinh' | 'suc-khoe' | 'chung';
+
+const TEN_PHAN: Record<NgonNgu, Record<PhanDoi, string>> = {
+  vi: {
+    'cong-viec': 'công việc',
+    'tien-bac': 'tiền bạc',
+    'vo-chong': 'chuyện vợ chồng',
+    'quan-he-nay': 'mối quan hệ này',
+    'tinh-cam': 'chuyện tình cảm',
+    'gia-dinh': 'chuyện gia đình',
+    'suc-khoe': 'sức khỏe',
+    chung: 'giai đoạn này',
+  },
+  en: {
+    'cong-viec': 'work',
+    'tien-bac': 'money',
+    'vo-chong': 'your marriage',
+    'quan-he-nay': 'this relationship',
+    'tinh-cam': 'your love life',
+    'gia-dinh': 'family matters',
+    'suc-khoe': 'health',
+    chung: 'this period',
+  },
 };
 
 /** Phần đời làm chủ ngữ của câu chốt dự phòng. */
-export function cumChoChuDe(chuDe: ChuDe, cauHoi: string, doiTuong?: DoiTuongCauHoi | null): string {
-  if (doiTuong) return PHAN_CUA_VAI[doiTuong.vai];
+export function cumChoChuDe(
+  chuDe: ChuDe,
+  cauHoi: string,
+  doiTuong?: DoiTuongCauHoi | null,
+  nn: NgonNgu = 'vi'
+): string {
+  if (doiTuong) return PHAN_CUA_VAI[nn][doiTuong.vai];
+  return TEN_PHAN[nn][phanDoi(chuDe, cauHoi)];
+}
+
+function phanDoi(chuDe: ChuDe, cauHoi: string): PhanDoi {
   switch (chuDe) {
     case 'su-nghiep':
-      return 'công việc';
+      return 'cong-viec';
     case 'tai-chinh':
-      return 'tiền bạc';
+      return 'tien-bac';
     case 'tinh-cam':
-      if (coCum(cauHoi, VO_CHONG_HIEN_TAI)) return 'chuyện vợ chồng';
-      if (coCum(cauHoi, MOT_NGUOI_CU_THE)) return 'mối quan hệ này';
-      return 'chuyện tình cảm';
+      if (coCum(cauHoi, VO_CHONG_HIEN_TAI)) return 'vo-chong';
+      if (coCum(cauHoi, MOT_NGUOI_CU_THE)) return 'quan-he-nay';
+      return 'tinh-cam';
     case 'gia-dao':
-      return 'chuyện gia đình';
+      return 'gia-dinh';
     case 'suc-khoe':
-      return 'sức khỏe';
+      return 'suc-khoe';
     default:
-      return 'giai đoạn này';
+      return 'chung';
   }
 }
 
 /* ------------------------------------------------------- câu dự phòng */
 
-const THAN: Record<HuongNghieng, string> = {
-  'thuan-ro': '{cum} đang khá thuận',
-  'thuan-nhe': '{cum} có phần thuận nhỉnh hơn, nhưng vẫn còn chỗ vướng',
-  'can-bang': '{cum} có mặt thuận và mặt vướng ngang nhau',
-  'can-nhe': '{cum} có phần vướng nhỉnh hơn, nhưng chưa phải thế khó',
-  'can-ro': '{cum} đang gặp khá nhiều chỗ vướng',
+const THAN: Record<NgonNgu, Record<HuongNghieng, string>> = {
+  vi: {
+    'thuan-ro': '{cum} đang khá thuận',
+    'thuan-nhe': '{cum} có phần thuận nhỉnh hơn, nhưng vẫn còn chỗ vướng',
+    'can-bang': '{cum} có mặt thuận và mặt vướng ngang nhau',
+    'can-nhe': '{cum} có phần vướng nhỉnh hơn, nhưng chưa phải thế khó',
+    'can-ro': '{cum} đang gặp khá nhiều chỗ vướng',
+  },
+  en: {
+    'thuan-ro': '{cum} is going fairly smoothly',
+    'thuan-nhe': '{cum} leans a little toward smooth, though some snags remain',
+    'can-bang': '{cum} has smooth and snagged sides in equal measure',
+    'can-nhe': '{cum} leans a little toward snags, though nothing severe',
+    'can-ro': '{cum} is running into quite a few snags',
+  },
 };
 
 const hoaDau = (s: string) => s.charAt(0).toLocaleUpperCase('vi') + s.slice(1);
 
+const VAI_MOC: Record<NgonNgu, Record<DauMoc['huong'], string>> = {
+  vi: { do: 'đỡ cho phần này', can: 'kéo phần này lại' },
+  en: { do: 'supports it', can: 'holds it back' },
+};
+
 /**
- * Tên kèm nghĩa đời thường, nghĩa cắt gọn ở dấu chấm phẩy đầu.
+ * Tên mốc kèm HƯỚNG, không kèm nghĩa.
  *
- * Nét sao đã bị bóc chủ ngữ "bạn" (`boChuNgu`), nên phải gắn lại; riêng nét tự
- * có chủ ngữ ("năm nay…", "phần này…") thì nối bằng dấu hai chấm.
+ * `d.y` là nét CHUNG của sao (tính cách chủ lá số), không phải nghĩa theo phần
+ * đời đang hỏi — engine chưa có nghĩa sao theo từng phần đời đáng tin. Gắn nét
+ * chung vào câu là tự suy nghĩa sang tiền bạc / tình cảm / sức khỏe, và gán
+ * tính cách cho người hỏi hoặc người khác (celes-domain FAIL 04/10). Nên chỉ
+ * nói mốc này đỡ hay kéo lại — đúng điều engine đã tính.
  */
-export function tenKemNghia(d: DauMoc, doiTuong?: DoiTuongCauHoi | null): string {
-  // Nét sao là nét của CHỦ lá số. Sao ở cung lục thân nói về quan hệ với người
-  // kia, không phải tính cách người hỏi — gắn "cho thấy bạn …" là gán sai người.
-  if (doiTuong) return d.ten;
-  const y = d.y.split(/[;—]/)[0].trim().replace(/[.,]$/, '');
-  return /^(?:năm nay|phần này|chuyện|việc)(?![\p{L}\p{M}])/iu.test(y) ? `${d.ten}: ${y}` : `${d.ten} cho thấy bạn ${y}`;
+export function tenKemHuong(d: DauMoc, nn: NgonNgu = 'vi'): string {
+  return `${d.ten} ${VAI_MOC[nn][d.huong]}`;
 }
 
 /**
@@ -132,15 +193,17 @@ export function cauChotDuPhong(vao: {
   cauHoi: string;
   moc?: string;
   doiTuong?: DoiTuongCauHoi | null;
+  ngonNgu?: NgonNgu;
 }): string {
-  const than = THAN[vao.nghieng.huong].replace('{cum}', cumChoChuDe(vao.chuDe, vao.cauHoi, vao.doiTuong));
+  const nn = vao.ngonNgu ?? 'vi';
+  const than = THAN[nn][vao.nghieng.huong].replace('{cum}', cumChoChuDe(vao.chuDe, vao.cauHoi, vao.doiTuong, nn));
   const dau = vao.moc ? `${vao.moc}, ${than}` : hoaDau(than);
   const moc = mocChoCauChot(vao.nghieng);
   if (!moc.length) return `${dau}.`;
   const [a, b] = moc;
-  if (vao.doiTuong) return `${dau}, thấy qua ${b ? `${a.ten} và ${b.ten}` : a.ten}.`;
-  const vi = b ? `${tenKemNghia(a)}, còn ${tenKemNghia(b)}` : tenKemNghia(a);
-  return `${dau}: ${vi}.`;
+  const noi = nn === 'en' ? ', while ' : ', còn ';
+  const ds = b ? `${tenKemHuong(a, nn)}${noi}${tenKemHuong(b, nn)}` : tenKemHuong(a, nn);
+  return `${dau}: ${ds}.`;
 }
 
 /* ------------------------------------------------------------ chiều xấu */

@@ -11,6 +11,7 @@
 
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import { datMienTruTamLy } from '../an-toan';
+import { datMienTruTheoNgonNgu } from './ngon-ngu';
 import { suaCauTiengLong } from '../sua-chua';
 import { kiemLuot, kiemMotCau, lamSach, type BanThoFocused, type KetQuaKiem, type NguCanhKiem } from './kiem';
 import { docFocused, dungPromptFocused, type DauVaoPromptFocused } from './prompt';
@@ -21,6 +22,12 @@ const MAX_TOKENS = 6000;
 export const HAN_CHOT_LUOT_MS = 50_000;
 /** Còn ít hơn chừng này thì không thử lại — một lượt gọi không kịp xong tệ hơn không gọi */
 const TOI_THIEU_THU_LAI_MS = 16_000;
+/**
+ * Lý do thử lại mà bản cuối vẫn mắc thì là HỎNG (502 + hoàn lượt), không dùng
+ * tạm: hết câu có căn cứ; hỏi một tháng mà không còn câu nguyệt hạn (04/10).
+ */
+const HONG_NEU_CON = new Set(['het-cau', 'thieu-nguyet-han']);
+const laHong = (ly: string | null) => !!ly && HONG_NEU_CON.has(ly);
 
 export interface VetFocused {
   lanGoi: number;
@@ -113,15 +120,15 @@ export async function chayFocused(v: {
       const k = kiemLuot(daSua, v.ctx);
       lyDo = k.thuLai;
       // Bản "quá dài" vẫn dùng được (đã cắt tới trần câu) — giữ lại phòng lần thử lại gãy.
-      if (!kiem || k.thuLai !== 'het-cau') kiem = k;
+      if (!kiem || !laHong(k.thuLai)) kiem = k;
       if (!lyDo) break;
     }
     if (lan === 0) vet.thuLai = lyDo;
   }
 
   const doTreMs = Date.now() - batDau;
-  // Chỉ "hết câu" (hoặc chưa đọc được bản nào) là hỏng; "quá dài" dùng bản đã cắt.
-  const hong = !kiem || kiem.thuLai === 'het-cau';
+  // Chỉ "hết câu", "thiếu nguyệt hạn" (hoặc chưa đọc được bản nào) là hỏng; "quá dài" dùng bản đã cắt.
+  const hong = !kiem || laHong(kiem.thuLai);
   if (kiem) {
     vet.boCau = kiem.bo;
     vet.dungDuPhong = kiem.dungDuPhong;
@@ -132,6 +139,9 @@ export async function chayFocused(v: {
 
   const vanTho = ghepVan(v.ctx.cauMa, kiem!, v.ctx.phanLoai.sau);
   // 15 L2: miễn trừ nối SAU guard độ dài, để không bị cắt và không bị đếm.
-  const van = v.ctx.mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanTho) : vanTho;
+  const van =
+    v.ctx.mucAnToan === 'SENSITIVE'
+      ? datMienTruTheoNgonNgu(vanTho, v.ctx.ngonNgu ?? 'vi', datMienTruTamLy)
+      : vanTho;
   return { van, chip: kiem!.chip, kiem, provider, model, doTreMs, vet };
 }

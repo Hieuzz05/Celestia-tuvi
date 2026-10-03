@@ -19,7 +19,7 @@ import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useQuyen } from '@/lib/support/useQuyen';
 import { bamLaSoTrinhDuyet, docHoiThoai, luuLuot, xoaHoiThoai } from '@/lib/store/hoi-thoai';
-import { dien, useT } from '@/lib/i18n/context';
+import { dien, useNgonNgu, useT } from '@/lib/i18n/context';
 import { QuayLai } from '@/components/QuayLai';
 
 interface TinNhan {
@@ -56,6 +56,7 @@ function khoaCua(form: ThongTinForm) {
  */
 function TrangHoiDap() {
   const t = useT();
+  const { ngonNgu } = useNgonNgu();
   const { duocVao, dangDoc } = useTaiKhoan();
   const boiCanh = useBoiCanh();
   const quyenCeles = useQuyen();
@@ -240,6 +241,7 @@ function TrangHoiDap() {
           cauHoi: cau,
           lichSu,
           tuChip,
+          ngonNgu,
         }),
       });
       const data = await res.json();

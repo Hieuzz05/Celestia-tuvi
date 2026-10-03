@@ -31,13 +31,14 @@ import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauNhuanChuaTach, cauTh
 import { chayFocused, type VetFocused } from './chay';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
+import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
 import type { NguCanhKiem } from './kiem';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import type { MocTinhSan } from './prompt';
 import { goiCoPhucDuc, khoaTen, tapTenTuGoi } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.3';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.4';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -62,12 +63,22 @@ export function tuoiTrongGoi(goi: Pick<GoiBangChung, 'duKien'>): [number, number
 export function mocChoChot(
   tg: BoiCanhThoiGian,
   keHoach: Pick<KeHoachTruyVan, 'phamViThoiGian'>,
-  bayGio: ThoiDiemAm
+  bayGio: ThoiDiemAm,
+  nn: NgonNgu = 'vi'
 ): string | undefined {
-  if (tg.thang) return `Tháng ${tg.thang.thang} âm${tg.thang.nhuan === 'nhuan' ? ' nhuận' : ''}`;
-  if (tg.cuoiNam) return `Từ giờ đến hết năm ${canChiCuaNam(bayGio.nam)}`;
+  const en = nn === 'en';
+  if (tg.thang) {
+    const nhuan = tg.thang.nhuan === 'nhuan';
+    return en
+      ? `In ${nhuan ? 'leap ' : ''}lunar month ${tg.thang.thang}`
+      : `Tháng ${tg.thang.thang} âm${nhuan ? ' nhuận' : ''}`;
+  }
+  if (tg.cuoiNam) return en ? 'From now until the end of this lunar year' : `Từ giờ đến hết năm ${canChiCuaNam(bayGio.nam)}`;
   const pv = keHoach.phamViThoiGian;
-  if (pv === 'nam' || pv === 'gan') return tg.namHieuLuc === bayGio.nam ? 'Năm nay' : `Năm ${tg.namHieuLuc}`;
+  if (pv === 'nam' || pv === 'gan') {
+    if (tg.namHieuLuc === bayGio.nam) return en ? 'This year' : 'Năm nay';
+    return en ? `In ${tg.namHieuLuc}` : `Năm ${tg.namHieuLuc}`;
+  }
   return undefined;
 }
 
@@ -121,6 +132,7 @@ export async function traLoiFocused(
   bayGio: ThoiDiemAm = bayGioAm()
 ): Promise<KetQuaFocused> {
   const batDau = Date.now();
+  const nn: NgonNgu = vao.ngonNgu === 'en' ? 'en' : 'vi';
   const lichSu = vao.lichSu ?? [];
   const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
   const saoTheoCung = saoChinhTheoCung(vao.laSo);
@@ -139,7 +151,7 @@ export async function traLoiFocused(
   const thoiGianSo = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
 
   const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon']): KetQuaTraLoi => {
-    const van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(cm.cau) : cm.cau;
+    const van = mucAnToan === 'SENSITIVE' ? datMienTruTheoNgonNgu(cm.cau, nn, datMienTruTamLy) : cm.cau;
     const coCauTruc: TraLoiCoCauTruc = { ketLuan: cm.cau, tomTat: cm.cau, yChinh: [], goiYTiep: cm.chip };
     return {
       van,
@@ -159,14 +171,14 @@ export async function traLoiFocused(
     };
   };
 
-  if (phanLoaiSo.khuon === 'F2' && so.doiTuong) return traNgay(cauVanRieng(so.doiTuong), 'focused-f2', 'F2');
-  if (phanLoaiSo.khuon === 'D') return traNgay(cauKhiNao(), 'focused-d', 'D');
+  if (phanLoaiSo.khuon === 'F2' && so.doiTuong) return traNgay(cauVanRieng(so.doiTuong, nn), 'focused-f2', 'F2');
+  if (phanLoaiSo.khuon === 'D') return traNgay(cauKhiNao(nn), 'focused-d', 'D');
   if (thoiGianSo.thang?.nhuan === 'can-hoi') {
-    return traNgay(cauHoiNhuan(thoiGianSo.thang, bayGio.nam), 'focused-nhuan', phanLoaiSo.khuon);
+    return traNgay(cauHoiNhuan(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan', phanLoaiSo.khuon);
   }
   // Đã chọn tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường thay vào.
   if (thoiGianSo.thang?.nhuan === 'nhuan') {
-    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
+    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
   }
 
   // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
@@ -189,10 +201,10 @@ export async function traLoiFocused(
   const thoiGian = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
   // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
   if (thoiGian.thang?.nhuan === 'nhuan') {
-    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam), 'focused-nhuan-chua-tach', phanLoai.khuon);
+    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon);
   }
   if (thoiGian.thang?.nhuan === 'can-hoi') {
-    return traNgay(cauHoiNhuan(thoiGian.thang, bayGio.nam), 'focused-nhuan', phanLoai.khuon);
+    return traNgay(cauHoiNhuan(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan', phanLoai.khuon);
   }
   const keHoach = themLopChoThang(keHoachGoc);
 
@@ -244,16 +256,16 @@ export async function traLoiFocused(
   const cauMa: string[] = [];
   let chipMa: string[] | undefined;
   if (phanLoai.khuon === 'E' && phanLoai.haiVe) {
-    const e = cauHaiVe(phanLoai.haiVe);
+    const e = cauHaiVe(phanLoai.haiVe, nn);
     cauMa.push(e.cau);
     chipMa = e.chip;
   }
-  if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang));
-  if (thoiGian.cuoiNam) cauMa.push(CAU_CUOI_NAM);
+  if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang, nn));
+  if (thoiGian.cuoiNam) cauMa.push(CAU_CUOI_NAM[nn]);
   // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu kết luận đã duyệt
   // (brief §11) đứng đầu và thay câu chốt model — model không được xác nhận tên.
   const ngoaiTam = nhanDangNgoaiTam(vao.cauHoi);
-  if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam));
+  if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam, nn));
 
   const ctx: NguCanhKiem = {
     cauHoi: vao.cauHoi,
@@ -267,12 +279,14 @@ export async function traLoiFocused(
     nghieng,
     thoiGian,
     tuoiHopLe: tuoiTrongGoi(goi),
-    mocChot: mocChoChot(thoiGian, keHoach, bayGio),
+    mocChot: mocChoChot(thoiGian, keHoach, bayGio, nn),
     cauMa,
     chipMa,
-    chipCuoiNam: thoiGian.cuoiNam ? (g) => chipCuoiNam(bayGio.nam, g) : undefined,
+    chipCuoiNam: thoiGian.cuoiNam ? (g) => chipCuoiNam(bayGio.nam, g, nn) : undefined,
     chipTruoc: chipTruocTu(lichSu),
     boChotModel: !!ngoaiTam,
+    maNguyetHan: new Set(goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id)),
+    ngonNgu: nn,
   };
 
   const moc: MocTinhSan = {
@@ -314,12 +328,15 @@ export async function traLoiFocused(
   return {
     van: kq.van,
     loiDi: kq.van
-      ? loiDiTiep({
-          chuDe: keHoach.chuDe,
-          lopHan: keHoach.lopHan,
-          yDinh: keHoach.yDinh,
-          cungTrongTam: keHoach.cungLienQuan[0],
-        })
+      ? loiDiTheoNgonNgu(
+          loiDiTiep({
+            chuDe: keHoach.chuDe,
+            lopHan: keHoach.lopHan,
+            yDinh: keHoach.yDinh,
+            cungTrongTam: keHoach.cungLienQuan[0],
+          }),
+          nn
+        )
       : [],
     coCauTruc,
     goi,

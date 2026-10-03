@@ -22,6 +22,7 @@ import type { NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import type { ChuDe } from '../planner';
 import { cauChotDuPhong, nhomCuaHuong, soatCauChot, type NhomHuong } from './chot-huong';
+import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
 import { laChipNgoaiTam } from './ngoai-tam';
@@ -91,6 +92,13 @@ export interface NguCanhKiem {
   chipTruoc: string[];
   /** Câu mã đã là câu chốt (danh tính bạn đời) — bỏ câu chốt model, như E */
   boChotModel?: boolean;
+  /**
+   * Mã F### loại `nguyet-han` trong gói. Hỏi MỘT tháng (`thoiGian.thang`) mà bản
+   * cuối không còn câu nào dựa vào các mã này → thử lại, rồi 502 (chủ dự án 04/10).
+   */
+  maNguyetHan?: ReadonlySet<string>;
+  /** Ngôn ngữ của câu do mã viết (câu chốt dự phòng, chip dự phòng). Thiếu = 'vi'. */
+  ngonNgu?: NgonNgu;
 }
 
 export interface CauDaBo {
@@ -205,6 +213,8 @@ export function kiemMotCau(noiDung: string, ctx: NguCanhKiem, laCauChot = false)
   if (tenCungTrongCau(s, ctx.phucDucLaSao).length) ly.add('ten-cung');
   const cum = cumTu(s);
   if (BO_GIONG_MAY.some((c) => cum.has(c))) ly.add('giong-may');
+  // "dữ kiện" là chữ nội bộ — so có dấu, vì bỏ dấu thì trùng "dự kiến" (celes-domain 04/10).
+  if (/(?<![\p{L}\p{M}])dữ kiện(?![\p{L}\p{M}])/iu.test(s)) ly.add('giong-may');
   if (TIENG_LONG_MOT_CAU.test(s)) ly.add('tieng-long');
 
   // 3. Phán quyết
@@ -291,7 +301,14 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
     : null;
   const duPhong = () =>
     nghiengTrongGoi
-      ? cauChotDuPhong({ nghieng: nghiengTrongGoi, chuDe: ctx.chuDe, cauHoi: ctx.cauHoi, moc: ctx.mocChot, doiTuong: ctx.doiTuong })
+      ? cauChotDuPhong({
+          nghieng: nghiengTrongGoi,
+          chuDe: ctx.chuDe,
+          cauHoi: ctx.cauHoi,
+          moc: ctx.mocChot,
+          doiTuong: ctx.doiTuong,
+          ngonNgu: ctx.ngonNgu,
+        })
       : '';
 
   if (cauChot) {
@@ -353,6 +370,11 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
 
   // 10. Độ dài — tính cả câu mã.
   const tran = tranDoDai(ctx);
+  // Hỏi một tháng: câu nguyệt hạn CUỐI CÙNG không bị cắt vì độ dài (cắt nó là tự gây thử lại).
+  // Cùng điều kiện với dòng dặn trong prompt: gói không có mã nguyệt hạn thì không đòi (tránh 502 chắc chắn).
+  const canNguyet = !ngoaiPhamVi && !!ctx.thoiGian.thang && khuon !== 'E' && (ctx.maNguyetHan?.size ?? 0) > 0;
+  const laNguyet = (c: { maDuKien: string[] }) => c.maDuKien.some((m) => ctx.maNguyetHan?.has(m));
+  const giuNguyet = (j: number) => canNguyet && laNguyet(cau[j]) && cau.filter(laNguyet).length === 1;
   const dem = () => {
     const tat = [...ctx.cauMa, cauChot, ...cau.map((c) => c.noiDung)].filter(Boolean);
     return { soCau: tat.length, amTiet: tat.reduce((n, x) => n + soAmTiet(x), 0) };
@@ -361,8 +383,8 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
     const catMot = (): boolean => {
       // Bỏ câu không căn cứ trước, rồi câu có căn cứ từ cuối lên; không đụng câu chốt.
       let i = -1;
-      for (let j = cau.length - 1; j >= 0; j--) if (!cau[j].coCanCu) { i = j; break; }
-      if (i < 0) i = cau.length - 1;
+      for (let j = cau.length - 1; j >= 0; j--) if (!cau[j].coCanCu && !giuNguyet(j)) { i = j; break; }
+      if (i < 0) for (let j = cau.length - 1; j >= 0; j--) if (!giuNguyet(j)) { i = j; break; }
       if (i < 0) return false;
       bo.push({ noiDung: cau[i].noiDung, lyDo: ['qua-dai'] });
       cau = cau.filter((_, j) => j !== i);
@@ -380,6 +402,7 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   // Mục 9 luật 5: hết câu CÓ CĂN CỨ (không phải hết câu) mới thử lại — câu chốt dự phòng do mã viết không tính.
   if (ngoaiPhamVi && cauChot) thuLai = null;
   else if (!chotCoCanCu && !cau.some((c) => c.coCanCu)) thuLai = 'het-cau';
+  else if (canNguyet && !cau.some(laNguyet)) thuLai = 'thieu-nguyet-han';
   else if (tran && amTiet > tran.thuLai) thuLai = 'qua-dai';
 
   return { cauChot, dungDuPhong, lyDoThayChot, cau, bo, chip, thuLai, soAmTiet: amTiet, soCau };
@@ -394,10 +417,8 @@ const CHIP_RA_LENH = /^\s*(?:hãy|nên|đừng|bạn nên|bạn hãy|có nên)(?
 const CHIP_THUAT_NGU = /đại vận/iu;
 /** Hỏi tên / họ của bất kỳ ai — `laChipNgoaiTam` chỉ phủ bạn đời. Lá số không chứa tên ai. */
 const CHIP_HOI_TEN = re('tên (?:là )?gì|tên (?:của )?(?:người|anh|chị|cô|cậu|em|vợ|chồng|người yêu|ny)|họ gì|họ (?:của )?(?:người|anh|chị|cô)|vần gì|chữ cái');
-/** Chip đủ để dùng khi model trả quá ít — đều là câu engine đọc được (#5). */
 /** Trần độ dài chip, khớp "tối đa 40 ký tự" trong prompt. */
 const CHIP_TOI_DA = 40;
-const CHIP_DU_PHONG = ['Sang năm thì sao?', 'Tháng này thì sao?', 'Năm nay thì sao?'];
 
 export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
   if (ctx.chipMa?.length) return [...ctx.chipMa].slice(0, 3);
@@ -418,7 +439,8 @@ export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
     ra.push(c);
     if (ra.length === 3) break;
   }
-  for (const d of CHIP_DU_PHONG) {
+  // Chip đủ để dùng khi model trả quá ít — đều là câu engine đọc được (#5).
+  for (const d of CHIP_DU_PHONG[ctx.ngonNgu ?? 'vi']) {
     if (ra.length >= 2) break;
     if (!daCo.has(chuanChip(d))) {
       daCo.add(chuanChip(d));

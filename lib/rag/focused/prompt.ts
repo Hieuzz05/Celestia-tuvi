@@ -199,8 +199,13 @@ export function khoiMoc(m: MocTinhSan): string {
     );
     if (thang.trangThai === 'da-qua') {
       dong.push('Tháng này ĐÃ QUA. Nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây".');
+      dong.push('Câu mở đầu do hệ thống viết đã nêu tháng và năm — câu chốt KHÔNG lặp lại "Tháng X âm năm N".');
     } else if (thang.trangThai === 'dang') {
       dong.push('Đây là tháng hiện tại.');
+    } else {
+      dong.push(
+        `Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng ${thang.thang} đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".`
+      );
     }
   } else {
     dong.push('Câu hỏi không chỉ một tháng cụ thể — không tự nêu tháng nào.');
@@ -241,6 +246,14 @@ export interface DauVaoPromptFocused {
   lyDoThuLai?: string;
 }
 
+/** Lý do thử lại đọc được cho model — mã lý do trần ("thieu-nguyet-han") model không hiểu. */
+const LY_DO_THU_LAI: Record<string, string> = {
+  'het-cau': 'không còn câu nào dựa vào mã dữ kiện thật trong gói',
+  'qua-dai': 'quá dài so với hợp đồng độ dài',
+  'json-gay': 'không phải JSON đúng schema',
+  'thieu-nguyet-han': 'câu hỏi về MỘT tháng mà không còn câu "cau" nào dựa vào dữ kiện của tháng đó',
+};
+
 export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; user: string } {
   const bc = chonBoiCanhHoiThoai(v.cauHoiGoc, v.lichSu, v.laTiepTuChip);
   const phan: string[] = [dungKhoiChoPrompt({ ...v.goi, cauHoi: v.cauHoiGoc })];
@@ -251,7 +264,11 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).
   const maThang = v.goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id);
   if (v.moc.thoiGian.thang && maThang.length) {
-    phan.push(`Câu hỏi về MỘT tháng: ít nhất một phần tử "cau" phải dựa vào dữ kiện của tháng đang đọc (${maThang.join(', ')}).`);
+    phan.push(
+      `Câu hỏi về MỘT tháng: ít nhất một phần tử "cau" phải dựa vào dữ kiện của tháng đang đọc (${maThang.join(', ')}). ` +
+        'Câu đó nói sao ở cung tháng làm phần ĐANG HỎI thuận hay vướng hơn trong tháng; KHÔNG mượn nghĩa của tên cung đó ' +
+        '(cha mẹ, nhà cửa, anh em…) để suy sang phần đang hỏi.'
+    );
   }
 
   if (v.daNoiTruoc.length) {
@@ -281,7 +298,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
     dan.push(`Câu mở của lượt đã có sẵn, người đọc sẽ thấy nó trước phần của bạn:\n"${v.cauMa.join(' ')}"\nĐừng viết lại ý đó.`);
   }
   if (cu.length) dan.push(`Mấy tin trước đã mở bằng: ${cu.map((c) => `"${c}…"`).join(', ')}. Đừng mở lại như vậy.`);
-  if (v.lyDoThuLai) dan.push(`Bản trước bị loại vì: ${v.lyDoThuLai}. Viết lại, tránh đúng lỗi đó.`);
+  if (v.lyDoThuLai) dan.push(`Bản trước bị loại vì: ${LY_DO_THU_LAI[v.lyDoThuLai] ?? v.lyDoThuLai}. Viết lại, tránh đúng lỗi đó.`);
   phan.push(dan.filter(Boolean).join('\n'));
 
   return {

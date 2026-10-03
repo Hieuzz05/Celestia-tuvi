@@ -80,6 +80,11 @@ export interface DauVaoTraLoi {
    * lúc đó con số eval không so được với lần trước.
    */
   dungModelPhanLoai?: boolean;
+  /**
+   * Ngôn ngữ giao diện của người hỏi. Chỉ đường Focused đọc (câu do mã viết theo
+   * ngôn ngữ này); đường STANDARD bỏ qua. Thiếu = 'vi'.
+   */
+  ngonNgu?: 'vi' | 'en';
 }
 
 export interface KetQuaTraLoi {
