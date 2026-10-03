@@ -16,10 +16,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1, worktree `D:/SAPP BA/tuvi-ai-fix-noi-dung-ai-env`) | [SỬA LỖI] `noi_dung_ai` lẫn môi trường — Preview/local đọc-ghi chung đệm production; brief: `docs/chien-luoc/moi-truong-phat-trien-2026-10.md` mục "Việc phát sinh" số 1 | `viec/fix-noi-dung-ai-env` | `lib/rag/noi-dung-ai.ts` + các nơi gọi (`app/api/*` luận giải, `lib/rag/thu-vien`, `lib/rag/v3`), bài kiểm mới trong `scripts/` | 03/10/2026 |
-| Claude (máy 1, thư mục chính `D:/SAPP BA/tuvi-ai`) | [CODE] CEL-186 vé B — Focused Chat, CODE SONG SONG với fix `noi_dung_ai` (chủ dự án mở khoá 03/10). CHƯA bật cờ Preview / eval model thật / gộp main cho tới khi fix gộp main. Phương án: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` | `viec/cel-186-focused-chat` | `lib/rag/focused/**` (mới), `lib/rag/tra-loi.ts`, `lib/rag/nghieng-ve.ts`, `lib/rag/boi-canh-la-so.ts`, `app/api/hoi-dap/route.ts`, `scripts/test-focused.ts`. KHÔNG chạm `noi-dung-ai.ts` / namespace đệm | 03/10/2026 |
+| Claude (máy 1, thư mục chính `D:/SAPP BA/tuvi-ai`) | [CODE] CEL-186 vé B — Focused Chat. CEL-189 đã lên Production (03/10) → đang: merge origin/main vào nhánh → regression → bật cờ Preview RIÊNG nhánh → eval model thật (≤ $2, ghim model Production) → Barnum → reviewer → UAT. Cờ Production vẫn TẮT khi gộp main. Phương án: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` | `viec/cel-186-focused-chat` | `lib/rag/focused/**`, `lib/rag/tra-loi.ts`, `lib/ai/fallback.ts` (chỉ biến eval), `app/api/hoi-dap/route.ts`, `scripts/test-focused.ts`, `scripts/eval-focused.ts` | 03/10/2026 |
 
-**Vé B (CEL-186) không còn tạm dừng** — xem dòng "Đang làm" ở trên.
 
 ## Đang vướng — đừng đụng vào
 
@@ -33,6 +31,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ LÊN PRODUCTION**: CEL-189 tách đệm `noi_dung_ai` theo môi trường (production / Preview / local), `/api/phien-ban` có `phamViDem`. Kiểm Production: commit `1bdfe6b`, nhanh=main, moiTruong=production, phamViDem=production. KHÔNG chạy `--ghi-production`, KHÔNG xoá đệm Production | `8bc5554`, `667848a` + merge `1bdfe6b` | 03/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/test-man-hinh`: bộ đo giao diện `test-man-hinh.mjs` P1–P5 (khách thật, ảnh toàn trang CDP, vùng chạm hộp DOM / `::after`, CLS cửa sổ phiên) + `docs/thiet-ke/celes-ui-quality-checklist.md`. Chạy tay, không vào CI. Kết quả 157 OK / 17 SAI = nợ UI có sẵn (`.pill-tag` 32px, `.btn-sm` 37–39px, link logo 24px). Việc tiếp: (1, ưu tiên) sửa xanh giả của mệnh bàn ở 390/820 (rộng 0 trong tab chưa mở vẫn báo OK); (2) vé CSS vùng chạm < 44px. Hai việc tiếp là việc riêng, chưa ai nhận | `02d26a8` + `568d444` + gộp `03d56f7` | 03/10/2026 |
 | **ĐÃ GỘP MAIN / production**: CEL-186 vé A — trục thời gian planner, năm/tháng hiệu lực, chip sang năm; năm sinh viết số không còn thành năm được hỏi | `bbfae60` + merge `10e351f` | 03/10/2026 |
 | **ĐÃ GỘP MAIN**: CEL-188 linh vật Celes mọi màn web (18 ảnh v2.3, 14 khoá; nhãn CEL-187 ở các commit đầu, CEL-187 giữ cho Streaming). Kèm: đăng ký / Google quay về đúng origin (`emailRedirectTo` / `redirectTo`) — chủ dự án đã thêm mẫu preview vào Redirect URLs của Supabase và thử đăng nhập trên preview đạt; /hoi-dap hai con không trùng dáng (bài kiểm mục 5); /luan-giai/sau dùng `CongDangNhap toanTrang`. CI 5313be4 xanh | `5313be4` + merge | 03/10/2026 |
