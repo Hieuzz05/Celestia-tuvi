@@ -78,6 +78,32 @@ mọi AI làm trên repo, cả hai máy.
 `[CHIẾN LƯỢC]` · `[CODE]` · `[SỬA LỖI]`. Không có dấu thì AI hỏi lại một câu
 ngắn, đừng tự đoán rồi đi sai luồng.
 
+Mỗi dấu có một skill chứa các bước làm được — **thấy dấu thì AI tự gọi skill, không chờ gõ lệnh**:
+
+| Dấu | Skill | Bước chung lúc mở phiên |
+|---|---|---|
+| `[CHIẾN LƯỢC]` | `/chien-luoc` | `.claude/skills/lam-tinh-nang/mo-phien.md` |
+| `[CODE]` | `/lam-tinh-nang` | (đọc TRANG-THAI, worktree nếu thư mục có phiên khác, |
+| `[SỬA LỖI]` | `/sua-loi` | nhánh `viec/*`, ghi "Đang làm" lên main, đọc `docs/bay`) |
+
+Ba skill phụ: `/kiem-truoc-push` (bảng "push được / chưa"), `/cap-nhat-backlog` (ghi
+`PRODUCT-BACKLOG.xlsx`, cấp ID không trùng), `/bai-hoc` (xem dưới). Luật CỨNG vẫn nằm ở tệp này;
+skill chỉ là các bước. Đổi luồng thì grep cả `.claude/skills/` và `AI-PHOI-HOP.md` — ba nơi
+nói ngược nhau là chuyện đã xảy ra (`docs/bai-hoc/NHAT-KY.md`, 03/10/2026).
+
+**Cỡ việc (chủ dự án quyết 02/10/2026).** `phan-bien`, `danh-gia-tac-dong`, `bien-tap-vi` chỉ bắt
+buộc với việc LỚN: đổi kiến trúc, đổi hợp đồng trả lời / prompt / schema, đổi chữ quan trọng ở mặt
+trước, thêm dịch vụ, tính năng mới cần ID, chạm vùng Chung, hoặc đóng một tính năng lớn. Việc nhỏ
+bỏ ba reviewer đó; `researcher` và `qa` vẫn giữ. Không chắc thì coi là Lớn và nói rõ đã chọn cỡ nào.
+
+### Bài học — làm sai một lần, cả hai máy cùng nhớ
+
+Có cái giá thật (mất thời gian, lỗi lọt, chủ dự án phải sửa lưng, hoặc cách mới đo được là tốt
+hơn) thì gọi `/bai-hoc`: ghi `docs/bai-hoc/NHAT-KY.md`, nâng luật lên `docs/bai-hoc/cach-lam.md`
+(nạp mọi phiên qua `CLAUDE.md`) hoặc `docs/bay/<vùng>.md`. **Lặp lần 2 thì chữ không đủ — đề xuất
+máy canh** (test / hook / CI). Chủ dự án nói "sai rồi", "lại quên", "không phải thế" là tín hiệu
+phải gọi. Memory của Claude là cục bộ một máy — bài học dùng chung KHÔNG ghi vào đó.
+
 ### Luồng A — `[CHIẾN LƯỢC]`
 
 ```
@@ -188,6 +214,10 @@ mục tạm **và in đường dẫn ra màn hình** — không in thì chủ d�
 - Không chạy lại cả bộ so mù / sinh bài dài trong phiên khi không cần — tốn cả tiền API lẫn ngữ cảnh.
 
 ## Kiểm tra trước khi commit
+
+Trong lúc làm: `node scripts/kiem-nhanh.mjs --chay` — chỉ chạy tsc, lint và các bài CI phủ đúng tệp
+vừa đổi (đọc đồ thị import). Danh sách đầy đủ dưới đây là thứ CI chạy; tay chỉ cần khi đổi cấu
+hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/kiem-truoc-push`.
 
 ```
 npx tsc --noEmit          # phải sạch

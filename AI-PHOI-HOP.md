@@ -30,7 +30,9 @@ lên `main`. Đó là cách duy nhất máy kia biết bạn đang động vào 
 
 ## 2. Điều tuyệt đối không làm
 
-- **Không commit thẳng lên `main`.** Ngoại lệ duy nhất: cập nhật `TRANG-THAI.md`.
+- **Không commit thẳng lên `main`.** Hai ngoại lệ: `TRANG-THAI.md`, và sổ bài học `docs/bai-hoc/`
+  (chủ dự án duyệt 03/10/2026 — bài học nằm trên nhánh chờ gộp thì máy kia không thấy nhiều ngày).
+  Cách đẩy an toàn từ một worktree tách riêng: xem `.claude/skills/bai-hoc/SKILL.md` bước 5.
 - **Không `git push --force`** lên bất kỳ nhánh nào máy kia có thể đang dùng.
 - **Không `git rebase` nhánh đã đẩy lên.** Nó viết lại lịch sử mà máy kia đã tải về.
 - **Không sửa `.env.local`, không in nội dung nó ra, không đưa nó vào commit.**
@@ -66,9 +68,14 @@ trong commit vì sao phải sang đó.
 
 ---
 
-## 4. Trước khi đẩy lên: bốn cổng
+## 4. Trước khi đẩy lên: các cổng
 
-Chạy đủ bốn, không bỏ cổng nào:
+**Từ 02/10/2026 (chủ dự án quyết):** trong lúc sửa và trước khi đẩy, chạy đúng các bài phủ phần
+vừa đổi bằng `node scripts/kiem-nhanh.mjs --chay` — nó đọc danh sách bài từ CI và chọn theo đồ thị
+import. CI (`.github/workflows/kiem-tra.yml`) chạy ĐỦ mọi cổng dưới đây trên mọi lần đẩy nhánh, nên
+không phải tự chạy build hay cả bộ mỗi lần. Rà trước khi báo "push được": `/kiem-truoc-push`.
+
+Các cổng CI giữ (chạy tay khi đổi cấu hình dựng, hoặc khi CI đỏ cần tái hiện):
 
 ```bash
 npx tsc --noEmit                        # phải sạch
@@ -110,7 +117,8 @@ vay. Doc den khoi thu hai la doan duoc khoi thu ba noi gi o dong nao.
 Xong việc thì:
 
 1. Cập nhật `PRODUCT-BACKLOG.xlsx` **trong cùng commit đó** — xem mục 5b ngay dưới.
-2. `git push -u origin viec/<ten>` — Vercel tự dựng bản xem thử.
+2. **Khi chủ dự án bảo push** thì `git push -u origin viec/<ten>` — Vercel tự dựng bản xem thử.
+   Không tự đẩy: nghiệm thu và push luôn là người (AGENTS.md).
 3. Chuyển dòng trong `TRANG-THAI.md` từ "Đang làm" xuống "Vừa xong", kèm mã commit.
 4. Báo cho chủ dự án link bản xem thử. **Không tự gộp vào `main`.** Việc gộp là
    quyết định của con người.

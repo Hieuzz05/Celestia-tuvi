@@ -14,3 +14,9 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Dùng heredoc `<<'PY'` cho script Python thì dấu gạch chéo bị nuốt một lớp**, nên mọi mẫu chứa
   `
 ` đều không khớp. Sửa tệp có ký tự thoát thì dùng công cụ sửa tệp, đừng dùng heredoc.
+- **Worktree có `node_modules` liên kết sang thư mục chính thì `next dev` (Turbopack) sập** với lỗi
+  "Symlink [project]/node_modules is invalid, it points out of the filesystem root". Chạy
+  `npx next dev --webpack` thì được (đã thử 28/09/2026, chuyển từ memory cục bộ máy 1).
+- **Python trên Windows in tiếng Việt ra console thì sập `UnicodeEncodeError` (cp1252).** Đặt
+  `PYTHONIOENCODING=utf-8` trước lệnh, hoặc gọi `sys.stdout.reconfigure(encoding='utf-8')` trong script
+  (`backlog.py` của skill cap-nhat-backlog đã làm vậy).
