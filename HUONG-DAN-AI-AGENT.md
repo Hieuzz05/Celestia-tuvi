@@ -1,152 +1,99 @@
-# Hướng dẫn dùng AI Agent cho Celes — dành cho người mới bắt đầu
+# Hướng dẫn dùng AI Agent cho Celes — dành cho chủ dự án
 
-Tài liệu này dành cho **chủ dự án**, viết theo đúng máy đang dùng: Windows, VS Code, phần mở
-rộng Claude Code (bản đang cài: `2.1.283`), gõ lệnh trong ô chat của Claude Code — không phải
-terminal riêng.
+Tài liệu viết cho máy đang dùng: Windows, VS Code, phần mở rộng Claude Code, gõ lệnh trong ô chat
+của Claude Code.
 
-Nếu bạn chưa từng dùng "AI Agent" bao giờ, cứ đọc từ đầu tới cuối một lần. Không cần nhớ, tài
-liệu này ở sẵn trong repo, mở lại bất cứ lúc nào.
+Không cần nhớ hết. Tài liệu nằm sẵn trong repo, cần thì mở lại.
 
 ---
 
-## 1. AI Agent ở đây nghĩa là gì
+## 1. Ba thứ giúp Claude làm việc
 
-Trước giờ bạn nhắn cho Claude kiểu: *"xem code phần Hôm nay, rồi sửa lại theo ý này"* — một
-Claude làm hết mọi việc: đọc code, suy nghĩ, viết code, tự kiểm tra. Nhắn càng nhiều, Claude nhớ
-càng nhiều thứ trong một phiên, phiên càng dài thì càng tốn (xem mục 6).
-
-Giờ có thêm ba **trợ lý phụ** (gọi là *subagent*), mỗi trợ lý chỉ làm một việc, làm xong trả kết
-quả về cho Claude chính rồi quên hết — không mang mọi thứ đã đọc vào cuộc trò chuyện chính của
-bạn:
-
-| Trợ lý | Việc của nó | Có được sửa code không |
+| Thứ | Là gì | Ở đâu |
 |---|---|---|
-| `researcher` | Đọc code hiện tại, tóm tắt lại: đang chạy thế nào, tệp nào liên quan | KHÔNG |
-| `celes-domain` | Kiểm bài luận giải Tử Vi có đúng luật không (không bịa sao, không vượt dữ kiện, không lộ thuật ngữ ra mặt trước…) | KHÔNG |
-| `qa` | Chạy các lệnh kiểm tra có sẵn của repo, báo cáo cái nào qua cái nào trượt | KHÔNG |
+| **Trợ lý phụ** (subagent) | Mỗi trợ lý làm một việc: đọc mã, phản biện, kiểm… Làm xong nó chỉ báo lại kết luận, không kéo theo mọi thứ đã đọc, nên cuộc trò chuyện chính đỡ nặng | `.claude/agents/` (9 trợ lý) |
+| **Skill** (lệnh `/…`) | Một quy trình nhiều bước đã viết sẵn. Gõ lệnh là Claude làm đúng từng bước, ở cả hai máy | `.claude/skills/` (6 skill) |
+| **Sổ bài học** | Nơi ghi lại mỗi lần AI làm sai hoặc tìm ra cách tốt hơn, để lần sau không lặp lại | `docs/bai-hoc/` |
 
-Cả ba đều **chỉ đọc**, không tự sửa file, không tự commit. Việc sửa code vẫn là Claude chính
-làm, sau khi bạn đã duyệt kế hoạch.
-
-Ba trợ lý này đã có sẵn trong repo, nằm ở `.claude/agents/`. Bạn không cần cài thêm gì.
+Mọi trợ lý phụ đều **chỉ đọc**, không tự sửa mã, không tự commit. Việc viết mã luôn do Claude
+chính làm, sau khi bạn đã duyệt phương án.
 
 ---
 
-## 2. Trước khi bắt đầu — ba điều bắt buộc
+## 2. Trước khi bắt đầu
 
-1. **Mở đúng thư mục trong VS Code.** File → Open Folder → chọn `d:\SAPP BA\tuvi-ai`. Nếu
-   VS Code đang mở ở một thư mục khác (ví dụ `C:\Users\Dell`), Claude Code sẽ không thấy ba trợ
-   lý này.
-2. **Bắt đầu một phiên chat MỚI** sau khi mở đúng thư mục (nút "+" hoặc mở lại panel Claude
-   Code). Cấu hình chỉ được đọc lúc phiên khởi động — một phiên đang mở từ trước sẽ không tự
-   thấy trợ lý mới.
-3. **Kiểm tra đã thấy đủ chưa**: gõ `/agents` vào ô chat. Nếu đúng, bạn sẽ thấy danh sách hiện ra
-   3 trợ lý ở trên. Nếu danh sách trống, quay lại bước 1–2.
+1. **Mở đúng thư mục trong VS Code**: `d:\SAPP BA\tuvi-ai`, hoặc thư mục worktree của việc đó.
+   Mở sai thư mục thì Claude không thấy trợ lý lẫn skill.
+2. **Mở một phiên chat MỚI** sau khi kéo cấu hình mới về (`git pull`). Phiên đã mở từ trước không
+   tự thấy skill mới.
+3. **Kiểm tra**: gõ `/agents` để thấy 9 trợ lý. Gõ `/` để thấy danh sách skill, trong đó có
+   `/lam-tinh-nang`, `/sua-loi`…
 
 ---
 
-## 3. Cách làm một tính năng mới — quy trình `/build-feature`
+## 3. Các lệnh thường dùng
 
-Đây là cách dùng chính, cho việc có sửa code thật (thêm tính năng, sửa luồng). Quy trình có 5
-bước, và **luôn dừng lại chờ bạn duyệt** trước khi viết một dòng code nào.
+| Bạn muốn | Gõ | Claude sẽ |
+|---|---|---|
+| Làm tính năng hoặc thay đổi mã | `/lam-tinh-nang <mô tả hoặc CEL-xxx>` (hoặc gắn `[CODE]`) | Đọc mã → lên phương án → **dừng chờ bạn duyệt** → viết → kiểm → commit → báo, **không push** |
+| Sửa một lỗi | `/sua-loi <mô tả lỗi>` (hoặc `[SỬA LỖI]`) | Tái hiện lỗi → tìm gốc (và chỗ cùng gốc) → sửa → kiểm → ghi bài học |
+| Bàn chiến lược (giá, đối thủ, hướng đi) | `/chien-luoc <câu hỏi>` (hoặc `[CHIẾN LƯỢC]`) | Thu dữ liệu → **phản biện bắt buộc** → trình bày "Sập / Lung lay / Đứng được" → bạn quyết → ghi quyết định ra tệp |
+| Hỏi "push được chưa?" | `/kiem-truoc-push` | Chạy đúng bài kiểm theo phần đã đổi, soát commit lạc, quét bí mật → bảng kết luận "push được / chưa" |
+| Ghi một bài học | `/bai-hoc <chuyện gì>` | Xem đã từng xảy ra chưa → ghi sổ → đưa luật lên đúng chỗ → lặp lần 2 thì đề xuất một bước kiểm tự động |
+| Cập nhật bảng theo dõi | `/cap-nhat-backlog` | Ghi `PRODUCT-BACKLOG.xlsx` đúng ba sheet, cấp ID mới không trùng |
 
-### Bước 1 — Viết yêu cầu ra một tệp (gọi là "spec")
+Gắn dấu `[CODE]`, `[SỬA LỖI]`, `[CHIẾN LƯỢC]` thì Claude tự gọi đúng skill, không cần gõ lệnh.
 
-Thay vì gõ yêu cầu trong chat rồi Claude đoán ý, bạn viết yêu cầu ra một tệp ngắn trước. Việc
-này giúp Claude không hiểu sai, và bạn có bản ghi lại đã yêu cầu gì.
-
-1. Mở thư mục `specs/` trong repo.
-2. Copy tệp `specs/_MAU.md` thành một tệp mới, đặt tên ngắn gọn không dấu, ví dụ
-   `specs/thong-bao-sang.md`.
-3. Điền vào các mục có sẵn trong mẫu: vấn đề, mục tiêu, tiêu chí để biết là xong (càng cụ thể
-   càng tốt, ví dụ "hiện đúng 1 dòng, không hiện 2 lần").
-4. Không biết điền gì cũng không sao — điền phần bạn chắc, để trống phần không chắc, Claude sẽ
-   hỏi lại.
-
-### Bước 2 — Gõ lệnh
-
-Trong ô chat, gõ:
-
-```
-/build-feature thong-bao-sang
-```
-
-(thay `thong-bao-sang` bằng đúng tên tệp bạn vừa tạo, không có `.md`)
-
-### Bước 3 — Claude tự làm 3 việc đầu, không hỏi bạn
-
-- Gọi `researcher` đọc code liên quan.
-- Nếu việc này đụng tới lá số / luận giải / lời văn Celes, gọi thêm `celes-domain` kiểm ràng
-  buộc trước.
-- Ghép lại thành một **kế hoạch**: sẽ sửa tệp nào, sửa thế nào, kiểm bằng cách nào.
-
-### Bước 4 — DỪNG LẠI, chờ bạn duyệt
-
-Claude sẽ in ra kế hoạch rồi **không viết code**. Bạn đọc kế hoạch:
-
-- Đồng ý → gõ "duyệt" hoặc "ok làm đi".
-- Muốn đổi gì → nói luôn, Claude sửa kế hoạch rồi hỏi lại.
-- Không chắc → hỏi Claude giải thích thêm, không sao cả.
-
-### Bước 5 — Sau khi duyệt
-
-Claude viết code theo đúng kế hoạch, rồi tự gọi `qa` chạy kiểm tra. Bạn sẽ thấy một bảng
-"đạt / trượt" cho từng tiêu chí đã ghi trong spec. Nếu trượt, Claude tự sửa rồi kiểm lại (tối đa
-2 lần), sau đó báo bạn kết quả cuối.
-
-Việc còn lại (cập nhật backlog, commit, đẩy nhánh) Claude tự làm theo đúng luật đã có sẵn của
-repo — bạn không cần gõ gì thêm.
+**Việc nhỏ và việc lớn.** Theo quyết định 02/10/2026, các trợ lý phản biện (`phan-bien`,
+`danh-gia-tac-dong`, `bien-tap-vi`) chỉ dùng cho việc lớn: đổi kiến trúc, đổi cách Celes trả lời,
+đổi chữ quan trọng trên giao diện, hoặc đóng một tính năng lớn. Việc nhỏ thì Claude làm nhanh,
+chỉ kiểm đúng phần vừa sửa, còn GitHub (CI) chạy toàn bộ bài kiểm sau khi đẩy lên. Claude sẽ nói
+rõ nó xếp việc của bạn vào cỡ nào.
 
 ---
 
-## 4. Không cần theo quy trình trên: tự gọi từng trợ lý
+## 4. Sổ bài học — vì sao có và dùng thế nào
 
-Với việc nhỏ, chỉ cần hỏi — không cần sửa gì — bạn có thể gọi thẳng một trợ lý bằng lời, không
-cần viết spec:
+Mục tiêu: **AI làm việc tốt hơn qua từng tính năng, ở cả hai máy.**
 
-> *"Dùng trợ lý researcher, xem hiện tại trang Hành trình đang tính mốc thời gian thế nào. Đừng
-> sửa gì."*
+- `docs/bai-hoc/NHAT-KY.md`: mỗi lần có cái giá thật thì ghi một mục, như mất thời gian, lỗi
+  lọt ra, hay bạn phải sửa lưng. Mục ghi chuyện gì xảy ra, vì sao, mất gì, và luật rút ra.
+- `docs/bai-hoc/cach-lam.md`: các luật đã chắt lọc. Claude đọc tệp này ở **mọi phiên** trên cả
+  hai máy.
+- Bài học **lặp lại lần thứ hai** nghĩa là ghi chữ không đủ. Lúc đó Claude đề xuất biến nó thành
+  một bước kiểm tự động (test, hook, CI) để máy chặn thay người nhớ.
+- Sổ được đẩy thẳng lên `main` (bạn duyệt 03/10/2026), để máy kia `git pull` là có ngay.
 
-> *"Dùng trợ lý celes-domain, kiểm lại 3 câu tính cách vừa viết cho lá số này có bịa sao nào
-> không."*
+**Bạn chỉ cần làm một việc:** khi thấy Claude làm sai một điều đáng nhớ, nói "ghi bài học" hoặc
+gõ `/bai-hoc`. Claude cũng tự ghi khi bị sửa lưng, và ở cuối mỗi lần sửa lỗi.
 
-> *"Dùng trợ lý qa, chạy kiểm tra cho phần vừa sửa xong."*
-
-Claude sẽ giao việc cho đúng trợ lý, đọc kết quả rồi tóm tắt lại cho bạn — bạn không thấy hết
-những gì trợ lý đã đọc, chỉ thấy kết luận.
-
----
-
-## 5. Muốn thêm trợ lý mới hoặc quy trình mới
-
-Nói thẳng với Claude, ví dụ: *"Tạo thêm một trợ lý chuyên viết nội dung marketing"* — Claude sẽ
-tạo một tệp mới trong `.claude/agents/`, theo đúng khuôn của ba tệp đang có. Không cần biết cú
-pháp, chỉ cần mô tả trợ lý đó nên và không nên làm gì.
+Memory riêng của Claude chỉ nằm trên một máy, máy kia không đọc được. Vì vậy bài học dùng chung
+luôn được ghi vào `docs/bai-hoc/`.
 
 ---
 
-## 6. Dùng sao cho đỡ tốn — vì sao việc này quan trọng
+## 5. Gọi thẳng một trợ lý
 
-Máy này đã dùng khoảng **3 tỷ "token"** trong 12 ngày để code Celes (đo được từ nhật ký, xem
-`AI lập trình` trong file kế hoạch kinh doanh). Phần lớn không phải vì việc nhiều, mà vì **một
-cuộc trò chuyện để quá lâu** — Claude phải đọc lại toàn bộ những gì đã nói từ đầu phiên ở MỖI
-câu trả lời. Trò chuyện càng dài, mỗi câu trả lời sau càng tốn.
+Với câu hỏi không cần sửa gì, bạn cứ nói:
 
-Bốn thói quen sau giúp giảm hẳn:
+> *"Dùng researcher xem trang Hành trình đang tính mốc thời gian thế nào. Đừng sửa gì."*
 
-1. **Một việc xong thì bắt đầu phiên mới.** Gõ `/clear` (xoá sạch, bắt đầu lại) khi đã xong một
-   việc, đừng nối tiếp việc mới vào cuối một cuộc trò chuyện dài đang có.
-2. **Không phải việc nào cũng cần model mạnh nhất.** Gõ `/model` để chọn:
-   - **Sonnet** — mặc định, dùng cho việc sửa code thường ngày. Nhanh và rẻ hơn.
-   - **Opus** — chỉ bật khi cần suy nghĩ sâu: thiết kế lại một phần lớn, gỡ một lỗi khó tìm.
-3. **Xem đang tốn bao nhiêu**: gõ `/context` để xem cuộc trò chuyện hiện tại đang chiếm bao
-   nhiêu, gõ `/usage` để xem đã dùng bao nhiêu % hạn mức gói đang có.
-4. **Việc "đọc rộng" nên giao cho `researcher`** thay vì tự đọc nhiều tệp lớn trong cuộc trò
-   chuyện chính (xem mục 3–4) — đây chính là lý do ba trợ lý này giúp tiết kiệm, không chỉ giúp
-   có tổ chức hơn.
+> *"Dùng phan-bien đánh sập ý tưởng gói Plus 49k này."*
 
-Nếu một tuần mà bạn thấy báo "hết hạn mức" hơn một lần, đó là dấu hiệu nên nâng gói Claude đang
-dùng — không phải dấu hiệu phải dùng ít đi.
+> *"Dùng quet-doi-thu xem Tử Vi Số đang bán gói gì."*
+
+---
+
+## 6. Dùng sao cho đỡ tốn
+
+Mỗi câu trả lời, Claude phải đọc lại toàn bộ cuộc trò chuyện từ đầu phiên. Phiên càng dài thì mỗi
+câu càng tốn.
+
+1. **Một việc một phiên.** Xong việc thì gõ `/clear`.
+2. **Chọn model hợp việc** bằng `/model`. Sonnet dùng cho việc thường ngày, Opus cho việc cần suy
+   nghĩ sâu.
+3. **Xem mức dùng**: `/context` cho phiên hiện tại, `/usage` cho hạn mức.
+4. **Việc đọc rộng thì giao `researcher`.**
 
 ---
 
@@ -154,18 +101,17 @@ dùng — không phải dấu hiệu phải dùng ít đi.
 
 | Thấy gì | Vì sao | Làm gì |
 |---|---|---|
-| Gõ `/agents` không thấy 3 trợ lý | Đang mở sai thư mục, hoặc phiên chat mở từ trước khi cấu hình có | Mở đúng `d:\SAPP BA\tuvi-ai`, mở phiên chat mới |
-| Gõ `/build-feature` báo không tìm thấy | Gõ sai tên, hoặc tệp spec chưa tạo | Kiểm lại tên tệp trong `specs/`, không gõ đuôi `.md` |
-| Claude cứ viết code luôn, không dừng chờ duyệt | Bạn gõ yêu cầu thẳng trong chat, không qua `/build-feature` | Việc nhỏ thì không sao; việc lớn nên đi lại từ Bước 1 |
-| Muốn xem lại đã đổi gói Claude nào chưa | — | Gõ `/model` không kèm gì để xem đang chọn gì |
+| Gõ `/lam-tinh-nang` không thấy | Sai thư mục, hoặc phiên mở trước khi `git pull` | Mở đúng thư mục, mở phiên mới |
+| Claude viết mã luôn, không dừng chờ duyệt | Yêu cầu không có dấu và không qua skill | Gắn `[CODE]` hoặc gõ `/lam-tinh-nang` |
+| Hai phiên Claude cùng làm một thư mục | Hai nhánh dễ lẫn commit của nhau (sự cố 27/09) | Phiên thứ hai dùng worktree riêng; skill sẽ tự đề xuất |
 
 ---
 
-## 8. Việc này có ảnh hưởng gì tới quy tắc hai máy không
+## 8. Quan hệ với luật hai máy
 
-Không đổi gì cả. Luật ở `AI-PHOI-HOP.md` (đọc trạng thái trước khi làm, làm trên nhánh riêng,
-không commit thẳng lên `main`…) vẫn giữ nguyên — quy trình `/build-feature` ở trên đã tự làm
-đúng các bước đó cho bạn (đọc `TRANG-THAI.md`, tạo nhánh, ghi lại khi xong).
+Luật ở `AI-PHOI-HOP.md` vẫn giữ: làm trên nhánh riêng, không commit thẳng `main`. Có **hai** ngoại
+lệ được đẩy thẳng `main`: `TRANG-THAI.md` và `docs/bai-hoc/`. Các skill đã tự làm các bước này:
+đọc trạng thái, tạo nhánh, ghi "Đang làm".
 
 ---
 
@@ -173,10 +119,11 @@ không commit thẳng lên `main`…) vẫn giữ nguyên — quy trình `/build
 
 | Muốn làm gì | Gõ gì |
 |---|---|
-| Xem có 3 trợ lý chưa | `/agents` |
-| Làm tính năng mới theo quy trình đầy đủ | `/build-feature <tên-spec>` |
-| Đổi model (Sonnet ⇄ Opus) | `/model` |
+| Làm tính năng | `/lam-tinh-nang <việc>` |
+| Sửa lỗi | `/sua-loi <lỗi>` |
+| Bàn chiến lược | `/chien-luoc <câu hỏi>` |
+| Hỏi push được chưa | `/kiem-truoc-push` |
+| Ghi bài học | `/bai-hoc <chuyện gì>` |
+| Xem trợ lý | `/agents` |
+| Đổi model | `/model` |
 | Xoá sạch, bắt đầu lại | `/clear` |
-| Xem cuộc trò chuyện đang nặng cỡ nào | `/context` |
-| Xem đã dùng bao nhiêu % hạn mức | `/usage` |
-| Gộp bớt lịch sử trò chuyện đang dài (không xoá hẳn) | `/compact` |
