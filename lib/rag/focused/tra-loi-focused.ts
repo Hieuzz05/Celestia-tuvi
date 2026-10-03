@@ -28,7 +28,7 @@ import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauThangDaQua, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
-import { chayFocused } from './chay';
+import { chayFocused, type VetFocused } from './chay';
 import { lapKeHoachFocused } from './ke-thua';
 import type { NguCanhKiem } from './kiem';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
@@ -102,6 +102,9 @@ function doiDaiVanSauTet(laSo: DauVaoTraLoi['laSo'], namHieuLuc: number): boolea
   return !!nay && !!sau && nay.tenCung !== sau.tenCung;
 }
 
+/** Kết quả kèm vết của vòng gọi model — lượt trả bằng mã không có vết. */
+export type KetQuaFocused = KetQuaTraLoi & { vetFocused?: VetFocused };
+
 const phienBanFocused = (base: Record<string, string>, khuon: PhanLoai['khuon']) => ({
   ...base,
   focused: khuon,
@@ -115,7 +118,7 @@ export async function traLoiFocused(
   phienBan: () => Record<string, string>,
   docSoKetLuan: (namHieuLuc: number) => Promise<string[]>,
   bayGio: ThoiDiemAm = bayGioAm()
-): Promise<KetQuaTraLoi> {
+): Promise<KetQuaFocused> {
   const batDau = Date.now();
   const lichSu = vao.lichSu ?? [];
   const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
@@ -312,5 +315,7 @@ export async function traLoiFocused(
     khoTrong: kqTruyHoi.khoTrong,
     phienBan: phienBanFocused(phienBan(), phanLoai.khuon),
     doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
+    // Chỉ cho scripts/eval-focused.ts đọc (thử lại, dự phòng, chiều thô). Route chọn trường, không gửi khoá này.
+    vetFocused: kq.vet,
   };
 }

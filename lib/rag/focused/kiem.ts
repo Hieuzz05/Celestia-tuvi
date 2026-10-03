@@ -141,13 +141,13 @@ const GIONG_BAO_CAO = [
 const BO_GIONG_MAY = [...CUM_AI, ...RO_RI_RAG, ...TU_CHUYEN_MON, ...GIONG_BAO_CAO];
 
 /** Luật 3. "Không chắc chắn", "chưa chắc chắn" là rào đón, không phải phán. */
-const PHAN_QUYET = re(
+export const PHAN_QUYET = re(
   '(?<!(?:không|chưa) )chắc chắn|nhất định|chắc luôn|sẽ không|không bao giờ|trăm phần trăm|không thể nào|sẽ xảy ra|không hợp nhau|không hợp với nhau'
 );
-const PHAN_TRAM = /100\s*%/u;
+export const PHAN_TRAM = /100\s*%/u;
 
 /** Luật 4. "nên" đứng một mình thường là liên từ ("…, nên chuyện chậm"), nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
-const KHUYEN = re(
+export const KHUYEN = re(
   [
     '(?:bạn|mình|anh|chị|em|cậu) (?:nên|đừng|hãy|không nên|chưa nên)',
     'hãy',
@@ -161,7 +161,7 @@ const KHUYEN = re(
     'nghiêng về (?:việc|chuyện|phương án|lựa chọn|hướng) ',
   ].join('|')
 );
-const KHUYEN_DAU_CAU = /^\s*(?:Nên|Đừng|Hãy)(?![\p{L}\p{M}])/u;
+export const KHUYEN_DAU_CAU = /^\s*(?:Nên|Đừng|Hãy)(?![\p{L}\p{M}])/u;
 
 /** Luật 5 */
 const NGHIENG_VE = re('nghiêng về');
@@ -329,10 +329,12 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   }
 
   // 12. Không có câu chốt hợp lệ (G, F1 không hướng): đẩy câu có căn cứ đầu tiên lên.
+  let chotCoCanCu = false;
   if (!cauChot && khuon !== 'E') {
     const i = cau.findIndex((c) => c.coCanCu);
     if (i >= 0) {
       cauChot = cau[i].noiDung;
+      chotCoCanCu = true;
       cau = cau.filter((_, j) => j !== i);
     }
   }
@@ -363,8 +365,8 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
 
   const { soCau, amTiet } = dem();
   let thuLai: string | null = null;
-  const soCauModel = (cauChot ? 1 : 0) + cau.length;
-  if (soCauModel === 0) thuLai = 'het-cau';
+  // Mục 9 luật 5: hết câu CÓ CĂN CỨ (không phải hết câu) mới thử lại — câu chốt dự phòng do mã viết không tính.
+  if (!chotCoCanCu && !cau.some((c) => c.coCanCu)) thuLai = 'het-cau';
   else if (tran && amTiet > tran.thuLai) thuLai = 'qua-dai';
 
   return { cauChot, dungDuPhong, lyDoThayChot, cau, bo, chip, thuLai, soAmTiet: amTiet, soCau };

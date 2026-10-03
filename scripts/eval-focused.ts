@@ -1,0 +1,465 @@
+/**
+ * Eval đường Focused (CEL-186 vé B) — npx tsx scripts/eval-focused.ts [--chi-ca] [--chi-barnum] [--xuat <tệp.json>]
+ *
+ * GỌI MODEL THẬT. KHÔNG nằm trong CI. Chỉ chạy SAU KHI fix `noi_dung_ai` đã vào main và chủ dự án
+ * cho chạy (phương án mục 9 + quyết định #7, #8). Trước đó chỉ được viết, không được chạy.
+ *
+ * Bắt buộc đặt trước khi chạy (thiếu là script từ chối):
+ *   AI_GHIM_MODEL='<provider>|<model>'   đúng model Production; MỌI lời gọi (planner, lời chính,
+ *                                        thử lại, sửa câu) chỉ dùng model này, không lùi (S2)
+ *   AI_TRAN_USD=<số ≤ 2>                 trần tiền cứng cho cả lượt chạy (cờ #8: tổng eval vé B ≤ $2)
+ *   AI_GIA_VAO_USD, AI_GIA_RA_USD        giá model ghim, USD cho 1 triệu token vào / ra
+ * Vượt trần → `VuotNganSachError` ném TRƯỚC lời gọi → script dừng cả bộ, in số tiền đã tính và ca
+ * đang dở, ghi phần đã có ra tệp `--xuat`.
+ *
+ * Chạy NGAY TRONG TIẾN TRÌNH (S3): gọi `traLoiCoCanCu` tuần tự từng ca, cờ CELES_FOCUSED_CHAT=1 đặt
+ * trong tiến trình — không qua HTTP Preview, không cần env Preview. `ghiNhatKy:false`, `AI_NHAN=test`
+ * (token ghi riêng dòng "<model>@test"). Lá số đóng băng (`mau-ansao.json`), không dữ liệu người dùng.
+ * Không có `chartHash` nên `daNoiTruoc` luôn rỗng ở đây — trên Preview thì có thể KHÔNG rỗng (dùng
+ * chung Supabase với Production, cờ #10); đừng so con số "lặp lại điều đã nói" giữa hai nơi.
+ *
+ * 6 CÂU CANONICAL: phương án không ghi nguyên văn, nên dùng chung với 6 câu Barnum ở `BARNUM`
+ * (câu 1 là câu đích danh "sắp tới tôi có người yêu ko? tương lai gần"). Chủ dự án sửa ở đó.
+ *
+ * Ca bổ sung 10 (hết câu có căn cứ → thử lại 1 lần → 502) KHÔNG đo ở đây: model thật không ép được
+ * — nó có test offline tất định trong `scripts/test-focused.ts`. Ở đây chỉ đo TỈ LỆ 502 thật.
+ *
+ * Mọi tiêu chí chấm bằng luật. Giọng (6 câu canonical) do bien-tap-vi và chủ dự án đọc từ tệp --xuat.
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { lapLaSo, type LaSo } from '../lib/tuvi/ansao';
+import { bayGioAm, type ThoiDiemAm } from '../lib/tuvi/bay-gio';
+import { phienBanHienTai, traLoiCoCanCu, type DauVaoTraLoi, type KetQuaTraLoi } from '../lib/rag/tra-loi';
+import { traLoiFocused, type KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
+import { tapTenTuGoi, tenNgoaiTap, goiCoPhucDuc, quetTen, khoaTen } from '../lib/rag/focused/quet-ten';
+import { KHUYEN, KHUYEN_DAU_CAU, PHAN_QUYET, PHAN_TRAM, soAmTiet } from '../lib/rag/focused/kiem';
+import { coThangNhuan } from '../lib/rag/focused/thang-am';
+import { tienDaTinh, tokenDaDung, VuotNganSachError } from '../lib/ai/fallback';
+import type { TinNhan } from '../lib/ai/prompt';
+
+for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
+  const s = d.trim();
+  if (!s || s.startsWith('#')) continue;
+  const [k, ...p] = s.split('=');
+  const v = p.join('=').trim();
+  // Biến đặt ở dòng lệnh thắng .env.local — ghim / trần không được bị tệp ghi đè.
+  if (v && process.env[k.trim()] === undefined) process.env[k.trim()] = v;
+}
+
+const arg = (k: string) => {
+  const i = process.argv.indexOf(k);
+  return i !== -1 ? process.argv[i + 1] : null;
+};
+const xuat = arg('--xuat');
+const chayCa = !process.argv.includes('--chi-barnum');
+const chayBarnum = !process.argv.includes('--chi-ca');
+
+/* ------------------------------------------------------------- cổng chạy */
+
+const thieu = ['AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'].filter((k) => !process.env[k]?.trim());
+if (thieu.length) {
+  console.error(`Thiếu ${thieu.join(', ')} — eval vé B phải ghim model Production và đặt trần tiền (cờ #8).`);
+  process.exit(2);
+}
+if (Number(process.env.AI_TRAN_USD) > 2) {
+  console.error(`AI_TRAN_USD=${process.env.AI_TRAN_USD} vượt $2 — cờ #8 giới hạn tổng chi eval vé B ở $2.`);
+  process.exit(2);
+}
+process.env.CELES_FOCUSED_CHAT = '1';
+process.env.AI_NHAN = 'test';
+
+/* --------------------------------------------------------------- ngưỡng */
+
+const NGUONG = {
+  /** Mục 9: lật chiều kết luận trên bản thô */
+  latChieuTho: 0.1,
+  /** NORMAL: 2–4 câu, 55–120 âm tiết, có ≥ 1 câu có căn cứ */
+  hinhDangNormal: 0.9,
+  duPhong: 0.25,
+  thuLai: 0.2,
+  loi502: 0.03,
+  /** Barnum 3: ghép mù theo tên căn cứ */
+  ghepMu: 0.8,
+  /** Barnum 2: trùng 5-gram phần lời (đã bỏ tên) giữa hai lá số — "phải thấp" */
+  trungLoi: 0.25,
+};
+
+/* --------------------------------------------------------------- lá số */
+
+const mau = JSON.parse(readFileSync(join(__dirname, 'mau-ansao.json'), 'utf8')).mau as Record<string, string>;
+const khoa = Object.keys(mau);
+const lapTu = (k: string): LaSo => {
+  const m = k.match(/^(\d+)\/(\d+)\/(\d+) (\d+)h (nam|nu)$/)!;
+  return lapLaSo({ ngay: +m[1], thang: +m[2], nam: +m[3], gio: +m[4], gioiTinh: m[5] as 'nam' | 'nu' });
+};
+// 6 lá số rải đều trong bộ đóng băng — cố định giữa các lần chạy để so được.
+const SAU_LA_SO = Array.from({ length: 6 }, (_, i) => khoa[Math.floor((i * khoa.length) / 6)]);
+
+const bayGio = bayGioAm();
+const NAM = bayGio.nam;
+const THANG = bayGio.thang;
+const thangDaQua = Math.max(1, THANG - 2);
+// Tháng nhuận gần nhất về trước (2025 có tháng 6 nhuận) — câu hỏi lại nhuận là mã, không tốn tiền.
+const NHUAN = (() => {
+  for (let n = NAM; n >= NAM - 5; n--) for (let t = 1; t <= 12; t++) if (coThangNhuan(n, t)) return { nam: n, thang: t };
+  return { nam: 2025, thang: 6 };
+})();
+
+/* --------------------------------------------------------------- ca */
+
+interface Ca {
+  ma: string;
+  cauHoi: string;
+  /** Khuôn mong đợi ở `phienBan.focused` */
+  khuon?: string;
+  /** Chủ đề mong đợi ở `goi.chuDe` */
+  chuDe?: string;
+  /** Lượt trước (chuỗi chip): câu người dùng → lấy văn trả lời thật làm tin trợ lý */
+  truoc?: string[];
+  laTiepTuChip?: boolean;
+  mucAnToan?: DauVaoTraLoi['mucAnToan'];
+  /** Hỏi theo tháng → cần ≥ 1 mã nguyệt hạn (N1) */
+  thang?: boolean;
+  /** Tiêm "bây giờ" (N4) — đi thẳng traLoiFocused */
+  bayGio?: ThoiDiemAm;
+  namXem?: number;
+  /** Người được phép nêu (có trong câu hỏi / ngữ cảnh) */
+  nguoi?: string[];
+}
+
+const BARNUM = [
+  'sắp tới tôi có người yêu ko? tương lai gần',
+  'Năm nay công việc của tôi thế nào?',
+  'Tiền bạc năm nay của tôi ra sao?',
+  'Sức khỏe của tôi năm nay thế nào?',
+  'Năm nay chuyện nhà cửa, gia đạo của tôi thế nào?',
+  'Năm nay tôi có nên học thêm để chuyển hướng không?',
+];
+
+const CA: Ca[] = [
+  // 6 canonical
+  { ma: 'canon-1-dich-danh', cauHoi: BARNUM[0], khuon: 'A', chuDe: 'tinh-cam' },
+  { ma: 'canon-2', cauHoi: BARNUM[1], chuDe: 'su-nghiep' },
+  { ma: 'canon-3', cauHoi: BARNUM[2], chuDe: 'tai-chinh' },
+  { ma: 'canon-4', cauHoi: BARNUM[3], chuDe: 'suc-khoe' },
+  { ma: 'canon-5', cauHoi: BARNUM[4] },
+  { ma: 'canon-6', cauHoi: BARNUM[5], khuon: 'C' },
+  // A ×2
+  { ma: 'A-mong-muon', cauHoi: 'Năm nay tôi có được thăng chức không?', khuon: 'A', chuDe: 'su-nghiep' },
+  { ma: 'A-xau', cauHoi: 'Năm nay tôi có bị mất tiền không?', khuon: 'A', chuDe: 'tai-chinh' },
+  // B gần
+  { ma: 'B-gan', cauHoi: 'Mấy tháng tới công việc của tôi thế nào?', khuon: 'B', chuDe: 'su-nghiep' },
+  // C ×2
+  { ma: 'C-chuyen', cauHoi: 'Năm nay tôi có nên chuyển sang công ty mới không?', khuon: 'C' },
+  { ma: 'C-nghi-viec', cauHoi: 'Tôi đang tính nghỉ việc, năm nay có ổn không?', khuon: 'C' },
+  // D, D′ (đã bỏ → phải ra D, cờ #5), năm cụ thể, tháng đã qua, tháng 11 âm gần (tiêm mốc)
+  { ma: 'D', cauHoi: 'Khi nào tôi lấy chồng?', khuon: 'D' },
+  { ma: 'D-phay-da-bo', cauHoi: 'Tháng nào đáng chú ý hơn?', khuon: 'D' },
+  { ma: 'nam-cu-the', cauHoi: `Năm ${NAM + 2} tiền bạc của tôi thế nào?`, chuDe: 'tai-chinh' },
+  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} vừa rồi công việc của tôi thế nào?`, thang: true },
+  { ma: 'thang-11-gan', cauHoi: 'Sắp tới công việc của tôi thế nào?', bayGio: { nam: NAM, thang: 11, ngay: 10 } },
+  // E
+  { ma: 'E', cauHoi: 'Tôi nên ở lại công ty hay chuyển việc?', khuon: 'E' },
+  // F1 ×2
+  { ma: 'F1-vo-chong', cauHoi: 'Tôi với chồng tôi năm nay có hợp nhau không?', khuon: 'F1', nguoi: ['chồng'] },
+  { ma: 'F1-bo', cauHoi: 'Tôi với bố có hợp nhau không?', khuon: 'F1', nguoi: ['bố'] },
+  // F2 ×2 (không gọi model)
+  { ma: 'F2-bo-suc-khoe', cauHoi: 'Bố tôi năm nay sức khỏe thế nào?', khuon: 'F2', nguoi: ['bố'] },
+  { ma: 'F2-con-thi', cauHoi: 'Con tôi năm nay thi đại học có đỗ không?', khuon: 'F2', nguoi: ['con'] },
+  // Xưng "con / em" về chính mình
+  { ma: 'xung-con', cauHoi: 'con nghĩ công việc của con năm nay thế nào?', chuDe: 'su-nghiep' },
+  { ma: 'xung-em', cauHoi: 'em muốn biết năm nay tình cảm của em ra sao?', chuDe: 'tinh-cam' },
+  // SENSITIVE ×2
+  { ma: 'SENS-1', cauHoi: 'Năm nay sức khỏe của tôi có đáng lo không?', mucAnToan: 'SENSITIVE' },
+  { ma: 'SENS-2', cauHoi: 'Tôi vừa chia tay, năm nay tình cảm còn hy vọng không?', mucAnToan: 'SENSITIVE' },
+  // Chuỗi chip ×2 (ca bổ sung 5, 6)
+  { ma: 'chip-tinh-cam', cauHoi: 'Sang năm thì sao?', truoc: ['Năm nay tình cảm của tôi thế nào?'], laTiepTuChip: true, chuDe: 'tinh-cam' },
+  { ma: 'chip-cong-viec', cauHoi: 'Sang năm thì sao?', truoc: ['Năm nay công việc của tôi thế nào?'], laTiepTuChip: true, chuDe: 'su-nghiep' },
+  // G
+  { ma: 'G-giai-thich', cauHoi: 'Cung Mệnh của tôi nói gì về tính cách?', khuon: 'G' },
+  { ma: 'G-tra-cuu', cauHoi: 'Thiên Phủ là sao gì?', khuon: 'G' },
+  // DEEP + quyết định
+  { ma: 'DEEP-quyet-dinh', cauHoi: 'Phân tích kỹ giúp tôi: năm nay có nên mở cửa hàng riêng không?', khuon: 'C' },
+  // Câu âm "kỹ sư" — không được bật DEEP
+  { ma: 'am-ky-su', cauHoi: 'Tôi là kỹ sư, năm nay công việc có thuận không?', khuon: 'A' },
+
+  // Ca bổ sung 1–9 (10 là offline, xem đầu tệp); 5–6 là hai chuỗi chip ở trên, 7 là tháng đã qua.
+  { ma: 'bs1-con-toi', cauHoi: 'con tôi năm nay thế nào?', nguoi: ['con'] },
+  { ma: 'bs3-bo-suc-khoe', cauHoi: 'bố tôi sức khỏe thế nào?', khuon: 'F2', nguoi: ['bố'] },
+  { ma: 'bs4-ban-than', cauHoi: 'bản thân tôi năm nay công việc có ổn không?', chuDe: 'su-nghiep' },
+  { ma: 'bs8-thang-12', cauHoi: 'Tháng 12 sắp tới tiền bạc của tôi thế nào?', thang: true, bayGio: { nam: NAM, thang: 11, ngay: 20 } },
+  { ma: 'bs9-nhuan', cauHoi: `Tháng ${NHUAN.thang} năm ${NHUAN.nam} công việc của tôi thế nào?`, namXem: NHUAN.nam },
+];
+
+/* ----------------------------------------------------------- đo một bài */
+
+const NGUOI = ['vợ', 'chồng', 'người yêu', 'con cái', 'con trai', 'con gái', 'bố', 'mẹ', 'cha', 'anh chị em', 'anh trai', 'chị gái', 'em trai', 'em gái', 'sếp', 'cấp trên', 'đồng nghiệp', 'bạn bè'];
+const reTu = (s: string) => new RegExp(`(?<![\\p{L}\\p{M}])${s}(?![\\p{L}\\p{M}])`, 'iu');
+const tachCau = (s: string) => s.split(/(?<=[.!?…])\s+|\n+/u).map((x) => x.trim()).filter(Boolean);
+
+interface Do {
+  ma: string;
+  laSo: string;
+  cauHoi: string;
+  khuon: string;
+  khuonDung: boolean | null;
+  chuDe: string;
+  chuDeDung: boolean | null;
+  provider: string;
+  model: string;
+  van: string;
+  chip: string[];
+  loi502: boolean;
+  tenNgoaiGoi: string[];
+  khuyenHo: string[];
+  nguoiLa: string[];
+  n1: boolean | null;
+  soCau: number;
+  amTiet: number;
+  canCu: number;
+  hinhDangNormal: boolean | null;
+  thuLai: boolean;
+  duPhong: boolean;
+  latChieuTho: boolean;
+  tenDaNeu: string[];
+  tenLopNam: string[];
+  tapTen: string[];
+}
+
+function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
+  const goi = kq.goi;
+  const tap = tapTenTuGoi(goi.duKien, goi.yDinh === 'tra-cuu' ? [ca.cauHoi] : []);
+  const pd = goiCoPhucDuc(goi.duKien);
+  // Phần do model viết (đã qua guard) — miễn trừ SENSITIVE và câu mã không chấm khuyên / độ dài.
+  const phanModel = [kq.coCauTruc?.ketLuan ?? '', ...(kq.coCauTruc?.yChinh ?? []).map((y) => y.noiDung)].filter(Boolean);
+  const laMa = kq.provider === 'ma';
+  const khuon = kq.phienBan.focused ?? '?';
+  const nguoiDuoc = new Set([...(ca.nguoi ?? []), ...NGUOI.filter((n) => reTu(n).test([ca.cauHoi, ...(ca.truoc ?? [])].join(' ')))]);
+  const maNguyet = new Set(goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id));
+  const maLopNam = goi.duKien.filter((d) => d.loai === 'luu-nien' || d.loai === 'luu-tinh');
+  const tenLopNamTap = tapTenTuGoi(maLopNam);
+  const tenDaNeu = [...new Set(phanModel.flatMap((c) => quetTen(c, pd).map((t) => khoaTen(t.ten))))];
+  // Độ dài tính cả câu mã (mục 9 luật 10); chỉ chấm hình dạng ở NORMAL nên không vướng miễn trừ.
+  const soCau = laMa ? 0 : tachCau(kq.van).length;
+  const amTiet = laMa ? 0 : soAmTiet(kq.van);
+  const canCu = (kq.coCauTruc?.yChinh ?? []).filter((y) => (y.maDuKien ?? []).length > 0).length;
+  const vet = kq.vetFocused;
+  const normal = !laMa && (ca.mucAnToan ?? 'NORMAL') === 'NORMAL' && khuon !== 'G' && !/kỹ giúp|chi tiết/iu.test(ca.cauHoi);
+  return {
+    ma,
+    laSo: laSoKhoa,
+    cauHoi: ca.cauHoi,
+    khuon,
+    khuonDung: ca.khuon ? khuon === ca.khuon : null,
+    chuDe: goi.chuDe,
+    chuDeDung: ca.chuDe ? goi.chuDe === ca.chuDe : null,
+    provider: kq.provider,
+    model: kq.model,
+    van: kq.van,
+    chip: kq.coCauTruc?.goiYTiep ?? [],
+    loi502: !kq.van,
+    tenNgoaiGoi: laMa ? [] : phanModel.flatMap((c) => tenNgoaiTap(c, tap, pd)),
+    khuyenHo: phanModel.filter((c) => KHUYEN.test(c) || KHUYEN_DAU_CAU.test(c) || PHAN_QUYET.test(c) || PHAN_TRAM.test(c)),
+    nguoiLa: NGUOI.filter((n) => !nguoiDuoc.has(n) && phanModel.some((c) => reTu(n).test(c))),
+    n1: ca.thang && !laMa ? (kq.coCauTruc?.yChinh ?? []).some((y) => (y.maDuKien ?? []).some((m) => maNguyet.has(m))) : null,
+    soCau,
+    amTiet,
+    canCu,
+    hinhDangNormal: normal && kq.van ? soCau >= 2 && soCau <= 4 && amTiet >= 55 && amTiet <= 120 && canCu >= 1 : null,
+    thuLai: !!vet?.thuLai,
+    duPhong: !!vet?.dungDuPhong,
+    latChieuTho: !!vet?.lyDoThayChot && /nguoc|thieu-chieu/u.test(vet.lyDoThayChot),
+    tenDaNeu,
+    tenLopNam: tenDaNeu.filter((t) => tenLopNamTap.has(t)),
+    tapTen: [...tap],
+  };
+}
+
+/* ------------------------------------------------------------- chạy */
+
+const ketQua: Do[] = [];
+let dangDo = '';
+
+async function hoi(laSo: LaSo, ca: Ca, lichSu: TinNhan[] = []): Promise<KetQuaFocused> {
+  const vao: DauVaoTraLoi = {
+    laSo,
+    cauHoi: ca.cauHoi,
+    namXem: ca.namXem ?? ca.bayGio?.nam ?? NAM,
+    thangXem: ca.bayGio?.thang ?? THANG,
+    lichSu,
+    laTiepTuChip: ca.laTiepTuChip,
+    mucAnToan: ca.mucAnToan,
+    ghiNhatKy: false,
+  };
+  // Tiêm "bây giờ" chỉ có ở traLoiFocused; lá số đóng băng không có sổ kết luận → [] đúng như route.
+  if (ca.bayGio) return traLoiFocused(vao, phienBanHienTai, async () => [], ca.bayGio);
+  return (await traLoiCoCanCu(vao)) as KetQuaTraLoi as KetQuaFocused;
+}
+
+async function chayMotCa(laSoKhoa: string, ca: Ca, ma: string) {
+  dangDo = `${ma} · ${laSoKhoa}`;
+  const laSo = lapTu(laSoKhoa);
+  const lichSu: TinNhan[] = [];
+  for (const t of ca.truoc ?? []) {
+    const kqTruoc = await hoi(laSo, { ma: 'truoc', cauHoi: t }, lichSu);
+    lichSu.push({ vaiTro: 'nguoi-dung', noiDung: t }, { vaiTro: 'tro-ly', noiDung: kqTruoc.van });
+  }
+  const kq = await hoi(laSo, ca, lichSu);
+  const d = cham(ma, laSoKhoa, ca, kq);
+  ketQua.push(d);
+  console.log(`  ${ma.padEnd(22)} ${d.khuon.padEnd(3)} ${d.loi502 ? '502' : `${d.soCau}c/${d.amTiet}at/${d.canCu}cc`}  $${tienDaTinh().toFixed(3)}`);
+}
+
+/* ------------------------------------------------------------- Barnum */
+
+function nGram(s: string, n = 5): Set<string> {
+  const tu = s.toLowerCase().split(/[^\p{L}\p{M}\d]+/u).filter(Boolean);
+  const ra = new Set<string>();
+  for (let i = 0; i + n <= tu.length; i++) ra.add(tu.slice(i, i + n).join(' '));
+  return ra;
+}
+const jaccard = (a: Set<string>, b: Set<string>) => {
+  const giao = [...a].filter((x) => b.has(x)).length;
+  return a.size + b.size - giao ? giao / (a.size + b.size - giao) : 0;
+};
+const boTen = (d: Do) => {
+  let s = d.van;
+  for (const t of d.tapTen) s = s.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'giu'), ' ');
+  return s;
+};
+
+function chamBarnum(bai: Do[], doiNam: [Do, Do][]) {
+  const theoCau = new Map<string, Do[]>();
+  for (const d of bai) theoCau.set(d.cauHoi, [...(theoCau.get(d.cauHoi) ?? []), d]);
+  let truot = 0, tongTen = 0, dungMu = 0, tongMu = 0;
+  const trung: number[] = [];
+  for (const nhom of theoCau.values()) {
+    for (const a of nhom) {
+      if (!a.van || a.provider === 'ma') continue;
+      // 1. Đổi gói: tên trong bài lá số A, kiểm bằng danh sách tên của lá số B.
+      for (const b of nhom) {
+        if (b === a) continue;
+        const tapB = new Set(b.tapTen);
+        tongTen += a.tenDaNeu.length;
+        truot += a.tenDaNeu.filter((t) => !tapB.has(t)).length;
+      }
+      // 3. Ghép mù: lá số nào chứa nhiều tên của bài nhất.
+      if (a.tenDaNeu.length) {
+        tongMu += 1;
+        const diem = nhom.map((b) => a.tenDaNeu.filter((t) => b.tapTen.includes(t)).length / Math.max(1, b.tapTen.length));
+        if (nhom[diem.indexOf(Math.max(...diem))].laSo === a.laSo) dungMu += 1;
+      }
+    }
+    // 2. Phần lời sau khi bỏ tên, từng cặp lá số.
+    for (let i = 0; i < nhom.length; i++)
+      for (let j = i + 1; j < nhom.length; j++) if (nhom[i].van && nhom[j].van) trung.push(jaccard(nGram(boTen(nhom[i])), nGram(boTen(nhom[j]))));
+  }
+  // 4. Đổi năm: tên lớp năm phải đổi.
+  const namDoi = doiNam.filter(([a, b]) => a.tenLopNam.length + b.tenLopNam.length > 0);
+  const namGiongHet = namDoi.filter(([a, b]) => a.tenLopNam.join('|') === b.tenLopNam.join('|')).length;
+  return {
+    tiLeTenTruotKhiDoiGoi: tongTen ? truot / tongTen : 0,
+    trungLoiTrungBinh: trung.length ? trung.reduce((x, y) => x + y, 0) / trung.length : 0,
+    ghepMu: tongMu ? dungMu / tongMu : 0,
+    doiNamCoTenLopNam: namDoi.length,
+    doiNamGiongHet: namGiongHet,
+  };
+}
+
+/* --------------------------------------------------------------- tổng */
+
+const tiLe = (ds: Do[], f: (d: Do) => boolean | null) => {
+  const co = ds.filter((d) => f(d) !== null);
+  return { dat: co.filter((d) => f(d) === true).length, tong: co.length };
+};
+
+function tongKet(barnum: ReturnType<typeof chamBarnum> | null) {
+  const model = ketQua.filter((d) => d.provider !== 'ma');
+  const pct = (x: { dat: number; tong: number }) => (x.tong ? x.dat / x.tong : 0);
+  const dong: [string, string, boolean][] = [];
+  const them = (ten: string, gt: string, dat: boolean) => dong.push([ten, gt, dat]);
+
+  const tenNgoai = model.filter((d) => d.tenNgoaiGoi.length).length;
+  them('Tên ngoài gói (bản cuối)', `${tenNgoai}/${model.length}`, tenNgoai === 0);
+  const lat = tiLe(model, (d) => d.latChieuTho);
+  them('Lật chiều trên bản thô', `${lat.dat}/${lat.tong}`, pct(lat) <= NGUONG.latChieuTho);
+  const khuyen = model.filter((d) => d.khuyenHo.length).length;
+  them('Khuyên / chọn hộ (C2/E1, bản cuối)', `${khuyen}`, khuyen === 0);
+  const la = ketQua.filter((d) => d.nguoiLa.length).length;
+  them('Người không có trong câu hỏi', `${la}`, la === 0);
+  const n1 = tiLe(ketQua, (d) => d.n1);
+  them('N1: hỏi tháng có mã nguyệt hạn', `${n1.dat}/${n1.tong}`, n1.dat === n1.tong);
+  const hd = tiLe(ketQua, (d) => d.hinhDangNormal);
+  them('NORMAL 2–4 câu · 55–120 âm tiết · ≥1 căn cứ', `${hd.dat}/${hd.tong}`, pct(hd) >= NGUONG.hinhDangNormal);
+  const dp = tiLe(model, (d) => d.duPhong);
+  them('Câu chốt dự phòng', `${dp.dat}/${dp.tong}`, pct(dp) <= NGUONG.duPhong);
+  const tl = tiLe(model, (d) => d.thuLai);
+  them('Thử lại', `${tl.dat}/${tl.tong}`, pct(tl) <= NGUONG.thuLai);
+  const e5 = tiLe(ketQua, (d) => d.loi502);
+  them('502', `${e5.dat}/${e5.tong}`, pct(e5) <= NGUONG.loi502);
+  const kh = tiLe(ketQua, (d) => d.khuonDung);
+  them('Đúng khuôn', `${kh.dat}/${kh.tong}`, kh.dat === kh.tong);
+  const cd = tiLe(ketQua, (d) => d.chuDeDung);
+  them('Đúng chủ đề (gồm chip kế thừa)', `${cd.dat}/${cd.tong}`, cd.dat === cd.tong);
+  if (barnum) {
+    them('Barnum 1: tên trượt khi đổi gói (cao = bài bám lá số)', `${(barnum.tiLeTenTruotKhiDoiGoi * 100).toFixed(1)}%`, true);
+    them('Barnum 2: trùng lời đã bỏ tên', `${(barnum.trungLoiTrungBinh * 100).toFixed(1)}%`, barnum.trungLoiTrungBinh <= NGUONG.trungLoi);
+    them('Barnum 3: ghép mù', `${(barnum.ghepMu * 100).toFixed(1)}%`, barnum.ghepMu >= NGUONG.ghepMu);
+    them('Barnum 4: đổi năm mà tên lớp năm giữ nguyên', `${barnum.doiNamGiongHet}/${barnum.doiNamCoTenLopNam}`, barnum.doiNamGiongHet === 0);
+  }
+
+  console.log('\n=== TỔNG ===');
+  for (const [ten, gt, dat] of dong) console.log(`${dat ? 'ĐẠT ' : 'TRƯỢT'}  ${ten.padEnd(52)} ${gt}`);
+  console.log(`Tiền đã tính: $${tienDaTinh().toFixed(4)} / $${process.env.AI_TRAN_USD} · token ${tokenDaDung()}`);
+  return dong;
+}
+
+function ghi(barnum: unknown, dong: unknown, dung: string | null) {
+  if (!xuat) return;
+  writeFileSync(
+    xuat,
+    JSON.stringify({ luc: new Date().toISOString(), model: process.env.AI_GHIM_MODEL, tien: tienDaTinh(), dungTai: dung, laSo: SAU_LA_SO, ketQua, barnum, tong: dong }, null, 2)
+  );
+  console.log(`Đã ghi ${xuat}`);
+}
+
+async function main() {
+  console.log(`Model ghim ${process.env.AI_GHIM_MODEL} · trần $${process.env.AI_TRAN_USD} · năm âm ${NAM} tháng ${THANG}`);
+  let barnum: ReturnType<typeof chamBarnum> | null = null;
+  try {
+    if (chayCa) {
+      console.log(`\n--- ${CA.length} ca trên lá số ${SAU_LA_SO[0]} ---`);
+      for (const ca of CA) await chayMotCa(SAU_LA_SO[0], ca, ca.ma);
+    }
+    if (chayBarnum) {
+      console.log('\n--- Barnum 6 câu × 6 lá số (+ đổi năm) ---');
+      const truoc = ketQua.length;
+      for (const [i, cau] of BARNUM.entries())
+        for (const k of SAU_LA_SO) await chayMotCa(k, { ma: `barnum-${i + 1}`, cauHoi: cau }, `barnum-${i + 1}`);
+      const bai = ketQua.slice(truoc);
+      // 4. Cùng lá số, đổi năm hiện tại ↔ năm +5: câu công việc trên cả 6 lá số.
+      const doiNam: [Do, Do][] = [];
+      for (const k of SAU_LA_SO) {
+        const nay = bai.find((d) => d.laSo === k && d.cauHoi === BARNUM[1])!;
+        await chayMotCa(k, { ma: 'doi-nam', cauHoi: `Năm ${NAM + 5} công việc của tôi thế nào?`, namXem: NAM }, 'doi-nam');
+        doiNam.push([nay, ketQua[ketQua.length - 1]]);
+      }
+      barnum = chamBarnum(bai, doiNam);
+    }
+  } catch (e) {
+    if (e instanceof VuotNganSachError) {
+      console.error(`\nDỪNG — ${e.message}\nCa đang dở: ${dangDo}`);
+      const dong = tongKet(barnum);
+      ghi(barnum, dong, dangDo);
+      process.exit(3);
+    }
+    throw e;
+  }
+  const dong = tongKet(barnum);
+  ghi(barnum, dong, null);
+  process.exit(dong.every(([, , dat]) => dat) ? 0 : 1);
+}
+
+void main();

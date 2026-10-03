@@ -30,7 +30,8 @@ import { cauVanRieng, cauHaiVe, cauHoiNhuan, cauKhiNao, chipCuoiNam, cauThangDaQ
 import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
 import { kiemMotCau, kiemLuot, chonChip, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
 import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
-import { ghepVan } from '../lib/rag/focused/chay';
+import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
+import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { focusedBat, mocChoChot, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
 import { phienBanHienTai, traLoiCoCanCu } from '../lib/rag/tra-loi';
 import type { NghiengVe } from '../lib/rag/nghieng-ve';
@@ -580,6 +581,34 @@ async function kiemNoi() {
       bayGio
     );
     kiem(nh.model === 'focused-nhuan' && (nh.coCauTruc?.goiYTiep ?? []).length === 2, `nhuận ra ${nh.model}`);
+
+    // Ca bổ sung 10: không còn câu có căn cứ → thử lại ĐÚNG một lần → văn rỗng (route trả 502 + hoàn lượt).
+    const cauHoi = 'Năm nay công việc của tôi thế nào?';
+    const kh = lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach;
+    const dk = [{ id: 'F001', loai: 'cung' as const, noiDung: 'Quan Lộc có Thiên Phủ.', cung: 'Quan Lộc' }];
+    const thoiGian = { namHieuLuc: 2026, thang: null, cuoiNam: false };
+    const phanLoai = { khuon: 'A' as const, loaiSuKien: 'trung-tinh' as const, sau: false };
+    let soLanGoi = 0;
+    const kq10 = await chayFocused({
+      prompt: {
+        goi: dungGoiBangChung(cauHoi, kh, dk, []), cauHoiGoc: cauHoi, lichSu: [], daNoiTruoc: [], nghieng: null,
+        phanLoai, mucAnToan: 'NORMAL', moc: { bayGio, thoiGian }, laTiepTuChip: false, cauMa: [],
+      },
+      ctx: {
+        cauHoi, phanLoai, mucAnToan: 'NORMAL', chuDe: 'su-nghiep', doiTuong: null,
+        tapTen: tapTenTuGoi(dk), phucDucLaSao: false, maHopLe: new Set(['F001']), nghieng: null,
+        thoiGian, tuoiHopLe: [], cauMa: [], chipTruoc: [],
+      },
+      tenSua: [],
+      goi: async () => {
+        soLanGoi += 1;
+        // Mọi câu trỏ mã không có trong gói → bị cắt hết → "het-cau".
+        const text = JSON.stringify({ cauChot: 'Năm nay công việc khá ổn.', cau: [{ noiDung: 'Thiên Phủ giữ nền cho bạn.', maDuKien: ['F999'], phia: 'thuan' }], chieu: 'thuan', goiYTiep: [] });
+        return { text, provider: 'gemini', model: 'gia', tokensIn: 1, tokensOut: 1, daThuHong: [] };
+      },
+    });
+    kiem(soLanGoi === 2 && kq10.vet.lanGoi === 2, `ca 10 gọi ${soLanGoi} lần, cần đúng 2`);
+    kiem(kq10.van === '' && kq10.vet.thuLai === 'het-cau', `ca 10 ra văn "${kq10.van.slice(0, 40)}" / thuLai ${kq10.vet.thuLai}`);
 
     // Cờ tắt: không lượt nào được mang dấu Focused. Đi tới truy hồi là chạm mạng,
     // nên chỉ kiểm phần đồng bộ — phienBanHienTai không có khoá focused.

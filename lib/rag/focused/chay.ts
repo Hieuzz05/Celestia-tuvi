@@ -82,7 +82,10 @@ export async function chayFocused(v: {
   /** Tên dữ kiện đưa cho lớp sửa tiếng lóng */
   tenSua: string[];
   batDau?: number;
+  /** Chỉ test tiêm vào (ca "không còn câu có căn cứ → thử lại → 502"); sản phẩm dùng mặc định. */
+  goi?: typeof goiVoiFallback;
 }): Promise<KetQuaChayFocused> {
+  const goi = v.goi ?? goiVoiFallback;
   const batDau = v.batDau ?? Date.now();
   const hanChot = batDau + HAN_CHOT_LUOT_MS;
   const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0 };
@@ -97,7 +100,7 @@ export async function chayFocused(v: {
 
     const { system, user } = dungPromptFocused({ ...v.prompt, lyDoThuLai: lan > 0 ? (lyDo ?? undefined) : undefined });
     vet.lanGoi += 1;
-    const kq = await goiVoiFallback({ system, user, maxTokens: MAX_TOKENS }, undefined, Math.max(conLai, 1));
+    const kq = await goi({ system, user, maxTokens: MAX_TOKENS }, undefined, Math.max(conLai, 1));
     provider = kq.provider;
     model = kq.model;
 
