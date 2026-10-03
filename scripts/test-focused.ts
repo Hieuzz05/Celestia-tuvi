@@ -31,6 +31,7 @@ import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/f
 import { kiemMotCau, kiemLuot, chonChip, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
 import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
+import { cauChotDuPhong, mocChoCauChot } from '../lib/rag/focused/chot-huong';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { focusedBat, mocChoChot, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
 import { phienBanHienTai, traLoiCoCanCu } from '../lib/rag/tra-loi';
@@ -166,6 +167,12 @@ const CA_DOI_TUONG: CaDoiTuong[] = [
   { cau: 'Sếp tôi có ưu ái tôi không?', cung: 'Phụ Mẫu', loai: 'quan-he' },
   { cau: 'con toi nam nay the nao', cung: 'Tử Tức', loai: 'quan-he' },
   { cau: 'ban than toi co phan toi khong', cung: 'Nô Bộc', loai: 'quan-he' },
+  // Chuyện riêng của người kia (bệnh, nghề) dù có "tôi" vẫn là vận riêng; tình cảm với tôi là quan hệ.
+  { cau: 'Mẹ tôi bao giờ đỡ bệnh?', cung: 'Phụ Mẫu', loai: 'van-rieng' },
+  { cau: 'Chồng tôi có thương tôi không?', cung: 'Phu Thê', loai: 'quan-he' },
+  { cau: 'Sếp tôi có cất nhắc tôi không?', cung: 'Phụ Mẫu', loai: 'quan-he' },
+  { cau: 'Chồng tôi có được cất nhắc không?', cung: 'Phu Thê', loai: 'van-rieng' },
+  { cau: 'Chồng em có giúp em kiếm tiền không?', cung: 'Phu Thê', loai: 'quan-he' },
   // Âm tính: đại từ xưng, "bản thân", người chung chung — là chính người hỏi.
   { cau: 'Bản thân tôi năm nay thế nào?', cung: null },
   { cau: 'ban than toi nam nay the nao', cung: null },
@@ -175,6 +182,12 @@ const CA_DOI_TUONG: CaDoiTuong[] = [
   { cau: 'Tôi có nên chuyển việc không?', cung: null },
   { cau: 'Năm nay tôi có con không?', cung: null },
   { cau: 'Anh ấy có thật lòng không?', cung: null },
+  // "vợ / chồng" đứng sau từ chỉ họ hàng là người khác, không phải bạn đời.
+  { cau: 'Mẹ chồng tôi năm nay sức khỏe thế nào?', cung: null },
+  { cau: 'Bố vợ tôi có khó tính không?', cung: null },
+  { cau: 'me chong toi nam nay the nao', cung: null },
+  { cau: 'Con chồng tôi có ngoan không?', cung: null },
+  { cau: 'Bạn chồng tôi có tốt không?', cung: null },
 ];
 
 for (const ca of CA_DOI_TUONG) {
@@ -480,6 +493,22 @@ for (const ca of CA_DOI_TUONG) {
   );
   kiem(eL.cauChot === '' && eL.soCau <= 4, `E: câu chốt model còn hoặc quá dài: "${eL.cauChot}" ${eL.soCau}`);
   kiem(eL.chip.join('|') === 'Ở lại thì sao?|Nhảy việc thì sao?', `E chip sai: ${eL.chip.join(' | ')}`);
+  // Ngoài phạm vi (b): một câu chốt, không câu thân — không đòi thử lại.
+  const ngoai = kiemLuot({ cauChot: 'Phần này Celes chưa đọc được từ lá số.', cau: [], goiYTiep: [], ngoaiPhamVi: true }, khongHuong);
+  kiem(ngoai.thuLai === null && ngoai.cauChot !== '', `ngoài phạm vi bị đòi thử lại: ${ngoai.thuLai} "${ngoai.cauChot}"`);
+  const ngoaiGia = kiemLuot({ cauChot: 'Bạn nên nghỉ.', cau: [{ noiDung: 'Bạn nên nghỉ việc.', maDuKien: ['F001'], phia: 'nen' }], goiYTiep: [], ngoaiPhamVi: true }, khongHuong);
+  kiem(ngoaiGia.thuLai === 'het-cau', `cờ ngoài phạm vi kèm câu thân lách được thử lại: ${ngoaiGia.thuLai}`);
+  // Câu mã đã kết luận (danh tính bạn đời) thì bỏ câu chốt của model.
+  const boChot = kiemLuot(ban, ctx({ cauMa: ['Câu mã kết luận.'], boChotModel: true }));
+  kiem(boChot.cauChot !== ban.cauChot && !boChot.dungDuPhong, `boChotModel vẫn giữ câu chốt model / dự phòng: "${boChot.cauChot}"`);
+  // Cung lục thân: câu dự phòng không gán nét sao thành tính cách người hỏi.
+  const dtPhuThe = nhanDangDoiTuong('Chồng tôi có thương tôi không?');
+  const duPhongDt = cauChotDuPhong({ nghieng, chuDe: 'tinh-cam', cauHoi: 'Chồng tôi có thương tôi không?', doiTuong: dtPhuThe });
+  kiem(!duPhongDt.includes('cho thấy bạn') && duPhongDt.includes('Thiên Phủ'), `dự phòng lục thân sai: ${duPhongDt}`);
+  // Không có mốc phía chính thì không nêu mốc phía ngược.
+  const chiCan = { ...nghieng, dauMoc: nghieng.dauMoc.filter((d) => d.huong === 'can') };
+  kiem(mocChoCauChot(chiCan).length === 0, `mốc ngược phía đứng sau hướng thuận: ${mocChoCauChot(chiCan).map((d) => d.ten)}`);
+  kiem(!cauChotDuPhong({ nghieng: chiCan, chuDe: 'su-nghiep', cauHoi: ctx().cauHoi }).includes('Đà La'), 'dự phòng hướng thuận nêu Đà La');
   const nhieu = { ...ban, cau: Array.from({ length: 9 }, () => ({ noiDung: qua, maDuKien: ['F001'], phia: 'nen' as const })) };
   kiem(kiemLuot(nhieu, ctx({ mucAnToan: 'SENSITIVE' })).cau.length === 9, 'SENSITIVE bị cắt');
   kiem(kiemLuot(nhieu, ctx({ phanLoai: { khuon: 'A', loaiSuKien: 'mong-muon', sau: true } })).soCau <= 8, 'DEEP quá 8 câu');

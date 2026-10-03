@@ -669,7 +669,7 @@ Vài điểm đáng biết:
   bổ sung học thuyết từ trí nhớ của model. Đây là chủ ý, không phải thiếu sót.
 
 **Đường Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`).** Cùng truy hồi và gói bằng chứng,
-khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu, 55–120 âm tiết ở NORMAL), chiều kết luận do
+khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120), chiều kết luận do
 mã chốt từ lá số. Một số lượt do mã viết trọn, không gọi model: hỏi vận riêng của người khác (F2),
 "khi nào" không mốc (D), tháng có nhuận cần hỏi lại. Hết câu có căn cứ thì thử lại một lần, vẫn hỏng
 thì trả 502 và hoàn lượt. Mã ở `lib/rag/focused/`; luật và quyết định ở

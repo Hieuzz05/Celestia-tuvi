@@ -30,6 +30,7 @@ import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauThangDaQua, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { lapKeHoachFocused } from './ke-thua';
+import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import type { NguCanhKiem } from './kiem';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import type { MocTinhSan } from './prompt';
@@ -63,7 +64,7 @@ export function mocChoChot(
   keHoach: Pick<KeHoachTruyVan, 'phamViThoiGian'>,
   bayGio: ThoiDiemAm
 ): string | undefined {
-  if (tg.thang) return `Tháng ${tg.thang.thang}${tg.thang.nhuan === 'nhuan' ? ' nhuận' : ''} âm`;
+  if (tg.thang) return `Tháng ${tg.thang.thang} âm${tg.thang.nhuan === 'nhuan' ? ' nhuận' : ''}`;
   if (tg.cuoiNam) return `Từ giờ đến hết năm ${canChiCuaNam(bayGio.nam)}`;
   const pv = keHoach.phamViThoiGian;
   if (pv === 'nam' || pv === 'gan') return tg.namHieuLuc === bayGio.nam ? 'Năm nay' : `Năm ${tg.namHieuLuc}`;
@@ -238,6 +239,10 @@ export async function traLoiFocused(
   }
   if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang));
   if (thoiGian.cuoiNam) cauMa.push(CAU_CUOI_NAM);
+  // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu kết luận đã duyệt
+  // (brief §11) đứng đầu và thay câu chốt model — model không được xác nhận tên.
+  const ngoaiTam = nhanDangNgoaiTam(vao.cauHoi);
+  if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam));
 
   const ctx: NguCanhKiem = {
     cauHoi: vao.cauHoi,
@@ -256,6 +261,7 @@ export async function traLoiFocused(
     chipMa,
     chipCuoiNam: thoiGian.cuoiNam ? (g) => chipCuoiNam(bayGio.nam, g) : undefined,
     chipTruoc: chipTruocTu(lichSu),
+    boChotModel: !!ngoaiTam,
   };
 
   const moc: MocTinhSan = {

@@ -44,6 +44,8 @@ export interface BanThoFocused {
   chieuCauChot?: NhomHuong;
   cau: CauModel[];
   goiYTiep: string[];
+  /** Model khai câu ngoài đời sống cá nhân (prompt mục (b)): một câu chốt, không câu thân */
+  ngoaiPhamVi?: boolean;
 }
 
 export type LyDoBo =
@@ -87,6 +89,8 @@ export interface NguCanhKiem {
   chipCuoiNam?: (goiY: string[]) => string[];
   /** Chip lượt trước — chip lặp lại thì không còn "đi sâu một lớp" */
   chipTruoc: string[];
+  /** Câu mã đã là câu chốt (danh tính bạn đời) — bỏ câu chốt model, như E */
+  boChotModel?: boolean;
 }
 
 export interface CauDaBo {
@@ -256,7 +260,14 @@ function tranDoDai(ctx: NguCanhKiem): { cau: number; amTiet: number; thuLai: num
 export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   const bo: CauDaBo[] = [];
   const { khuon, loaiSuKien } = ctx.phanLoai;
-  const coNghieng = !!ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'F1');
+  /*
+   * Ngoài phạm vi loại (b): đúng một câu chốt, không câu thân. Không có căn cứ
+   * là ĐÚNG ở đây, nên không thử lại; cũng không ép hướng (câu không nói về
+   * phần đời nào). Câu chốt vẫn qua guard từng câu.
+   */
+  const ngoaiPhamVi = !!ban.ngoaiPhamVi && ban.cau.length === 0 && !!ban.cauChot;
+  const coNghieng =
+    !ngoaiPhamVi && !!ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'F1');
 
   // Câu thân: làm sạch, kiểm, giữ mã F### thật.
   let cau = ban.cau
@@ -272,7 +283,7 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
     });
 
   // 8. Câu chốt. E: câu mã đã mở, câu chốt model bỏ (nó dễ chọn hộ một vế).
-  let cauChot = khuon === 'E' ? '' : lamSach(ban.cauChot);
+  let cauChot = khuon === 'E' || ctx.boChotModel ? '' : lamSach(ban.cauChot);
   let dungDuPhong = false;
   let lyDoThayChot: string | undefined;
   const nghiengTrongGoi = ctx.nghieng
@@ -323,7 +334,8 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
     }
   }
 
-  if (!cauChot && coNghieng) {
+  // Câu mã đã kết luận (boChotModel) thì không chèn thêm câu chốt dự phòng sau nó.
+  if (!cauChot && coNghieng && !ctx.boChotModel) {
     cauChot = duPhong();
     dungDuPhong = !!cauChot;
   }
@@ -366,7 +378,8 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   const { soCau, amTiet } = dem();
   let thuLai: string | null = null;
   // Mục 9 luật 5: hết câu CÓ CĂN CỨ (không phải hết câu) mới thử lại — câu chốt dự phòng do mã viết không tính.
-  if (!chotCoCanCu && !cau.some((c) => c.coCanCu)) thuLai = 'het-cau';
+  if (ngoaiPhamVi && cauChot) thuLai = null;
+  else if (!chotCoCanCu && !cau.some((c) => c.coCanCu)) thuLai = 'het-cau';
   else if (tran && amTiet > tran.thuLai) thuLai = 'qua-dai';
 
   return { cauChot, dungDuPhong, lyDoThayChot, cau, bo, chip, thuLai, soAmTiet: amTiet, soCau };

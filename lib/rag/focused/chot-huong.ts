@@ -76,7 +76,7 @@ export function cumChoChuDe(chuDe: ChuDe, cauHoi: string, doiTuong?: DoiTuongCau
 const THAN: Record<HuongNghieng, string> = {
   'thuan-ro': '{cum} đang khá thuận',
   'thuan-nhe': '{cum} có phần thuận nhỉnh hơn, nhưng vẫn còn chỗ vướng',
-  'can-bang': '{cum} có mặt thuận và mặt vướng khá cân nhau',
+  'can-bang': '{cum} có mặt thuận và mặt vướng ngang nhau',
   'can-nhe': '{cum} có phần vướng nhỉnh hơn, nhưng chưa phải thế khó',
   'can-ro': '{cum} đang gặp khá nhiều chỗ vướng',
 };
@@ -89,7 +89,10 @@ const hoaDau = (s: string) => s.charAt(0).toLocaleUpperCase('vi') + s.slice(1);
  * Nét sao đã bị bóc chủ ngữ "bạn" (`boChuNgu`), nên phải gắn lại; riêng nét tự
  * có chủ ngữ ("năm nay…", "phần này…") thì nối bằng dấu hai chấm.
  */
-export function tenKemNghia(d: DauMoc): string {
+export function tenKemNghia(d: DauMoc, doiTuong?: DoiTuongCauHoi | null): string {
+  // Nét sao là nét của CHỦ lá số. Sao ở cung lục thân nói về quan hệ với người
+  // kia, không phải tính cách người hỏi — gắn "cho thấy bạn …" là gán sai người.
+  if (doiTuong) return d.ten;
   const y = d.y.split(/[;—]/)[0].trim().replace(/[.,]$/, '');
   return /^(?:năm nay|phần này|chuyện|việc)(?![\p{L}\p{M}])/iu.test(y) ? `${d.ten}: ${y}` : `${d.ten} cho thấy bạn ${y}`;
 }
@@ -108,11 +111,13 @@ export function mocChoCauChot(n: NghiengVe): DauMoc[] {
   if (nhom === 'ngang') {
     if (thuan) ra.push(thuan);
     if (can) ra.push(can);
-  } else {
-    if (chinh) ra.push(chinh);
+  } else if (chinh) {
+    // Không có mốc phía chính (bị lọc khỏi gói) thì không nêu tên: một mốc phía
+    // ngược đứng sau "đang khá thuận" là câu tự cãi mình.
+    ra.push(chinh);
     if (nguoc && !n.huong.endsWith('-ro')) ra.push(nguoc);
   }
-  return ra.length ? ra : n.dauMoc.slice(0, 1);
+  return ra;
 }
 
 /**
@@ -133,6 +138,7 @@ export function cauChotDuPhong(vao: {
   const moc = mocChoCauChot(vao.nghieng);
   if (!moc.length) return `${dau}.`;
   const [a, b] = moc;
+  if (vao.doiTuong) return `${dau}, thấy qua ${b ? `${a.ten} và ${b.ten}` : a.ten}.`;
   const vi = b ? `${tenKemNghia(a)}, còn ${tenKemNghia(b)}` : tenKemNghia(a);
   return `${dau}: ${vi}.`;
 }

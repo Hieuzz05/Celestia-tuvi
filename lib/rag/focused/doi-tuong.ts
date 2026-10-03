@@ -88,6 +88,16 @@ export const CUNG_CUA_VAI: Record<VaiNguoi, string> = {
 const CHU = '(?:của )?(?:tôi|mình|em|tớ)';
 const CHU_KHONG_DAU = '(?:cua )?(?:toi|minh|em)';
 
+/*
+ * "mẹ chồng tôi", "bố vợ tôi", "em chồng tôi", "nhà chồng tôi": "chồng tôi" /
+ * "vợ tôi" nằm trọn bên trong, nhưng người được hỏi KHÔNG phải vợ chồng — đọc
+ * Phu Thê là đọc nhầm người. Chưa có vai cho người bên nội ngoại của vợ chồng,
+ * nên các cụm này không kích hoạt (câu đi đường thường, không gán cung).
+ */
+const TRUOC_VO_CHONG = '(?<!(?:mẹ|bố|cha|ba|má|anh|chị|em|ông|bà|nhà|cô|dì|chú|bác|cậu|mợ|thím|họ|con|bạn) )';
+const TRUOC_VO_CHONG_KD = '(?<!(?:me|bo|cha|ba|ma|anh|chi|em|ong|nha|co|di|chu|bac|cau|mo|thim|ho|con|ban) )';
+const laVoChong = (co: string) => co === 'vợ' || co === 'chồng';
+
 const reTu = (mau: string) => new RegExp(`(?<![\\p{L}\\p{M}])(?:${mau})(?![\\p{L}\\p{M}])`, 'iu');
 const thoat = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -114,13 +124,13 @@ const VAN_RIENG = [
   'đại học', 'cưới', 'lấy chồng', 'lấy vợ', 'bệnh', 'ốm', 'sức khỏe', 'sức khoẻ', 'khỏe', 'khoẻ',
   'hạn', 'tai nạn', 'mất', 'chết', 'qua đời', 'sống', 'thọ', 'sinh con', 'có con', 'có bầu',
   'kiếm tiền', 'làm ăn', 'công việc', 'sự nghiệp', 'tiền bạc', 'việc làm', 'đi làm', 'xin việc',
-  'tiền', 'phá sản', 'nợ', 'kiện',
+  'tiền', 'phá sản', 'nợ', 'kiện', 'bị thương', 'đỡ bệnh', 'khỏi bệnh', 'nghề', 'học', 'cất nhắc',
 ].join('|');
 const VAN_RIENG_KD = [
   'thang chuc', 'len chuc', 'thang tien', 'giau', 'phat tai', 'thi cu', 'thi do', 'hoc hanh', 'dai hoc',
   'cuoi', 'lay chong', 'lay vo', 'benh', 'om', 'suc khoe', 'khoe', 'tai nan', 'qua doi', 'sinh con',
   'co con', 'co bau', 'kiem tien', 'lam an', 'cong viec', 'su nghiep', 'tien bac', 'viec lam', 'di lam',
-  'xin viec', 'tien', 'pha san',
+  'xin viec', 'tien', 'pha san', 'bi thuong', 'nghe', 'hoc', 'cat nhac',
 ].join('|');
 
 /** Câu hỏi có hỏi về một người cụ thể khác người hỏi không. `null` khi không. */
@@ -130,7 +140,7 @@ export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
   let gap: { co: string; vai: VaiNguoi } | null = null;
   let mauBo = '';
   for (const n of NGUOI) {
-    if (reTu(`${thoat(n.co)} ${CHU}`).test(cau)) {
+    if (reTu(`${laVoChong(n.co) ? TRUOC_VO_CHONG : ''}${thoat(n.co)} ${CHU}`).test(cau)) {
       gap = n;
       mauBo = thoat(n.co);
       break;
@@ -145,7 +155,7 @@ export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
         if (n.co !== 'bạn thân') continue;
         // "ban than toi" chỉ là bạn thân khi có ngữ cảnh quan hệ bạn bè.
         if (!/(?<= )ban than (?:cua )?toi(?= )/.test(s) || !/(?<= )(?:phan|choi|giup)(?= )/.test(s)) continue;
-      } else if (!new RegExp(`(?<= )${kd} ${CHU_KHONG_DAU}(?= )`).test(s)) {
+      } else if (!new RegExp(`(?<= )${laVoChong(n.co) ? TRUOC_VO_CHONG_KD : ''}${kd} ${CHU_KHONG_DAU}(?= )`).test(s)) {
         continue;
       }
       gap = n;
@@ -158,11 +168,17 @@ export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
   // Bỏ chính danh từ người trước khi dò tín hiệu: "người yêu" chứa "yêu", "bạn
   // thân" chứa "thân" — để nguyên thì câu nào về hai người đó cũng thành quan hệ.
   const conLai = cau.replace(reTu(mauBo), ' ');
-  const loai = khopCum(conLai, QUAN_HE, QUAN_HE_KD)
-    ? 'quan-he'
-    : khopCum(conLai, VAN_RIENG, VAN_RIENG_KD)
-      ? 'van-rieng'
-      : 'quan-he';
+  const quanHe = khopCum(conLai, QUAN_HE, QUAN_HE_KD);
+  const vanRieng = khopCum(conLai, VAN_RIENG, VAN_RIENG_KD);
+  /*
+   * Có cả hai tín hiệu: chữ quan hệ nhiều nghĩa ("đỡ bệnh", "bị thương", "nghề
+   * gì hợp", "có được cất nhắc", "học có hiểu bài") chỉ là quan hệ khi người hỏi
+   * có mặt lần nữa trong câu ("thương tôi", "giúp tôi giàu", "hợp nhau").
+   * Không có thì người kia là chủ ngữ của chuyện vận → vận riêng.
+   */
+  const conLaiNguoi = cau.replace(reTu(`${mauBo} ${CHU}|${mauBo} ${CHU_KHONG_DAU}`), ' ');
+  const coNguoiHoi = khopCum(conLaiNguoi, 'tôi|mình|tớ|nhau|em', 'toi|minh|nhau|em');
+  const loai = vanRieng && (!quanHe || !coNguoiHoi) ? 'van-rieng' : 'quan-he';
   return { vai: gap.vai, cung: CUNG_CUA_VAI[gap.vai], loai, nhan: gap.co };
 }
 

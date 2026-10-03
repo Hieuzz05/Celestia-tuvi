@@ -54,7 +54,7 @@ KHÔNG ĐƯỢC:
 
 CÂU HỎI KHÔNG THUỘC PHẠM VI:
 (a) Hỏi về một đối tượng nằm NGOÀI người hỏi (mã cổ phiếu, đồng tiền mã hoá, loại thuốc, vụ kiện): câu đầu nói lá số không trả lời được về đối tượng đó, rồi chuyển sang cách người này quyết khi có rủi ro. Quyết định của CHÍNH người hỏi (nhận việc, chuyển ngành, chia tay) thì vẫn thuộc phạm vi.
-(b) Chuyện hoàn toàn ngoài đời sống cá nhân (nấu ăn, bóng đá, sửa máy): đúng MỘT câu nói đây không phải thứ lá số nói tới, "cau" rỗng.
+(b) Chuyện hoàn toàn ngoài đời sống cá nhân (nấu ăn, bóng đá, sửa máy): "cauChot" là đúng MỘT câu nói đây không phải thứ lá số nói tới, "cau" rỗng, và thêm "ngoaiPhamVi": true.
 
 ${KHOI_GIONG_CELES}
 
@@ -63,7 +63,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
   "cauChot": "ĐÚNG MỘT câu trả lời thẳng câu vừa hỏi. Theo hướng đã chốt nếu có.",
   "chieuCauChot": "thuan | ngang | vuong — câu cauChot nói phần đời đang hỏi đang thuận, ngang hay vướng (không phải chuyện người hỏi mong hay sợ)",
   "cau": [
-    { "noiDung": "MỘT câu: nêu tên dữ kiện rồi dịch ngay ra đời thường", "maDuKien": ["F002"], "phia": "thuan | can | nen" }
+    { "noiDung": "MỘT câu: nêu tên sao / hạn rồi dịch ngay ra đời thường", "maDuKien": ["F002"], "phia": "thuan | can | nen" }
   ],
   "goiYTiep": ["2-3 câu NGƯỜI DÙNG sẽ gõ tiếp, ở ngôi của họ, tối đa 40 ký tự"]
 }
@@ -95,6 +95,7 @@ Câu mở đã có sẵn (do Celes viết), để "cauChot" RỖNG.
 "goiYTiep": để rỗng — chip đã có sẵn.`,
   F1: `KHUÔN LƯỢT NÀY: hỏi về mối quan hệ với một người thân.
 Đọc phần đời ứng với NGƯỜI ĐÓ trong lá số của người hỏi, nói về mối quan hệ giữa hai người — không phán vận riêng của người kia.
+Nghĩa sao trong danh sách là nét chung; ở đây dịch nó thành chuyện giữa người hỏi và người kia, KHÔNG gán thành tính cách của người hỏi ("cho thấy bạn…").
 "cauChot" trả lời thẳng; "cau": 1–2 căn cứ.`,
   F2: '',
   G: `KHUÔN LƯỢT NÀY: hỏi giải thích hoặc tra cứu, không có hướng thuận / cản.
@@ -106,7 +107,7 @@ function khoiKhuon(pl: PhanLoai, muc: MucAnToan): string {
   const dong = [KHOI_KHUON[pl.khuon]].filter(Boolean);
   if (pl.loaiSuKien === 'xau') {
     dong.push(
-      'Người hỏi đang lo một chuyện KHÔNG mong. "chieuCauChot" vẫn nói về phần đời ấy (thuận = phần đời đó êm), không phải về việc chuyện xấu có tới hay không.'
+      'Người hỏi đang lo một chuyện KHÔNG mong. "chieuCauChot" vẫn nói về phần đời ấy (thuận = phần đời đó êm), không phải về việc chuyện xấu có tới hay không. Câu chốt nói phần đời ấy êm hay vướng; KHÔNG mở bằng "có" — với câu hỏi này, "có" nghĩa là chuyện xấu sẽ tới.'
     );
   }
   if (pl.sau) {
@@ -123,11 +124,11 @@ function khoiKhuon(pl: PhanLoai, muc: MucAnToan): string {
 /* ------------------------------------------------------- khối nghiêng */
 
 const MO_TA_HUONG: Record<NghiengVe['huong'], string> = {
-  'thuan-ro': 'nghiêng HẲN về phía có / thuận. Câu chốt nói rõ điều đó, không rào đón — nhưng không "chắc chắn".',
-  'thuan-nhe': 'nghiêng về phía có / thuận nhưng không áp đảo. Nói có nghiêng, và phần chưa chắc nằm ở đâu.',
+  'thuan-ro': 'nghiêng HẲN về phía thuận. Câu chốt nói rõ điều đó, không rào đón — nhưng không "chắc chắn".',
+  'thuan-nhe': 'nghiêng về phía thuận nhưng không áp đảo. Nói có nghiêng, và phần chưa chắc nằm ở đâu.',
   'can-bang': 'hai phía ngang nhau thật. Nói thẳng là ngang — đó vẫn là câu trả lời — rồi nêu MỘT căn cứ mỗi phía.',
-  'can-nhe': 'nghiêng về phía chưa / khó nhưng không áp đảo. Nói có nghiêng, và chỗ còn mở.',
-  'can-ro': 'nghiêng HẲN về phía chưa / khó. Câu chốt nói rõ điều đó, không rào đón — nhưng không "chắc chắn".',
+  'can-nhe': 'nghiêng về phía vướng nhưng không áp đảo. Nói có nghiêng, và chỗ còn mở.',
+  'can-ro': 'nghiêng HẲN về phía vướng. Câu chốt nói rõ điều đó, không rào đón — nhưng không "chắc chắn".',
 };
 
 const NHAN_CHIEU: Record<NhomHuong, string> = { thuan: 'thuan', ngang: 'ngang', vuong: 'vuong' };
@@ -302,5 +303,5 @@ export function docFocused(text: string): BanThoFocused | null {
       })
     : [];
   const goiYTiep = Array.isArray(o.goiYTiep) ? o.goiYTiep.map(chuoi).filter(Boolean) : [];
-  return { cauChot: chuoi(o.cauChot), chieuCauChot: docChieu(o.chieuCauChot), cau, goiYTiep };
+  return { cauChot: chuoi(o.cauChot), chieuCauChot: docChieu(o.chieuCauChot), cau, goiYTiep, ngoaiPhamVi: o.ngoaiPhamVi === true };
 }
