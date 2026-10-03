@@ -16,6 +16,9 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1, worktree `D:/SAPP BA/tuvi-ai-fix-noi-dung-ai-env`) | [SỬA LỖI] `noi_dung_ai` lẫn môi trường — Preview/local đọc-ghi chung đệm production; brief: `docs/chien-luoc/moi-truong-phat-trien-2026-10.md` mục "Việc phát sinh" số 1 | `viec/fix-noi-dung-ai-env` | `lib/rag/noi-dung-ai.ts` + các nơi gọi (`app/api/*` luận giải, `lib/rag/thu-vien`, `lib/rag/v3`), bài kiểm mới trong `scripts/` | 03/10/2026 |
+
+**TẠM DỪNG — CEL-186 vé B (Focused Chat, nhánh `viec/cel-186-focused-chat`)**: chờ sửa xong lỗi đệm `noi_dung_ai` lẫn môi trường (quyết định 03/10, `docs/chien-luoc/moi-truong-phat-trien-2026-10.md`). Không làm tiếp vé B cho tới khi việc sửa đệm xanh và được nghiệm thu.
 
 ## Đang vướng — đừng đụng vào
 
@@ -29,6 +32,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN / production**: CEL-186 vé A — trục thời gian planner, năm/tháng hiệu lực, chip sang năm; năm sinh viết số không còn thành năm được hỏi | `bbfae60` + merge `10e351f` | 03/10/2026 |
 | **ĐÃ GỘP MAIN**: CEL-188 linh vật Celes mọi màn web (18 ảnh v2.3, 14 khoá; nhãn CEL-187 ở các commit đầu, CEL-187 giữ cho Streaming). Kèm: đăng ký / Google quay về đúng origin (`emailRedirectTo` / `redirectTo`) — chủ dự án đã thêm mẫu preview vào Redirect URLs của Supabase và thử đăng nhập trên preview đạt; /hoi-dap hai con không trùng dáng (bài kiểm mục 5); /luan-giai/sau dùng `CongDangNhap toanTrang`. CI 5313be4 xanh | `5313be4` + merge | 03/10/2026 |
 | **Skill + sổ bài học** (ĐÃ GỘP main 03/10): 6 skill `/lam-tinh-nang` `/sua-loi` `/chien-luoc` `/kiem-truoc-push` `/cap-nhat-backlog` `/bai-hoc`; sổ `docs/bai-hoc/` (được đẩy thẳng main); `scripts/kiem-nhanh.mjs` chọn bài kiểm theo diff. **Chạm vùng Chung:** `AGENTS.md`, `AI-PHOI-HOP.md`, `CLAUDE.md`, `HUONG-DAN-AI-AGENT.md` — máy kia sửa các tệp này thì gộp nhánh này trước. Gộp xong mở phiên mới mới thấy skill | `aac18fc` | 03/10/2026 |
 | **ĐÃ GỘP MAIN (fast-forward)**: CEL-185 v2 — cổng `boDanDat` (câu hợp đồng trả lời bảo bỏ phần dẫn dắt thì không chèn dấu ấn), thư viện dấu ấn v2, hai bước dấu ấn vào CI (`test-dau-an`, `do-coverage-dau-an`). Nhánh đã merge origin/main (hotfix CEL-180, linh vật CEL-181), giữ cả hai phía; CI run 37012947640 xanh | `096701c`, `e69c954` | 02/10/2026 |

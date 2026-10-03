@@ -2,6 +2,7 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHIEN_BAN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
+import { canChiCuaNam, namAmHienTai, namAmSapToi } from '@/lib/tuvi/bay-gio';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import {
   chamDoChac,
@@ -156,6 +157,62 @@ export function dauAnChoLuot(vao: {
   });
 }
 
+/**
+ * Lượt này có cần hướng nghiêng của engine không.
+ *
+ * Câu CẦN một câu trả lời thẳng (quyết định, có/không, thời điểm) thì luôn cần.
+ * Câu mô tả thì tuỳ MỐC THỜI GIAN, không tuỳ ý định: "công việc sắp tới thế
+ * nào" hỏi về một quãng có lưu niên, nên có hướng để nói; "tính cách tôi thế
+ * nào" (không mốc) không có bên nào để nghiêng về, ép một hướng vào đó là bịa
+ * ra câu hỏi người ta không hỏi. Chặng dài cũng KHÔNG: hướng của một năm không
+ * đại diện được cho cả chặng.
+ */
+export function canTinhNghieng(keHoach: Pick<KeHoachTruyVan, 'yDinh' | 'phamViThoiGian'>): boolean {
+  if (keHoach.yDinh === 'quyet-dinh' || keHoach.yDinh === 'co-khong' || keHoach.yDinh === 'thoi-diem') return true;
+  if (keHoach.yDinh !== 'mo-ta') return false;
+  const pv = keHoach.phamViThoiGian;
+  return pv === 'gan' || pv === 'nam' || pv === 'thang';
+}
+
+/**
+ * Chip "Sang năm <Can Chi> thì sao?" khi Tết đã gần (≤ 4 tháng âm).
+ *
+ * Chat neo năm âm hiện tại, nên tháng 10 âm hỏi "sắp tới" là đọc năm nay — dù
+ * quãng người ta nghĩ tới có thể vắt qua Tết. Thay vì tự quét sang năm sau,
+ * Celes MỜI một câu hỏi về năm sau: bấm chip là một lượt mới, đọc đúng năm đó
+ * qua `namMucTieu`. Chip vẫn tính lượt như mọi chip khác.
+ *
+ * Chỉ thêm khi lượt này đọc năm hiện tại cho một câu có mốc gần hoặc cần một
+ * câu trả lời thẳng, và câu không chạm an toàn. Đủ ba chip thì thay chip cuối:
+ * chip của model là gợi ý chung, chip này nói đúng điều người hỏi sắp gặp.
+ */
+export function chipSangNam(
+  goiY: string[],
+  vao: {
+    keHoach: Pick<KeHoachTruyVan, 'phamViThoiGian' | 'yDinh'>;
+    namHieuLuc: number;
+    mucAnToan: MucAnToan;
+    moc?: Date;
+  }
+): string[] {
+  const namSau = namAmSapToi(vao.moc);
+  if (namSau === null || vao.mucAnToan !== 'NORMAL') return goiY;
+  if (vao.namHieuLuc !== namAmHienTai(vao.moc)) return goiY;
+
+  const { phamViThoiGian: pv, yDinh } = vao.keHoach;
+  const canMocGan =
+    pv === 'gan' ||
+    pv === 'nam' ||
+    (pv === 'khong-ro' && (yDinh === 'co-khong' || yDinh === 'thoi-diem' || yDinh === 'quyet-dinh'));
+  if (!canMocGan) return goiY;
+
+  const canChi = canChiCuaNam(namSau);
+  if (goiY.some((c) => c.includes(canChi) || c.includes(String(namSau)))) return goiY;
+
+  const chip = `Sang năm ${canChi} thì sao?`;
+  return goiY.length < 3 ? [...goiY, chip] : [...goiY.slice(0, 2), chip];
+}
+
 export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
   const tinNhan = nc.yDinh === 'tra-cuu' || nc.laCauNoi === true || t.yChinh.length <= 2;
 
@@ -305,17 +362,30 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     cauHoi: vao.cauHoi,
     saoTheoCung,
     tenCachCuc: tenCachCucCho(vao.laSo, so.cungLienQuan[0]),
+    namXem: vao.namXem,
+    thangXem: vao.thangXem,
   };
   const keHoach =
     vao.dungModelPhanLoai === false
       ? lapKeHoach(dauVaoPlanner)
       : await lapKeHoachDayDu(dauVaoPlanner);
 
+  /*
+   * MỘT năm cho cả lượt. Người hỏi gọi tên năm ("năm 2028", "năm sau") thì năm
+   * đó thắng năm đang xem — ở dữ kiện lá số, ở hướng nghiêng, ở sổ "đã nói
+   * trước". Thiếu dòng này thì câu hỏi về 2028 được trả lời bằng lưu niên năm
+   * nay, và sổ kết luận của năm nay bị dán vào một năm khác.
+   */
+  const namHieuLuc = keHoach.namMucTieu ?? vao.namXem;
+  // Cùng luật cho tháng: "tháng 3" thì dữ kiện nguyệt hạn và hướng nghiêng đọc
+  // tháng 3, không đọc tháng đang xem.
+  const thangHieuLuc = keHoach.thangMucTieu ?? vao.thangXem;
+
   const { duKien } = chonBoiCanh({
     laSo: vao.laSo,
     keHoach,
-    namXem: vao.namXem,
-    thangXem: vao.thangXem,
+    namXem: namHieuLuc,
+    thangXem: thangHieuLuc,
   });
 
   const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
@@ -326,34 +396,26 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       : await ghiLanTruyHoi(keHoach, kqTruyHoi, {
           requestId: vao.requestId,
           cauHoi: vao.cauHoi,
+          namHieuLuc,
+          thangHieuLuc,
         });
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
   // Sổ kết luận chung: bài luận giải v3 đã kết luận gì, rồi bảng tám lĩnh vực (bản cũ). Tám câu là trần —
   // nhiều hơn thì khối này lấn át chính dữ kiện lá số.
   const [soV3, bangCu] = await Promise.all([
-    import('./v3/so-ket-luan').then((m) => m.soKetLuanV3(vao.chartHashLaSo, vao.namXem)).catch(() => [] as string[]),
-    ketLuanBaiTongQuan(vao.chartHash, vao.namXem),
+    import('./v3/so-ket-luan').then((m) => m.soKetLuanV3(vao.chartHashLaSo, namHieuLuc)).catch(() => [] as string[]),
+    ketLuanBaiTongQuan(vao.chartHash, namHieuLuc),
   ]);
   const daNoiTruoc = [...soV3, ...bangCu].slice(0, 8);
 
-  /*
-   * Hướng nghiêng chỉ tính cho câu CẦN một câu trả lời thẳng.
-   *
-   * "Tính cách tôi thế nào" không có bên nào để nghiêng về, và ép một hướng
-   * vào đó là bịa ra một câu hỏi người ta không hỏi.
-   */
-  const canNghieng =
-    keHoach.yDinh === 'quyet-dinh' ||
-    keHoach.yDinh === 'co-khong' ||
-    keHoach.yDinh === 'thoi-diem';
-  const nghieng = canNghieng
+  const nghieng = canTinhNghieng(keHoach)
     ? tinhNghiengVe({
         laSo: vao.laSo,
         chuDe: keHoach.chuDe,
         lopHan: keHoach.lopHan,
-        namXem: vao.namXem,
-        thangXem: vao.thangXem,
+        namXem: namHieuLuc,
+        thangXem: thangHieuLuc,
       })
     : null;
 
@@ -452,7 +514,15 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const daCham = chamDoChac(coCauTruc, goi);
   const ketQuaKiem = kiemDuyet(daCham, goi);
   const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
-  const daLoc = gomLoiKhuyen(daLocY, keHoach.yDinh);
+  const daGom = gomLoiKhuyen(daLocY, keHoach.yDinh);
+  const daLoc = {
+    ...daGom,
+    goiYTiep: chipSangNam(daGom.goiYTiep ?? [], {
+      keHoach,
+      namHieuLuc,
+      mucAnToan,
+    }),
+  };
 
   const loiDi = loiDiTiep({
     chuDe: keHoach.chuDe,
