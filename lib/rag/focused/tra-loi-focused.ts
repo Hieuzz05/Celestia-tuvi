@@ -37,7 +37,7 @@ import type { MocTinhSan } from './prompt';
 import { goiCoPhucDuc, khoaTen, tapTenTuGoi } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.2';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.3';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 

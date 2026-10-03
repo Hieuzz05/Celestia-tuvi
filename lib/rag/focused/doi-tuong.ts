@@ -172,7 +172,7 @@ export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
      */
     for (const n of NGUOI) {
       if (['anh', 'chị', 'em', 'bạn'].includes(n.co)) continue;
-      if (reTu(`(?:tôi|mình|tớ) (?:với|và) ${thoat(n.co)}(?! (?:chồng|vợ)(?![\\p{L}\\p{M}]))`).test(cau)) {
+      if (reTu(`(?:tôi|mình|tớ) (?:với|và) ${thoat(n.co)}(?! (?:(?:bố|mẹ) )?(?:chồng|vợ)(?![\\p{L}\\p{M}])| người(?![\\p{L}\\p{M}]))`).test(cau)) {
         return { vai: n.vai, cung: CUNG_CUA_VAI[n.vai], loai: 'quan-he', nhan: n.co };
       }
     }

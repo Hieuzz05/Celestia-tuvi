@@ -191,6 +191,8 @@ const CA_DOI_TUONG: CaDoiTuong[] = [
   // "tôi với <người>": chỉ người ruột, bỏ "anh / em" trần và "mẹ chồng".
   { cau: 'Tôi với mẹ chồng có hợp không?', cung: null },
   { cau: 'Tôi với anh ấy có hợp không?', cung: null },
+  { cau: 'Tôi với bố mẹ chồng có hợp không?', cung: null },
+  { cau: 'Tôi với con người đó có hợp không?', cung: null },
 ];
 
 for (const ca of CA_DOI_TUONG) {
@@ -541,6 +543,10 @@ for (const ca of CA_DOI_TUONG) {
   kiem(kiemLuot(nhieu, ctx({ mucAnToan: 'SENSITIVE' })).cau.length === 9, 'SENSITIVE bị cắt');
   kiem(kiemLuot(nhieu, ctx({ phanLoai: { khuon: 'A', loaiSuKien: 'mong-muon', sau: true } })).soCau <= 8, 'DEEP quá 8 câu');
   kiem(chonChip([], ctx()).length === 2, 'không bù chip khi model trả rỗng');
+  const dai = 'Công việc năm nay của tôi có gặp trở ngại lớn không?';
+  kiem(!chonChip([dai, 'Còn tiền bạc thì sao?'], ctx()).includes(dai), 'chip quá 40 ký tự lọt qua');
+  const chipCam = chonChip(['Có nên đổi cách kiếm tiền?', 'Đại vận này bào mòn ở điểm nào?', 'Còn tiền bạc thì sao?'], ctx());
+  kiem(!chipCam.some((c) => /Có nên|Đại vận/.test(c)), `chip khuyên / thuật ngữ lọt qua: ${chipCam.join(' | ')}`);
   const n4 = chonChip(['Còn tiền bạc thì sao?'], ctx({ chipCuoiNam: (x) => chipCuoiNam(2026, x) }));
   kiem(n4[0].startsWith('Sang năm'), `N4 chip không đứng đầu: ${n4.join(' | ')}`);
   kiem(soAmTiet('Năm nay, công việc ổn.') === 5, 'đếm âm tiết sai');

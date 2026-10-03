@@ -1,6 +1,8 @@
 # CEL-186 Vé B: Focused Chat. PHƯƠNG ÁN bản 2 (đã qua phan-bien, danh-gia-tac-dong và soat-chi-phi)
 
-> **TRẠNG THÁI (03/10/2026, cập nhật tối):** chủ dự án **mở khoá code song song** với fix `noi_dung_ai`.
+> **TRẠNG THÁI (04/10/2026):** fix `noi_dung_ai` (CEL-189) đã lên Production; eval model thật 5 vòng xong, kết quả và nợ ở **mục 16**. Chờ chủ dự án quyết các nợ ở mục 16, bật cờ Preview và UAT. Chưa gộp main.
+>
+> **TRẠNG THÁI CŨ (03/10/2026, cập nhật tối):** chủ dự án **mở khoá code song song** với fix `noi_dung_ai`.
 > - ĐƯỢC: code Focused, cờ, lớp `DoiTuongCauHoi`, contract theo ý định, câu code-owned, chip giữ chủ đề, validator, retry/502/hoàn lượt, DEEP, test offline/hồi quy, test cờ OFF giữ STANDARD, build/tsc/lint/CI.
 > - CHƯA ĐƯỢC (tới khi fix `noi_dung_ai` gộp main): bật `CELES_FOCUSED_CHAT=1` trên Preview, eval model thật 30 ca, Barnum model thật, coi output Preview là UAT, gộp Vé B vào main.
 > - Fix gộp main → trên nhánh B `git merge origin/main` (không rebase nếu đã push) → chạy lại toàn bộ hồi quy → bật env Preview riêng nhánh → eval 30 ca → Barnum 6×6 → celes-domain, bien-tap-vi, qa, soat-tai-lieu → UAT chủ dự án → mới trình gộp.
@@ -501,3 +503,38 @@ Mã từ 10e351f tới HEAD chỉ đổi tài liệu. Nhánh fix `noi_dung_ai` c
 - 14.8;
 - cờ đọc mỗi lượt;
 - `tenCachCucCho`.
+
+## 16. Kết quả eval model thật và nợ còn lại (03–04/10/2026)
+
+Model ghim `openai|gpt-5.6-luna`, không fallback. Năm vòng, tổng ≈ **$0.77 / $2**. Báo cáo đầy đủ cho chủ
+dự án: `D:\Celestia\CEL-186-ve-B-bao-cao-eval.md`.
+
+| Mục | Ngưỡng | Vòng 2 | Vòng 4 | Vòng 5 (focused-2026.10.3) |
+|---|---|---|---|---|
+| Tên ngoài gói / lật chiều | 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| Khuyên · người lạ | 0 | 0 · 0 | 0 · 0 | 0 · 0 |
+| N1 hỏi tháng có nguyệt hạn | đủ | 2/2 | 2/2 | **1/2** |
+| NORMAL | ≥ 90% | 66/67 | 66/67 | 67/67 |
+| Dự phòng | ≤ 25% | 11/72 | 4/72 | 7/72 |
+| Thử lại · 502 | ≤ 15% · ≤ 3% | 1.3% · 0 | 0% · 0 | 0% · 0 |
+| Đúng khuôn | đủ | 19/19 | 19/19 | 19/19 |
+| Đúng chủ đề | đủ | 12/13 | 12/13 | **12/13** |
+| Barnum 1 / 2 / 4 | — | đạt | đạt | đạt |
+| Barnum 3 ghép mù | ≥ 80% | 66.7% | 66.7% | **61.1%** |
+
+Vòng 1 trượt phần lớn vì lỗi thước đo, xem Logic #12. Vòng 3 chỉ chạy Barnum.
+
+**Nợ, chưa sửa và chờ chủ dự án quyết:**
+1. **Câu chốt dự phòng do mã viết** (`chot-huong.ts` `tenKemNghia`) lấy nét tính cách của sao (`nghieng-ve.ts`) mà không theo cung.
+   - Ví dụ: hỏi tiền mà ra "Tang Môn cho thấy bạn dễ gặp chuyện phải chia tay, tiễn đi".
+   - celes-domain FAIL: lệch ví dụ đã duyệt ở mục 7 (nghĩa theo phần đời đang hỏi).
+   - Cờ #1 cấm tự đổi logic câu mã.
+2. **Barnum 3 dưới ngưỡng do cấu trúc.** Bài nêu 1–4 sao, nhiều sao trùng giữa các lá số, nên đổi thước đo cũng không qua. Cần quyết ngưỡng hoặc cách đo.
+3. **Planner (ngoài vé):**
+   - "bản thân tôi năm nay công việc…" bị xếp vào Tổng quan;
+   - "nhà cửa / gia đạo" bị xếp vào Tài chính.
+4. **N1 chỉ ép ở prompt**, nên kết quả dao động. Muốn chắc thì phải thêm điều kiện thử lại, nghĩa là đổi cờ #3.
+5. **Câu mã cần duyệt chữ:**
+   - `cauHoiNhuan` và `cauThangDaQua` (cau-ma.ts);
+   - khuôn D lộ chữ "dữ kiện".
+6. Người dùng EN vẫn nhận câu mã tiếng Việt.

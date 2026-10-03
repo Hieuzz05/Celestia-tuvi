@@ -389,10 +389,14 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
 
 const chuanChip = (s: string) => boDau(s).replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-const CHIP_RA_LENH = /^\s*(?:hãy|nên|đừng|bạn nên|bạn hãy)(?![\p{L}\p{M}])/iu;
+const CHIP_RA_LENH = /^\s*(?:hãy|nên|đừng|bạn nên|bạn hãy|có nên)(?![\p{L}\p{M}])/iu;
+/** Thuật ngữ chip không được kéo người dùng vào — lượt sau phải đọc được bằng lời thường. */
+const CHIP_THUAT_NGU = /đại vận/iu;
 /** Hỏi tên / họ của bất kỳ ai — `laChipNgoaiTam` chỉ phủ bạn đời. Lá số không chứa tên ai. */
 const CHIP_HOI_TEN = re('tên (?:là )?gì|tên (?:của )?(?:người|anh|chị|cô|cậu|em|vợ|chồng|người yêu|ny)|họ gì|họ (?:của )?(?:người|anh|chị|cô)|vần gì|chữ cái');
 /** Chip đủ để dùng khi model trả quá ít — đều là câu engine đọc được (#5). */
+/** Trần độ dài chip, khớp "tối đa 40 ký tự" trong prompt. */
+const CHIP_TOI_DA = 40;
 const CHIP_DU_PHONG = ['Sang năm thì sao?', 'Tháng này thì sao?', 'Năm nay thì sao?'];
 
 export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
@@ -407,8 +411,9 @@ export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
     if (daCo.has(k)) continue;
     if (laChipNgoaiTam(c) || CHIP_HOI_TEN.test(c)) continue; // hỏi tên, họ, danh tính
     if (nhanDangDoiTuong(c)?.loai === 'van-rieng') continue; // vận riêng người khác
-    if (CHIP_RA_LENH.test(c)) continue;
+    if (CHIP_RA_LENH.test(c) || CHIP_THUAT_NGU.test(c)) continue;
     if (laHoiKhiNao(c)) continue; // "Tháng nào…", "Khi nào…" — engine không chọn mốc (#5)
+    if ([...c].length > CHIP_TOI_DA) continue; // hợp đồng prompt: tối đa 40 ký tự, chip dài vỡ hàng trên màn hẹp
     daCo.add(k);
     ra.push(c);
     if (ra.length === 3) break;
