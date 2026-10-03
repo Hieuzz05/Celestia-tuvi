@@ -45,3 +45,6 @@ next-env.d.ts
 # và nó xuất hiện/biến mất theo việc có ai đang mở file hay không.
 ~$*.xlsx
 scripts/_*.ts
+
+# Ảnh của scripts/test-man-hinh.mjs — để xem lại, không phải nội dung
+/.anh-man-hinh/

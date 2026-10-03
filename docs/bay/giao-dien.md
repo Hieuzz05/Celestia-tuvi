@@ -45,3 +45,6 @@ Hai luật cho web ở màn hẹp, đã đo bằng Chrome ở 390px:
 - **Không trang nào được cuộn ngang.** Kiểm bằng `scrollWidth - clientWidth` phải bằng 0.
 - **Vùng chạm tối thiểu 44px.** `.nav-link` và `.link-text` dùng `::after` phủ thêm chiều cao ở
   `(pointer: coarse)` — nới padding thì gạch chân chỉ báo trang rời khỏi chữ.
+
+Đo cả hai luật trên, cùng CLS và ảnh toàn trang, bằng `node scripts/test-man-hinh.mjs` (chạy local,
+trạng thái khách). Soát phần còn lại theo `docs/thiet-ke/celes-ui-quality-checklist.md`.
