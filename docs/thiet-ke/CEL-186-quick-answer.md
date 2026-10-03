@@ -593,3 +593,77 @@ Câu chốt lệch chiều engine / vượt độ chắc / phán quyết / giọ
 - `eval-giong-quick` (20 ca model thật, mục 12) CHƯA viết, CHƯA chạy — không chặn push, phải chạy trước khi bật production.
 
 **Kiểm** — `npm run kiem-nhanh` (theo vùng đã đổi), `npm run smoke:safety`, `npm run smoke:quick`; CI chạy thêm test-do-sau, test-ngoai-tam, test-quick-answer, hai smoke.
+
+## 19. QUYẾT ĐỊNH CUỐI (03/10/2026) — thay v2 "bỏ STANDARD", sau phan-bien + danh-gia-tac-dong
+
+Chủ dự án đã duyệt. Mục này thay thế mọi phương án trước nếu mâu thuẫn.
+
+**Chẩn đoán.** Câu "sắp tới tôi có người yêu ko? tương lai gần" hỏng vì HAI lỗi độc lập:
+lỗi A, hiểu sai câu hỏi (planner: `laCauCoKhong` chỉ nhìn 3 từ cuối, "tương lai" trong `TU_KHOA_CHANG_DAI` bỏ `luu-nien`
+nên engine đọc đại vận 25–34); lỗi B, hiểu đúng vẫn trả quá dài (khuôn STANDARD). Phải sửa cả hai, bằng hai vé.
+
+### 19.1 Hai vé, không xoá legacy
+- **Vé A — Planner + Time Semantics.** Làm trước, gộp độc lập, không chờ eval giọng chat.
+- **Vé B — Focused Chat.** Mở SAU khi vé A đã gộp và ổn định, nhánh mới từ `origin/main`; port phần CEL-186a còn cần, không kéo nguyên quyết định cũ.
+- Ticket dọn dẹp (xoá STANDARD legacy, `CELES_QUICK_ANSWER`, mã tương thích) chỉ mở sau khi Focused chạy production ổn. CEL-186 KHÔNG xoá legacy.
+
+### 19.2 Nhánh
+- KHÔNG gộp nguyên `viec/cel-186-quick` vào main (P1 `cd56c00` đổi `PHIEN_BAN_PLANNER` ∈ `PHIEN_BAN_CHU` → đổi khoá đệm các bề mặt khác dù QUICK tắt).
+- Vé A: `viec/cel-186-planner-time` từ `origin/main`, cherry-pick RIÊNG `cd56c00`. Không cherry-pick `8931545`, `4c27bc3`, `6ab0392`.
+- `viec/cel-186-quick` giữ làm tham chiếu / preview, không gộp main.
+
+### 19.3 Vé A — tách Ý ĐỊNH khỏi PHẠM VI THỜI GIAN
+- `KeHoachTruyVan` thêm `phamViThoiGian: 'khong-ro' | 'gan' | 'thang' | 'nam' | 'giai-doan'` và `namMucTieu?: number`.
+  `yDinh = thoi-diem` không còn gánh nghĩa "khoảng nào".
+- `gan`: tương lai gần, sắp tới, thời gian tới, vài tháng tới, trong thời gian gần. Cụm cụ thể khớp trước cụm chung:
+  chữ "tương lai" nằm trong "tương lai gần" KHÔNG kích hoạt chặng dài.
+- `có … không`: bỏ luật 3 từ cuối, nhưng KHÔNG dùng `/có.*không/` thô. Ca bắt buộc:
+  - "tôi có người yêu không trong tương lai gần" → co-khong
+  - "sắp tới tôi có người yêu ko? tương lai gần" → co-khong
+  - "tôi có người yêu nhưng không hạnh phúc, vì sao" → giai-thich
+  - "bao giờ tôi có người yêu?" → thoi-diem
+  - "tôi có nên đổi việc năm sau không?" → quyet-dinh
+- Năm cụ thể: "năm 2028 tôi có người yêu không?" → `namMucTieu = 2028`.
+  `namHieuLuc = keHoach.namMucTieu ?? namXem` đi vào MỌI chỗ trong cùng lượt: `chonBoiCanh`, `tinhNghiengVe`, lớp hạn / dữ kiện năm, vết.
+  Cấm dữ kiện 2028 mà hướng tính 2026.
+- Ca gốc phải ra: `tinh-cam / co-khong / gan / namHieuLuc = năm âm hiện tại / lopHan có luu-nien`.
+- **Năm mặc định**: chat (web `/api/hoi-dap` và app `hoiCeles()`) thống nhất `namAmHienTai()`; năm ghi rõ trong câu luôn thắng.
+  Kiểm cả sổ "đã nói trước", tra kết luận V3, tra bảng tổng quan: từ 01/01 tới Tết không được chat đọc năm âm cũ còn sổ tra bằng năm dương mới.
+- **Gần Tết**: `gan` neo năm âm đang xét, không quét nhiều năm. Còn ≤ 4 tháng tới Tết kế tiếp thì chip được phép có
+  "Sang năm <Can Chi> thì sao?". Chỉ là chip, không luận năm sau trong câu hiện tại, chip vẫn tốn lượt.
+- **Cổng vé A**: bộ vàng planner 100% · test ngữ nghĩa thời gian · so trước/sau `lapKeHoach` trên câu cố định của MỌI bề mặt dùng planner
+  (chat, bảng lĩnh vực, bản đọc sâu, mốc hành trình, bề mặt ngắn, Kết nối, admin/retrieval), báo diff `chuDe / yDinh / lopHan / cungLienQuan / phamViThoiGian / namMucTieu`
+  (không đổi ngữ nghĩa → ghi rõ chỉ đổi phiên bản đệm; có đổi → dừng, review) · đếm số khoá đệm sẽ cũ theo từng bề mặt (không xuất dữ liệu người dùng) · tsc · lint · build · CI.
+  Dừng để chủ dự án nghiệm thu trước khi gộp.
+
+### 19.4 Vé B — Focused Chat (chưa làm)
+- Cờ `CELES_FOCUSED_CHAT`: preview 1, production 0. Tắt → đường production hiện tại nguyên vẹn. Bật production sau khi chủ dự án thử + eval đạt.
+- Không một validator chung cho mọi ý định; không đưa mọi ý định qua `kiemQuick()` hiện tại. Khuôn theo nhóm:
+  - **Có/không (bản thân)**: hướng engine, `chieuCauChot`, soát câu chốt, `cauChotDuPhong`; 2–4 câu, 1–2 căn cứ, 2–3 chip.
+  - **Quyết định (bản thân)**: câu chốt nói về BỐI CẢNH của quyết định, không chọn hộ hành động engine chưa chấm
+    (cấm "công việc thuận → nên nghỉ / nên đổi việc"). Câu rời bỏ (nghỉ việc, chia tay, bỏ chồng/vợ, rời công ty) vẫn FOCUSED ngắn.
+  - **A hay B**: câu giới hạn DO MÃ VIẾT (engine chưa so A với B), chip "Ở lại thì sao?" / "Chuyển việc thì sao?" / "Năm nay có hợp thay đổi không?".
+  - **Khi nào** (không kèm năm): câu giới hạn DO MÃ VIẾT, không bịa năm; chip theo năm / tháng. Kèm năm → co-khong + `namMucTieu`.
+  - **Người khác**: KHÔNG chặn theo danh từ quan hệ. Quan hệ giữa người hỏi và người kia ("con tôi có hợp với tôi không") → đọc từ lá số người hỏi.
+    Chuyện riêng của người kia ("vợ tôi có thăng chức không") → câu do mã viết, 2–3 biến thể theo công việc / sức khoẻ / tài chính,
+    cùng nghĩa "lá số người hỏi không đủ kết luận vận riêng của người kia"; không chạy cung của người hỏi rồi gán cho người kia. Có test domain riêng.
+  - **Giải thích / tra cứu / mô tả**: 1 câu chính + 1–2 câu có căn cứ + 2–3 chip. Câu mở bị loại → đẩy câu có căn cứ đầu tiên lên;
+    không còn câu nào có căn cứ → coi là lượt model hỏng → thử lại / 502 + hoàn lượt (đường `hoanCauHoi` đã có).
+    Cấm đường của `kiemQuick` hiện tại "không có câu dự phòng → giữ câu lỗi, xoá cờ".
+- **SENSITIVE là lớp phủ, không phải ý định**: ý định gốc giữ nguyên khoá kết luận; lớp phủ chỉ đổi độ dài tối thiểu (không nén cứng, giữ luật CEL-183),
+  giọng COMPANION, lời miễn trừ do mã, tắt trêu. CRITICAL / tiên lượng vẫn chặn ở route.
+- **Cân bằng giữ hai phía**: `can-bang` → còn ≥ 1 căn cứ thuận + ≥ 1 căn cứ vướng. Hướng khác: 1 căn cứ mạnh nhất + tối đa 1 căn cứ ngược khi đáng kể.
+- **FOCUSED bỏ yêu cầu legacy**: hoiLai, tuKiem, ≥ 2 dữ kiện, ≥ 1 cách cục, DAN_LUAN, heading, kế hoạch hành động. KHÔNG bỏ căn cứ:
+  ≥ 1 căn cứ thật cho mỗi nhận định chuyên môn, không bịa sao / cung / cách cục, không đổi hướng engine.
+- **Dấu ấn CEL-185**: FOCUSED không chèn DAN_LUAN; không xoá khỏi repo; đường legacy giữ nguyên để lùi đúng hành vi.
+- **Tinh nghịch**: `CELES_TINH_NGHICH` không đặt → TẮT; không thừa hưởng cờ QUICK / FOCUSED; chỉ bật khi `=1` và cổng ngữ cảnh cho phép.
+- **Chip tốn lượt**: không đổi trong CEL-186. Nợ sản phẩm: hội thoại từng bước + 5 lượt/ngày có thể làm người dùng hết lượt nhanh hơn — cần quyết riêng về giá / hạn mức.
+- **Streaming**: FOCUSED là điều kiện UX cho CEL-187, KHÔNG phải kiến trúc streaming. CEL-187 vẫn phải làm truyền tải, giao thức từng phần, UI hiển thị dần, lỗi / thử lại.
+
+### 19.5 Eval vé B
+- Lưu ba bản: thô từ model · sau validator · cuối. Đo `rawSyllables, finalSyllables, soCauBiBo, soYBiBo, evidenceBefore, evidenceAfter`.
+  "Cuối ≤ 120" không tính là đạt nếu mã đã cắt mất toàn bộ lý do.
+- **Chống Barnum (hoán lá số)**: cùng câu hỏi trên ≥ 2 lá số khác nhau → căn cứ nêu ra (tên / mã dữ kiện / nghĩa) phải khác khi dữ kiện khác. Không đo n-gram.
+- **Unsupported person/action claim** (đo được): câu chốt / ý chính nhắc (1) người hoặc vai trò không có trong câu hỏi, ngữ cảnh hội thoại hợp lệ, gói bằng chứng;
+  hoặc (2) hành động / lựa chọn cụ thể không có trong câu hỏi, chip vừa chọn, ngữ cảnh do mã; hoặc (3) biến hướng một lĩnh vực thành đánh giá cho một hành động engine không chấm.
+- Giọng không để AI viết code tự chấm: script xuất output, reviewer độc lập + chủ dự án đọc 5 ca chuẩn.
