@@ -301,11 +301,17 @@ Nút chỉ hiện khi provider được bật thật trong Supabase, nên nếu 
 Vào [Authentication → URL Configuration](https://supabase.com/dashboard/project/wqhxksgtkyoqknicombi/auth/url-configuration):
 
 - **Site URL**: `https://celestia-tuvi.vercel.app`
-- **Redirect URLs** → Add URL, thêm 2 dòng:
+- **Redirect URLs** → Add URL, thêm 3 dòng:
   - `https://celestia-tuvi.vercel.app/auth/callback`
   - `http://localhost:3000/auth/callback`
+  - `https://*-duyhieu24082000-6871s-projects.vercel.app/**` — mọi bản preview của Vercel
 
 Thiếu bước này thì Google xác thực xong nhưng Supabase từ chối đẩy người dùng về web.
+
+**Đăng nhập từ preview rơi sang production?** Mã đã gửi `emailRedirectTo` / `redirectTo` theo
+origin đang mở (`app/dang-nhap/page.tsx`, hàm `diaChiCallback`). Nếu origin đó KHÔNG khớp một dòng
+Redirect URLs, Supabase im lặng dùng **Site URL** (production) — không báo lỗi. Thiếu dòng preview
+ở trên là nguyên nhân. Đăng nhập email + mật khẩu không qua bước này nên không bị.
 
 **Kiểm tra**
 

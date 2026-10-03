@@ -1,0 +1,151 @@
+{
+  "nguon": "celes_character_system_v2_3_dark_halo_fix.html (chu du an gui 02/10/2026)",
+  "ghiChu": "PNG lossless dung byte trong HTML nguon. Vien trang da khu o nguon (v2.3). 14 artwork khoa KHONG chep vao day — xem celes-visual-character-system.md muc 12.",
+  "pipeline": "scripts/lam-sach-anh-celes.py -> public/celes/<ten>.webp",
+  "anh": [
+    {
+      "ten": "default",
+      "chuThich": "DEFAULT / Standing neutral",
+      "loai": "trang-thai-dong",
+      "chiSoTrongHtml": 23,
+      "sha256_8": "e2035650",
+      "kb": 296
+    },
+    {
+      "ten": "listening",
+      "chuThich": "Listening",
+      "loai": "trang-thai-dong",
+      "chiSoTrongHtml": 8,
+      "sha256_8": "6ba72b0b",
+      "kb": 112
+    },
+    {
+      "ten": "thinking",
+      "chuThich": "Thinking",
+      "loai": "trang-thai-dong",
+      "chiSoTrongHtml": 9,
+      "sha256_8": "719ed038",
+      "kb": 107
+    },
+    {
+      "ten": "serious",
+      "chuThich": "Serious",
+      "loai": "trang-thai-dong",
+      "chiSoTrongHtml": 22,
+      "sha256_8": "38ecee3e",
+      "kb": 132
+    },
+    {
+      "ten": "celebrate",
+      "chuThich": "CELEBRATE / Holding star",
+      "loai": "trang-thai-dong",
+      "chiSoTrongHtml": 31,
+      "sha256_8": "7f632519",
+      "kb": 130
+    },
+    {
+      "ten": "tiny-smile",
+      "chuThich": "Tiny smile",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 17,
+      "sha256_8": "da1153a1",
+      "kb": 120
+    },
+    {
+      "ten": "one-ear-up",
+      "chuThich": "One ear up",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 25,
+      "sha256_8": "74bbad63",
+      "kb": 125
+    },
+    {
+      "ten": "leaning-closer",
+      "chuThich": "Leaning closer",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 35,
+      "sha256_8": "61c8660e",
+      "kb": 131
+    },
+    {
+      "ten": "reading",
+      "chuThich": "Reading",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 28,
+      "sha256_8": "3f8615e2",
+      "kb": 114
+    },
+    {
+      "ten": "moving",
+      "chuThich": "Moving",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 36,
+      "sha256_8": "077013f9",
+      "kb": 124
+    },
+    {
+      "ten": "curious",
+      "chuThich": "Curious",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 10,
+      "sha256_8": "b5ad0662",
+      "kb": 125
+    },
+    {
+      "ten": "sitting-neutral",
+      "chuThich": "Sitting neutral",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 24,
+      "sha256_8": "edeb8641",
+      "kb": 112
+    },
+    {
+      "ten": "neutral",
+      "chuThich": "Neutral",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 7,
+      "sha256_8": "70561497",
+      "kb": 121
+    },
+    {
+      "ten": "proud",
+      "chuThich": "Proud",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 19,
+      "sha256_8": "0bb90d5e",
+      "kb": 118
+    },
+    {
+      "ten": "using-laptop",
+      "chuThich": "Using laptop",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 30,
+      "sha256_8": "fb46a8fb",
+      "kb": 109
+    },
+    {
+      "ten": "waving",
+      "chuThich": "Waving",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 29,
+      "sha256_8": "2bac61d6",
+      "kb": 125
+    },
+    {
+      "ten": "concerned",
+      "chuThich": "Concerned",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 20,
+      "sha256_8": "717595dd",
+      "kb": 108
+    },
+    {
+      "ten": "playing",
+      "chuThich": "Playing",
+      "loai": "minh-hoa-tinh",
+      "chiSoTrongHtml": 34,
+      "sha256_8": "c924ee83",
+      "kb": 116
+    }
+  ]
+}

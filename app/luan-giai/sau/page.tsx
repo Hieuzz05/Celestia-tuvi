@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from '@/components/luangiai/CauTraLoiV3';
@@ -15,6 +14,8 @@ import { QuayLai } from '@/components/QuayLai';
 import { XuatLuanGiai, type BaiDaDoc } from '@/components/luangiai/XuatLuanGiai';
 import { VietLaiQuanTri } from '@/components/luangiai/VietLaiQuanTri';
 import { HoiBoiCanh } from '@/components/luangiai/HoiBoiCanh';
+import { CelesMascot } from '@/components/CelesMascot';
+import { CongDangNhap } from '@/components/auth/CongDangNhap';
 import { TRUONG_THEO_CHU_DE, conThieu, khoaBoiCanh, type BoiCanhDoc } from '@/lib/rag/v3/boi-canh-doc';
 import { docBoiCanhDoc, luuBoiCanhDoc } from '@/lib/store/boi-canh-doc';
 
@@ -204,18 +205,14 @@ function TrangSau() {
     return (
       <Shell className="flex flex-col gap-[16px] py-[32px]">
         {nutVe}
-        <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
-          <h1 className="heading-sm">Luận giải chuyên sâu cần tài khoản</h1>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Phần tổng quan mở cho mọi người. Đăng nhập để đọc sâu từng chủ đề và để Celes giữ bài
-            đọc lại cho bạn.
-          </p>
-          <Link
-            href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(`/luan-giai/sau?${params.toString()}`)}`}
-            className="btn-primary self-start"
-          >
-            Đăng nhập
-          </Link>
+        {/* Cùng cổng với /luan-giai (một bản cài đặt, có waving) — giữ query lá số
+            để đăng nhập xong rơi lại đúng bài sâu. */}
+        <div className="mx-auto w-full max-w-[620px]">
+          <CongDangNhap
+            nguon="deep_read"
+            toanTrang
+            quayVe={`/luan-giai/sau?${params.toString()}`}
+          />
         </div>
       </Shell>
     );
@@ -444,9 +441,17 @@ function TrangSau() {
           )}
 
           {laBuc ? null : canHoiBoiCanh && boiCanh ? (
-            <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
+            // Celes hỏi thêm trước khi đọc: màn vào, chưa có bài. Màn hẹp xếp
+            // dọc để form không bị bóp 96px.
+            <div className="flex flex-col gap-[16px] sm:flex-row sm:items-start">
+              <CelesMascot cho="rong" minhHoa="curious" cao={80} caoNho={64} />
+              <div className="min-w-0 flex-1">
+                <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
+              </div>
+            </div>
           ) : !trangThai || trangThai.dang ? (
-            <DangDocV3 key={chon} />
+            // Lần chờ ĐẦU của bài: có Celes. Hai chỗ "viết tiếp" bên dưới thì không.
+            <DangDocV3 key={chon} celes />
           ) : trangThai.cau ? (
             <div className="flex flex-col gap-[32px]">
               {trangThai.cau.map((c, i) => (

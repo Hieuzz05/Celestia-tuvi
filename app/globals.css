@@ -736,7 +736,7 @@ body {
  *
  * Tắt ở hai nơi, cố ý tách:
  *   1. Người dùng tắt hiệu ứng ở hệ điều hành  → khối reduced-motion bên dưới.
- *   2. Ngữ cảnh nghiêm túc (state `serious`, hoặc nơi gọi truyền `tatChuyenDong`)
+ *   2. Ngữ cảnh nghiêm túc (`serious`, `concerned`, hoặc nơi gọi truyền `tatChuyenDong`)
  *      → nơi gọi không gắn lớp này. Xem CelesMascot.tsx.
  *      Ở /hoi-dap, lượt người dùng mới nhất có Safety != NORMAL thì nơi gọi
  *      đổi sang `serious` (lib/linh-vat.ts) — tắt thở đi cùng SERIOUS (mục 9).
@@ -748,6 +748,17 @@ body {
  * (serious, hoặc khi tắt chuyển động) — bóng thì phải còn ở mọi trạng thái. */
 .celes-anh {
   filter: var(--shadow-celes);
+  /* Cỡ đặt từ CelesMascot qua biến, để màn hẹp đè được (inline width thì không). */
+  width: var(--celes-cao, 56px);
+  height: var(--celes-cao, 56px);
+  flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .celes-anh {
+    width: var(--celes-cao-nho, var(--celes-cao, 56px));
+    height: var(--celes-cao-nho, var(--celes-cao, 56px));
+  }
 }
 
 .celes-tho {
@@ -762,6 +773,51 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .celes-tho {
+    animation: none;
+  }
+}
+
+/*
+ * CELES HIỆN TRỄ — cho màn chờ. Chỗ đã giữ từ đầu (không nhảy layout), ảnh
+ * chỉ hiện nếu màn chờ còn đó sau `--celes-tre`. Màn chớp dưới 1 giây thì
+ * không bao giờ thấy linh vật (mục 12). Chạy bằng CSS nên đúng cả với HTML
+ * tĩnh trước khi JS tới (khung chờ Suspense).
+ */
+.celes-tre {
+  opacity: 0;
+  animation: celes-hien 400ms ease-out var(--celes-tre, 1s) forwards;
+}
+
+@keyframes celes-hien {
+  to { opacity: 1; }
+}
+
+/*
+ * CELES NỔI — sự kiện ngắn (proud khi vừa giữ lại lá số). Cố định ở góc dưới,
+ * không chiếm chỗ trong luồng → không CLS. Không nhận chạm.
+ */
+.celes-noi {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 8px 8px;
+  border-radius: var(--radius-cards);
+  border: 1px solid var(--line);
+  background: var(--surface-card);
+  pointer-events: none;
+  animation: celes-hien 300ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Bỏ mờ dần, GIỮ độ trễ: chuyển động tắt, luật "không hiện cho màn chớp" thì không. */
+  .celes-tre {
+    animation: celes-hien 1ms linear var(--celes-tre, 1s) forwards;
+  }
+  .celes-noi {
     animation: none;
   }
 }

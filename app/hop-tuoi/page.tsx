@@ -9,6 +9,7 @@ import { CAU_HINH_Y_DINH, Y_DINH_MAC_DINH, type YDinhKetNoi } from '@/lib/ket-no
 import type { KetQuaSoSanh, MucDo } from '@/lib/tuvi/hoptuoi';
 import { Shell } from '@/components/ui';
 import { CongDangNhap } from '@/components/auth/CongDangNhap';
+import { CelesMascot } from '@/components/CelesMascot';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
@@ -161,12 +162,25 @@ export default function KetNoiPage() {
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
-      <div>
-        <p className="eyebrow">MỐI QUAN HỆ</p>
-        <h1 className="heading mt-[10px]">Hai người có hợp nhau không?</h1>
-        <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-          Cùng Celes xem hai lá số để hiểu hai người hợp nhau ở điểm nào, dễ bất đồng vì đâu và chuyện tình cảm, hợp tác hay gia đình có thể diễn biến ra sao.
-        </p>
+      <div className="flex items-start gap-[16px]">
+        {/* Tò mò TRƯỚC khi gửi hai lá số. Đang tính hoặc đã có kết quả thì ẩn
+            bằng visibility (giữ chỗ, không nhảy layout) — kết quả hợp tuổi là
+            vùng đọc, và lúc chờ đã có Celes đang nghĩ bên dưới. */}
+        <CelesMascot
+          cho="rong"
+          minhHoa="curious"
+          cao={80}
+          caoNho={56}
+          ngay
+          className={dangChay || ketQua ? 'invisible' : ''}
+        />
+        <div className="min-w-0">
+          <p className="eyebrow">MỐI QUAN HỆ</p>
+          <h1 className="heading mt-[10px]">Hai người có hợp nhau không?</h1>
+          <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
+            Cùng Celes xem hai lá số để hiểu hai người hợp nhau ở điểm nào, dễ bất đồng vì đâu và chuyện tình cảm, hợp tác hay gia đình có thể diễn biến ra sao.
+          </p>
+        </div>
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-2">
@@ -232,9 +246,12 @@ export default function KetNoiPage() {
         </p>
       </section>
 
-      <button onClick={chay} disabled={dangChay || thieuCauHoi} className="btn-primary self-start">
-        {dangChay ? 'Celes đang nhìn hai lá số…' : cauHinh.nutBam}
-      </button>
+      <div className="flex items-center gap-[16px]">
+        <button onClick={chay} disabled={dangChay || thieuCauHoi} className="btn-primary self-start">
+          {dangChay ? 'Celes đang nhìn hai lá số…' : cauHinh.nutBam}
+        </button>
+        {dangChay && <CelesMascot cho="cho" trangThai="thinking" cao={80} caoNho={56} />}
+      </div>
 
       {loi && (
         <p className="body-text" style={{ color: 'var(--chart-hung)' }}>

@@ -65,6 +65,8 @@ jobs:
         run: npx tsx scripts/do-coverage-dau-an.ts
       - name: Linh vật nghiêm theo lượt mới nhất (không dính)
         run: npx tsx scripts/test-linh-vat-an-toan.ts
+      - name: Chỗ đặt linh vật (mục 12, ảnh khoá, vùng nội dung)
+        run: npx tsx scripts/test-cho-dat-celes.ts
 
       - name: Build
         run: npx next build

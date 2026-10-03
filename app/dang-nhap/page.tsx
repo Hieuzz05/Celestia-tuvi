@@ -8,6 +8,7 @@ import { ghiSuKien } from '@/lib/analytics';
 import { dien, useT } from '@/lib/i18n/context';
 import { Shell } from '@/components/ui';
 import { QuayLai } from '@/components/QuayLai';
+import { CelesMascot } from '@/components/CelesMascot';
 
 type Che = 'dang-nhap' | 'dang-ky';
 
@@ -21,6 +22,18 @@ const SSO = [
 ] as const;
 
 type SsoId = (typeof SSO)[number]['id'];
+
+/**
+ * Địa chỉ Supabase gửi người dùng về sau OAuth / xác nhận email. Luôn lấy
+ * `window.location.origin`, KHÔNG hard-code production: preview phải về preview.
+ * Origin này còn phải nằm trong Redirect URLs của Supabase, không thì Supabase
+ * lặng lẽ thay bằng Site URL. `next` chỉ nhận đường dẫn nội bộ.
+ */
+function diaChiCallback(): string {
+  const next = new URLSearchParams(window.location.search).get('next');
+  const dich = next && next.startsWith('/') && !next.startsWith('//') ? next : '/home';
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(dich)}`;
+}
 
 export default function DangNhapPage() {
   const t = useT();
@@ -98,7 +111,13 @@ export default function DangNhapPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password: matKhau,
-          options: { data: { full_name: tenHienThi.trim() || email.split('@')[0] } },
+          options: {
+            data: { full_name: tenHienThi.trim() || email.split('@')[0] },
+            // Link xác nhận trong email phải về ĐÚNG nơi người dùng đang đứng
+            // (preview / production / localhost). Bỏ trống thì Supabase dùng
+            // Site URL = production, và người đang thử bản preview bị đá sang đó.
+            emailRedirectTo: diaChiCallback(),
+          },
         });
         if (error) throw error;
         setThongBao({
@@ -152,14 +171,11 @@ export default function DangNhapPage() {
 
   const dangNhapSSO = async (provider: SsoId) => {
     setThongBao(null);
-    const quayVe = new URLSearchParams(window.location.search).get('next') ?? '/';
     const supabase = await laySupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(quayVe)}`,
-      },
+      options: { redirectTo: diaChiCallback() },
     });
     if (error) setThongBao({ loai: 'loi', noiDung: error.message });
   };
@@ -171,6 +187,8 @@ export default function DangNhapPage() {
           Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
       <div className="mx-auto grid w-full max-w-[940px] gap-[32px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
       <div className="w-full">
+      {/* Đầu cột form, trên nếp gấp → eager. */}
+      <CelesMascot cho="dau-trang" minhHoa="waving" cao={72} caoNho={64} ngay className="mb-[16px] block" />
       <h1 className="heading-sm">{che === 'dang-nhap' ? t.auth.tieuDe : t.auth.tieuDeDangKy}</h1>
       <p className="body-text mt-[14px]" style={{ color: 'var(--fg-muted)' }}>
         {yDinh && LOI_ICH_THEO_Y_DINH[yDinh]

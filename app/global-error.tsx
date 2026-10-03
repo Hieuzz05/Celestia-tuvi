@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import './globals.css';
+import { CelesMascot } from '@/components/CelesMascot';
 
 /**
  * Chỉ hiện khi chính layout gốc hỏng (provider ngôn ngữ, bối cảnh lá số, thanh
@@ -17,6 +18,11 @@ export default function LoiGoc({ error, retry }: { error: Error & { digest?: str
     <html lang="vi" data-theme="day">
       <body style={{ background: 'var(--bg)', color: 'var(--fg)' }}>
         <main style={{ maxWidth: 560, margin: '0 auto', padding: '60px 16px' }}>
+          {/* Thuộc tính width/height của ảnh tự giữ cỡ 96 kể cả khi CSS chưa
+              tải; khối bọc viết style thẳng vì lý do đó. */}
+          <div style={{ marginBottom: 20 }}>
+            <CelesMascot cho="loi" minhHoa="concerned" cao={96} ngay />
+          </div>
           <h1 className="heading">Celestia vừa gặp trục trặc</h1>
           <p className="body-text" style={{ marginTop: 16, color: 'var(--fg-muted)' }}>
             Lá số và dữ liệu của bạn vẫn còn nguyên. Thử tải lại; nếu chưa được, quay lại sau ít phút.

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Eyebrow, HuyHieuOk, NutChinh, NutVien, Section, Shell, The } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
 import { dien, useT } from '@/lib/i18n/context';
+import { CelesMascot } from '@/components/CelesMascot';
 
 /**
  * Màn thanh toán một đơn ủng hộ.
@@ -61,6 +62,24 @@ function nhomTrangThai(d: Don | null, hetHan: boolean): TrangThaiHienThi {
   return 'pending';
 }
 
+/**
+ * Lần ĐẦU màn này thấy đơn thành công thì mừng; lần sau (tải lại, mở lại từ
+ * lịch sử) thì không. Đánh dấu theo `paymentId`, không theo URL trả về, nên
+ * không phụ thuộc webhook về trước hay người dùng quay lại trước, cũng không
+ * phụ thuộc tab nào (PayOS mở ở tab mới). Không đọc được kho thì vẫn mừng —
+ * mừng thừa một lần còn hơn không mừng.
+ */
+function lanDauMung(paymentId: string): boolean {
+  try {
+    const khoa = `celes-mung-${paymentId}`;
+    if (localStorage.getItem(khoa)) return false;
+    localStorage.setItem(khoa, '1');
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 function demNguoc(den: string | null, bayGio: number): string {
   if (!den || !bayGio) return '';
   const con = new Date(den).getTime() - bayGio;
@@ -79,6 +98,10 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
   // giao diện: gọi trong lúc render thì hai lần vẽ ra hai kết quả khác nhau.
   const [bayGio, setBayGio] = useState(0);
   const daBaoXong = useRef(false);
+  // null = chưa thấy thành công. Quyết một lần trong callback (không trong
+  // effect, không trong updater — StrictMode gọi updater hai lần là mất mừng).
+  const [mung, setMung] = useState<boolean | null>(null);
+  const daQuyetMung = useRef(false);
 
   const tai = useCallback(async (): Promise<Don | null> => {
     try {
@@ -93,8 +116,16 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
   const capNhat = useCallback(
     (d: Don | null) => {
       setBayGio(Date.now());
-      if (d) setDon(d);
-      else setLoi(t.ungHo.loiTao);
+      if (d) {
+        setDon(d);
+        // Một lần hỏi lỗi rồi lần sau được: xoá lỗi cũ, đừng để nó đứng cạnh
+        // trạng thái đúng.
+        setLoi(null);
+        if (d.entitlementGranted && !daQuyetMung.current) {
+          daQuyetMung.current = true;
+          setMung(lanDauMung(d.paymentId));
+        }
+      } else setLoi(t.ungHo.loiTao);
     },
     [t.ungHo.loiTao]
   );
@@ -127,6 +158,10 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
   const trangThai = nhomTrangThai(don, hetHan);
   const conLai = demNguoc(don?.expiresAt ?? null, bayGio);
   const soTien = don ? `${don.amount.toLocaleString('vi-VN')}đ` : '';
+  // Lo lắng chỉ cho lỗi hệ thống / thanh toán. Người dùng tự huỷ thì KHÔNG —
+  // linh vật không được làm mặt buồn để kéo người ta trả tiền (mục 12).
+  const loiTai = !don && Boolean(loi);
+  const lo = loiTai || trangThai === 'failed' || trangThai === 'expired';
 
   return (
     <Section gon>
@@ -157,6 +192,13 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
 
           {/* Cột phải: trả bằng cách nào, và đang tới đâu rồi */}
           <The className="flex flex-col items-start gap-[12px]">
+            {trangThai === 'success' &&
+              (mung ? (
+                <CelesMascot cho="su-kien" trangThai="celebrate" cao={96} caoNho={80} ngay />
+              ) : (
+                <CelesMascot cho="rong" trangThai="default" cao={80} ngay />
+              ))}
+            {lo && <CelesMascot cho="loi" minhHoa="concerned" cao={80} ngay />}
             {/* aria-live để trình đọc màn hình thông báo khi trạng thái đổi */}
             <p className="body-text" aria-live="polite" style={{ color: 'var(--fg)' }}>
               {t.ungHo.trangThai[trangThai]}
@@ -231,6 +273,11 @@ export function TrangThanhToan({ paymentId }: { paymentId: string }) {
               <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
                 {loi}
               </p>
+            )}
+            {loiTai && (
+              <NutVien nho onClick={() => tai().then(capNhat)}>
+                {t.ungHo.thuLai}
+              </NutVien>
             )}
           </The>
         </div>

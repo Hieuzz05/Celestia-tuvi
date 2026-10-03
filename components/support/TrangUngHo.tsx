@@ -5,6 +5,7 @@ import { CongUngHo } from '@/components/support/CongUngHo';
 import { TheSupporter } from '@/components/support/TheSupporter';
 import { Eyebrow, NutChinh, Section, Shell, The } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
+import { CelesMascot } from '@/components/CelesMascot';
 import { useQuyen } from '@/lib/support/useQuyen';
 
 /**
@@ -23,6 +24,9 @@ export function TrangUngHo() {
     <Section gon>
       <Shell className="flex flex-col gap-[24px]">
         <div>
+          {/* Chỉ ở đầu trang. KHÔNG cạnh số tiền, nút ủng hộ hay modal 402 —
+              linh vật không được dùng để ép trả tiền (mục 12). */}
+          <CelesMascot cho="dau-trang" minhHoa="tiny-smile" cao={80} caoNho={64} ngay className="mb-[16px] block" />
           <Eyebrow className="mb-[12px]">{t.ungHo.ten}</Eyebrow>
           <h1 className="heading-sm">{t.ungHo.moiLyCaPhe}</h1>
           <p className="body-sm mt-[10px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>

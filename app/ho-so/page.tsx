@@ -88,7 +88,18 @@ export default function TrangDanhSachLaSo() {
 
   return (
     <Shell className="flex flex-col gap-[32px] py-[36px]">
-      <div>
+      <div className="flex items-start gap-[16px]">
+      {/* Đầu trang: neutral khi ĐÃ có lá số, cạnh tiêu đề, ngoài danh sách.
+          Đang tải hoặc rỗng thì ẩn bằng visibility (giữ chỗ 56px, không nhảy
+          layout) — lúc rỗng thân trang đã có Celes ngồi chờ (mục 12). */}
+      <CelesMascot
+        cho="dau-trang"
+        minhHoa="neutral"
+        cao={56}
+        ngay
+        className={boiCanh.hoSos.length > 0 ? '' : 'invisible'}
+      />
+      <div className="min-w-0">
         <Eyebrow className="mb-[12px]">{t.danhSach.eyebrow}</Eyebrow>
         <h1 className="heading-sm">{t.danhSach.tieuDe}</h1>
         <p className="body-sm mt-[12px] max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
@@ -105,6 +116,7 @@ export default function TrangDanhSachLaSo() {
           </button>
         )}
       </div>
+      </div>
 
       <NutChinh onClick={() => router.push('/la-so?moi=1')} className="self-start">
         {t.danhSach.themLaSo}
@@ -112,10 +124,10 @@ export default function TrangDanhSachLaSo() {
 
       <section className="flex flex-col gap-[12px]">
         {!boiCanh.dangTai && boiCanh.hoSos.length === 0 && (
-          // Trạng thái rỗng cấp trang: Celes 80px, DEFAULT (mục 12). Chỉ ở nhánh
-          // RỖNG — danh sách có lá số là nơi người ta đọc, không gắn ở đó.
+          // Trạng thái rỗng cấp trang: Celes 80px ngồi chờ (mục 12). KHÔNG gắn
+          // vào từng dòng của danh sách — đó là nơi người ta đọc.
           <div className="flex items-center gap-[16px]">
-            <CelesMascot trangThai="default" cao={80} />
+            <CelesMascot cho="rong" minhHoa="sitting-neutral" cao={80} />
             <p className="body-sm min-w-0" style={{ color: 'var(--fg-muted)' }}>
               {t.danhSach.trong}
             </p>

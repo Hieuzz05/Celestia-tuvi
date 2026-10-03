@@ -49,7 +49,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
 | Con số thương mại (hạn mức, mức tiền) | `lib/support/config.ts` — đọc từ biến môi trường |
 | Dấu thương hiệu (web) | `components/Logo.tsx` — `app/icon.svg` phải sửa theo |
-| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Linh vật đứng nghiêm khi câu MỚI NHẤT nặng: `lib/linh-vat.ts`. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt ở lá số, mệnh bàn, trang luận giải |
+| Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Linh vật đứng nghiêm khi câu MỚI NHẤT nặng: `lib/linh-vat.ts`. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt TRONG vùng nội dung (mệnh bàn, bài luận, dòng thời gian); danh sách chỗ đặt + bài kiểm CI `scripts/test-cho-dat-celes.ts` |
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Nhịp và kiểu của MỘT lượt chat | `lib/rag/hop-dong-tra-loi.ts` — hàm thuần, chỉ đổi độ dài và lối nói, KHÔNG chạm kết luận |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
@@ -77,6 +77,32 @@ mọi AI làm trên repo, cả hai máy.
 
 `[CHIẾN LƯỢC]` · `[CODE]` · `[SỬA LỖI]`. Không có dấu thì AI hỏi lại một câu
 ngắn, đừng tự đoán rồi đi sai luồng.
+
+Mỗi dấu có một skill chứa các bước làm được — **thấy dấu thì AI tự gọi skill, không chờ gõ lệnh**:
+
+| Dấu | Skill | Bước chung lúc mở phiên |
+|---|---|---|
+| `[CHIẾN LƯỢC]` | `/chien-luoc` | `.claude/skills/lam-tinh-nang/mo-phien.md` |
+| `[CODE]` | `/lam-tinh-nang` | (đọc TRANG-THAI, worktree nếu thư mục có phiên khác, |
+| `[SỬA LỖI]` | `/sua-loi` | nhánh `viec/*`, ghi "Đang làm" lên main, đọc `docs/bay`) |
+
+Ba skill phụ: `/kiem-truoc-push` (bảng "push được / chưa"), `/cap-nhat-backlog` (ghi
+`PRODUCT-BACKLOG.xlsx`, cấp ID không trùng), `/bai-hoc` (xem dưới). Luật CỨNG vẫn nằm ở tệp này;
+skill chỉ là các bước. Đổi luồng thì grep cả `.claude/skills/` và `AI-PHOI-HOP.md` — ba nơi
+nói ngược nhau là chuyện đã xảy ra (`docs/bai-hoc/NHAT-KY.md`, 03/10/2026).
+
+**Cỡ việc (chủ dự án quyết 02/10/2026).** `phan-bien`, `danh-gia-tac-dong`, `bien-tap-vi` chỉ bắt
+buộc với việc LỚN: đổi kiến trúc, đổi hợp đồng trả lời / prompt / schema, đổi chữ quan trọng ở mặt
+trước, thêm dịch vụ, tính năng mới cần ID, chạm vùng Chung, hoặc đóng một tính năng lớn. Việc nhỏ
+bỏ ba reviewer đó; `researcher` và `qa` vẫn giữ. Không chắc thì coi là Lớn và nói rõ đã chọn cỡ nào.
+
+### Bài học — làm sai một lần, cả hai máy cùng nhớ
+
+Có cái giá thật (mất thời gian, lỗi lọt, chủ dự án phải sửa lưng, hoặc cách mới đo được là tốt
+hơn) thì gọi `/bai-hoc`: ghi `docs/bai-hoc/NHAT-KY.md`, nâng luật lên `docs/bai-hoc/cach-lam.md`
+(nạp mọi phiên qua `CLAUDE.md`) hoặc `docs/bay/<vùng>.md`. **Lặp lần 2 thì chữ không đủ — đề xuất
+máy canh** (test / hook / CI). Chủ dự án nói "sai rồi", "lại quên", "không phải thế" là tín hiệu
+phải gọi. Memory của Claude là cục bộ một máy — bài học dùng chung KHÔNG ghi vào đó.
 
 ### Luồng A — `[CHIẾN LƯỢC]`
 
@@ -189,6 +215,10 @@ mục tạm **và in đường dẫn ra màn hình** — không in thì chủ d�
 
 ## Kiểm tra trước khi commit
 
+Trong lúc làm: `node scripts/kiem-nhanh.mjs --chay` — chỉ chạy tsc, lint và các bài CI phủ đúng tệp
+vừa đổi (đọc đồ thị import). Danh sách đầy đủ dưới đây là thứ CI chạy; tay chỉ cần khi đổi cấu
+hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/kiem-truoc-push`.
+
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
@@ -207,6 +237,7 @@ npx tsx scripts/test-sua-chua-tach.ts  # lớp sửa câu giữ nguyên xuống 
 npx tsx scripts/test-dau-an.ts         # dấu ấn Celes: cổng (an toàn, ketLuan, bỏ dẫn dắt, câu nối), chống lặp, đầu-cuối trên văn cuối — offline
 npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (tập DB bỏ qua nếu thiếu .env.local)
 npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
+npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
 npx tsx scripts/eval-phu-du-kien.ts --sinh|--cham  # model thật: A/B mã cũ–mới trên dữ kiện cung chính/xung chiếu (xem đầu tệp)
@@ -219,7 +250,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng

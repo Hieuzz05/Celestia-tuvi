@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { NutChinh, NutVien, O, OChon, PillTag, Truong } from '@/components/ui';
 import { ghiSuKien } from '@/lib/analytics';
+import { CelesMascot } from '@/components/CelesMascot';
 import { dien, useT } from '@/lib/i18n/context';
 import { hourToChi } from '@/lib/tuvi/lunar';
 import { CHI } from '@/lib/tuvi/constants';
@@ -77,6 +78,9 @@ export function BuocNhapSinh({
 
   return (
     <div className="card mx-auto flex w-full max-w-[560px] flex-col gap-[24px]">
+      {/* Màn vào: Celes nghiêng lại nghe. Ngày sinh sai vẫn giữ ảnh này —
+          lỗi nhập liệu không phải lỗi hệ thống, không đổi sang lo lắng. */}
+      <CelesMascot cho="rong" minhHoa="leaning-closer" cao={80} caoNho={64} ngay />
       {/* Chỉ báo tiến độ — cho biết còn bao xa, giảm cảm giác form dài vô tận */}
       <div className="flex flex-col gap-[8px]">
         <span className="eyebrow">

@@ -15,8 +15,11 @@ import { CongUngHo } from '@/components/support/CongUngHo';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { QuayLai } from '@/components/QuayLai';
+import { CelesMascot } from '@/components/CelesMascot';
+import { dien, useT } from '@/lib/i18n/context';
 
 function TrangLuanGiai() {
+  const t = useT();
   const { duocVao, dangDoc } = useTaiKhoan();
   const params = useSearchParams();
   const [form, setForm] = useState<ThongTinForm>({
@@ -269,11 +272,14 @@ function TrangLuanGiai() {
             className="min-h-[200px] rounded-[var(--radius-cards)] border p-[22px]"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
+            {/* Chờ thật 15–45 giây: ảnh hiện ngay, không cần trễ. */}
             {dangChay && (
-              <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-                Đang luận giải chủ đề <b style={{ color: 'var(--fg)' }}>{CHU_DE[chuDe].nhan}</b>… mất
-                khoảng 15–45 giây.
-              </p>
+              <div className="flex items-center gap-[16px]">
+                <CelesMascot cho="cho" trangThai="thinking" cao={80} caoNho={64} />
+                <p className="body-text min-w-0" style={{ color: 'var(--fg-muted)' }}>
+                  {dien(t.luanChuDe.dangDoc, { chuDe: CHU_DE[chuDe].nhan })}
+                </p>
+              </div>
             )}
 
             {loi && (
@@ -299,9 +305,12 @@ function TrangLuanGiai() {
             )}
 
             {!ketQua && !dangChay && !loi && (
-              <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-                Chọn một chủ đề ở trên để bắt đầu.
-              </p>
+              <div className="flex items-center gap-[16px]">
+                <CelesMascot cho="rong" minhHoa="reading" cao={80} caoNho={64} />
+                <p className="body-text min-w-0" style={{ color: 'var(--fg-muted)' }}>
+                  {t.luanChuDe.chonChuDe}
+                </p>
+              </div>
             )}
           </div>
         </div>

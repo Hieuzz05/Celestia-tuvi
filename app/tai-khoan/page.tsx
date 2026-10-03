@@ -9,6 +9,7 @@ import { TheSupporter } from '@/components/support/TheSupporter';
 import { Shell } from '@/components/ui';
 import Link from 'next/link';
 import { useT } from '@/lib/i18n/context';
+import { CelesMascot } from '@/components/CelesMascot';
 
 export default function TaiKhoanPage() {
   const t = useT();
@@ -69,9 +70,12 @@ export default function TaiKhoanPage() {
   return (
     <Shell className="py-[24px]">
       <div className="flex max-w-[620px] flex-col gap-[24px]">
-      <div>
-        <p className="eyebrow">Tài khoản</p>
-        <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
+      <div className="flex items-center gap-[16px]">
+        <CelesMascot cho="dau-trang" minhHoa="using-laptop" cao={64} caoNho={56} ngay />
+        <div className="min-w-0">
+          <p className="eyebrow">Tài khoản</p>
+          <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
+        </div>
       </div>
 
       <div

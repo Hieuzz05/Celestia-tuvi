@@ -3,3 +3,6 @@
 # lặng lẽ: git báo gộp thành công, Excel mới báo không mở được.
 *.xlsx binary
 *.pdf  binary
+
+# Sổ bài học chỉ thêm vào cuối, hai máy cùng ghi lên main: gộp kiểu union để không xung đột.
+docs/bai-hoc/NHAT-KY.md merge=union

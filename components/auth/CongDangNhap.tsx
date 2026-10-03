@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
 import { Eyebrow, IconKhien, The } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
+import { CelesMascot } from '@/components/CelesMascot';
 
 /**
  * Cổng đăng nhập theo ngữ cảnh (Gate 1 — miễn phí).
@@ -37,6 +38,7 @@ export function CongDangNhap({
   moTa,
   chu,
   toanTrang = false,
+  quayVe,
 }: {
   nguon: NguonCong;
   /** Thứ đang chờ phía sau cổng — cho thấy để người dùng biết mình đổi được gì */
@@ -58,11 +60,17 @@ export function CongDangNhap({
    * thoại (nó nằm trong Menu).
    */
   toanTrang?: boolean;
+  /**
+   * Nơi quay về sau đăng nhập khi trang cần cả query (vd. /luan-giai/sau mang
+   * tham số lá số). Bỏ trống → pathname. Chỉ nhận đường dẫn nội bộ.
+   */
+  quayVe?: string;
 }) {
   const pathname = usePathname();
   const t = useT();
   const loiIch = t.cong.loiIch[nguon];
-  const duongDangNhap = `/dang-nhap?next=${encodeURIComponent(pathname)}`;
+  const dich = quayVe && quayVe.startsWith('/') && !quayVe.startsWith('//') ? quayVe : pathname;
+  const duongDangNhap = `/dang-nhap?next=${encodeURIComponent(dich)}`;
   const TieuDe = toanTrang ? 'h1' : 'h2';
 
   useEffect(() => {
@@ -71,11 +79,14 @@ export function CongDangNhap({
 
   // Giữ cả ý định lẫn nơi cần quay về, để sau khi đăng nhập người dùng rơi lại
   // đúng chỗ vừa bấm chứ không phải trang chủ
-  const duong = `/dang-nhap?intent=${nguon}&next=${encodeURIComponent(pathname)}`;
+  const duong = `/dang-nhap?intent=${nguon}&next=${encodeURIComponent(dich)}`;
 
   return (
     <The className={`flex flex-col gap-[16px] ${toanTrang ? 'mx-auto w-full max-w-[640px]' : ''}`}>
       {!toanTrang && <Eyebrow>{t.cong.eyebrow}</Eyebrow>}
+      {/* Chỉ bản toàn trang: bản nhúng nằm giữa nội dung trang khác. Trang
+          gọi cổng toàn trang tự nhường linh vật đầu trang của nó (mục 12). */}
+      {toanTrang && <CelesMascot cho="cong" minhHoa="waving" cao={80} caoNho={64} ngay />}
 
       <div className="flex items-start gap-[12px]">
         {!toanTrang && (
