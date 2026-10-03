@@ -167,7 +167,7 @@ const CA: Ca[] = [
   { ma: 'D', cauHoi: 'Khi nào tôi lấy chồng?', khuon: 'D' },
   { ma: 'D-phay-da-bo', cauHoi: 'Tháng nào đáng chú ý hơn?', khuon: 'D' },
   { ma: 'nam-cu-the', cauHoi: `Năm ${NAM + 2} tiền bạc của tôi thế nào?`, chuDe: 'tai-chinh' },
-  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} vừa rồi công việc của tôi thế nào?`, thang: true },
+  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} âm vừa rồi công việc của tôi thế nào?`, thang: true },
   { ma: 'thang-11-gan', cauHoi: 'Sắp tới công việc của tôi thế nào?', bayGio: { nam: NAM, thang: 11, ngay: 10 } },
   // E
   { ma: 'E', cauHoi: 'Tôi nên ở lại công ty hay chuyển việc?', khuon: 'E' },
@@ -198,17 +198,19 @@ const CA: Ca[] = [
   { ma: 'bs1-con-toi', cauHoi: 'con tôi năm nay thế nào?', nguoi: ['con'] },
   { ma: 'bs3-bo-suc-khoe', cauHoi: 'bố tôi sức khỏe thế nào?', khuon: 'F2', nguoi: ['bố'] },
   { ma: 'bs4-ban-than', cauHoi: 'bản thân tôi năm nay công việc có ổn không?', chuDe: 'su-nghiep' },
-  { ma: 'bs8-thang-12', cauHoi: 'Tháng 12 sắp tới tiền bạc của tôi thế nào?', thang: true, bayGio: { nam: NAM, thang: 11, ngay: 20 } },
-  { ma: 'bs9-nhuan', cauHoi: `Tháng ${NHUAN.thang} năm ${NHUAN.nam} công việc của tôi thế nào?`, namXem: NHUAN.nam },
+  { ma: 'bs8-thang-12', cauHoi: 'Tháng 12 âm sắp tới tiền bạc của tôi thế nào?', thang: true, bayGio: { nam: NAM, thang: 11, ngay: 20 } },
+  { ma: 'bs9-nhuan', cauHoi: `Tháng ${NHUAN.thang} nhuận năm ${NHUAN.nam} công việc của tôi thế nào?`, namXem: NHUAN.nam },
 ];
 
 // Bộ câu MỘT tháng (chủ dự án 04/10/2026): bản cuối phải còn ≥ 1 câu nguyệt hạn, thử lại ≤ 15%.
 const THANG_SAU = THANG < 12 ? THANG + 1 : 12;
 const CA_THANG: Ca[] = [
-  { ma: 'thang-sau', cauHoi: `Tháng ${THANG_SAU} công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
+  { ma: 'thang-sau', cauHoi: `Tháng ${THANG_SAU} âm công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
   { ma: 'thang-nay', cauHoi: 'Tháng này tiền bạc của tôi ra sao?', thang: true, chuDe: 'tai-chinh' },
   { ma: 'thang-tinh-cam', cauHoi: 'Tháng sau chuyện tình cảm của tôi thế nào?', thang: true, chuDe: 'tinh-cam' },
-  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} vừa rồi công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
+  { ma: 'thang-da-qua', cauHoi: `Tháng ${thangDaQua} âm vừa rồi công việc của tôi thế nào?`, thang: true, chuDe: 'su-nghiep' },
+  // "Tháng N" trơn = tháng DƯƠNG (chủ dự án 04/10/2026) — ca chủ dự án thử trên Preview.
+  { ma: 'thang-duong-qua', cauHoi: 'Tháng 6 năm 2025 công việc của tôi thế nào?', thang: true, chuDe: 'su-nghiep' },
 ];
 
 /* ----------------------------------------------------------- đo một bài */

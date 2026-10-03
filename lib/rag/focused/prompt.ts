@@ -197,14 +197,20 @@ export function khoiMoc(m: MocTinhSan): string {
     dong.push(
       `Tháng đang đọc: tháng ${thang.thang}${thang.nhuan === 'nhuan' ? ' nhuận' : ''} âm${khoang ? ` (khoảng ${khoang} dương lịch)` : ''}.`
     );
+    if (thang.duong) {
+      dong.push(
+        `Người dùng hỏi tháng ${thang.duong.thang}/${thang.duong.nam} DƯƠNG LỊCH; phần lớn tháng đó là tháng ${thang.thang} âm ở trên. Câu mở đầu do hệ thống viết đã giải thích quy đổi — KHÔNG nhắc lại, KHÔNG viết "tháng ${thang.thang} âm"; gọi là "tháng ${thang.trangThai === 'dang' ? 'này' : 'đó'}".`
+      );
+    }
     if (thang.trangThai === 'da-qua') {
       dong.push('Tháng này ĐÃ QUA. Nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây".');
-      dong.push('Câu mở đầu do hệ thống viết đã nêu tháng và năm — câu chốt KHÔNG lặp lại "Tháng X âm năm N".');
+      dong.push('Câu mở đầu do hệ thống viết đã nêu tháng và năm — thân bài và câu chốt KHÔNG lặp lại tên tháng, năm. Không viết "tháng này", "quãng này".');
     } else if (thang.trangThai === 'dang') {
       dong.push('Đây là tháng hiện tại.');
     } else {
       dong.push(
-        `Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng ${thang.thang} đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".`
+        `Tháng này CHƯA TỚI: nói như dự báo ("tháng đó dễ…", "khi vào tháng đó…"), KHÔNG dùng "đang", KHÔNG gọi là "tháng này". ` +
+          `Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng ${thang.thang} đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".`
       );
     }
   } else {

@@ -23,7 +23,7 @@ import { CHU_TRUU_TUONG } from '../lib/rag/chu-truu-tuong';
 import { PHIEN_BAN_NGON_NGU } from '../lib/rag/ngon-ngu';
 import { PHIEN_BAN_VALIDATOR } from '../lib/rag/kiem-duyet';
 import { nhanDangDoiTuong, ghepKeHoach, cauGhep } from '../lib/rag/focused/doi-tuong';
-import { coThangNhuan, khoangDuong, soVoiBayGio, laCuoiNamAm } from '../lib/rag/focused/thang-am';
+import { coThangNhuan, khoangDuong, soVoiBayGio, laCuoiNamAm, thangAmChuYeu } from '../lib/rag/focused/thang-am';
 import { lapKeHoachFocused } from '../lib/rag/focused/ke-thua';
 import { phanKhuon, laXinSau, tachHaiVe, boiCanhThoiGian } from '../lib/rag/focused/phan-loai';
 import {
@@ -33,11 +33,11 @@ import {
   CAU_VAN_RIENG,
   cauVanRieng,
   cauHaiVe,
-  cauHoiNhuan,
   cauKhiNao,
   cauNhuanChuaTach,
   chipCuoiNam,
   cauThangDaQua,
+  cauThangDuong,
 } from '../lib/rag/focused/cau-ma';
 import { CAU_NGOAI_TAM, CAU_NGOAI_TAM_EN } from '../lib/rag/focused/ngoai-tam';
 import {
@@ -50,7 +50,7 @@ import {
 import { datMienTruTamLy } from '../lib/rag/an-toan';
 import { loiDiTiep } from '../lib/rag/hinh-dang-tra-loi';
 import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
-import { kiemMotCau, kiemLuot, chonChip, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
+import { kiemMotCau, kiemLuot, chonChip, doiNayThanhDo, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
 import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
 import { cauChotDuPhong, mocChoCauChot } from '../lib/rag/focused/chot-huong';
@@ -394,32 +394,92 @@ for (const ca of CA_DOI_TUONG) {
     kiem(b2b.chuDe === chuDe, `N3 hai bước (lịch sử có câu đang hỏi) "${cauGoc}" ra ${b2b.chuDe}`);
   }
 
-  // Tháng nhuận: hai chip phân giải được, không hỏi lại lần hai. 2025 có tháng 6 nhuận.
-  for (const [nam, thang] of [[2025, 6], [2023, 2]] as const) {
-    const cauGoc = `Tháng ${thang} năm ${nam} công việc của tôi thế nào?`;
-    const kh = lapKeHoachFocused({ ...vao, cauHoi: cauGoc }).keHoach;
-    const bc = boiCanhThoiGian({ cauHoi: cauGoc, keHoach: kh, namXem: 2026, bayGio });
-    if (bc.thang?.nhuan !== 'can-hoi') {
-      hong.push(`"${cauGoc}" phải hỏi lại nhuận, ra ${bc.thang?.nhuan}`);
-      continue;
-    }
-    const hoi = cauHoiNhuan(bc.thang, 2026);
-    kiem(!hoi.goiModel, 'hỏi lại nhuận không được gọi model');
+  // "Tháng N" trơn = tháng N DƯƠNG (chủ dự án 04/10/2026); đọc tháng âm phủ phần lớn tháng ấy.
+  // "âm" / "âm lịch" = tháng âm; không nói "nhuận" thì là tháng thường, không hỏi lại.
+  {
+    const q = thangAmChuYeu(2025, 6);
+    kiem(q.nam === 2025 && q.thang === 5 && !q.nhuan && q.khoang === '27/5 – 24/6', `quy đổi 6/2025 sai: ${JSON.stringify(q)}`);
+    const q8 = thangAmChuYeu(2025, 8);
+    kiem(q8.thang === 6 && q8.nhuan, `8/2025 phải rơi vào tháng 6 nhuận: ${JSON.stringify(q8)}`);
+    const q1 = thangAmChuYeu(2026, 1);
+    kiem(q1.nam === 2025 && q1.thang === 11, `1/2026 phải là tháng 11 âm năm 2025: ${JSON.stringify(q1)}`);
+  }
+  for (const [cauHoi, can] of [
+    ['Tháng 6 năm 2025 công việc của tôi thế nào?', { nam: 2025, thang: 5, nhuan: null, duong: 6 }],
+    ['Tháng 8 năm 2025 công việc của tôi thế nào?', { nam: 2025, thang: 6, nhuan: 'nhuan', duong: 8 }],
+    ['Tháng 6 âm năm 2025 công việc của tôi thế nào?', { nam: 2025, thang: 6, nhuan: 'thuong', duong: null }],
+    ['Tháng 6 âm lịch năm 2025 công việc của tôi thế nào?', { nam: 2025, thang: 6, nhuan: 'thuong', duong: null }],
+    ['Tháng 6 nhuận năm 2025 công việc của tôi thế nào?', { nam: 2025, thang: 6, nhuan: 'nhuan', duong: null }],
+    ['Tháng 1 năm 2026 công việc của tôi thế nào?', { nam: 2025, thang: 11, nhuan: null, duong: 1 }],
+    ['Tháng 11 công việc của tôi thế nào?', { nam: 2026, thang: 10, nhuan: null, duong: 11 }],
+  ] as const) {
+    const kh = lapKeHoachFocused({ ...vao, cauHoi }).keHoach;
+    const bc = boiCanhThoiGian({ cauHoi, keHoach: kh, namXem: 2026, bayGio });
+    const ra = { nam: bc.thang?.nam, thang: bc.thang?.thang, nhuan: bc.thang?.nhuan, duong: bc.thang?.duong?.thang ?? null };
     kiem(
-      hoi.cau ===
-        `Tháng ${thang} nhuận năm ${nam} cần được đọc riêng với tháng ${thang} thường. Hiện Celes chưa tách được hai mốc này, nên chưa luận tháng nhuận để tránh đọc nhầm.`,
-      `câu nhuận lệch chữ đã duyệt: ${hoi.cau}`
+      ra.nam === can.nam && ra.thang === can.thang && ra.nhuan === can.nhuan && ra.duong === can.duong && bc.namHieuLuc === can.nam,
+      `"${cauHoi}" ra ${JSON.stringify(ra)} / năm ${bc.namHieuLuc}, cần ${JSON.stringify(can)}`
     );
-    // Chỉ một chip — tháng thường. Chip "tháng nhuận" là mời bấm vào một ngõ cụt.
-    kiem(hoi.chip.length === 1, `nhuận có ${hoi.chip.length} chip, cần 1: ${hoi.chip.join(' | ')}`);
-    const can = ['thuong'];
-    hoi.chip.forEach((chip, i) => {
-      const k = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cauGoc)] }).keHoach;
-      const b = boiCanhThoiGian({ cauHoi: chip, keHoach: k, namXem: 2026, bayGio });
-      kiem(b.thang?.nhuan === can[i], `chip "${chip}" ra ${b.thang?.nhuan}, cần ${can[i]}`);
-      kiem(b.namHieuLuc === nam, `chip "${chip}" đọc năm ${b.namHieuLuc}, cần ${nam}`);
-      kiem(k.chuDe === 'su-nghiep', `chip "${chip}" mất chủ đề: ${k.chuDe}`);
-    });
+  }
+  // Chip tháng âm thường do câu nhuận đặt phải đọc lại đúng tháng âm thường, giữ chủ đề.
+  {
+    const goc = 'Tháng 6 nhuận năm 2025 công việc của tôi thế nào?';
+    const kh = lapKeHoachFocused({ ...vao, cauHoi: goc }).keHoach;
+    const bc = boiCanhThoiGian({ cauHoi: goc, keHoach: kh, namXem: 2026, bayGio });
+    const r = cauNhuanChuaTach(bc.thang!, 2026);
+    kiem(!r.goiModel && r.chip.length === 1 && r.chip[0] === 'Tháng 6 âm năm 2025', `chip nhuận sai: ${r.chip.join(' | ')}`);
+    const k = lapKeHoachFocused({ ...vao, cauHoi: r.chip[0], laTiepTuChip: true, lichSu: [nd(goc)] }).keHoach;
+    const b = boiCanhThoiGian({ cauHoi: r.chip[0], keHoach: k, namXem: 2026, bayGio });
+    kiem(b.thang?.nhuan === 'thuong' && b.thang.thang === 6 && !b.thang.duong && b.namHieuLuc === 2025, `chip "${r.chip[0]}" ra ${JSON.stringify(b.thang)}`);
+    kiem(k.chuDe === 'su-nghiep', `chip "${r.chip[0]}" mất chủ đề: ${k.chuDe}`);
+  }
+  // Câu quy đổi tháng dương: nêu tháng dương, tháng âm, khoảng ngày; tháng qua gộp ý N2.
+  {
+    const mocDuongQua = { nam: 2025, thang: 5, trangThai: 'da-qua' as const, nhuan: null, duong: { nam: 2025, thang: 6, khoang: '27/5 – 24/6', ro: true } };
+    kiem(
+      cauThangDuong(mocDuongQua) ===
+        'Tháng 6/2025 đã qua. Phần lớn tháng đó nằm trong tháng 5 âm lịch (từ 27/5 đến 24/6 dương lịch), nên phần dưới đọc lại xu hướng của tháng âm ấy, không coi đây là dự báo cho thời gian sắp tới.',
+      `câu tháng dương đã qua sai: ${cauThangDuong(mocDuongQua)}`
+    );
+    const mocDuongToi = { nam: 2026, thang: 10, trangThai: 'toi' as const, nhuan: null, duong: { nam: 2026, thang: 11, khoang: '9/11 – 8/12', ro: true } };
+    kiem(
+      cauThangDuong(mocDuongToi) === 'Tháng 11/2026 phần lớn nằm trong tháng 10 âm lịch (từ 9/11 đến 8/12 dương lịch), nên Celes đọc theo tháng âm ấy.',
+      `câu tháng dương sắp tới sai: ${cauThangDuong(mocDuongToi)}`
+    );
+    const mocNhuanDuong = { nam: 2025, thang: 6, trangThai: 'da-qua' as const, nhuan: 'nhuan' as const, duong: { nam: 2025, thang: 8, khoang: '25/7 – 22/8', ro: true } };
+    const nhuanDuong = cauNhuanChuaTach(mocNhuanDuong, 2026);
+    kiem(
+      !nhuanDuong.goiModel && nhuanDuong.chip.length === 0 && nhuanDuong.cau.startsWith('Tháng 8/2025 phần lớn rơi vào tháng 6 nhuận âm lịch (từ 25/7 đến 22/8 dương lịch)'),
+      `câu nhuận từ tháng dương sai: ${nhuanDuong.cau}`
+    );
+    for (const c of [cauThangDuong(mocDuongQua, 'en'), cauThangDuong(mocDuongToi, 'en'), cauNhuanChuaTach(mocNhuanDuong, 2026, 'en').cau]) {
+      kiem(!conChuViet(c), `câu tháng dương EN còn chữ Việt: ${c}`);
+    }
+    kiem(
+      mocChoChot({ namHieuLuc: 2025, cuoiNam: false, thang: mocDuongQua } as never, { phamViThoiGian: 'thang' }, bayGio) === 'Tháng đó',
+      'mốc chốt tháng dương sai'
+    );
+    // Chia gần đều: không nói "phần lớn". Năm âm khác năm dương: nêu năm âm.
+    const mocVat = { nam: 2025, thang: 11, trangThai: 'toi' as const, nhuan: null, duong: { nam: 2026, thang: 1, khoang: '20/12 – 18/1', ro: false } };
+    kiem(
+      cauThangDuong(mocVat) ===
+        'Tháng 1/2026 vắt qua hai tháng âm; Celes đọc theo tháng có phần dài hơn là tháng 11 âm lịch năm 2025 (từ 20/12 đến 18/1 dương lịch).',
+      `câu tháng dương vắt hai tháng sai: ${cauThangDuong(mocVat)}`
+    );
+    for (const c of [cauThangDuong(mocVat, 'en'), cauThangDuong({ ...mocVat, trangThai: 'da-qua' }, 'en'), cauNhuanChuaTach({ ...mocNhuanDuong, duong: { ...mocNhuanDuong.duong, ro: false } }, 2026, 'en').cau]) {
+      kiem(!conChuViet(c) && !/most of/i.test(c), `câu vắt hai tháng EN sai: ${c}`);
+    }
+    kiem(!/phần lớn/u.test(cauThangDuong({ ...mocVat, trangThai: 'da-qua' })), 'chia gần đều mà vẫn nói "phần lớn"');
+    // Tháng 6 âm thầm, am hiểu: không phải âm lịch.
+    for (const cauHoi of ['Tháng 6 âm thầm mình cố gắng, công việc năm 2025 thế nào?']) {
+      const kh = lapKeHoachFocused({ ...vao, cauHoi }).keHoach;
+      const bc = boiCanhThoiGian({ cauHoi, keHoach: kh, namXem: 2026, bayGio });
+      kiem(!kh.thangMucTieu || !!bc.thang?.duong, `"${cauHoi}" bị hiểu là tháng âm`);
+    }
+    // Tháng đã qua: "tháng này / quãng này" → "đó".
+    const doi = doiNayThanhDo('Quãng này công việc mở ra, tháng này dễ vướng.');
+    kiem(doi === 'Quãng đó công việc mở ra, tháng đó dễ vướng.', `đổi "này" sai: ${doi}`);
+    kiem(doiNayThanhDo('Cách này ổn, tháng nàyy') === 'Cách này ổn, tháng nàyy', 'đổi "này" chạm nhầm chữ khác');
   }
 
   // N2 nêu đúng tháng, năm; N4 chip sang năm đứng đầu, không trùng.
@@ -659,7 +719,6 @@ for (const ca of CA_DOI_TUONG) {
   const cauMaEn: string[] = [
     CAU_KHI_NAO.en, CAU_HAI_VE.en, CAU_VAN_RIENG.en, CAU_CUOI_NAM.en, ...CAU_NGOAI_TAM_EN, MIEN_TRU_TAM_LY_EN,
     cauNhuanChuaTach(mocNhuan, 2026, 'en').cau, ...cauNhuanChuaTach(mocNhuan, 2026, 'en').chip,
-    cauHoiNhuan({ ...mocNhuan, nhuan: 'can-hoi' }, 2026, 'en').cau,
     cauThangDaQua(mocQua, 'en'), cauThangDaQua({ ...mocQua, nhuan: 'nhuan' }, 'en'),
     ...cauKhiNao('en').chip, chipCuoiNam(2026, [], 'en').join(' '),
     cauHaiVe(['nghỉ việc', 'ở lại'], 'en').cau, ...cauHaiVe(['nghỉ việc', 'ở lại'], 'en').chip,
@@ -774,14 +833,17 @@ async function kiemNoi() {
     const nhay = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?', mucAnToan: 'SENSITIVE' });
     kiem(nhay.van.length > f2.van.length && nhay.van.startsWith(f2.van), 'F2 SENSITIVE thiếu lời miễn trừ');
 
-    // Hỏi lại nhuận: 2025 có tháng 6 nhuận, gọi thẳng để tiêm "bây giờ".
+    // Tháng 8/2025 dương phần lớn là tháng 6 nhuận → dừng bằng câu mã, không chip, không đọc tháng thường.
     const nh = await traLoiFocused(
-      { ...vaoGoc, namXem: 2025, cauHoi: 'Tháng 6 năm 2025 công việc của tôi thế nào?' },
+      { ...vaoGoc, namXem: 2025, cauHoi: 'Tháng 8 năm 2025 công việc của tôi thế nào?' },
       phienBanHienTai,
       async () => [],
       bayGio
     );
-    kiem(nh.model === 'focused-nhuan' && (nh.coCauTruc?.goiYTiep ?? []).length === 1, `nhuận ra ${nh.model}`);
+    kiem(
+      nh.model === 'focused-nhuan-chua-tach' && (nh.coCauTruc?.goiYTiep ?? []).length === 0 && nh.goi.duKien.length === 0,
+      `8/2025 ra ${nh.model}`
+    );
 
     // Đã chọn tháng nhuận (chip hoặc gõ thẳng): engine chưa tách nguyệt hạn tháng
     // nhuận → fail closed bằng câu mã, KHÔNG truy hồi / gọi model / đọc tháng thường.
@@ -798,11 +860,11 @@ async function kiemNoi() {
         `"${cauHoi}" văn sai: ${r.van}`
       );
       kiem(r.goi.duKien.length === 0, `"${cauHoi}" vẫn có dữ kiện — đã đọc tháng thường`);
-      kiem((r.coCauTruc?.goiYTiep ?? []).join('|') === 'Tháng 6 năm 2025', `"${cauHoi}" chip sai: ${(r.coCauTruc?.goiYTiep ?? []).join('|')}`);
+      kiem((r.coCauTruc?.goiYTiep ?? []).join('|') === 'Tháng 6 âm năm 2025', `"${cauHoi}" chip sai: ${(r.coCauTruc?.goiYTiep ?? []).join('|')}`);
     }
     // Chip "Tháng 6" (thường) vẫn đi đường đọc bình thường, không bị chặn.
     {
-      const chipThuong = (nh.coCauTruc?.goiYTiep ?? [])[0] ?? '';
+      const chipThuong = 'Tháng 6 âm năm 2025';
       const k = lapKeHoachFocused({ cauHoi: chipThuong, laTiepTuChip: true, lichSu: [{ vaiTro: 'nguoi-dung', noiDung: goc6 }], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2025, thangXem: 8 }).keHoach;
       const b = boiCanhThoiGian({ cauHoi: chipThuong, keHoach: k, namXem: 2025, bayGio });
       kiem(b.thang?.nhuan === 'thuong' && b.thang.thang === 6, `chip thường "${chipThuong}" ra ${b.thang?.nhuan}`);

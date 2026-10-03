@@ -267,8 +267,16 @@ function tranDoDai(ctx: NguCanhKiem): { cau: number; amTiet: number; thuLai: num
   return { cau: 4, amTiet: 120, thuLai: 140 };
 }
 
+/**
+ * Tháng đã qua: "tháng này", "quãng này" đọc như đang diễn ra — đổi thành "đó".
+ * Thay chữ trong một cụm cố định, không chạm kết luận.
+ */
+const NAY_QUA_KHU = /(?<![\p{L}\p{M}])(tháng|quãng|thời gian|giai đoạn|khoảng)( này)(?![\p{L}\p{M}])/giu;
+export const doiNayThanhDo = (s: string) => s.replace(NAY_QUA_KHU, (_m, a: string) => `${a} đó`);
+
 export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   const bo: CauDaBo[] = [];
+  const quaKhu = ctx.thoiGian.thang?.trangThai === 'da-qua' ? doiNayThanhDo : (x: string) => x;
   const { khuon, loaiSuKien } = ctx.phanLoai;
   /*
    * Ngoài phạm vi loại (b): đúng một câu chốt, không câu thân. Không có căn cứ
@@ -282,7 +290,7 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
   // Câu thân: làm sạch, kiểm, giữ mã F### thật.
   let cau = ban.cau
     .map((c) => {
-      const noiDung = lamSach(c.noiDung);
+      const noiDung = quaKhu(lamSach(c.noiDung));
       const ma = c.maDuKien.filter((m) => ctx.maHopLe.has(m));
       return { ...c, noiDung, maDuKien: ma, coCanCu: ma.length > 0 };
     })
@@ -293,7 +301,7 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
     });
 
   // 8. Câu chốt. E: câu mã đã mở, câu chốt model bỏ (nó dễ chọn hộ một vế).
-  let cauChot = khuon === 'E' || ctx.boChotModel ? '' : lamSach(ban.cauChot);
+  let cauChot = khuon === 'E' || ctx.boChotModel ? '' : quaKhu(lamSach(ban.cauChot));
   let dungDuPhong = false;
   let lyDoThayChot: string | undefined;
   const nghiengTrongGoi = ctx.nghieng

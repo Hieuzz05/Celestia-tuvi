@@ -15,7 +15,7 @@ import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { laCauChieuXau } from './chot-huong';
 import { khopCum } from './khop';
-import { coThangNhuan, laCuoiNamAm, soVoiBayGio } from './thang-am';
+import { coThangNhuan, laCuoiNamAm, namDuongCua, soVoiBayGio, thangAmChuYeu } from './thang-am';
 
 export type Khuon = 'A' | 'B' | 'C' | 'D' | 'E' | 'F1' | 'F2' | 'G';
 
@@ -214,11 +214,18 @@ export interface MocThang {
   thang: number;
   trangThai: 'da-qua' | 'dang' | 'toi';
   /**
-   * Năm có cả tháng X thường và X nhuận: `can-hoi` khi người dùng chưa nói rõ
-   * (mã báo chưa luận tháng nhuận, chip mời đọc tháng thường), `nhuan` / `thuong` khi đã nói. `null` khi năm
-   * không có nhuận ở tháng đó.
+   * `nhuan` khi đang đọc tháng X NHUẬN (người dùng gõ "nhuận", hoặc tháng dương
+   * họ hỏi rơi phần lớn vào tháng nhuận) — engine chưa tách, mã dừng. `thuong`
+   * khi năm có cả X thường lẫn X nhuận mà đọc X thường. `null` khi năm không có
+   * nhuận ở tháng đó.
    */
-  nhuan: 'can-hoi' | 'nhuan' | 'thuong' | null;
+  nhuan: 'nhuan' | 'thuong' | null;
+  /**
+   * Tháng DƯƠNG người dùng hỏi, khi họ gọi số tháng mà không nói "âm" (chủ dự
+   * án 04/10/2026: "tháng 6" là tháng 6 dương). `nam` / `thang` ở trên là tháng
+   * âm phủ phần lớn tháng dương ấy — nguyệt hạn tính theo tháng âm.
+   */
+  duong?: { nam: number; thang: number; khoang: string | null; ro: boolean };
 }
 
 export interface BoiCanhThoiGian {
@@ -230,9 +237,11 @@ export interface BoiCanhThoiGian {
 
 const THANG_SO = /(?<![\p{L}\p{M}])th[aá]ng\s*(1[0-2]|[1-9])(?!\d)/u;
 const NHUAN = /(?<![\p{L}\p{M}])nhu[aậ]n(?![\p{L}\p{M}])/u;
-/** Chip "Tháng X" (kèm năm khi khác năm nay) do mã đặt sau câu hỏi lại nhuận — là tháng thường. */
-const CHIP_THANG_THUONG = /^\s*th[aá]ng\s*\d+(?:\s*n[aă]m\s*\d{4})?\s*[?.!]*\s*$/u;
-const THUONG = /(?<![\p{L}\p{M}])(?:th[uư][oờ]ng|ch[ií]nh)(?![\p{L}\p{M}])/u;
+/**
+ * Người dùng nói rõ lịch âm: "tháng 6 âm", "tháng 6 nhuận âm", "âm lịch", "lịch âm".
+ * Chỉ "âm" ĐỨNG SAU số tháng — "âm" đứng riêng còn là "âm thầm", "âm nhạc".
+ */
+const AM = /th[aá]ng\s*(?:1[0-2]|[1-9])\s*(?:nhu[aậ]n\s*)?(?:âm|am|al)(?![\p{L}\p{M}])(?!\s*(?:thầm|tham|nhạc|nhac|hiểu|hieu|ấm|ỉ)(?![\p{L}\p{M}]))|(?<![\p{L}\p{M}])(?:âm\s*lịch|am\s*lich|lịch\s*âm|lich\s*am)(?![\p{L}\p{M}])/u;
 
 /**
  * Mốc tháng / năm của lượt. `namXem` là năm âm đang neo (năm hiện tại), `bayGio`
@@ -245,20 +254,33 @@ export function boiCanhThoiGian(vao: {
   bayGio: ThoiDiemAm;
 }): BoiCanhThoiGian {
   const { cauHoi, keHoach, namXem, bayGio } = vao;
-  const namHieuLuc = keHoach.namMucTieu ?? namXem;
+  let namHieuLuc = keHoach.namMucTieu ?? namXem;
 
   let thang: MocThang | null = null;
   if (keHoach.thangMucTieu !== undefined) {
     const s = cauHoi.normalize('NFC').toLowerCase();
     const t = keHoach.thangMucTieu;
-    // Chỉ hỏi lại nhuận khi người dùng gọi ĐÍCH DANH số tháng; "tháng này",
-    // "tháng tới" là tháng đang chạy, không mơ hồ.
     const goiSo = THANG_SO.exec(s);
-    let nhuan: MocThang['nhuan'] = null;
-    if (goiSo && Number(goiSo[1]) === t && coThangNhuan(namHieuLuc, t)) {
-      nhuan = NHUAN.test(s) ? 'nhuan' : THUONG.test(s) || CHIP_THANG_THUONG.test(s) ? 'thuong' : 'can-hoi';
+    const goiDichDanh = !!goiSo && Number(goiSo[1]) === t;
+    if (goiDichDanh && !AM.test(s) && !NHUAN.test(s)) {
+      // "Tháng 6" trơn = tháng 6 DƯƠNG. Đọc tháng âm phủ phần lớn tháng ấy.
+      const namDuong = keHoach.namMucTieu ?? namDuongCua(bayGio);
+      const q = thangAmChuYeu(namDuong, t);
+      namHieuLuc = q.nam;
+      thang = {
+        nam: q.nam,
+        thang: q.thang,
+        trangThai: soVoiBayGio(q.nam, q.thang, bayGio),
+        nhuan: q.nhuan ? 'nhuan' : coThangNhuan(q.nam, q.thang) ? 'thuong' : null,
+        duong: { nam: namDuong, thang: t, khoang: q.khoang, ro: q.ro },
+      };
+    } else {
+      // Tháng âm nói rõ, hoặc "tháng này / tháng tới" (planner đã tính theo tháng âm
+      // đang chạy). Không nói "nhuận" thì là tháng thường — không hỏi lại.
+      const nhuan: MocThang['nhuan'] =
+        goiDichDanh && coThangNhuan(namHieuLuc, t) ? (NHUAN.test(s) ? 'nhuan' : 'thuong') : null;
+      thang = { nam: namHieuLuc, thang: t, trangThai: soVoiBayGio(namHieuLuc, t, bayGio), nhuan };
     }
-    thang = { nam: namHieuLuc, thang: t, trangThai: soVoiBayGio(namHieuLuc, t, bayGio), nhuan };
   }
 
   const cuoiNam =

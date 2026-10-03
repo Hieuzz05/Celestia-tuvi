@@ -574,3 +574,16 @@ Tổng chi eval sau mục này: ≈ **$0.83 / $2**.
 Chạy lại eval tháng: 0 câu lộ "dữ kiện", 0 câu mâu thuẫn, N1 24/24, thử lại 4,2%, 502 0.
 - Còn lặp mốc "Tháng X âm năm N" ở 2/6 ca tháng đã qua. Lỗi nhỏ, chưa chặn.
 - Tổng chi eval ≈ **$0.89 / $2**.
+
+## 18. UAT Preview 04/10/2026: "tháng N" là tháng dương (focused-2026.10.5)
+
+Chủ dự án hỏi "Tháng 6 năm 2025 công việc của tôi thế nào?" trên Preview và nhận câu tháng nhuận; bấm chip thì Celes đọc tháng 6 ÂM. Chủ dự án quyết: "tháng 6" trơn là tháng 6 dương; muốn âm lịch thì người dùng nói "tháng 6 âm".
+
+- "Tháng N" không kèm "âm" / "âm lịch" / "lịch âm" / "nhuận" → tháng dương. Đọc nguyệt hạn của tháng âm phủ nhiều ngày nhất trong tháng dương ấy (`thangAmChuYeu`).
+- Câu mở đầu do mã viết nêu quy đổi, kèm khoảng ngày dương. Chỉ nói "phần lớn" khi tháng âm chiếm từ 60% số ngày; nêu năm âm khi khác năm dương.
+- Bỏ hẳn nhánh hỏi lại "thường hay nhuận" (`cauHoiNhuan`). Chỉ dừng khi người dùng gõ "nhuận", hoặc tháng dương rơi vào tháng nhuận (vd 8/2025).
+- Chip của câu nhuận đổi thành "Tháng X âm năm N" để không bị hiểu là tháng dương.
+- Tháng đã qua: "tháng này / quãng này" trong văn model đổi thành "đó". Tháng chưa tới: prompt cấm "đang".
+- "Tháng này / tháng sau / tháng tới" vẫn theo tháng âm đang chạy.
+- Đường STANDARD (planner dùng chung) vẫn hiểu "tháng N" là tháng âm — gom vào CEL-190, phải thống nhất trước khi bật cờ Production.
+- Chạy thật 10 lượt (model ghim) ≈ $0.02; tổng chi eval ≈ **$0.94 / $2**.

@@ -27,7 +27,7 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
-import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauNhuanChuaTach, cauThangDaQua, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
+import { CAU_CUOI_NAM, cauHaiVe, cauKhiNao, cauNhuanChuaTach, cauThangDaQua, cauThangDuong, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
@@ -38,7 +38,7 @@ import type { MocTinhSan } from './prompt';
 import { goiCoPhucDuc, khoaTen, tapTenTuGoi } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.4';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.5';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -67,6 +67,8 @@ export function mocChoChot(
   nn: NgonNgu = 'vi'
 ): string | undefined {
   const en = nn === 'en';
+  // Tháng dương: câu mở đầu do mã viết đã nêu tháng, năm — chốt không lặp lại.
+  if (tg.thang?.duong) return en ? 'That month' : 'Tháng đó';
   if (tg.thang) {
     const nhuan = tg.thang.nhuan === 'nhuan';
     return en
@@ -173,9 +175,6 @@ export async function traLoiFocused(
 
   if (phanLoaiSo.khuon === 'F2' && so.doiTuong) return traNgay(cauVanRieng(so.doiTuong, nn), 'focused-f2', 'F2');
   if (phanLoaiSo.khuon === 'D') return traNgay(cauKhiNao(nn), 'focused-d', 'D');
-  if (thoiGianSo.thang?.nhuan === 'can-hoi') {
-    return traNgay(cauHoiNhuan(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan', phanLoaiSo.khuon);
-  }
   // Đã chọn tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường thay vào.
   if (thoiGianSo.thang?.nhuan === 'nhuan') {
     return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
@@ -202,9 +201,6 @@ export async function traLoiFocused(
   // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
   if (thoiGian.thang?.nhuan === 'nhuan') {
     return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon);
-  }
-  if (thoiGian.thang?.nhuan === 'can-hoi') {
-    return traNgay(cauHoiNhuan(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan', phanLoai.khuon);
   }
   const keHoach = themLopChoThang(keHoachGoc);
 
@@ -260,7 +256,9 @@ export async function traLoiFocused(
     cauMa.push(e.cau);
     chipMa = e.chip;
   }
-  if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang, nn));
+  // Tháng dương: nói rõ đang đọc tháng âm nào (gộp luôn ý "đã qua"). Tháng âm nói rõ: câu N2 đã duyệt.
+  if (thoiGian.thang?.duong) cauMa.push(cauThangDuong(thoiGian.thang, nn));
+  else if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang, nn));
   if (thoiGian.cuoiNam) cauMa.push(CAU_CUOI_NAM[nn]);
   // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu kết luận đã duyệt
   // (brief §11) đứng đầu và thay câu chốt model — model không được xác nhận tên.

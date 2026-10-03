@@ -55,3 +55,33 @@ export function soVoiBayGio(nam: number, thang: number, bayGio: ThoiDiemAm): 'da
 export function laCuoiNamAm(bayGio: ThoiDiemAm): boolean {
   return bayGio.thang >= 11;
 }
+
+/** Năm dương của "bây giờ" (bayGio là ngày âm, tiêm được trong test). */
+export function namDuongCua(bayGio: ThoiDiemAm): number {
+  return lunarToSolar(bayGio.ngay, bayGio.thang, bayGio.nam)?.year ?? bayGio.nam;
+}
+
+/**
+ * Tháng âm phủ NHIỀU NGÀY NHẤT của một tháng dương (chủ dự án 04/10/2026:
+ * "tháng 6" không kèm "âm" là tháng 6 dương). Nguyệt hạn tính theo tháng âm,
+ * nên phải quy đổi; một tháng dương thường vắt qua hai tháng âm, lấy tháng âm
+ * chiếm nhiều ngày nhất. Hoà thì lấy tháng âm đến trước (khi đó `ro` = false).
+ */
+export function thangAmChuYeu(
+  namDuong: number,
+  thangDuong: number
+): { nam: number; thang: number; nhuan: boolean; khoang: string | null; ro: boolean } {
+  const soNgay = new Date(Date.UTC(namDuong, thangDuong, 0)).getUTCDate();
+  const dem = new Map<string, { nam: number; thang: number; nhuan: boolean; n: number }>();
+  for (let d = 1; d <= soNgay; d++) {
+    const am = solarToLunar(d, thangDuong, namDuong);
+    const k = `${am.year}-${am.month}-${am.isLeapMonth ? 1 : 0}`;
+    const cu = dem.get(k);
+    if (cu) cu.n += 1;
+    else dem.set(k, { nam: am.year, thang: am.month, nhuan: am.isLeapMonth === true, n: 1 });
+  }
+  let chon = { nam: namDuong, thang: thangDuong, nhuan: false, n: 0 };
+  for (const v of dem.values()) if (v.n > chon.n) chon = v;
+  // `ro`: tháng âm chiếm từ 60% số ngày — dưới mức đó (kể cả hoà) không được nói "phần lớn".
+  return { nam: chon.nam, thang: chon.thang, nhuan: chon.nhuan, khoang: khoangDuong(chon.nam, chon.thang, chon.nhuan), ro: chon.n * 5 >= soNgay * 3 };
+}
