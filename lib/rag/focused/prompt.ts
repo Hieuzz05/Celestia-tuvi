@@ -20,6 +20,7 @@ import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import { chonBoiCanhHoiThoai } from '../tiep-noi';
 import { docChieu, nhomCuaHuong, type NhomHuong } from './chot-huong';
+import { khoaTen, tapTenTuGoi } from './quet-ten';
 import type { BanThoFocused, CauModel, PhiaCau } from './kiem';
 import type { BoiCanhThoiGian, PhanLoai } from './phan-loai';
 import { khoangDuong } from './thang-am';
@@ -153,15 +154,74 @@ const TEN_LOP: Record<LopDauMoc, (n: NghiengVe) => string> = {
   thang: () => 'thuộc tháng đang xét',
 };
 
+export interface NghiengHienThi {
+  /** Đầu mốc in KÈM tên: tên có trong chữ dữ kiện */
+  dauMoc: DauMoc[];
+  /** Đầu mốc in KHÔNG tên: sao chỉ có ở `d.sao` — giữ nét đời sống cho hướng, không cấp quyền gọi tên */
+  anTen: DauMoc[];
+  cachCuc: string[];
+}
+
+/**
+ * Đầu mốc và cách cục mà `khoiNghiengFocused` thực sự in ra. Guard tên đọc
+ * cùng hàm này, nên tên được phép gọi không lệch khỏi chữ model thấy.
+ *
+ * Chỉ in lớp có F### trong gói. Sao chỉ có ở `d.sao` (phụ tinh không trọng yếu,
+ * không có trong câu dữ kiện) vẫn vào khối nhưng mất tên: in tên là để metadata
+ * cấp quyền gọi tên qua cửa sau (A/B 04/10/2026: Phá Toái, Thiên Y).
+ */
+export function nghiengHienThi(
+  n: NghiengVe | null,
+  goi: Pick<GoiBangChung, 'duKien'>,
+  khuon: PhanLoai['khuon']
+): NghiengHienThi | null {
+  if (!n || khuon === 'G') return null;
+  const lop = lopCoTrongGoi(goi);
+  const trongChu = tapTenTuGoi(goi.duKien);
+  const trongSao = new Set(goi.duKien.flatMap((d) => (d.sao ?? []).map(khoaTen)));
+  const dauMoc: DauMoc[] = [];
+  const anTen: DauMoc[] = [];
+  for (const d of n.dauMoc) {
+    if (!lop.has(d.lop)) continue;
+    const k = khoaTen(d.ten);
+    if (trongChu.has(k)) dauMoc.push(d);
+    else if (trongSao.has(k)) anTen.push(d);
+  }
+  return { dauMoc, anTen, cachCuc: [...n.cachCuc] };
+}
+
+/**
+ * Tập tên guard cho phép trong một lượt, dựng từ đúng các mặt chữ prompt in ra:
+ * `noiDung` của dữ kiện, khối nghiêng (đầu mốc có tên, cách cục) và câu hỏi khi
+ * tra cứu đích danh. `tenHien` là đầu mốc + cách cục đã in, dùng cho lớp sửa tên.
+ */
+export function tenDuocGoiTrongLuot(v: {
+  goi: Pick<GoiBangChung, 'duKien'>;
+  nghieng: NghiengVe | null;
+  khuon: PhanLoai['khuon'];
+  cauTraCuu?: string;
+}): { tapTen: Set<string>; tenHien: string[] } {
+  const hien = nghiengHienThi(v.nghieng, v.goi, v.khuon);
+  const tenHien = hien ? [...hien.dauMoc.map((d) => d.ten), ...hien.cachCuc] : [];
+  const chu = [khoiNghiengFocused(v.nghieng, v.goi, v.khuon), ...(v.cauTraCuu ? [v.cauTraCuu] : [])];
+  return { tapTen: tapTenTuGoi(v.goi.duKien, chu, tenHien), tenHien };
+}
+
 /**
  * Khối hướng của Focused. Khác `khoiNghiengVe` (STANDARD) ở ba chỗ: chỉ in lớp
  * có F### trong gói, không có lời dặn khuôn bài dài, và nói rõ chiều mã đã chốt
  * để model điền `chieuCauChot`.
  */
-export function khoiNghiengFocused(n: NghiengVe | null, lop: ReadonlySet<LopDauMoc>, khuon: PhanLoai['khuon']): string {
-  if (!n || khuon === 'G') return '';
-  const dauMoc = n.dauMoc.filter((d) => lop.has(d.lop));
-  const dong = (d: DauMoc) => `- ${d.ten} (${TEN_LOP[d.lop](n)}) — ${d.y}`;
+export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 'duKien'>, khuon: PhanLoai['khuon']): string {
+  const hien = nghiengHienThi(n, goi, khuon);
+  if (!n || !hien) return '';
+  const coTen = new Set(hien.dauMoc);
+  // Giữ thứ tự gốc (theo trọng số) — đầu mốc không tên đứng đúng chỗ của nó.
+  const dauMoc = n.dauMoc.filter((d) => coTen.has(d) || hien.anTen.includes(d));
+  const dong = (d: DauMoc) =>
+    coTen.has(d)
+      ? `- ${d.ten} (${TEN_LOP[d.lop](n)}) — ${d.y}`
+      : `- Một sao phụ riêng, KHÔNG gọi tên và không gán nét này cho sao khác (${TEN_LOP[d.lop](n)}) — ${d.y}`;
   const ben = (h: 'do' | 'can') => {
     const ds = dauMoc.filter((d) => d.huong === h);
     return ds.length ? ds.map(dong).join('\n') : '- (không có)';
@@ -177,7 +237,7 @@ Cản lại:
 ${ben('can')}${cachCuc}
 
 HƯỚNG ĐÃ CHỐT: ${MO_TA_HUONG[n.huong]}
-"chieuCauChot" của lượt này phải là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}". Câu chốt chỉ được gọi tên dữ kiện trong hai danh sách trên.`;
+"chieuCauChot" của lượt này phải là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}". Câu chốt chỉ được gọi tên các dữ kiện CÓ TÊN trong hai danh sách trên.`;
 }
 
 /* ----------------------------------------------------- mốc tính sẵn */
@@ -264,7 +324,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   const bc = chonBoiCanhHoiThoai(v.cauHoiGoc, v.lichSu, v.laTiepTuChip);
   const phan: string[] = [dungKhoiChoPrompt({ ...v.goi, cauHoi: v.cauHoiGoc })];
 
-  const nghieng = khoiNghiengFocused(v.nghieng, lopCoTrongGoi(v.goi), v.phanLoai.khuon);
+  const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
   if (nghieng) phan.push(nghieng);
   phan.push(khoiMoc(v.moc));
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).

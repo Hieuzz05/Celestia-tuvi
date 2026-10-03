@@ -34,11 +34,11 @@ import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
 import type { NguCanhKiem } from './kiem';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
-import type { MocTinhSan } from './prompt';
-import { goiCoPhucDuc, khoaTen, tapTenTuGoi } from './quet-ten';
+import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
+import { goiCoPhucDuc } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.5';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.7';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -242,11 +242,14 @@ export async function traLoiFocused(
           focused: true,
         });
 
-  const tapTen = tapTenTuGoi(goi.duKien, keHoach.yDinh === 'tra-cuu' ? [vao.cauHoi] : []);
-  // Prompt chỉ thấy đầu mốc mà guard cho phép gọi tên — đưa tên rồi bỏ câu là tự làm khó mình.
-  const nghiengPrompt = nghieng
-    ? { ...nghieng, dauMoc: nghieng.dauMoc.filter((d) => tapTen.has(khoaTen(d.ten))) }
-    : null;
+  // Tên được phép gọi: chỉ những gì prompt của lượt này thực sự in — chữ dữ kiện, khối
+  // nghiêng (đầu mốc có tên, cách cục), câu tra cứu. `d.sao` không cấp quyền (xem `nghiengHienThi`).
+  const { tapTen, tenHien } = tenDuocGoiTrongLuot({
+    goi,
+    nghieng,
+    khuon: phanLoai.khuon,
+    cauTraCuu: keHoach.yDinh === 'tra-cuu' ? vao.cauHoi : undefined,
+  });
 
   // Câu mã đứng đầu (E, N2, N4) và chip mã.
   const cauMa: string[] = [];
@@ -300,7 +303,7 @@ export async function traLoiFocused(
       cauHoiGoc: vao.cauHoi,
       lichSu,
       daNoiTruoc,
-      nghieng: nghiengPrompt,
+      nghieng,
       phanLoai,
       mucAnToan,
       moc,
@@ -308,7 +311,7 @@ export async function traLoiFocused(
       cauMa,
     },
     ctx,
-    tenSua: nghiengPrompt ? [...nghiengPrompt.dauMoc.map((d) => d.ten), ...nghiengPrompt.cachCuc] : [],
+    tenSua: tenHien,
     batDau,
   });
   const doTreModel = Date.now() - truocModel;

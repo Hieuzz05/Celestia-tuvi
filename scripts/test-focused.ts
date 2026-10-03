@@ -49,9 +49,9 @@ import {
 } from '../lib/rag/focused/ngon-ngu';
 import { datMienTruTamLy } from '../lib/rag/an-toan';
 import { loiDiTiep } from '../lib/rag/hinh-dang-tra-loi';
-import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
+import { goiCoPhucDuc, khoaTen, quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
 import { kiemMotCau, kiemLuot, chonChip, doiNayThanhDo, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
-import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
+import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
 import { cauChotDuPhong, mocChoCauChot } from '../lib/rag/focused/chot-huong';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
@@ -749,10 +749,102 @@ for (const ca of CA_DOI_TUONG) {
   kiem(soAmTiet('Năm nay, công việc ổn.') === 5, 'đếm âm tiết sai');
 
   // Prompt: chỉ in lớp có F### trong gói (4.4) — Thất Sát (lớp tháng) không có
-  const khoi = khoiNghiengFocused(nghieng, lopCoTrongGoi({ duKien }), 'A');
+  const khoi = khoiNghiengFocused(nghieng, { duKien }, 'A');
   kiem(khoi.includes('Đà La') && !khoi.includes('Thất Sát'), 'khối nghiêng in lớp không có trong gói');
   kiem(khoi.includes('"thuan"'), 'khối nghiêng thiếu chiều đã chốt');
-  kiem(khoiNghiengFocused(nghieng, lopCoTrongGoi({ duKien }), 'G') === '', 'G vẫn có khối nghiêng');
+  kiem(khoiNghiengFocused(nghieng, { duKien }, 'G') === '', 'G vẫn có khối nghiêng');
+  kiem(lopCoTrongGoi({ duKien }).has('nam'), 'lopCoTrongGoi bỏ sót lớp năm');
+
+  /* Guard tên đọc đúng chữ prompt in ra (SỬA LỖI 04/10/2026). `d.sao` là metadata
+     model không thấy — tự nó không cấp quyền gọi tên, kể cả qua đầu mốc in vào khối nghiêng. */
+  {
+    const ctxTen = (tap: Set<string>, n: NghiengVe | null = null): NguCanhKiem => ({
+      cauHoi: 'Sức khỏe năm nay của tôi thế nào?', phanLoai: { khuon: 'B', loaiSuKien: 'trung-tinh', sau: false },
+      mucAnToan: 'NORMAL', chuDe: 'suc-khoe', doiTuong: null, tapTen: tap, phucDucLaSao: false,
+      maHopLe: new Set(['F001', 'F002']), nghieng: n, thoiGian: { namHieuLuc: 2026, thang: null, cuoiNam: false },
+      tuoiHopLe: [], cauMa: [], chipTruoc: [],
+    });
+    const nThienY: NghiengVe = {
+      ...nghieng, phanDoi: 'sức khỏe', cachCuc: ['Sát Phá Tham'],
+      dauMoc: [
+        { ten: 'Thiên Y', lop: 'nen', huong: 'do', trong: 1, y: 'có người đỡ khi cơ thể mệt' },
+        { ten: 'Thiên Phủ', lop: 'nen', huong: 'do', trong: 2, y: 'giữ được nền' },
+        { ten: 'Đà La', lop: 'nam', huong: 'can', trong: 2, y: 'chậm, vướng' },
+      ],
+    };
+    const cauThienY = 'Khi thấy mệt bạn vẫn tìm được chỗ đỡ; Thiên Y giữ lại phần này.';
+    const lyTen = (tap: Set<string>) => kiemMotCau(cauThienY, ctxTen(tap, nThienY), false);
+
+    // (1) d.sao có Thiên Y, noiDung không → câu nhắc Thiên Y bị loại; khối in đầu mốc KHÔNG tên.
+    const dkMeta: DuKienLaSo[] = [
+      { id: 'F001', loai: 'cung', noiDung: 'Tật Ách có Thiên Phủ.', cung: 'Tật Ách', sao: ['Thiên Phủ', 'Thiên Y'] },
+      { id: 'F002', loai: 'luu-nien', noiDung: 'Tiểu hạn năm 2026 vào Tật Ách, có Đà La.', cung: 'Tật Ách', sao: ['Đà La'] },
+    ];
+    const r1 = tenDuocGoiTrongLuot({ goi: { duKien: dkMeta }, nghieng: nThienY, khuon: 'B' });
+    kiem(!r1.tapTen.has(khoaTen('Thiên Y')), '(1) Thiên Y chỉ ở d.sao vẫn được phép');
+    kiem(lyTen(r1.tapTen).includes('ten-ngoai-goi'), `(1) câu nhắc Thiên Y (chỉ ở d.sao) lọt guard: ${lyTen(r1.tapTen).join(',')}`);
+    const khoi1 = khoiNghiengFocused(nThienY, { duKien: dkMeta }, 'B');
+    kiem(!khoi1.includes('Thiên Y') && khoi1.includes('có người đỡ khi cơ thể mệt') && khoi1.includes('KHÔNG gọi tên'),
+      `(1) đầu mốc chỉ ở d.sao phải in nét, không in tên: ${khoi1}`);
+    kiem(!r1.tenHien.includes('Thiên Y'), '(1) lớp sửa tên được mồi Thiên Y');
+
+    // (2) noiDung có Thiên Y → được phép, đầu mốc in kèm tên.
+    const dkChu: DuKienLaSo[] = [{ ...dkMeta[0], noiDung: 'Tật Ách có Thiên Phủ; phụ tinh Thiên Y.' }, dkMeta[1]];
+    const r2 = tenDuocGoiTrongLuot({ goi: { duKien: dkChu }, nghieng: nThienY, khuon: 'B' });
+    kiem(lyTen(r2.tapTen).length === 0, `(2) Thiên Y có trong chữ dữ kiện bị chặn: ${lyTen(r2.tapTen).join(',')}`);
+    kiem(khoiNghiengFocused(nThienY, { duKien: dkChu }, 'B').includes('- Thiên Y ('), '(2) đầu mốc có tên trong chữ không in tên');
+
+    // (3) Tên chỉ nằm trong khối nghiêng thực sự in (cách cục) → được phép; khuôn G không in khối → không.
+    kiem(r1.tapTen.has(khoaTen('Sát Phá Tham')), '(3) cách cục in trong khối nghiêng không được phép');
+    const rG = tenDuocGoiTrongLuot({ goi: { duKien: dkMeta }, nghieng: nThienY, khuon: 'G' });
+    kiem(!rG.tapTen.has(khoaTen('Sát Phá Tham')), '(3) khuôn G không in khối mà cách cục vẫn được phép');
+    // Tra cứu đích danh: câu hỏi là mặt chữ model thấy.
+    const rTc = tenDuocGoiTrongLuot({ goi: { duKien: dkMeta }, nghieng: nThienY, khuon: 'B', cauTraCuu: 'Thiên Y là sao gì?' });
+    kiem(rTc.tapTen.has(khoaTen('Thiên Y')), '(3) tra cứu đích danh Thiên Y bị chặn');
+
+    // (4) Tên ngoài toàn bộ prompt → loại. Thất Sát: không ở chữ, không ở khối, không ở câu hỏi.
+    kiem(kiemMotCau('Thất Sát làm bạn dễ quá sức.', ctxTen(r2.tapTen, nThienY), false).includes('ten-ngoai-goi'), '(4) Thất Sát ngoài prompt lọt guard');
+    // Đầu mốc lớp vắng (lớp tháng, gói không có F### tháng) không in → tên không được phép dù có ở d.sao.
+    const nThang: NghiengVe = { ...nThienY, dauMoc: [...nThienY.dauMoc, { ten: 'Thiên Hình', lop: 'thang', huong: 'can', trong: 1, y: 'dễ va chạm' }] };
+    const dkThang: DuKienLaSo[] = [dkChu[0], { ...dkChu[1], sao: ['Đà La', 'Thiên Hình'] }];
+    kiem(!tenDuocGoiTrongLuot({ goi: { duKien: dkThang }, nghieng: nThang, khuon: 'B' }).tapTen.has(khoaTen('Thiên Hình')), '(4) đầu mốc lớp vắng vẫn được gọi tên');
+
+    // Câu chốt dự phòng (mã viết) chỉ gọi đầu mốc có tên trong chữ: tập chốt lọc theo tapTen.
+    const kqDp = kiemLuot({ cauChot: 'Năm nay sức khỏe chắc chắn tốt.', chieuCauChot: 'thuan', cau: [], goiYTiep: [], ngoaiPhamVi: false } as BanThoFocused,
+      { ...ctxTen(r1.tapTen, nThienY), phanLoai: { khuon: 'A', loaiSuKien: 'trung-tinh', sau: false } });
+    kiem(!kqDp.cauChot.includes('Thiên Y'), `(4) câu chốt dự phòng gọi tên chỉ có ở d.sao: ${kqDp.cauChot}`);
+  }
+
+  // (5) Hồi quy thật từ A/B 04/10/2026: lá số 22/5/2026 16h nữ. Phá Toái (Tài Bạch) và Thiên Y
+  // (Tật Ách) chỉ có ở d.sao nhưng lọt guard qua đầu mốc in tên. Câu lấy nguyên văn bản A/B.
+  {
+    const laSo = lapLaSo({ ngay: 22, thang: 5, nam: 2026, gio: 16, gioiTinh: 'nu' });
+    const ca: [string, string, string][] = [
+      ['Năm nay tôi có bị mất tiền không?', 'Phá Toái', 'Điều cần để ý là một việc tưởng gần xong có thể phát sinh khoản sửa lại, do Phá Toái làm phần cuối dễ vướng.'],
+      ['Tiền bạc năm nay của tôi ra sao?', 'Phá Toái', 'Cự Môn khiến chuyện tiền bạc cần nói rõ từ đầu, còn Phá Toái làm khâu cuối dễ phát sinh lỗi hoặc khoản phải sửa.'],
+      ['Sức khỏe của tôi năm nay thế nào?', 'Thiên Y', 'Điểm còn mở là khả năng tự chăm sóc vẫn có, nên khi nhận ra dấu hiệu bất ổn, bạn thường tìm được cách hỗ trợ phù hợp; Thiên Y giữ lại phần này.'],
+    ];
+    for (const [cauHoi, ten, cau] of ca) {
+      const kh = themLopChoThang(lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach);
+      const pl = phanKhuon({ cauHoi, keHoach: kh, doiTuong: null });
+      const { duKien: dk } = chonBoiCanh({ laSo, keHoach: kh, namXem: 2026, thangXem: 8, focused: true });
+      const n = tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true });
+      const k = khoaTen(ten);
+      // Tiền đề của lỗi: tên ở d.sao, không ở chữ, và là đầu mốc của khối nghiêng.
+      kiem(dk.some((d) => (d.sao ?? []).some((s) => khoaTen(s) === k)) && !dk.some((d) => d.noiDung.includes(ten)) && !!n?.dauMoc.some((d) => d.ten === ten),
+        `(5) tiền đề ${ten} đổi — engine/dữ kiện đã khác, xem lại ca hồi quy`);
+      const { tapTen: tap } = tenDuocGoiTrongLuot({ goi: { duKien: dk }, nghieng: n, khuon: pl.khuon });
+      kiem(!tap.has(k), `(5) ${ten} (chỉ ở d.sao) vẫn được phép — "${cauHoi}"`);
+      kiem(!khoiNghiengFocused(n, { duKien: dk }, pl.khuon).includes(ten), `(5) khối nghiêng còn in tên ${ten}`);
+      const ly = kiemMotCau(cau, {
+        cauHoi, phanLoai: pl, mucAnToan: 'NORMAL', chuDe: kh.chuDe, doiTuong: null, tapTen: tap, phucDucLaSao: goiCoPhucDuc(dk),
+        maHopLe: new Set(dk.map((d) => d.id)), nghieng: n, thoiGian: { namHieuLuc: 2026, thang: null, cuoiNam: false },
+        tuoiHopLe: [], cauMa: [], chipTruoc: [],
+      }, false);
+      kiem(ly.includes('ten-ngoai-goi'), `(5) câu A/B nhắc ${ten} lọt guard: ${ly.join(',')}`);
+    }
+  }
+
   const moc = khoiMoc({
     bayGio: { nam: 2026, thang: 8 } as never,
     thoiGian: { namHieuLuc: 2026, thang: { nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null }, cuoiNam: false },
