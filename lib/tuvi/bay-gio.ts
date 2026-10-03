@@ -1,3 +1,4 @@
+import { CAN, CHI } from './constants';
 import { lunarToSolar, solarToLunar } from './lunar';
 
 /**
@@ -38,6 +39,24 @@ export function thangAmHienTai(moc: Date = new Date()): number {
 /** Năm âm lịch hiện tại — khác năm dương ở quãng đầu năm, trước Tết */
 export function namAmHienTai(moc: Date = new Date()): number {
   return bayGioAm(moc).nam;
+}
+
+/** Can Chi của một năm âm, dạng "Đinh Mùi" — cùng công thức với `thongTinNgay` */
+export function canChiCuaNam(namAm: number): string {
+  return `${CAN[(((namAm + 6) % 10) + 10) % 10]} ${CHI[(((namAm + 8) % 12) + 12) % 12]}`;
+}
+
+/**
+ * Năm âm kế tiếp, nhưng CHỈ khi Tết đã gần: đang ở tháng 9 âm trở đi, tức còn
+ * nhiều nhất bốn tháng âm. Ngoài quãng đó trả null.
+ *
+ * Chat neo năm âm hiện tại. Cuối năm âm thì "sắp tới" của người hỏi vắt qua
+ * Tết, nên Celes được phép mời một câu hỏi về năm sau — mời thôi, không tự
+ * đọc thay.
+ */
+export function namAmSapToi(moc: Date = new Date()): number | null {
+  const bayGio = bayGioAm(moc);
+  return bayGio.thang >= 9 ? bayGio.nam + 1 : null;
 }
 
 /**

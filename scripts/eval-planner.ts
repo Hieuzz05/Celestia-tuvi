@@ -27,6 +27,8 @@ let dungYDinh = 0;
 let soCoThucThe = 0;
 let soCoLopHan = 0;
 let soCoYDinh = 0;
+let dungThoiGian = 0;
+let soCoThoiGian = 0;
 const hong: Hong[] = [];
 
 for (const c of BO_VANG_PLANNER) {
@@ -61,6 +63,19 @@ for (const c of BO_VANG_PLANNER) {
     else loi.push(`ý định: mong ${c.yDinhBatBuoc}, nhận ${k.yDinh}`);
   }
 
+  // Trục thời gian: phạm vi, năm mục tiêu, và lớp hạn KHÔNG được kéo vào
+  if (c.phamViBatBuoc || c.namMucTieuBatBuoc !== undefined || c.lopHanCam?.length) {
+    soCoThoiGian += 1;
+    const truoc = loi.length;
+    if (c.phamViBatBuoc && k.phamViThoiGian !== c.phamViBatBuoc)
+      loi.push(`phạm vi: mong ${c.phamViBatBuoc}, nhận ${k.phamViThoiGian}`);
+    if (c.namMucTieuBatBuoc !== undefined && k.namMucTieu !== c.namMucTieuBatBuoc)
+      loi.push(`năm mục tiêu: mong ${c.namMucTieuBatBuoc}, nhận ${k.namMucTieu ?? '—'}`);
+    const thua = (c.lopHanCam ?? []).filter((x) => k.lopHan.includes(x));
+    if (thua.length) loi.push(`lớp hạn không được có: ${thua.join(', ')}`);
+    if (loi.length === truoc) dungThoiGian += 1;
+  }
+
   if (loi.length) hong.push({ cauHoi: c.cauHoi, loi });
 }
 
@@ -73,6 +88,7 @@ console.log(`  Đủ cung bắt buộc     ${pc(duCung, n)}  (${duCung}/${n})`);
 console.log(`  Đủ thực thể          ${pc(duThucThe, soCoThucThe)}  (${duThucThe}/${soCoThucThe})`);
 console.log(`  Đủ lớp hạn           ${pc(duLopHan, soCoLopHan)}  (${duLopHan}/${soCoLopHan})`);
 console.log(`  Đúng ý định          ${pc(dungYDinh, soCoYDinh)}  (${dungYDinh}/${soCoYDinh})`);
+console.log(`  Đúng trục thời gian  ${pc(dungThoiGian, soCoThoiGian)}  (${dungThoiGian}/${soCoThoiGian})`);
 console.log(`  Câu không lỗi nào    ${pc(n - hong.length, n)}  (${n - hong.length}/${n})`);
 
 if (hong.length) {

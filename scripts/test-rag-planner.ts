@@ -12,6 +12,8 @@ import { demTenSao, laCauKeSao } from '../lib/rag/sua-chua';
 import { chonBoiCanhHoiThoai, gomDieuTuKe, laCauNoiTiep } from '../lib/rag/tiep-noi';
 import { kiemDuyet, locYHong } from '../lib/rag/kiem-duyet';
 import { lapKeHoach } from '../lib/rag/planner';
+import { chipSangNam } from '../lib/rag/tra-loi';
+import { canChiCuaNam, namAmHienTai, namAmSapToi } from '../lib/tuvi/bay-gio';
 import { cumVietHoa, tachTuKhoa } from '../lib/rag/cum-tu-khoa';
 import { chonDaDang, doTrung, mucChacChan, NGUONG_TRUNG } from '../lib/rag/uu-tien-nguon';
 import type { DoanUngVien } from '../lib/rag/truy-hoi';
@@ -441,6 +443,84 @@ console.log('\n== ĐOẠN TRÙNG GIỮA CÁC TÀI LIỆU ==');
     'Đồng thuận giả không còn: ba cuốn chép một câu là MỘT tiếng nói',
     mucChacChan(chon.filter((u) => u.noiDung.includes('dị bào'))) === 'yeu'
   );
+}
+
+console.log('\n== PLANNER: TRỤC THỜI GIAN TÁCH KHỎI Ý ĐỊNH (CEL-186 vé A) ==');
+{
+  const goc = lapKeHoach({ cauHoi: 'sắp tới tôi có người yêu ko? tương lai gần', namXem: 2026 });
+  kiem('Ca gốc → tinh-cam', goc.chuDe === 'tinh-cam', goc.chuDe);
+  kiem('Ca gốc → co-khong (không còn thoi-diem)', goc.yDinh === 'co-khong', goc.yDinh);
+  kiem('Ca gốc → phạm vi gan ("tương lai" trong "tương lai gần" không thành chặng dài)', goc.phamViThoiGian === 'gan', goc.phamViThoiGian);
+  kiem('Ca gốc → có lưu niên', goc.lopHan.includes('luu-nien'), goc.lopHan);
+  kiem('Ca gốc → không có năm mục tiêu (neo năm đang xem)', goc.namMucTieu === undefined, goc.namMucTieu);
+}
+const Y_DINH_THOI_GIAN: [string, string][] = [
+  ['tôi có người yêu không trong tương lai gần', 'co-khong'],
+  ['sắp tới tôi có người yêu ko? tương lai gần', 'co-khong'],
+  ['tôi có người yêu nhưng không hạnh phúc, vì sao', 'giai-thich'],
+  ['bao giờ tôi có người yêu?', 'thoi-diem'],
+  ['tôi có nên đổi việc năm sau không?', 'quyet-dinh'],
+  ['tôi không thích công việc hiện tại, phải làm sao', 'mo-ta'],
+  ['làm ăn không lãi, vì sao', 'giai-thich'],
+  ['anh ấy có yêu tôi không ạ', 'co-khong'],
+  ['có hợp không với tôi', 'co-khong'],
+  ['năm 2028 tôi có người yêu không?', 'co-khong'],
+];
+for (const [c, y] of Y_DINH_THOI_GIAN) {
+  const k = lapKeHoach({ cauHoi: c });
+  kiem(`"${c}" → ${y}`, k.yDinh === y, k.yDinh);
+}
+const PHAM_VI: [string, string, number | undefined][] = [
+  ['năm 2028 tôi có người yêu không?', 'nam', 2028],
+  ['năm nay có đổi việc được không', 'nam', 2026],
+  ['năm sau tình cảm thế nào', 'nam', 2027],
+  ['Sang năm Đinh Mùi thì sao?', 'nam', 2027],
+  ['năm ngoái tôi có hạn không', 'nam', 2025],
+  ['tôi sinh năm 1990, năm nay có đổi việc được không', 'nam', 2026],
+  ['sau này tôi có giàu không?', 'giai-doan', undefined],
+  ['những năm tới tôi có giàu không', 'giai-doan', undefined],
+  ['tương lai tôi có giàu không', 'giai-doan', undefined],
+  ['tương lai gần công việc có khá hơn không?', 'gan', undefined],
+  ['vài tháng tới có tiền không', 'gan', undefined],
+  ['thời gian tới tôi có đổi việc không', 'gan', undefined],
+  ['tháng này tiền bạc có ổn không', 'thang', undefined],
+  ['tháng 3 năm 2028 có cưới không', 'thang', 2028],
+  ['tính cách tôi thế nào', 'khong-ro', undefined],
+];
+for (const [c, pv, nam] of PHAM_VI) {
+  const k = lapKeHoach({ cauHoi: c, namXem: 2026 });
+  kiem(`"${c}" → ${pv}${nam ? ` / ${nam}` : ''}`, k.phamViThoiGian === pv && k.namMucTieu === nam, [k.phamViThoiGian, k.namMucTieu]);
+}
+kiem('Không truyền năm đang xem thì "năm sau" không đoán năm', lapKeHoach({ cauHoi: 'năm sau thế nào' }).namMucTieu === undefined);
+kiem('Chặng dài không kéo lưu niên', !lapKeHoach({ cauHoi: 'những năm tới tôi có giàu không' }).lopHan.includes('luu-nien'));
+kiem('"vài tháng tới" không kéo nguyệt hạn', !lapKeHoach({ cauHoi: 'vài tháng tới có tiền không' }).lopHan.includes('nguyet-han'));
+{
+  const lh = lapKeHoach({ cauHoi: 'năm 2028 tôi có người yêu không?' }).lopHan;
+  kiem('"năm 2028" có lưu niên + đại vận', lh.includes('luu-nien') && lh.includes('dai-van'), lh);
+}
+kiem(
+  'Bài dài "… của cả đời" (câu mô tả cố định) giữ nguyên lớp hạn cũ',
+  [...lapKeHoach({ cauHoi: 'Tôi là ai? Tính cách, năng lực nổi trội, thế mạnh và điểm cần lưu ý của cả đời' }).lopHan].sort().join() === 'ban-menh,luu-nien'
+);
+
+console.log('\n== NĂM ÂM VÀ CHIP "SANG NĂM" (CEL-186 vé A) ==');
+kiem('20/01/2027 (trước Tết) vẫn là năm âm 2026', namAmHienTai(new Date('2027-01-20T12:00:00+07:00')) === 2026);
+kiem('Can Chi 2026 = Bính Ngọ', canChiCuaNam(2026) === 'Bính Ngọ', canChiCuaNam(2026));
+kiem('Can Chi 2027 = Đinh Mùi', canChiCuaNam(2027) === 'Đinh Mùi', canChiCuaNam(2027));
+kiem('Giữa năm âm: chưa mời năm sau', namAmSapToi(new Date('2026-06-01T12:00:00+07:00')) === null);
+kiem('Tháng 10 âm: mời năm sau', namAmSapToi(new Date('2026-11-20T12:00:00+07:00')) === 2027);
+{
+  const moc = new Date('2026-11-20T12:00:00+07:00');
+  const kh = { phamViThoiGian: 'gan' as const, yDinh: 'co-khong' as const };
+  const chip = 'Sang năm Đinh Mùi thì sao?';
+  kiem('Thêm chip khi còn chỗ', chipSangNam(['A', 'B'], { keHoach: kh, namHieuLuc: 2026, mucAnToan: 'NORMAL', moc }).at(-1) === chip);
+  kiem('Đủ ba chip thì thay chip cuối, vẫn ba', chipSangNam(['A', 'B', 'C'], { keHoach: kh, namHieuLuc: 2026, mucAnToan: 'NORMAL', moc }).join('|') === `A|B|${chip}`);
+  kiem('Không mời khi câu chạm an toàn', chipSangNam(['A'], { keHoach: kh, namHieuLuc: 2026, mucAnToan: 'SENSITIVE', moc }).length === 1);
+  kiem('Không mời khi lượt đã đọc năm khác', chipSangNam(['A'], { keHoach: kh, namHieuLuc: 2028, mucAnToan: 'NORMAL', moc }).length === 1);
+  kiem('Không mời cho câu chặng dài', chipSangNam(['A'], { keHoach: { phamViThoiGian: 'giai-doan', yDinh: 'co-khong' }, namHieuLuc: 2026, mucAnToan: 'NORMAL', moc }).length === 1);
+  kiem('Không mời cho câu tra cứu', chipSangNam(['A'], { keHoach: { phamViThoiGian: 'khong-ro', yDinh: 'tra-cuu' }, namHieuLuc: 2026, mucAnToan: 'NORMAL', moc }).length === 1);
+  kiem('Chip ≤ 40 ký tự', chip.length <= 40);
+  kiem('Bấm chip thì planner đọc đúng năm sau', lapKeHoach({ cauHoi: chip, namXem: 2026 }).namMucTieu === 2027);
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);

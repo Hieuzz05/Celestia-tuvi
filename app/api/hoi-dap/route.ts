@@ -15,7 +15,7 @@ import {
 } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
-import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
+import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
@@ -146,7 +146,10 @@ export async function POST(req: Request) {
     });
   }
 
-  const namXem = soHopLe(body.namXem, 1900, 2100) ? body.namXem! : new Date().getFullYear();
+  // Năm ÂM, cùng luật với tháng bên dưới. Năm dương thì từ 01/01 đến Tết web
+  // đọc sang lưu niên năm sau, còn app (vốn gửi năm âm) vẫn đọc năm cũ — cùng
+  // một lá số, hai câu trả lời.
+  const namXem = soHopLe(body.namXem, 1900, 2100) ? body.namXem! : namAmHienTai();
   // Tháng ÂM, không phải tháng dương — xem lib/tuvi/bay-gio.ts
   const thangXem = soHopLe(body.thangXem, 1, 12) ? body.thangXem! : thangAmHienTai();
 

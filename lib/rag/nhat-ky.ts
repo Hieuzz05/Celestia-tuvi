@@ -36,7 +36,14 @@ export function bamLaSo(ngay: number, thang: number, nam: number, gio: number, g
 export async function ghiLanTruyHoi(
   keHoach: KeHoachTruyVan,
   kq: KetQuaTruyHoi,
-  meta: { requestId?: string; cauHoi: string; cheDo?: 'that' | 'thu_nghiem'; nguoiChay?: string }
+  meta: {
+    requestId?: string;
+    cauHoi: string;
+    cheDo?: 'that' | 'thu_nghiem';
+    nguoiChay?: string;
+    /** Năm thật sự được đọc trong lượt (năm người hỏi gọi tên, hoặc năm đang xem) */
+    namHieuLuc?: number;
+  }
 ): Promise<string | null> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return null;
@@ -51,7 +58,12 @@ export async function ghiLanTruyHoi(
         y_dinh: keHoach.chuDe,
         thuc_the: keHoach.thucThe.map((t) => t.id),
         cung_lien_quan: keHoach.cungLienQuan,
-        bo_loc: { hePhai: kq.cauHinh.hePhai ?? null, locThucThe: kq.cauHinh.locThucThe },
+        bo_loc: {
+          hePhai: kq.cauHinh.hePhai ?? null,
+          locThucThe: kq.cauHinh.locThucThe,
+          phamViThoiGian: keHoach.phamViThoiGian,
+          namHieuLuc: meta.namHieuLuc ?? null,
+        },
         cau_hinh: kq.cauHinh,
         phien_ban: { planner: keHoach.phienBan, truyHoi: kq.phienBan },
         do_tre_ms: kq.doTreMs,

@@ -17,7 +17,7 @@ import { boDau, nhanDangThucThe, type ThucThe } from './thuc-the';
  * hồi. Không đánh số thì không so sánh được hai lần chạy eval.
  */
 
-export const PHIEN_BAN_PLANNER = '2026.10.1';
+export const PHIEN_BAN_PLANNER = '2026.10.2';
 
 export type ChuDe = 'su-nghiep' | 'tai-chinh' | 'tinh-cam' | 'gia-dao' | 'suc-khoe' | 'tong-quan';
 
@@ -38,6 +38,21 @@ export type YDinh =
   | 'giai-thich'   // "vì sao tôi hay…"
   | 'tra-cuu'      // "Lộc Tồn ở Tài Bạch nghĩa là gì"
   | 'mo-ta';       // mặc định
+
+/**
+ * Trục thời gian — câu hỏi nhắm vào QUÃNG nào. Tách hẳn khỏi ý định.
+ *
+ * "Sắp tới tôi có người yêu không" là câu có/không về một quãng gần, không phải
+ * câu hỏi "khi nào". Trước 2026.10.2 chữ "sắp tới" bị đếm là ý định thoi-diem,
+ * còn chữ "tương lai" trong "tương lai gần" kéo câu thành chặng dài — một câu
+ * hỏi về vài tháng tới được trả lời bằng quãng mười năm.
+ */
+export type PhamViThoiGian =
+  | 'khong-ro'   // không nói mốc nào
+  | 'gan'        // "sắp tới", "tương lai gần", "thời gian tới", "vài tháng tới"
+  | 'thang'      // "tháng này", "tháng tới"
+  | 'nam'        // "năm nay", "năm sau", "năm 2028"
+  | 'giai-doan'; // "sau này", "cả đời", "những năm tới"
 
 export interface KeHoachTruyVan {
   chuDe: ChuDe;
@@ -63,6 +78,13 @@ export interface KeHoachTruyVan {
    * cụm viết hoa người dùng gõ, tên cung khi có dùng. Xem lib/rag/cum-tu-khoa.ts.
    */
   cumTuKhoa?: string[];
+  phamViThoiGian: PhamViThoiGian;
+  /**
+   * Năm (âm) người hỏi gọi đích danh: "năm 2028", hay "năm sau" khi biết năm
+   * đang xem. Có thì nó thắng năm đang xem ở MỌI chỗ đọc năm trong lượt — xem
+   * `namHieuLuc` trong tra-loi.ts.
+   */
+  namMucTieu?: number;
   phienBan: string;
 }
 
@@ -189,24 +211,103 @@ const CHU_DE_THEO_CUNG: Record<string, ChuDe> = {
 };
 
 /**
- * Chữ báo rằng câu hỏi nhắm tới CẢ CHẶNG DÀI, không nhắm tới một năm.
+ * Cụm báo phạm vi thời gian. Khớp theo cụm DÀI NHẤT tại mỗi vị trí, nên cụm cụ
+ * thể luôn nuốt cụm chung nằm trong nó: "tương lai gần" là 'gan', chữ "tương
+ * lai" bên trong không còn được đếm lần nữa; "vài tháng tới" là 'gan' chứ không
+ * phải 'thang'; "những năm tới" là 'giai-doan' chứ không phải năm sau.
  *
- * Không có nhóm này thì mọi câu có/không đều bị kéo về lưu niên, kể cả câu hỏi
- * về cả đời. Đo được trên câu thật: "sau này tôi có giàu có ko?" nhận về một
- * bài mở bằng "Năm 2026…".
- *
- * Cố ý KHÔNG có "lâu dài": nó hay đi với một mốc gần ("kế hoạch lâu dài cho năm
- * nay"), nên nó không phân biệt được hai hình câu hỏi.
+ * 'giai-doan' giữ nguyên nhóm chữ chặng dài cũ (đo được trên câu thật: "sau này
+ * tôi có giàu có ko?" từng nhận về một bài mở bằng "Năm 2026…"). Cố ý KHÔNG có
+ * "lâu dài": nó hay đi với một mốc gần ("kế hoạch lâu dài cho năm nay").
  */
-const TU_KHOA_CHANG_DAI = [
-  'sau nay', 've sau', 'tuong lai', 've gia', 'cuoi doi', 'ca doi',
-  'suot doi', 'doi toi', 'den gia', 'luc gia', 'nhung nam toi',
-  'may nam toi', 'mai sau',
-];
+const CUM_PHAM_VI: Record<Exclude<PhamViThoiGian, 'khong-ro'>, string[]> = {
+  gan: [
+    'tuong lai gan', 'sap toi', 'thoi gian toi', 'thoi gian gan', 'vai thang toi',
+    'may thang toi', 'vai thang nua', 'may thang nua',
+  ],
+  thang: ['thang nay', 'thang toi', 'thang sau', 'trong thang', 'nguyet han'],
+  // "sang năm" là cách nói năm sau — và là chữ mở đầu chip "Sang năm <Can Chi> thì sao?"
+  nam: ['nam nay', 'nam toi', 'nam sau', 'sang nam', 'nam ngoai', 'trong nam', 'luu nien', 'tieu han'],
+  'giai-doan': [
+    'sau nay', 've sau', 'tuong lai', 've gia', 'cuoi doi', 'ca doi', 'suot doi',
+    'doi toi', 'den gia', 'luc gia', 'mai sau', 'nhung nam toi', 'may nam toi',
+    'vai nam toi', 'cac nam toi', 'nhung nam sau', 'may nam nua', 'vai nam nua',
+  ],
+};
 
+/** Năm lệch so với năm đang xem, cho những cụm nói năm bằng lời */
+const LECH_NAM: Record<string, number> = {
+  'nam nay': 0, 'nam toi': 1, 'nam sau': 1, 'sang nam': 1, 'nam ngoai': -1,
+};
+
+/** Cụm → phạm vi, tra một lần */
+const PHAM_VI_THEO_CUM = new Map<string, Exclude<PhamViThoiGian, 'khong-ro'>>(
+  (Object.entries(CUM_PHAM_VI) as [Exclude<PhamViThoiGian, 'khong-ro'>, string[]][]).flatMap(
+    ([pv, ds]) => ds.map((c) => [c, pv] as const)
+  )
+);
+
+/**
+ * Khi một câu nói hai mốc, mốc HẸP hơn thắng: "tháng tới năm nay" hỏi về một
+ * tháng, "sắp tới, năm sau" hỏi về một năm. Chặng dài đứng cuối vì nó là nền
+ * cho mọi mốc còn lại.
+ */
+const UU_TIEN_PHAM_VI: Exclude<PhamViThoiGian, 'khong-ro'>[] = ['thang', 'nam', 'gan', 'giai-doan'];
+
+/** Năm viết bằng số. "sinh năm 1990" là năm sinh, không phải năm được hỏi. */
+const LA_NAM_SO = /^(?:19|20)\d\d$/;
+
+/**
+ * Đọc phạm vi thời gian và năm mục tiêu từ các từ của câu (đã bỏ dấu, đã chuẩn
+ * hoá viết tắt).
+ *
+ * Quét trái sang phải, tại mỗi vị trí lấy cụm dài nhất có trong bảng — cùng một
+ * luật cho mọi cặp cụm lồng nhau, không vá từng cặp.
+ */
+function doanPhamViThoiGian(
+  tu: string[],
+  namXem?: number
+): { phamViThoiGian: PhamViThoiGian; namMucTieu?: number } {
+  const gap = new Set<Exclude<PhamViThoiGian, 'khong-ro'>>();
+  let namMucTieu: number | undefined;
+
+  for (let i = 0; i < tu.length; ) {
+    if (LA_NAM_SO.test(tu[i]) && tu[i - 1] !== 'sinh' && !(tu[i - 1] === 'nam' && tu[i - 2] === 'sinh')) {
+      gap.add('nam');
+      namMucTieu ??= Number(tu[i]);
+      i += 1;
+      continue;
+    }
+    // "tháng 3", "tháng 11" — một tháng cụ thể
+    if (tu[i] === 'thang' && /^(?:[1-9]|1[0-2])$/.test(tu[i + 1] ?? '')) {
+      gap.add('thang');
+      i += 2;
+      continue;
+    }
+    let khop = 0;
+    for (let n = Math.min(4, tu.length - i); n >= 1; n--) {
+      const cum = tu.slice(i, i + n).join(' ');
+      const pv = PHAM_VI_THEO_CUM.get(cum);
+      if (!pv) continue;
+      gap.add(pv);
+      if (namXem !== undefined && cum in LECH_NAM) namMucTieu ??= namXem + LECH_NAM[cum];
+      khop = n;
+      break;
+    }
+    i += khop || 1;
+  }
+
+  const phamViThoiGian = UU_TIEN_PHAM_VI.find((pv) => gap.has(pv)) ?? 'khong-ro';
+  return namMucTieu === undefined ? { phamViThoiGian } : { phamViThoiGian, namMucTieu };
+}
+
+/*
+ * Lưu niên và nguyệt hạn KHÔNG còn ở bảng này: chúng đến từ phạm vi thời gian
+ * ('nam', 'thang'), vốn khớp cụm dài nhất. Khớp theo cụm con như ở đây thì
+ * "năm tới" bên trong "những năm tới" kéo lưu niên vào một câu hỏi chặng dài,
+ * và "tháng tới" bên trong "vài tháng tới" kéo nguyệt hạn vào một câu hỏi gần.
+ */
 const TU_KHOA_HAN: [LopHan, string[]][] = [
-  ['nguyet-han', ['thang nay', 'thang toi', 'thang sau', 'trong thang', 'nguyet han']],
-  ['luu-nien', ['nam nay', 'nam toi', 'nam sau', 'trong nam', 'luu nien', 'tieu han']],
   ['dai-van', ['dai van', 'dai han', 'muoi nam', '10 nam', 'giai doan nay', 'nhung nam toi']],
   ['ban-menh', ['ca doi', 'suot doi', 'ban chat', 'tinh cach', 'ban menh', 'so phan']],
 ];
@@ -228,7 +329,7 @@ const TU_KHOA_Y_DINH: Record<Exclude<YDinh, 'mo-ta' | 'co-khong'>, string[]> = {
   ],
   'thoi-diem': [
     'khi nao', 'bao gio', 'luc nao', 'thoi diem', 'luc nay', 'hien gio',
-    'sap toi', 'den bao gio', 'may tuoi', 'nam bao nhieu tuoi', 'dung luc',
+    'den bao gio', 'may tuoi', 'nam bao nhieu tuoi', 'dung luc',
     'co phai luc', 'thoi gian nao',
   ],
   'giai-thich': [
@@ -261,12 +362,47 @@ const UU_TIEN_Y_DINH: Exclude<YDinh, 'mo-ta'>[] = [
  * liệt kê hết động từ đứng giữa: chuyển việc, lấy chồng, mua nhà, hợp nghề…
  *
  * Phải xét VỊ TRÍ, không chỉ xét có mặt: "tôi không thích công việc hiện tại,
- * phải làm sao" cũng chứa "không" nhưng là câu kể, không phải câu hỏi có/không.
- * Ba từ cuối là đủ rộng để bắt "…được không", "…hay không".
+ * phải làm sao" cũng chứa "không" nhưng là câu kể. Chữ "không" đứng TRƯỚC một
+ * động từ hay tính từ là phủ định ("nhưng không hạnh phúc"); chỉ "không" KHÉP
+ * một vế câu mới là dấu hỏi.
+ *
+ * Nhưng "cuối câu" không có nghĩa là từ cuối cùng. Người ta hay hỏi xong rồi
+ * nói thêm mốc thời gian, hay chêm một tiểu từ: "sắp tới tôi có người yêu ko?
+ * tương lai gần", "có người yêu không trong tương lai gần", "có hợp không với
+ * tôi ạ". Luật cũ nhìn ba từ cuối của CẢ câu nên lỡ hết các câu này. Luật này
+ * xét từng vế (tách ở dấu câu), gọt đuôi những chữ không mang nội dung — mốc
+ * thời gian, tiểu từ, đại từ — rồi mới xem vế có khép bằng "không"/"chưa".
  */
-function laCauCoKhong(tu: string[]): boolean {
-  return tu.slice(-3).some((t) => t === 'khong' || t === 'chua');
+function laCauCoKhong(cauKhongDau: string): boolean {
+  return cauKhongDau.split(/[?.!;,\n]+/).some((ve) => {
+    const tu = tuCua(ve);
+    let cuoi = tu.length;
+    for (let got = 1; got && cuoi > 0; cuoi -= got) {
+      got = DUOI_KHONG_NOI_DUNG.has(tu[cuoi - 1]) || /^\d+$/.test(tu[cuoi - 1]) ? 1 : 0;
+      // Cụm thời gian gọt NGUYÊN CỤM, không gọt từng mảnh: "lại" trong "tương
+      // lai" là mảnh thời gian, còn "lãi" trong "không lãi" là nội dung.
+      for (let n = Math.min(4, cuoi); n >= 2 && !got; n--) {
+        if (PHAM_VI_THEO_CUM.has(tu.slice(cuoi - n, cuoi).join(' '))) got = n;
+      }
+    }
+    return cuoi >= 2 && (tu[cuoi - 1] === 'khong' || tu[cuoi - 1] === 'chua');
+  });
 }
+
+/**
+ * Chữ được gọt khỏi đuôi một vế trước khi xem vế có khép bằng "không".
+ *
+ * Chỉ gồm chữ KHÔNG BAO GIỜ là động từ hay tính từ chính của câu: tiểu từ,
+ * đại từ, giới từ ("nam" là chữ "năm" trước một năm viết bằng số). Cụm thời
+ * gian thì gọt theo bảng CUM_PHAM_VI, nguyên cụm. Thêm một tính từ vào đây là
+ * biến câu phủ định thành câu hỏi: "không vui" mà gọt mất "vui" thì còn "không".
+ */
+const DUOI_KHONG_NOI_DUNG = new Set([
+  // tiểu từ cuối câu
+  'a', 'ha', 'nhi', 'nhe', 'chu', 'vay', 'the', 'day', 'ta', 'ah', 'oi',
+  // đại từ, giới từ
+  'toi', 'minh', 'em', 'anh', 'chi', 'voi', 'cho', 'nua', 'trong', 'nam',
+]);
 
 /**
  * Bỏ dấu câu hỏi để so từ khoá — nhưng giữ lại những chữ mà bỏ dấu là đổi nghĩa.
@@ -364,13 +500,13 @@ function doanChuDe(cum: Set<string>): { chuDe: ChuDe; chacChan: boolean } {
  * bao giờ xong — "nên nhận", "nên đổi", "nên ở lại", "nên ký"… — mà cấu trúc
  * thì chỉ có một.
  */
-function doanYDinh(cum: Set<string>, tu: string[]): YDinh {
+function doanYDinh(cum: Set<string>, cauKhongDau: string): YDinh {
   if (cum.has('nen') && (cum.has('khong') || cum.has('hay'))) return 'quyet-dinh';
 
   const diem = new Map<YDinh, number>();
   // Cấu trúc câu hỏi có/không tính như một từ khoá đã khớp, với trọng số đủ để
   // thắng các ý định đọc bằng từ khoá lẻ.
-  if (laCauCoKhong(tu)) diem.set('co-khong', 20);
+  if (laCauCoKhong(cauKhongDau)) diem.set('co-khong', 20);
   for (const [y, tuKhoa] of Object.entries(TU_KHOA_Y_DINH) as [YDinh, string[]][]) {
     const d = tuKhoa.reduce((t, k) => (cum.has(k) ? t + k.length : t), 0);
     if (d > 0) diem.set(y, d);
@@ -381,24 +517,51 @@ function doanYDinh(cum: Set<string>, tu: string[]): YDinh {
   return 'mo-ta';
 }
 
-function doanLopHan(cum: Set<string>, thucThe: ThucThe[], yDinh: YDinh): LopHan[] {
+function doanLopHan(
+  cum: Set<string>,
+  thucThe: ThucThe[],
+  yDinh: YDinh,
+  phamVi: PhamViThoiGian
+): LopHan[] {
   const ra = new Set<LopHan>();
 
   for (const [lop, tuKhoa] of TU_KHOA_HAN) {
     if (tuKhoa.some((t) => cum.has(t))) ra.add(lop);
   }
 
-  // Người dùng gọi thẳng tên lớp hạn thì tin theo, khỏi đoán
+  // Người dùng gọi thẳng tên lớp hạn thì tin theo, khỏi đoán.
+  //
+  // Trừ khi phạm vi đã đọc NGUYÊN CỤM nói khác: từ điển thực thể nhận "năm tới"
+  // là bí danh lưu niên kể cả khi nó nằm trong "những năm tới", và "tháng tới"
+  // là nguyệt hạn kể cả trong "vài tháng tới".
+  const boLuuNien = phamVi === 'giai-doan';
+  const boNguyetHan = phamVi === 'giai-doan' || phamVi === 'gan';
   for (const tt of thucThe) {
-    if (tt.id === 'PERIOD.LUU_NIEN') ra.add('luu-nien');
+    if (tt.id === 'PERIOD.LUU_NIEN' && !boLuuNien) ra.add('luu-nien');
     if (tt.id === 'PERIOD.DAI_VAN') ra.add('dai-van');
-    if (tt.id === 'PERIOD.NGUYET_HAN') ra.add('nguyet-han');
+    if (tt.id === 'PERIOD.NGUYET_HAN' && !boNguyetHan) ra.add('nguyet-han');
     if (tt.id === 'PERIOD.BAN_MENH') ra.add('ban-menh');
   }
 
   // Bản mệnh luôn có mặt: mọi lớp hạn đều đọc trên nền lá số gốc, bỏ nó ra thì
   // đoạn tài liệu về cách cục gốc không bao giờ được truy hồi.
   ra.add('ban-menh');
+
+  /*
+   * Phạm vi thời gian lái lớp hạn, độc lập với ý định.
+   *
+   * Một quãng gần hay một năm cụ thể đọc trên lưu niên, và lưu niên luôn đọc
+   * trên nền đại vận đang chạy. Chặng dài ('giai-doan') chỉ được xét ở nhánh ý
+   * định bên dưới, đúng như luật chặng dài cũ: bài dài "Tôi là ai? … của cả
+   * đời" là câu mô tả có chữ "cả đời", và đổi lớp hạn của nó là đổi một bề mặt
+   * cố định chứ không phải sửa chat.
+   */
+  if (phamVi === 'gan' || phamVi === 'nam') {
+    ra.add('dai-van');
+    ra.add('luu-nien');
+  } else if (phamVi === 'thang') {
+    ra.add('nguyet-han');
+  }
 
   /*
    * Ý định lái lớp hạn.
@@ -429,7 +592,7 @@ function doanLopHan(cum: Set<string>, thucThe: ThucThe[], yDinh: YDinh): LopHan[
      * Thiếu phân biệt này thì câu hỏi về cả đời được trả lời bằng tiểu hạn của
      * một năm — mà tiểu hạn là thứ nói ít nhất về việc một người rồi sẽ ra sao.
      */
-    if (!TU_KHOA_CHANG_DAI.some((t) => cum.has(t))) ra.add('luu-nien');
+    if (phamVi !== 'giai-doan') ra.add('luu-nien');
   } else if (yDinh === 'tra-cuu' && ra.size === 1) {
     return ['ban-menh'];
   }
@@ -493,6 +656,12 @@ export interface DauVaoPlanner {
    * xuất hiện ở khắp nơi.
    */
   tenCachCuc?: string[];
+  /**
+   * Năm âm đang xem. Chỉ dùng để đổi "năm nay / năm sau / năm ngoái" thành một
+   * năm cụ thể; thiếu thì những cụm đó vẫn cho phạm vi 'nam' nhưng không có
+   * `namMucTieu`. Năm viết bằng số thì không cần nó.
+   */
+  namXem?: number;
 }
 
 /**
@@ -587,9 +756,13 @@ function dungKeHoach(
   yDinh: YDinh,
   chacChan: boolean,
   tenCachCuc?: string[],
-  phanLoaiBangModel?: boolean
+  phanLoaiBangModel?: boolean,
+  namXem?: number
 ): KeHoachTruyVan {
   const cum = cumTu(boDauCauHoi(cauHoi));
+  // Tính ở đây, không ở lapKeHoach: nhánh model chỉ trả chủ đề và ý định, phạm
+  // vi thời gian vẫn phải có cho nó.
+  const thoiGian = doanPhamViThoiGian(tuCua(boDauCauHoi(cauHoi)), namXem);
   const thucThe = nhanDangThucThe(cauHoi);
   const cungGoiTen = thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
   const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
@@ -600,11 +773,12 @@ function dungKeHoach(
     chacChan,
     ...(phanLoaiBangModel ? { phanLoaiBangModel: true } : {}),
     cungLienQuan,
-    lopHan: doanLopHan(cum, thucThe, yDinh),
+    lopHan: doanLopHan(cum, thucThe, yDinh, thoiGian.phamViThoiGian),
     thucThe,
     truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung, tenCachCuc),
     truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),
     cumTuKhoa: dungCumTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),
+    ...thoiGian,
     phienBan: PHIEN_BAN_PLANNER,
   };
 }
@@ -616,7 +790,7 @@ function dungKeHoach(
  * và một hàm đồng bộ thì không có cách nào lỡ tay gọi model trong vòng lặp.
  * Nhánh model nằm ở `lapKeHoachDayDu` bên dưới.
  */
-export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): KeHoachTruyVan {
+export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem }: DauVaoPlanner): KeHoachTruyVan {
   const cum = cumTu(boDauCauHoi(cauHoi));
   const thucThe = nhanDangThucThe(cauHoi);
 
@@ -631,9 +805,11 @@ export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc }: DauVaoPlanner): 
     cauHoi,
     saoTheoCung,
     chuDe,
-    doanYDinh(cum, tuCua(boDauCauHoi(cauHoi))),
+    doanYDinh(cum, boDauCauHoi(cauHoi)),
     theoTuKhoa.chacChan || cungGoiTen.length > 0,
-    tenCachCuc
+    tenCachCuc,
+    undefined,
+    namXem
   );
 }
 
@@ -701,7 +877,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không giải thích:
       yDinh && Y_DINH_HOP_LE.includes(yDinh) ? yDinh : theoLuat.yDinh,
       true,
       vao.tenCachCuc,
-      true
+      true,
+      vao.namXem
     );
   } catch (e) {
     console.warn('[planner] phân loại bằng model hỏng:', e instanceof Error ? e.message : e);
