@@ -81,7 +81,8 @@ const NGUONG = {
   /** NORMAL: 2–4 câu, 55–120 âm tiết, có ≥ 1 câu có căn cứ */
   hinhDangNormal: 0.9,
   duPhong: 0.25,
-  thuLai: 0.2,
+  /** Chủ dự án 03/10/2026: thử lại > 15% TỔNG số ca thì dừng trước Production, điều tra nguyên nhân */
+  thuLai: 0.15,
   loi502: 0.03,
   /** Barnum 3: ghép mù theo tên căn cứ */
   ghepMu: 0.8,
@@ -224,6 +225,10 @@ interface Do {
   canCu: number;
   hinhDangNormal: boolean | null;
   thuLai: boolean;
+  /** Lý do lần thử lại (het-cau, json-gay, qua-dai); null khi không thử lại */
+  lyDoThuLai: string | null;
+  /** Số lần gọi model của lượt — phải ≤ 2 (thử lại đúng một lần) */
+  lanGoi: number;
   duPhong: boolean;
   latChieuTho: boolean;
   tenDaNeu: string[];
@@ -272,6 +277,8 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     canCu,
     hinhDangNormal: normal && kq.van ? soCau >= 2 && soCau <= 4 && amTiet >= 55 && amTiet <= 120 && canCu >= 1 : null,
     thuLai: !!vet?.thuLai,
+    lyDoThuLai: vet?.thuLai ?? null,
+    lanGoi: vet?.lanGoi ?? 0,
     duPhong: !!vet?.dungDuPhong,
     latChieuTho: !!vet?.lyDoThayChot && /nguoc|thieu-chieu/u.test(vet.lyDoThayChot),
     tenDaNeu,
@@ -398,8 +405,19 @@ function tongKet(barnum: ReturnType<typeof chamBarnum> | null) {
   them('NORMAL 2–4 câu · 55–120 âm tiết · ≥1 căn cứ', `${hd.dat}/${hd.tong}`, pct(hd) >= NGUONG.hinhDangNormal);
   const dp = tiLe(model, (d) => d.duPhong);
   them('Câu chốt dự phòng', `${dp.dat}/${dp.tong}`, pct(dp) <= NGUONG.duPhong);
-  const tl = tiLe(model, (d) => d.thuLai);
-  them('Thử lại', `${tl.dat}/${tl.tong}`, pct(tl) <= NGUONG.thuLai);
+  // Mẫu số là TỔNG số ca (kể cả lượt trả bằng mã), theo quyết định chủ dự án.
+  const soThuLai = ketQua.filter((d) => d.thuLai).length;
+  const tiLeThuLai = ketQua.length ? soThuLai / ketQua.length : 0;
+  const theoLyDo = Object.entries(
+    ketQua.reduce<Record<string, number>>((a, d) => (d.lyDoThuLai ? { ...a, [d.lyDoThuLai]: (a[d.lyDoThuLai] ?? 0) + 1 } : a), {})
+  ).map(([k, n]) => `${k} ${n}`).join(', ');
+  them(
+    `Thử lại (≤ ${NGUONG.thuLai * 100}% tổng ca)`,
+    `${soThuLai}/${ketQua.length} = ${(tiLeThuLai * 100).toFixed(1)}%${theoLyDo ? ` (${theoLyDo})` : ''}`,
+    tiLeThuLai <= NGUONG.thuLai
+  );
+  const quaHaiLan = ketQua.filter((d) => d.lanGoi > 2).length;
+  them('Gọi model quá 2 lần một lượt', `${quaHaiLan}`, quaHaiLan === 0);
   const e5 = tiLe(ketQua, (d) => d.loi502);
   them('502', `${e5.dat}/${e5.tong}`, pct(e5) <= NGUONG.loi502);
   const kh = tiLe(ketQua, (d) => d.khuonDung);
@@ -416,6 +434,10 @@ function tongKet(barnum: ReturnType<typeof chamBarnum> | null) {
   console.log('\n=== TỔNG ===');
   for (const [ten, gt, dat] of dong) console.log(`${dat ? 'ĐẠT ' : 'TRƯỢT'}  ${ten.padEnd(52)} ${gt}`);
   console.log(`Tiền đã tính: $${tienDaTinh().toFixed(4)} / $${process.env.AI_TRAN_USD} · token ${tokenDaDung()}`);
+  if (tiLeThuLai > NGUONG.thuLai) {
+    console.log(`
+DỪNG TRƯỚC PRODUCTION — tỉ lệ thử lại ${(tiLeThuLai * 100).toFixed(1)}% > ${NGUONG.thuLai * 100}%. Điều tra nguyên nhân trước khi đi tiếp.`);
+  }
   return dong;
 }
 

@@ -671,7 +671,8 @@ Vài điểm đáng biết:
 **Đường Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`).** Cùng truy hồi và gói bằng chứng,
 khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120), chiều kết luận do
 mã chốt từ lá số. Một số lượt do mã viết trọn, không gọi model: hỏi vận riêng của người khác (F2),
-"khi nào" không mốc (D), tháng có nhuận cần hỏi lại. Hết câu có căn cứ thì thử lại một lần, vẫn hỏng
+"khi nào" không mốc (D), tháng có nhuận cần hỏi lại, và tháng nhuận đã chọn (Celes chưa tách riêng
+được vận tháng nhuận nên nói thẳng, không đọc tháng thường thay). Hết câu có căn cứ thì thử lại một lần, vẫn hỏng
 thì trả 502 và hoàn lượt. Mã ở `lib/rag/focused/`; luật và quyết định ở
 `docs/chien-luoc/CEL-186-ve-B-phuong-an.md`.
 

@@ -337,6 +337,28 @@ for (const ca of CA_DOI_TUONG) {
     kiem(kq.keHoach.chuDe === 'tinh-cam', `chip D "${chip}" ra ${kq.keHoach.chuDe}, cần tinh-cam`);
   }
 
+  // N3 hai bước: câu gốc → chip "Sang năm" → chip "Tháng này". Lịch sử là đúng thứ
+  // client gửi (câu chip là lượt người dùng, xen câu trả lời của Celes). Chủ đề phải
+  // giữ qua CẢ HAI chip, và trục thời gian là của chip đang bấm.
+  const tl = (noiDung: string) => ({ vaiTro: 'tro-ly' as const, noiDung });
+  for (const [cauGoc, chuDe, cung] of [
+    ['Tình cảm sắp tới?', 'tinh-cam', 'Phu Thê'],
+    ['Công việc sắp tới?', 'su-nghiep', 'Quan Lộc'],
+  ] as const) {
+    const chip1 = 'Sang năm thì sao?';
+    const chip2 = 'Tháng này thì sao?';
+    const b1 = lapKeHoachFocused({ ...vao, cauHoi: chip1, laTiepTuChip: true, lichSu: [nd(cauGoc), tl('Năm nay khá thuận.')] }).keHoach;
+    kiem(b1.chuDe === chuDe && b1.cungLienQuan[0] === cung, `N3 bước 1 "${cauGoc}" → ${b1.chuDe}/${b1.cungLienQuan[0]}`);
+    kiem(b1.namMucTieu === 2027, `N3 bước 1 "${cauGoc}" năm ${b1.namMucTieu}, cần 2027`);
+    const lich2 = [nd(cauGoc), tl('Năm nay khá thuận.'), nd(chip1), tl('Sang năm có phần vướng hơn.')];
+    const b2 = lapKeHoachFocused({ ...vao, cauHoi: chip2, laTiepTuChip: true, lichSu: lich2 }).keHoach;
+    kiem(b2.chuDe === chuDe && b2.cungLienQuan[0] === cung, `N3 hai bước "${cauGoc}" mất chủ đề: ${b2.chuDe}/${b2.cungLienQuan[0]}`);
+    kiem(b2.namMucTieu !== 2027, `N3 bước 2 "${cauGoc}" vẫn giữ năm của chip trước: ${b2.namMucTieu}`);
+    // Route có thể nhét câu đang hỏi vào cuối lịch sử — vẫn phải ra như trên.
+    const b2b = lapKeHoachFocused({ ...vao, cauHoi: chip2, laTiepTuChip: true, lichSu: [...lich2, nd(chip2)] }).keHoach;
+    kiem(b2b.chuDe === chuDe, `N3 hai bước (lịch sử có câu đang hỏi) "${cauGoc}" ra ${b2b.chuDe}`);
+  }
+
   // Tháng nhuận: hai chip phân giải được, không hỏi lại lần hai. 2025 có tháng 6 nhuận.
   for (const [nam, thang] of [[2025, 6], [2023, 2]] as const) {
     const cauGoc = `Tháng ${thang} năm ${nam} công việc của tôi thế nào?`;
@@ -610,6 +632,27 @@ async function kiemNoi() {
       bayGio
     );
     kiem(nh.model === 'focused-nhuan' && (nh.coCauTruc?.goiYTiep ?? []).length === 2, `nhuận ra ${nh.model}`);
+
+    // Đã chọn tháng nhuận (chip hoặc gõ thẳng): engine chưa tách nguyệt hạn tháng
+    // nhuận → fail closed bằng câu mã, KHÔNG truy hồi / gọi model / đọc tháng thường.
+    const goc6 = 'Tháng 6 năm 2025 công việc của tôi thế nào?';
+    for (const [cauHoi, lichSu] of [
+      [(nh.coCauTruc?.goiYTiep ?? [])[1] ?? '', [{ vaiTro: 'nguoi-dung' as const, noiDung: goc6 }]],
+      ['Tháng 6 nhuận năm 2025 công việc của tôi thế nào?', []],
+    ] as const) {
+      const r = await traLoiFocused({ ...vaoGoc, namXem: 2025, cauHoi, laTiepTuChip: lichSu.length > 0, lichSu: [...lichSu] }, phienBanHienTai, async () => [], bayGio);
+      kiem(r.provider === 'ma' && r.model === 'focused-nhuan-chua-tach', `"${cauHoi}" ra ${r.provider}/${r.model}, cần fail closed`);
+      kiem(r.van.includes('chưa tách riêng') && r.van.includes('tháng 6 nhuận'), `"${cauHoi}" văn sai: ${r.van}`);
+      kiem(r.goi.duKien.length === 0, `"${cauHoi}" vẫn có dữ kiện — đã đọc tháng thường`);
+      kiem((r.coCauTruc?.goiYTiep ?? []).join('|') === 'Tháng 6 năm 2025', `"${cauHoi}" chip sai: ${(r.coCauTruc?.goiYTiep ?? []).join('|')}`);
+    }
+    // Chip "Tháng 6" (thường) vẫn đi đường đọc bình thường, không bị chặn.
+    {
+      const chipThuong = (nh.coCauTruc?.goiYTiep ?? [])[0] ?? '';
+      const k = lapKeHoachFocused({ cauHoi: chipThuong, laTiepTuChip: true, lichSu: [{ vaiTro: 'nguoi-dung', noiDung: goc6 }], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2025, thangXem: 8 }).keHoach;
+      const b = boiCanhThoiGian({ cauHoi: chipThuong, keHoach: k, namXem: 2025, bayGio });
+      kiem(b.thang?.nhuan === 'thuong' && b.thang.thang === 6, `chip thường "${chipThuong}" ra ${b.thang?.nhuan}`);
+    }
 
     // Ca bổ sung 10: không còn câu có căn cứ → thử lại ĐÚNG một lần → văn rỗng (route trả 502 + hoàn lượt).
     const cauHoi = 'Năm nay công việc của tôi thế nào?';

@@ -27,7 +27,7 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
-import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauThangDaQua, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
+import { CAU_CUOI_NAM, cauHaiVe, cauHoiNhuan, cauKhiNao, cauNhuanChuaTach, cauThangDaQua, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
@@ -164,6 +164,10 @@ export async function traLoiFocused(
   if (thoiGianSo.thang?.nhuan === 'can-hoi') {
     return traNgay(cauHoiNhuan(thoiGianSo.thang, bayGio.nam), 'focused-nhuan', phanLoaiSo.khuon);
   }
+  // Đã chọn tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường thay vào.
+  if (thoiGianSo.thang?.nhuan === 'nhuan') {
+    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
+  }
 
   // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
   const tenCachCuc = tenCachCucCho(vao.laSo, so.keHoach.cungLienQuan[0]);
@@ -183,6 +187,13 @@ export async function traLoiFocused(
   const doiTuong = hai.doiTuong;
   const phanLoai = phanKhuon({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, doiTuong });
   const thoiGian = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
+  // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
+  if (thoiGian.thang?.nhuan === 'nhuan') {
+    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam), 'focused-nhuan-chua-tach', phanLoai.khuon);
+  }
+  if (thoiGian.thang?.nhuan === 'can-hoi') {
+    return traNgay(cauHoiNhuan(thoiGian.thang, bayGio.nam), 'focused-nhuan', phanLoai.khuon);
+  }
   const keHoach = themLopChoThang(keHoachGoc);
 
   const namHieuLuc = thoiGian.namHieuLuc;

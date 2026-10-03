@@ -88,6 +88,22 @@ export function cauHoiNhuan(m: MocThang, namNay: number): CauMa {
   };
 }
 
+/**
+ * Người dùng đã chọn tháng X NHUẬN. Engine chỉ có nguyệt hạn theo số tháng,
+ * không tách tháng nhuận — đọc tiếp là đưa vận tháng X thường ra như thể của
+ * tháng nhuận: câu sai mà trông hợp lệ. Nên dừng hẳn (fail closed), trọn lượt,
+ * không truy hồi, không gọi model. Chip "Tháng X" (thường) vẫn đọc được.
+ */
+export function cauNhuanChuaTach(m: MocThang, namNay: number): CauMa {
+  const x = m.thang;
+  return {
+    cau: `Celes chưa tách riêng được vận của tháng ${x} nhuận năm ${m.nam}, nên chưa đọc phần này để không lẫn với tháng ${x} thường.`,
+    chip: [`Tháng ${x}${duoiNam(m.nam, namNay)}`],
+    loiDi: [],
+    goiModel: false,
+  };
+}
+
 /* ---------------------------------------------------- N2 tháng đã qua */
 
 export function cauThangDaQua(m: MocThang): string {

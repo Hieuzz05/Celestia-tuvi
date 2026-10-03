@@ -71,6 +71,8 @@ jobs:
         run: npx tsx scripts/test-du-kien.ts
       - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
         run: npx tsx scripts/test-focused.ts
+      - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
+        run: npx tsx scripts/test-fallback-giu-nguyen.ts
 
       - name: Build
         run: npx next build
