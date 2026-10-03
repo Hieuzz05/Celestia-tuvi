@@ -67,6 +67,10 @@ jobs:
         run: npx tsx scripts/test-linh-vat-an-toan.ts
       - name: Chỗ đặt linh vật (mục 12, ảnh khoá, vùng nội dung)
         run: npx tsx scripts/test-cho-dat-celes.ts
+      - name: Dữ kiện phần đang hỏi (nghiêng về, mốc, cờ Focused tắt)
+        run: npx tsx scripts/test-du-kien.ts
+      - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
+        run: npx tsx scripts/test-focused.ts
 
       - name: Build
         run: npx next build
