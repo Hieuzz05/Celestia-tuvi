@@ -108,7 +108,9 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   gọi một lượt cho cả nhóm. Gọi theo nhóm còn được thêm một thứ: model nhìn cả dãy
   nên không lặp ý ở phần tử sau.
 - **Mọi nội dung AI đều đi qua `layHoacSinh` và cất vào `noi_dung_ai`.** Khoá là
-  (lá số, bề mặt, kỳ). Kỳ quyết định khi nào làm mới: ngày cho Điểm nổi bật, tháng
+  (lá số, bề mặt, kỳ) — kỳ được module gắn tiền tố môi trường (03/10/2026, xem
+  `docs/bay/moi-truong.md`); không truy vấn bảng này trực tiếp ngoài `lib/rag/noi-dung-ai.ts` (trừ ba module cấu hình
+  dùng chung `thu-vien/kho.ts`, `v3/mau-giong.ts`, `v3/cau-hinh.ts`: đọc chung, ghi chỉ production). Kỳ quyết định khi nào làm mới: ngày cho Điểm nổi bật, tháng
   ÂM cho Hành trình, khoảng tuổi cho giai đoạn, năm cho bảng 8 lĩnh vực. Bảng này
   phải chạy tay: `supabase/schema-noi-dung-ai.sql`. Thiếu bảng thì có lớp đệm RAM
   đỡ tạm, nhưng nó không chia sẻ giữa các instance.

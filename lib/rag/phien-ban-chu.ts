@@ -14,7 +14,7 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
  *
  * Bộ nhớ đệm khoá theo (lá số, bề mặt, kỳ, ngôn ngữ). Sửa prompt không đổi bất
  * kỳ thứ nào trong bốn thứ ấy, nên người đã từng đọc sẽ đọc lại đúng bài cũ —
- * mãi mãi, hoặc cho tới khi có người nhớ chạy tay `chay-lai-luan-giai.ts`.
+ * mãi mãi, hoặc cho tới khi có người nhớ chạy tay `chay-lai-luan-giai.ts` (kèm `--ghi-production` mới làm mới đệm production).
  *
  * Đây không phải rủi ro lý thuyết. Đếm được lúc thêm hằng số này: chỉ 2 trên 7
  * bề mặt có phiên bản prompt trong khoá. Tám phiên bản vừa được bump trong một

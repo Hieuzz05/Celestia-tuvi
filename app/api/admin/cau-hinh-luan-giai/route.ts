@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { canQuanTri } from '@/lib/rag/cong-quan-tri';
 import { ghiNhatKyQuanTri } from '@/lib/rag/nhat-ky';
+import { laProductionThat, LoiNgoaiProduction } from '@/lib/moi-truong-dem';
 import { docCauHinhChoQuanTri, lamSachCauHinh, luuCauHinhV3, CAU_HINH_MAC_DINH } from '@/lib/rag/v3/cau-hinh';
 
 /**
@@ -24,6 +25,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const cong = await canQuanTri();
   if (!cong.duocPhep) return cong.chan;
+  // Cấu hình dùng chung một DB với production: Preview/local đọc được nhưng không được sửa
+  if (!laProductionThat()) return NextResponse.json({ loi: 'Chỉ sửa được cấu hình trên production' }, { status: 403 });
   let body: { cauHinh?: unknown; nhan?: unknown; khoiPhuc?: unknown; veMacDinh?: unknown };
   try {
     body = await req.json();
@@ -48,6 +51,7 @@ export async function POST(req: Request) {
     await ghiNhatKyQuanTri('luu-cau-hinh', 'cau-hinh-v3', 'v3', cong.actor, { nhan: ban.nhan, cauHinh: ban.cauHinh });
     return NextResponse.json(await docCauHinhChoQuanTri());
   } catch (e) {
+    if (e instanceof LoiNgoaiProduction) return NextResponse.json({ loi: 'Chỉ sửa được cấu hình trên production' }, { status: 403 });
     return NextResponse.json({ loi: e instanceof Error ? e.message : 'Không lưu được cấu hình' }, { status: 500 });
   }
 }

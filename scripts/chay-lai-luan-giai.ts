@@ -1,5 +1,10 @@
 /**
- * Chạy lại toàn bộ phần luận giải của một tài khoản — npx tsx scripts/chay-lai-luan-giai.ts [email]
+ * Chạy lại toàn bộ phần luận giải của một tài khoản — npx tsx scripts/chay-lai-luan-giai.ts [email] [--ghi-production]
+ *
+ * MẶC ĐỊNH chạy trong namespace LOCAL (local:<CELES_CACHE_NAMESPACE|local>:) — đọc, xoá, ghi đệm của
+ * riêng máy này, không đụng đệm production dù `.env.local` trỏ Supabase production. Muốn làm mới
+ * đệm production thật thì thêm cờ dòng lệnh `--ghi-production` (KHÔNG có biến môi trường tương đương:
+ * `.env.local` mà có thì `next dev` cũng nhận theo). Xem lib/moi-truong-dem.ts.
  *
  * Khác `test-be-mat-ai.ts`: script kia gọi thẳng lớp sinh trên một lá số bịa và
  * cố ý KHÔNG đụng bộ nhớ đệm. Script này làm ngược lại — nó lấy lá số thật đã
@@ -29,7 +34,7 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
  * Email không nằm ở bảng `profiles` mà ở `auth.users` — `profiles` chỉ giữ tên
  * hiển thị và lá số mặc định. Nên phải hỏi qua Admin API chứ không select được.
  */
-const EMAILS = (process.argv[2] ?? process.env.ADMIN_EMAILS ?? '')
+const EMAILS = (process.argv.slice(2).find((a) => !a.startsWith('--')) ?? process.env.ADMIN_EMAILS ?? '')
   .split(',')
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
@@ -42,14 +47,34 @@ function inKhoi(nhan: string, than: Record<string, string>) {
   }
 }
 
+/**
+ * Bề mặt được xoá: ba bề mặt script này sinh lại, cộng các bề mặt luận CÙNG kỳ / cùng lĩnh vực
+ * với chúng (nhịp, mốc, bản đọc sâu) — route tự sinh lại khi mở trang. Bỏ sót chúng là thẻ nhịp
+ * giữ bài cũ cạnh luận hạn mới, hai bên nói lệch về cùng một giai đoạn.
+ * Không xoá cấu hình, sổ đếm khách, chat, luan-giai-v3 (sinh lại rất tốn).
+ */
+const BE_MAT_XOA = [
+  'diem-noi-bat',
+  'bang-linh-vuc',
+  'luan-han-chi-tiet',
+  'nhip-hien-tai',
+  'moc-giai-doan',
+  'moc-nam',
+  'moc-thang',
+  'ban-doc-sau',
+] as const;
+
 async function main() {
+  const { khaiBaoScript } = await import('../lib/moi-truong-dem');
+  const pv = khaiBaoScript(process.argv);
+  console.log(`Phạm vi đệm: ${pv.phamViDem}${pv.moiTruong === 'production' ? '  ← GHI ĐỆM PRODUCTION' : ''}`);
   const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
   const { lapLaSo, cungDaiVan } = await import('../lib/tuvi/ansao');
   const { luanHan } = await import('../lib/tuvi/luan-han');
   const { tuoiAmTaiNam } = await import('../lib/tuvi/hanh-trinh');
   const { namAmHienTai, thangAmHienTai } = await import('../lib/tuvi/bay-gio');
   const { bamLaSo } = await import('../lib/rag/nhat-ky');
-  const { layHoacSinh, kyTheoNgay, kyTheoThangAm } = await import('../lib/rag/noi-dung-ai');
+  const { layHoacSinh, kyTheoNgay, kyTheoThangAm, xoaDemLaSo } = await import('../lib/rag/noi-dung-ai');
   const { sinhDiemNoiBat, sinhNhipHanhTrinh } = await import('../lib/rag/be-mat-ngan');
   const { sinhBangLinhVuc } = await import('../lib/rag/bang-linh-vuc');
 
@@ -97,12 +122,9 @@ async function main() {
     );
     console.log(`chart_hash ${chartHash} · năm xem ${namXem} · tháng âm ${thangXem}`);
 
-    // Xoá bản đã cất của CHÍNH lá số này. Không đụng lá số của người khác.
-    const { error: loiXoa, count } = await sb
-      .from('noi_dung_ai')
-      .delete({ count: 'exact' })
-      .eq('chart_hash', chartHash);
-    console.log(loiXoa ? `xoá đệm HỎNG: ${loiXoa.message}` : `xoá ${count ?? 0} bản đã cất`);
+    // Xoá bản đã cất của CHÍNH lá số này, chỉ các bề mặt trong BE_MAT_XOA, chỉ trong phạm vi đệm hiện tại.
+    const xoa = await xoaDemLaSo(chartHash, [...BE_MAT_XOA]);
+    console.log(xoa.loi ? `xoá đệm HỎNG: ${xoa.loi}` : `xoá ${xoa.soBan} bản đã cất (${pv.phamViDem})`);
 
     // 1. Điểm nổi bật — trang Hôm nay và thẻ dẫn đầu trang Lá số
     const dnb = await layHoacSinh(
@@ -193,7 +215,7 @@ async function main() {
   }
 
   console.log('\n' + '='.repeat(72));
-  console.log('Xong. Mở lại trang là thấy đúng những bài trên.');
+  console.log('Xong. Bài trên chỉ để đọc soát — khoá script khác khoá route (thiếu hậu tố |v:), trang sẽ tự sinh lại khi mở.');
 }
 
 main().catch((e) => {
