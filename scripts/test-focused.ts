@@ -51,7 +51,9 @@ import { datMienTruTamLy } from '../lib/rag/an-toan';
 import { loiDiTiep } from '../lib/rag/hinh-dang-tra-loi';
 import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
 import { kiemMotCau, kiemLuot, chonChip, doiNayThanhDo, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
-import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
+import { docFocused, dungPromptFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
+import { VAN_PHONG_CELES_CHAT } from '../lib/rag/van-phong';
+import { chonMauVang, KHO_VANG, type MauVang } from '../lib/rag/mau-vang';
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
 import { cauChotDuPhong, mocChoCauChot } from '../lib/rag/focused/chot-huong';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
@@ -897,6 +899,46 @@ async function kiemNoi() {
     });
     kiem(soLanGoi === 2 && kq10.vet.lanGoi === 2, `ca 10 gọi ${soLanGoi} lần, cần đúng 2`);
     kiem(kq10.van === '' && kq10.vet.thuLai === 'het-cau', `ca 10 ra văn "${kq10.van.slice(0, 40)}" / thuLai ${kq10.vet.thuLai}`);
+
+    // Hợp đồng văn (04/10/2026): tên sao không bắt buộc trong câu — căn cứ ở maDuKien.
+    {
+      const vaoP = {
+        goi: dungGoiBangChung(cauHoi, kh, dk, []), cauHoiGoc: cauHoi, lichSu: [], daNoiTruoc: [], nghieng: null,
+        phanLoai, mucAnToan: 'NORMAL' as const, moc: { bayGio, thoiGian }, laTiepTuChip: false, cauMa: [],
+      };
+      const p0 = dungPromptFocused(vaoP);
+      kiem(p0.system.includes(VAN_PHONG_CELES_CHAT), 'system Focused thiếu VAN_PHONG_CELES_CHAT');
+      kiem(!/nêu tên sao \/ hạn rồi dịch|nêu tên rồi dịch|có tên và nghĩa đời thường/u.test(p0.system + p0.user), 'prompt còn lệnh "nêu tên sao rồi dịch"');
+      kiem(/tối đa HAI tên sao/u.test(p0.system), 'prompt thiếu trần hai tên sao mỗi lượt');
+      // Kho rỗng: không khối mẫu. Mẫu tiêm vào: nằm ở USER, system giữ nguyên (đệm tiền tố).
+      if (!KHO_VANG.some((m) => m.beMat === 'chat')) kiem(!p0.user.includes('MẪU VỀ CÁCH VIẾT'), 'kho chat rỗng mà prompt có khối mẫu');
+      const mauThu: MauVang = { id: 'MV-THU', beMat: 'chat', loai: 'day-du-kien', nhan: 'mẫu thử', van: 'Đoạn mẫu thử.' };
+      kiem(chonMauVang({ beMat: 'chat', kho: [mauThu] })[0]?.id === 'MV-THU', 'chonMauVang không đọc kho tiêm');
+      kiem(chonMauVang({ beMat: 'bai-dai', kho: [mauThu] }).length === 0, 'chonMauVang lấy nhầm mẫu khác bề mặt');
+      const p1 = dungPromptFocused({ ...vaoP, mauVang: [mauThu] });
+      kiem(p1.user.includes('Đoạn mẫu thử.') && p1.system === p0.system, 'mẫu vàng phải vào USER, system không đổi');
+
+      let lanG = 0;
+      const kqKhongTen = await chayFocused({
+        prompt: vaoP,
+        ctx: {
+          cauHoi, phanLoai, mucAnToan: 'NORMAL', chuDe: 'su-nghiep', doiTuong: null,
+          tapTen: tapTenTuGoi(dk), phucDucLaSao: false, maHopLe: new Set(['F001']), nghieng: null,
+          thoiGian, tuoiHopLe: [], cauMa: [], chipTruoc: [],
+        },
+        tenSua: [],
+        goi: async () => {
+          lanG += 1;
+          const text = JSON.stringify({
+            cauChot: 'Công việc năm nay khá vững, ít phải chạy theo người khác.',
+            cau: [{ noiDung: 'Những việc bạn đã nắm chắc dễ được giao thêm, nhịp làm đều hơn là gấp.', maDuKien: ['F001'], phia: 'thuan' }],
+            chieuCauChot: 'thuan', goiYTiep: [],
+          });
+          return { text, provider: 'gemini', model: 'gia', tokensIn: 1, tokensOut: 1, daThuHong: [] };
+        },
+      });
+      kiem(lanG === 1 && kqKhongTen.van.includes('Những việc bạn đã nắm chắc') && !kqKhongTen.vet.thuLai, `câu không tên sao mà có mã thật bị bỏ / thử lại: ${kqKhongTen.van}`);
+    }
 
     // Hỏi MỘT tháng mà hai lần đều không có câu nguyệt hạn → văn rỗng (502 + hoàn lượt).
     {

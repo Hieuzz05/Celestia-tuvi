@@ -114,11 +114,13 @@ export function chonMauVang(vao: {
   loai?: LoaiMau[];
   muc?: MucId[];
   soLuong?: number;
+  /** Kho để chọn — mặc định `KHO_VANG`. Chỉ test / A/B tiêm kho khác; Production luôn đọc `KHO_VANG`. */
+  kho?: readonly MauVang[];
 }): MauVang[] {
   const soLuong = vao.soLuong ?? SO_MAU_MOI_LUOT;
   if (soLuong <= 0) return [];
 
-  const dungBeMat = KHO_VANG.filter((m) => m.beMat === vao.beMat);
+  const dungBeMat = (vao.kho ?? KHO_VANG).filter((m) => m.beMat === vao.beMat);
   if (dungBeMat.length === 0) return [];
 
   const diem = (m: MauVang) =>

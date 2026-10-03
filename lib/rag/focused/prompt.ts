@@ -15,6 +15,8 @@ import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import { dungKhoiChoPrompt, type GoiBangChung } from '../bang-chung';
 import { CHUAN_NGON_NGU_CELES } from '../chuan-ngon-ngu';
+import { chonMauVang, khoiMauVang, type MauVang } from '../mau-vang';
+import { VAN_PHONG_CELES_CHAT } from '../van-phong';
 import { docObjectJson } from '../doc-json';
 import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
@@ -60,22 +62,30 @@ CÂU HỎI KHÔNG THUỘC PHẠM VI:
 
 ${KHOI_GIONG_CELES}
 
+${VAN_PHONG_CELES_CHAT}
+
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 {
   "cauChot": "ĐÚNG MỘT câu trả lời thẳng câu vừa hỏi. Theo hướng đã chốt nếu có.",
   "chieuCauChot": "thuan | ngang | vuong — câu cauChot nói phần đời đang hỏi đang thuận, ngang hay vướng (không phải chuyện người hỏi mong hay sợ)",
   "cau": [
-    { "noiDung": "MỘT câu: nêu tên sao / hạn rồi dịch ngay ra đời thường", "maDuKien": ["F002"], "phia": "thuan | can | nen" }
+    { "noiDung": "MỘT câu đời thường về đúng phần đang hỏi — phần lớn câu KHÔNG có tên sao", "maDuKien": ["F002"], "phia": "thuan | can | nen" }
   ],
   "goiYTiep": ["2-3 câu NGƯỜI DÙNG sẽ gõ tiếp, ở ngôi của họ, tối đa 40 ký tự"]
 }
 
-LUẬT CHO "cau":
+LUẬT CHO "cau" — MỘT MẠCH VĂN, KHÔNG PHẢI DANH SÁCH SAO:
+- "cauChot" và "cau" đọc liền thành một đoạn, theo mạch: quãng đó ra sao (cauChot) → chuyện chính người hỏi dễ gặp ở đúng phần đang hỏi → căn cứ nổi bật → lực kéo ngược, nếu có. Không viết mỗi câu một sao đứng riêng; câu sau nối ý câu trước.
+- Mỗi câu nói trước điều người đọc hiểu hoặc hình dung được — việc đến nhanh hay chậm, chỗ phải tự chốt, chỗ kéo dài, ai đỡ một phần — ở ĐÚNG phần đời đang hỏi. Chuyện đó phải suy ra từ nghĩa của chính các mã ghi trong "maDuKien"; không thêm sự kiện, con số hay người mà dữ kiện không nói.
+- Tên sao KHÔNG bắt buộc có trong câu. Căn cứ nằm ở "maDuKien": câu không nêu tên vẫn phải ghi mã thật mà nó dựa vào.
+- Khi nêu tên: nghĩa đời thường đứng trước, tên đứng sau như lời giải thích, và câu gọi tên nói luôn tên đó làm gì ("Thất Sát làm nhịp việc gấp hơn") — không chỉ trỏ lại ("X nói rõ điều đó", "X và Y cùng hiện rõ"). Không mở câu bằng tên sao.
+- Cả lượt (tính cả "cauChot") nêu tối đa HAI tên sao: thường chỉ MỘT câu trong "cau" gọi tên căn cứ nổi bật nhất, cùng lắm thêm một tên cho lực kéo ngược. Các câu còn lại nói bằng lời thường, vẫn ghi mã. Mỗi câu tối đa MỘT tên, không liệt kê ("A và B", "A đi cùng B"). Đừng biến mỗi dữ kiện thành một câu giải nghĩa sao.
+- Câu ngắn, mỗi câu MỘT ý, khoảng 15–30 chữ. Không nối hai ý bằng dấu chấm phẩy — tách thành hai phần tử. Câu dài làm lượt vượt độ dài và bị cắt từ cuối, mất luôn lực kéo ngược.
+- Không mở câu bằng mốc thời gian ("Năm âm …,", "Năm …,") — người hỏi đã biết mình hỏi quãng nào.
 - Mỗi phần tử là MỘT câu, không tiêu đề, không gạch đầu dòng, không markdown.
 - "maDuKien" là mã F### mà câu đó dựa vào. Câu không mã, hoặc mã không có trong khối dữ kiện, coi là câu không căn cứ và bị cắt trước.
 - "phia": "thuan" là dữ kiện mở đường, "can" là dữ kiện cản lại, "nen" là bối cảnh không nghiêng bên nào.
 - Chỉ nêu năm, tháng, tuổi có trong khối MỐC THỜI GIAN hoặc khối dữ kiện. Mốc khác sẽ bị bỏ.
-- Mỗi câu nêu tối đa MỘT tên sao.
 
 LUẬT CHO "goiYTiep": lời người dùng bấm, không phải lời bạn dặn. Mỗi chip đi sâu thêm MỘT lớp so với câu vừa hỏi, không lặp lại câu ấy hay chip lượt trước. Không chip hỏi tên, họ của người khác; không chip hỏi vận riêng của người khác; không chip "Tháng nào…", "Khi nào…"; không chip khuyên ("Có nên…"), hỏi tính cách người khác, hỏi kéo dài bao lâu, hay nhắc "Đại vận".`;
 
@@ -84,10 +94,10 @@ LUẬT CHO "goiYTiep": lời người dùng bấm, không phải lời bạn d�
 const KHOI_KHUON: Record<PhanLoai['khuon'], string> = {
   A: `KHUÔN LƯỢT NÀY: hỏi có / không.
 "cauChot" nói thẳng nghiêng về "có" hay "chưa", đúng mức hướng đã chốt, bằng lời thường.
-"cau": MỘT căn cứ mạnh nhất (nêu tên rồi dịch), và nếu thật cần thì MỘT lực kéo ngược. Không hơn.`,
+"cau": căn cứ mạnh nhất nói thành chuyện đời thường, và nếu thật cần thì MỘT lực kéo ngược. Không hơn.`,
   B: `KHUÔN LƯỢT NÀY: mô tả một quãng thời gian.
 "cauChot" là giọng xu hướng: quãng này phần đời đang hỏi đang mở ra, đang chững, hay đang vướng.
-"cau": 1–2 căn cứ, có tên và nghĩa đời thường.`,
+"cau": 1–3 câu theo mạch: chuyện chính của quãng đó → căn cứ nổi bật → lực kéo ngược nếu có.`,
   C: `KHUÔN LƯỢT NÀY: người hỏi đang cân một quyết định.
 "cauChot" đọc BỐI CẢNH của quyết định (quãng này đỡ hay cản việc ấy), KHÔNG nói họ nên làm gì.
 "cau": 1–2 căn cứ. Không câu nào được là lời khuyên hay lựa chọn hộ.`,
@@ -114,9 +124,9 @@ function khoiKhuon(pl: PhanLoai, muc: MucAnToan): string {
     );
   }
   if (pl.sau) {
-    dong.push('Người hỏi xin đọc kỹ: "cau" được tới 6–7 câu, vẫn mỗi câu một căn cứ, vẫn không tiêu đề.');
+    dong.push('Người hỏi xin đọc kỹ: "cau" được tới 6–7 câu, vẫn một mạch, vẫn mỗi câu có mã căn cứ, vẫn không tiêu đề. Cả lượt nêu tối đa BỐN tên sao.');
   } else if (muc === 'NORMAL') {
-    dong.push('Độ dài: cả lượt 2–4 câu, khoảng 55–120 chữ. Dài hơn sẽ bị cắt từ cuối.');
+    dong.push('Độ dài: cả lượt 2–4 câu, khoảng 55–120 chữ, cả lượt nêu tối đa HAI tên sao. Dài hơn sẽ bị cắt từ cuối.');
   }
   if (muc === 'SENSITIVE') {
     dong.push('Người hỏi đang ở chỗ dễ tổn thương. Viết chậm, ấm, không đùa; không cắt ngắn câu trả lời chỉ để gọn.');
@@ -166,7 +176,7 @@ export function khoiNghiengFocused(n: NghiengVe | null, lop: ReadonlySet<LopDauM
     const ds = dauMoc.filter((d) => d.huong === h);
     return ds.length ? ds.map(dong).join('\n') : '- (không có)';
   };
-  const cachCuc = n.cachCuc.length ? `\nCách cục đọc được ở phần này: ${n.cachCuc.join(', ')}. Nêu tên thì dịch nghĩa ngay.` : '';
+  const cachCuc = n.cachCuc.length ? `\nCách cục đọc được ở phần này: ${n.cachCuc.join(', ')}. Nêu tên thì nghĩa đời thường đứng trước, tên đứng sau.` : '';
   return `DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG, KHÔNG ĐẢO:
 Phần đời đang hỏi: ${n.phanDoi}.
 
@@ -250,6 +260,8 @@ export interface DauVaoPromptFocused {
   cauMa: string[];
   /** Lý do lượt trước trượt guard — chỉ có ở lần thử lại */
   lyDoThuLai?: string;
+  /** Mẫu vàng đã chọn. Thiếu = chọn từ `KHO_VANG` bề mặt 'chat'. Chỉ test / A/B truyền vào. */
+  mauVang?: readonly MauVang[];
 }
 
 /** Lý do thử lại đọc được cho model — mã lý do trần ("thieu-nguyet-han") model không hiểu. */
@@ -272,7 +284,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   if (v.moc.thoiGian.thang && maThang.length) {
     phan.push(
       `Câu hỏi về MỘT tháng: ít nhất một phần tử "cau" phải dựa vào dữ kiện của tháng đang đọc (${maThang.join(', ')}). ` +
-        'Câu đó nói sao ở cung tháng làm phần ĐANG HỎI thuận hay vướng hơn trong tháng; KHÔNG mượn nghĩa của tên cung đó ' +
+        'Câu đó nói phần ĐANG HỎI trong tháng thuận hay vướng hơn ra sao, bằng chuyện đời thường (không bắt buộc nêu tên sao); KHÔNG mượn nghĩa của tên cung đó ' +
         '(cha mẹ, nhà cửa, anh em…) để suy sang phần đang hỏi.'
     );
   }
@@ -297,6 +309,12 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   if (!v.goi.bangChung.length) {
     phan.push('LƯU Ý: không có nguồn tham chiếu nào cho câu này. Chỉ mô tả điều dữ kiện lá số nói, không tự thêm quy tắc Tử Vi.');
   }
+  // Mẫu vàng nằm ở tin USER, không ở system: system giữ nguyên để tiền tố đệm được (CEL-111).
+  const mau = khoiMauVang([
+    ...(v.mauVang ??
+      chonMauVang({ beMat: 'chat', loai: v.phanLoai.loaiSuKien === 'xau' ? ['mien-rui-ro'] : undefined })),
+  ]);
+  if (mau) phan.push(mau);
 
   const cu = moDauCu(v.lichSu);
   const dan: string[] = [khoiKhuon(v.phanLoai, v.mucAnToan)];
