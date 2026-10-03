@@ -411,3 +411,93 @@ Năm mức × ba loại sự kiện:
 10. **Còn chưa kiểm, sẽ kiểm khi code:**
     - cột `provider` của bảng vết và nhãn trong `chotCauHoi` có ràng buộc giá trị không. Nếu có, F2 ghi `provider = 'ma'` sẽ không lưu được;
     - app xử lý `loiDi` sang Kết nối ra sao.
+
+## 14. Cập nhật theo researcher 03/10 tối (thay đổi so với bản 2, sau khi mở khoá)
+
+Mã từ 10e351f tới HEAD chỉ đổi tài liệu. Nhánh fix `noi_dung_ai` chỉ chồng với Vé B ở `.github/workflows/kiem-tra.yml` (một bước CI, gỡ khi merge). Vé B không chạm `noi-dung-ai.ts`, `so-ket-luan`, `thu-vien`, `v3`.
+
+1. **`DoiTuongCauHoi` (thay mục 1 và 13.1).** `lib/rag/focused/doi-tuong.ts` là hàm thuần. Nó đọc câu hỏi và trả `{ vai, cung, loai: 'quan-he'|'van-rieng' } | null`.
+   - **Dựng lại kế hoạch cho cung lục thân mà KHÔNG sửa `planner.ts`.** Gọi `lapKeHoach` / `lapKeHoachDayDu` công khai với câu `"<Tên cung có dấu> " + cauHoi`. Tên cung đứng đầu thì thành PALACE đầu tiên, nên `cungLienQuan[0]` là cung lục thân.
+   - Chỉ dùng câu ghép này để lập kế hoạch và truy hồi. Prompt và guard vẫn thấy câu gốc.
+   - Chọn cung theo `cungLienQuan[0]`, không theo `chuDe` (Tử Tức, Phụ Mẫu, Huynh Đệ đều ra `gia-dao`).
+   - `tenCachCuc = tenCachCucCho(laSo, cungLucThan)`.
+   - `PHIEN_BAN_PLANNER` không đổi, không xả đệm.
+2. **Ba chỗ thêm `export`, không đổi nội dung:**
+   - `CUM_AI`, `RO_RI_RAG` trong `ngon-ngu.ts`;
+   - `TIENG_LONG_MOT_CAU` trong `sua-chua.ts`.
+   - Có test khẳng định `PHIEN_BAN_CHU` bằng giá trị chụp từ main.
+3. **`KHOI_GIONG_CELES`** chép từ nhánh quick vào `focused/prompt.ts`. Không sửa `prompt-co-can-cu.ts`.
+4. **Port từ nhánh quick:**
+   - `chot-huong.ts` vào `focused/chot-huong.ts` (bỏ bẫy `if (duPhong && !cauDuPhong) duPhong = null`); `cauChotDuPhong` viết thêm phần tên `dauMoc`;
+   - `ngoai-tam.ts` vào `focused/ngoai-tam.ts` (chỉ danh tính bạn đời).
+   - Không merge nhánh quick.
+5. **SENSITIVE:** đường Focused tự gọi `datMienTruTamLy`, như STANDARD đang làm ở tra-loi.ts:593. Nếu không, mất lớp an toàn.
+6. **Tháng nhuận và khoảng dương lịch:** thêm `focused/thang-am.ts`, không sửa `lib/tuvi`.
+   - `coThangNhuan(nam, X) = lunarToSolar(1, X, nam, true) !== null`.
+   - `khoangDuong` tính đúng cả khi tháng X có nhuận.
+   - Test trên năm có nhuận đã biết.
+7. **F### lưu tinh:** `chonBoiCanh` nhận tham số tuỳ chọn `focused`.
+   - Chỉ khi có cờ này mới nối các mục lưu tinh vào CUỐI danh sách, với `loai` mới là `'luu-tinh'`.
+   - Grep mọi `switch` / bảng tra theo `loai` để không chỗ nào vỡ.
+   - Cờ tắt thì chụp mẫu từng byte giống main.
+8. **Tháng thêm lớp đại vận và lưu niên (N1):** trong `focused/`, sao chép `keHoach` rồi sửa `lopHan`. Không sửa planner.
+9. **Ghim model cho eval** (cờ #8): `DauVaoTraLoi` thêm trường tuỳ chọn `uuTienProvider` (`'provider|model'`), chỉ đường Focused truyền xuống `goiVoiFallback`.
+   - Eval đặt `AI_KHONG_LUI=1`, ghim đúng model Production đọc từ `ai_model_configs` lúc chạy.
+   - Trần $2 quy ra `AI_NGAN_SACH_TOKEN` theo giá của model đó.
+   - **Việc này thuộc giai đoạn sau khi fix gộp main.**
+10. **Cờ:** `const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1'`, đọc mỗi lượt như `AI_*`. Tinh nghịch vẫn tắt, vì `CELES_TINH_NGHICH` chưa tồn tại và không thêm trong vé này.
+11. **Đã biết:** trên Preview sau fix, `daNoiTruoc` rỗng cho tới khi bảng lĩnh vực được sinh ở Preview. Eval phải ghi rõ chuyện này, hoặc sinh bảng lĩnh vực cho các lá số eval trước khi chạy.
+
+## 15. Sửa mục 14 theo phan-bien 03/10 tối (thắng mục 14 ở chỗ nói ngược)
+
+**Sập, đã sửa phương án:**
+
+- **S1 (sửa 14.6). Dò tháng nhuận.**
+  - `lunarToSolar(1, X, nam, true)` chỉ trả `null` trong nhánh năm có nhuận. Năm không nhuận (như 2026) thì mọi X đều bị coi là "có nhuận".
+  - Dò đúng: `kq = lunarToSolar(1, X, nam, true)`, rồi `coThangNhuan = kq !== null && solarToLunar(kq).isLeapMonth === true && thang === X`.
+  - Test bắt buộc có ca âm tính (2026, 2027: không tháng nào nhuận) và ca dương tính (một năm nhuận đã biết, kiểm đúng tháng).
+- **S2 (sửa 14.9). Ghim model phải phủ MỌI lời gọi trong lượt.** Trong một lượt có tới bốn chỗ gọi model:
+  - planner (`planner.ts:920`);
+  - lời gọi chính;
+  - lượt thử lại;
+  - sửa câu (`sua-chua.ts:287/381`).
+  
+  Truyền `uuTienProvider` riêng cho lời gọi chính là không đủ.
+  - Sửa: thêm biến môi trường CHỈ DÀNH CHO SCRIPT, `AI_GHIM_MODEL='provider|model'`, đọc trong `goiVoiFallback`. Khi có biến này, danh sách thu về đúng model đó cho MỌI lời gọi, dù có truyền `uuTienProvider` hay không. Không gọi được thì ném `KhongCoModelError`, không lùi.
+  - Sản phẩm không đặt biến này, nên hành vi Production không đổi.
+  - Bỏ trường `uuTienProvider` khỏi `DauVaoTraLoi`, vì không cần nữa.
+  - Đây là sửa `lib/ai/fallback.ts`, tệp Chung. Nhánh fix môi trường KHÔNG chạm tệp này (đã đối chiếu danh sách tệp). Chỉ thêm một nhánh `if` đọc env. Làm ở commit script eval, chưa chạy model thật.
+- **S3 (sửa 14.9). Trần $2 phải cứng thật.** `AI_NGAN_SACH_TOKEN` không phải trần cứng:
+  - kiểm trước rồi mới cộng;
+  - Gemini đếm thiếu token suy nghĩ;
+  - lượt hỏng không được đếm;
+  - lỗi vượt ngân sách bị nuốt ở planner và sửa câu;
+  - bộ đếm theo tiến trình, nên gọi qua HTTP thì không có trần.
+  
+  Thiết kế eval:
+  - Script eval gọi `traLoiCoCanCu` NGAY TRONG TIẾN TRÌNH, chạy tuần tự từng ca, không qua HTTP Preview.
+  - **Giữ chỗ trước khi gọi.** Thêm biến chỉ dành cho script, `AI_TRAN_USD`, kèm giá vào/ra của model ghim. Trước MỖI lời gọi, `goiVoiFallback` cộng phần giữ chỗ bi quan, gồm token vào ước theo độ dài prompt cộng `maxTokens` tính theo giá RA. Tổng giữ chỗ vượt trần thì ném `VuotNganSachError` TRƯỚC khi gọi. Gọi xong thì thay phần giữ chỗ bằng số thật, lấy số lớn hơn giữa số báo về và phần giữ chỗ của token ra nếu provider không báo token suy nghĩ. Lượt hỏng vẫn tính trọn phần giữ chỗ.
+  - Vì kiểm trước mỗi lời gọi và bộ đếm chỉ tăng, lỗi bị nuốt ở planner hay sửa câu cũng chỉ trì hoãn một bước: lời gọi chính kế tiếp vẫn bị chặn.
+  - Đường Focused không nuốt `VuotNganSachError` trong vòng thử lại. Script bắt lỗi này thì dừng NGAY cả bộ, in số đã tiêu và ca đang dở.
+  - Hết bộ, đối chiếu `ai_usage_logs` theo `AI_NHAN=test`.
+
+**Lung lay, đã sửa phương án:**
+
+- **L1 (sửa 14.1). Câu ghép tên cung chỉ dùng để lấy cung và truy hồi.**
+  - Lập HAI kế hoạch: một từ câu GỐC, một từ câu GHÉP.
+  - Kế hoạch dùng thật lấy mọi trường từ câu gốc (`yDinh`, `namMucTieu`, `thangMucTieu`, `phamVi`, `lopHan`, `chacChan`, `chuDe`). Riêng `cungLienQuan` lấy từ câu ghép, với cung lục thân đứng đầu.
+  - Nhờ vậy, năm trần đứng đầu câu ("2027 bố tôi…") không bị mất.
+  - Lọc khỏi `cungLienQuan` các cung của CHÍNH người hỏi mà câu kéo theo (Quan Lộc, Tài Bạch, Tật Ách khi người được hỏi là người khác). Với câu vận riêng người kia (F3), câu do mã viết trả lời trước nên không tới bước này.
+  - `tinhNghiengVe` nhận `cungChinh` tường minh trên đường Focused, không suy từ `CUNG_THEO_CHU_DE[chuDe]`.
+  - Test hợp đồng: trên 10 câu lục thân, kế hoạch dùng thật bằng kế hoạch câu gốc ở mọi trường trừ `cungLienQuan`, và `cungLienQuan[0]` là đúng cung lục thân.
+- **L2 (sửa 14.5).** Miễn trừ SENSITIVE nối SAU guard độ dài, và áp cho MỌI nhánh trả văn của Focused, kể cả câu do mã viết khi `mucAnToan` là SENSITIVE.
+- **L3 (sửa 14.2).**
+  - Test `PHIEN_BAN_CHU` không ghim một chuỗi cứng. Nó dựng lại băm từ chính các hằng số nguồn, rồi so với `PHIEN_BAN_CHU` đang export, để chứng minh việc thêm `export` không làm đổi đầu vào băm.
+  - Ba hằng số export dưới dạng `readonly`.
+
+**Đứng được (giữ nguyên):**
+- ba chỗ thêm `export`;
+- loại `'luu-tinh'`;
+- 14.8;
+- cờ đọc mỗi lượt;
+- `tenCachCucCho`.
