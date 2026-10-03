@@ -10,7 +10,10 @@
  *   AI_TRAN_USD=<số ≤ 2>                 trần tiền cứng cho cả lượt chạy (cờ #8: tổng eval vé B ≤ $2)
  *   AI_GIA_VAO_USD, AI_GIA_RA_USD        giá model ghim, USD cho 1 triệu token vào / ra
  * Vượt trần → `VuotNganSachError` ném TRƯỚC lời gọi → script dừng cả bộ, in số tiền đã tính và ca
- * đang dở, ghi phần đã có ra tệp `--xuat`.
+ * đang dở, ghi phần đã có ra tệp `--xuat`. Bộ đếm tiền sống trong TIẾN TRÌNH: chạy tách `--chi-ca` rồi
+ * `--chi-barnum` thì mỗi lần tính lại từ 0 — đặt AI_TRAN_USD mỗi lần sao cho TỔNG ≤ $2 (ví dụ 1 + 1).
+ * Embedding truy hồi gọi thẳng, không qua trần (~$0,0001 cả bộ). Ghim model Gemini free tier sẽ vướng
+ * hạn mức ngày (`lib/ai/usage.ts`) → "Tất cả model đều không dùng được". Model Production thật: xem /admin/models.
  *
  * Chạy NGAY TRONG TIẾN TRÌNH (S3): gọi `traLoiCoCanCu` tuần tự từng ca, cờ CELES_FOCUSED_CHAT=1 đặt
  * trong tiến trình — không qua HTTP Preview, không cần env Preview. `ghiNhatKy:false`, `AI_NHAN=test`

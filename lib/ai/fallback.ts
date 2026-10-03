@@ -198,7 +198,7 @@ export async function goiVoiFallback(
       return { ...kq, daThuHong };
     } catch (e) {
       if (e instanceof AiRetryableError) {
-        await ghiNhanSuDung(m.provider, m.model, 0, 0, true);
+        await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, 0, 0, true);
         // Ghi KÈM LÝ DO để phân biệt hết credit với gọi hơi nhanh (lib/ai/su-co.ts).
         // Không chờ: chuỗi đang lùi sang model kế, đừng bắt người dùng chờ thêm.
         void ghiSuCo({ nguon: 'chat', provider: m.provider, model: m.model, loai: e.loai, thongDiep: e.message });

@@ -52,6 +52,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Linh vật Celes (web) | `components/CelesMascot.tsx` + `.celes-anh` / `.celes-tho` trong `app/globals.css`. Bóng đổ nằm ở CSS (`--shadow-celes`, mỗi theme một giá trị), KHÔNG nướng vào ảnh. Linh vật đứng nghiêm khi câu MỚI NHẤT nặng: `lib/linh-vat.ts`. Thêm/đổi ảnh thì chạy `scripts/lam-sach-anh-celes.py` từ PNG gốc, đừng copy tay. **Nơi được đặt** là luật: `docs/chien-luoc/celes-visual-character-system.md` mục 12 — không đặt TRONG vùng nội dung (mệnh bàn, bài luận, dòng thời gian); danh sách chỗ đặt + bài kiểm CI `scripts/test-cho-dat-celes.ts` |
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Nhịp và kiểu của MỘT lượt chat | `lib/rag/hop-dong-tra-loi.ts` — hàm thuần, chỉ đổi độ dài và lối nói, KHÔNG chạm kết luận |
+| Chat Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`) | `lib/rag/focused/` — điểm vào `tra-loi-focused.ts`, nối ở đầu `traLoiCoCanCu`. Cờ tắt = đường STANDARD nguyên vẹn. Phương án + quyết định: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
 | An sao | `lib/tuvi/ansao.ts` + `lib/tuvi/constants.ts` |
@@ -238,8 +239,11 @@ npx tsx scripts/test-dau-an.ts         # dấu ấn Celes: cổng (an toàn, ket
 npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (tập DB bỏ qua nếu thiếu .env.local)
 npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
 npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
+npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
+npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
+npx tsx scripts/eval-focused.ts        # model thật: 30+ ca Focused + Barnum 6×6; BẮT BUỘC AI_GHIM_MODEL + AI_TRAN_USD (≤ $2) + giá — xem đầu tệp
 npx tsx scripts/eval-phu-du-kien.ts --sinh|--cham  # model thật: A/B mã cũ–mới trên dữ kiện cung chính/xung chiếu (xem đầu tệp)
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
@@ -250,7 +254,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
