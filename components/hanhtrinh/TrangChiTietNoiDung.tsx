@@ -126,7 +126,7 @@ export function TrangChiTietNoiDung() {
         setDay(Boolean(d.day));
         setAi((d.ai as NhipChiTietAi | null) ?? null);
       })
-      // Trước CEL-187 nhánh này thiếu: mất mạng là màn treo ở "chưa có lá số".
+      // Trước CEL-188 nhánh này thiếu: mất mạng là màn treo ở "chưa có lá số".
       .catch(() => {
         if (!huy) setKhoaLoi(khoa);
       });
@@ -148,7 +148,7 @@ export function TrangChiTietNoiDung() {
   }
 
   /*
-   * Ba nhánh trước khi có bài (CEL-187). Trước đây "đang tải" và "chưa có lá
+   * Ba nhánh trước khi có bài (CEL-188). Trước đây "đang tải" và "chưa có lá
    * số" dùng chung một màn, nên mọi lần mở đều chớp chữ "chưa có lá số".
    */
   const chuaCoLaSo = !laSo && !dangDoc && !boiCanh.dangTai;

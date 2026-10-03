@@ -19,7 +19,7 @@ const GOC = join(__dirname, '..');
 
 /** Tệp → ảnh được dùng ở tệp đó. Khớp bảng mục 12. */
 const DANH_SACH: Record<string, readonly string[]> = {
-  'app/hoi-dap/page.tsx': ['default', 'listening', 'thinking', 'serious'],
+  'app/hoi-dap/page.tsx': ['default', 'listening', 'thinking', 'serious', 'one-ear-up', 'curious'],
   'app/ho-so/page.tsx': ['sitting-neutral', 'neutral'],
   'app/la-so/page.tsx': ['thinking', 'leaning-closer', 'proud'],
   'app/luan-giai/page.tsx': ['reading', 'thinking'],
@@ -139,6 +139,24 @@ for (const f of [...quet(join(GOC, 'app')), ...quet(join(GOC, 'components'))]) {
 }
 console.log('4. Vùng nội dung không import');
 for (const f of CAM) if (!existsSync(join(GOC, f))) sai(`${f} không còn — sửa CAM theo tên mới`);
+
+
+// 5. /hoi-dap là chỗ DUY NHẤT có hai con một khung nhìn → hai con không được cùng dáng.
+//    Thẻ rỗng ở thân (cho="rong") không dùng ảnh nào mà đầu trang (cho="dau-trang") dùng.
+console.log('5. /hoi-dap: đầu trang và thân rỗng không trùng dáng');
+{
+  const nd = readFileSync(join(GOC, 'app/hoi-dap/page.tsx'), 'utf8');
+  const tenTrong = (cho: string) =>
+    new Set(
+      (nd.match(/<CelesMascot\b[\s\S]*?\/>/g) ?? [])
+        .filter((the) => the.includes(`cho="${cho}"`))
+        .flatMap((the) => [...the.matchAll(TEN_RE)].map((m) => m[1]))
+    );
+  const dau = tenTrong('dau-trang');
+  const rong = tenTrong('rong');
+  if (dau.size === 0 || rong.size === 0) sai('/hoi-dap: không tìm thấy thẻ đầu trang hoặc thẻ rỗng — sửa bài kiểm theo mã mới');
+  for (const t of rong) if (dau.has(t)) sai(`/hoi-dap: "${t}" vừa ở đầu trang vừa ở thân rỗng — hai con trùng dáng`);
+}
 
 for (const f of Object.keys(DANH_SACH)) if (!dung.includes(f)) console.log(`  · ${f}: chưa đặt (được phép)`);
 

@@ -280,7 +280,7 @@ Khuyến nghị ban đầu là chỉ commit WebP (1.9MB) để tiết kiệm. Ph
 **Luật:** chỉ copy sang `public/` (web) hoặc `apps/celes-app/assets/` (app) **đúng những
 state đang thật sự dùng**, vào phiên thi công, khi có mã trỏ tới. Không copy trước.
 
-**Trạng thái 02/10/2026 (CEL-187):** `public/celes/` có **18 tệp WebP** — đúng 18 ảnh
+**Trạng thái 02/10/2026 (CEL-188):** `public/celes/` có **18 tệp WebP** — đúng 18 ảnh
 đang dùng ở mục 12, trích từ nguồn v2.3. 14 ảnh khoá (gồm `HAS_RECEIPTS`, `NOT_BUYING_IT`)
 không có tệp. `apps/celes-app/assets/` chưa có tệp linh vật vì phía app chưa làm. Thêm
 ảnh mới vào `public/` là lại phải qua luật trên, và `scripts/test-cho-dat-celes.ts` đỏ
@@ -295,7 +295,11 @@ Thêm state mới thì chạy lại script đó, đừng copy tay.
 
 ---
 
-## 12. Celes trên giao diện — chốt 02/10/2026 (CEL-187), WEB ĐÃ THI CÔNG
+## 12. Celes trên giao diện — chốt 02/10/2026 (CEL-188), WEB ĐÃ THI CÔNG
+
+> **Mã việc: CEL-188.** Các commit thi công đầu tiên trên nhánh `viec/linh-vat-moi-man`
+> mang nhãn CEL-187; mã chính thức đã đổi sang CEL-188 (03/10/2026). CEL-187 giữ cho
+> Streaming (xem `docs/thiet-ke/CEL-186-quick-answer.md` mục 15).
 
 > Thay bản chốt đầu ngày 02/10 (5 chỗ, chỉ /hoi-dap và /ho-so). Chủ dự án duyệt lại cùng
 > ngày: **18/32 artwork unique vào web ngay, 14/32 khoá có chủ đích.** Nguồn ảnh:
@@ -335,12 +339,13 @@ bao giờ vào vùng nội dung.
 | `/la-so` giữ lại | proud | bấm "Giữ lại" và lưu thành công | nổi góc dưới, 4s | 72 / 56 |
 | `/luan-giai` | reading · thinking | rỗng · đang tải | thẻ | 80 / 64 |
 | `/luan-giai/sau` | thinking · curious | lần tải đầu (trễ 3s) · HoiBoiCanh | trước bài · cạnh câu hỏi | 80 / 64 |
+| Cổng đăng nhập toàn trang (`/hoi-dap`, `/luan-giai`, `/luan-giai/sau`, Hành trình, chi tiết hạn, `/hop-tuoi`) | waving | chưa đăng nhập | trên tiêu đề cổng — MỘT bản `CongDangNhap toanTrang`, không dựng cổng riêng | 80 / 64 |
 | Bức tranh lớn | thinking | lần tải đầu (trễ 3s), qua `DangDocV3` | trước bài | 80 / 64 |
 | Hành trình | moving | đầu trang (không ở nhánh cổng) | cạnh tiêu đề | 72 / 56 |
 | Chi tiết hạn | curious · thinking · concerned | chưa có lá số · đang tải (trễ 1s) · lỗi tải + nút thử lại | thẻ | 80 / 64 |
 | Hợp tuổi | curious · thinking | trước khi gửi (ẩn khi chạy / có kết quả) · đang tính | đầu trang · cạnh nút | 80 / 56 |
 | `/hoi-dap` đầu trang | serious > listening > default | lượt mới nhất nặng > ô nhập focus và có chữ > rảnh | cạnh tiêu đề | 56 |
-| `/hoi-dap` thân | default · thinking · serious | rỗng · đang trả lời · đang trả lời lượt nặng | thẻ rỗng / màn chờ | 80 |
+| `/hoi-dap` thân | one-ear-up · curious · thinking · serious | chưa chọn lá số · đã chọn lá số, chat rỗng · đang trả lời · đang trả lời lượt nặng | thẻ rỗng / màn chờ | 80 |
 | `/ho-so` | sitting-neutral · neutral | chưa có lá số · đã có | thẻ rỗng · cạnh tiêu đề (giữ chỗ bằng visibility) | 80 · 56 |
 | `/tai-khoan` | using-laptop | luôn | cạnh tiêu đề | 64 / 56 |
 | `/dang-nhap`, cổng đăng nhập toàn trang | waving | luôn | trên form / tiêu đề | 72–80 / 64 |
@@ -376,11 +381,17 @@ Mở khoá là quyết định của chủ dự án, không phải một dòng t
 ### Luật hiển thị
 
 1. **Mỗi khung nhìn tối đa một con.** Ngoại lệ duy nhất: `/hoi-dap` (đầu trang + một con ở
-   thân). Đầu trang `/hoi-dap` **không bao giờ** `thinking` — lúc chờ con ở thân đã nghĩ, hai
-   con cùng nghĩ là lặp.
-2. **Màn chớp dưới 1 giây không có linh vật.** Màn chờ dùng `.celes-tre` (CSS, mặc định 1s;
-   bài sâu 3s): giữ chỗ từ đầu, ảnh chỉ hiện nếu màn chờ còn đó. Chạy bằng CSS nên đúng cả
-   với HTML tĩnh của khung Suspense.
+   thân), và hai con **không bao giờ cùng dáng**: đầu trang chỉ default / listening /
+   serious, thân rỗng là one-ear-up (chưa chọn lá số) hoặc curious (đã chọn, chat rỗng).
+   Đầu trang **không bao giờ** `thinking` — lúc chờ con ở thân đã nghĩ. Ngoại lệ trong
+   ngoại lệ: lượt mới nhất nặng thì cả hai `serious` (luật an toàn thắng luật dáng).
+2. **Chờ ngắn thì trễ, chờ dài thì hiện ngay.** Không phải mọi màn chờ đều trễ 1 giây:
+   - Màn chờ ngắn hoặc có thể dưới 1 giây (khung Suspense `/la-so`, chi tiết hạn đọc đệm,
+     bài sâu đã đệm) → giữ chỗ từ đầu, ảnh hiện trễ bằng `.celes-tre` (mặc định 1s; bài sâu
+     3s vì đệm trả trong ~0,4s). Chạy bằng CSS nên đúng cả với HTML tĩnh của Suspense.
+   - Màn chờ vốn dài rõ ràng (chat đang trả lời, sinh bài 15–45s ở `/luan-giai`, hợp tuổi
+     đang tính) → `thinking` hiện ngay, trễ chỉ làm người dùng tưởng treo.
+   - Bấm "Lập lá số": lá số dựng tại máy, gần như tức thì → KHÔNG ép `thinking` chớp lên.
 3. **Không nhảy layout.** Ảnh có width/height thật; ảnh ẩn theo điều kiện dùng `invisible`
    (giữ chỗ), không gỡ khỏi cây. Sự kiện (`proud`) là `.celes-noi` — `position: fixed`, không
    chiếm chỗ, không nhận chạm.
@@ -412,7 +423,7 @@ duyệt bằng đúng hàm máy chủ dùng (`lib/linh-vat.ts` → `lib/rag/an-t
 
 ### Hôm nay — đã đảo, phạm vi hẹp
 
-Bản đầu chốt "Tab Hôm nay: KHÔNG" và đánh dấu mở lại. CEL-187 đảo **chỉ cho thẻ rỗng**
+Bản đầu chốt "Tab Hôm nay: KHÔNG" và đánh dấu mở lại. CEL-188 đảo **chỉ cho thẻ rỗng**
 (chưa có lá số → `one-ear-up`). Màn Hôm nay khi đã có lá số vẫn **KHÔNG** — đó là nơi hiện
 nội dung chính của ngày.
 

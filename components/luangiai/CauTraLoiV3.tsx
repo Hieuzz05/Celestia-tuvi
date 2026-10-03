@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
 
-// Tách sang tệp riêng (CEL-187) để tệp bài luận này không bao giờ import linh
+// Tách sang tệp riêng (CEL-188) để tệp bài luận này không bao giờ import linh
 // vật — bài kiểm chỗ đặt cấm tệp này. Giữ xuất lại cho nơi gọi cũ.
 export { DangDocV3 } from './DangDocV3';
 

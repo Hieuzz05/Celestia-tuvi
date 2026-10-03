@@ -23,6 +23,18 @@ const SSO = [
 
 type SsoId = (typeof SSO)[number]['id'];
 
+/**
+ * Địa chỉ Supabase gửi người dùng về sau OAuth / xác nhận email. Luôn lấy
+ * `window.location.origin`, KHÔNG hard-code production: preview phải về preview.
+ * Origin này còn phải nằm trong Redirect URLs của Supabase, không thì Supabase
+ * lặng lẽ thay bằng Site URL. `next` chỉ nhận đường dẫn nội bộ.
+ */
+function diaChiCallback(): string {
+  const next = new URLSearchParams(window.location.search).get('next');
+  const dich = next && next.startsWith('/') && !next.startsWith('//') ? next : '/home';
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(dich)}`;
+}
+
 export default function DangNhapPage() {
   const t = useT();
   const router = useRouter();
@@ -99,7 +111,13 @@ export default function DangNhapPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password: matKhau,
-          options: { data: { full_name: tenHienThi.trim() || email.split('@')[0] } },
+          options: {
+            data: { full_name: tenHienThi.trim() || email.split('@')[0] },
+            // Link xác nhận trong email phải về ĐÚNG nơi người dùng đang đứng
+            // (preview / production / localhost). Bỏ trống thì Supabase dùng
+            // Site URL = production, và người đang thử bản preview bị đá sang đó.
+            emailRedirectTo: diaChiCallback(),
+          },
         });
         if (error) throw error;
         setThongBao({
@@ -153,14 +171,11 @@ export default function DangNhapPage() {
 
   const dangNhapSSO = async (provider: SsoId) => {
     setThongBao(null);
-    const quayVe = new URLSearchParams(window.location.search).get('next') ?? '/';
     const supabase = await laySupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(quayVe)}`,
-      },
+      options: { redirectTo: diaChiCallback() },
     });
     if (error) setThongBao({ loai: 'loi', noiDung: error.message });
   };

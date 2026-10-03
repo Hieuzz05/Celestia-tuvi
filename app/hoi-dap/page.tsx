@@ -409,8 +409,9 @@ function TrangHoiDap() {
             className="flex min-h-[320px] flex-col items-center justify-center gap-[12px] rounded-[var(--radius-cards)] border p-[24px] text-center"
             style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
           >
-            {/* Trạng thái rỗng (chưa chọn lá số): Celes 80px, DEFAULT — cùng dáng với rỗng có lá số. */}
-            <CelesMascot cho="rong" trangThai="default" cao={80} />
+            {/* Chưa chọn lá số: one-ear-up — KHÁC dáng đầu trang (default), hai con
+                cùng khung nhìn không được trùng dáng (mục 12). */}
+            <CelesMascot cho="rong" minhHoa="one-ear-up" cao={80} />
             <h2 className="subheading">{t.hoiCeles.canBietAi}</h2>
             <p className="body-text max-w-[420px]" style={{ color: 'var(--fg-muted)' }}>
               {t.hoiCeles.canBietAiMo}
@@ -436,8 +437,8 @@ function TrangHoiDap() {
             >
               {tinNhan.length === 0 && !dangChay && (
                 <div className="flex flex-col gap-[16px]">
-                  {/* Trạng thái rỗng: Celes 80px, DEFAULT. */}
-                  <CelesMascot cho="rong" trangThai="default" cao={80} />
+                  {/* Đã chọn lá số, chat còn rỗng: curious — khác dáng đầu trang. */}
+                  <CelesMascot cho="rong" minhHoa="curious" cao={80} />
 
                   <div className="flex flex-col gap-[12px]">
                     <p className="eyebrow">{t.hoiCeles.khamPhaNhanhTieuDe}</p>
