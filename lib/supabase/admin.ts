@@ -32,12 +32,19 @@ async function fetchCoThuLai(
   }
 }
 
+/** Chỉ cho bài kiểm offline (scripts/test-moi-truong-dem.ts): thay client bằng bản giả trong RAM */
+let clientThu: SupabaseClient | null = null;
+export function _thayAdminChoTest(c: SupabaseClient | null): void {
+  clientThu = c;
+}
+
 /**
  * Client dùng service role — BỎ QUA toàn bộ Row Level Security.
  * Chỉ được import trong mã chạy phía server. Kho tri thức cố tình không mở
  * policy nào cho anon key, nên mọi thao tác với nó phải đi qua đây.
  */
 export function taoSupabaseAdmin(): SupabaseClient | null {
+  if (clientThu) return clientThu;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!SUPABASE_URL || !serviceKey) return null;
 

@@ -1,4 +1,5 @@
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { phamViDem } from '@/lib/moi-truong-dem';
 
 /**
  * Bộ nhớ đệm cho nội dung do AI sinh ra.
@@ -15,6 +16,12 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
  * Thiếu bảng hoặc thiếu Supabase thì mọi hàm ở đây im lặng trả null. Đó là cố
  * ý: lớp gọi phải có đường lùi về chữ tất định, và một bảng chưa tạo không được
  * phép làm trắng màn hình người dùng.
+ *
+ * NAMESPACE (03/10/2026): production, Preview và local dùng chung một Supabase. Mọi khoá kỳ đi qua
+ * tệp này được gắn tiền tố phạm vi (lib/moi-truong-dem.ts): production '' (khoá cũ y nguyên),
+ * Preview `preview:<nhánh>-<băm>:`, local `local:<tên>:`. Gắn và cắt CHỈ ở đây — nơi gọi truyền và
+ * nhận khoá trần, không bao giờ tự đụng tiền tố. Cấu hình dùng chung (thu-vien, mau-giong,
+ * cau-hinh-v3) không đi qua tệp này: đọc chung, chỉ production được ghi.
  */
 
 export type BeMat =
@@ -63,6 +70,14 @@ interface Khoa {
   ngonNgu: string;
 }
 
+/** Cấu hình dùng chung — không bao giờ đọc/ghi/xoá qua các hàm đệm ở đây */
+const BE_MAT_CAU_HINH: ReadonlySet<BeMat> = new Set<BeMat>(['thu-vien', 'mau-giong', 'cau-hinh-v3']);
+
+/** Khoá thật trong bảng = tiền tố phạm vi + khoá kỳ. Tính lúc gọi. */
+function khoaThat(khoaKy: string): string {
+  return phamViDem().ns + khoaKy;
+}
+
 export async function docNoiDung<T>(k: Khoa): Promise<BanGhiNoiDung<T> | null> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return null;
@@ -73,7 +88,7 @@ export async function docNoiDung<T>(k: Khoa): Promise<BanGhiNoiDung<T> | null> {
       .select('noi_dung, provider, model, tao_luc')
       .eq('chart_hash', k.chartHash)
       .eq('be_mat', k.beMat)
-      .eq('khoa_ky', k.khoaKy)
+      .eq('khoa_ky', khoaThat(k.khoaKy))
       .eq('ngon_ngu', k.ngonNgu)
       .maybeSingle();
 
@@ -108,7 +123,7 @@ export async function luuNoiDung(
       {
         chart_hash: k.chartHash,
         be_mat: k.beMat,
-        khoa_ky: k.khoaKy,
+        khoa_ky: khoaThat(k.khoaKy),
         ngon_ngu: k.ngonNgu,
         noi_dung: noiDung,
         provider: meta.provider ?? null,
@@ -129,13 +144,14 @@ export async function luuNoiDung(
  * Bản MỚI NHẤT có khoá bắt đầu bằng `tienTo` — dùng để đọc lại bài đã sinh dưới
  * khoá kiểu cũ (khoá cũ gắn phiên bản prompt, đổi mỗi lần deploy).
  *
- * `tienTo` không được chứa `%` hay `_`: hai ký tự đó là ký tự đại diện của LIKE.
+ * `tienTo` không được chứa `%` hay `_`: hai ký tự đó là ký tự đại diện của LIKE. `tienTo` rỗng
+ * thì trả null — `LIKE '%'` khớp mọi khoá, kể cả của môi trường khác.
  */
 export async function docNoiDungMoiNhat<T>(
   k: Omit<Khoa, 'khoaKy'>,
   tienTo: string
 ): Promise<BanGhiNoiDung<T> | null> {
-  if (/[%_]/.test(tienTo)) return null;
+  if (!tienTo || /[%_]/.test(tienTo)) return null;
   const supabase = taoSupabaseAdmin();
   if (!supabase) return null;
   try {
@@ -145,7 +161,7 @@ export async function docNoiDungMoiNhat<T>(
       .eq('chart_hash', k.chartHash)
       .eq('be_mat', k.beMat)
       .eq('ngon_ngu', k.ngonNgu)
-      .like('khoa_ky', `${tienTo}%`)
+      .like('khoa_ky', `${khoaThat(tienTo)}%`)
       .order('tao_luc', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -159,7 +175,8 @@ export async function docNoiDungMoiNhat<T>(
 /**
  * Mọi bản ghi có khoá bắt đầu bằng `tienTo` — để một bề mặt đọc được các phần
  * anh em đã cất của cùng lá số (sổ ý chống lặp của luận giải v3). Cùng luật
- * `tienTo` như trên. Hỏng thì trả rỗng: thiếu sổ ý chỉ là lặp hơn, không phải lỗi.
+ * `tienTo` như trên (rỗng thì trả []). Hỏng thì trả rỗng: thiếu sổ ý chỉ là lặp hơn, không phải lỗi.
+ * `khoaKy` trả ra là khoá TRẦN (đã cắt tiền tố phạm vi) — nơi gọi cắt chuỗi trên nó.
  */
 export async function docNhieuTheoTienTo<T>(
   k: Omit<Khoa, 'khoaKy'>,
@@ -167,9 +184,10 @@ export async function docNhieuTheoTienTo<T>(
   /** Khoá phải CHỨA chuỗi này (vd. "|th:6") — lọc ngay trong truy vấn: một lá số có thể có hàng chục bản ghi của các thế hệ đệm cũ */
   chua?: string
 ): Promise<{ khoaKy: string; noiDung: T }[]> {
-  if (/[%_]/.test(tienTo) || (chua && /[%_]/.test(chua))) return [];
+  if (!tienTo || /[%_]/.test(tienTo) || (chua && /[%_]/.test(chua))) return [];
   const supabase = taoSupabaseAdmin();
   if (!supabase) return [];
+  const ns = phamViDem().ns;
   try {
     const { data, error } = await supabase
       .from('noi_dung_ai')
@@ -177,10 +195,12 @@ export async function docNhieuTheoTienTo<T>(
       .eq('chart_hash', k.chartHash)
       .eq('be_mat', k.beMat)
       .eq('ngon_ngu', k.ngonNgu)
-      .like('khoa_ky', chua ? `${tienTo}%${chua}%` : `${tienTo}%`)
+      .like('khoa_ky', chua ? `${ns}${tienTo}%${chua}%` : `${ns}${tienTo}%`)
       .limit(60);
     if (error || !data) return [];
-    return data.map((d) => ({ khoaKy: d.khoa_ky as string, noiDung: d.noi_dung as T }));
+    return data
+      .filter((d) => (d.khoa_ky as string).startsWith(ns))
+      .map((d) => ({ khoaKy: (d.khoa_ky as string).slice(ns.length), noiDung: d.noi_dung as T }));
   } catch {
     return [];
   }
@@ -210,7 +230,7 @@ const HAN_DEM_RAM_MS = 30 * 60 * 1000;
 const demRam = new Map<string, { luc: number; giaTri: unknown }>();
 
 function khoaChuoi(k: Khoa): string {
-  return `${k.chartHash}|${k.beMat}|${k.khoaKy}|${k.ngonNgu}`;
+  return `${k.chartHash}|${k.beMat}|${khoaThat(k.khoaKy)}|${k.ngonNgu}`;
 }
 
 function docRam<T>(k: Khoa): T | null {
@@ -263,6 +283,25 @@ export async function layHoacSinh<T>(
   ghiRam(k, ra.noiDung);
   await luuNoiDung(k, ra.noiDung, ra);
   return { noiDung: ra.noiDung, tuDem: false };
+}
+
+/**
+ * Xoá đệm của MỘT lá số trong phạm vi hiện tại, chỉ các bề mặt được nêu — cho script chạy lại bài.
+ *
+ * Production (ns rỗng) chỉ xoá khoá không mang tiền tố `preview:`/`local:`; ngoài production chỉ xoá
+ * khoá mang đúng tiền tố của mình. Bề mặt cấu hình bị từ chối, không xoá gì.
+ */
+export async function xoaDemLaSo(chartHash: string, beMats: BeMat[]): Promise<{ soBan: number; loi?: string }> {
+  if (!chartHash || !beMats.length) return { soBan: 0, loi: 'Thiếu lá số hoặc bề mặt' };
+  if (beMats.some((b) => BE_MAT_CAU_HINH.has(b))) return { soBan: 0, loi: 'Không xoá cấu hình qua đệm' };
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return { soBan: 0, loi: 'Thiếu Supabase' };
+  const ns = phamViDem().ns;
+  let q = supabase.from('noi_dung_ai').delete({ count: 'exact' }).eq('chart_hash', chartHash).in('be_mat', beMats);
+  q = ns ? q.like('khoa_ky', `${ns}%`) : q.not('khoa_ky', 'like', 'preview:%').not('khoa_ky', 'like', 'local:%');
+  const { error, count } = await q;
+  for (const k of [...demRam.keys()]) if (k.startsWith(`${chartHash}|`)) demRam.delete(k);
+  return error ? { soBan: 0, loi: error.message } : { soBan: count ?? 0 };
 }
 
 /** Khoá kỳ theo ngày dương — dùng cho thứ đổi mỗi ngày */

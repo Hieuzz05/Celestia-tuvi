@@ -67,6 +67,8 @@ jobs:
         run: npx tsx scripts/test-linh-vat-an-toan.ts
       - name: Chỗ đặt linh vật (mục 12, ảnh khoá, vùng nội dung)
         run: npx tsx scripts/test-cho-dat-celes.ts
+      - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
+        run: npx tsx scripts/test-moi-truong-dem.ts
 
       - name: Build
         run: npx next build

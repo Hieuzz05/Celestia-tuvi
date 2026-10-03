@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto';
 import { supabaseDaCauHinh } from '@/lib/supabase/config';
 import { nguoiDungHienTai } from '@/lib/supabase/server';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { docNhieuTheoTienTo, luuNoiDung } from '@/lib/rag/noi-dung-ai';
 
 /**
  * Giới hạn số lá số MỚI một khách chưa đăng nhập được Celes viết tổng quan
@@ -27,6 +28,9 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
  * Bảng noi_dung_ai, bề mặt 'gioi-han-khach': chart_hash = băm IP, khoa_ky =
  * "<ngày giờ VN>|<băm lá số>". Khoá duy nhất sẵn có của bảng lo việc một lá số
  * chỉ tính một lần. Không cần chạy SQL mới.
+ *
+ * Đọc và ghi qua lib/rag/noi-dung-ai.ts (03/10/2026), KHÔNG chạm bảng trực tiếp: sổ đếm là trạng
+ * thái theo môi trường, nên khách thử trên Preview/local không ăn vào lượt của production.
  *
  * IP không bao giờ được cất thô: băm HMAC với khoá bí mật của máy chủ, nên có
  * đọc được bảng cũng không dò ngược ra IP.
@@ -88,23 +92,14 @@ export async function xinLuotLaSoMoi(req: Request, chartHash: string): Promise<K
   const maIp = bamIp(ip);
   const tienTo = `${ngayVN()}|`;
   const khoaNay = `${tienTo}${chartHash}`;
+  const k = { chartHash: maIp, beMat: BE_MAT, ngonNgu: 'vi' } as const;
   try {
-    const { data, error } = await supabase
-      .from('noi_dung_ai')
-      .select('khoa_ky')
-      .eq('chart_hash', maIp)
-      .eq('be_mat', BE_MAT)
-      .like('khoa_ky', `${tienTo}%`)
-      .limit(tran + 1);
-    if (error) return { duocPhep: true, daDung: 0, tran };
-    const da = (data ?? []).map((d) => d.khoa_ky as string);
+    // Đọc hỏng thì trả rỗng → cho qua (xem "HỎNG THÌ CHO QUA")
+    const da = (await docNhieuTheoTienTo<unknown>(k, tienTo)).map((d) => d.khoaKy);
     if (da.includes(khoaNay)) return { duocPhep: true, daDung: da.length, tran };
     if (da.length >= tran) return { duocPhep: false, daDung: da.length, tran };
 
-    await supabase.from('noi_dung_ai').upsert(
-      { chart_hash: maIp, be_mat: BE_MAT, khoa_ky: khoaNay, ngon_ngu: 'vi', noi_dung: {} },
-      { onConflict: 'chart_hash,be_mat,khoa_ky,ngon_ngu' }
-    );
+    await luuNoiDung({ ...k, khoaKy: khoaNay }, {}, {});
     return { duocPhep: true, daDung: da.length + 1, tran };
   } catch {
     return { duocPhep: true, daDung: 0, tran };

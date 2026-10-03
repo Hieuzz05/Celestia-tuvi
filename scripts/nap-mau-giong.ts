@@ -1,5 +1,7 @@
 /**
- * NẠP MẪU GIỌNG VĂN vào Supabase — npx tsx scripts/nap-mau-giong.ts <mẫu.json> <mã câu,…>
+ * NẠP MẪU GIỌNG VĂN vào Supabase — npx tsx scripts/nap-mau-giong.ts <mẫu.json> <mã câu,…> --ghi-production
+ *
+ * Mẫu giọng là cấu hình DÙNG CHUNG mọi môi trường: chỉ ghi được với cờ `--ghi-production` (lib/moi-truong-dem.ts).
  *
  * <mẫu.json>: {"cau": {"SN02": {"cauHoi": "...", "luanGiai": "..."}, …}} — chuyển từ tệp Excel chủ dự án
  * gửi, để NGOÀI repo (bài viết cho lá số thật; repo công khai). Chỉ các mã câu được chọn được nạp.
@@ -16,7 +18,9 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
 }
 
 async function main() {
-  const [tep, ma] = process.argv.slice(2);
+  const { khaiBaoScript } = await import('../lib/moi-truong-dem');
+  khaiBaoScript(process.argv);
+  const [tep, ma] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
   if (!tep || !ma) throw new Error('Cách dùng: npx tsx scripts/nap-mau-giong.ts <mẫu.json> SN02,TB01');
   const cau = (JSON.parse(readFileSync(tep, 'utf-8')) as { cau: Record<string, { cauHoi: string; luanGiai: string }> }).cau;
   const ds = ma.split(',').map((m) => cau[m.trim()]).filter(Boolean).map((c) => ({ cauHoi: c.cauHoi, luanGiai: c.luanGiai }));

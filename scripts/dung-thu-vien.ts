@@ -8,6 +8,9 @@
  * ĐỊNH (lib/rag/thu-vien/kiem.ts) → gộp → phát hiện mâu thuẫn → gán đích cho mục
  * khác add → lưu (lib/rag/thu-vien/kho.ts). `--thu`: không lưu.
  *
+ * Lưu (không `--thu`, không `--dem`) cần cờ `--ghi-production`: thư viện là cấu hình DÙNG CHUNG mọi
+ * môi trường, chỉ production được ghi (lib/moi-truong-dem.ts). Kiểm NGAY đầu, trước khi tốn lượt model.
+ *
  * `--chu-de` (30/09/2026): chủ đề của thư viện — mặc định su-nghiep (lời nhắc giữ NGUYÊN như các
  * đợt sn-*). Các chủ đề khác ở CHU_DE_TV dưới. `--dem`: chỉ đếm đoạn sẽ đọc rồi dừng, KHÔNG gọi
  * model — ước lượng số lượt gọi trước khi tiêu hạn mức dùng chung.
@@ -137,6 +140,10 @@ async function main() {
   const chiDoSang = process.argv.includes('--chi-do-sang');
   const baoCao = thamSo('bao-cao');
 
+  const { khaiBaoScript, CO_GHI_PRODUCTION } = await import('../lib/moi-truong-dem');
+  if (khaiBaoScript(process.argv).moiTruong !== 'production' && !thu && !chiDem) {
+    throw new Error(`Lưu thư viện ghi cấu hình dùng chung của production — thêm ${CO_GHI_PRODUCTION}, hoặc chạy --thu / --dem.`);
+  }
   const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
   const { goiVoiFallback } = await import('../lib/ai/fallback');
   const { docObjectJson } = await import('../lib/rag/doc-json');

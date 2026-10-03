@@ -8,6 +8,7 @@ import { PHIEN_BAN_PLANNER } from '@/lib/rag/planner';
 import { PHIEN_BAN_TRUY_HOI } from '@/lib/rag/truy-hoi';
 import { PHIEN_BAN_UU_TIEN } from '@/lib/rag/uu-tien-nguon';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
+import { phamViDem } from '@/lib/moi-truong-dem';
 
 /**
  * Bản nào đang chạy trên máy chủ — công khai, không kèm bí mật.
@@ -19,6 +20,10 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
  *
  * Chỉ trả mã commit, thời điểm dựng và số hiệu từng lớp của đường luận giải.
  * Không trả tên tài liệu, không trả khoá, không trả gì của người dùng.
+ *
+ * `phamViDem` (03/10/2026): đệm AI của bản này đọc/ghi vào phạm vi nào (lib/moi-truong-dem.ts).
+ * Cổng nghiệm thu sau mỗi lần deploy production: `moiTruong` VÀ `phamViDem` đều phải là
+ * `production`. Lệch là deploy hỏng — mọi người dùng đang đọc một đệm trống.
  */
 
 export const dynamic = 'force-dynamic';
@@ -30,6 +35,7 @@ export function GET() {
       commitDay: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
       nhanh: process.env.VERCEL_GIT_COMMIT_REF ?? null,
       moiTruong: process.env.VERCEL_ENV ?? 'cuc-bo',
+      phamViDem: phamViDem().phamViDem,
       dungLuc: process.env.VERCEL_DEPLOYMENT_ID ?? null,
       duongLuanGiai: {
         baiDai: PHIEN_BAN_BAI_DAI,

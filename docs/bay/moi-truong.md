@@ -2,6 +2,24 @@
 
 Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọc tệp này TRƯỚC khi sửa vùng tương ứng.
 
+- **Production, Preview và local dùng CHUNG một Supabase — đệm AI tách bằng tiền tố `khoa_ky`**
+  (03/10/2026, `lib/moi-truong-dem.ts`). `NODE_ENV` là `development`/`test` thì luôn non-production;
+  ngoài đó production chỉ khi `VERCEL=1` + `VERCEL_ENV=production` (NODE_ENV chỉ dùng để loại, không
+  phải điều kiện dương); Preview `preview:<nhánh>-<băm>:`; còn lại `local:<CELES_CACHE_NAMESPACE|local>:`.
+  Không tự đọc `VERCEL_ENV` ở module khác — gọi `phamViDem()` / `laProductionThat()`. `.env.local`
+  không được có `VERCEL` hay `VERCEL_ENV` (`kiem-moi-truong.ts` báo đỏ).
+- **Script chạy tay mặc định ghi đệm LOCAL; ghi production phải có cờ dòng lệnh `--ghi-production`**
+  (`chay-lai-luan-giai.ts`, `dung-thu-vien.ts`, `nap-mau-giong.ts` gọi `khaiBaoScript(process.argv)`).
+  KHÔNG đổi cờ này thành biến môi trường: script và `next dev` cùng nạp `.env.local`, ghi biến đó vào
+  là `next dev` thành production. Cấu hình dùng chung (`thu-vien`, `mau-giong`, `cau-hinh-v3`) đọc
+  được ở mọi môi trường nhưng ghi/xoá ngoài production là ném `LoiNgoaiProduction` (route trả 403).
+- **Sau mỗi deploy production chạm đệm: mở `/api/phien-ban`, đủ bốn điều kiện mới đạt cổng —
+  `commit` bằng HEAD vừa release, `nhanh=main`, `moiTruong=production`, `phamViDem=production`.**
+  Lệch là mọi người dùng đang đọc một đệm trống — coi deploy hỏng, không chạy sinh/xoá đệm nào.
+  Deploy tách namespace KHÔNG xả đệm production (giữ khoá cũ); không chạy `--ghi-production` chỉ để
+  nghiệm thu — cờ đó chỉ dùng khi chủ dự án yêu cầu sinh lại một lá số / nhóm bề mặt cụ thể.
+  Preview mới luôn bắt đầu với đệm trống (sinh lại tốn lượt model); không prewarm.
+
 - **Biến `NEXT_PUBLIC_*` nhúng lúc build.** Thêm biến xong phải Redeploy và **bỏ tick build
   cache**, không thì bundle phía client vẫn là bản cũ.
 - **Hàm trên Vercel Hobby chỉ sống 60 giây** (`TIMEOUT_MS = 55_000`). Model suy luận mạnh như

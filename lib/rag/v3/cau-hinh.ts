@@ -1,4 +1,5 @@
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { chanGhiNgoaiProduction } from '@/lib/moi-truong-dem';
 import { DO_DAI_V3 } from './prompt-v3';
 import { TRAN_GOI_Y } from './kiem-v3';
 
@@ -115,7 +116,9 @@ export async function docCauHinhChoQuanTri(): Promise<{ hienTai: BanCauHinh | nu
   return { hienTai: d?.hienTai ?? null, lichSu: d?.lichSu ?? [], macDinh: CAU_HINH_MAC_DINH };
 }
 
+/** Cấu hình dùng chung mọi môi trường: chỉ production được ghi — Preview/local đọc được, không sửa được */
 export async function luuCauHinhV3(cauHinh: CauHinhV3, nhan: string, boi?: string): Promise<BanCauHinh> {
+  chanGhiNgoaiProduction('Lưu cấu hình luận giải');
   const supabase = taoSupabaseAdmin();
   if (!supabase) throw new Error('Thiếu Supabase');
   const cu = await docDong();
