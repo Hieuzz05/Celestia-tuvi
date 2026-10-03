@@ -1,4 +1,5 @@
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { chanGhiNgoaiProduction } from '@/lib/moi-truong-dem';
 import { SYSTEM_V3, SYSTEM_V3_KHUNG } from './prompt-v3';
 
 /**
@@ -53,7 +54,9 @@ export async function heThongV3(): Promise<string> {
   return system;
 }
 
+/** Mẫu dùng chung mọi môi trường: chỉ production được ghi (script nạp phải có `--ghi-production`) */
 export async function luuMauGiong(ds: MauGiong[]): Promise<void> {
+  chanGhiNgoaiProduction('Lưu mẫu giọng');
   const supabase = taoSupabaseAdmin();
   if (!supabase) throw new Error('Thiếu Supabase');
   const { error } = await supabase

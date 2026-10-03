@@ -1,4 +1,5 @@
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { chanGhiNgoaiProduction } from '@/lib/moi-truong-dem';
 import type { MucThuVien } from './kieu';
 
 /**
@@ -11,6 +12,9 @@ import type { MucThuVien } from './kieu';
  *
  * Câu trích sách nằm ở đây, trong Supabase — không vào repo.
  * Xét lại khi chủ dự án chạy SQL bảng riêng.
+ *
+ * Cấu hình DÙNG CHUNG mọi môi trường: đọc không gắn namespace, mọi ghi/xoá chỉ chạy trên production
+ * (lib/moi-truong-dem.ts) — script nạp sách chạy tay phải có `--ghi-production`.
  */
 
 const CHART_HASH = 'thu-vien';
@@ -80,6 +84,7 @@ async function docTungDong(): Promise<MucThuVien[]> {
 
 /** Dựng lại GÓI cho các đợt từ các dòng mục — gọi sau mỗi lần lưu / sửa mục */
 export async function dongGoi(dots: string[]): Promise<void> {
+  chanGhiNgoaiProduction('Dựng gói thư viện');
   const supabase = taoSupabaseAdmin();
   if (!supabase || !dots.length) return;
   const tatCa = await docTungDong();
@@ -95,6 +100,7 @@ export async function dongGoi(dots: string[]): Promise<void> {
 }
 
 export async function luuThuVien(ds: MucThuVien[]): Promise<number> {
+  chanGhiNgoaiProduction('Lưu thư viện');
   const supabase = taoSupabaseAdmin();
   if (!supabase) return 0;
   let da = 0;
@@ -117,6 +123,7 @@ export async function luuThuVien(ds: MucThuVien[]): Promise<number> {
 
 /** Xoá các mục của một đợt trích (chạy lại đợt) — chỉ đụng bề mặt thư viện */
 export async function xoaDotTrich(dot: string): Promise<void> {
+  chanGhiNgoaiProduction('Xoá đợt trích thư viện');
   const supabase = taoSupabaseAdmin();
   if (!supabase) return;
   await supabase.from('noi_dung_ai').delete().eq('chart_hash', CHART_HASH).eq('be_mat', BE_MAT).eq('phien_ban->>dot', dot);

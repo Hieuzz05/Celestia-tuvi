@@ -15,10 +15,13 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+/** Tên khoá có trong .env.local (chỉ tên, không giữ giá trị) */
+const KHOA_ENV_LOCAL = new Set<string>();
 for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
   const s = d.trim();
   if (!s || s.startsWith('#')) continue;
   const [k, ...p] = s.split('=');
+  KHOA_ENV_LOCAL.add(k.trim().replace(/^export\s+/, ''));
   const v = p.join('=').trim();
   if (v) process.env[k.trim()] = v;
 }
@@ -128,6 +131,15 @@ async function main() {
   bao(coModel.length > 0, 'Có ít nhất một API key model', coModel.join(', ') || 'chưa có key nào');
   for (const [k, vi] of Object.entries(TUY_CHON)) if (!process.env[k]) nhac(k, vi);
 
+  // .env.local có VERCEL/VERCEL_ENV (thường do `vercel env pull`) là dấu hiệu máy này đang giả làm Vercel.
+  // Đây KHÔNG phải lớp chặn — lib/moi-truong-dem.ts vẫn coi `next dev` là local — chỉ là cảnh báo.
+  for (const k of ['VERCEL_ENV', 'VERCEL']) {
+    if (KHOA_ENV_LOCAL.has(k)) {
+      sai += 1;
+      console.log(`  \x1b[31mSAI  .env.local có khoá ${k} — xoá dòng đó: máy local không được tự nhận là Vercel (xem lib/moi-truong-dem.ts)\x1b[0m`);
+    }
+  }
+
   const U = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const K = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!U || !K) {
@@ -175,9 +187,14 @@ async function main() {
   }
   try {
     const r = await fetch('https://celestia-tuvi.vercel.app/api/phien-ban');
-    const d = (await r.json()) as { commit?: string };
+    const d = (await r.json()) as { commit?: string; moiTruong?: string; phamViDem?: string };
     console.log(`  máy này : ${cucBo}`);
     console.log(`  máy chủ : ${d.commit}`);
+    bao(
+      d.moiTruong === 'production' && d.phamViDem === 'production',
+      'Production đọc/ghi đúng đệm production',
+      `moiTruong=${d.moiTruong} phamViDem=${d.phamViDem ?? '(bản cũ, chưa có trường này)'}`
+    );
     bao(
       Boolean(d.commit) && d.commit === cucBo,
       'Máy chủ khớp với bản đang có ở máy này',

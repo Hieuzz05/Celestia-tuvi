@@ -73,6 +73,8 @@ jobs:
         run: npx tsx scripts/test-focused.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
         run: npx tsx scripts/test-fallback-giu-nguyen.ts
+      - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
+        run: npx tsx scripts/test-moi-truong-dem.ts
 
       - name: Build
         run: npx next build
