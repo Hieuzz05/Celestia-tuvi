@@ -17,6 +17,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
 | Claude (máy 1, worktree `D:/SAPP BA/tuvi-ai-fix-noi-dung-ai-env`) | [SỬA LỖI] `noi_dung_ai` lẫn môi trường — Preview/local đọc-ghi chung đệm production; brief: `docs/chien-luoc/moi-truong-phat-trien-2026-10.md` mục "Việc phát sinh" số 1 | `viec/fix-noi-dung-ai-env` | `lib/rag/noi-dung-ai.ts` + các nơi gọi (`app/api/*` luận giải, `lib/rag/thu-vien`, `lib/rag/v3`), bài kiểm mới trong `scripts/` | 03/10/2026 |
+| Claude (máy 1, worktree `D:/SAPP BA/tuvi-ai-man-hinh`) | [CODE] Bộ đo giao diện: `test-man-hinh.mjs` P1–P5 (khách thật, ảnh CDP, vùng chạm, CLS) + Celes UI Quality Checklist; quyết định `docs/chien-luoc/cong-cu-thiet-ke-2026-10.md` mục 3 | `viec/test-man-hinh` | `scripts/test-man-hinh.mjs`, `docs/thiet-ke/celes-ui-quality-checklist.md`, `docs/bay/giao-dien.md`, `.gitignore` | 03/10/2026 |
 
 **TẠM DỪNG — CEL-186 vé B (Focused Chat, nhánh `viec/cel-186-focused-chat`)**: chờ sửa xong lỗi đệm `noi_dung_ai` lẫn môi trường (quyết định 03/10, `docs/chien-luoc/moi-truong-phat-trien-2026-10.md`). Không làm tiếp vé B cho tới khi việc sửa đệm xanh và được nghiệm thu.
 
