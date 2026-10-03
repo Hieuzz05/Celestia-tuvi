@@ -27,6 +27,12 @@ import { coThangNhuan, khoangDuong, soVoiBayGio, laCuoiNamAm } from '../lib/rag/
 import { lapKeHoachFocused } from '../lib/rag/focused/ke-thua';
 import { phanKhuon, laXinSau, tachHaiVe, boiCanhThoiGian } from '../lib/rag/focused/phan-loai';
 import { cauVanRieng, cauHaiVe, cauHoiNhuan, cauKhiNao, chipCuoiNam, cauThangDaQua } from '../lib/rag/focused/cau-ma';
+import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
+import { kiemMotCau, kiemLuot, chonChip, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
+import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
+import { ghepVan } from '../lib/rag/focused/chay';
+import type { NghiengVe } from '../lib/rag/nghieng-ve';
+import type { DuKienLaSo } from '../lib/rag/boi-canh-la-so';
 
 const hong: string[] = [];
 const kiem = (dk: boolean, loi: string) => {
@@ -341,6 +347,159 @@ for (const ca of CA_DOI_TUONG) {
   kiem(n2.startsWith('Bạn đang hỏi tháng 3 âm lịch năm 2026.'), `N2 sai: ${n2}`);
   const n4 = chipCuoiNam(2026, ['Sang năm Đinh Mùi thì sao?', 'Còn tiền bạc thì sao?']);
   kiem(n4[0] === 'Sang năm Đinh Mùi thì sao?' && n4.length === 2, `N4 chip sai: ${n4.join(' | ')}`);
+}
+
+/* ------------------------------------------------------ quét tên (luật 1) */
+
+{
+  const ten = (c: string) => quetTen(c).map((t) => `${t.loai}:${t.ten}`);
+  const co = (c: string, x: string) => kiem(ten(c).includes(x), `quét "${c}" thiếu ${x}: ${ten(c).join(', ')}`);
+  const khong = (c: string, x: string) => kiem(!ten(c).some((t) => t.endsWith(`:${x}`)), `quét "${c}" bắt nhầm ${x}`);
+  co('Năm nay Lưu Thiên Mã chạy qua phần này.', 'luu:Lưu Thiên Mã');
+  khong('Năm nay Lưu Thiên Mã chạy qua phần này.', 'Thiên Mã');
+  co('Có Lưu Hoá Kỵ ở đây.', 'luu-hoa:Lưu Hóa Kỵ');
+  co('Có Triệt chắn ở đầu.', 'tuan-triet:Triệt');
+  khong('Tuần tới bạn bận.', 'Tuần');
+  khong('Xử lý triệt để chuyện này.', 'Triệt');
+  khong('Bạn có thiên phú về nghề này.', 'Thiên Phủ');
+  co('Hoả Linh đồng cung làm nóng nảy.', 'ghep:Hoả Linh');
+  kiem(tenCungTrongCau('Phần Quan Lộc của bạn khá vững.').length === 1, 'không bắt tên cung Quan Lộc');
+  kiem(tenCungTrongCau('Có Phúc Đức ở đây.', true).length === 0, 'Phúc Đức là sao (có trong gói) vẫn bị coi là cung');
+
+  const duKien: DuKienLaSo[] = [
+    { id: 'F001', loai: 'cung', noiDung: 'Quan Lộc có Tả Phù, Hữu Bật, Thiên Phủ.', cung: 'Quan Lộc', sao: ['Tả Phù', 'Hữu Bật', 'Thiên Phủ'] },
+  ];
+  const tap = tapTenTuGoi(duKien);
+  kiem(tenNgoaiTap('Tả Hữu đứng cạnh nên có người đỡ.', tap).length === 0, 'Tả Hữu bị chặn dù đủ Tả Phù + Hữu Bật');
+  kiem(tenNgoaiTap('Thất Sát làm bạn nóng vội.', tap).includes('Thất Sát'), 'Thất Sát ngoài gói không bị chặn');
+}
+
+/* --------------------------------------------------------- guard (mục 6) */
+
+{
+  const duKien: DuKienLaSo[] = [
+    { id: 'F001', loai: 'cung', noiDung: 'Quan Lộc có Thiên Phủ, Hóa Khoa.', cung: 'Quan Lộc', sao: ['Thiên Phủ', 'Hóa Khoa'] },
+    { id: 'F002', loai: 'luu-nien', noiDung: 'Tiểu hạn năm 2026 vào Quan Lộc, có Đà La.', cung: 'Quan Lộc', sao: ['Đà La'] },
+    { id: 'F003', loai: 'dai-van', noiDung: 'Đại vận 33–42 tuổi ở Quan Lộc.', cung: 'Quan Lộc' },
+  ];
+  const nghieng: NghiengVe = {
+    huong: 'thuan-nhe', cap: 'nam', cung: 'Quan Lộc', phanDoi: 'công việc', cham: { daiVan: true, nam: true, thang: false },
+    namXem: 2026, khoangTuoi: '33–42 tuổi',
+    dauMoc: [
+      { ten: 'Thiên Phủ', lop: 'nen', huong: 'do', trong: 3, y: 'giữ được nền' },
+      { ten: 'Hóa Khoa', lop: 'nen', huong: 'do', trong: 2, y: 'có tiếng tốt' },
+      { ten: 'Đà La', lop: 'nam', huong: 'can', trong: 2, y: 'chậm, vướng' },
+      { ten: 'Thất Sát', lop: 'thang', huong: 'can', trong: 1, y: 'gấp' },
+    ],
+    cachCuc: [], canNang: { do: 5, can: 3 },
+  };
+  const ctx = (them: Partial<NguCanhKiem> = {}): NguCanhKiem => ({
+    cauHoi: 'Năm nay công việc tôi có thuận không?',
+    phanLoai: { khuon: 'A', loaiSuKien: 'mong-muon', sau: false },
+    mucAnToan: 'NORMAL', chuDe: 'su-nghiep', doiTuong: null,
+    tapTen: tapTenTuGoi(duKien), phucDucLaSao: false, maHopLe: new Set(duKien.map((d) => d.id)),
+    nghieng, thoiGian: { namHieuLuc: 2026, thang: null, cuoiNam: false }, tuoiHopLe: [[33, 42]],
+    cauMa: [], chipTruoc: [], ...them,
+  });
+  const ly = (c: string, x: NguCanhKiem = ctx(), chot = false) => kiemMotCau(c, x, chot);
+
+  // Mỗi luật: một câu qua, một câu trượt.
+  const qua = 'Thiên Phủ ở đây giúp bạn giữ được nền trong công việc.';
+  kiem(ly(qua).length === 0, `câu sạch bị chặn: ${ly(qua).join(',')}`);
+  const truot: [string, string][] = [
+    ['Thất Sát khiến bạn nóng vội.', 'ten-ngoai-goi'],
+    ['Lưu Hóa Kỵ năm nay làm chậm việc.', 'luu-hoa'],
+    ['Phần Quan Lộc của bạn khá vững.', 'ten-cung'],
+    ['Dựa trên các dữ kiện, công việc ổn.', 'giong-may'],
+    ['Năm nay chắc chắn bạn được thăng chức.', 'phan-quyet'],
+    ['Bạn nên nhận lời mời này.', 'khuyen'],
+    ['Hãy giữ nhịp làm việc.', 'khuyen'],
+    ['Năm 2028 mọi việc mở ra.', 'moc-la'],
+    ['Tháng 5 là quãng đáng chú ý.', 'moc-la'],
+    ['Tới 50 tuổi mới yên.', 'moc-la'],
+  ];
+  for (const [c, x] of truot) kiem(ly(c).includes(x as never), `"${c}" không ra ${x}: ${ly(c).join(',')}`);
+  kiem(!ly('Chuyện này không chắc chắn, còn tùy bạn.').includes('phan-quyet'), '"không chắc chắn" bị coi là phán');
+  kiem(!ly('Việc chậm, nên phải chờ thêm.').includes('khuyen'), '"nên" liên từ bị coi là khuyên');
+  kiem(ly('Quãng 35 tuổi là lúc vững nhất.').length === 0, `tuổi trong đại vận bị chặn: ${ly('Quãng 35 tuổi là lúc vững nhất.')}`);
+  const G = { khuon: 'G' as const, loaiSuKien: 'trung-tinh' as const, sau: false };
+  kiem(ly('Phần này nghiêng về thuận.', ctx({ phanLoai: G })).includes('nghieng-ve'), 'G nói "nghiêng về" không bị chặn');
+  const daQua = ctx({ thoiGian: { namHieuLuc: 2026, thang: { nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null }, cuoiNam: false } });
+  kiem(ly('Quãng đó sẽ có người giúp.', daQua).includes('tuong-lai'), 'tháng đã qua nói "sẽ" không bị chặn');
+  kiem(!ly('Tháng 3 có Thiên Phủ đỡ.', daQua).includes('moc-la'), 'tháng hiệu lực bị coi là mốc lạ');
+  const E = { khuon: 'E' as const, loaiSuKien: 'trung-tinh' as const, sau: false, haiVe: ['ở lại', 'nhảy việc'] as [string, string] };
+  kiem(ly('Ở lại sẽ hợp hơn với bạn.', ctx({ phanLoai: E })).includes('khuyen'), 'E chọn hộ "ở lại hợp hơn" không bị chặn');
+  kiem(ly('Năm nay khá thuận nhờ Thiên Phủ.', ctx(), true).length === 0, 'câu chốt có tên dauMoc bị chặn');
+
+  // Lượt: câu chốt ngược hướng → dự phòng; câu không mã bị cắt trước; NORMAL ≤ 4 câu.
+  const ban: BanThoFocused = {
+    cauChot: 'Năm nay công việc khá vướng.',
+    chieuCauChot: 'vuong',
+    cau: [
+      { noiDung: qua, maDuKien: ['F001'], phia: 'thuan' },
+      { noiDung: 'Đà La năm nay làm vài việc chậm hơn dự tính.', maDuKien: ['F002'], phia: 'can' },
+      { noiDung: 'Hóa Khoa cho bạn tiếng tốt ở chỗ làm.', maDuKien: ['F001'], phia: 'thuan' },
+      { noiDung: 'Người xung quanh dễ thấy bạn đáng tin.', maDuKien: [], phia: 'nen' },
+      { noiDung: 'Có Thiên Phủ nên bạn ít khi bị cuốn theo.', maDuKien: ['F999'], phia: 'thuan' },
+    ],
+    goiYTiep: ['Năm nay công việc tôi có thuận không?', 'Bạn nên làm gì?', 'Tháng nào tốt hơn?', 'Còn tiền bạc thì sao?', 'Tên người đó là gì?'],
+  };
+  const k = kiemLuot(ban, ctx());
+  kiem(k.dungDuPhong && k.cauChot !== ban.cauChot && k.lyDoThayChot === 'nguoc-huong', `câu chốt ngược hướng không thay: ${k.lyDoThayChot} ${k.cauChot}`);
+  kiem(k.soCau <= 4, `NORMAL quá 4 câu: ${k.soCau}`);
+  kiem(k.cau.every((c) => c.coCanCu), 'câu không căn cứ còn sót sau khi cắt');
+  kiem(!k.cau.some((c) => c.maDuKien.includes('F999')), 'mã F### lạ không bị bỏ');
+  kiem(k.thuLai === null, `lượt hợp lệ bị đòi thử lại: ${k.thuLai}`);
+  kiem(k.chip.length >= 2 && k.chip.length <= 3, `số chip sai: ${k.chip.join(' | ')}`);
+  kiem(!k.chip.some((c) => /nên|Tháng nào|Tên/u.test(c) || c === ctx().cauHoi), `chip bẩn lọt: ${k.chip.join(' | ')}`);
+  kiem(k.chip.includes('Còn tiền bạc thì sao?'), 'chip hợp lệ bị bỏ');
+  const motPhia = kiemLuot(
+    {
+      ...ban,
+      cauChot: 'Năm nay công việc khá thuận.',
+      chieuCauChot: 'thuan',
+      cau: [
+        { noiDung: 'Đà La năm nay làm vài việc chậm.', maDuKien: ['F002'], phia: 'can' },
+        { noiDung: 'Đà La cũng khiến giấy tờ dây dưa.', maDuKien: ['F002'], phia: 'can' },
+      ],
+    },
+    ctx()
+  );
+  kiem(motPhia.cau.filter((c) => c.phia === 'can').length === 1, 'hướng thuận giữ hơn một câu cản');
+  const khongHuong = ctx({ nghieng: null, phanLoai: G });
+  const het = kiemLuot({ cauChot: '', cau: [{ noiDung: 'Bạn nên nghỉ việc.', maDuKien: ['F001'], phia: 'nen' }], goiYTiep: [] }, khongHuong);
+  kiem(het.thuLai === 'het-cau', `hết câu không đòi thử lại: ${het.thuLai}`);
+  const g = kiemLuot({ cauChot: 'Bạn nên làm vậy.', cau: [{ noiDung: qua, maDuKien: ['F001'], phia: 'nen' }], goiYTiep: [] }, khongHuong);
+  kiem(g.cauChot === qua && g.cau.length === 0, `G không đẩy câu căn cứ lên: "${g.cauChot}"`);
+  const eL = kiemLuot(
+    { ...ban, cauChot: 'Ở lại tốt hơn.' },
+    ctx({ phanLoai: E, nghieng: null, cauMa: ['Câu mã một.'], chipMa: ['Ở lại thì sao?', 'Nhảy việc thì sao?'] })
+  );
+  kiem(eL.cauChot === '' && eL.soCau <= 4, `E: câu chốt model còn hoặc quá dài: "${eL.cauChot}" ${eL.soCau}`);
+  kiem(eL.chip.join('|') === 'Ở lại thì sao?|Nhảy việc thì sao?', `E chip sai: ${eL.chip.join(' | ')}`);
+  const nhieu = { ...ban, cau: Array.from({ length: 9 }, () => ({ noiDung: qua, maDuKien: ['F001'], phia: 'nen' as const })) };
+  kiem(kiemLuot(nhieu, ctx({ mucAnToan: 'SENSITIVE' })).cau.length === 9, 'SENSITIVE bị cắt');
+  kiem(kiemLuot(nhieu, ctx({ phanLoai: { khuon: 'A', loaiSuKien: 'mong-muon', sau: true } })).soCau <= 8, 'DEEP quá 8 câu');
+  kiem(chonChip([], ctx()).length === 2, 'không bù chip khi model trả rỗng');
+  const n4 = chonChip(['Còn tiền bạc thì sao?'], ctx({ chipCuoiNam: (x) => chipCuoiNam(2026, x) }));
+  kiem(n4[0].startsWith('Sang năm'), `N4 chip không đứng đầu: ${n4.join(' | ')}`);
+  kiem(soAmTiet('Năm nay, công việc ổn.') === 5, 'đếm âm tiết sai');
+
+  // Prompt: chỉ in lớp có F### trong gói (4.4) — Thất Sát (lớp tháng) không có
+  const khoi = khoiNghiengFocused(nghieng, lopCoTrongGoi({ duKien }), 'A');
+  kiem(khoi.includes('Đà La') && !khoi.includes('Thất Sát'), 'khối nghiêng in lớp không có trong gói');
+  kiem(khoi.includes('"thuan"'), 'khối nghiêng thiếu chiều đã chốt');
+  kiem(khoiNghiengFocused(nghieng, lopCoTrongGoi({ duKien }), 'G') === '', 'G vẫn có khối nghiêng');
+  const moc = khoiMoc({
+    bayGio: { nam: 2026, thang: 8 } as never,
+    thoiGian: { namHieuLuc: 2026, thang: { nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null }, cuoiNam: false },
+  });
+  kiem(moc.includes('ĐÃ QUA') && moc.includes('Bính Ngọ') && moc.includes('còn 4 tháng'), `khối mốc thiếu: ${moc}`);
+  const doc = docFocused('```json\n{"cauChot":"A.","chieuCauChot":"thuan","cau":[{"noiDung":"B.","maDuKien":["F001"],"phia":"lạ"}],"goiYTiep":["C?"]}\n```');
+  kiem(!!doc && doc.cau[0].phia === 'nen' && doc.chieuCauChot === 'thuan', 'docFocused đọc sai');
+  kiem(docFocused('không phải json') === null, 'docFocused nhận văn xuôi');
+  const ghep = ghepVan(['Mã.'], { cauChot: 'Chốt.', cau: [{ noiDung: 'Một.', maDuKien: [], phia: 'nen', coCanCu: true }] }, false);
+  kiem(ghep === 'Mã. Chốt.\n\nMột.', `ghép văn sai: ${JSON.stringify(ghep)}`);
 }
 
 /* ------------------------------------------------------------------- kết */
