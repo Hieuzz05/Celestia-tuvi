@@ -31,6 +31,8 @@ import { quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/f
 import { kiemMotCau, kiemLuot, chonChip, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
 import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi } from '../lib/rag/focused/prompt';
 import { ghepVan } from '../lib/rag/focused/chay';
+import { focusedBat, mocChoChot, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
+import { phienBanHienTai, traLoiCoCanCu } from '../lib/rag/tra-loi';
 import type { NghiengVe } from '../lib/rag/nghieng-ve';
 import type { DuKienLaSo } from '../lib/rag/boi-canh-la-so';
 
@@ -502,11 +504,102 @@ for (const ca of CA_DOI_TUONG) {
   kiem(ghep === 'Mã. Chốt.\n\nMột.', `ghép văn sai: ${JSON.stringify(ghep)}`);
 }
 
+/* ------------------------------------------- 4. nối vào tra-loi (mục 8) */
+
+{
+  // Hàm thuần của phần nối.
+  const tuoi = tuoiTrongGoi({
+    duKien: [
+      { id: 'F001', loai: 'dai-van', noiDung: 'Đại vận 33–42 tuổi đóng tại cung Quan Lộc' },
+      { id: 'F002', loai: 'luu-nien', noiDung: 'Năm 2026 (37 tuổi âm) tiểu hạn tại cung Tài Bạch' },
+    ] as DuKienLaSo[],
+  });
+  kiem(JSON.stringify(tuoi) === '[[33,42],[37,37]]', `tuoiTrongGoi sai: ${JSON.stringify(tuoi)}`);
+
+  const tgNam = { namHieuLuc: 2026, thang: null, cuoiNam: false };
+  kiem(mocChoChot(tgNam, { phamViThoiGian: 'nam' }, bayGio) === 'Năm nay', 'mốc chốt năm nay sai');
+  kiem(mocChoChot({ ...tgNam, namHieuLuc: 2027 }, { phamViThoiGian: 'nam' }, bayGio) === 'Năm 2027', 'mốc chốt năm khác sai');
+  kiem(mocChoChot(tgNam, { phamViThoiGian: 'tong' as never }, bayGio) === undefined, 'câu không mốc mà có tiền tố thời gian');
+  kiem(
+    mocChoChot({ ...tgNam, thang: { nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null } }, { phamViThoiGian: 'thang' }, bayGio) ===
+      'Tháng 3 âm',
+    'mốc chốt tháng sai'
+  );
+  kiem(
+    mocChoChot({ ...tgNam, cuoiNam: true }, { phamViThoiGian: 'gan' }, { nam: 2026, thang: 11, ngay: 2 }) ===
+      'Từ giờ đến hết năm Bính Ngọ',
+    'mốc chốt cuối năm sai'
+  );
+
+  // N1: tháng thêm đại vận + lưu niên, trên BẢN SAO; câu không phải tháng giữ nguyên đối tượng.
+  const khThang = lapKeHoach({ cauHoi: 'Tháng 10 công việc của tôi thế nào?', saoTheoCung: saoChinhTheoCung(dsLaSo[0]) });
+  const lopCu = [...khThang.lopHan];
+  const n1 = themLopChoThang(khThang);
+  kiem(khThang.phamViThoiGian === 'thang' && (n1.lopHan.includes('dai-van') && n1.lopHan.includes('luu-nien')), 'N1 không thêm lớp');
+  kiem(JSON.stringify(khThang.lopHan) === JSON.stringify(lopCu), 'N1 sửa thẳng kế hoạch gốc');
+  const khNam = lapKeHoach({ cauHoi: 'Tính cách tôi thế nào?', saoTheoCung: saoChinhTheoCung(dsLaSo[0]) });
+  kiem(themLopChoThang(khNam) === khNam, 'N1 chạm câu không phải tháng');
+}
+
+async function kiemNoi() {
+  const laSo = dsLaSo[0];
+  const vaoGoc = { laSo, namXem: 2026, thangXem: 8, ghiNhatKy: false, dungModelPhanLoai: false } as const;
+  const cu = process.env.CELES_FOCUSED_CHAT;
+  try {
+    // Cờ đọc MỖI lượt, không chụp lúc nạp mô-đun.
+    process.env.CELES_FOCUSED_CHAT = '0';
+    kiem(!focusedBat(), 'cờ "0" vẫn bật Focused');
+    delete process.env.CELES_FOCUSED_CHAT;
+    kiem(!focusedBat(), 'thiếu cờ vẫn bật Focused');
+    process.env.CELES_FOCUSED_CHAT = '1';
+    kiem(focusedBat(), 'cờ "1" không bật Focused');
+
+    // F2 / D đi trọn đường qua traLoiCoCanCu: không truy hồi, không gọi model.
+    const f2 = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?' });
+    kiem(f2.provider === 'ma' && f2.model === 'focused-f2', `F2 ra ${f2.provider}/${f2.model}`);
+    kiem(!!f2.van && f2.van.startsWith('Lá số này là của bạn'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
+    kiem((f2.coCauTruc?.goiYTiep ?? []).some((c) => c.includes('hợp nhau')), 'F2 thiếu chip quan hệ');
+    // Route đọc mấy trường này ở nhánh quản trị — thiếu là 502 (mục 13.3).
+    kiem(Array.isArray(f2.goi.duKien) && Array.isArray(f2.goi.bangChung), 'F2 gói thiếu trường');
+    kiem(!!f2.phienBan.engine && !!f2.phienBan.phuongPhap && f2.phienBan.focused === 'F2', 'F2 phienBan thiếu khoá');
+    kiem(f2.kiemDuyet === null && f2.runId === null, 'F2 có kiểm duyệt / runId');
+
+    const d = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Khi nào tôi lấy chồng?' });
+    kiem(d.provider === 'ma' && d.model === 'focused-d', `D ra ${d.provider}/${d.model}`);
+    kiem(!(d.coCauTruc?.goiYTiep ?? []).some((c) => /tháng nào/i.test(c)), 'D còn chip "Tháng nào" (#5)');
+
+    // L2: SENSITIVE nối miễn trừ cả ở lượt trả bằng mã.
+    const nhay = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?', mucAnToan: 'SENSITIVE' });
+    kiem(nhay.van.length > f2.van.length && nhay.van.startsWith(f2.van), 'F2 SENSITIVE thiếu lời miễn trừ');
+
+    // Hỏi lại nhuận: 2025 có tháng 6 nhuận, gọi thẳng để tiêm "bây giờ".
+    const nh = await traLoiFocused(
+      { ...vaoGoc, namXem: 2025, cauHoi: 'Tháng 6 năm 2025 công việc của tôi thế nào?' },
+      phienBanHienTai,
+      async () => [],
+      bayGio
+    );
+    kiem(nh.model === 'focused-nhuan' && (nh.coCauTruc?.goiYTiep ?? []).length === 2, `nhuận ra ${nh.model}`);
+
+    // Cờ tắt: không lượt nào được mang dấu Focused. Đi tới truy hồi là chạm mạng,
+    // nên chỉ kiểm phần đồng bộ — phienBanHienTai không có khoá focused.
+    process.env.CELES_FOCUSED_CHAT = '0';
+    kiem(!('focused' in phienBanHienTai()), 'phienBanHienTai của STANDARD mang khoá focused');
+  } finally {
+    if (cu === undefined) delete process.env.CELES_FOCUSED_CHAT;
+    else process.env.CELES_FOCUSED_CHAT = cu;
+  }
+}
+
 /* ------------------------------------------------------------------- kết */
 
-if (hong.length) {
-  console.log(`HỎNG ${hong.length}:`);
-  for (const l of hong.slice(0, 40)) console.log(`  - ${l}`);
-  process.exit(1);
-}
-console.log(`Tất cả đạt. ${dsLaSo.length} lá số × ${CAU_CO.length} câu; lưu tinh ${soLuuTinh}, cân bằng ${soCanBang}.`);
+void kiemNoi()
+  .catch((e) => hong.push(`phần nối ném lỗi: ${e instanceof Error ? e.stack : e}`))
+  .then(() => {
+    if (hong.length) {
+      console.log(`HỎNG ${hong.length}:`);
+      for (const l of hong.slice(0, 40)) console.log(`  - ${l}`);
+      process.exit(1);
+    }
+    console.log(`Tất cả đạt. ${dsLaSo.length} lá số × ${CAU_CO.length} câu; lưu tinh ${soLuuTinh}, cân bằng ${soCanBang}.`);
+  });

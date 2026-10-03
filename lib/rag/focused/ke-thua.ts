@@ -28,6 +28,8 @@ export interface DauVaoKeThua {
   saoTheoCung: SaoTheoCung;
   namXem?: number;
   thangXem?: number;
+  /** Tên cách cục của cung trọng tâm — lượt lập thứ hai, như đường STANDARD */
+  tenCachCuc?: string[];
 }
 
 export interface KetQuaKeThua {
@@ -54,7 +56,7 @@ function timNguon(vao: DauVaoKeThua): { cau: string; keHoach: KeHoachTruyVan; do
   // Route có thể đã nhét câu đang hỏi vào cuối lịch sử — bỏ nó, đừng tự kế thừa chính mình.
   if (cuaNguoiDung.length && cuaNguoiDung[cuaNguoiDung.length - 1] === vao.cauHoi.trim()) cuaNguoiDung.pop();
   for (const cau of cuaNguoiDung.slice(-SO_LUOT_LUI).reverse()) {
-    const keHoach = lapKeHoach({ cauHoi: cau, saoTheoCung: vao.saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem });
+    const keHoach = lapKeHoach({ cauHoi: cau, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem });
     const doiTuong = nhanDangDoiTuong(cau);
     if (coChuDeRieng(keHoach, doiTuong)) return { cau, keHoach, doiTuong };
   }
@@ -62,13 +64,13 @@ function timNguon(vao: DauVaoKeThua): { cau: string; keHoach: KeHoachTruyVan; do
 }
 
 export function lapKeHoachFocused(vao: DauVaoKeThua): KetQuaKeThua {
-  const goc = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung: vao.saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem });
+  const goc = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem });
   const doiTuong = nhanDangDoiTuong(vao.cauHoi);
 
   const datGhep = (dt: DoiTuongCauHoi) =>
     ghepKeHoach(
       goc,
-      lapKeHoach({ cauHoi: `${dt.cung} ${vao.cauHoi}`, saoTheoCung: vao.saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem }),
+      lapKeHoach({ cauHoi: `${dt.cung} ${vao.cauHoi}`, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem }),
       dt
     );
 
@@ -93,6 +95,7 @@ export function lapKeHoachFocused(vao: DauVaoKeThua): KetQuaKeThua {
   const ghep = lapKeHoach({
     cauHoi: cungNguon ? `${cungNguon} ${vao.cauHoi}` : vao.cauHoi,
     saoTheoCung: vao.saoTheoCung,
+    tenCachCuc: vao.tenCachCuc,
     namXem: vao.namXem,
     thangXem: vao.thangXem,
   });
