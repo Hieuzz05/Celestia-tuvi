@@ -16,6 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1, `D:\SAPP BA	uvi-ai`) | CEL-186 vé B — Focused Chat: trả lời Hỏi Celes ngắn, đúng trọng tâm, có chip; cờ `CELES_FOCUSED_CHAT` | `viec/cel-186-focused-chat` | `lib/rag/` (tra-loi, hop-dong-tra-loi, kiem-duyet, prompt), `app/api/hoi-dap`, có thể `components/` chat + i18n | 03/10/2026 |
 
 ## Đang vướng — đừng đụng vào
 
