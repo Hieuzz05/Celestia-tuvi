@@ -203,11 +203,20 @@ export function quetTen(cau: string, phucDucLaSao = false): TenTrongCau[] {
 export const khoaTen = (ten: string) => tachTu(ten).map((t) => t.chuan).join(' ');
 
 /**
- * Tập tên được phép gọi trong lượt: mọi tên có trong gói (câu dữ kiện, danh
- * sách sao, tên cách cục), cộng `them` (tên trong câu hỏi khi người dùng tra
- * cứu đích danh một sao).
+ * Tập tên được phép gọi trong lượt: CHỈ tên nằm trong chữ model thực sự đọc.
+ * Gồm tên quét từ `noiDung` của từng dữ kiện, `chu` (khối nghiêng đã dựng, câu
+ * hỏi khi người dùng tra cứu đích danh một sao) và `ten` (đầu mốc, cách cục
+ * đã in vào khối nghiêng).
+ *
+ * `d.sao` KHÔNG cấp quyền: prompt chỉ in `noiDung`, nên một sao chỉ có ở
+ * metadata là tên model lấy từ chỗ khác (đoạn tham chiếu, trí nhớ). A/B
+ * 04/10/2026: Phá Toái, Thiên Y lọt guard theo đường này.
  */
-export function tapTenTuGoi(duKien: readonly DuKienLaSo[], them: readonly string[] = []): Set<string> {
+export function tapTenTuGoi(
+  duKien: readonly DuKienLaSo[],
+  chu: readonly string[] = [],
+  ten: readonly string[] = []
+): Set<string> {
   const tap = new Set<string>();
   const phucDuc = goiCoPhucDuc(duKien);
   const nap = (chuoi: string) => {
@@ -215,10 +224,11 @@ export function tapTenTuGoi(duKien: readonly DuKienLaSo[], them: readonly string
   };
   for (const d of duKien) {
     nap(d.noiDung);
-    for (const s of d.sao ?? []) tap.add(khoaTen(s));
-    if (d.tenCachCuc) tap.add(khoaTen(d.tenCachCuc));
+    // Tên cách cục chưa chắc có trong từ điển quét, nhưng câu dữ kiện in nguyên tên ("Cách cục X tại …").
+    if (d.tenCachCuc && d.noiDung.includes(d.tenCachCuc)) tap.add(khoaTen(d.tenCachCuc));
   }
-  for (const c of them) nap(c);
+  for (const c of chu) nap(c);
+  for (const t of ten) tap.add(khoaTen(t));
   return tap;
 }
 
