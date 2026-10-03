@@ -8,9 +8,10 @@ import { createHash } from 'node:crypto';
  * thuộc môi trường nào, nên Preview đọc trúng bài cũ của production và local ghi đè đệm production.
  *
  * Luật:
- * - Production CHỈ khi đúng là Vercel Production đang chạy: `VERCEL=1`, `VERCEL_ENV=production`
- *   và `NODE_ENV=production`. `next dev` luôn ép NODE_ENV=development, nên `.env.local` có chép
- *   `VERCEL_ENV=production` (hay cả `VERCEL=1` từ `vercel env pull`) vẫn là local.
+ * - NODE_ENV là `development` hoặc `test` thì LUÔN non-production. Ngoài hai trường hợp đó,
+ *   production CHỈ khi `VERCEL=1` và `VERCEL_ENV=production`. `next dev` luôn ép
+ *   NODE_ENV=development, nên `.env.local` có chép `VERCEL_ENV=production` (hay cả `VERCEL=1`
+ *   từ `vercel env pull`) vẫn là local.
  * - Script chạy tay KHÔNG dựa vào biến môi trường (script nào cũng nạp `.env.local`): gọi
  *   `khaiBaoScript(process.argv)` ở đầu script, và chỉ cờ dòng lệnh `--ghi-production` mới cho
  *   script đó ghi production. Cờ dòng lệnh không thể lọt vào `next dev` qua `.env.local`.
@@ -56,8 +57,13 @@ function bam(s: string): string {
   return createHash('sha256').update(s).digest('hex').slice(0, 8);
 }
 
+/**
+ * NODE_ENV chỉ dùng để LOẠI (development / test luôn là non-production), không phải điều kiện
+ * dương: ngoài hai giá trị đó, Vercel chỉ cần VERCEL=1 (chủ dự án quyết 03/10/2026).
+ */
 function laVercelDangChay(env: Env): boolean {
-  return env.VERCEL === '1' && env.NODE_ENV === 'production';
+  if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') return false;
+  return env.VERCEL === '1';
 }
 
 export function phamViDem(env: Env = process.env): PhamViDem {

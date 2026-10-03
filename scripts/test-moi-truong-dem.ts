@@ -157,6 +157,17 @@ async function main() {
   kiem('Hai nhánh cùng slug (nhanh_a / nhanh-a) vẫn khác namespace', a.ns !== b.ns);
   kiem('Preview không có tên nhánh → preview:khong-ro', phamViDem({ ...PREVIEW_A, VERCEL_GIT_COMMIT_REF: '' }).ns === 'preview:khong-ro:');
   kiem('vercel dev (VERCEL_ENV=development) → local', phamViDem({ ...PROD, VERCEL_ENV: 'development' }).moiTruong === 'local');
+  // NODE_ENV chỉ LOẠI (development / test), không phải điều kiện dương (chủ dự án quyết 03/10/2026)
+  kiem('Spoof: VERCEL=1 + VERCEL_ENV=production dưới NODE_ENV=test → local', phamViDem({ ...PROD, NODE_ENV: 'test' }).moiTruong === 'local');
+  kiem('Preview dưới NODE_ENV=test → local', phamViDem({ ...PREVIEW_A, NODE_ENV: 'test' }).moiTruong === 'local');
+  kiem('Vercel Production thiếu NODE_ENV → vẫn production (NODE_ENV không phải điều kiện dương)', phamViDem({ VERCEL: '1', VERCEL_ENV: 'production' }).moiTruong === 'production');
+  kiem('Vercel Preview → KHÔNG production', !laProductionThat(PREVIEW_A));
+  kiem('Script không có --ghi-production: env Vercel Production vẫn là local', (() => {
+    khaiBaoScript(['node', 'scripts/chay-lai-luan-giai.ts', 'a@b.c']);
+    const r = phamViDem(PROD).moiTruong === 'local' && !laProductionThat(PROD);
+    _datLaiCheDoScript();
+    return r;
+  })());
   kiem('Tên local được chuẩn hoá, không còn % _ :', phamViDem({ CELES_CACHE_NAMESPACE: 'Máy_Hiếu:1%' }).ns === 'local:may-hieu-1:');
   for (const s of ['a_b', 'x%y', 'p:q', 'Đường/nhánh__', '', '----']) {
     const r = slugNs(s, 'mac-dinh');
