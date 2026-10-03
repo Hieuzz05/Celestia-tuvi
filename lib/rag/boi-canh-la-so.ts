@@ -2,6 +2,7 @@ import {
   cungDaiVan,
   cungNguyetHan,
   cungTieuHan,
+  luuTinhTheoNam,
   tamPhuongTuChinh,
   type Cung,
   type LaSo,
@@ -35,7 +36,9 @@ export interface DuKienLaSo {
     | 'dai-van'
     | 'luu-nien'
     | 'nguyet-han'
-    | 'tam-hop';
+    | 'tam-hop'
+    /** Lưu tinh năm ở cung đang hỏi — CHỈ đường Focused (CEL-186 Vé B), nối cuối danh sách */
+    | 'luu-tinh';
   /** Câu mô tả dữ kiện, viết đủ để đứng một mình */
   noiDung: string;
   cung?: string;
@@ -73,6 +76,11 @@ export interface DauVaoBoiCanh {
   keHoach: KeHoachTruyVan;
   namXem: number;
   thangXem: number;
+  /**
+   * Đường Focused (CEL-186 Vé B). Thiếu = đường cũ, đúng từng byte như trước:
+   * mục mới chỉ NỐI VÀO CUỐI, nên mã F### của các mục cũ không dịch.
+   */
+  focused?: boolean;
 }
 
 export interface BoiCanhLaSo {
@@ -104,7 +112,7 @@ export function saoChinhTheoCung(laSo: LaSo): Record<string, string[]> {
   return ra;
 }
 
-export function chonBoiCanh({ laSo, keHoach, namXem, thangXem }: DauVaoBoiCanh): BoiCanhLaSo {
+export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused }: DauVaoBoiCanh): BoiCanhLaSo {
   const duKien: DuKienLaSo[] = [];
   let dem = 0;
   const them = (d: Omit<DuKienLaSo, 'id'>) => {
@@ -218,6 +226,25 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem }: DauVaoBoiCanh):
         loai: 'nguyet-han',
         noiDung: `Tháng ${thangXem}/${namXem} nguyệt hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
         cung: c.tenCung,
+      });
+    }
+  }
+
+  /*
+   * Lưu tinh năm rơi đúng cung đang hỏi (N1, chỉ Focused).
+   *
+   * Khối hướng nghiêng nêu lưu tinh làm căn cứ, nhưng gói cũ không có mục nào
+   * chứa chúng — câu nêu "Lưu Thiên Mã" không trỏ được về F### nào. Chỉ 9 lưu
+   * tinh engine có; không có lưu Tứ Hóa.
+   */
+  if (focused && cungChinh && keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
+    const luu = luuTinhTheoNam(namXem).filter((s) => s.chiIndex === cungChinh.chiIndex);
+    if (luu.length) {
+      them({
+        loai: 'luu-tinh',
+        noiDung: `Năm ${namXem} lưu tinh rơi vào cung ${cungChinh.tenCung}: ${luu.map((s) => s.ten).join(', ')}.`,
+        cung: cungChinh.tenCung,
+        sao: luu.map((s) => s.ten),
       });
     }
   }

@@ -41,7 +41,7 @@ const MO_DAU_SAO = [
 ];
 
 /** Cụm nối rỗng nghĩa — dấu hiệu rõ nhất của văn model */
-const CUM_AI = [
+export const CUM_AI: readonly string[] = [
   'dieu nay cho thay rang',
   'co the noi rang',
   'nhin chung',
@@ -206,7 +206,7 @@ const CAU_DEM_YEU_TO =
  * tài liệu cho phép hiện nó trong phần "Muốn biết vì sao không?", vì nó nói bộ
  * quy tắc nào đã chạy chứ không tiết lộ nguồn nào được truy hồi.
  */
-const RO_RI_RAG = [
+export const RO_RI_RAG: readonly string[] = [
   'theo tai lieu',
   'trong sach',
   'tai lieu cho biet',
@@ -234,7 +234,7 @@ function cumTu(khongDau: string): Set<string> {
   return ra;
 }
 
-function dem(cum: Set<string>, canTim: string[]): string[] {
+function dem(cum: Set<string>, canTim: readonly string[]): string[] {
   return canTim.filter((c) => cum.has(c));
 }
 
@@ -285,7 +285,7 @@ const PHU_DINH = [
  */
 const KHUYEN_CO_DIEU_KIEN = new Set(['nen nghi viec', 'nen cuoi', 'khong nen cuoi']);
 
-function demCoPhuDinh(khongDau: string, cum: Set<string>, canTim: string[]): string[] {
+function demCoPhuDinh(khongDau: string, cum: Set<string>, canTim: readonly string[]): string[] {
   return canTim.filter((c) => {
     if (!cum.has(c)) return false;
     let i = khongDau.indexOf(c);
