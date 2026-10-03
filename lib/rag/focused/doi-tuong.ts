@@ -163,7 +163,21 @@ export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
       break;
     }
   }
-  if (!gap) return null;
+  if (!gap) {
+    /*
+     * "Tôi với bố có hợp nhau không?" — không có định danh sở hữu nhưng là câu
+     * về quan hệ hai người (mục 9: đi khuôn F1). Bỏ "anh / chị / em / bạn" trần:
+     * "tôi với anh ấy" thường là người yêu, không phải anh ruột. "tôi với mẹ
+     * chồng" không phải mẹ ruột. Chỉ nhận bản có dấu.
+     */
+    for (const n of NGUOI) {
+      if (['anh', 'chị', 'em', 'bạn'].includes(n.co)) continue;
+      if (reTu(`(?:tôi|mình|tớ) (?:với|và) ${thoat(n.co)}(?! (?:chồng|vợ)(?![\\p{L}\\p{M}]))`).test(cau)) {
+        return { vai: n.vai, cung: CUNG_CUA_VAI[n.vai], loai: 'quan-he', nhan: n.co };
+      }
+    }
+    return null;
+  }
 
   // Bỏ chính danh từ người trước khi dò tín hiệu: "người yêu" chứa "yêu", "bạn
   // thân" chứa "thân" — để nguyên thì câu nào về hai người đó cũng thành quan hệ.

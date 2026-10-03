@@ -188,6 +188,9 @@ const CA_DOI_TUONG: CaDoiTuong[] = [
   { cau: 'me chong toi nam nay the nao', cung: null },
   { cau: 'Con chồng tôi có ngoan không?', cung: null },
   { cau: 'Bạn chồng tôi có tốt không?', cung: null },
+  // "tôi với <người>": chỉ người ruột, bỏ "anh / em" trần và "mẹ chồng".
+  { cau: 'Tôi với mẹ chồng có hợp không?', cung: null },
+  { cau: 'Tôi với anh ấy có hợp không?', cung: null },
 ];
 
 for (const ca of CA_DOI_TUONG) {
@@ -278,6 +281,9 @@ for (const ca of CA_DOI_TUONG) {
     ['Nên mua nhà hay thuê nhà thì tốt hơn?', 'E'],
     ['Bố tôi năm nay sức khỏe thế nào?', 'F2'],
     ['Tôi với bố tôi có hợp nhau không?', 'F1'],
+    // Không có định danh sở hữu vẫn là quan hệ hai người (eval 03/10: từng ra A).
+    ['Tôi với bố có hợp nhau không?', 'F1'],
+    ['Tôi và mẹ năm nay có hợp không?', 'F1'],
     ['Tính cách của tôi thế nào?', 'G'],
   ];
   for (const [cau, khuon] of CA_KHUON) {

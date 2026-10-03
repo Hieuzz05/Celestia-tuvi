@@ -51,6 +51,7 @@ KHÔNG ĐƯỢC:
 - Nêu một tên sao, tên cách cục KHÔNG có trong khối dữ kiện. Câu có tên lạ sẽ bị bỏ trước khi tới người đọc.
 - Gọi tên cung (Quan Lộc, Phúc Đức, Phu Thê, Tài Bạch, Tử Tức…). Gọi phần đời bằng lời thường.
 - Khuyên hay ra lệnh: "bạn nên", "hãy", "đừng", "thời điểm vàng", "chọn A". Người hỏi tự quyết; Celes chỉ đọc bối cảnh.
+- Đưa vào câu văn một người mà câu hỏi không nhắc tới (sếp, cấp trên, đồng nghiệp, khách hàng, bạn bè, vợ chồng, cha mẹ, con cái…), kể cả làm ví dụ hay cảnh minh hoạ. Hỏi về chính mình thì chỉ nói về chính người hỏi: họ làm gì, gặp gì, vướng ở đâu.
 
 CÂU HỎI KHÔNG THUỘC PHẠM VI:
 (a) Hỏi về một đối tượng nằm NGOÀI người hỏi (mã cổ phiếu, đồng tiền mã hoá, loại thuốc, vụ kiện): câu đầu nói lá số không trả lời được về đối tượng đó, rồi chuyển sang cách người này quyết khi có rủi ro. Quyết định của CHÍNH người hỏi (nhận việc, chuyển ngành, chia tay) thì vẫn thuộc phạm vi.
@@ -245,6 +246,11 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   const nghieng = khoiNghiengFocused(v.nghieng, lopCoTrongGoi(v.goi), v.phanLoai.khuon);
   if (nghieng) phan.push(nghieng);
   phan.push(khoiMoc(v.moc));
+  // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).
+  const maThang = v.goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id);
+  if (v.moc.thoiGian.thang && maThang.length) {
+    phan.push(`Câu hỏi về MỘT tháng: ít nhất một phần tử "cau" phải dựa vào dữ kiện của tháng đang đọc (${maThang.join(', ')}).`);
+  }
 
   if (v.daNoiTruoc.length) {
     phan.push(

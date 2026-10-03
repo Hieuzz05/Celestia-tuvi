@@ -39,6 +39,7 @@ import { traLoiFocused, type KetQuaFocused } from '../lib/rag/focused/tra-loi-fo
 import { tapTenTuGoi, tenNgoaiTap, goiCoPhucDuc, quetTen, khoaTen } from '../lib/rag/focused/quet-ten';
 import { KHUYEN, KHUYEN_DAU_CAU, PHAN_QUYET, PHAN_TRAM, soAmTiet } from '../lib/rag/focused/kiem';
 import { coThangNhuan } from '../lib/rag/focused/thang-am';
+import { NHAN_CHU_DE, type ChuDe } from '../lib/rag/planner';
 import { tienDaTinh, tokenDaDung, VuotNganSachError } from '../lib/ai/fallback';
 import type { TinNhan } from '../lib/ai/prompt';
 
@@ -119,7 +120,7 @@ interface Ca {
   /** Khuôn mong đợi ở `phienBan.focused` */
   khuon?: string;
   /** Chủ đề mong đợi ở `goi.chuDe` */
-  chuDe?: string;
+  chuDe?: ChuDe;
   /** Lượt trước (chuỗi chip): câu người dùng → lấy văn trả lời thật làm tin trợ lý */
   truoc?: string[];
   laTiepTuChip?: boolean;
@@ -201,6 +202,19 @@ const CA: Ca[] = [
 
 const NGUOI = ['vợ', 'chồng', 'người yêu', 'con cái', 'con trai', 'con gái', 'bố', 'mẹ', 'cha', 'anh chị em', 'anh trai', 'chị gái', 'em trai', 'em gái', 'sếp', 'cấp trên', 'đồng nghiệp', 'bạn bè'];
 const reTu = (s: string) => new RegExp(`(?<![\\p{L}\\p{M}])${s}(?![\\p{L}\\p{M}])`, 'iu');
+/**
+ * Bỏ những chỗ trùng chữ nhưng không phải nêu thêm người (eval 03/10, 8/18 ca
+ * là báo nhầm): nhãn phần đời ("phần cha mẹ", "phần bạn bè và đồng nghiệp"),
+ * từ ghép ("công bố"), và cặp có chính người được hỏi ("chuyện vợ chồng" khi
+ * hỏi về chồng, "cha mẹ" khi hỏi về bố).
+ */
+const NHAN_PHAN = /phần (?:cha mẹ|bố mẹ|con cái|anh chị em|vợ chồng|bạn bè(?: và đồng nghiệp)?|đồng nghiệp)/giu;
+function boChuKhongPhaiNguoi(c: string, duoc: ReadonlySet<string>): string {
+  let r = c.replace(NHAN_PHAN, ' ').replace(/công bố/giu, ' ');
+  if (duoc.has('vợ') || duoc.has('chồng')) r = r.replace(/vợ chồng/giu, ' ');
+  if (duoc.has('bố') || duoc.has('mẹ') || duoc.has('cha')) r = r.replace(/(?:cha|bố) mẹ/giu, ' ');
+  return r;
+}
 const tachCau = (s: string) => s.split(/(?<=[.!?…])\s+|\n+/u).map((x) => x.trim()).filter(Boolean);
 
 interface Do {
@@ -241,7 +255,8 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
   const tap = tapTenTuGoi(goi.duKien, goi.yDinh === 'tra-cuu' ? [ca.cauHoi] : []);
   const pd = goiCoPhucDuc(goi.duKien);
   // Phần do model viết (đã qua guard) — miễn trừ SENSITIVE và câu mã không chấm khuyên / độ dài.
-  const phanModel = [kq.coCauTruc?.ketLuan ?? '', ...(kq.coCauTruc?.yChinh ?? []).map((y) => y.noiDung)].filter(Boolean);
+  // Câu chốt dự phòng do mã viết (cờ #1) — không chấm như lời model.
+  const phanModel = [kq.vetFocused?.dungDuPhong ? '' : kq.coCauTruc?.ketLuan ?? '', ...(kq.coCauTruc?.yChinh ?? []).map((y) => y.noiDung)].filter(Boolean);
   const laMa = kq.provider === 'ma';
   const khuon = kq.phienBan.focused ?? '?';
   const nguoiDuoc = new Set([...(ca.nguoi ?? []), ...NGUOI.filter((n) => reTu(n).test([ca.cauHoi, ...(ca.truoc ?? [])].join(' ')))]);
@@ -262,7 +277,8 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     khuon,
     khuonDung: ca.khuon ? khuon === ca.khuon : null,
     chuDe: goi.chuDe,
-    chuDeDung: ca.chuDe ? goi.chuDe === ca.chuDe : null,
+    // goi.chuDe là nhãn hiển thị ("Tình cảm"), ca.chuDe là mã planner ("tinh-cam").
+    chuDeDung: ca.chuDe ? goi.chuDe === NHAN_CHU_DE[ca.chuDe] : null,
     provider: kq.provider,
     model: kq.model,
     van: kq.van,
@@ -270,7 +286,7 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     loi502: !kq.van,
     tenNgoaiGoi: laMa ? [] : phanModel.flatMap((c) => tenNgoaiTap(c, tap, pd)),
     khuyenHo: phanModel.filter((c) => KHUYEN.test(c) || KHUYEN_DAU_CAU.test(c) || PHAN_QUYET.test(c) || PHAN_TRAM.test(c)),
-    nguoiLa: NGUOI.filter((n) => !nguoiDuoc.has(n) && phanModel.some((c) => reTu(n).test(c))),
+    nguoiLa: NGUOI.filter((n) => !nguoiDuoc.has(n) && phanModel.some((c) => reTu(n).test(boChuKhongPhaiNguoi(c, nguoiDuoc)))),
     n1: ca.thang && !laMa ? (kq.coCauTruc?.yChinh ?? []).some((y) => (y.maDuKien ?? []).some((m) => maNguyet.has(m))) : null,
     soCau,
     amTiet,
