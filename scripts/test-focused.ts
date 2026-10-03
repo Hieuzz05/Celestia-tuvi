@@ -24,6 +24,9 @@ import { PHIEN_BAN_NGON_NGU } from '../lib/rag/ngon-ngu';
 import { PHIEN_BAN_VALIDATOR } from '../lib/rag/kiem-duyet';
 import { nhanDangDoiTuong, ghepKeHoach, cauGhep } from '../lib/rag/focused/doi-tuong';
 import { coThangNhuan, khoangDuong, soVoiBayGio, laCuoiNamAm } from '../lib/rag/focused/thang-am';
+import { lapKeHoachFocused } from '../lib/rag/focused/ke-thua';
+import { phanKhuon, laXinSau, tachHaiVe, boiCanhThoiGian } from '../lib/rag/focused/phan-loai';
+import { cauVanRieng, cauHaiVe, cauHoiNhuan, cauKhiNao, chipCuoiNam, cauThangDaQua } from '../lib/rag/focused/cau-ma';
 
 const hong: string[] = [];
 const kiem = (dk: boolean, loi: string) => {
@@ -33,11 +36,10 @@ const kiem = (dk: boolean, loi: string) => {
 /* ----------------------------------------------- 1. phiên bản chữ không đổi */
 
 /*
- * L3: Focused không được đổi `PHIEN_BAN_CHU` — đổi là xả đệm mọi bài của mọi
- * người. Hằng dưới đây đóng băng giá trị trên main lúc mở nhánh; dựng lại băm
- * từ các hằng nguồn để biết hằng nào trôi khi nó lệch.
+ * L3 (mục 15): không ghim chuỗi cứng — main có quyền đổi chuẩn và nâng băm.
+ * Dựng lại băm từ chính các hằng nguồn rồi so với giá trị đang export: thêm
+ * `export` cho hằng nào cũng không được làm đổi đầu vào băm.
  */
-const PHIEN_BAN_CHU_MAIN = '8d8e5a24';
 const dungLai = createHash('sha1')
   .update(
     [
@@ -51,11 +53,7 @@ const dungLai = createHash('sha1')
   )
   .digest('hex')
   .slice(0, 8);
-kiem(dungLai === PHIEN_BAN_CHU, `băm dựng lại ${dungLai} ≠ PHIEN_BAN_CHU ${PHIEN_BAN_CHU} — phien-ban-chu.ts đổi công thức`);
-kiem(
-  PHIEN_BAN_CHU === PHIEN_BAN_CHU_MAIN,
-  `PHIEN_BAN_CHU trôi ${PHIEN_BAN_CHU_MAIN} → ${PHIEN_BAN_CHU}: đường Focused đã chạm hằng dùng chung (xả đệm toàn bộ)`
-);
+kiem(dungLai === PHIEN_BAN_CHU, `băm dựng lại ${dungLai} ≠ PHIEN_BAN_CHU ${PHIEN_BAN_CHU} — đầu vào băm đã trôi`);
 
 /* ---------------------------------------------- 2. cờ tắt: không đổi từng byte */
 
@@ -198,6 +196,151 @@ for (const ca of CA_DOI_TUONG) {
   const { cungLienQuan: _a, ...conGoc } = goc;
   const { cungLienQuan: _b, ...conKq } = kq;
   kiem(JSON.stringify(conGoc) === JSON.stringify(conKq), `"${ca.cau}" ghép kế hoạch đổi trường ngoài cungLienQuan`);
+}
+
+/* ---------------------------------------------- kế thừa chủ đề qua chip (cờ #2) */
+
+{
+  const vao = { saoTheoCung: saoChinhTheoCung(dsLaSo[0]), namXem: 2026, thangXem: 8 };
+  const nd = (noiDung: string) => ({ vaiTro: 'nguoi-dung' as const, noiDung });
+  const tl = (noiDung: string) => ({ vaiTro: 'tro-ly' as const, noiDung });
+  const CA_KE_THUA: { truoc: string; chip: string; chuDe: string; cung?: string; nam?: number; thang?: number; keThua: boolean }[] = [
+    // Ca eval 5, 6
+    { truoc: 'Năm nay chuyện tình cảm của tôi thế nào?', chip: 'Sang năm Đinh Mùi thì sao?', chuDe: 'tinh-cam', cung: 'Phu Thê', nam: 2027, keThua: true },
+    { truoc: 'Công việc của tôi năm nay ra sao?', chip: 'Sang năm Đinh Mùi thì sao?', chuDe: 'su-nghiep', cung: 'Quan Lộc', nam: 2027, keThua: true },
+    // Năm trần: thời gian phải lấy từ câu gốc
+    { truoc: 'Năm nay chuyện tình cảm của tôi thế nào?', chip: '2027 thì sao?', chuDe: 'tinh-cam', cung: 'Phu Thê', nam: 2027, keThua: true },
+    { truoc: 'Công việc của tôi năm nay ra sao?', chip: 'Tháng tới thì sao?', chuDe: 'su-nghiep', cung: 'Quan Lộc', thang: 9, keThua: true },
+    { truoc: 'Tôi đang phân vân nghỉ việc hay ở lại', chip: 'Ở lại thì sao?', chuDe: 'su-nghiep', cung: 'Quan Lộc', keThua: true },
+    // Câu mới tự có chủ đề: tin câu mới
+    { truoc: 'Năm nay chuyện tình cảm của tôi thế nào?', chip: 'Còn tiền bạc thì sao?', chuDe: 'tai-chinh', keThua: false },
+    // Người được hỏi đi theo nguồn
+    { truoc: 'Con tôi năm nay học hành thế nào?', chip: 'Sang năm Đinh Mùi thì sao?', chuDe: '*', cung: 'Tử Tức', nam: 2027, keThua: true },
+    { truoc: 'Anh tôi có giàu không?', chip: 'Tôi với anh tôi có hợp nhau không?', chuDe: '*', cung: 'Huynh Đệ', keThua: false },
+  ];
+  for (const ca of CA_KE_THUA) {
+    const kq = lapKeHoachFocused({
+      ...vao,
+      cauHoi: ca.chip,
+      laTiepTuChip: true,
+      lichSu: [nd(ca.truoc), tl('...'), nd(ca.chip)],
+    });
+    const ten = `"${ca.truoc}" → "${ca.chip}"`;
+    kiem(!!kq.keThuaTu === ca.keThua, `${ten}: kế thừa ${!!kq.keThuaTu}, cần ${ca.keThua}`);
+    if (ca.chuDe !== '*') kiem(kq.keHoach.chuDe === ca.chuDe, `${ten}: chủ đề ${kq.keHoach.chuDe}, cần ${ca.chuDe}`);
+    if (ca.cung) kiem(kq.keHoach.cungLienQuan[0] === ca.cung, `${ten}: cung đầu ${kq.keHoach.cungLienQuan[0]}, cần ${ca.cung}`);
+    if (ca.nam) kiem(kq.keHoach.namMucTieu === ca.nam, `${ten}: năm ${kq.keHoach.namMucTieu}, cần ${ca.nam}`);
+    if (ca.thang) kiem(kq.keHoach.thangMucTieu === ca.thang, `${ten}: tháng ${kq.keHoach.thangMucTieu}, cần ${ca.thang}`);
+  }
+  // Câu dài không có chủ đề, không phải chip: không kế thừa.
+  const dai = lapKeHoachFocused({
+    ...vao,
+    cauHoi: 'Nhìn chung mấy năm tới cuộc đời tôi sẽ đi theo hướng nào nhỉ?',
+    lichSu: [nd('Công việc của tôi năm nay ra sao?')],
+  });
+  kiem(!dai.keThuaTu, 'câu dài tự đứng không được kế thừa chủ đề cũ');
+  // Không lịch sử: không kế thừa, không vỡ.
+  kiem(!lapKeHoachFocused({ ...vao, cauHoi: 'Sang năm thì sao?', laTiepTuChip: true }).keThuaTu, 'không lịch sử mà vẫn kế thừa');
+}
+
+/* ------------------------------------------------------------ phân khuôn */
+
+{
+  const vao = { saoTheoCung: saoChinhTheoCung(dsLaSo[0]), namXem: 2026, thangXem: 8 };
+  const CA_KHUON: [string, string][] = [
+    ['Năm nay tôi có người yêu không?', 'A'],
+    ['Có chuyển việc hay không?', 'A'],
+    ['Khi nào tôi lấy chồng?', 'D'],
+    ['Tháng nào tôi nên khai trương?', 'D'],
+    ['Tôi nên nghỉ việc hay ở lại?', 'E'],
+    ['Nên mua nhà hay thuê nhà thì tốt hơn?', 'E'],
+    ['Bố tôi năm nay sức khỏe thế nào?', 'F2'],
+    ['Tôi với bố tôi có hợp nhau không?', 'F1'],
+    ['Tính cách của tôi thế nào?', 'G'],
+  ];
+  for (const [cau, khuon] of CA_KHUON) {
+    const kq = lapKeHoachFocused({ ...vao, cauHoi: cau });
+    const pl = phanKhuon({ cauHoi: cau, keHoach: kq.keHoach, doiTuong: kq.doiTuong });
+    kiem(pl.khuon === khuon, `"${cau}" ra khuôn ${pl.khuon}, cần ${khuon}`);
+  }
+  kiem(laXinSau('Phân tích kỹ giúp tôi'), '"Phân tích kỹ" phải là DEEP');
+  kiem(!laXinSau('Tôi là kỹ sư, năm nay thế nào?'), '"kỹ sư" không được thành DEEP');
+}
+
+/* --------------------------------------------- câu do mã: chip đi đúng đường */
+
+{
+  const vao = { saoTheoCung: saoChinhTheoCung(dsLaSo[0]), namXem: 2026, thangXem: 8 };
+  const nd = (noiDung: string) => ({ vaiTro: 'nguoi-dung' as const, noiDung });
+  const bayGio = { nam: 2026, thang: 8, ngay: 10 };
+
+  // F2 → chip quan hệ → F1, đúng cung lục thân, không đọc cung tiền của người hỏi.
+  for (const [cau, cung, coLoi] of [
+    ['Anh tôi có giàu không?', 'Huynh Đệ', false],
+    ['Bố tôi năm nay sức khỏe thế nào?', 'Phụ Mẫu', false],
+    ['Chồng tôi có thăng chức không?', 'Phu Thê', true],
+  ] as const) {
+    const dt = nhanDangDoiTuong(cau);
+    if (!dt || dt.loai !== 'van-rieng') {
+      hong.push(`"${cau}" phải là vận riêng`);
+      continue;
+    }
+    const cm = cauVanRieng(dt);
+    kiem(!cm.goiModel, `F2 "${cau}" không được gọi model`);
+    kiem(cm.loiDi.length > 0 === coLoi, `F2 "${cau}" lối sang hai lá số sai`);
+    const kq = lapKeHoachFocused({ ...vao, cauHoi: cm.chip[0], laTiepTuChip: true, lichSu: [nd(cau)] });
+    const pl = phanKhuon({ cauHoi: cm.chip[0], keHoach: kq.keHoach, doiTuong: kq.doiTuong });
+    kiem(pl.khuon === 'F1', `chip "${cm.chip[0]}" ra khuôn ${pl.khuon}, cần F1`);
+    kiem(kq.keHoach.cungLienQuan[0] === cung, `chip "${cm.chip[0]}" cung đầu ${kq.keHoach.cungLienQuan[0]}, cần ${cung}`);
+    kiem(!kq.keHoach.cungLienQuan.includes('Tài Bạch'), `chip "${cm.chip[0]}" còn Tài Bạch`);
+  }
+
+  // E: chip hai vế giữ chủ đề của câu gốc.
+  const cauE = 'Tôi nên nghỉ việc hay ở lại?';
+  const hv = tachHaiVe(cauE);
+  if (!hv) hong.push(`"${cauE}" phải tách được hai vế`);
+  else {
+    for (const chip of cauHaiVe(hv).chip) {
+      const kq = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cauE)] });
+      kiem(kq.keHoach.chuDe === 'su-nghiep', `chip E "${chip}" ra ${kq.keHoach.chuDe}, cần su-nghiep`);
+    }
+  }
+
+  // D: chip năm giữ chủ đề, không còn chip "tháng nào".
+  const cauD = 'Khi nào tôi lấy chồng?';
+  const d = cauKhiNao();
+  kiem(!d.chip.some((c) => /tháng nào/i.test(c)), 'D còn chip "tháng nào" (quyết định #5)');
+  for (const chip of d.chip) {
+    const kq = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cauD)] });
+    kiem(kq.keHoach.chuDe === 'tinh-cam', `chip D "${chip}" ra ${kq.keHoach.chuDe}, cần tinh-cam`);
+  }
+
+  // Tháng nhuận: hai chip phân giải được, không hỏi lại lần hai. 2025 có tháng 6 nhuận.
+  for (const [nam, thang] of [[2025, 6], [2023, 2]] as const) {
+    const cauGoc = `Tháng ${thang} năm ${nam} công việc của tôi thế nào?`;
+    const kh = lapKeHoachFocused({ ...vao, cauHoi: cauGoc }).keHoach;
+    const bc = boiCanhThoiGian({ cauHoi: cauGoc, keHoach: kh, namXem: 2026, bayGio });
+    if (bc.thang?.nhuan !== 'can-hoi') {
+      hong.push(`"${cauGoc}" phải hỏi lại nhuận, ra ${bc.thang?.nhuan}`);
+      continue;
+    }
+    const hoi = cauHoiNhuan(bc.thang, 2026);
+    kiem(!hoi.goiModel, 'hỏi lại nhuận không được gọi model');
+    const can = ['thuong', 'nhuan'];
+    hoi.chip.forEach((chip, i) => {
+      const k = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cauGoc)] }).keHoach;
+      const b = boiCanhThoiGian({ cauHoi: chip, keHoach: k, namXem: 2026, bayGio });
+      kiem(b.thang?.nhuan === can[i], `chip "${chip}" ra ${b.thang?.nhuan}, cần ${can[i]}`);
+      kiem(b.namHieuLuc === nam, `chip "${chip}" đọc năm ${b.namHieuLuc}, cần ${nam}`);
+      kiem(k.chuDe === 'su-nghiep', `chip "${chip}" mất chủ đề: ${k.chuDe}`);
+    });
+  }
+
+  // N2 nêu đúng tháng, năm; N4 chip sang năm đứng đầu, không trùng.
+  const n2 = cauThangDaQua({ nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null });
+  kiem(n2.startsWith('Bạn đang hỏi tháng 3 âm lịch năm 2026.'), `N2 sai: ${n2}`);
+  const n4 = chipCuoiNam(2026, ['Sang năm Đinh Mùi thì sao?', 'Còn tiền bạc thì sao?']);
+  kiem(n4[0] === 'Sang năm Đinh Mùi thì sao?' && n4.length === 2, `N4 chip sai: ${n4.join(' | ')}`);
 }
 
 /* ------------------------------------------------------------------- kết */

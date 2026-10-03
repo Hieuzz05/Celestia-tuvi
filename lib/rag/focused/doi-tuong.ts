@@ -13,6 +13,7 @@
 
 import type { KeHoachTruyVan } from '../planner';
 import { boDau } from '../thuc-the';
+import { chuKhongDau, khopCum } from './khop';
 
 export type VaiNguoi = 'vo-chong' | 'nguoi-yeu' | 'con' | 'bo-me' | 'anh-chi-em' | 'ban-be' | 'cap-tren';
 
@@ -96,7 +97,16 @@ const QUAN_HE = [
   'nhờ', 'xung đột', 'va chạm', 'cãi', 'gần gũi', 'xa cách', 'quan hệ', 'gắn bó', 'hiểu',
   'tin tưởng', 'phản', 'ngoại tình', 'chung thủy', 'chung thuỷ', 'làm ăn chung', 'ủng hộ',
   'ưu ái', 'cất nhắc', 'chiều', 'ghét', 'thân',
-];
+].join('|');
+/*
+ * Bản không dấu bỏ chữ đơn mơ hồ: "thuong" (thương / thường), "yeu" (yêu /
+ * yếu), "do" (đỡ / do), "than" (thân / than), "phan" (phản / phần).
+ */
+const QUAN_HE_KD = [
+  'voi toi', 'voi minh', 'voi em', 'hop', 'hop nhau', 'giup', 'hieu', 'xung dot', 'va cham', 'cai nhau',
+  'gan gui', 'xa cach', 'quan he', 'gan bo', 'tin tuong', 'ngoai tinh', 'chung thuy', 'lam an chung',
+  'ung ho', 'uu ai', 'cat nhac', 'ghet', 'thuong toi', 'yeu toi', 'phan toi', 'do toi', 'nho duoc',
+].join('|');
 
 /** Người kia là chủ ngữ của chuyện vận — đọc trên lá số của chính họ. */
 const VAN_RIENG = [
@@ -105,56 +115,54 @@ const VAN_RIENG = [
   'hạn', 'tai nạn', 'mất', 'chết', 'qua đời', 'sống', 'thọ', 'sinh con', 'có con', 'có bầu',
   'kiếm tiền', 'làm ăn', 'công việc', 'sự nghiệp', 'tiền bạc', 'việc làm', 'đi làm', 'xin việc',
   'tiền', 'phá sản', 'nợ', 'kiện',
-];
-
-/** Tiếng Việt có dấu thật không (người gõ không dấu thì mọi so khớp đi đường bỏ dấu) */
-function coDau(s: string): boolean {
-  return boDau(s) !== s.toLowerCase();
-}
-
-function coCum(cau: string, ds: readonly string[], coDauThat: boolean): boolean {
-  if (coDauThat) return reTu(ds.map(thoat).join('|')).test(cau);
-  const s = ` ${boDau(cau).replace(/[^a-z0-9]+/g, ' ').trim()} `;
-  return ds.some((c) => s.includes(` ${boDau(c)} `));
-}
+].join('|');
+const VAN_RIENG_KD = [
+  'thang chuc', 'len chuc', 'thang tien', 'giau', 'phat tai', 'thi cu', 'thi do', 'hoc hanh', 'dai hoc',
+  'cuoi', 'lay chong', 'lay vo', 'benh', 'om', 'suc khoe', 'khoe', 'tai nan', 'qua doi', 'sinh con',
+  'co con', 'co bau', 'kiem tien', 'lam an', 'cong viec', 'su nghiep', 'tien bac', 'viec lam', 'di lam',
+  'xin viec', 'tien', 'pha san',
+].join('|');
 
 /** Câu hỏi có hỏi về một người cụ thể khác người hỏi không. `null` khi không. */
 export function nhanDangDoiTuong(cauHoi: string): DoiTuongCauHoi | null {
   const cau = cauHoi.normalize('NFC').toLowerCase();
-  const daDau = coDau(cau);
 
   let gap: { co: string; vai: VaiNguoi } | null = null;
-  if (daDau) {
-    for (const n of NGUOI) {
-      if (reTu(`${thoat(n.co)} ${CHU}`).test(cau)) {
-        gap = n;
-        break;
-      }
+  let mauBo = '';
+  for (const n of NGUOI) {
+    if (reTu(`${thoat(n.co)} ${CHU}`).test(cau)) {
+      gap = n;
+      mauBo = thoat(n.co);
+      break;
     }
-  } else {
-    const s = boDau(cau).replace(/[^a-z0-9]+/g, ' ');
+  }
+  if (!gap) {
+    // Chỉ chữ người dùng tự gõ không dấu: "Còn tôi thì sao" không thành "con tôi".
+    const s = chuKhongDau(cau);
     for (const n of NGUOI) {
+      const kd = boDau(n.co);
       if (KHONG_NHAN_KHONG_DAU.has(n.co)) {
         if (n.co !== 'bạn thân') continue;
         // "ban than toi" chỉ là bạn thân khi có ngữ cảnh quan hệ bạn bè.
-        if (!/(?:^| )ban than (?:cua )?toi(?: |$)/.test(s) || !/(?:^| )(?:phan|choi|giup)(?: |$)/.test(s)) continue;
-        gap = n;
-        break;
+        if (!/(?<= )ban than (?:cua )?toi(?= )/.test(s) || !/(?<= )(?:phan|choi|giup)(?= )/.test(s)) continue;
+      } else if (!new RegExp(`(?<= )${kd} ${CHU_KHONG_DAU}(?= )`).test(s)) {
+        continue;
       }
-      if (new RegExp(`(?:^| )${boDau(n.co)} ${CHU_KHONG_DAU}(?: |$)`).test(s)) {
-        gap = n;
-        break;
-      }
+      gap = n;
+      mauBo = kd;
+      break;
     }
   }
   if (!gap) return null;
 
   // Bỏ chính danh từ người trước khi dò tín hiệu: "người yêu" chứa "yêu", "bạn
   // thân" chứa "thân" — để nguyên thì câu nào về hai người đó cũng thành quan hệ.
-  const conLai = daDau
-    ? cau.replace(reTu(thoat(gap.co)), ' ')
-    : ` ${boDau(cau).replace(/[^a-z0-9]+/g, ' ')} `.replace(` ${boDau(gap.co)} `, ' ');
-  const loai = coCum(conLai, QUAN_HE, daDau) ? 'quan-he' : coCum(conLai, VAN_RIENG, daDau) ? 'van-rieng' : 'quan-he';
+  const conLai = cau.replace(reTu(mauBo), ' ');
+  const loai = khopCum(conLai, QUAN_HE, QUAN_HE_KD)
+    ? 'quan-he'
+    : khopCum(conLai, VAN_RIENG, VAN_RIENG_KD)
+      ? 'van-rieng'
+      : 'quan-he';
   return { vai: gap.vai, cung: CUNG_CUA_VAI[gap.vai], loai, nhan: gap.co };
 }
 
