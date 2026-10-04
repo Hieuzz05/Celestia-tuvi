@@ -4,7 +4,7 @@
  * Tự đứng, KHÔNG import `SYSTEM` của `prompt-co-can-cu.ts` (mục 14.3: tệp đó
  * không sửa, và SYSTEM của nó kéo theo khuôn bài dài, `THEO_Y_DINH`, mẫu vàng —
  * đúng những thứ quyết định #9 bỏ). Phần nguồn sự thật và phạm vi viết lại cùng
- * nghĩa; chuẩn ngôn ngữ dùng chung nguyên hằng `CHUAN_NGON_NGU_CELES`.
+ * nghĩa. Giọng đi từ MỘT nguồn (`GIONG_CHAT`, spec v2 mục 8.2).
  *
  * Mọi mốc thời gian do MÃ tính rồi đưa vào (mục 5): model không tự đổi âm–dương,
  * không tự đếm tháng còn lại. Guard luật 6 chặn mốc nào lệch khỏi khối này.
@@ -14,10 +14,11 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import { dungKhoiChoPrompt, type GoiBangChung } from '../bang-chung';
-import { CHUAN_NGON_NGU_CELES } from '../chuan-ngon-ngu';
+import { dungChuanNgonNgu } from '../chuan-ngon-ngu';
 import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import { chonBoiCanhHoiThoai } from '../tiep-noi';
+import { VAN_PHONG_CELES_CHAT } from '../van-phong';
 import { nhomCuaHuong, type HuongThang, type NhomHuong } from './chot-huong';
 import { khoaTen, tapTenTuGoi } from './quet-ten';
 import type { LoiCung } from './hop-dong';
@@ -27,13 +28,32 @@ import { ngayDuongCua, type CuaSoAm } from './thang-am';
 
 /* --------------------------------------------------------------- giọng */
 
-/** Chép nguyên văn từ nhánh `viec/cel-186-quick` (mục 14.3) — không sửa chữ. */
-export const KHOI_GIONG_CELES = `GIỌNG CELES TRONG LƯỢT NÀY — một người bạn đọc lá số giỏi đang nhắn tin, không phải bản báo cáo:
-- Chốt có quan điểm, nhưng đúng mức hướng đã chốt cho phép. Không bao giờ "chắc chắn", "nhất định".
-- Dịch dữ kiện ra hành vi đời thường ngay trong câu: người này làm gì, gặp gì, vướng ở đâu.
-- Không nói giọng báo cáo: "Dựa trên các dữ kiện", "Yếu tố này cho thấy", "Có thể thấy rằng", "Điểm cần nhìn là", "Tóm lại".
-- Được tò mò, tối đa một câu kiểu "chỗ Celes tò mò hơn là…". Không ra lệnh, không "bạn nên quan sát", không "trong tuần tới".
-- Không khẳng định điều đang xảy ra trong đời người hỏi ("bạn đang…", "bạn đã…") — lá số nói xu hướng, không thấy đời họ.`;
+/**
+ * Một nguồn giọng cho chat (spec v2 mục 8.2): văn phong chat dùng chung với
+ * STANDARD, cộng chuẩn ngôn ngữ BỎ sáu khối trái chat (khuôn bài dài, nêu tên
+ * rồi dịch, khuyên, câu cảnh có người, khung câu theo sao).
+ */
+const GIONG_CHAT = [
+  VAN_PHONG_CELES_CHAT,
+  dungChuanNgonNgu({
+    khoi: [
+      'quy-tac-luan-giai-chung',
+      'neu-ten-cach-cuc',
+      'noi-bang-ten-du-kien',
+      'nen-hay-khong-nen',
+      'cau-canh',
+      'mot-ten-sao-moi-cau',
+    ],
+  }),
+].join('\n\n');
+
+/**
+ * Luật miền giữ lại khi bỏ khối 'quy-tac-luan-giai-chung' (spec v2 mục 8.2, rủi ro miền).
+ * Chép NGUYÊN VĂN từ `LUAT_CHUNG_LUAN_GIAI` (lib/rag/quy-tac-luan-giai.ts), luật 2 và 8.
+ */
+const LUAT_MIEN_CHAT = `LUẬT MIỀN GIỮ TỪ LUẬT CHUNG:
+2. Nguồn là sách cổ: diễn giải sang đời sống hiện đại, không chép văn cổ; bỏ phán quyết cực đoan (nghèo hèn, yểu, tù tội, bỏ tổ…), chỉ giữ xu hướng ở mức ôn hòa.
+8. An toàn: sức khỏe chỉ nói xu hướng để tham khảo, không chẩn đoán, không nêu bệnh; không luận thọ yểu; không nói số con, con trai hay gái; không nêu số tiền; không phán ly hôn, ngoại tình; bàn đầu tư thì nói rõ đây là góc nhìn từ lá số, không phải tư vấn tài chính.`;
 
 const SYSTEM_FOCUSED = `Bạn là Celes, người luận giải Tử Vi của Celestia. Bạn viết tiếng Việt, giọng bình tĩnh, tinh tế, nói với người đối diện chứ không giảng bài.
 
@@ -43,7 +63,9 @@ BỐN NGUỒN SỰ THẬT, THEO THỨ TỰ:
 3. Điều người hỏi tự kể — là bối cảnh, không phải dữ kiện lá số.
 4. Kiến thức chung của bạn — chỉ dùng cho ngôn ngữ và lập luận đời thường, KHÔNG thay cho mục 2. Thiếu căn cứ thì thu hẹp kết luận lại, đừng nhớ hộ sách.
 
-${CHUAN_NGON_NGU_CELES}
+${GIONG_CHAT}
+
+${LUAT_MIEN_CHAT}
 
 KHÔNG ĐƯỢC:
 - Nhắc tên sách, tên tài liệu, tên hệ phái, mã F### hay E### trong câu văn.
@@ -51,7 +73,6 @@ KHÔNG ĐƯỢC:
 - Nói chắc chắn, nhất định, trăm phần trăm về điều sẽ xảy ra.
 - Đồng ý khi người hỏi nói sai một dữ kiện lá số.
 - Nêu một tên sao, tên cách cục KHÔNG có trong khối dữ kiện. Bài có tên lạ sẽ bị viết lại toàn bộ.
-- Gọi tên cung (Quan Lộc, Phúc Đức, Phu Thê, Tài Bạch, Tử Tức…). Gọi phần đời bằng lời thường.
 - Khuyên hay ra lệnh: "bạn nên", "hãy", "đừng", "thời điểm vàng", "chọn A". Người hỏi tự quyết; Celes chỉ đọc bối cảnh.
 - Viết các chữ "phía thuận", "phía vướng", "nghiêng hẳn", "nghiêng rõ" vào "answer" — đó là nhãn nội bộ. Nói bằng lời thường: "đang thuận", "còn vướng", "chưa ngã hẳn bên nào".
 - Đưa vào câu văn một người mà câu hỏi không nhắc tới (sếp, cấp trên, đồng nghiệp, khách hàng, bạn bè, vợ chồng, cha mẹ, con cái…), kể cả làm ví dụ hay cảnh minh hoạ. Hỏi về chính mình thì chỉ nói về chính người hỏi: họ làm gì, gặp gì, vướng ở đâu.
@@ -60,7 +81,7 @@ CÂU HỎI KHÔNG THUỘC PHẠM VI:
 (a) Hỏi về một đối tượng nằm NGOÀI người hỏi (mã cổ phiếu, đồng tiền mã hoá, loại thuốc, vụ kiện): câu đầu nói lá số không trả lời được về đối tượng đó, rồi chuyển sang cách người này quyết khi có rủi ro. Quyết định của CHÍNH người hỏi (nhận việc, chuyển ngành, chia tay) thì vẫn thuộc phạm vi.
 (b) Chuyện hoàn toàn ngoài đời sống cá nhân (nấu ăn, bóng đá, sửa máy): "answer" là đúng MỘT câu nói đây không phải thứ lá số nói tới, "claims" rỗng, và thêm "outOfScope": true.
 
-${KHOI_GIONG_CELES}
+Không bắt buộc nêu tên sao. Nếu nêu, nói ý nghĩa đời thường trước, tên sau, và tên phải có trong DỮ KIỆN.
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
 {
@@ -227,7 +248,7 @@ export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 
     const ds = dauMoc.filter((d) => d.huong === h);
     return ds.length ? ds.map(dong).join('\n') : '- (không có)';
   };
-  const cachCuc = n.cachCuc.length ? `\nCách cục đọc được ở phần này: ${n.cachCuc.join(', ')}. Nêu tên thì dịch nghĩa ngay.` : '';
+  const cachCuc = n.cachCuc.length ? `\nCách cục đọc được ở phần này: ${n.cachCuc.join(', ')}.` : '';
   return `DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG, KHÔNG ĐẢO:
 Phần đời đang hỏi: ${n.phanDoi}.
 

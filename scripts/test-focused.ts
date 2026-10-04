@@ -19,6 +19,7 @@ import { tinhNghiengVe, khoiNghiengVe } from '../lib/rag/nghieng-ve';
 import { lapKeHoach, PHIEN_BAN_PLANNER } from '../lib/rag/planner';
 import { PHIEN_BAN_CHU } from '../lib/rag/phien-ban-chu';
 import { CHUAN_NGON_NGU_CELES } from '../lib/rag/chuan-ngon-ngu';
+import { VAN_PHONG_CELES_CHAT } from '../lib/rag/van-phong';
 import { CHU_TRUU_TUONG } from '../lib/rag/chu-truu-tuong';
 import { PHIEN_BAN_NGON_NGU } from '../lib/rag/ngon-ngu';
 import { PHIEN_BAN_VALIDATOR } from '../lib/rag/kiem-duyet';
@@ -841,6 +842,19 @@ for (const ca of CA_DOI_TUONG) {
     const vl = dungPromptFocused({ ...dv, vietLai: { answer: 'Bản cũ.', loi: [{ ma: 'LO_MA', chiTiet: 'văn có mã nội bộ "F001"', doan: 'theo F001 thì' }] } }).user;
     kiem(vl.includes('Viết lại TOÀN BỘ câu trả lời.') && vl.includes('văn có mã nội bộ "F001"') && vl.includes('theo F001 thì') && vl.includes('Bản cũ.'), 'khối viết lại thiếu lỗi / đoạn / bản cũ');
     kiem(!p.user.includes('Viết lại TOÀN BỘ'), 'lần một có khối viết lại');
+
+    // H (8.2): một nguồn giọng. "nêu tên" bị cấm ở dạng khuôn "nêu tên rồi/thì dịch";
+    // câu spec bắt thêm ("Không bắt buộc nêu tên sao…") tự chứa chữ đó nên không cấm trần.
+    const sys = p.system.toLowerCase();
+    for (const cam of ['nêu tên rồi dịch', 'nêu tên thì dịch', 'nêu tên sao / hạn rồi dịch', 'kết bằng lời khuyên', 'tối đa một tên sao']) {
+      kiem(!(sys + p.user.toLowerCase()).includes(cam), `prompt Focused còn "${cam}"`);
+    }
+    kiem(p.system.includes(VAN_PHONG_CELES_CHAT.split('\n')[0]), 'SYSTEM thiếu dòng đầu VAN_PHONG_CELES_CHAT');
+    kiem(p.system.includes(VAN_PHONG_CELES_CHAT), 'SYSTEM thiếu nguyên khối VAN_PHONG_CELES_CHAT');
+    kiem(p.system.includes('Không bắt buộc nêu tên sao. Nếu nêu, nói ý nghĩa đời thường trước, tên sau, và tên phải có trong DỮ KIỆN.'), 'thiếu câu tên sao 8.2');
+    kiem(!p.system.includes('GIỌNG CELES TRONG LƯỢT NÀY'), 'SYSTEM còn KHOI_GIONG_CELES');
+    kiem(!p.system.includes('QUY TẮC VIẾT'), 'SYSTEM còn khối quy-tac-luan-giai-chung');
+    kiem(p.system.includes('không luận thọ yểu') && p.system.includes('bỏ phán quyết cực đoan'), 'SYSTEM thiếu LUAT_MIEN_CHAT');
   }
 
   // Câu do mã viết: chữ đã duyệt (chủ dự án 04/10), không lộ "dữ kiện", EN không còn chữ Việt.

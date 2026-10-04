@@ -64,7 +64,7 @@ import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.14';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.15';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
