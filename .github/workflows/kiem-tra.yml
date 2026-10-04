@@ -73,6 +73,8 @@ jobs:
         run: npx tsx scripts/test-focused.ts
       - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
         run: npx tsx scripts/test-loi-chi-ma.ts
+      - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)
+        run: npx tsx scripts/test-boi-canh-dong-bang.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
         run: npx tsx scripts/test-fallback-giu-nguyen.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
