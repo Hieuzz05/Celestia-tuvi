@@ -57,8 +57,9 @@ import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi, tenDuocGoiTrong
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
 import { cauChotDuPhong, mocChoCauChot } from '../lib/rag/focused/chot-huong';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
-import { focusedBat, mocChoChot, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
+import { type KetQuaFocused, focusedBat, mocChoChot, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
 import { phienBanHienTai, traLoiCoCanCu } from '../lib/rag/tra-loi';
+import { ghiVetPreview } from '../lib/rag/focused/vet';
 import type { NghiengVe } from '../lib/rag/nghieng-ve';
 import type { DuKienLaSo } from '../lib/rag/boi-canh-la-so';
 
@@ -1219,7 +1220,7 @@ async function kiemNoi() {
     kiem(focusedBat(), 'cờ "1" không bật Focused');
 
     // F2 đi trọn đường qua traLoiCoCanCu: hỏi lại, không truy hồi, không gọi model, KHÔNG tính lượt.
-    const f2 = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?' });
+    const f2 = (await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?' })) as KetQuaFocused;
     kiem(f2.provider === 'ma' && f2.model === 'focused-f2', `F2 ra ${f2.provider}/${f2.model}`);
     kiem(f2.khongTinhLuot === true, 'F2 hỏi lại mà vẫn tính lượt');
     kiem(!!f2.van && f2.van.startsWith('Để Celes không luận vận riêng'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
@@ -1355,6 +1356,73 @@ async function kiemNoi() {
       });
       kiem(lan === 2, `tháng thiếu nguyệt hạn gọi ${lan} lần, cần 2`);
       kiem(kqT.van === '' && kqT.vet.thuLai === 'thieu-nguyet-han', `tháng thiếu nguyệt hạn ra "${kqT.van.slice(0, 40)}" / ${kqT.vet.thuLai}`);
+    }
+
+    // Vết Preview (CEL-186 v2, commit A — spec 5.4).
+    {
+      const dong: string[] = [];
+      const ghi = (d: string) => dong.push(d);
+      // (1) Production thật: không ghi, kể cả khi lỡ đặt cờ vết.
+      kiem(
+        !ghiVetPreview(f2.vetPreview, { VERCEL: '1', VERCEL_ENV: 'production', CELES_FOCUSED_TRACE: '1' }, ghi) && dong.length === 0,
+        'vết Preview ghi ở Production'
+      );
+      kiem(!ghiVetPreview(f2.vetPreview, { VERCEL: '1', VERCEL_ENV: 'preview' }, ghi) && dong.length === 0, 'vết ghi khi không có cờ');
+      kiem(ghiVetPreview(f2.vetPreview, { VERCEL: '1', VERCEL_ENV: 'preview', CELES_FOCUSED_TRACE: '1' }, ghi) && dong.length === 1, 'vết không ghi ở Preview có cờ');
+      kiem(dong[0]?.startsWith('[focused-vet] {'), `dòng vết sai dạng: ${dong[0]?.slice(0, 30)}`);
+      kiem(f2.vetPreview?.loiRa === 'ma-focused-f2' && f2.vetPreview.hieu.coChoHoiLai, `vết F2: ${f2.vetPreview?.loiRa}`);
+
+      // (2)+(3) Lượt đi trọn qua model giả: câu hỏi / câu trả lời mang chuỗi đánh dấu; vết không được chứa.
+      const DAU_HOI = 'ZZDAUHOIZZ';
+      const DAU_TRA = 'ZZTRALOIZZ';
+      const fetchCu = globalThis.fetch;
+      const khoaCu = process.env.GROQ_API_KEY;
+      process.env.GROQ_API_KEY = 'khoa-gia-test';
+      globalThis.fetch = (async (url: string | URL | Request) => {
+        const u = String(url instanceof Request ? url.url : url);
+        if (!u.includes('api.groq.com')) return new Response('khong co mang', { status: 500 });
+        const text = JSON.stringify({
+          cauChot: `Năm nay công việc nghiêng về thuận ${DAU_TRA}.`,
+          cau: [{ noiDung: `Cung công việc có sao tốt đỡ ${DAU_TRA}.`, maDuKien: ['F001'], phia: 'thuan' }],
+          chieu: 'thuan',
+          goiYTiep: ['Tiền bạc năm nay thế nào?'],
+        });
+        return new Response(
+          JSON.stringify({ choices: [{ message: { content: text }, finish_reason: 'stop' }], usage: { prompt_tokens: 100, completion_tokens: 20, total_tokens: 120 } }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }) as typeof fetch;
+      try {
+        const r = await traLoiFocused(
+          { ...vaoGoc, cauHoi: `Năm nay công việc của tôi ra sao? ${DAU_HOI}`, requestId: 'req-test' },
+          phienBanHienTai,
+          async () => [],
+          bayGio
+        );
+        const v = r.vetPreview;
+        kiem(!!v, 'lượt qua model không có vetPreview');
+        if (v) {
+          const chuoi = JSON.stringify(v);
+          for (const cam of [DAU_HOI, DAU_TRA, 'công việc của tôi', 'sao tốt đỡ']) kiem(!chuoi.includes(cam), `vết chứa "${cam}"`);
+          for (const khoa of ['"claim"', '"doan"', '"chiTiet"', '"nhan"', '"vai"', '"cauHoi"', '"van"', '"noiDung"']) kiem(!chuoi.includes(khoa), `vết có khoá ${khoa}`);
+          for (const k of ['requestId', 'phienBan', 'loiRa', 'hieu', 'hoanCanhSo', 'maDuKien', 'maNguon', 'chunkIds', 'lan', 'msTong', 'msTruyHoi'] as const) {
+            kiem(k in v, `vết thiếu ${k}`);
+          }
+          for (const k of ['chuDe', 'yDinh', 'khuon', 'coDoiTuong', 'thoiGian', 'nguon', 'giaiThichLuotTruoc', 'coChoHoiLai'] as const) kiem(k in v.hieu, `vết.hieu thiếu ${k}`);
+          kiem(v.requestId === 'req-test' && v.lan.length >= 1 && v.lan[0].tokVao === 100 && v.lan[0].tokRa === 20, `vết lần gọi: ${JSON.stringify(v.lan)}`);
+          kiem(v.loiRa === (r.van ? 'ok' : '502'), `vết loiRa ${v.loiRa} lệch văn`);
+          if (r.van) kiem(!!v.ketQua && v.ketQua.soKyTu === r.van.length, 'vết thiếu ketQua khi ok');
+        }
+        // Văn trả lời không đổi vì có vết: cùng đầu vào, vết tắt/bật ra cùng văn.
+        process.env.CELES_FOCUSED_TRACE = '1';
+        const r2 = await traLoiFocused({ ...vaoGoc, cauHoi: `Năm nay công việc của tôi ra sao? ${DAU_HOI}` }, phienBanHienTai, async () => [], bayGio);
+        kiem(r2.van === r.van, 'cờ vết làm đổi văn trả lời');
+      } finally {
+        delete process.env.CELES_FOCUSED_TRACE;
+        globalThis.fetch = fetchCu;
+        if (khoaCu === undefined) delete process.env.GROQ_API_KEY;
+        else process.env.GROQ_API_KEY = khoaCu;
+      }
     }
 
     // Cờ tắt: không lượt nào được mang dấu Focused. Đi tới truy hồi là chạm mạng,

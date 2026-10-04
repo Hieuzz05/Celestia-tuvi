@@ -15,6 +15,7 @@ import { datMienTruTheoNgonNgu } from './ngon-ngu';
 import { suaCauTiengLong } from '../sua-chua';
 import { kiemLuot, kiemMotCau, lamSach, type BanThoFocused, type KetQuaKiem, type NguCanhKiem } from './kiem';
 import { docFocused, dungPromptFocused, type DauVaoPromptFocused } from './prompt';
+import type { LanGoiVet } from './vet';
 
 /** Cùng ngân sách token với đường STANDARD — token suy nghĩ trừ vào đây (tra-loi.ts) */
 const MAX_TOKENS = 6000;
@@ -38,6 +39,8 @@ export interface VetFocused {
   lyDoThayChot?: string;
   soCauSuaTiengLong: number;
   soAmTiet: number;
+  /** Từng lần gọi model: thời gian, token, mã lỗi (vết Preview, spec 5.4) */
+  lan: LanGoiVet[];
   /** Đầu vào prompt của lượt (tham chiếu, không chép) — chỉ cho bộ đo dựng lại chữ model thấy (oracle tên) */
   dauVaoPrompt?: DauVaoPromptFocused;
 }
@@ -97,7 +100,7 @@ export async function chayFocused(v: {
   const goi = v.goi ?? goiVoiFallback;
   const batDau = v.batDau ?? Date.now();
   const hanChot = batDau + HAN_CHOT_LUOT_MS;
-  const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0, dauVaoPrompt: v.prompt };
+  const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0, lan: [], dauVaoPrompt: v.prompt };
   let provider = '';
   let model = '';
   let kiem: KetQuaKiem | null = null;
@@ -109,9 +112,12 @@ export async function chayFocused(v: {
 
     const { system, user } = dungPromptFocused({ ...v.prompt, lyDoThuLai: lan > 0 ? (lyDo ?? undefined) : undefined });
     vet.lanGoi += 1;
+    const t0 = Date.now();
     const kq = await goi({ system, user, maxTokens: MAX_TOKENS }, undefined, Math.max(conLai, 1));
     provider = kq.provider;
     model = kq.model;
+    const lanVet: LanGoiVet = { stt: lan === 0 ? 1 : 2, ms: Date.now() - t0, tokVao: kq.tokensIn, tokRa: kq.tokensOut, loi: [] };
+    vet.lan.push(lanVet);
 
     const ban = docFocused(kq.text);
     if (!ban) {
@@ -125,6 +131,7 @@ export async function chayFocused(v: {
       if (!kiem || !laHong(k.thuLai)) kiem = k;
       if (!lyDo) break;
     }
+    if (lyDo) lanVet.loi.push({ ma: lyDo });
     if (lan === 0) vet.thuLai = lyDo;
   }
 

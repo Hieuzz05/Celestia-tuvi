@@ -15,6 +15,8 @@ import {
 } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { chonNgonNgu, COOKIE_NGON_NGU } from '@/lib/rag/focused/ngon-ngu';
+import type { KetQuaFocused } from '@/lib/rag/focused/tra-loi-focused';
+import { ghiVetPreview } from '@/lib/rag/focused/vet';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
@@ -241,6 +243,9 @@ export async function POST(req: Request) {
      * lần hỏng hiếm ở phía model, không phải lỗi cấu trúc; nhưng đường lùi này vẫn cần có, vì lần
      * hỏng kế tiếp — hiếm tới đâu — không được phép lại là một bong bóng trắng im lặng.
      */
+    // Vết Preview của đường Focused (spec 5.4): chỉ mã và số; Production không bao giờ ghi.
+    ghiVetPreview((kq as KetQuaFocused).vetPreview);
+
     if (!kq.van) {
       await hoanCauHoi(cho.nguon, requestId);
       return NextResponse.json(

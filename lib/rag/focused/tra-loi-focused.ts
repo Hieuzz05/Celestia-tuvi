@@ -39,6 +39,7 @@ import type { NguCanhKiem } from './kiem';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
+import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
 export const PHIEN_BAN_FOCUSED = 'focused-2026.10.10';
@@ -119,8 +120,19 @@ function doiDaiVanSauTet(laSo: DauVaoTraLoi['laSo'], namHieuLuc: number): boolea
   return !!nay && !!sau && nay.tenCung !== sau.tenCung;
 }
 
-/** Kết quả kèm vết của vòng gọi model — lượt trả bằng mã không có vết. */
-export type KetQuaFocused = KetQuaTraLoi & { vetFocused?: VetFocused };
+/**
+ * Kết quả kèm vết của vòng gọi model (`vetFocused`, lượt trả bằng mã không có) và vết
+ * Preview (`vetPreview`, mọi lượt — route ghi nó qua `ghiVetPreview`, spec 5.4).
+ */
+export type KetQuaFocused = KetQuaTraLoi & { vetFocused?: VetFocused; vetPreview?: VetPreview };
+
+/** Mục tiêu thời gian cho vết: chỉ loại và số. */
+function thoiGianVet(tg: BoiCanhThoiGian, kh: Pick<KeHoachTruyVan, 'phamViThoiGian'>): ThoiGianVet {
+  if (tg.thang?.duong) return { loai: 'thang-duong', nam: tg.thang.duong.nam, thang: tg.thang.duong.thang };
+  if (tg.thang) return { loai: 'thang-am', namAm: tg.thang.nam, thangAm: tg.thang.thang, nhuan: tg.thang.nhuan === 'nhuan' };
+  if (kh.phamViThoiGian === 'nam' || kh.phamViThoiGian === 'gan') return { loai: 'nam', nam: tg.namHieuLuc };
+  return { loai: 'khong' };
+}
 
 const phienBanFocused = (base: Record<string, string>, khuon: PhanLoai['khuon']) => ({
   ...base,
@@ -155,7 +167,19 @@ export async function traLoiFocused(
   const phanLoaiSo = phanKhuon({ cauHoi: vao.cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
   const thoiGianSo = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
 
-  const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon'], khongTinhLuot = false): KetQuaTraLoi => {
+  const vetHieu = (kh: KeHoachTruyVan, khuon: PhanLoai['khuon'], coDoiTuong: boolean, tg: BoiCanhThoiGian, nguon: string) => ({
+    chuDe: kh.chuDe,
+    yDinh: kh.yDinh,
+    khuon,
+    coDoiTuong,
+    thoiGian: thoiGianVet(tg, kh),
+    nguon,
+    giaiThichLuotTruoc: false,
+    coChoHoiLai: khuon === 'F2',
+  });
+  const nguonSo = so.keThuaTu ? 'ke-thua' : 'luat';
+
+  const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon'], khongTinhLuot = false): KetQuaFocused => {
     const van = mucAnToan === 'SENSITIVE' ? datMienTruTheoNgonNgu(cm.cau, nn, datMienTruTamLy) : cm.cau;
     const coCauTruc: TraLoiCoCauTruc = { ketLuan: cm.cau, tomTat: cm.cau, yChinh: [], goiYTiep: cm.chip };
     return {
@@ -174,6 +198,19 @@ export async function traLoiFocused(
       phienBan: phienBanFocused(phienBan(), khuon),
       doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
       ...(khongTinhLuot ? { khongTinhLuot: true } : {}),
+      vetPreview: {
+        requestId: vao.requestId ?? '',
+        phienBan: PHIEN_BAN_FOCUSED,
+        loiRa: `ma-${model}`,
+        hieu: vetHieu(so.keHoach, khuon, !!so.doiTuong, thoiGianSo, nguonSo),
+        hoanCanhSo: 0,
+        maDuKien: [],
+        maNguon: [],
+        chunkIds: [],
+        lan: [],
+        msTong: Date.now() - batDau,
+        msTruyHoi: 0,
+      },
     };
   };
 
@@ -342,6 +379,40 @@ export async function traLoiFocused(
   });
   const doTreModel = Date.now() - truocModel;
 
+  const lan = kq.vet.lan;
+  const vetPreview: VetPreview = {
+    requestId: vao.requestId ?? '',
+    phienBan: PHIEN_BAN_FOCUSED,
+    loiRa: kq.van ? 'ok' : '502',
+    hieu: vetHieu(
+      keHoach,
+      phanLoai.khuon,
+      !!doiTuong,
+      thoiGian,
+      hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai'
+    ),
+    hoanCanhSo: 0,
+    maDuKien: goi.duKien.map((d) => d.id),
+    maNguon: goi.bangChung.map((e) => e.id),
+    chunkIds: kqTruyHoi.daChon.map((d) => d.chunkId),
+    lan,
+    ...(lan[0]?.loi.length ? { lyDoVietLai: lan[0].loi.map((l) => l.ma) } : {}),
+    ...(kq.van && kq.kiem
+      ? {
+          ketQua: {
+            soKyTu: kq.van.length,
+            soAmTiet: demAmTiet(kq.van),
+            soClaim: kq.kiem.cau.length,
+            maClaim: [...new Set(kq.kiem.cau.flatMap((c) => c.maDuKien))],
+            soChip: kq.chip.length,
+          },
+        }
+      : {}),
+    msTong: Date.now() - batDau,
+    msTruyHoi: kqTruyHoi.doTreMs,
+    usdUocTinh: usdUocTinh(lan),
+  };
+
   const coCauTruc: TraLoiCoCauTruc | null = kq.kiem
     ? {
         ketLuan: kq.kiem.cauChot || undefined,
@@ -378,5 +449,6 @@ export async function traLoiFocused(
     doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
     // Chỉ cho scripts/eval-focused.ts đọc (thử lại, dự phòng, chiều thô). Route chọn trường, không gửi khoá này.
     vetFocused: kq.vet,
+    vetPreview,
   };
 }
