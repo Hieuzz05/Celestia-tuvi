@@ -9,7 +9,7 @@
  *   - Hành vi riêng của Focused: người được hỏi, tháng nhuận, nghiêng về.
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { lapLaSo, type LaSo } from '../lib/tuvi/ansao';
@@ -1432,6 +1432,23 @@ async function kiemNoi() {
   } finally {
     if (cu === undefined) delete process.env.CELES_FOCUSED_CHAT;
     else process.env.CELES_FOCUSED_CHAT = cu;
+  }
+}
+
+/* ------------------------------------------- bộ mù không lọt vào lib (spec 7.3) */
+
+{
+  // Bộ mù và Behavior Contract chỉ đo, không được thành khuôn prompt: không tệp lib/ nào import
+  // chúng, và không câu hỏi nào của bộ mù xuất hiện nguyên văn trong lib/.
+  const tep = (readdirSync('lib', { recursive: true }) as string[]).filter((f) => /\.tsx?$/.test(f)).map((f) => join('lib', f));
+  const mu = readFileSync('scripts/eval-mu-focused.ts', 'utf-8');
+  const khoiCau = mu.slice(mu.indexOf('const CAU_MU'), mu.indexOf('];', mu.indexOf('const CAU_MU')));
+  const cauMu = [...khoiCau.matchAll(/'([^']{12,})'/g)].map((m) => m[1]);
+  kiem(cauMu.length === 12, `bộ mù phải có 12 câu, đọc được ${cauMu.length}`);
+  for (const f of tep) {
+    const noi = readFileSync(f, 'utf-8');
+    kiem(!/eval-mu-focused|hop-dong-focused/.test(noi), `${f} import bộ đo (eval-mu-focused / hop-dong-focused)`);
+    for (const c of cauMu) kiem(!noi.includes(c), `${f} chứa câu hỏi của bộ mù: "${c.slice(0, 30)}…"`);
   }
 }
 
