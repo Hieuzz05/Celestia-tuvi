@@ -80,7 +80,23 @@ const CUNG_NHA = new Set(['Điền Trạch', 'Mệnh']);
 type DauVaoLap = Omit<DauVaoKeThua, 'laTiepTuChip' | 'lichSu'>;
 
 /** `lapKeHoach` + hai chỉnh chủ đề của Focused. Thuần, không gọi model. */
+/**
+ * Năm gọi bằng tiếng Anh ("in 2025", "for 2027"): planner chỉ đọc tiếng Việt nên bỏ
+ * qua, mốc rơi về năm đang xem — câu "How was my health in 2025?" trên lá số sinh
+ * 2026 lọt chặn trước ngày sinh rồi hết câu có căn cứ (502). Vá ở lớp Focused, không
+ * đổi bảng planner (PHIEN_BAN_PLANNER giữ nguyên, STANDARD không đổi).
+ */
+const NAM_EN = /\b(?:in|for|during|of|by|year)\s+((?:19|20)\d{2})\b|^(?:will|was|is|how)\b[^?]*?\b((?:19|20)\d{2})\b/i;
+
 export function lapKeHoachChinh(vao: DauVaoLap): KeHoachTruyVan {
+  const ke = lapKeHoachChinhVi(vao);
+  if (ke.namMucTieu !== undefined || ke.phamViThoiGian === 'giai-doan') return ke;
+  const m = NAM_EN.exec(vao.cauHoi);
+  if (!m) return ke;
+  return { ...ke, namMucTieu: Number(m[1] ?? m[2]), phamViThoiGian: ke.phamViThoiGian === 'thang' ? 'thang' : 'nam' };
+}
+
+function lapKeHoachChinhVi(vao: DauVaoLap): KeHoachTruyVan {
   const p = { cauHoi: vao.cauHoi, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem };
   const goc = lapKeHoach(p);
   const cung = goc.thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);

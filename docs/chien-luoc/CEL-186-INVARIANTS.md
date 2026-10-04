@@ -42,7 +42,7 @@ Phiên bản lúc khoá: `focused-2026.10.9`, planner `2026.10.4` (không đổi
 
 | ID | Luật | Lớp | Test |
 |---|---|---|---|
-| AGE-01 | Mốc NGƯỜI HỎI GỌI TÊN kết thúc trước ngày sinh → dừng bằng mã trước truy hồi, không model, **hoàn lượt**. Tháng chứa ngày sinh vẫn đọc. Không gọi mốc → không xét (kể cả lá số sinh sau hôm nay: "tính cách của bé" vẫn đọc) | `gioi-han.ts` `chanTruocSinh`, `tra-loi-focused.ts` `gioiHan`, route `khongTinhLuot` | `AGE-01` bảng 8 ca + 2 ca lá số 1990 + EN + đầu-cuối |
+| AGE-01 | Mốc NGƯỜI HỎI GỌI TÊN kết thúc trước ngày sinh → dừng bằng mã trước truy hồi, không model, **hoàn lượt**. Tháng chứa ngày sinh vẫn đọc. Không gọi mốc → không xét (kể cả lá số sinh sau hôm nay: "tính cách của bé" vẫn đọc). Năm gọi bằng tiếng Anh ("in 2025", "Will 2027…") được lớp Focused đọc vào `namMucTieu` (planner chỉ hiểu tiếng Việt; UAT 04/10 câu EN trước sinh lọt rồi 502) | `gioi-han.ts` `chanTruocSinh`, `tra-loi-focused.ts` `gioiHan`, route `khongTinhLuot` | `AGE-01` bảng 8 ca + 2 ca lá số 1990 + EN + `AGE-01 năm EN` 4 ca + đầu-cuối "How was my health in 2025?" |
 | AGE-02 | Tuổi âm < 15 hỏi việc làm / hôn nhân / người yêu CỦA CHÍNH người có lá số (VI và EN) → câu mã, hoàn lượt. Không chặn: câu cả đời (`giai-doan`), câu thiên hướng nghề, câu về người khác trong nhà ("bố tôi công việc", "bố mẹ tôi ly hôn"), học hành, tính cách, sức khoẻ. Lượt chặn thứ hai (sau model phân loại) chỉ xét từ khoá + vai, không xét chủ đề — cùng câu không lúc chặn lúc không | `chanChuaHopTuoi` | `AGE-02` bảng 9 ca × 2 lá số + bảng lá số 2016 (8 ca) + EN "work out" + lượt hai + đầu-cuối |
 | AGE-03 | Cùng lá số, năm đủ tuổi thì đọc bình thường (luật tính theo năm đang đọc, không theo hôm nay) | `tuoiAmTai(laSo, tg.namHieuLuc)` | `AGE-03 năm 2045` |
 

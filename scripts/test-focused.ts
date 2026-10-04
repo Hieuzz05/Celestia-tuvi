@@ -1015,6 +1015,16 @@ for (const ca of CA_DOI_TUONG) {
     kiem(!!c === chan, `AGE-01 "${cauHoi}" chặn=${!!c}, cần ${chan}`);
     if (c) kiem(!c.goiModel && c.chip.length === 1 && c.cau.includes('22/5/2026') && c.cau.includes('trước ngày sinh'), `AGE-01 câu sai: ${c.cau}`);
   }
+  // AGE-01 EN: năm tiếng Anh vào namMucTieu ở lớp Focused; câu không gọi năm giữ nguyên.
+  for (const [cauHoi, nam] of [
+    ['How was my health in 2025?', 2025],
+    ['Will 2027 be good for my career?', 2027],
+    ['How is my career this year?', undefined],
+    ['Năm 2025 sức khỏe của tôi thế nào?', 2025],
+  ] as const) {
+    const kh = lapKeHoachChinh({ cauHoi, namXem: 2026, thangXem: 8 } as never);
+    kiem(kh.namMucTieu === nam, `AGE-01 năm EN "${cauHoi}" ra ${kh.namMucTieu}, cần ${nam}`);
+  }
   // AGE-01 × lá số người lớn: không chặn mốc sau sinh.
   kiem(!chanTruocSinh(lon, keHoachVa(lon, 'Tháng 6 năm 2025 công việc của tôi thế nào?').tg, keHoachVa(lon, 'Tháng 6 năm 2025 công việc của tôi thế nào?').kh, 'vi'), 'AGE-01 chặn nhầm lá số 1990');
   kiem(!!chanTruocSinh(lon, keHoachVa(lon, 'Năm 1985 tôi thế nào?', 2026).tg, keHoachVa(lon, 'Năm 1985 tôi thế nào?', 2026).kh, 'vi'), 'AGE-01 năm 1985 trên lá số 1990 không chặn');
@@ -1207,6 +1217,8 @@ async function kiemNoi() {
         [{ ...vaoGoc, laSo: tre, cauHoi: 'Năm nay công việc của tôi thế nào?' }, 'focused-chua-hop-tuoi'],
         [{ ...vaoGoc, laSo: tre, cauHoi: 'Năm nay tôi có người yêu không?' }, 'focused-chua-hop-tuoi'],
         [{ ...vaoGoc, laSo: tre, cauHoi: 'This year, how is my work going?', ngonNgu: 'en' as const }, 'focused-chua-hop-tuoi'],
+        // UAT U18: năm gọi bằng tiếng Anh — planner chỉ đọc tiếng Việt, lớp Focused tự đọc năm.
+        [{ ...vaoGoc, laSo: tre, cauHoi: 'How was my health in 2025?', ngonNgu: 'en' as const }, 'focused-truoc-sinh'],
         [{ ...vaoGoc, cauHoi: 'Chồng tôi năm nay thế nào?' }, 'focused-lech-gioi'],
       ] as const) {
         const r = await traLoiFocused(vao, phienBanHienTai, async () => [], bayGio);
