@@ -17,7 +17,7 @@
  * hai lần ĐỌC sổ kết luận mà đường STANDARD cũng đọc.
  */
 
-import { bayGioAm, canChiCuaNam, type ThoiDiemAm } from '@/lib/tuvi/bay-gio';
+import { bayGioAm, type ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import { cungDaiVan } from '@/lib/tuvi/ansao';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { datMienTruTamLy, doAnToan } from '../an-toan';
@@ -29,13 +29,13 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
-import { CAU_CUOI_NAM, cauHaiVe, cauNhuanChuaTach, cauThangDaQua, cauThangDuong, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
+import { chipHaiVe, cauNhuanChuaTach, cauThangDuong, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { chanChuaHopTuoi, chanTruocSinh } from './gioi-han';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
-import type { NguCanhKiem } from './kiem';
+import { tinhMocHopLe, type NguCanhKiem } from './kiem';
 import type { BanNhap } from './hop-dong';
 import { nhomCuaHuong, type NhomHuong } from './chot-huong';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
@@ -44,7 +44,7 @@ import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.11';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.12';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -63,31 +63,6 @@ export function tuoiTrongGoi(goi: Pick<GoiBangChung, 'duKien'>): [number, number
     }
   }
   return ra;
-}
-
-/** Tiền tố thời gian cho câu chốt dự phòng — rỗng khi câu không có mốc. */
-export function mocChoChot(
-  tg: BoiCanhThoiGian,
-  keHoach: Pick<KeHoachTruyVan, 'phamViThoiGian'>,
-  bayGio: ThoiDiemAm,
-  nn: NgonNgu = 'vi'
-): string | undefined {
-  const en = nn === 'en';
-  // Tháng dương: câu mở đầu do mã viết đã nêu tháng, năm — chốt không lặp lại.
-  if (tg.thang?.duong) return en ? 'That month' : 'Tháng đó';
-  if (tg.thang) {
-    const nhuan = tg.thang.nhuan === 'nhuan';
-    return en
-      ? `In ${nhuan ? 'leap ' : ''}lunar month ${tg.thang.thang}`
-      : `Tháng ${tg.thang.thang} âm${nhuan ? ' nhuận' : ''}`;
-  }
-  if (tg.cuoiNam) return en ? 'From now until the end of this lunar year' : `Từ giờ đến hết năm ${canChiCuaNam(bayGio.nam)}`;
-  const pv = keHoach.phamViThoiGian;
-  if (pv === 'nam' || pv === 'gan') {
-    if (tg.namHieuLuc === bayGio.nam) return en ? 'This year' : 'Năm nay';
-    return en ? `In ${tg.namHieuLuc}` : `Năm ${tg.namHieuLuc}`;
-  }
-  return undefined;
 }
 
 /**
@@ -319,23 +294,23 @@ export async function traLoiFocused(
     cauTraCuu: keHoach.yDinh === 'tra-cuu' ? vao.cauHoi : undefined,
   });
 
-  // Câu mã đứng đầu (E, N2, N4) và chip mã.
+  // Câu mã đứng đầu và chip mã. Spec v2 bỏ câu E / N2 / N4 do mã viết: model tự
+  // nói giới hạn của quyết định, tháng đã qua, quãng cuối năm (prompt.ts).
   const cauMa: string[] = [];
-  let chipMa: string[] | undefined;
-  if (phanLoai.khuon === 'E' && phanLoai.haiVe) {
-    const e = cauHaiVe(phanLoai.haiVe, nn);
-    cauMa.push(e.cau);
-    chipMa = e.chip;
-  }
-  // Tháng dương: nói rõ đang đọc tháng âm nào (gộp luôn ý "đã qua"). Tháng âm nói rõ: câu N2 đã duyệt.
+  const chipMa = phanLoai.khuon === 'E' && phanLoai.haiVe ? chipHaiVe(phanLoai.haiVe, nn) : undefined;
+  // Tháng dương: nói rõ đang đọc tháng âm nào (gộp luôn ý "đã qua").
   if (thoiGian.thang?.duong) cauMa.push(cauThangDuong(thoiGian.thang, nn));
-  else if (thoiGian.thang?.trangThai === 'da-qua') cauMa.push(cauThangDaQua(thoiGian.thang, nn));
-  if (thoiGian.cuoiNam) cauMa.push(CAU_CUOI_NAM[nn]);
-  // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu kết luận đã duyệt
-  // (brief §11) đứng đầu và thay câu chốt model — model không được xác nhận tên.
+  // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu đã duyệt (brief §11) đứng
+  // đầu. Giữ là câu mã vì nó chỉ nói GIỚI HẠN ("lá số không xác nhận được tên"), không kết luận.
   const ngoaiTam = nhanDangNgoaiTam(vao.cauHoi);
   if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam, nn));
 
+  const mocHopLe = tinhMocHopLe({
+    cauHoi: vao.cauHoi,
+    thoiGian,
+    namSinh: [vao.laSo.thongTin.nam, vao.laSo.thongTin.amLich.nam],
+    vanGoi: [...goi.duKien.map((d) => d.noiDung), ...goi.bangChung.map((e) => e.noiDung)],
+  });
   const ctx: NguCanhKiem = {
     cauHoi: vao.cauHoi,
     phanLoai,
@@ -349,6 +324,8 @@ export async function traLoiFocused(
     nghieng,
     thoiGian,
     tuoiHopLe: tuoiTrongGoi(goi),
+    mocHopLeAnswer: mocHopLe.answer,
+    mocHopLeChip: mocHopLe.chip,
     cauMa,
     chipMa,
     // D đọc mức năm: lối đi tiếp là năm sau, không phải một tháng.

@@ -2,42 +2,38 @@
  * GUARD — đường Focused (CEL-186 vé B, mục 6).
  *
  * Hàm thuần, không gọi model, KHÔNG sửa văn model (Answer Contract v2, spec 5).
- * `kiemCung` trả danh sách lỗi cứng; có lỗi thì `chay.ts` viết lại TOÀN bài một
- * lần, vẫn lỗi thì 502 + hoàn lượt. Không cắt câu, không thay câu.
+ * `kiemCung` trả danh sách lỗi cứng theo bảng 5.1; có lỗi thì `chay.ts` viết lại
+ * TOÀN bài một lần, vẫn lỗi thì 502 + hoàn lượt. Không cắt câu, không thay câu.
+ * Luật văn phong (tên cung, giọng máy, khuyên chung, "sẽ" ở tháng đã qua…) là
+ * EVAL: đo ở bộ chấm, không chặn ở đây.
  *
- * `kiemMotCau` (luật từng câu cũ) còn ở đây cho tới khi `kiemCung` phủ đủ bảng 5.1.
  * `chonChip` lọc chip (không đụng `answer`).
  */
 
-import { CUM_AI, RO_RI_RAG } from '../ngon-ngu';
-import { TIENG_LONG_MOT_CAU } from '../sua-chua';
+import { lunarToSolar } from '@/lib/tuvi/lunar';
+import { RO_RI_RAG } from '../ngon-ngu';
+import { tachManh } from '../sua-chua';
 import { boDau, tenBiaChan } from '../thuc-the';
 import type { NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import type { ChuDe } from '../planner';
+import { nhomCuaHuong, soChieu } from './chot-huong';
 import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
 import type { BanNhap, LoiCung } from './hop-dong';
 import { laChipNgoaiTam } from './ngoai-tam';
 import { laHoiKhiNao, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
-import { khoaTen, tenCungTrongCau, tenNgoaiTap } from './quet-ten';
+import { tenNgoaiTap } from './quet-ten';
+import { ngayCuoiThangAm } from './thang-am';
 
 /* ------------------------------------------------------------------ kiểu */
 
-export type LyDoBo =
-  | 'ten-ngoai-goi'
-  | 'ten-bia'
-  | 'luu-hoa'
-  | 'ten-cung'
-  | 'giong-may'
-  | 'tieng-long'
-  | 'phan-quyet'
-  | 'khuyen'
-  | 'nghieng-ve'
-  | 'moc-la'
-  | 'tuong-lai'
-  | 'rong';
+/** Năm, tháng được phép nêu (spec 5.1 `moc-la`, delta #6) */
+export interface MocHopLe {
+  nam: ReadonlySet<number>;
+  thang: ReadonlySet<number>;
+}
 
 export interface NguCanhKiem {
   cauHoi: string;
@@ -56,9 +52,13 @@ export interface NguCanhKiem {
   thoiGian: BoiCanhThoiGian;
   /** Khoảng tuổi đại vận có trong gói, `[từ, đến]` */
   tuoiHopLe: [number, number][];
-  /** Câu do mã viết đứng đầu lượt (E, N2, N4) — không kiểm */
+  /** Mốc được nêu trong `answer` — KHÔNG có năm sau (delta #6) */
+  mocHopLeAnswer: MocHopLe;
+  /** Mốc được nêu trong chip = answer ∪ {năm sau, tháng kế} */
+  mocHopLeChip: MocHopLe;
+  /** Câu mã đứng đầu lượt (tháng dương, danh tính bạn đời) — không kiểm */
   cauMa: string[];
-  /** Chip do mã đặt (E, N4). Có thì thay chip model, trừ N4 trộn thêm. */
+  /** Chip do mã đặt (E). Có thì thay chip model. */
   chipMa?: string[];
   /** N4: chip "Sang năm <Can Chi>" đứng đầu, trộn chip model phía sau */
   chipCuoiNam?: (goiY: string[]) => string[];
@@ -86,29 +86,40 @@ function cumTu(s: string): Set<string> {
   return ra;
 }
 
+/**
+ * Câu của `answer` — tách bằng hàm của `sua-chua.ts` (spec 5.2). Quét tên theo
+ * câu thì chữ hoa đầu câu thứ hai ("Suy…") không bị coi là tên riêng.
+ */
+const tachCau = (van: string) => tachManh(van).filter((m) => m.loai === 'NOI_DUNG').map((m) => m.text);
+
+/** ≤60 ký tự quanh vị trí `i` — chỉ đưa vào prompt viết lại. */
+function doanQuanh(s: string, i: number): string {
+  const tu = Math.max(0, i - 30);
+  return s.slice(tu, tu + 60);
+}
+
 /* ----------------------------------------------------------- bảng chữ */
 
-/** Chữ chuyên môn của sách — cùng danh sách `TU_CHUYEN_MON` của `ngon-ngu.ts` (ở đó là cảnh báo, ở đây là chặn). */
-const TU_CHUYEN_MON = [
-  'mieu vien', 'toa thu', 'hoi chieu', 'cung chieu', 'xung chieu', 'tam phuong tu chinh', 'nhi hop',
-  'ban tien cach', 'phu quy cach', 'thu menh',
-];
-
-/** Giọng báo cáo — `KHOI_GIONG_CELES` cấm, ở đây chặn. */
+/** Giọng báo cáo — thuộc `LO_MA` (spec 5.1). */
 const GIONG_BAO_CAO = [
   'dua tren cac du kien', 'yeu to nay cho thay', 'co the thay rang', 'diem can nhin la', 'tom lai',
   'du kien la so', 'theo la so cua ban', 'ma f',
 ];
 
-const BO_GIONG_MAY = [...CUM_AI, ...RO_RI_RAG, ...TU_CHUYEN_MON, ...GIONG_BAO_CAO];
-
-/** Luật 3. "Không chắc chắn", "chưa chắc chắn" là rào đón, không phải phán. */
+/** Cả tập phán quyết — `CHAC_CHAN_GIA` chỉ chặn tập con, phần còn lại do bộ chấm đo (EVAL). */
 export const PHAN_QUYET = re(
   '(?<!(?:không|chưa) )chắc chắn|nhất định|chắc luôn|sẽ không|không bao giờ|trăm phần trăm|không thể nào|sẽ xảy ra|không hợp nhau|không hợp với nhau'
 );
+/**
+ * `CHAC_CHAN_GIA` (delta #3): tập con TỐI THIỂU của `PHAN_QUYET`. "Không / chưa
+ * chắc chắn" và "không thể nào biết / nói / đoán / khẳng định" là rào đón.
+ */
+const CHAC_CHAN_GIA = re(
+  '(?<!(?:không|chưa) )chắc chắn|nhất định|trăm phần trăm|sẽ xảy ra|không thể nào(?! (?:biết|nói|đoán|khẳng định))'
+);
 export const PHAN_TRAM = /100\s*%/u;
 
-/** Luật 4. "nên" đứng một mình thường là liên từ ("…, nên chuyện chậm"), nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
+/** Lời khuyên chung — EVAL. "nên" đứng một mình thường là liên từ, nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
 export const KHUYEN = re(
   [
     '(?:bạn|mình|anh|chị|em|cậu) (?:nên|đừng|hãy|không nên|chưa nên)',
@@ -125,65 +136,86 @@ export const KHUYEN = re(
 );
 export const KHUYEN_DAU_CAU = /^\s*(?:Nên|Đừng|Hãy)(?![\p{L}\p{M}])/u;
 
-/** Luật 5 */
-const NGHIENG_VE = re('nghiêng về');
-
-/** Luật 7 */
-const TUONG_LAI = re('sẽ|sắp|tới đây|sắp tới|trong thời gian tới');
+/** `CHON_HO` (khuôn C, E): tập con của `KHUYEN` — chỉ chỗ chọn hộ, không bắt "hãy", "đừng". */
+const CHON_HO = re('(?:bạn|mình|anh|chị|em|cậu) (?:nên|không nên|chưa nên)|thì nên|tốt nhất là');
+const CHON_HO_DAU_CAU = /^\s*Nên(?![\p{L}\p{M}])/u;
 
 const NAM = /(?<!\d)(19\d{2}|20\d{2})(?!\d)/gu;
 const THANG = /(?<![\p{L}\p{M}])th[aá]ng\s*(1[0-2]|[1-9])(?!\d)/giu;
 const TUOI = /(?<!\d)(\d{1,2})\s*(?:[–-]\s*(\d{1,2})\s*)?tuổi|tuổi\s*(\d{1,2})(?:\s*[–-]\s*(\d{1,2}))?/giu;
 
-/* ------------------------------------------------------- luật trên một câu */
+/** Mốc nhỏ hơn một năm nói bằng chữ — số tháng đã có `THANG` bắt. */
+export const MOC_NHO_HON_NAM =
+  /(?<![\p{L}\p{M}])(?:cuối năm|đầu năm|giữa năm|nửa (?:đầu|cuối|sau) năm|(?:sau|trước|quanh|dịp) Tết|quý (?:một|hai|ba|bốn|I{1,3}|IV|[1-4])|mùa (?:xuân|hạ|hè|thu|đông)|tháng (?:giêng|chạp|tới|sau|sắp tới)|vài tháng tới|mấy tháng tới)(?![\p{L}\p{M}])/iu;
+
+/** Mã máy lộ ra văn: F###/E### và nhãn cửa sổ W1–W3 (spec 5.1 LO_MA). */
+const MA_MAY = /\b[FE]\d{3}\b|\bW[1-3]\b/u;
+
+/* ------------------------------------------------------------- mốc hợp lệ */
 
 /**
- * Luật 1–7 trên MỘT câu. `laCauChot` bật thêm luật tên của câu chốt (giao với
- * `dauMoc`). Thứ tự lý do không mang nghĩa ưu tiên.
+ * Hai tập mốc của lượt (spec 5.1 `moc-la`, delta #6). Tính một lần khi dựng ngữ cảnh.
+ *
+ * Answer: năm hiệu lực, năm người dùng tự nêu, năm sinh, năm 4 chữ số trong văn
+ * F###/E### của gói, năm / tháng dương hai đầu cửa sổ tháng; tháng người hỏi,
+ * tháng âm đang đọc. KHÔNG có năm sau: hỏi "năm nay" mà answer nói "sang 2027"
+ * là lệch câu hỏi.
+ * Chip: answer ∪ {năm hiệu lực + 1, tháng dương kế của tháng đang hỏi (quay năm)}.
  */
-export function kiemMotCau(noiDung: string, ctx: NguCanhKiem, laCauChot = false): LyDoBo[] {
-  const ly = new Set<LyDoBo>();
-  const s = noiDung.normalize('NFC');
-  if (!s.trim()) return ['rong'];
+export function tinhMocHopLe(v: {
+  cauHoi: string;
+  thoiGian: BoiCanhThoiGian;
+  namSinh: number[];
+  vanGoi: string[];
+}): { answer: MocHopLe; chip: MocHopLe } {
+  const nam = new Set<number>([v.thoiGian.namHieuLuc, ...v.namSinh]);
+  const thang = new Set<number>();
+  for (const m of v.cauHoi.matchAll(NAM)) nam.add(Number(m[1]));
+  for (const m of v.cauHoi.matchAll(THANG)) thang.add(Number(m[1]));
+  for (const s of v.vanGoi) for (const m of s.matchAll(NAM)) nam.add(Number(m[1]));
 
-  // 1. Tên
-  const ngoai = tenNgoaiTap(s, ctx.tapTen, ctx.phucDucLaSao);
-  if (ngoai.some((t) => t.startsWith('Lưu Hóa'))) ly.add('luu-hoa');
-  if (ngoai.some((t) => !t.startsWith('Lưu Hóa'))) ly.add('ten-ngoai-goi');
-  if (tenBiaChan(s).length) ly.add('ten-bia');
-  const { khuon } = ctx.phanLoai;
-  if (laCauChot && ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'D')) {
-    const tapChot = new Set(
-      ctx.nghieng.dauMoc.map((d) => khoaTen(d.ten)).filter((k) => ctx.tapTen.has(k))
-    );
-    if (tenNgoaiTap(s, tapChot, ctx.phucDucLaSao).length) ly.add('ten-ngoai-goi');
+  const t = v.thoiGian.thang;
+  if (t) {
+    thang.add(t.thang);
+    if (t.duong) {
+      nam.add(t.duong.nam);
+      thang.add(t.duong.thang);
+    }
+    const dau = lunarToSolar(1, t.thang, t.nam, t.nhuan === 'nhuan');
+    const cuoi = ngayCuoiThangAm(t.nam, t.thang, t.nhuan === 'nhuan');
+    if (dau) {
+      nam.add(dau.year);
+      thang.add(dau.month);
+    }
+    if (cuoi) {
+      nam.add(cuoi.getUTCFullYear());
+      thang.add(cuoi.getUTCMonth() + 1);
+    }
   }
 
-  // 2. Mặt trước sạch
-  if (tenCungTrongCau(s, ctx.phucDucLaSao).length) ly.add('ten-cung');
-  const cum = cumTu(s);
-  if (BO_GIONG_MAY.some((c) => cum.has(c))) ly.add('giong-may');
-  // "dữ kiện" là chữ nội bộ — so có dấu, vì bỏ dấu thì trùng "dự kiến" (celes-domain 04/10).
-  if (/(?<![\p{L}\p{M}])dữ kiện(?![\p{L}\p{M}])/iu.test(s)) ly.add('giong-may');
-  if (TIENG_LONG_MOT_CAU.test(s)) ly.add('tieng-long');
+  const namChip = new Set(nam).add(v.thoiGian.namHieuLuc + 1);
+  const thangChip = new Set(thang);
+  if (t) {
+    const hoi = t.duong ?? { nam: t.nam, thang: t.thang };
+    if (hoi.thang === 12) {
+      thangChip.add(1);
+      namChip.add(hoi.nam + 1);
+    } else thangChip.add(hoi.thang + 1);
+  }
+  return { answer: { nam, thang }, chip: { nam: namChip, thang: thangChip } };
+}
 
-  // 3. Phán quyết
-  if (PHAN_QUYET.test(s) || PHAN_TRAM.test(s)) ly.add('phan-quyet');
-
-  // 4. Khuyên, chọn hộ
-  if (KHUYEN.test(s) || KHUYEN_DAU_CAU.test(s)) ly.add('khuyen');
-  if (ctx.phanLoai.haiVe && chonMotVe(s, ctx.phanLoai.haiVe)) ly.add('khuyen');
-
-  // 5. G (hoặc không có hướng engine) thì không được nói "nghiêng về"
-  if ((khuon === 'G' || !ctx.nghieng) && NGHIENG_VE.test(s)) ly.add('nghieng-ve');
-
-  // 6. Không mốc lạ. "Khi nào" (D) chỉ đọc mức năm: mốc nhỏ hơn năm bằng chữ cũng là mốc lạ.
-  if (mocLa(s, ctx) || (khuon === 'D' && MOC_NHO_HON_NAM.test(s))) ly.add('moc-la');
-
-  // 7. Tháng đã qua thì không nói như dự báo
-  if (ctx.thoiGian.thang?.trangThai === 'da-qua' && TUONG_LAI.test(s)) ly.add('tuong-lai');
-
-  return [...ly];
+/** Mốc đầu tiên không thuộc tập — null khi sạch. */
+function mocNgoaiTap(s: string, tap: MocHopLe, tuoi?: [number, number][]): RegExpMatchArray | null {
+  for (const m of s.matchAll(NAM)) if (!tap.nam.has(Number(m[1]))) return m;
+  for (const m of s.matchAll(THANG)) if (!tap.thang.has(Number(m[1]))) return m;
+  if (tuoi) {
+    for (const m of s.matchAll(TUOI)) {
+      const so = [m[1], m[2], m[3], m[4]].filter(Boolean).map(Number);
+      if (so.some((x) => !tuoi.some(([a, b]) => x >= a && x <= b))) return m;
+    }
+  }
+  return null;
 }
 
 /** E1: câu chọn hộ một vế ("ở lại hợp hơn", "chọn nhảy việc"). */
@@ -195,54 +227,97 @@ function chonMotVe(s: string, haiVe: [string, string]): boolean {
   });
 }
 
-/** Mốc nhỏ hơn một năm nói bằng chữ — số tháng đã có `THANG` bắt. */
-export const MOC_NHO_HON_NAM =
-  /(?<![\p{L}\p{M}])(?:cuối năm|đầu năm|giữa năm|nửa (?:đầu|cuối|sau) năm|(?:sau|trước|quanh|dịp) Tết|quý (?:một|hai|ba|bốn|I{1,3}|IV|[1-4])|mùa (?:xuân|hạ|hè|thu|đông)|tháng (?:giêng|chạp|tới|sau|sắp tới)|vài tháng tới|mấy tháng tới)(?![\p{L}\p{M}])/iu;
-
-function mocLa(s: string, ctx: NguCanhKiem): boolean {
-  for (const m of s.matchAll(NAM)) if (Number(m[1]) !== ctx.thoiGian.namHieuLuc) return true;
-  const thang = ctx.thoiGian.thang?.thang;
-  for (const m of s.matchAll(THANG)) if (Number(m[1]) !== thang) return true;
-  for (const m of s.matchAll(TUOI)) {
-    const so = [m[1], m[2], m[3], m[4]].filter(Boolean).map(Number);
-    if (so.some((x) => !ctx.tuoiHopLe.some(([a, b]) => x >= a && x <= b))) return true;
-  }
-  return false;
-}
-
 /* ------------------------------------------------------------- cả lượt */
 
-/** Mã máy lộ ra văn: F###/E### và nhãn cửa sổ W1–W3 (spec 5.1 LO_MA). */
-const MA_MAY = /\b[FE]\d{3}\b|\bW[1-3]\b/u;
-
-/** ≤60 ký tự quanh vị trí `i` — chỉ đưa vào prompt viết lại. */
-function doanQuanh(s: string, i: number): string {
-  const tu = Math.max(0, i - 30);
-  return s.slice(tu, tu + 60);
-}
-
 /**
- * Validator cứng (spec 5.1). Thuần, không sửa `ban`. Commit D chạy tập tối thiểu:
- * SCHEMA, KHONG_CAN_CU, MA_KHONG_HOP_LE, LO_MA.
+ * Validator cứng (spec 5.1). Thuần, không sửa `ban`. Mỗi mã lỗi báo tối đa một lần.
+ * Quét tên trên từng câu của `answer` và trên từng `claims[].claim` (spec 5.2).
  */
-export function kiemCung(ban: BanNhap | null, ctx: Pick<NguCanhKiem, 'maHopLe' | 'maNguonHopLe'>): LoiCung[] {
+export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
   if (!ban) return [{ ma: 'SCHEMA', chiTiet: 'bản trả về không phải một object JSON đúng schema' }];
   const loi: LoiCung[] = [];
-  if (!ban.answer) loi.push({ ma: 'SCHEMA', chiTiet: 'thiếu "answer" hoặc "answer" rỗng' });
+  const co = new Set<LoiCung['ma']>();
+  const bao = (l: LoiCung) => {
+    if (co.has(l.ma)) return;
+    co.add(l.ma);
+    loi.push(l);
+  };
+  const cau = tachCau(ban.answer);
 
-  const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m);
-  const sai = [...new Set(ban.claims.flatMap((c) => c.evidenceIds.filter((m) => !hopLe(m))))];
-  if (sai.length) loi.push({ ma: 'MA_KHONG_HOP_LE', chiTiet: `mã ${sai.join(', ')} không có trong DỮ KIỆN hay NGUỒN THAM CHIẾU` });
-  if (!ban.outOfScope && !ban.claims.some((c) => c.evidenceIds.some(hopLe))) {
-    loi.push({ ma: 'KHONG_CAN_CU', chiTiet: '"claims" không có kết luận nào dẫn mã F### / E### có trong gói' });
+  // SCHEMA
+  if (!ban.answer) bao({ ma: 'SCHEMA', chiTiet: 'thiếu "answer" hoặc "answer" rỗng' });
+  if (ban.outOfScope && (ban.claims.length || cau.length > 1)) {
+    bao({ ma: 'SCHEMA', chiTiet: '"outOfScope" thì "answer" đúng MỘT câu và "claims" rỗng' });
   }
 
+  // Căn cứ
+  const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m);
+  const sai = [...new Set(ban.claims.flatMap((c) => c.evidenceIds.filter((m) => !hopLe(m))))];
+  if (sai.length) bao({ ma: 'MA_KHONG_HOP_LE', chiTiet: `mã ${sai.join(', ')} không có trong DỮ KIỆN hay NGUỒN THAM CHIẾU` });
+  if (!ban.outOfScope && !ban.claims.some((c) => c.evidenceIds.some(hopLe))) {
+    bao({ ma: 'KHONG_CAN_CU', chiTiet: '"claims" không có kết luận nào dẫn mã F### / E### có trong gói' });
+  }
+
+  // Tên: từng câu answer, từng claim
+  for (const s of [...cau, ...ban.claims.map((c) => c.claim)]) {
+    const ngoai = tenNgoaiTap(s, ctx.tapTen, ctx.phucDucLaSao);
+    const luu = ngoai.filter((t) => t.startsWith('Lưu Hóa'));
+    const khac = ngoai.filter((t) => !t.startsWith('Lưu Hóa'));
+    if (luu.length) bao({ ma: 'LUU_HOA', chiTiet: `"${luu[0]}" không có trong DỮ KIỆN — lá số không an lưu tứ hoá` });
+    if (khac.length) bao({ ma: 'TEN_NGOAI_GOI', chiTiet: `tên ${khac.map((t) => `"${t}"`).join(', ')} không có trong DỮ KIỆN` });
+    const bia = tenBiaChan(s);
+    if (bia.length) bao({ ma: 'TEN_BIA', chiTiet: `tên ${bia.map((t) => `"${t}"`).join(', ')} không phải sao có thật` });
+  }
+
+  // Mốc
+  const moc = mocNgoaiTap(ban.answer, ctx.mocHopLeAnswer, ctx.tuoiHopLe);
+  if (moc) {
+    bao({ ma: 'MOC_BIA', chiTiet: `mốc "${moc[0]}" không có trong khối MỐC THỜI GIAN hay dữ kiện`, doan: doanQuanh(ban.answer, moc.index ?? 0) });
+  }
+  const khuon = ctx.phanLoai.khuon;
+  if (khuon === 'D') {
+    const m = MOC_NHO_HON_NAM.exec(ban.answer);
+    if (m) bao({ ma: 'MOC_NHO_HON_NAM', chiTiet: `"${m[0]}" nhỏ hơn một năm — lượt này chỉ đọc mức năm`, doan: doanQuanh(ban.answer, m.index) });
+  }
+
+  // Định lượng, độ chắc, chọn hộ, lộ nguồn — theo câu
+  const pt = PHAN_TRAM.exec(ban.answer);
+  if (pt) bao({ ma: 'PHAN_TRAM', chiTiet: 'văn nêu phần trăm — lá số không cho con số xác suất', doan: doanQuanh(ban.answer, pt.index) });
+  for (const s of cau) {
+    const cc = CHAC_CHAN_GIA.exec(s);
+    if (cc) bao({ ma: 'CHAC_CHAN_GIA', chiTiet: `"${cc[0]}" — lá số chỉ nói xu hướng, không nói chắc điều sẽ xảy ra`, doan: s.slice(0, 60) });
+    if (khuon === 'C' || khuon === 'E') {
+      const chon =
+        CHON_HO.test(s) || CHON_HO_DAU_CAU.test(s) || (khuon === 'E' && !!ctx.phanLoai.haiVe && chonMotVe(s, ctx.phanLoai.haiVe));
+      if (chon) bao({ ma: 'CHON_HO', chiTiet: 'văn chọn hộ hoặc khuyên người hỏi nên làm gì — chỉ đọc bối cảnh, người hỏi tự quyết', doan: s.slice(0, 60) });
+    }
+    const cum = cumTu(s);
+    const nguon = RO_RI_RAG.find((c) => cum.has(c));
+    if (nguon) bao({ ma: 'LO_NGUON', chiTiet: `văn nhắc nguồn (cụm "${nguon}", viết không dấu)`, doan: s.slice(0, 60) });
+    const bc = GIONG_BAO_CAO.find((c) => cum.has(c));
+    if (bc) bao({ ma: 'LO_MA', chiTiet: `văn có giọng báo cáo (cụm "${bc}", viết không dấu) — nói thẳng bằng lời thường` });
+  }
   const m = MA_MAY.exec(ban.answer);
-  if (m) loi.push({ ma: 'LO_MA', chiTiet: `văn có mã nội bộ "${m[0]}"`, doan: doanQuanh(ban.answer, m.index) });
-  else {
-    const cum = cumTu(ban.answer);
-    const bao = GIONG_BAO_CAO.find((c) => cum.has(c));
-    if (bao) loi.push({ ma: 'LO_MA', chiTiet: `văn có giọng báo cáo (cụm "${bao}", viết không dấu) — nói thẳng bằng lời thường` });
+  if (m) bao({ ma: 'LO_MA', chiTiet: `văn có mã nội bộ "${m[0]}"`, doan: doanQuanh(ban.answer, m.index) });
+
+  // Hướng và tháng — chỉ khi có kết luận
+  if (!ban.outOfScope) {
+    if (ctx.nghieng && khuon !== 'G') {
+      const ly = soChieu(ban.claims[0]?.direction, ctx.nghieng.huong);
+      if (ly) {
+        bao({
+          ma: 'NGUOC_HUONG',
+          chiTiet:
+            ly === 'thieu-chieu'
+              ? 'claims[0] thiếu "direction"'
+              : `claims[0] nói "${ban.claims[0]?.direction}" nhưng hướng đã chốt là "${nhomCuaHuong(ctx.nghieng.huong)}"`,
+        });
+      }
+    }
+    const nh = ctx.maNguyetHan;
+    if (ctx.thoiGian.thang && nh?.size && !ban.claims.some((c) => c.evidenceIds.some((x) => nh.has(x)))) {
+      bao({ ma: 'THIEU_THANG', chiTiet: `câu hỏi về một tháng mà không claim nào dẫn dữ kiện của tháng (${[...nh].join(', ')})` });
+    }
   }
   return loi;
 }
@@ -267,6 +342,9 @@ export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
   for (const g of goiY) {
     const c = g.normalize('NFC').trim();
     if (!c) continue;
+    // Spec 5.1 `chonChip`: chip là câu người dùng HỎI, và chỉ nêu mốc của tập chip.
+    if (!/[?？]$/u.test(c)) continue;
+    if (mocNgoaiTap(c, ctx.mocHopLeChip)) continue;
     const k = chuanChip(c);
     if (daCo.has(k)) continue;
     if (laChipNgoaiTam(c) || CHIP_HOI_TEN.test(c)) continue; // hỏi tên, họ, danh tính

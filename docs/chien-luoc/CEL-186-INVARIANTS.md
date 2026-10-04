@@ -46,7 +46,7 @@ khi thuộc một trong ba loại; danh sách cho phép nằm ở `scripts/test-
 | ID | Luật | Lớp | Test |
 |---|---|---|---|
 | PERSON-01 | Hỏi vận riêng của người khác (bố thi, chồng thăng chức) → F2: hỏi lại lá số đang mở là của ai (STOP-02), không tính lượt, không đoán vận người kia trên lá số của người hỏi | `doi-tuong.ts`, `hoiLaiVanRieng` | bảng `loai: 'van-rieng'`, "F2 ra …" (đầu-cuối) |
-| PERSON-02 | Câu quan hệ (tôi với bố có hợp không) → đọc cung lục thân, không gán nét sao thành tính cách người hỏi | `chot-huong.ts` `cumChoChuDe` | "dự phòng lục thân sai", chip F2 → F1 |
+| PERSON-02 | Câu quan hệ (tôi với bố có hợp không) → đọc cung lục thân, không gán nét sao thành tính cách người hỏi | prompt khuôn F1 (câu chốt dự phòng `cumChoChuDe` bỏ ở Answer Contract v2, commit E) | chip F2 → F1 |
 | ~~PERSON-03/04~~ | Đã bỏ 04/10 (chủ dự án): lá số đang mở có thể không phải của người hỏi, người nam vẫn có thể có chồng — luật chữ không đủ để dừng lượt. "Chồng tôi" trên lá số nam đi đường thường | — | chip "bạn đời của tôi" vẫn ra Phu Thê |
 
 ## AGE — tuổi và ngày sinh
@@ -73,12 +73,14 @@ và đổi STANDARD.
 
 ## FALLBACK — câu chốt dự phòng
 
+> Answer Contract v2 (commit E): bỏ câu chốt dự phòng do mã viết — model viết trọn bài, trượt luật cứng thì viết lại một lần rồi 502. Các dòng FALLBACK dưới đây chỉ còn là lịch sử.
+
 | ID | Luật | Lớp | Test |
 |---|---|---|---|
-| FALLBACK-01 | Hướng cân bằng, hai phía đều có tên được phép → nêu cả hai | `chot-huong.ts` `mocChoCauChot` | `FALLBACK-01` |
-| FALLBACK-02 | Một phía không có tên được phép → không nêu tên phía nào, không mượn tên | `mocChoCauChot` | `FALLBACK-02` |
-| FALLBACK-03 | Dự phòng chỉ gọi đầu mốc có tên trong chữ (lọc theo tập guard) | `kiemLuot` | (4) "câu chốt dự phòng gọi tên chỉ có ở d.sao" |
-| FALLBACK-04 | Dự phòng EN không còn chữ Việt (ngoài tên sao) | `cauChotDuPhong` | `FALLBACK-04`, "dự phòng EN người khác còn chữ Việt" |
+| ~~FALLBACK-01~~ | Hướng cân bằng, hai phía đều có tên được phép → nêu cả hai | `chot-huong.ts` `mocChoCauChot` | `FALLBACK-01` |
+| ~~FALLBACK-02~~ | Một phía không có tên được phép → không nêu tên phía nào, không mượn tên | `mocChoCauChot` | `FALLBACK-02` |
+| ~~FALLBACK-03~~ | Dự phòng chỉ gọi đầu mốc có tên trong chữ (lọc theo tập guard) | `kiemLuot` | (4) "câu chốt dự phòng gọi tên chỉ có ở d.sao" |
+| ~~FALLBACK-04~~ | Dự phòng EN không còn chữ Việt (ngoài tên sao) | `cauChotDuPhong` | `FALLBACK-04`, "dự phòng EN người khác còn chữ Việt" |
 
 ## VOICE — giọng
 

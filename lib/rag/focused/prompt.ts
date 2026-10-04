@@ -48,6 +48,7 @@ ${CHUAN_NGON_NGU_CELES}
 KHÔNG ĐƯỢC:
 - Nhắc tên sách, tên tài liệu, tên hệ phái, mã F### hay E### trong câu văn.
 - Phán chắc chắn về sức khoẻ, tiền bạc hay pháp lý.
+- Nói chắc chắn, nhất định, trăm phần trăm về điều sẽ xảy ra.
 - Đồng ý khi người hỏi nói sai một dữ kiện lá số.
 - Nêu một tên sao, tên cách cục KHÔNG có trong khối dữ kiện. Bài có tên lạ sẽ bị viết lại toàn bộ.
 - Gọi tên cung (Quan Lộc, Phúc Đức, Phu Thê, Tài Bạch, Tử Tức…). Gọi phần đời bằng lời thường.
@@ -98,7 +99,7 @@ Nếu người hỏi THẬT SỰ hỏi bao giờ một việc tới: lượt nà
 KHÔNG nêu tháng, mùa, quý, "cuối năm", "đầu năm", "sau Tết" hay bất kỳ mốc nào nhỏ hơn một năm.
 Nếu câu chỉ có chữ ấy mà không hỏi thời điểm ("lúc nào cũng mệt…", "chưa bao giờ…") thì trả lời đúng điều họ hỏi như mọi câu khác.`,
   E: `KHUÔN LƯỢT NÀY: người hỏi đưa ra hai phương án.
-Câu mở đã có sẵn (do Celes viết). "answer" chỉ nói về bối cảnh chung của quãng này. KHÔNG so hai phương án, KHÔNG nói phương án nào hợp hơn, KHÔNG nhắc lại tên phương án như một lựa chọn.
+"answer" tự nói, bằng lời của bạn, rằng lá số đọc được bối cảnh của quyết định này nhưng chưa đủ để kết luận phương án nào tốt hơn; phần còn lại nói về bối cảnh chung của quãng này. KHÔNG so hai phương án, KHÔNG nói phương án nào hợp hơn, KHÔNG nhắc lại tên phương án như một lựa chọn.
 "suggestedQuestions": để rỗng — chip đã có sẵn.`,
   F1: `KHUÔN LƯỢT NÀY: hỏi về mối quan hệ với một người thân.
 Đọc phần đời ứng với NGƯỜI ĐÓ trong lá số của người hỏi, nói về mối quan hệ giữa hai người — không phán vận riêng của người kia.
@@ -268,7 +269,11 @@ export function khoiMoc(m: MocTinhSan, khuon?: PhanLoai['khuon']): string {
     }
     if (thang.trangThai === 'da-qua') {
       dong.push('Tháng này ĐÃ QUA. Nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây".');
-      dong.push('Câu mở đầu do hệ thống viết đã nêu tháng và năm — "answer" KHÔNG lặp lại tên tháng, năm. Không viết "tháng này", "quãng này".');
+      dong.push(
+        thang.duong
+          ? 'Câu mở đầu do hệ thống viết đã nêu tháng và năm — "answer" KHÔNG lặp lại tên tháng, năm. Không viết "tháng này", "quãng này".'
+          : `"answer" tự nói ngay đầu rằng đang nhìn lại tháng ${thang.thang}${thang.nhuan === 'nhuan' ? ' nhuận' : ''} âm năm ${thang.nam} đã qua — đây là nhìn lại, không phải dự báo. Không viết "tháng này", "quãng này".`
+      );
     } else if (thang.trangThai === 'dang') {
       dong.push('Đây là tháng hiện tại.');
     } else {
@@ -283,6 +288,9 @@ export function khoiMoc(m: MocTinhSan, khuon?: PhanLoai['khuon']): string {
   if (namHieuLuc === m.bayGio.nam && khuon !== 'D') {
     const con = 12 - m.bayGio.thang;
     dong.push(con > 0 ? `Năm âm ${namHieuLuc} còn ${con} tháng sau tháng hiện tại.` : `Năm âm ${namHieuLuc} đang ở tháng cuối.`);
+  }
+  if (m.thoiGian.cuoiNam && khuon !== 'D') {
+    dong.push('Người hỏi nói "sắp tới" khi năm âm sắp hết: "answer" nói rõ đang đọc quãng từ giờ đến hết năm âm này; phần sau Tết thuộc năm mới, cần xem riêng.');
   }
   if (m.doiDaiVanSauTet && khuon !== 'D') dong.push('Sau Tết, người hỏi bước sang một đại vận mới.');
   return `MỐC THỜI GIAN (do Celes tính sẵn, chỉ dùng các mốc này):\n${dong.join('\n')}`;

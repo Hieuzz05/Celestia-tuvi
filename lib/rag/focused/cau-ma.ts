@@ -37,20 +37,11 @@ const hoaDau = (s: string) => s.charAt(0).toLocaleUpperCase('vi') + s.slice(1);
 
 /* ------------------------------------------------------------ khuôn E */
 
-export const CAU_HAI_VE: Record<NgonNgu, string> = {
-  vi: 'Lá số hiện cho Celes đọc được bối cảnh của quyết định này, nhưng chưa đủ để kết luận một phương án chắc chắn tốt hơn phương án còn lại.',
-  en: 'Your chart lets Celes read the backdrop to this decision, but it is not enough to say one option is surely better than the other.',
-};
-
 /** Chip tách từng phương án người dùng gõ: "Ở lại thì sao?". */
 export function chipHaiVe(haiVe: [string, string], nn: NgonNgu = 'vi'): string[] {
   // EN: cụm người dùng gõ có thể là tiếng Việt hoặc dài — dùng chip chung, không nhét nguyên cụm.
   if (nn === 'en') return ['What about the first option?', 'What about the second option?'];
   return haiVe.map((v) => `${hoaDau(v.trim())} thì sao?`);
-}
-
-export function cauHaiVe(haiVe: [string, string], nn: NgonNgu = 'vi'): CauMa {
-  return { cau: CAU_HAI_VE[nn], chip: chipHaiVe(haiVe, nn), loiDi: [], goiModel: true };
 }
 
 /* ----------------------------------------------------------- khuôn F2 */
@@ -201,21 +192,7 @@ export function cauThangDuong(m: MocThang, nn: NgonNgu = 'vi'): string {
     : quyDoi;
 }
 
-/* ---------------------------------------------------- N2 tháng đã qua */
-
-export function cauThangDaQua(m: MocThang, nn: NgonNgu = 'vi'): string {
-  const nhuan = m.nhuan === 'nhuan';
-  return nn === 'en'
-    ? `You are asking again about ${nhuan ? 'leap ' : ''}lunar month ${m.thang} of ${m.nam} — that time has already passed. What follows looks back at how that month tended to go; it is not a forecast for the time ahead.`
-    : `Bạn đang hỏi lại tháng ${m.thang}${nhuan ? ' nhuận' : ''} âm lịch năm ${m.nam} — mốc này đã qua. Phần dưới sẽ đọc lại xu hướng của tháng đó, không coi đây là dự báo cho thời gian sắp tới.`;
-}
-
 /* --------------------------------------------------- N4 cuối năm âm */
-
-export const CAU_CUOI_NAM: Record<NgonNgu, string> = {
-  vi: 'Phần này đang đọc quãng từ hiện tại đến hết năm âm này. Phần sau Tết thuộc năm mới và cần được xem riêng.',
-  en: 'This reads the stretch from now until the end of this lunar year. What comes after Lunar New Year belongs to the new year and needs a separate look.',
-};
 
 /** Chip sang năm đứng ĐẦU: đó là điều người hỏi "sắp tới" thật sự sắp gặp. */
 export function chipCuoiNam(namNay: number, goiY: string[], nn: NgonNgu = 'vi'): string[] {
