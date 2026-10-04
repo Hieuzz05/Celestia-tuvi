@@ -118,7 +118,7 @@ function kiem(k: KiemModel, l: LuotDaChay, truoc: LuotDaChay | null): boolean | 
     case 'mien-tru-tam-ly':
       return null; // flow 17 — chấm ở eval-focused (SENS) và cột T
     case 'tieng-anh':
-      return !!kq.van && !CO_DAU_VIET.test([kq.van, ...chip].join(' ').replace(/\b[A-ZÀ-Ỹ][\p{L}]*(?: [A-ZÀ-Ỹ][\p{L}]*)*/gu, ''));
+      return !!kq.van && !CO_DAU_VIET.test([kq.van, ...chip].join(' ').replace(/(?<!\p{L})[A-ZÀ-Ỹ][\p{L}]*(?:[A-ZÀ-Ỹ][\p{L}]*)*/gu, ''));
     case 'chip-la-cau-hoi':
       return chip.every((c) => /[?？]$/.test(c.trim()) && c.length <= 40);
     case 'ngoai-pham-vi': {
