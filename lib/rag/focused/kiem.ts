@@ -119,8 +119,23 @@ export const PHAN_QUYET = re(
  * chắc chắn" và "không thể nào biết / nói / đoán / khẳng định" là rào đón.
  */
 const CHAC_CHAN_GIA = re(
-  '(?<!(?:không|chưa) )chắc chắn|nhất định|trăm phần trăm|sẽ xảy ra|không thể nào(?! (?:biết|nói|đoán|khẳng định))'
+  '(?<!(?:không|chưa) )chắc chắn|nhất định|trăm phần trăm|sẽ xảy ra|không thể nào(?! (?:biết|nói|đoán|khẳng định))',
+  'giu'
 );
+/**
+ * Phủ định đứng xa hơn một từ vẫn là rào đón: "không phải dấu hiệu chắc chắn bị cho nghỉ",
+ * "không có nghĩa là chắc chắn mất tiền", "không đủ để kết luận chắc chắn". Chỉ xét trong cùng
+ * vế câu (sau dấu , ; : hay "mà", "nhưng" gần nhất) — tái hiện 502 của eval mù I: mọi lượt trượt đều đúng dạng này.
+ */
+const PHU_DINH_VE = re('(?:không|chưa|chẳng) (?:phải|hẳn|có nghĩa|đủ|thể)');
+function chacChanGia(s: string): RegExpExecArray | null {
+  CHAC_CHAN_GIA.lastIndex = 0;
+  for (let m = CHAC_CHAN_GIA.exec(s); m; m = CHAC_CHAN_GIA.exec(s)) {
+    const ve = s.slice(0, m.index).split(/[,;:]| mà | nhưng /u).pop() ?? '';
+    if (!PHU_DINH_VE.test(ve)) return m;
+  }
+  return null;
+}
 export const PHAN_TRAM = /100\s*%/u;
 
 /** Lời khuyên chung — EVAL. "nên" đứng một mình thường là liên từ, nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
@@ -286,7 +301,7 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
   const pt = PHAN_TRAM.exec(ban.answer);
   if (pt) bao({ ma: 'PHAN_TRAM', chiTiet: 'văn nêu phần trăm — lá số không cho con số xác suất', doan: doanQuanh(ban.answer, pt.index) });
   for (const s of cau) {
-    const cc = CHAC_CHAN_GIA.exec(s);
+    const cc = chacChanGia(s);
     if (cc) bao({ ma: 'CHAC_CHAN_GIA', chiTiet: `"${cc[0]}" — lá số chỉ nói xu hướng, không nói chắc điều sẽ xảy ra`, doan: s.slice(0, 60) });
     if (khuon === 'C' || khuon === 'E') {
       const chon =
