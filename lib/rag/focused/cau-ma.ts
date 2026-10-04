@@ -16,7 +16,7 @@
  *
  * Mọi câu có bản VI và EN (chủ dự án 04/10): theo `ngonNgu` của người dùng.
  * Bản VI của tháng nhuận, N2 là nguyên văn chủ dự án duyệt 04/10 — đổi chữ
- * là phải duyệt lại. Câu hỏi lại F2 (04/10, bước 1) chờ chủ dự án duyệt.
+ * là phải duyệt lại. Câu hỏi lại F2 cũng là nguyên văn chủ dự án duyệt 04/10 (bước 1).
  */
 
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
@@ -61,21 +61,11 @@ export function cauHaiVe(haiVe: [string, string], nn: NgonNgu = 'vi'): CauMa {
  * chuyện luật chữ đoán được. Không tính lượt, và MỘT chạm phải trả lời được câu
  * gốc: chip đầu là chính câu người dùng, đổi "mẹ tôi" thành "người có lá số này".
  */
-export function cauVanRieng(dt: DoiTuongCauHoi, nn: NgonNgu = 'vi'): string {
+export function cauVanRieng(nn: NgonNgu = 'vi'): string {
+  // Nguyên văn chủ dự án duyệt 04/10: "luận", không "đoán"; không khẳng định lá số là của ai.
   return nn === 'en'
-    ? 'Celes does not know whose chart is open. If it belongs to the person you are asking about, Celes can read your question on it right away. If it is your own chart, Celes will not use it to guess that person’s own fortunes, but can still read the relationship between the two of you.'
-    : `Celes chưa biết lá số đang mở là của ai. Nếu đây là lá số của ${chuNhan(dt)}, Celes đọc được câu hỏi này ngay trên lá số. Nếu đây là lá số của bạn, Celes không dùng nó để đoán vận riêng của ${chuNhan(dt)}, nhưng vẫn đọc được mối quan hệ giữa hai người.`;
-}
-
-/** Nhãn số nhiều: một lá số chỉ của MỘT người, nên nói "một người trong …". */
-const NHAN_SO_NHIEU = new Set(['bố mẹ', 'cha mẹ', 'ba mẹ', 'vợ chồng', 'anh chị em', 'anh em', 'chị em', 'bạn bè', 'đồng nghiệp', 'con cái']);
-
-/** "<người> bạn" trong câu F2 — tránh "bạn bạn", "anh bạn", "lá số của vợ chồng bạn". */
-export function chuNhan(dt: DoiTuongCauHoi): string {
-  if (dt.nhan === 'bạn') return 'người bạn ấy';
-  if (dt.nhan === 'anh') return 'anh của bạn';
-  if (NHAN_SO_NHIEU.has(dt.nhan)) return `một người trong ${dt.nhan} bạn`;
-  return `${dt.nhan} bạn`;
+    ? 'So that Celes doesn’t read someone’s personal fortune from the wrong chart, please tell Celes: is the open chart that of the person you’re asking about, or your own?'
+    : 'Để Celes không luận vận riêng của một người bằng nhầm lá số, bạn cho Celes biết: lá số đang mở là của người bạn đang hỏi, hay là của bạn?';
 }
 
 /** Lối sang nối hai lá số — cùng nhãn và đường với `loiDiTiep`. */
@@ -117,7 +107,7 @@ export function hoiLaiVanRieng(cauHoi: string, dt: DoiTuongCauHoi, nn: NgonNgu =
   const banDoi = dt.vai === 'vo-chong' || dt.vai === 'nguoi-yeu';
   const doc = chipLaSoCuaNguoiDuocHoi(cauHoi, dt);
   return {
-    cau: cauVanRieng(dt, nn),
+    cau: cauVanRieng(nn),
     chip: [...(doc ? [doc] : []), chipQuanHe(dt, nn)],
     loiDi: banDoi ? [LOI_HAI_LA_SO[nn]] : [],
     goiModel: false,

@@ -32,7 +32,6 @@ import {
   CAU_HAI_VE,
   cauVanRieng,
   chipLaSoCuaNguoiDuocHoi,
-  chuNhan,
   chipQuanHe,
   hoiLaiVanRieng,
   cauHaiVe,
@@ -357,21 +356,9 @@ for (const ca of CA_DOI_TUONG) {
     kiem(kq.keHoach.cungLienQuan[0] === cung, `chip "${quanHe}" cung đầu ${kq.keHoach.cungLienQuan[0]}, cần ${cung}`);
     kiem(!kq.keHoach.cungLienQuan.includes('Tài Bạch'), `chip "${quanHe}" còn Tài Bạch`);
   }
-  // Câu F2 ghép "<người> bạn" — không được ra "bạn bạn", "anh bạn", "lá số của vợ chồng bạn".
-  for (const [cau, can] of [
-    ['Bạn tôi năm nay thế nào?', 'người bạn ấy'],
-    ['Anh tôi năm nay công việc thế nào?', 'anh của bạn'],
-    ['Bố mẹ tôi năm nay sức khỏe thế nào?', 'một người trong bố mẹ bạn'],
-    ['Mẹ tôi năm nay sức khỏe thế nào?', 'mẹ bạn'],
-  ] as const) {
-    const dt = nhanDangDoiTuong(cau);
-    if (!dt) {
-      hong.push(`"${cau}" không nhận ra người được hỏi`);
-      continue;
-    }
-    kiem(chuNhan(dt) === can, `F2 "${cau}" ghép "${chuNhan(dt)}", cần "${can}"`);
-    kiem(!/bạn bạn|anh bạn,/u.test(cauVanRieng(dt)), `F2 "${cau}" câu vỡ: ${cauVanRieng(dt)}`);
-  }
+  // Câu F2 nguyên văn duyệt 04/10: "luận", không "đoán", không khẳng định lá số là của ai.
+  kiem(/luận vận riêng/u.test(cauVanRieng()) && !/đoán|là của bạn,/u.test(cauVanRieng()), `F2 câu sai: ${cauVanRieng()}`);
+  kiem(!/[À-ỹ]/u.test(cauVanRieng('en').replace(/’/g, '')), 'F2 EN lẫn chữ Việt');
   for (const [cau, chipCan, chuDe] of [
     ['Mẹ tôi năm nay sức khỏe thế nào?', 'Người có lá số này năm nay sức khỏe thế nào?', 'suc-khoe'],
     ['Năm nay con gái tôi học hành ra sao?', 'Năm nay người có lá số này học hành ra sao?', 'su-nghiep'],
@@ -748,7 +735,7 @@ for (const ca of CA_DOI_TUONG) {
   const mocQua = { nam: 2026, thang: 3, trangThai: 'da-qua' as const, nhuan: null };
   const dtMe = nhanDangDoiTuong('Mẹ tôi năm nay thế nào?');
   const cauMaVi = [
-    CAU_HAI_VE.vi, ...(dtMe ? [cauVanRieng(dtMe)] : []), CAU_CUOI_NAM.vi, ...CAU_NGOAI_TAM,
+    CAU_HAI_VE.vi, ...(dtMe ? [cauVanRieng()] : []), CAU_CUOI_NAM.vi, ...CAU_NGOAI_TAM,
     cauNhuanChuaTach(mocNhuan, 2026).cau, cauThangDaQua(mocQua),
     cauChotDuPhong({ nghieng: tangMon, chuDe: 'tai-chinh', cauHoi: 'Tiền bạc?', moc: 'Năm nay' }),
   ];
@@ -760,7 +747,7 @@ for (const ca of CA_DOI_TUONG) {
     chipCuoiNam(2026, [], 'en').join(' '),
     cauHaiVe(['nghỉ việc', 'ở lại'], 'en').cau, ...cauHaiVe(['nghỉ việc', 'ở lại'], 'en').chip,
     ...CHIP_DU_PHONG.en,
-    ...(dtMe ? [cauVanRieng(dtMe, 'en'), chipQuanHe(dtMe, 'en')] : []),
+    ...(dtMe ? [cauVanRieng('en'), chipQuanHe(dtMe, 'en')] : []),
     ...loiDiTheoNgonNgu(loiDiTiep({ chuDe: 'su-nghiep', lopHan: ['luu-nien'], yDinh: 'co-khong' }), 'en').map((l) => l.nhan),
   ];
   for (const c of cauMaEn) kiem(!conChuViet(c), `câu mã EN còn chữ Việt: ${c}`);
@@ -1235,7 +1222,7 @@ async function kiemNoi() {
     const f2 = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?' });
     kiem(f2.provider === 'ma' && f2.model === 'focused-f2', `F2 ra ${f2.provider}/${f2.model}`);
     kiem(f2.khongTinhLuot === true, 'F2 hỏi lại mà vẫn tính lượt');
-    kiem(!!f2.van && f2.van.startsWith('Celes chưa biết lá số đang mở là của ai'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
+    kiem(!!f2.van && f2.van.startsWith('Để Celes không luận vận riêng'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
     kiem(!/Lá số này là của bạn/u.test(f2.van), 'F2 còn câu cũ "Lá số này là của bạn"');
     kiem((f2.coCauTruc?.goiYTiep ?? [])[0] === 'Người có lá số này năm nay sức khỏe thế nào?', `F2 chip đầu: ${f2.coCauTruc?.goiYTiep?.[0]}`);
     kiem((f2.coCauTruc?.goiYTiep ?? []).some((c) => c.includes('hợp nhau')), 'F2 thiếu chip quan hệ');
