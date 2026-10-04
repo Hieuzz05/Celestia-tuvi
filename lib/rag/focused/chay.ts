@@ -1,44 +1,37 @@
 /**
- * CHẠY MỘT LƯỢT MODEL — đường Focused (CEL-186 vé B, mục 5–6, 15 L2).
+ * CHẠY MỘT LƯỢT MODEL — đường Focused (CEL-186 Answer Contract v2, spec 5.3).
  *
- * gọi model → đọc JSON → sửa câu chỉ trượt vì tiếng lóng (luật 11) → guard →
- * hết câu / quá dài / JSON gãy thì thử lại MỘT lần → vẫn hỏng thì `van: ''`
- * (route coi là hỏng: 502 + hoàn lượt, như đường STANDARD).
+ * gọi model → đọc `BanNhap` → validator cứng → trượt thì viết lại TOÀN bài một
+ * lần (kèm lỗi) → vẫn trượt / hết giờ thì `van: ''` (route coi là hỏng: 502 +
+ * hoàn lượt, như đường STANDARD). Không cắt câu, không văn dự phòng của mã, không
+ * trả bản lần một "tốt nhất có thể".
  *
  * Không nuốt `VuotNganSachError`: script eval cần nó nổi lên để dừng cả bộ (15 S3).
- * Cả lượt có MỘT hạn chót; lần thử lại không bắt đầu khi còn quá ít thời gian.
+ * Cả lượt có MỘT hạn chót; lần viết lại không bắt đầu khi còn quá ít thời gian.
  */
 
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import { datMienTruTamLy } from '../an-toan';
+import { boMarkdown } from '../sua-chua';
 import { datMienTruTheoNgonNgu } from './ngon-ngu';
-import { suaCauTiengLong } from '../sua-chua';
-import { kiemLuot, kiemMotCau, lamSach, type BanThoFocused, type KetQuaKiem, type NguCanhKiem } from './kiem';
-import { docFocused, dungPromptFocused, type DauVaoPromptFocused } from './prompt';
+import { docBanNhap, type BanNhap, type LoiCung } from './hop-dong';
+import { chonChip, kiemCung, type NguCanhKiem } from './kiem';
+import { dungPromptFocused, type DauVaoPromptFocused } from './prompt';
 import type { LanGoiVet } from './vet';
 
 /** Cùng ngân sách token với đường STANDARD — token suy nghĩ trừ vào đây (tra-loi.ts) */
 const MAX_TOKENS = 6000;
 /** Trần của route là 60 giây; chừa 10 giây cho phần còn lại, như `goiVoiFallback` mặc định */
 export const HAN_CHOT_LUOT_MS = 50_000;
-/** Còn ít hơn chừng này thì không thử lại — một lượt gọi không kịp xong tệ hơn không gọi */
+/** Còn ít hơn chừng này thì không viết lại — một lượt gọi không kịp xong tệ hơn không gọi */
 const TOI_THIEU_THU_LAI_MS = 16_000;
-/**
- * Lý do thử lại mà bản cuối vẫn mắc thì là HỎNG (502 + hoàn lượt), không dùng
- * tạm: hết câu có căn cứ; hỏi một tháng mà không còn câu nguyệt hạn (04/10).
- */
-const HONG_NEU_CON = new Set(['het-cau', 'thieu-nguyet-han']);
-const laHong = (ly: string | null) => !!ly && HONG_NEU_CON.has(ly);
 
 export interface VetFocused {
   lanGoi: number;
-  /** Lý do lần đầu trượt, nếu có thử lại */
+  /** Mã lỗi lần một (nối bằng dấu phẩy), nếu có viết lại */
   thuLai: string | null;
-  boCau: KetQuaKiem['bo'];
-  dungDuPhong: boolean;
-  lyDoThayChot?: string;
-  soCauSuaTiengLong: number;
-  soAmTiet: number;
+  /** Lỗi cứng của bản cuối (rỗng = sạch) */
+  loi: LoiCung[];
   /** Từng lần gọi model: thời gian, token, mã lỗi (vết Preview, spec 5.4) */
   lan: LanGoiVet[];
   /** Đầu vào prompt của lượt (tham chiếu, không chép) — chỉ cho bộ đo dựng lại chữ model thấy (oracle tên) */
@@ -49,108 +42,62 @@ export interface KetQuaChayFocused {
   /** Rỗng = hỏng, route trả 502 và hoàn lượt */
   van: string;
   chip: string[];
-  kiem: KetQuaKiem | null;
+  /** Bản nháp đã qua validator — null khi hỏng */
+  banNhap: BanNhap | null;
   provider: string;
   model: string;
   doTreMs: number;
   vet: VetFocused;
 }
 
-/** Dựng văn: đoạn một là câu mã + câu chốt, đoạn hai là căn cứ. DEEP thì chia ba câu một đoạn. */
-export function ghepVan(cauMa: readonly string[], k: Pick<KetQuaKiem, 'cauChot' | 'cau'>, sau: boolean): string {
-  const dau = [...cauMa, k.cauChot].filter(Boolean).join(' ');
-  const than = k.cau.map((c) => c.noiDung);
-  const doan: string[] = [];
-  if (dau) doan.push(dau);
-  const co = sau ? 3 : than.length || 1;
-  for (let i = 0; i < than.length; i += co) doan.push(than.slice(i, i + co).join(' '));
-  return doan.join('\n\n');
-}
-
-/**
- * Luật 11: câu (kể cả câu chốt) trượt DUY NHẤT vì tiếng lóng thì nhờ model viết
- * lại đúng câu đó, đưa kèm tên dữ kiện để nó không phải tự nghĩ tên. Sửa hỏng
- * thì `suaCauTiengLong` trả nguyên câu, và guard sẽ bỏ nó như thường.
- */
-async function suaTiengLong(ban: BanThoFocused, ctx: NguCanhKiem, ten: string[]): Promise<[BanThoFocused, number]> {
-  const chiLong = (s: string, chot: boolean) => {
-    const ly = kiemMotCau(lamSach(s), ctx, chot);
-    return ly.length === 1 && ly[0] === 'tieng-long';
-  };
-  let dem = 0;
-  const sua = async (s: string, chot: boolean) => {
-    if (!s || !chiLong(s, chot)) return s;
-    dem += 1;
-    return suaCauTiengLong(s, ten);
-  };
-  const cauChot = await sua(ban.cauChot, true);
-  const cau = await Promise.all(ban.cau.map(async (c) => ({ ...c, noiDung: await sua(c.noiDung, false) })));
-  return [{ ...ban, cauChot, cau }, dem];
-}
-
 export async function chayFocused(v: {
   prompt: DauVaoPromptFocused;
   ctx: NguCanhKiem;
-  /** Tên dữ kiện đưa cho lớp sửa tiếng lóng */
-  tenSua: string[];
   batDau?: number;
-  /** Chỉ test tiêm vào (ca "không còn câu có căn cứ → thử lại → 502"); sản phẩm dùng mặc định. */
+  /** Chỉ test tiêm vào (ca "trượt → viết lại → 502"); sản phẩm dùng mặc định. */
   goi?: typeof goiVoiFallback;
 }): Promise<KetQuaChayFocused> {
   const goi = v.goi ?? goiVoiFallback;
   const batDau = v.batDau ?? Date.now();
   const hanChot = batDau + HAN_CHOT_LUOT_MS;
-  const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0, lan: [], dauVaoPrompt: v.prompt };
+  const vet: VetFocused = { lanGoi: 0, thuLai: null, loi: [], lan: [], dauVaoPrompt: v.prompt };
   let provider = '';
   let model = '';
-  let kiem: KetQuaKiem | null = null;
-  let lyDo: string | null = null;
+  let ban: BanNhap | null = null;
+  let truoc: { answer: string; loi: LoiCung[] } | undefined;
 
   for (let lan = 0; lan < 2; lan++) {
     const conLai = hanChot - Date.now();
     if (lan > 0 && conLai < TOI_THIEU_THU_LAI_MS) break;
 
-    const { system, user } = dungPromptFocused({ ...v.prompt, lyDoThuLai: lan > 0 ? (lyDo ?? undefined) : undefined });
+    const { system, user } = dungPromptFocused({ ...v.prompt, vietLai: truoc });
     vet.lanGoi += 1;
     const t0 = Date.now();
     const kq = await goi({ system, user, maxTokens: MAX_TOKENS }, undefined, Math.max(conLai, 1));
     provider = kq.provider;
     model = kq.model;
-    const lanVet: LanGoiVet = { stt: lan === 0 ? 1 : 2, ms: Date.now() - t0, tokVao: kq.tokensIn, tokRa: kq.tokensOut, loi: [] };
-    vet.lan.push(lanVet);
 
-    const ban = docFocused(kq.text);
-    if (!ban) {
-      lyDo = 'json-gay';
-    } else {
-      const [daSua, soSua] = await suaTiengLong(ban, v.ctx, v.tenSua);
-      vet.soCauSuaTiengLong += soSua;
-      const k = kiemLuot(daSua, v.ctx);
-      lyDo = k.thuLai;
-      // Bản "quá dài" vẫn dùng được (đã cắt tới trần câu) — giữ lại phòng lần thử lại gãy.
-      if (!kiem || !laHong(k.thuLai)) kiem = k;
-      if (!lyDo) break;
+    const doc = docBanNhap(kq.text);
+    const banDoc = doc ? { ...doc, answer: boMarkdown(doc.answer) } : null;
+    const loi = kiemCung(banDoc, v.ctx);
+    vet.lan.push({ stt: lan === 0 ? 1 : 2, ms: Date.now() - t0, tokVao: kq.tokensIn, tokRa: kq.tokensOut, loi: loi.map((l) => ({ ma: l.ma })) });
+    vet.loi = loi;
+    if (!loi.length) {
+      ban = banDoc;
+      break;
     }
-    if (lyDo) lanVet.loi.push({ ma: lyDo });
-    if (lan === 0) vet.thuLai = lyDo;
+    if (lan === 0) vet.thuLai = loi.map((l) => l.ma).join(',');
+    truoc = { answer: banDoc?.answer ?? '', loi };
   }
 
   const doTreMs = Date.now() - batDau;
-  // Chỉ "hết câu", "thiếu nguyệt hạn" (hoặc chưa đọc được bản nào) là hỏng; "quá dài" dùng bản đã cắt.
-  const hong = !kiem || laHong(kiem.thuLai);
-  if (kiem) {
-    vet.boCau = kiem.bo;
-    vet.dungDuPhong = kiem.dungDuPhong;
-    vet.lyDoThayChot = kiem.lyDoThayChot;
-    vet.soAmTiet = kiem.soAmTiet;
-  }
-  if (hong) return { van: '', chip: [], kiem, provider, model, doTreMs, vet };
+  if (!ban) return { van: '', chip: [], banNhap: null, provider, model, doTreMs, vet };
 
-  const vanTho = ghepVan(v.ctx.cauMa, kiem!, v.ctx.phanLoai.sau);
-  // 15 L2: miễn trừ nối SAU guard độ dài, để không bị cắt và không bị đếm.
+  // Câu mã đứng đầu (E, tháng dương, cuối năm, danh tính bạn đời) — commit E/G gỡ dần.
+  const vanTho = [v.ctx.cauMa.join(' '), ban.answer].filter(Boolean).join('\n\n');
   const van =
     v.ctx.mucAnToan === 'SENSITIVE'
       ? datMienTruTheoNgonNgu(vanTho, v.ctx.ngonNgu ?? 'vi', datMienTruTamLy)
       : vanTho;
-  return { van, chip: kiem!.chip, kiem, provider, model, doTreMs, vet };
+  return { van, chip: chonChip(ban.suggestedQuestions, v.ctx), banNhap: ban, provider, model, doTreMs, vet };
 }

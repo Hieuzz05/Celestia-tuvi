@@ -276,8 +276,8 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
   const tap = dauVaoPrompt ? tenModelThay(dauVaoPrompt, traCuu) : new Set<string>();
   const pd = goiCoPhucDuc(goi.duKien);
   // Phần do model viết (đã qua guard) — miễn trừ SENSITIVE và câu mã không chấm khuyên / độ dài.
-  // Câu chốt dự phòng do mã viết (cờ #1) — không chấm như lời model.
-  const phanModel = [kq.vetFocused?.dungDuPhong ? '' : kq.coCauTruc?.ketLuan ?? '', ...(kq.coCauTruc?.yChinh ?? []).map((y) => y.noiDung)].filter(Boolean);
+  // Hợp đồng v2: model viết trọn `answer` — chấm từng câu của nó (không còn chốt dự phòng của mã).
+  const phanModel = kq.banNhap ? tachCau(kq.banNhap.answer) : [];
   const laMa = kq.provider === 'ma';
   const khuon = kq.phienBan.focused ?? '?';
   const nguoiDuoc = new Set([...(ca.nguoi ?? []), ...NGUOI.filter((n) => reTu(n).test([ca.cauHoi, ...(ca.truoc ?? [])].join(' ')))]);
@@ -316,9 +316,10 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     thuLai: !!vet?.thuLai,
     lyDoThuLai: vet?.thuLai ?? null,
     lanGoi: vet?.lanGoi ?? 0,
-    duPhong: !!vet?.dungDuPhong,
-    lyDoThayChot: vet?.lyDoThayChot ?? null,
-    latChieuTho: !!vet?.lyDoThayChot && /nguoc|thieu-chieu/u.test(vet.lyDoThayChot),
+    // Hợp đồng v2 bỏ chốt dự phòng và thay chốt (spec 5.1) — giữ cột để bảng cũ còn so được.
+    duPhong: false,
+    lyDoThayChot: null,
+    latChieuTho: !!kq.huongEngine && !!kq.banNhap?.claims[0]?.direction && kq.banNhap.claims[0].direction !== kq.huongEngine,
     tenDaNeu,
     tenLopNam: tenDaNeu.filter((t) => tenLopNamTap.has(t)),
     tapTen: [...tap],
@@ -462,7 +463,8 @@ function tongKet(barnum: ReturnType<typeof chamBarnum> | null) {
   const n1 = tiLe(ketQua, (d) => d.n1);
   them('N1: hỏi tháng có mã nguyệt hạn', `${n1.dat}/${n1.tong}`, n1.dat === n1.tong);
   const hd = tiLe(ketQua, (d) => d.hinhDangNormal);
-  them('NORMAL 2–4 câu · 55–120 âm tiết · ≥1 căn cứ', `${hd.dat}/${hd.tong}`, pct(hd) >= NGUONG.hinhDangNormal);
+  // Spec v2 8.1: độ dài chỉ đo, không chặn.
+  them('NORMAL 2–4 câu · 55–120 âm tiết · ≥1 căn cứ (chỉ đo)', `${hd.dat}/${hd.tong}`, true);
   const dp = tiLe(model, (d) => d.duPhong);
   them('Câu chốt dự phòng', `${dp.dat}/${dp.tong}`, pct(dp) <= NGUONG.duPhong);
   // Mẫu số là TỔNG số ca (kể cả lượt trả bằng mã), theo quyết định chủ dự án.

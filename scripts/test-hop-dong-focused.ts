@@ -60,10 +60,9 @@ const PHAN_LOAI_GIA: Record<string, { chuDe: string; yDinh: string }> = {
 function traLoiGia(prompt: string): string {
   const ma = prompt.match(/\bF\d{3}\b/)?.[0] ?? 'F001';
   return JSON.stringify({
-    cauChot: 'Năm nay mọi việc đi khá đều.',
-    chieuCauChot: 'thuan',
-    cau: [{ noiDung: 'Có một điểm tựa giúp mọi việc đi đều.', maDuKien: [ma], phia: 'thuan' }],
-    goiYTiep: ['Sang năm thì sao?'],
+    answer: 'Năm nay mọi việc đi khá đều. Có một điểm tựa giúp mọi việc đi đều.',
+    claims: [{ claim: 'Mọi việc đi khá đều', evidenceIds: [ma], direction: 'thuan' }],
+    suggestedQuestions: ['Sang năm thì sao?'],
   });
 }
 

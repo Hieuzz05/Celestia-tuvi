@@ -1,53 +1,29 @@
 /**
  * GUARD — đường Focused (CEL-186 vé B, mục 6).
  *
- * Hàm thuần: nhận bản thô model trả về và ngữ cảnh lượt, trả bản đã lọc cùng lý
- * do của từng câu bị bỏ. Không gọi model. Hai việc cần model (sửa tiếng lóng,
- * thử lại) do `chay.ts` làm rồi gọi lại guard.
+ * Hàm thuần, không gọi model, KHÔNG sửa văn model (Answer Contract v2, spec 5).
+ * `kiemCung` trả danh sách lỗi cứng; có lỗi thì `chay.ts` viết lại TOÀN bài một
+ * lần, vẫn lỗi thì 502 + hoàn lượt. Không cắt câu, không thay câu.
  *
- * Câu do mã viết (D, E, F2, N2, N4, nhuận, câu chốt dự phòng) KHÔNG qua guard:
- * nguyên văn đã duyệt, nhưng VẪN đếm vào độ dài (luật 10).
- *
- * Mười ba luật, đánh số theo phương án:
- *   1 tên chỉ trong gói · 2 mặt trước sạch · 3 không phán quyết · 4 không khuyên
- *   5 G không "nghiêng về" · 6 không mốc lạ · 7 tháng đã qua không "sẽ"
- *   8 câu chốt khớp hướng · 9 cân bằng · 10 độ dài · 11 sửa tiếng lóng (chay.ts)
- *   12 câu mở hỏng thì đẩy câu kế lên · 13 chip
+ * `kiemMotCau` (luật từng câu cũ) còn ở đây cho tới khi `kiemCung` phủ đủ bảng 5.1.
+ * `chonChip` lọc chip (không đụng `answer`).
  */
 
 import { CUM_AI, RO_RI_RAG } from '../ngon-ngu';
-import { doiTenCung, boMarkdown, TIENG_LONG_MOT_CAU } from '../sua-chua';
+import { TIENG_LONG_MOT_CAU } from '../sua-chua';
 import { boDau, tenBiaChan } from '../thuc-the';
 import type { NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import type { ChuDe } from '../planner';
-import { cauChotDuPhong, nhomCuaHuong, soatCauChot, type NhomHuong } from './chot-huong';
 import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
+import type { BanNhap, LoiCung } from './hop-dong';
 import { laChipNgoaiTam } from './ngoai-tam';
 import { laHoiKhiNao, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { khoaTen, tenCungTrongCau, tenNgoaiTap } from './quet-ten';
 
 /* ------------------------------------------------------------------ kiểu */
-
-export type PhiaCau = 'thuan' | 'can' | 'nen';
-
-export interface CauModel {
-  noiDung: string;
-  maDuKien: string[];
-  phia: PhiaCau;
-}
-
-/** Bản thô model trả, đã đọc qua `docFocused` */
-export interface BanThoFocused {
-  cauChot: string;
-  chieuCauChot?: NhomHuong;
-  cau: CauModel[];
-  goiYTiep: string[];
-  /** Model khai câu ngoài đời sống cá nhân (prompt mục (b)): một câu chốt, không câu thân */
-  ngoaiPhamVi?: boolean;
-}
 
 export type LyDoBo =
   | 'ten-ngoai-goi'
@@ -61,8 +37,6 @@ export type LyDoBo =
   | 'nghieng-ve'
   | 'moc-la'
   | 'tuong-lai'
-  | 'nguoc-phia'
-  | 'qua-dai'
   | 'rong';
 
 export interface NguCanhKiem {
@@ -76,13 +50,13 @@ export interface NguCanhKiem {
   phucDucLaSao: boolean;
   /** Mã F### có trong gói */
   maHopLe: ReadonlySet<string>;
+  /** Mã E### có trong gói */
+  maNguonHopLe: ReadonlySet<string>;
   nghieng: NghiengVe | null;
   thoiGian: BoiCanhThoiGian;
   /** Khoảng tuổi đại vận có trong gói, `[từ, đến]` */
   tuoiHopLe: [number, number][];
-  /** Tiền tố thời gian cho câu chốt dự phòng ("Năm 2027", "Tháng 3 âm") */
-  mocChot?: string;
-  /** Câu do mã viết đứng đầu lượt (E, N2, N4) — đếm vào độ dài, không kiểm */
+  /** Câu do mã viết đứng đầu lượt (E, N2, N4) — không kiểm */
   cauMa: string[];
   /** Chip do mã đặt (E, N4). Có thì thay chip model, trừ N4 trộn thêm. */
   chipMa?: string[];
@@ -90,34 +64,10 @@ export interface NguCanhKiem {
   chipCuoiNam?: (goiY: string[]) => string[];
   /** Chip lượt trước — chip lặp lại thì không còn "đi sâu một lớp" */
   chipTruoc: string[];
-  /** Câu mã đã là câu chốt (danh tính bạn đời) — bỏ câu chốt model, như E */
-  boChotModel?: boolean;
-  /**
-   * Mã F### loại `nguyet-han` trong gói. Hỏi MỘT tháng (`thoiGian.thang`) mà bản
-   * cuối không còn câu nào dựa vào các mã này → thử lại, rồi 502 (chủ dự án 04/10).
-   */
+  /** Mã F### loại `nguyet-han` trong gói */
   maNguyetHan?: ReadonlySet<string>;
-  /** Ngôn ngữ của câu do mã viết (câu chốt dự phòng, chip dự phòng). Thiếu = 'vi'. */
+  /** Ngôn ngữ của chip dự phòng. Thiếu = 'vi'. */
   ngonNgu?: NgonNgu;
-}
-
-export interface CauDaBo {
-  noiDung: string;
-  lyDo: LyDoBo[];
-}
-
-export interface KetQuaKiem {
-  /** Câu mở của phần model (rỗng ở E — câu mã đã mở) */
-  cauChot: string;
-  dungDuPhong: boolean;
-  lyDoThayChot?: string;
-  cau: (CauModel & { coCanCu: boolean })[];
-  bo: CauDaBo[];
-  chip: string[];
-  /** Có lý do thì `chay.ts` thử lại một lần, rồi 502 */
-  thuLai: string | null;
-  soAmTiet: number;
-  soCau: number;
 }
 
 /* -------------------------------------------------------------- tiện ích */
@@ -262,162 +212,39 @@ function mocLa(s: string, ctx: NguCanhKiem): boolean {
 
 /* ------------------------------------------------------------- cả lượt */
 
-export const lamSach = (s: string) => doiTenCung(boMarkdown(s.normalize('NFC').trim()));
+/** Mã máy lộ ra văn: F###/E### và nhãn cửa sổ W1–W3 (spec 5.1 LO_MA). */
+const MA_MAY = /\b[FE]\d{3}\b|\bW[1-3]\b/u;
 
-/** Trần độ dài theo mức (luật 10, quyết định #9). */
-function tranDoDai(ctx: NguCanhKiem): { cau: number; amTiet: number; thuLai: number } | null {
-  if (ctx.mucAnToan !== 'NORMAL') return null; // SENSITIVE không cắt cứng
-  if (ctx.phanLoai.sau) return { cau: 8, amTiet: Infinity, thuLai: Infinity };
-  return { cau: 4, amTiet: 120, thuLai: 140 };
+/** ≤60 ký tự quanh vị trí `i` — chỉ đưa vào prompt viết lại. */
+function doanQuanh(s: string, i: number): string {
+  const tu = Math.max(0, i - 30);
+  return s.slice(tu, tu + 60);
 }
 
 /**
- * Tháng đã qua: "tháng này", "quãng này" đọc như đang diễn ra — đổi thành "đó".
- * Thay chữ trong một cụm cố định, không chạm kết luận.
+ * Validator cứng (spec 5.1). Thuần, không sửa `ban`. Commit D chạy tập tối thiểu:
+ * SCHEMA, KHONG_CAN_CU, MA_KHONG_HOP_LE, LO_MA.
  */
-const NAY_QUA_KHU = /(?<![\p{L}\p{M}])(tháng|quãng|thời gian|giai đoạn|khoảng)( này)(?![\p{L}\p{M}])/giu;
-export const doiNayThanhDo = (s: string) => s.replace(NAY_QUA_KHU, (_m, a: string) => `${a} đó`);
+export function kiemCung(ban: BanNhap | null, ctx: Pick<NguCanhKiem, 'maHopLe' | 'maNguonHopLe'>): LoiCung[] {
+  if (!ban) return [{ ma: 'SCHEMA', chiTiet: 'bản trả về không phải một object JSON đúng schema' }];
+  const loi: LoiCung[] = [];
+  if (!ban.answer) loi.push({ ma: 'SCHEMA', chiTiet: 'thiếu "answer" hoặc "answer" rỗng' });
 
-export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
-  const bo: CauDaBo[] = [];
-  const quaKhu = ctx.thoiGian.thang?.trangThai === 'da-qua' ? doiNayThanhDo : (x: string) => x;
-  const { khuon, loaiSuKien } = ctx.phanLoai;
-  /*
-   * Ngoài phạm vi loại (b): đúng một câu chốt, không câu thân. Không có căn cứ
-   * là ĐÚNG ở đây, nên không thử lại; cũng không ép hướng (câu không nói về
-   * phần đời nào). Câu chốt vẫn qua guard từng câu.
-   */
-  const ngoaiPhamVi = !!ban.ngoaiPhamVi && ban.cau.length === 0 && !!ban.cauChot;
-  const coNghieng =
-    !ngoaiPhamVi && !!ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'D' || khuon === 'F1');
-
-  // Câu thân: làm sạch, kiểm, giữ mã F### thật.
-  let cau = ban.cau
-    .map((c) => {
-      const noiDung = quaKhu(lamSach(c.noiDung));
-      const ma = c.maDuKien.filter((m) => ctx.maHopLe.has(m));
-      return { ...c, noiDung, maDuKien: ma, coCanCu: ma.length > 0 };
-    })
-    .filter((c) => {
-      const ly = kiemMotCau(c.noiDung, ctx);
-      if (ly.length) bo.push({ noiDung: c.noiDung, lyDo: ly });
-      return ly.length === 0;
-    });
-
-  // 8. Câu chốt. E: câu mã đã mở, câu chốt model bỏ (nó dễ chọn hộ một vế).
-  let cauChot = khuon === 'E' || ctx.boChotModel ? '' : quaKhu(lamSach(ban.cauChot));
-  let dungDuPhong = false;
-  let lyDoThayChot: string | undefined;
-  const nghiengTrongGoi = ctx.nghieng
-    ? { ...ctx.nghieng, dauMoc: ctx.nghieng.dauMoc.filter((d) => ctx.tapTen.has(khoaTen(d.ten))) }
-    : null;
-  const duPhong = () =>
-    nghiengTrongGoi
-      ? cauChotDuPhong({
-          nghieng: nghiengTrongGoi,
-          chuDe: ctx.chuDe,
-          cauHoi: ctx.cauHoi,
-          moc: ctx.mocChot,
-          doiTuong: ctx.doiTuong,
-          ngonNgu: ctx.ngonNgu,
-        })
-      : '';
-
-  if (cauChot) {
-    const ly = kiemMotCau(cauChot, ctx, true);
-    if (ly.length) {
-      bo.push({ noiDung: cauChot, lyDo: ly });
-      lyDoThayChot = ly.join(',');
-      cauChot = '';
-    } else if (coNghieng && ctx.nghieng) {
-      const lech = soatCauChot({ ketLuan: cauChot, chieu: ban.chieuCauChot, huong: ctx.nghieng.huong });
-      if (lech) {
-        bo.push({ noiDung: cauChot, lyDo: ['nguoc-phia'] });
-        lyDoThayChot = lech;
-        cauChot = '';
-      }
-    }
+  const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m);
+  const sai = [...new Set(ban.claims.flatMap((c) => c.evidenceIds.filter((m) => !hopLe(m))))];
+  if (sai.length) loi.push({ ma: 'MA_KHONG_HOP_LE', chiTiet: `mã ${sai.join(', ')} không có trong DỮ KIỆN hay NGUỒN THAM CHIẾU` });
+  if (!ban.outOfScope && !ban.claims.some((c) => c.evidenceIds.some(hopLe))) {
+    loi.push({ ma: 'KHONG_CAN_CU', chiTiet: '"claims" không có kết luận nào dẫn mã F### / E### có trong gói' });
   }
 
-  // 9. Cân bằng / một phía. Chiều do mã (`nhomCuaHuong`), không do model khai.
-  if (coNghieng && ctx.nghieng) {
-    const nhom = nhomCuaHuong(ctx.nghieng.huong);
-    if (nhom === 'ngang') {
-      const coThuan = cau.some((c) => c.coCanCu && c.phia === 'thuan');
-      const coCan = cau.some((c) => c.coCanCu && c.phia === 'can');
-      // Thiếu một phía thì câu chốt dự phòng nêu đủ hai mốc thay cho model.
-      if (!(coThuan && coCan) && cauChot) {
-        lyDoThayChot = lyDoThayChot ?? 'can-bang-thieu-phia';
-        cauChot = '';
-      }
-    } else {
-      const nguoc: PhiaCau = nhom === 'thuan' ? 'can' : 'thuan';
-      let daGap = 0;
-      cau = cau.filter((c) => {
-        if (c.phia !== nguoc) return true;
-        daGap += 1;
-        if (daGap <= 1) return true;
-        bo.push({ noiDung: c.noiDung, lyDo: ['nguoc-phia'] });
-        return false;
-      });
-    }
+  const m = MA_MAY.exec(ban.answer);
+  if (m) loi.push({ ma: 'LO_MA', chiTiet: `văn có mã nội bộ "${m[0]}"`, doan: doanQuanh(ban.answer, m.index) });
+  else {
+    const cum = cumTu(ban.answer);
+    const bao = GIONG_BAO_CAO.find((c) => cum.has(c));
+    if (bao) loi.push({ ma: 'LO_MA', chiTiet: `văn có giọng báo cáo (cụm "${bao}", viết không dấu) — nói thẳng bằng lời thường` });
   }
-
-  // Câu mã đã kết luận (boChotModel) thì không chèn thêm câu chốt dự phòng sau nó.
-  if (!cauChot && coNghieng && !ctx.boChotModel) {
-    cauChot = duPhong();
-    dungDuPhong = !!cauChot;
-  }
-
-  // 12. Không có câu chốt hợp lệ (G, F1 không hướng): đẩy câu có căn cứ đầu tiên lên.
-  let chotCoCanCu = false;
-  if (!cauChot && khuon !== 'E') {
-    const i = cau.findIndex((c) => c.coCanCu);
-    if (i >= 0) {
-      cauChot = cau[i].noiDung;
-      chotCoCanCu = true;
-      cau = cau.filter((_, j) => j !== i);
-    }
-  }
-
-  // 10. Độ dài — tính cả câu mã.
-  const tran = tranDoDai(ctx);
-  // Hỏi một tháng: câu nguyệt hạn CUỐI CÙNG không bị cắt vì độ dài (cắt nó là tự gây thử lại).
-  // Cùng điều kiện với dòng dặn trong prompt: gói không có mã nguyệt hạn thì không đòi (tránh 502 chắc chắn).
-  const canNguyet = !ngoaiPhamVi && !!ctx.thoiGian.thang && khuon !== 'E' && (ctx.maNguyetHan?.size ?? 0) > 0;
-  const laNguyet = (c: { maDuKien: string[] }) => c.maDuKien.some((m) => ctx.maNguyetHan?.has(m));
-  const giuNguyet = (j: number) => canNguyet && laNguyet(cau[j]) && cau.filter(laNguyet).length === 1;
-  const dem = () => {
-    const tat = [...ctx.cauMa, cauChot, ...cau.map((c) => c.noiDung)].filter(Boolean);
-    return { soCau: tat.length, amTiet: tat.reduce((n, x) => n + soAmTiet(x), 0) };
-  };
-  if (tran) {
-    const catMot = (): boolean => {
-      // Bỏ câu không căn cứ trước, rồi câu có căn cứ từ cuối lên; không đụng câu chốt.
-      let i = -1;
-      for (let j = cau.length - 1; j >= 0; j--) if (!cau[j].coCanCu && !giuNguyet(j)) { i = j; break; }
-      if (i < 0) for (let j = cau.length - 1; j >= 0; j--) if (!giuNguyet(j)) { i = j; break; }
-      if (i < 0) return false;
-      bo.push({ noiDung: cau[i].noiDung, lyDo: ['qua-dai'] });
-      cau = cau.filter((_, j) => j !== i);
-      return true;
-    };
-    while (dem().soCau > tran.cau && catMot());
-    while (dem().amTiet > tran.amTiet && dem().soCau > 2 && catMot());
-  }
-
-  // 13. Chip
-  const chip = chonChip(ban.goiYTiep, ctx);
-
-  const { soCau, amTiet } = dem();
-  let thuLai: string | null = null;
-  // Mục 9 luật 5: hết câu CÓ CĂN CỨ (không phải hết câu) mới thử lại — câu chốt dự phòng do mã viết không tính.
-  if (ngoaiPhamVi && cauChot) thuLai = null;
-  else if (!chotCoCanCu && !cau.some((c) => c.coCanCu)) thuLai = 'het-cau';
-  else if (canNguyet && !cau.some(laNguyet)) thuLai = 'thieu-nguyet-han';
-  else if (tran && amTiet > tran.thuLai) thuLai = 'qua-dai';
-
-  return { cauChot, dungDuPhong, lyDoThayChot, cau, bo, chip, thuLai, soAmTiet: amTiet, soCau };
+  return loi;
 }
 
 /* ------------------------------------------------------------------ chip */
