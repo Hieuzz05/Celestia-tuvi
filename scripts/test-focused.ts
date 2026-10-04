@@ -709,7 +709,8 @@ for (const ca of CA_DOI_TUONG) {
     'Điều này không có nghĩa là chắc chắn mất tiền, mà là khoản vay khó đòi.',
     'Đây không đủ để kết luận chắc chắn rằng khoản vay mất.',
     'Celes chưa có đủ căn cứ để khẳng định một thay đổi nhà cụ thể sẽ xảy ra.',
-    'Lá số không có căn cứ để nói chắc chắn chuyện này.']) {
+    'Lá số không có căn cứ để nói chắc chắn chuyện này.',
+    'Điều này không đồng nghĩa với việc chắc chắn nhận việc ngay trong tháng.']) {
     kiem(!ma(c).includes('CHAC_CHAN_GIA'), `"${c}" bị CHAC_CHAN_GIA nhầm`);
   }
   // Mốc: tháng 10/2026 dương phủ tháng 8 và 9 âm; tháng kế (11) không lạ; hỏi "năm nay" mà nói "sang 2027" là lệch (delta #6).
