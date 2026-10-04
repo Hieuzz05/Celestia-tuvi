@@ -80,6 +80,12 @@ export const soAmTiet = (s: string) => s.split(/[^\p{L}\p{M}\d]+/u).filter(Boole
 
 const re = (mau: string, co = 'iu') => new RegExp(`(?<![\\p{L}\\p{M}])(?:${mau})(?![\\p{L}\\p{M}])`, co);
 
+/**
+ * Hai cụm hệ phái của `RO_RI_RAG` bỏ dấu xong trùng chữ thường: "tiền bạc phải" → "bac phai",
+ * "năm phải" → "nam phai" (eval I: bắt nhầm, phải viết lại). Ở Focused chỉ tính khi văn có dấu đúng.
+ */
+const HE_PHAI_CO_DAU: Record<string, RegExp> = { 'nam phai': re('nam phái'), 'bac phai': re('bắc phái') };
+
 /** Mọi cụm 1–5 từ của chuỗi đã bỏ dấu — khớp theo TỪ, như `ngon-ngu.ts`. */
 function cumTu(s: string): Set<string> {
   const tu = boDau(s).split(/[^a-z0-9%]+/).filter(Boolean);
@@ -309,7 +315,7 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
       if (chon) bao({ ma: 'CHON_HO', chiTiet: 'văn chọn hộ hoặc khuyên người hỏi nên làm gì — chỉ đọc bối cảnh, người hỏi tự quyết', doan: s.slice(0, 60) });
     }
     const cum = cumTu(s);
-    const nguon = RO_RI_RAG.find((c) => cum.has(c));
+    const nguon = RO_RI_RAG.find((c) => cum.has(c) && (HE_PHAI_CO_DAU[c]?.test(s) ?? true));
     if (nguon) bao({ ma: 'LO_NGUON', chiTiet: `văn nhắc nguồn (cụm "${nguon}", viết không dấu)`, doan: s.slice(0, 60) });
     const bc = GIONG_BAO_CAO.find((c) => cum.has(c));
     if (bc) bao({ ma: 'LO_MA', chiTiet: `văn có giọng báo cáo (cụm "${bc}", viết không dấu) — nói thẳng bằng lời thường` });

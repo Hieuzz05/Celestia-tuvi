@@ -693,6 +693,7 @@ for (const ca of CA_DOI_TUONG) {
     ['Đây không phải dấu hiệu xấu mà chắc chắn là lúc đổi nghề.', 'CHAC_CHAN_GIA'],
     ['Không có gì phải lo, việc tốt sẽ xảy ra.', 'CHAC_CHAN_GIA'],
     ['Theo tài liệu, năm nay công việc ổn.', 'LO_NGUON'],
+    ['Theo Bắc phái, năm nay công việc ổn.', 'LO_NGUON'],
     ['Theo F001, năm nay công việc ổn.', 'LO_MA'],
   ];
   for (const [c, x] of truot) kiem(ma(c).includes(x as never), `"${c}" không ra ${x}: ${ma(c)}`);
@@ -700,6 +701,10 @@ for (const ca of CA_DOI_TUONG) {
   kiem(!ma('Năm nay khá thuận. Suy cho cùng, nền vẫn vững.').some((x) => x.startsWith('TEN')), `"Suy…" đầu câu bị coi là tên: ${ma('Năm nay khá thuận. Suy cho cùng, nền vẫn vững.')}`);
   kiem(ma(qua, ctx(), [{ ...claimTot[0], claim: 'Thất Sát làm việc gấp' }]).includes('TEN_NGOAI_GOI'), 'tên lạ trong claim lọt');
   kiem(ma('Quãng 35 tuổi là lúc vững nhất.').length === 0, `tuổi trong đại vận bị chặn: ${ma('Quãng 35 tuổi là lúc vững nhất.')}`);
+  // Eval I: chữ thường bỏ dấu trùng cụm hệ phái — không phải nhắc nguồn.
+  for (const c of ['Điều làm bạn mệt không hẳn là thiếu tiền, mà là tiền bạc phải chia nhiều nơi.', 'Cả năm phải giữ nhịp đều.']) {
+    kiem(!ma(c).includes('LO_NGUON'), `"${c}" bị LO_NGUON nhầm`);
+  }
   // Delta #3: rào đón không phải phán chắc.
   for (const c of ['Celes không chắc chắn chuyện này, còn tùy bạn.', 'Không thể nào biết trước mọi chuyện.', 'Việc đó sẽ không đến ngay.',
     // Eval mù I: phủ định xa hơn một từ, cùng vế câu — từng ra 502.

@@ -275,8 +275,8 @@ export async function giaiHoiLai(cauHoi: string, cho: ChoHoiLai, chuDeTho: ChuDe
     const nhan = cho.doiTuong.nhan;
     const system = `Bạn xác định LÁ SỐ CỦA AI đang mở trong một cuộc trò chuyện Tử Vi. Celes vừa hỏi lại người dùng vì chưa biết lá số đang mở là của chính họ hay của ${nhan} của họ. Đọc câu người dùng vừa gõ, rồi trả DUY NHẤT một nhãn, không giải thích, không rào code:
 nguoi-duoc-hoi   lá số đang mở là của ${nhan} (người được hỏi)
-nguoi-hoi        lá số đang mở là của chính người dùng
-khong-lien-quan  câu không trả lời câu hỏi lại (hỏi sang chuyện khác)`;
+nguoi-hoi        người dùng nói lá số đang mở là của chính họ (vd "lá số này của tôi")
+khong-lien-quan  câu không trả lời câu hỏi lại: một câu hỏi mới, kể cả câu hỏi về chính người dùng (vd "Năm nay tiền bạc tôi thế nào?")`;
     const user = `Câu hỏi gốc: "${cho.cauHoiGoc.slice(0, 300)}"\nCeles hỏi lại: "${cauVanRieng(nn)}"\nNgười dùng vừa gõ: "${cau.slice(0, 300)}"`;
     const kq = await Promise.race([
       goiVoiFallback({ system, user, maxTokens: 60 }),
