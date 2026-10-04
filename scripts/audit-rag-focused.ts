@@ -18,7 +18,9 @@
  *   2. truy hồi về   — có trong `ungVien` (kèm hạng vector / từ khoá / RRF)
  *   3. được chọn     — có trong `daChon`
  *   4. đưa cho model — có trong `goi.bangChung` (mã E###, chính là khối `dungKhoiChoPrompt`)
- *   5. dùng trong claim — CHƯA ĐO ĐƯỢC trước commit D (chưa có `claims[]`)
+ *   5. dùng trong claim — chỉ với `--buoc5` (sau commit D): chạy `traLoiFocused` bằng MODEL THẬT
+ *      (bắt buộc AI_GHIM_MODEL + AI_TRAN_USD ≤ 0.5 + giá), xem có claim nào dẫn mã E### của một
+ *      đoạn gắn thực thể đó không. Lượt Focused tự truy hồi lại, nên đối chiếu theo đoạn CỦA LƯỢT ĐÓ.
  * Kết luận ca = khâu hỏng sớm nhất trên các thực thể kỳ vọng:
  *   kien-thuc | truy-hoi | chon-loc | prompt-dung | khong-lo-hong
  */
@@ -123,6 +125,8 @@ interface DongThucThe {
   duocChon: number;
   maE: string[];
   khau: Khau;
+  /** Bước 5: true = có claim dẫn E### của đoạn gắn thực thể; null = lượt 502, không đo */
+  dungTrongClaim?: boolean | null;
 }
 
 interface KetQuaCa {
@@ -144,6 +148,7 @@ interface KetQuaCa {
   soLanThu: number;
   thucThe: DongThucThe[];
   ketLuan: Khau;
+  buoc5?: { status: 200 | 502; lanGoi: number; thuLai: string | null; soClaim: number; maClaim: string[]; msTong: number };
 }
 
 async function main() {
@@ -155,6 +160,15 @@ async function main() {
   const { dungGoiBangChung } = await import('../lib/rag/bang-chung');
   const { traThucThe } = await import('../lib/rag/thuc-the');
   const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
+
+  const buoc5 = process.argv.includes('--buoc5');
+  if (buoc5) {
+    const thieu = ['AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'].filter((k) => !process.env[k]?.trim());
+    if (thieu.length || Number(process.env.AI_TRAN_USD) > 0.5) throw new Error(`--buoc5 cần ${thieu.join(', ') || 'AI_TRAN_USD ≤ 0.5'}`);
+  }
+  const { traLoiFocused } = await import('../lib/rag/focused/tra-loi-focused');
+  const { phienBanHienTai } = await import('../lib/rag/tra-loi');
+  const { tienDaTinh } = await import('../lib/ai/fallback');
 
   const sb = taoSupabaseAdmin();
   if (!sb) throw new Error('Thiếu Supabase trong .env.local — audit cần DB thật (chỉ SELECT).');
@@ -245,6 +259,40 @@ async function main() {
         khau,
       });
     }
+    let b5: KetQuaCa['buoc5'];
+    if (buoc5) {
+      const kqF = await traLoiFocused(
+        {
+          laSo,
+          cauHoi: ca.cauHoi,
+          namXem: NAM_XEM,
+          thangXem: vaoKh.thangXem,
+          lichSu: ca.lichSu ?? [],
+          ghiNhatKy: false,
+          dungModelPhanLoai: false,
+          ngonNgu: ca.nhom === 'en' ? 'en' : 'vi',
+        },
+        phienBanHienTai,
+        async () => []
+      );
+      const claims = kqF.banNhap?.claims ?? [];
+      const maDan = new Set(claims.flatMap((c) => c.evidenceIds));
+      const chunkF = kqF.vetPreview?.chunkIds ?? [];
+      const ttF = await thucTheCuaDoan(chunkF);
+      for (const d of dong) {
+        d.dungTrongClaim = kqF.van
+          ? chunkF.some((c, i) => !!ttF.get(c)?.has(d.id) && maDan.has(`E${String(i + 1).padStart(3, '0')}`))
+          : null;
+      }
+      b5 = {
+        status: kqF.van ? 200 : 502,
+        lanGoi: kqF.vetFocused?.lanGoi ?? 0,
+        thuLai: kqF.vetFocused?.thuLai ?? null,
+        soClaim: claims.length,
+        maClaim: [...maDan],
+        msTong: kqF.vetPreview?.msTong ?? 0,
+      };
+    }
     const ketLuan = dong.length ? THU_TU[Math.min(...dong.map((d) => THU_TU.indexOf(d.khau)))] : 'khong-lo-hong';
 
     ketQua.push({
@@ -266,8 +314,9 @@ async function main() {
       soLanThu,
       thucThe: dong,
       ketLuan,
+      ...(b5 ? { buoc5: b5 } : {}),
     });
-    console.log(`${ca.ma.padEnd(18)} ${keHoach.chuDe.padEnd(10)} cung=${cung.padEnd(10)} UV=${kq.ungVien.length} chọn=${kq.daChon.length} E=${goi.bangChung.length} → ${ketLuan}${soLanThu > 1 ? ` (thử ${soLanThu} lần)` : ''}`);
+    console.log(`${ca.ma.padEnd(18)} ${keHoach.chuDe.padEnd(10)} cung=${cung.padEnd(10)} UV=${kq.ungVien.length} chọn=${kq.daChon.length} E=${goi.bangChung.length} → ${ketLuan}${soLanThu > 1 ? ` (thử ${soLanThu} lần)` : ''}${b5 ? ` · b5 ${b5.status} gọi=${b5.lanGoi} claim=${b5.maClaim.join(',')} dùng=${dong.filter((d) => d.dungTrongClaim).length}/${dong.length} $${tienDaTinh().toFixed(3)}` : ''}`);
   }
 
   // Tổng hợp
@@ -290,14 +339,22 @@ async function main() {
       L.push(`| ${c.ma} | ${c.nhom} | ${c.cauHoi} | ${c.chuDe} / ${c.yDinh}${c.thangMucTieu ? ` · tháng ${c.thangMucTieu}` : ''} | ${c.cungTrongTam} | ${c.soUngVien} / ${c.soDaChon} / ${c.soE} / ${c.soF} | **${c.ketLuan}** |`);
     }
     L.push('\n## Chi tiết từng thực thể kỳ vọng\n');
-    L.push('Bước 5 (dùng trong claim): **chưa đo được** — trước commit D chưa có `claims[]`.\n');
+    L.push(
+      buoc5
+        ? 'Bước 5 (dùng trong claim): model thật, sau commit D. "có" = một claim dẫn mã E### của đoạn gắn thực thể (đoạn của chính lượt đó); "502" = lượt hỏng, không đo.\n'
+        : 'Bước 5 (dùng trong claim): **chưa đo** — chạy lại với `--buoc5`.\n'
+    );
     for (const c of ketQua) {
       L.push(`### ${c.ma} — ${c.laSo}\n`);
-      L.push('| Thực thể | (1) trong kho | (2) truy hồi về | hạng tốt nhất (vec / từ khoá / RRF) | (3) được chọn | (4) mã E | Khâu |');
-      L.push('|---|---|---|---|---|---|---|');
+      if (c.buoc5) {
+        const b = c.buoc5;
+        L.push(`Lượt model: ${b.status} · ${b.lanGoi} lần gọi${b.thuLai ? ` (viết lại vì ${b.thuLai})` : ''} · ${b.soClaim} claim dẫn ${b.maClaim.join(', ') || '–'} · ${b.msTong} ms\n`);
+      }
+      L.push('| Thực thể | (1) trong kho | (2) truy hồi về | hạng tốt nhất (vec / từ khoá / RRF) | (3) được chọn | (4) mã E | Khâu | (5) dùng trong claim |');
+      L.push('|---|---|---|---|---|---|---|---|');
       for (const d of c.thucThe) {
         const h = d.hangTotNhat ? `${d.hangTotNhat.vector ?? '–'} / ${d.hangTotNhat.tuKhoa ?? '–'} / ${d.hangTotNhat.rrf}` : '–';
-        L.push(`| ${d.ten} (${d.id}) | ${d.trongKho} | ${d.truyHoi} | ${h} | ${d.duocChon} | ${d.maE.join(', ') || '–'} | ${d.khau} |`);
+        L.push(`| ${d.ten} (${d.id}) | ${d.trongKho} | ${d.truyHoi} | ${h} | ${d.duocChon} | ${d.maE.join(', ') || '–'} | ${d.khau} | ${d.dungTrongClaim === undefined ? '–' : d.dungTrongClaim === null ? '502' : d.dungTrongClaim ? 'có' : 'không'} |`);
       }
       L.push('');
     }
@@ -306,6 +363,14 @@ async function main() {
     L.push(`- Ca phải truy hồi lại vì hết giờ câu lệnh DB: ${ketQua.filter((c) => c.soLanThu > 1).map((c) => `${c.ma} (${c.soLanThu} lần)`).join(', ') || 'không'}`);
     L.push(`- Độ trễ truy hồi (lần cuối) p50/max: ${[...ketQua.map((c) => c.doTreMs)].sort((a, b) => a - b)[Math.floor(ketQua.length / 2)]} / ${Math.max(...ketQua.map((c) => c.doTreMs))} ms`);
     L.push(`- Theo thực thể kỳ vọng (${tatCaTT.length}): ${THU_TU.map((k) => `${k} ${demTT[k]}`).join(' · ')}`);
+    if (buoc5) {
+      const tt5 = tatCaTT.filter((d) => d.dungTrongClaim === true || d.dungTrongClaim === false);
+      const toiPrompt = tt5.filter((d) => d.khau === 'khong-lo-hong');
+      const b = ketQua.flatMap((c) => (c.buoc5 ? [c.buoc5] : []));
+      const ms = b.map((x) => x.msTong).sort((x, y) => x - y);
+      L.push(`- Bước 5: thực thể được claim dẫn ${tt5.filter((d) => d.dungTrongClaim).length}/${tt5.length}; riêng thực thể đã tới prompt ở lượt audit ${toiPrompt.filter((d) => d.dungTrongClaim).length}/${toiPrompt.length}`);
+      L.push(`- Lượt model: 502 ${b.filter((x) => x.status === 502).length}/${b.length} · viết lại ${b.filter((x) => x.thuLai).length}/${b.length} · ca có ≥1 claim dẫn E### ${b.filter((x) => x.maClaim.some((m) => m.startsWith('E'))).length}/${b.length} · trễ p50/max ${ms[Math.floor(ms.length / 2)]} / ${ms[ms.length - 1]} ms · tiền $${tienDaTinh().toFixed(4)}`);
+    }
     writeFileSync(xuat, L.join('\n') + '\n', 'utf8');
     console.log(`Đã ghi ${xuat}`);
   }
