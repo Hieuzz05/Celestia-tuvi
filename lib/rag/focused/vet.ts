@@ -15,7 +15,6 @@ type Env = Record<string, string | undefined>;
 
 /** Mục tiêu thời gian của lượt — chỉ loại và số, không chữ. */
 export type ThoiGianVet =
-  | { loai: 'khong' }
   | { loai: 'nam'; nam: number }
   | { loai: 'thang-duong'; nam: number; thang: number }
   | { loai: 'thang-am'; namAm: number; thangAm: number; nhuan: boolean };

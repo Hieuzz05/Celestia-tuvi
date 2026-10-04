@@ -51,3 +51,22 @@ export function soChieu(chieu: NhomHuong | undefined, huong: HuongNghieng): 'thi
 export function docChieu(x: unknown): NhomHuong | undefined {
   return x === 'thuan' || x === 'ngang' || x === 'vuong' ? x : undefined;
 }
+
+/* ------------------------------------------------------- hướng của tháng */
+
+/**
+ * Hướng của một tháng dương phủ nhiều tháng âm (spec v2 §3.3). Mọi cửa sổ cùng
+ * nhóm → một chiều, nói gộp cả tháng; khác nhóm (kể cả ba cửa sổ) → hai nửa,
+ * mỗi claim nói về một nửa phải đúng chiều của nửa ấy.
+ */
+export type HuongThang =
+  | { kieu: 'mot-chieu'; nhom: NhomHuong; cuaSo: string[] }
+  | { kieu: 'hai-nua'; theoCuaSo: { cuaSo: string; nhom: NhomHuong }[] };
+
+export function gopHuongThang(theo: { cuaSo: string; huong: HuongNghieng }[]): HuongThang | null {
+  if (!theo.length) return null;
+  const ds = theo.map((t) => ({ cuaSo: t.cuaSo, nhom: nhomCuaHuong(t.huong) }));
+  return ds.every((d) => d.nhom === ds[0].nhom)
+    ? { kieu: 'mot-chieu', nhom: ds[0].nhom, cuaSo: ds.map((d) => d.cuaSo) }
+    : { kieu: 'hai-nua', theoCuaSo: ds };
+}

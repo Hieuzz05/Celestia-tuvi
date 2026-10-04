@@ -20,9 +20,6 @@ import type { KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
 
 /** Khoá lượt: "<số flow>#<thứ tự lượt, từ 1>". Lý do ghi ngay cạnh — commit nào gỡ. */
 const CHUA_DAT: Record<string, string> = {
-  '1#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '2#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '3#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
   '3#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
   '4#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
   '4#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
@@ -30,19 +27,8 @@ const CHUA_DAT: Record<string, string> = {
   '6#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
   '6#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
   '7#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '12#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '13#1': 'G — tháng nhuận dừng an toàn, không tính lượt (Q8)',
-  '14#1': 'G — tháng nhuận dừng an toàn, không tính lượt (Q8)',
-  '16#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '18#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2) + khuôn EN',
-  '19#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2) + tên tháng EN',
-  '21#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '22.5#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '23#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
+  '18#1': 'NỢ — planner không bắt "this year" nên khuôn ra G; spec 3.1 cấm thêm bảng từ / sửa planner',
   '24#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '25#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '26#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
-  '30#1': 'G — mô hình thời gian dương lịch / cửa sổ âm (spec 3.1–3.2)',
   '30#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
 };
 

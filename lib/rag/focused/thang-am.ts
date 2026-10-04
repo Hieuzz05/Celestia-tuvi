@@ -77,27 +77,99 @@ export function namDuongCua(bayGio: ThoiDiemAm): number {
   return lunarToSolar(bayGio.ngay, bayGio.thang, bayGio.nam)?.year ?? bayGio.nam;
 }
 
+/* ------------------------------------------------------------ cửa sổ âm */
+
 /**
- * Tháng âm phủ NHIỀU NGÀY NHẤT của một tháng dương (chủ dự án 04/10/2026:
- * "tháng 6" không kèm "âm" là tháng 6 dương). Nguyệt hạn tính theo tháng âm,
- * nên phải quy đổi; một tháng dương thường vắt qua hai tháng âm, lấy tháng âm
- * chiếm nhiều ngày nhất. Hoà thì lấy tháng âm đến trước (khi đó `ro` = false).
+ * Một đoạn liên tục của tháng dương nằm trong cùng một tháng âm (spec 3.2). Vận
+ * tháng tính theo âm lịch, nên một tháng dương được đọc bằng MỌI tháng âm chồng
+ * lên nó — không chọn "tháng chủ yếu", không trọng số theo số ngày.
  */
-export function thangAmChuYeu(
-  namDuong: number,
-  thangDuong: number
-): { nam: number; thang: number; nhuan: boolean; khoang: string | null; ro: boolean } {
-  const soNgay = new Date(Date.UTC(namDuong, thangDuong, 0)).getUTCDate();
-  const dem = new Map<string, { nam: number; thang: number; nhuan: boolean; n: number }>();
+export interface CuaSoAm {
+  ma: 'W1' | 'W2' | 'W3';
+  namAm: number;
+  thangAm: number;
+  nhuan: boolean;
+  /** 'YYYY-MM-DD' dương — phần GIAO với tháng dương (thang-am: cả tháng âm) */
+  tuNgay: string;
+  denNgay: string;
+  soNgay: number;
+  /** Theo ngày dương của cửa sổ so với hôm nay */
+  trangThai: 'da-qua' | 'dang' | 'toi';
+}
+
+const MA_CUA_SO = ['W1', 'W2', 'W3'] as const;
+const p2 = (n: number) => String(n).padStart(2, '0');
+const ngayChuoi = (d: Date) => `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())}`;
+
+/** Ngày dương của "bây giờ" (bayGio là ngày âm, tiêm được trong test), UTC nửa đêm. */
+export function ngayDuongCua(bayGio: ThoiDiemAm): Date {
+  const d = lunarToSolar(bayGio.ngay, bayGio.thang, bayGio.nam);
+  return d ? new Date(Date.UTC(d.year, d.month - 1, d.day)) : new Date();
+}
+
+function trangThaiKhoang(tu: string, den: string, homNay: Date): CuaSoAm['trangThai'] {
+  const h = ngayChuoi(homNay);
+  if (den < h) return 'da-qua';
+  return tu > h ? 'toi' : 'dang';
+}
+
+/**
+ * Các tháng âm chồng lên tháng dương `thang/nam`, theo thứ tự thời gian: 1–3 đoạn,
+ * liên tục, phủ kín tháng. Đi từng ngày bằng `solarToLunar`, gom đoạn cùng
+ * (năm âm, tháng âm, nhuận).
+ */
+export function cuaSoAmCuaThangDuong(nam: number, thang: number, homNay: Date = new Date()): CuaSoAm[] {
+  const soNgay = new Date(Date.UTC(nam, thang, 0)).getUTCDate();
+  const doan: { namAm: number; thangAm: number; nhuan: boolean; tu: number; den: number }[] = [];
   for (let d = 1; d <= soNgay; d++) {
-    const am = solarToLunar(d, thangDuong, namDuong);
-    const k = `${am.year}-${am.month}-${am.isLeapMonth ? 1 : 0}`;
-    const cu = dem.get(k);
-    if (cu) cu.n += 1;
-    else dem.set(k, { nam: am.year, thang: am.month, nhuan: am.isLeapMonth === true, n: 1 });
+    const am = solarToLunar(d, thang, nam);
+    const nhuan = am.isLeapMonth === true;
+    const cuoi = doan[doan.length - 1];
+    if (cuoi && cuoi.namAm === am.year && cuoi.thangAm === am.month && cuoi.nhuan === nhuan) cuoi.den = d;
+    else doan.push({ namAm: am.year, thangAm: am.month, nhuan, tu: d, den: d });
   }
-  let chon = { nam: namDuong, thang: thangDuong, nhuan: false, n: 0 };
-  for (const v of dem.values()) if (v.n > chon.n) chon = v;
-  // `ro`: tháng âm chiếm từ 60% số ngày — dưới mức đó (kể cả hoà) không được nói "phần lớn".
-  return { nam: chon.nam, thang: chon.thang, nhuan: chon.nhuan, khoang: khoangDuong(chon.nam, chon.thang, chon.nhuan), ro: chon.n * 5 >= soNgay * 3 };
+  return doan.slice(0, 3).map((x, i) => {
+    const tuNgay = `${nam}-${p2(thang)}-${p2(x.tu)}`;
+    const denNgay = `${nam}-${p2(thang)}-${p2(x.den)}`;
+    return {
+      ma: MA_CUA_SO[i],
+      namAm: x.namAm,
+      thangAm: x.thangAm,
+      nhuan: x.nhuan,
+      tuNgay,
+      denNgay,
+      soNgay: x.den - x.tu + 1,
+      trangThai: trangThaiKhoang(tuNgay, denNgay, homNay),
+    };
+  });
+}
+
+/** Tháng âm nói rõ: đúng một cửa sổ là cả tháng âm. Rỗng khi không đổi được (vd. nhuận không có). */
+export function cuaSoCuaThangAm(namAm: number, thangAm: number, nhuan: boolean, homNay: Date = new Date()): CuaSoAm[] {
+  if (nhuan && !coThangNhuan(namAm, thangAm)) return [];
+  const dau = lunarToSolar(1, thangAm, namAm, nhuan);
+  const cuoi = ngayCuoiThangAm(namAm, thangAm, nhuan);
+  if (!dau || !cuoi) return [];
+  const d0 = new Date(Date.UTC(dau.year, dau.month - 1, dau.day));
+  const tuNgay = ngayChuoi(d0);
+  const denNgay = ngayChuoi(cuoi);
+  return [
+    {
+      ma: 'W1',
+      namAm,
+      thangAm,
+      nhuan,
+      tuNgay,
+      denNgay,
+      soNgay: Math.round((cuoi.getTime() - d0.getTime()) / 86400000) + 1,
+      trangThai: trangThaiKhoang(tuNgay, denNgay, homNay),
+    },
+  ];
+}
+
+/** Trạng thái của tháng DƯƠNG người hỏi (so năm, tháng dương với hôm nay). */
+export function trangThaiThangDuong(nam: number, thang: number, homNay: Date): 'da-qua' | 'dang' | 'toi' {
+  const a = nam * 12 + thang;
+  const b = homNay.getUTCFullYear() * 12 + homNay.getUTCMonth() + 1;
+  return a === b ? 'dang' : a < b ? 'da-qua' : 'toi';
 }

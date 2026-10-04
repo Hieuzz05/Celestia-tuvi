@@ -18,12 +18,12 @@ import { CHUAN_NGON_NGU_CELES } from '../chuan-ngon-ngu';
 import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import { chonBoiCanhHoiThoai } from '../tiep-noi';
-import { nhomCuaHuong, type NhomHuong } from './chot-huong';
+import { nhomCuaHuong, type HuongThang, type NhomHuong } from './chot-huong';
 import { khoaTen, tapTenTuGoi } from './quet-ten';
 import type { LoiCung } from './hop-dong';
 import type { NgonNgu } from './ngon-ngu';
 import type { BoiCanhThoiGian, PhanLoai } from './phan-loai';
-import { khoangDuong } from './thang-am';
+import { ngayDuongCua, type CuaSoAm } from './thang-am';
 
 /* --------------------------------------------------------------- giọng */
 
@@ -81,7 +81,7 @@ LUẬT CHO "answer":
 LUẬT CHO "claims" — người đọc KHÔNG thấy, dùng để kiểm căn cứ:
 - claims[0] là kết luận chính của answer. "direction" của claims[0] nói phần đời đang hỏi đang thuận, ngang hay vướng (không phải chuyện người hỏi mong hay sợ).
 - Mỗi claim dẫn ít nhất một mã F### hoặc E### có trong gói lượt này. Mã không có trong gói là căn cứ bịa: cả bài bị viết lại.
-- "timeRefs" chỉ khi claim nói về một mốc ("nam" = năm đang đọc).
+- "timeRefs" chỉ khi claim nói về một mốc ("nam" = năm đang đọc; "W1" / "W2" = một phần của tháng, theo khối THỜI GIAN).
 
 LUẬT CHO "suggestedQuestions": lời người dùng bấm, không phải lời bạn dặn. Mỗi chip đi sâu thêm MỘT lớp so với câu vừa hỏi, không lặp lại câu ấy hay chip lượt trước. Không chip hỏi tên, họ của người khác; không chip hỏi vận riêng của người khác; không chip "Tháng nào…", "Khi nào…"; không chip khuyên ("Có nên…"), hỏi tính cách người khác, hỏi kéo dài bao lâu, hay nhắc "Đại vận".`;
 
@@ -248,6 +248,90 @@ export interface MocTinhSan {
   thoiGian: BoiCanhThoiGian;
   /** Năm âm hiệu lực bước sang đại vận mới ngay sau Tết */
   doiDaiVanSauTet?: boolean;
+  /** Hướng của tháng theo cửa sổ âm (spec v2 §3.3) — chỉ khi hỏi một tháng */
+  huongThang?: HuongThang | null;
+  /** Mã nguyệt hạn + lưu niên của từng cửa sổ */
+  maTheoCuaSo?: Record<string, string[]>;
+}
+
+const TRANG_THAI: Record<CuaSoAm['trangThai'], string> = { 'da-qua': 'đã qua', dang: 'đang diễn ra', toi: 'sắp tới' };
+const TEN_CHIEU: Record<NhomHuong, string> = { thuan: 'thuận', ngang: 'ngang', vuong: 'vướng' };
+const SO_CHU = ['', 'một', 'hai', 'ba'];
+const dmy = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+const ngayHom = (d: Date) =>
+  `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
+
+/** Chiều của một cửa sổ, nếu đã tính. */
+function chieuCuaSo(h: HuongThang | null | undefined, w: string): NhomHuong | undefined {
+  if (!h) return undefined;
+  return h.kieu === 'mot-chieu' ? h.nhom : h.theoCuaSo.find((x) => x.cuaSo === w)?.nhom;
+}
+
+/**
+ * Khối THỜI GIAN (spec v2 §3.4): tháng người hỏi đang hỏi, các tháng âm chồng
+ * lên nó, chiều của từng phần, và kết luận cách nói. Cùng chiều thì nói gộp,
+ * không giải thích lịch; khác chiều mới tả hai phần.
+ */
+function khoiThoiGian(m: MocTinhSan): string[] {
+  const t = m.thoiGian.thang!;
+  const homNay = ngayHom(ngayDuongCua(m.bayGio));
+  const dong: string[] = [];
+  if (t.muc.loai === 'thang-duong') {
+    dong.push(
+      `THỜI GIAN NGƯỜI HỎI ĐANG HỎI: tháng ${t.muc.thang}/${t.muc.nam} dương lịch — ${TRANG_THAI[t.trangThai]} (hôm nay ${homNay}).`
+    );
+    dong.push(
+      t.cuaSo.length > 1
+        ? `Vận tháng tính theo âm lịch. Tháng này phủ ${SO_CHU[t.cuaSo.length]} tháng âm:`
+        : 'Vận tháng tính theo âm lịch. Tháng này nằm trọn trong một tháng âm:'
+    );
+  } else {
+    const w = t.cuaSo[0];
+    dong.push(
+      `THỜI GIAN NGƯỜI HỎI ĐANG HỎI: tháng ${t.muc.thangAm}${t.muc.nhuan ? ' nhuận' : ''} âm lịch năm ${t.muc.namAm}${
+        w ? ` (${dmy(w.tuNgay)}/${w.tuNgay.slice(0, 4)}–${dmy(w.denNgay)}/${w.denNgay.slice(0, 4)} dương lịch)` : ''
+      } — ${TRANG_THAI[t.trangThai]} (hôm nay ${homNay}).`
+    );
+    if (t.khongCoNhuan) dong.push(`Năm này không có tháng ${t.muc.thangAm} nhuận, đọc tháng ${t.muc.thangAm} âm thường.`);
+  }
+  for (const w of t.cuaSo) {
+    const chieu = chieuCuaSo(m.huongThang, w.ma);
+    const ma = m.maTheoCuaSo?.[w.ma] ?? [];
+    dong.push(
+      `  ${w.ma}: ${dmy(w.tuNgay)}–${dmy(w.denNgay)}, thuộc tháng ${w.thangAm}${w.nhuan ? ' nhuận' : ''} âm — ${TRANG_THAI[w.trangThai]}` +
+        `${chieu ? ` — chiều: ${TEN_CHIEU[chieu]}` : ''}${ma.length ? ` — căn cứ ${ma.join(', ')}` : ''}`
+    );
+  }
+  const h = m.huongThang;
+  if (h?.kieu === 'hai-nua') {
+    const dau = t.cuaSo[0];
+    dong.push(
+      `KẾT LUẬN THỜI GIAN: các phần KHÁC CHIỀU → tả đầu tháng (đến khoảng ${Number(dau.denNgay.slice(8, 10))}/${Number(dau.denNgay.slice(5, 7))}) và phần còn lại của tháng một cách tự nhiên; có thể nói một câu ngắn vì sao (vận tháng theo âm lịch). Không gọi tên ${t.cuaSo.map((w) => w.ma).join('/')}.`
+    );
+    dong.push(
+      `Claim nói về một phần tháng thì "timeRefs" là đúng mã phần đó (${h.theoCuaSo
+        .map((x) => `["${x.cuaSo}"]`)
+        .join(' hoặc ')}) và "direction" là chiều của phần đó (${h.theoCuaSo
+        .map((x) => `${x.cuaSo}: "${NHAN_CHIEU[x.nhom]}"`)
+        .join(', ')}). Mỗi phần cần ít nhất một claim dẫn căn cứ của phần đó.`
+    );
+  } else if (t.cuaSo.length > 1) {
+    dong.push(
+      `KẾT LUẬN THỜI GIAN: ${t.cuaSo.length > 2 ? 'các' : 'hai'} phần CÙNG CHIỀU → nói gộp cả tháng ${t.muc.loai === 'thang-duong' ? t.muc.thang : t.muc.thangAm}, KHÔNG giải thích âm/dương lịch.`
+    );
+  } else {
+    dong.push('KẾT LUẬN THỜI GIAN: nói về cả tháng, KHÔNG giải thích âm/dương lịch.');
+  }
+  dong.push('Không cộng, không chấm điểm, không gọi phần nào "nặng hơn" theo số ngày.');
+  if (t.trangThai === 'da-qua') {
+    dong.push('Tháng này ĐÃ QUA: "answer" nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây". Không viết "tháng này", "quãng này".');
+  } else if (t.trangThai === 'toi') {
+    dong.push(
+      'Tháng này CHƯA TỚI: nói như dự báo ("tháng đó dễ…", "khi vào tháng đó…"), KHÔNG dùng "đang", KHÔNG gọi là "tháng này". ' +
+        'Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng đó đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".'
+    );
+  }
+  return dong;
 }
 
 /**
@@ -257,34 +341,8 @@ export interface MocTinhSan {
 export function khoiMoc(m: MocTinhSan, khuon?: PhanLoai['khuon']): string {
   const { namHieuLuc, thang } = m.thoiGian;
   const dong = [`Năm đang đọc: năm âm ${namHieuLuc} (${canChiCuaNam(namHieuLuc)}).`];
-  if (thang) {
-    const khoang = khoangDuong(thang.nam, thang.thang, thang.nhuan === 'nhuan');
-    dong.push(
-      `Tháng đang đọc: tháng ${thang.thang}${thang.nhuan === 'nhuan' ? ' nhuận' : ''} âm${khoang ? ` (khoảng ${khoang} dương lịch)` : ''}.`
-    );
-    if (thang.duong) {
-      dong.push(
-        `Người dùng hỏi tháng ${thang.duong.thang}/${thang.duong.nam} DƯƠNG LỊCH; phần lớn tháng đó là tháng ${thang.thang} âm ở trên. Câu mở đầu do hệ thống viết đã giải thích quy đổi — KHÔNG nhắc lại, KHÔNG viết "tháng ${thang.thang} âm"; gọi là "tháng ${thang.trangThai === 'dang' ? 'này' : 'đó'}".`
-      );
-    }
-    if (thang.trangThai === 'da-qua') {
-      dong.push('Tháng này ĐÃ QUA. Nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây".');
-      dong.push(
-        thang.duong
-          ? 'Câu mở đầu do hệ thống viết đã nêu tháng và năm — "answer" KHÔNG lặp lại tên tháng, năm. Không viết "tháng này", "quãng này".'
-          : `"answer" tự nói ngay đầu rằng đang nhìn lại tháng ${thang.thang}${thang.nhuan === 'nhuan' ? ' nhuận' : ''} âm năm ${thang.nam} đã qua — đây là nhìn lại, không phải dự báo. Không viết "tháng này", "quãng này".`
-      );
-    } else if (thang.trangThai === 'dang') {
-      dong.push('Đây là tháng hiện tại.');
-    } else {
-      dong.push(
-        `Tháng này CHƯA TỚI: nói như dự báo ("tháng đó dễ…", "khi vào tháng đó…"), KHÔNG dùng "đang", KHÔNG gọi là "tháng này". ` +
-          `Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng ${thang.thang} đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".`
-      );
-    }
-  } else {
-    dong.push('Câu hỏi không chỉ một tháng cụ thể — không tự nêu tháng nào.');
-  }
+  if (thang) dong.push(...khoiThoiGian(m));
+  else dong.push('Câu hỏi không chỉ một tháng cụ thể — không tự nêu tháng nào.');
   if (namHieuLuc === m.bayGio.nam && khuon !== 'D') {
     const con = 12 - m.bayGio.thang;
     dong.push(con > 0 ? `Năm âm ${namHieuLuc} còn ${con} tháng sau tháng hiện tại.` : `Năm âm ${namHieuLuc} đang ở tháng cuối.`);
@@ -344,7 +402,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   phan.push(khoiMoc(v.moc, v.phanLoai.khuon));
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).
   const maThang = v.goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id);
-  if (v.moc.thoiGian.thang && maThang.length) {
+  if (v.moc.thoiGian.thang && maThang.length && v.moc.huongThang?.kieu !== 'hai-nua') {
     phan.push(
       `Câu hỏi về MỘT tháng: ít nhất một claim phải dẫn dữ kiện của tháng đang đọc (${maThang.join(', ')}). ` +
         'Phần đó nói sao ở cung tháng làm phần ĐANG HỎI thuận hay vướng hơn trong tháng; KHÔNG mượn nghĩa của tên cung đó ' +

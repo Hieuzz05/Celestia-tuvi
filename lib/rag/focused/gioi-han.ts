@@ -33,15 +33,17 @@ export function mocDaHoi(
   keHoach: Pick<KeHoachTruyVan, 'namMucTieu'>
 ): { moc: MocHoi; ketThuc: Date } | null {
   const t = tg.thang;
-  if (t?.duong) {
+  if (t?.muc.loai === 'thang-duong') {
     return {
-      moc: { loai: 'thang-duong', nam: t.duong.nam, thang: t.duong.thang },
-      ketThuc: new Date(Date.UTC(t.duong.nam, t.duong.thang, 0)),
+      moc: { loai: 'thang-duong', nam: t.muc.nam, thang: t.muc.thang },
+      ketThuc: new Date(Date.UTC(t.muc.nam, t.muc.thang, 0)),
     };
   }
-  if (t) {
-    const kt = ngayCuoiThangAm(t.nam, t.thang, t.nhuan === 'nhuan');
-    return kt ? { moc: { loai: 'thang-am', nam: t.nam, thang: t.thang, nhuan: t.nhuan === 'nhuan' }, ketThuc: kt } : null;
+  if (t?.muc.loai === 'thang-am') {
+    const kt = ngayCuoiThangAm(t.muc.namAm, t.muc.thangAm, t.muc.nhuan);
+    return kt
+      ? { moc: { loai: 'thang-am', nam: t.muc.namAm, thang: t.muc.thangAm, nhuan: t.muc.nhuan }, ketThuc: kt }
+      : null;
   }
   // Chỉ năm GỌI TÊN mới so — năm đang xem mặc định là năm hiện tại, không phải câu hỏi của họ.
   if (keHoach.namMucTieu === undefined) return null;

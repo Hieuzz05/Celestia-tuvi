@@ -15,7 +15,16 @@ import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { laCauChieuXau } from './chot-huong';
 import { khopCum } from './khop';
-import { coThangNhuan, laCuoiNamAm, namDuongCua, soVoiBayGio, thangAmChuYeu } from './thang-am';
+import {
+  coThangNhuan,
+  cuaSoAmCuaThangDuong,
+  cuaSoCuaThangAm,
+  laCuoiNamAm,
+  ngayDuongCua,
+  soVoiBayGio,
+  trangThaiThangDuong,
+  type CuaSoAm,
+} from './thang-am';
 
 export type Khuon = 'A' | 'B' | 'C' | 'D' | 'E' | 'F1' | 'F2' | 'G';
 
@@ -216,28 +225,29 @@ export function phanKhuon(vao: {
 
 /* --------------------------------------------------------- mốc thời gian */
 
-export interface MocThang {
-  nam: number;
-  thang: number;
+/**
+ * Người hỏi đang hỏi mốc nào (spec v2 §3.1). "Tháng 10", "10/2026", "tháng này /
+ * tới / sau", "October" là tháng DƯƠNG; chỉ "tháng 10 âm / âm lịch" hay "tháng 6
+ * nhuận" mới là tháng âm.
+ */
+export type MucTieuThoiGian =
+  | { loai: 'nam'; nam: number }
+  | { loai: 'thang-duong'; nam: number; thang: number }
+  | { loai: 'thang-am'; namAm: number; thangAm: number; nhuan: boolean };
+
+export interface ThangDangHoi {
+  muc: Exclude<MucTieuThoiGian, { loai: 'nam' }>;
+  /** Tháng dương: so tháng dương với hôm nay; tháng âm: so tháng âm. */
   trangThai: 'da-qua' | 'dang' | 'toi';
-  /**
-   * `nhuan` khi đang đọc tháng X NHUẬN (người dùng gõ "nhuận", hoặc tháng dương
-   * họ hỏi rơi phần lớn vào tháng nhuận) — engine chưa tách, mã dừng. `thuong`
-   * khi năm có cả X thường lẫn X nhuận mà đọc X thường. `null` khi năm không có
-   * nhuận ở tháng đó.
-   */
-  nhuan: 'nhuan' | 'thuong' | null;
-  /**
-   * Tháng DƯƠNG người dùng hỏi, khi họ gọi số tháng mà không nói "âm" (chủ dự
-   * án 04/10/2026: "tháng 6" là tháng 6 dương). `nam` / `thang` ở trên là tháng
-   * âm phủ phần lớn tháng dương ấy — nguyệt hạn tính theo tháng âm.
-   */
-  duong?: { nam: number; thang: number; khoang: string | null; ro: boolean };
+  /** Mọi tháng âm chồng lên tháng đang hỏi (§3.2) — tháng âm nói rõ thì đúng 1. */
+  cuaSo: CuaSoAm[];
+  /** Hỏi "tháng X nhuận" mà năm ấy không có X nhuận — đọc tháng X thường (§3.5). */
+  khongCoNhuan?: true;
 }
 
 export interface BoiCanhThoiGian {
   namHieuLuc: number;
-  thang: MocThang | null;
+  thang: ThangDangHoi | null;
   /** N4: tháng âm 11–12, hỏi gần, chỉ có căn cứ năm hiện tại */
   cuoiNam: boolean;
 }
@@ -250,9 +260,60 @@ const NHUAN = /(?<![\p{L}\p{M}])nhu[aậ]n(?![\p{L}\p{M}])/u;
  */
 const AM = /th[aá]ng\s*(?:1[0-2]|[1-9])\s*(?:nhu[aậ]n\s*)?(?:âm|am|al)(?![\p{L}\p{M}])(?!\s*(?:thầm|tham|nhạc|nhac|hiểu|hieu|ấm|ỉ)(?![\p{L}\p{M}]))|(?<![\p{L}\p{M}])(?:âm\s*lịch|am\s*lich|lịch\s*âm|lich\s*am)(?![\p{L}\p{M}])/u;
 
+const THANG_NAM_SO = /(?<![\p{L}\p{M}])th[aá]ng\s*(?:1[0-2]|[1-9])\s*(?:\/|-|năm|nam)\s*((?:19|20)\d{2})(?!\d)/u;
+
+/** Tên tháng tiếng Anh (§3.1). "may" viết thường đứng riêng KHÔNG phải tháng. */
+const THANG_EN_SO: Record<string, number> = {
+  january: 1, jan: 1, february: 2, feb: 2, march: 3, mar: 3, april: 4, apr: 4,
+  june: 6, jun: 6, july: 7, jul: 7, august: 8, aug: 8, september: 9, sep: 9, sept: 9,
+  october: 10, oct: 10, november: 11, nov: 11, december: 12, dec: 12,
+};
+const TEN_EN = /\b(january|february|march|april|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept|sep|oct|nov|dec)\b/i;
+const MAY_EN = /\b(?:in|this|next)\s+may\b|\bmay\s+(?:19|20)\d{2}\b/i;
+
+/** Tháng tiếng Anh trong câu và năm đi kèm (nếu nói). */
+export function thangTiengAnh(cauHoi: string, namNay: number): { nam: number; thang: number } | null {
+  let thang: number | null = null;
+  let viTri = -1;
+  let dai = 0;
+  const m = TEN_EN.exec(cauHoi);
+  if (m) {
+    thang = THANG_EN_SO[m[1].toLowerCase()];
+    viTri = m.index;
+    dai = m[0].length;
+  } else {
+    const may = MAY_EN.exec(cauHoi);
+    if (may) {
+      const k = may[0].toLowerCase().indexOf('may');
+      thang = 5;
+      viTri = may.index + k;
+      dai = 3;
+    } else {
+      // "May" viết hoa giữa câu (không đứng đầu câu): "find a job in early May".
+      const re = /\bMay\b/g;
+      let x: RegExpExecArray | null;
+      while ((x = re.exec(cauHoi))) {
+        const truoc = cauHoi.slice(0, x.index).trimEnd();
+        if (truoc && !/[.?!]$/.test(truoc)) {
+          thang = 5;
+          viTri = x.index;
+          dai = 3;
+          break;
+        }
+      }
+    }
+  }
+  if (thang === null) return null;
+  const sau = /^\s*,?\s*((?:19|20)\d{2})(?!\d)/.exec(cauHoi.slice(viTri + dai));
+  if (sau) return { nam: Number(sau[1]), thang };
+  const truoc = cauHoi.slice(0, viTri).toLowerCase();
+  if (/\bnext\s*$/.test(truoc)) return { nam: namNay + 1, thang };
+  return { nam: namNay, thang };
+}
+
 /**
  * Mốc tháng / năm của lượt. `namXem` là năm âm đang neo (năm hiện tại), `bayGio`
- * là ngày âm hôm nay — tiêm vào được để test N2 / N4.
+ * là ngày âm hôm nay — tiêm vào được để test N2 / N4 / cửa sổ.
  */
 export function boiCanhThoiGian(vao: {
   cauHoi: string;
@@ -261,40 +322,57 @@ export function boiCanhThoiGian(vao: {
   bayGio: ThoiDiemAm;
 }): BoiCanhThoiGian {
   const { cauHoi, keHoach, namXem, bayGio } = vao;
-  let namHieuLuc = keHoach.namMucTieu ?? namXem;
+  const homNay = ngayDuongCua(bayGio);
+  const namDuongNay = homNay.getUTCFullYear();
+  const s = cauHoi.normalize('NFC').toLowerCase();
 
-  let thang: MocThang | null = null;
-  if (keHoach.thangMucTieu !== undefined) {
-    const s = cauHoi.normalize('NFC').toLowerCase();
-    const t = keHoach.thangMucTieu;
-    const goiSo = THANG_SO.exec(s);
-    const goiDichDanh = !!goiSo && Number(goiSo[1]) === t;
-    if (goiDichDanh && !AM.test(s) && !NHUAN.test(s)) {
-      // "Tháng 6" trơn = tháng 6 DƯƠNG. Đọc tháng âm phủ phần lớn tháng ấy.
-      const namDuong = keHoach.namMucTieu ?? namDuongCua(bayGio);
-      const q = thangAmChuYeu(namDuong, t);
-      namHieuLuc = q.nam;
-      thang = {
-        nam: q.nam,
-        thang: q.thang,
-        trangThai: soVoiBayGio(q.nam, q.thang, bayGio),
-        nhuan: q.nhuan ? 'nhuan' : coThangNhuan(q.nam, q.thang) ? 'thuong' : null,
-        duong: { nam: namDuong, thang: t, khoang: q.khoang, ro: q.ro },
-      };
-    } else {
-      // Tháng âm nói rõ, hoặc "tháng này / tháng tới" (planner đã tính theo tháng âm
-      // đang chạy). Không nói "nhuận" thì là tháng thường — không hỏi lại.
-      const nhuan: MocThang['nhuan'] =
-        goiDichDanh && coThangNhuan(namHieuLuc, t) ? (NHUAN.test(s) ? 'nhuan' : 'thuong') : null;
-      thang = { nam: namHieuLuc, thang: t, trangThai: soVoiBayGio(namHieuLuc, t, bayGio), nhuan };
-    }
+  let muc: ThangDangHoi['muc'] | null = null;
+  let khongCoNhuan = false;
+  const t = keHoach.thangMucTieu;
+  const goiSo = THANG_SO.exec(s);
+  const goiDichDanh = t !== undefined && !!goiSo && Number(goiSo[1]) === t;
+  const en = goiDichDanh ? null : thangTiengAnh(cauHoi.normalize('NFC'), keHoach.namMucTieu ?? namDuongNay);
+
+  if (goiDichDanh && (AM.test(s) || NHUAN.test(s))) {
+    // Tháng âm nói rõ: một cửa sổ là cả tháng âm. Hỏi nhuận mà năm không có → tháng thường.
+    const namAm = keHoach.namMucTieu ?? namXem;
+    const hoiNhuan = NHUAN.test(s);
+    const coNhuan = hoiNhuan && coThangNhuan(namAm, t);
+    khongCoNhuan = hoiNhuan && !coNhuan;
+    muc = { loai: 'thang-am', namAm, thangAm: t, nhuan: coNhuan };
+  } else if (goiDichDanh) {
+    // "Tháng 10", "tháng 10/2026" = tháng DƯƠNG (chủ dự án 04/10/2026).
+    const kem = THANG_NAM_SO.exec(s);
+    muc = { loai: 'thang-duong', nam: kem ? Number(kem[1]) : keHoach.namMucTieu ?? namDuongNay, thang: t };
+  } else if (en) {
+    muc = { loai: 'thang-duong', nam: en.nam, thang: en.thang };
+  } else if (t !== undefined) {
+    // "Tháng này / tới / sau": planner tính theo tháng âm đang chạy — giữ nguyên
+    // planner, quy độ lệch sang tháng dương của hôm nay.
+    const lech = (t - bayGio.thang + 12) % 12;
+    const tong = homNay.getUTCMonth() + lech;
+    muc = { loai: 'thang-duong', nam: namDuongNay + Math.floor(tong / 12), thang: (tong % 12) + 1 };
   }
 
+  let thang: ThangDangHoi | null = null;
+  if (muc?.loai === 'thang-duong') {
+    thang = {
+      muc,
+      trangThai: trangThaiThangDuong(muc.nam, muc.thang, homNay),
+      cuaSo: cuaSoAmCuaThangDuong(muc.nam, muc.thang, homNay),
+    };
+  } else if (muc?.loai === 'thang-am') {
+    thang = {
+      muc,
+      trangThai: soVoiBayGio(muc.namAm, muc.thangAm, bayGio),
+      cuaSo: cuaSoCuaThangAm(muc.namAm, muc.thangAm, muc.nhuan, homNay),
+      ...(khongCoNhuan ? { khongCoNhuan: true as const } : {}),
+    };
+  }
+
+  const namHieuLuc = thang?.cuaSo[0]?.namAm ?? keHoach.namMucTieu ?? namXem;
   const cuoiNam =
-    laCuoiNamAm(bayGio) &&
-    keHoach.phamViThoiGian === 'gan' &&
-    namHieuLuc === bayGio.nam &&
-    keHoach.thangMucTieu === undefined;
+    laCuoiNamAm(bayGio) && keHoach.phamViThoiGian === 'gan' && namHieuLuc === bayGio.nam && !thang;
 
   return { namHieuLuc, thang, cuoiNam };
 }

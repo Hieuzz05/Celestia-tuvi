@@ -10,14 +10,13 @@
  * `chonChip` lọc chip (không đụng `answer`).
  */
 
-import { lunarToSolar } from '@/lib/tuvi/lunar';
 import { RO_RI_RAG } from '../ngon-ngu';
 import { tachManh } from '../sua-chua';
 import { boDau, tenBiaChan } from '../thuc-the';
 import type { NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import type { ChuDe } from '../planner';
-import { nhomCuaHuong, soChieu } from './chot-huong';
+import { nhomCuaHuong, soChieu, type HuongThang } from './chot-huong';
 import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
@@ -25,7 +24,6 @@ import type { BanNhap, LoiCung } from './hop-dong';
 import { laChipNgoaiTam } from './ngoai-tam';
 import { laHoiKhiNao, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { tenNgoaiTap } from './quet-ten';
-import { ngayCuoiThangAm } from './thang-am';
 
 /* ------------------------------------------------------------------ kiểu */
 
@@ -66,6 +64,10 @@ export interface NguCanhKiem {
   chipTruoc: string[];
   /** Mã F### loại `nguyet-han` trong gói */
   maNguyetHan?: ReadonlySet<string>;
+  /** Hướng của tháng đang hỏi theo cửa sổ âm (spec v2 §3.3) */
+  huongThang?: HuongThang;
+  /** Mã nguyệt hạn + lưu niên của từng cửa sổ (W1/W2/W3) */
+  maTheoCuaSo?: Record<string, string[]>;
   /** Ngôn ngữ của chip dự phòng. Thiếu = 'vi'. */
   ngonNgu?: NgonNgu;
 }
@@ -176,27 +178,25 @@ export function tinhMocHopLe(v: {
 
   const t = v.thoiGian.thang;
   if (t) {
-    thang.add(t.thang);
-    if (t.duong) {
-      nam.add(t.duong.nam);
-      thang.add(t.duong.thang);
-    }
-    const dau = lunarToSolar(1, t.thang, t.nam, t.nhuan === 'nhuan');
-    const cuoi = ngayCuoiThangAm(t.nam, t.thang, t.nhuan === 'nhuan');
-    if (dau) {
-      nam.add(dau.year);
-      thang.add(dau.month);
-    }
-    if (cuoi) {
-      nam.add(cuoi.getUTCFullYear());
-      thang.add(cuoi.getUTCMonth() + 1);
+    // Tháng hỏi + tháng âm của mọi cửa sổ + năm, tháng dương hai đầu mỗi cửa sổ (spec 5.1 MOC_BIA).
+    if (t.muc.loai === 'thang-duong') {
+      nam.add(t.muc.nam);
+      thang.add(t.muc.thang);
+    } else thang.add(t.muc.thangAm);
+    for (const w of t.cuaSo) {
+      nam.add(w.namAm);
+      thang.add(w.thangAm);
+      for (const iso of [w.tuNgay, w.denNgay]) {
+        nam.add(Number(iso.slice(0, 4)));
+        thang.add(Number(iso.slice(5, 7)));
+      }
     }
   }
 
   const namChip = new Set(nam).add(v.thoiGian.namHieuLuc + 1);
   const thangChip = new Set(thang);
   if (t) {
-    const hoi = t.duong ?? { nam: t.nam, thang: t.thang };
+    const hoi = t.muc.loai === 'thang-duong' ? { nam: t.muc.nam, thang: t.muc.thang } : { nam: t.muc.namAm, thang: t.muc.thangAm };
     if (hoi.thang === 12) {
       thangChip.add(1);
       namChip.add(hoi.nam + 1);
@@ -314,9 +314,43 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
         });
       }
     }
-    const nh = ctx.maNguyetHan;
-    if (ctx.thoiGian.thang && nh?.size && !ban.claims.some((c) => c.evidenceIds.some((x) => nh.has(x)))) {
-      bao({ ma: 'THIEU_THANG', chiTiet: `câu hỏi về một tháng mà không claim nào dẫn dữ kiện của tháng (${[...nh].join(', ')})` });
+    const ht = ctx.huongThang;
+    if (ht?.kieu === 'hai-nua') {
+      // Hai nửa khác chiều: claim nói về một nửa (timeRefs đúng một W) phải đúng chiều nửa ấy.
+      for (const c of ban.claims) {
+        const w = (c.timeRefs ?? []).filter((r) => ht.theoCuaSo.some((x) => x.cuaSo === r));
+        if (w.length !== 1) continue;
+        const nhom = ht.theoCuaSo.find((x) => x.cuaSo === w[0])!.nhom;
+        if (c.direction !== nhom) {
+          bao({
+            ma: 'NGUOC_HUONG',
+            chiTiet: c.direction
+              ? `claim về ${w[0]} nói "${c.direction}" nhưng chiều của phần đó là "${nhom}"`
+              : `claim về ${w[0]} thiếu "direction"`,
+          });
+          break;
+        }
+      }
+      // Mỗi nửa phải có ít nhất một claim dẫn căn cứ của nó.
+      const thieu = ht.theoCuaSo
+        .map((x) => x.cuaSo)
+        .filter((w) => {
+          const ma = ctx.maTheoCuaSo?.[w] ?? [];
+          return ma.length > 0 && !ban.claims.some((c) => c.evidenceIds.some((x) => ma.includes(x)));
+        });
+      if (thieu.length) {
+        bao({
+          ma: 'THIEU_THANG',
+          chiTiet: `tháng có hai phần khác chiều mà không claim nào dẫn căn cứ của ${thieu
+            .map((w) => `${w} (${(ctx.maTheoCuaSo?.[w] ?? []).join(', ')})`)
+            .join(', ')}`,
+        });
+      }
+    } else {
+      const nh = ctx.maNguyetHan;
+      if (ctx.thoiGian.thang && nh?.size && !ban.claims.some((c) => c.evidenceIds.some((x) => nh.has(x)))) {
+        bao({ ma: 'THIEU_THANG', chiTiet: `câu hỏi về một tháng mà không claim nào dẫn dữ kiện của tháng (${[...nh].join(', ')})` });
+      }
     }
   }
   return loi;

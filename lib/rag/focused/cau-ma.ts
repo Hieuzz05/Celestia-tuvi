@@ -24,7 +24,7 @@ import type { LoiDiTiep } from '../hinh-dang-tra-loi';
 import { boDau } from '../thuc-the';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import type { NgonNgu } from './ngon-ngu';
-import type { MocThang } from './phan-loai';
+import type { ThangDangHoi } from './phan-loai';
 
 export interface CauMa {
   cau: string;
@@ -111,85 +111,46 @@ export function hoiLaiVanRieng(cauHoi: string, dt: DoiTuongCauHoi, nn: NgonNgu =
 const duoiNam = (nam: number, namNay: number, nn: NgonNgu) =>
   nam === namNay ? '' : nn === 'en' ? ` of ${nam}` : ` năm ${nam}`;
 
-/** Câu duyệt 04/10: engine chưa tách tháng nhuận nên không luận, dù người hỏi đã chọn hay chưa. */
-function cauNhuan(m: MocThang, nn: NgonNgu): string {
-  const x = m.thang;
-  return nn === 'en'
-    ? `Leap month ${x} of ${m.nam} has to be read separately from the regular month ${x}. Celes cannot tell these two apart yet, so it will not read the leap month, to avoid a mix-up.`
-    : `Tháng ${x} nhuận năm ${m.nam} cần được đọc riêng với tháng ${x} thường. Hiện Celes chưa tách được hai mốc này, nên chưa luận tháng nhuận để tránh đọc nhầm.`;
-}
-
-/** Chip duy nhất: tháng X âm THƯỜNG — thứ engine đọc được. Có chữ "âm" để không bị hiểu là tháng dương. */
-const chipThangThuong = (m: MocThang, namNay: number, nn: NgonNgu) =>
-  `${nn === 'en' ? 'Lunar month' : 'Tháng'} ${m.thang}${nn === 'en' ? '' : ' âm'}${duoiNam(m.nam, namNay, nn)}`;
-
 const THANG_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const tenThangDuong = (d: NonNullable<MocThang['duong']>, nn: NgonNgu) =>
-  nn === 'en' ? `${THANG_EN[d.thang - 1]} ${d.nam}` : `Tháng ${d.thang}/${d.nam}`;
-/** "27/5 – 24/6" → " (từ 27/5 đến 24/6 dương lịch)" / " (27 May – 24 Jun)": người không quen âm lịch dễ đọc nhầm ngày trong ngoặc là ngày âm. */
-const ngoac = (khoang: string | null, nn: NgonNgu) => {
-  const m = khoang && /^(\d+)\/(\d+) – (\d+)\/(\d+)$/u.exec(khoang);
-  if (!m) return '';
-  if (nn !== 'en') return ` (từ ${m[1]}/${m[2]} đến ${m[3]}/${m[4]} dương lịch)`;
-  const ten = (t: string) => THANG_EN[Number(t) - 1].slice(0, 3);
-  return ` (${m[1]} ${ten(m[2])} – ${m[3]} ${ten(m[4])})`;
+/** 'YYYY-MM-DD' → "27/5" / "27 May" */
+const ngayNgan = (iso: string, nn: NgonNgu) => {
+  const d = Number(iso.slice(8, 10));
+  const t = Number(iso.slice(5, 7));
+  return nn === 'en' ? `${d} ${THANG_EN[t - 1].slice(0, 3)}` : `${d}/${t}`;
 };
-const THU_TU_EN = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'];
 
 /**
  * Đang đọc tháng X NHUẬN. Engine chỉ có nguyệt hạn theo số tháng, không tách
  * tháng nhuận — đọc tiếp là đưa vận tháng X thường ra như thể của tháng nhuận:
  * câu sai mà trông hợp lệ. Nên dừng hẳn (fail closed), trọn lượt, không truy
- * hồi, không gọi model.
+ * hồi, không gọi model, không tính lượt.
  *
  * Hai đường vào: người dùng tự gõ "nhuận" (câu duyệt 04/10 + chip tháng X âm
- * thường), hoặc tháng DƯƠNG họ hỏi rơi phần lớn vào tháng nhuận (nói rõ quy đổi,
- * không chip — mời đọc tháng X thường là đổi câu hỏi của họ).
+ * thường), hoặc tháng DƯƠNG họ hỏi có một phần rơi vào tháng nhuận (nói rõ phần
+ * nào, không chip — mời đọc tháng X thường là đổi câu hỏi của họ).
  */
-export function cauNhuanChuaTach(m: MocThang, namNay: number, nn: NgonNgu = 'vi'): CauMa {
-  if (m.duong) {
-    const d = m.duong;
-    const ten = tenThangDuong(d, nn);
-    const thangAm = nn === 'en' ? `the leap lunar month ${m.thang}${namAm(m, nn)}${ngoac(d.khoang, nn)}` : `tháng ${m.thang} nhuận âm lịch${namAm(m, nn)}${ngoac(d.khoang, nn)}`;
-    // TIME-05: người dùng hỏi tháng DƯƠNG — không nhắc "hai tháng ${m.thang}" hay "tách", họ không hỏi chuyện đó.
+export function cauNhuanChuaTach(t: ThangDangHoi, namNay: number, nn: NgonNgu = 'vi'): CauMa {
+  const w = t.cuaSo.find((c) => c.nhuan) ?? t.cuaSo[0];
+  if (t.muc.loai === 'thang-duong' && w) {
+    const { nam, thang } = t.muc;
+    const tu = ngayNgan(w.tuNgay, nn);
+    const den = ngayNgan(w.denNgay, nn);
+    // TIME-05: người dùng hỏi tháng DƯƠNG — không nhắc "hai tháng X" hay "tách", họ không hỏi chuyện đó.
     const cau =
       nn === 'en'
-        ? `Monthly fortune follows the lunar calendar, so Celes converts the month you asked about: ${d.ro ? `most of ${ten} falls in ${thangAm}` : `${ten} spans two lunar months, the longer part being ${thangAm}`}. Celes cannot read a leap month yet, so it will not read this month.`
-        : `Vận tháng tính theo âm lịch, nên Celes quy đổi tháng bạn hỏi: ${d.ro ? `${ten.charAt(0).toLowerCase()}${ten.slice(1)} phần lớn nằm trong ${thangAm}` : `${ten.charAt(0).toLowerCase()}${ten.slice(1)} vắt qua hai tháng âm, phần dài hơn là ${thangAm}`}. Celes chưa đọc được vận của tháng nhuận, nên chưa luận tháng này.`;
+        ? `Monthly fortune follows the lunar calendar, and ${tu} – ${den} of ${THANG_EN[thang - 1]} ${nam} falls in the leap lunar month ${w.thangAm}. Celes cannot read a leap month yet, so it will not read this month.`
+        : `Vận tháng tính theo âm lịch, và quãng từ ${tu} đến ${den} của tháng ${thang}/${nam} thuộc tháng ${w.thangAm} nhuận âm lịch. Celes chưa đọc được vận của tháng nhuận, nên chưa luận tháng này.`;
     return { cau, chip: [], loiDi: [], goiModel: false };
   }
-  return { cau: cauNhuan(m, nn), chip: [chipThangThuong(m, namNay, nn)], loiDi: [], goiModel: false };
-}
-
-/** Năm âm, chỉ khi khác năm dương người dùng hỏi (tháng 1–2 dương thường còn thuộc năm âm trước). */
-const namAm = (m: MocThang, nn: NgonNgu) => (m.duong && m.duong.nam !== m.nam ? (nn === 'en' ? ` of ${m.nam}` : ` năm ${m.nam}`) : '');
-
-/**
- * Người dùng hỏi tháng DƯƠNG (chủ dự án 04/10/2026). Nói rõ đang đọc theo tháng
- * âm nào — nguyệt hạn tính theo tháng âm, và một tháng dương vắt qua hai tháng âm.
- * Chỉ nói "phần lớn" khi tháng âm chiếm từ 60% số ngày. Tháng đã qua gộp luôn ý của N2.
- */
-export function cauThangDuong(m: MocThang, nn: NgonNgu = 'vi'): string {
-  const d = m.duong!;
-  const ten = tenThangDuong(d, nn);
-  const thangAm =
-    nn === 'en' ? `lunar month ${m.thang}${namAm(m, nn)}${ngoac(d.khoang, nn)}` : `tháng ${m.thang} âm lịch${namAm(m, nn)}${ngoac(d.khoang, nn)}`;
-  // TIME-01: nói rõ đây là quy đổi của Celes — người hỏi gọi tháng dương, không phải tháng âm.
-  if (nn === 'en') {
-    const quyDoi = d.ro
-      ? `Monthly fortune follows the lunar calendar, so Celes reads ${ten} by the lunar month covering most of it: ${thangAm}.`
-      : `Monthly fortune follows the lunar calendar; ${ten} spans two lunar months, so Celes reads the longer one: ${thangAm}.`;
-    return m.trangThai === 'da-qua'
-      ? `${ten} has already passed. ${quyDoi} What follows looks back at how that month tended to go; it is not a forecast for the time ahead.`
-      : quyDoi;
-  }
-  const thuong = `${ten.charAt(0).toLowerCase()}${ten.slice(1)}`;
-  const quyDoi = d.ro
-    ? `Vận tháng tính theo âm lịch, nên Celes đọc ${thuong} theo tháng âm chiếm phần lớn của nó: ${thangAm}.`
-    : `Vận tháng tính theo âm lịch; ${thuong} vắt qua hai tháng âm, nên Celes đọc theo tháng có phần dài hơn: ${thangAm}.`;
-  return m.trangThai === 'da-qua'
-    ? `${ten} đã qua. ${quyDoi} Phần dưới nhìn lại xu hướng của tháng ấy, không coi đây là dự báo cho thời gian sắp tới.`
-    : quyDoi;
+  const x = w?.thangAm ?? 1;
+  const namAmLich = w?.namAm ?? namNay;
+  const cau =
+    nn === 'en'
+      ? `Leap month ${x} of ${namAmLich} has to be read separately from the regular month ${x}. Celes cannot tell these two apart yet, so it will not read the leap month, to avoid a mix-up.`
+      : `Tháng ${x} nhuận năm ${namAmLich} cần được đọc riêng với tháng ${x} thường. Hiện Celes chưa tách được hai mốc này, nên chưa luận tháng nhuận để tránh đọc nhầm.`;
+  // Chip duy nhất: tháng X âm THƯỜNG — thứ engine đọc được. Có chữ "âm" để không bị hiểu là tháng dương.
+  const chip = `${nn === 'en' ? 'Lunar month' : 'Tháng'} ${x}${nn === 'en' ? '' : ' âm'}${duoiNam(namAmLich, namNay, nn)}`;
+  return { cau, chip: [chip], loiDi: [], goiModel: false };
 }
 
 /* --------------------------------------------------- N4 cuối năm âm */

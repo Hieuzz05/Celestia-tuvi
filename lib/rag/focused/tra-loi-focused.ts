@@ -29,7 +29,7 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
-import { chipHaiVe, cauNhuanChuaTach, cauThangDuong, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
+import { chipHaiVe, cauNhuanChuaTach, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { chanChuaHopTuoi, chanTruocSinh } from './gioi-han';
 import { lapKeHoachFocused } from './ke-thua';
@@ -37,14 +37,14 @@ import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
 import { tinhMocHopLe, type NguCanhKiem } from './kiem';
 import type { BanNhap } from './hop-dong';
-import { nhomCuaHuong, type NhomHuong } from './chot-huong';
+import { gopHuongThang, nhomCuaHuong, type HuongThang, type NhomHuong } from './chot-huong';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.12';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.13';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -110,12 +110,18 @@ export type KetQuaFocused = KetQuaTraLoi & {
   huongEngine?: NhomHuong;
 };
 
-/** Mục tiêu thời gian cho vết: chỉ loại và số. */
-function thoiGianVet(tg: BoiCanhThoiGian, kh: Pick<KeHoachTruyVan, 'phamViThoiGian'>): ThoiGianVet {
-  if (tg.thang?.duong) return { loai: 'thang-duong', nam: tg.thang.duong.nam, thang: tg.thang.duong.thang };
-  if (tg.thang) return { loai: 'thang-am', namAm: tg.thang.nam, thangAm: tg.thang.thang, nhuan: tg.thang.nhuan === 'nhuan' };
-  if (kh.phamViThoiGian === 'nam' || kh.phamViThoiGian === 'gan') return { loai: 'nam', nam: tg.namHieuLuc };
-  return { loai: 'khong' };
+/** Mục tiêu thời gian cho vết: chỉ loại và số. Không nêu tháng = năm hiệu lực (spec v2 §3.1). */
+function thoiGianVet(tg: BoiCanhThoiGian): ThoiGianVet {
+  return tg.thang ? tg.thang.muc : { loai: 'nam', nam: tg.namHieuLuc };
+}
+
+/** Cửa sổ âm cho vết: mã, số, chiều — không ngày. */
+function cuaSoVet(tg: BoiCanhThoiGian, h?: HuongThang | null): VetPreview['cuaSo'] {
+  if (!tg.thang) return undefined;
+  return tg.thang.cuaSo.map((w) => {
+    const nhom = !h ? undefined : h.kieu === 'mot-chieu' ? h.nhom : h.theoCuaSo.find((x) => x.cuaSo === w.ma)?.nhom;
+    return { ma: w.ma, thangAm: w.thangAm, nhuan: w.nhuan, soNgay: w.soNgay, ...(nhom ? { nhom } : {}) };
+  });
 }
 
 const phienBanFocused = (base: Record<string, string>, khuon: PhanLoai['khuon']) => ({
@@ -156,7 +162,7 @@ export async function traLoiFocused(
     yDinh: kh.yDinh,
     khuon,
     coDoiTuong,
-    thoiGian: thoiGianVet(tg, kh),
+    thoiGian: thoiGianVet(tg),
     nguon,
     giaiThichLuotTruoc: false,
     coChoHoiLai: khuon === 'F2',
@@ -188,6 +194,7 @@ export async function traLoiFocused(
         loiRa: `ma-${model}`,
         hieu: vetHieu(so.keHoach, khuon, !!so.doiTuong, thoiGianSo, nguonSo),
         hoanCanhSo: 0,
+        ...(thoiGianSo.thang ? { cuaSo: cuaSoVet(thoiGianSo) } : {}),
         maDuKien: [],
         maNguon: [],
         chunkIds: [],
@@ -216,9 +223,10 @@ export async function traLoiFocused(
   if (phanLoaiSo.khuon === 'F2' && so.doiTuong) {
     return traNgay(hoiLaiVanRieng(vao.cauHoi, so.doiTuong, nn), 'focused-f2', 'F2', true);
   }
-  // Đã chọn tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường thay vào.
-  if (thoiGianSo.thang?.nhuan === 'nhuan') {
-    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
+  // Có cửa sổ tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường
+  // thay vào, không tính lượt (spec v2 §3.3).
+  if (thoiGianSo.thang?.cuaSo.some((w) => w.nhuan)) {
+    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon, true);
   }
 
   // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
@@ -237,25 +245,36 @@ export async function traLoiFocused(
     });
   }
   const doiTuong = hai.doiTuong;
-  const phanLoai = phanKhuon({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, doiTuong });
+  const nguonKeHoach = hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai';
   const thoiGian = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
+  // Tháng mà planner bỏ sót ("this October"): đọc như câu hỏi một tháng. Sao chép, không sửa planner.
+  if (thoiGian.thang && keHoachGoc.phamViThoiGian !== 'thang') {
+    keHoachGoc = {
+      ...keHoachGoc,
+      phamViThoiGian: 'thang',
+      lopHan: [...new Set<LopHan>([...keHoachGoc.lopHan, 'nguyet-han'])],
+    };
+  }
+  const phanLoai = phanKhuon({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, doiTuong });
   // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
   const chanHai = gioiHan(thoiGian, keHoachGoc, doiTuong, phanLoai.khuon, false);
   if (chanHai) return chanHai;
-  if (thoiGian.thang?.nhuan === 'nhuan') {
-    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon);
+  if (thoiGian.thang?.cuaSo.some((w) => w.nhuan)) {
+    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon, true);
   }
   const keHoach = themLopChoThang(keHoachGoc);
 
   const namHieuLuc = thoiGian.namHieuLuc;
-  const thangHieuLuc = thoiGian.thang?.thang ?? vao.thangXem;
+  const cuaSo = thoiGian.thang?.cuaSo;
+  const thangHieuLuc = cuaSo?.[0]?.thangAm ?? vao.thangXem;
 
-  const { duKien } = chonBoiCanh({
+  const { duKien, maTheoCuaSo } = chonBoiCanh({
     laSo: vao.laSo,
     keHoach,
     namXem: namHieuLuc,
     thangXem: thangHieuLuc,
     focused: true,
+    ...(cuaSo?.length ? { cuaSo } : {}),
   });
 
   const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
@@ -272,34 +291,46 @@ export async function traLoiFocused(
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
   const daNoiTruoc = await docSoKetLuan(namHieuLuc);
 
-  const nghieng: NghiengVe | null =
+  // Hướng theo từng cửa sổ âm (spec v2 §3.3): cùng chiều → một hướng; khác chiều → hai nửa,
+  // không có hướng chung cho claims[0], mỗi nửa kiểm theo timeRefs.
+  const nghiengDs: { cuaSo: string; n: NghiengVe }[] =
     phanLoai.khuon === 'G'
-      ? null
-      : tinhNghiengVe({
-          laSo: vao.laSo,
-          chuDe: keHoach.chuDe,
-          lopHan: keHoach.lopHan,
-          namXem: namHieuLuc,
-          thangXem: thangHieuLuc,
-          cungChinh: doiTuong?.cung,
-          focused: true,
+      ? []
+      : (cuaSo?.length ? cuaSo : [null]).flatMap((w) => {
+          const n = tinhNghiengVe({
+            laSo: vao.laSo,
+            chuDe: keHoach.chuDe,
+            lopHan: keHoach.lopHan,
+            namXem: w?.namAm ?? namHieuLuc,
+            thangXem: w?.thangAm ?? thangHieuLuc,
+            cungChinh: doiTuong?.cung,
+            focused: true,
+          });
+          return n ? [{ cuaSo: w?.ma ?? '', n }] : [];
         });
+  const huongThang: HuongThang | null = cuaSo?.length
+    ? gopHuongThang(nghiengDs.map((x) => ({ cuaSo: x.cuaSo, huong: x.n.huong })))
+    : null;
+  const nghieng: NghiengVe | null = huongThang?.kieu === 'hai-nua' ? null : (nghiengDs[0]?.n ?? null);
 
   // Tên được phép gọi: chỉ những gì prompt của lượt này thực sự in — chữ dữ kiện, khối
   // nghiêng (đầu mốc có tên, cách cục), câu tra cứu. `d.sao` không cấp quyền (xem `nghiengHienThi`).
-  const { tapTen } = tenDuocGoiTrongLuot({
-    goi,
-    nghieng,
-    khuon: phanLoai.khuon,
-    cauTraCuu: keHoach.yDinh === 'tra-cuu' ? vao.cauHoi : undefined,
-  });
+  // Nhiều cửa sổ: hợp tên của mọi cửa sổ.
+  const tapTen = new Set<string>();
+  for (const x of nghiengDs.length ? nghiengDs.map((y) => y.n) : [null]) {
+    const { tapTen: t } = tenDuocGoiTrongLuot({
+      goi,
+      nghieng: x,
+      khuon: phanLoai.khuon,
+      cauTraCuu: keHoach.yDinh === 'tra-cuu' ? vao.cauHoi : undefined,
+    });
+    for (const ten of t) tapTen.add(ten);
+  }
 
   // Câu mã đứng đầu và chip mã. Spec v2 bỏ câu E / N2 / N4 do mã viết: model tự
   // nói giới hạn của quyết định, tháng đã qua, quãng cuối năm (prompt.ts).
   const cauMa: string[] = [];
   const chipMa = phanLoai.khuon === 'E' && phanLoai.haiVe ? chipHaiVe(phanLoai.haiVe, nn) : undefined;
-  // Tháng dương: nói rõ đang đọc tháng âm nào (gộp luôn ý "đã qua").
-  if (thoiGian.thang?.duong) cauMa.push(cauThangDuong(thoiGian.thang, nn));
   // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu đã duyệt (brief §11) đứng
   // đầu. Giữ là câu mã vì nó chỉ nói GIỚI HẠN ("lá số không xác nhận được tên"), không kết luận.
   const ngoaiTam = nhanDangNgoaiTam(vao.cauHoi);
@@ -335,6 +366,8 @@ export async function traLoiFocused(
         : undefined,
     chipTruoc: chipTruocTu(lichSu),
     maNguyetHan: new Set(goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id)),
+    ...(huongThang ? { huongThang } : {}),
+    ...(maTheoCuaSo ? { maTheoCuaSo } : {}),
     ngonNgu: nn,
   };
 
@@ -342,6 +375,8 @@ export async function traLoiFocused(
     bayGio,
     thoiGian,
     doiDaiVanSauTet: thoiGian.cuoiNam ? doiDaiVanSauTet(vao.laSo, namHieuLuc) : undefined,
+    huongThang,
+    maTheoCuaSo,
   };
 
   const truocModel = Date.now();
@@ -374,9 +409,10 @@ export async function traLoiFocused(
       phanLoai.khuon,
       !!doiTuong,
       thoiGian,
-      hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai'
+      nguonKeHoach
     ),
     hoanCanhSo: 0,
+    ...(thoiGian.thang ? { cuaSo: cuaSoVet(thoiGian, huongThang) } : {}),
     maDuKien: goi.duKien.map((d) => d.id),
     maNguon: goi.bangChung.map((e) => e.id),
     chunkIds: kqTruyHoi.daChon.map((d) => d.chunkId),

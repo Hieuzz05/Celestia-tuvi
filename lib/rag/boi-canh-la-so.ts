@@ -7,6 +7,7 @@ import {
   type Cung,
   type LaSo,
 } from '@/lib/tuvi/ansao';
+import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
@@ -81,12 +82,20 @@ export interface DauVaoBoiCanh {
    * mục mới chỉ NỐI VÀO CUỐI, nên mã F### của các mục cũ không dịch.
    */
   focused?: boolean;
+  /**
+   * Cửa sổ âm của tháng đang hỏi (CEL-186 v2 §3.3, chỉ Focused). Thiếu = đúng
+   * từng byte như trước. Có thì lưu niên mỗi năm âm một lần, nguyệt hạn mỗi cửa
+   * sổ một lần, chung một bộ đếm F###.
+   */
+  cuaSo?: { ma: string; namAm: number; thangAm: number; nhuan: boolean; tuNgay: string; denNgay: string }[];
 }
 
 export interface BoiCanhLaSo {
   duKien: DuKienLaSo[];
   /** Sao theo từng cung — planner dùng để viết lại truy vấn */
   saoTheoCung: Record<string, string[]>;
+  /** Chỉ khi có `cuaSo`: mã nguyệt hạn + lưu niên của từng cửa sổ */
+  maTheoCuaSo?: Record<string, string[]>;
 }
 
 /** Sao đáng đưa vào truy vấn: chính tinh và Tứ Hóa. Phụ tinh để dành cho dữ kiện. */
@@ -112,7 +121,7 @@ export function saoChinhTheoCung(laSo: LaSo): Record<string, string[]> {
   return ra;
 }
 
-export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused }: DauVaoBoiCanh): BoiCanhLaSo {
+export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }: DauVaoBoiCanh): BoiCanhLaSo {
   const duKien: DuKienLaSo[] = [];
   let dem = 0;
   const them = (d: Omit<DuKienLaSo, 'id'>) => {
@@ -206,27 +215,63 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused }: DauVao
     }
   }
 
-  if (keHoach.lopHan.includes('luu-nien')) {
-    const i = cungTieuHan(laSo, tuoiAm);
-    const c = laSo.cungs[i];
-    if (c) {
-      them({
-        loai: 'luu-nien',
-        noiDung: `Năm ${namXem} (${tuoiAm} tuổi âm) tiểu hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
-        cung: c.tenCung,
-      });
+  const maTheoCuaSo: Record<string, string[]> | undefined = cuaSo?.length ? {} : undefined;
+  if (cuaSo?.length) {
+    const dm = (iso: string) => `${Number(iso.slice(8, 10))}/${Number(iso.slice(5, 7))}`;
+    const maNam = new Map<number, string>();
+    if (keHoach.lopHan.includes('luu-nien')) {
+      for (const namAm of new Set(cuaSo.map((w) => w.namAm))) {
+        const tuoi = namAm - laSo.thongTin.amLich.nam + 1;
+        const c = laSo.cungs[cungTieuHan(laSo, tuoi)];
+        if (!c) continue;
+        them({
+          loai: 'luu-nien',
+          noiDung: `Năm ${namAm} (${tuoi} tuổi âm) tiểu hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
+          cung: c.tenCung,
+        });
+        maNam.set(namAm, duKien[duKien.length - 1].id);
+      }
     }
-  }
+    for (const w of cuaSo) {
+      const ma: string[] = [];
+      if (keHoach.lopHan.includes('nguyet-han')) {
+        const c = laSo.cungs[cungNguyetHan(laSo, w.namAm - laSo.thongTin.amLich.nam + 1, w.thangAm)];
+        if (c) {
+          them({
+            loai: 'nguyet-han',
+            noiDung: `Tháng ${w.thangAm}${w.nhuan ? ' nhuận' : ''} âm lịch năm ${canChiCuaNam(w.namAm)} (${dm(w.tuNgay)}–${dm(w.denNgay)} dương lịch): nguyệt hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
+            cung: c.tenCung,
+          });
+          ma.push(duKien[duKien.length - 1].id);
+        }
+      }
+      const mn = maNam.get(w.namAm);
+      if (mn) ma.push(mn);
+      maTheoCuaSo![w.ma] = ma;
+    }
+  } else {
+    if (keHoach.lopHan.includes('luu-nien')) {
+      const i = cungTieuHan(laSo, tuoiAm);
+      const c = laSo.cungs[i];
+      if (c) {
+        them({
+          loai: 'luu-nien',
+          noiDung: `Năm ${namXem} (${tuoiAm} tuổi âm) tiểu hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
+          cung: c.tenCung,
+        });
+      }
+    }
 
-  if (keHoach.lopHan.includes('nguyet-han')) {
-    const i = cungNguyetHan(laSo, tuoiAm, thangXem);
-    const c = laSo.cungs[i];
-    if (c) {
-      them({
-        loai: 'nguyet-han',
-        noiDung: `Tháng ${thangXem}/${namXem} nguyệt hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
-        cung: c.tenCung,
-      });
+    if (keHoach.lopHan.includes('nguyet-han')) {
+      const i = cungNguyetHan(laSo, tuoiAm, thangXem);
+      const c = laSo.cungs[i];
+      if (c) {
+        them({
+          loai: 'nguyet-han',
+          noiDung: `Tháng ${thangXem}/${namXem} nguyệt hạn tại ${motTaCung(c).replace(/^Cung /, 'cung ')}`,
+          cung: c.tenCung,
+        });
+      }
     }
   }
 
@@ -249,7 +294,9 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused }: DauVao
     }
   }
 
-  return { duKien, saoTheoCung: saoChinhTheoCung(laSo) };
+  return maTheoCuaSo
+    ? { duKien, saoTheoCung: saoChinhTheoCung(laSo), maTheoCuaSo }
+    : { duKien, saoTheoCung: saoChinhTheoCung(laSo) };
 }
 
 /** Phiên bản engine tính — đi vào mọi bản ghi trace */
