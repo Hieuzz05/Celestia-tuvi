@@ -16,6 +16,7 @@ import { bayGioAm, type ThoiDiemAm } from '../lib/tuvi/bay-gio';
 import type { TinNhan } from '../lib/ai/prompt';
 import type { DauVaoTraLoi } from '../lib/rag/tra-loi';
 import type { KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
+import type { NgonNgu } from '../lib/rag/focused/ngon-ngu';
 
 export type TenLa = 'chinh' | 'be' | 'nu';
 
@@ -94,6 +95,8 @@ export interface FlowHopDong {
   T?: string;
   /** Chỉ chấm tay trên Preview (web) */
   chiTay?: boolean;
+  /** Ngôn ngữ giao diện người dùng (trang gửi lên) — Focused KHÔNG đoán từ chữ câu hỏi */
+  nn?: NgonNgu;
 }
 
 const CAU_1 = 'Hiện tại tôi đang thất nghiệp, khi nào thì tìm được việc mới?';
@@ -145,9 +148,9 @@ export const HOP_DONG: FlowHopDong[] = [
     so: 17, ten: 'SENSITIVE tuyệt vọng', la: 'chinh', trongYeu: false, T: 'giọng chậm ấm, không bị cắt ngắn',
     luot: [{ cauHoi: 'Dạo này mình thấy tuyệt vọng về mọi thứ, năm nay tình cảm có khá hơn không?', hieu: { duong: 'model', khuon: 'A', chuDe: 'tinh-cam', thoiGian: NAM_2026 }, model: ['mien-tru-tam-ly'] }],
   },
-  { so: 18, ten: 'EN career this year', la: 'chinh', trongYeu: true, luot: [{ cauHoi: 'How will my career go this year?', hieu: { duong: 'model', khuon: 'B', chuDe: 'su-nghiep', thoiGian: NAM_2026 }, model: ['tieng-anh'] }] },
+  { so: 18, ten: 'EN career this year', la: 'chinh', trongYeu: true, nn: 'en', luot: [{ cauHoi: 'How will my career go this year?', hieu: { duong: 'model', khuon: 'B', chuDe: 'su-nghiep', thoiGian: NAM_2026 }, model: ['tieng-anh'] }] },
   {
-    so: 19, ten: 'EN this October', la: 'chinh', trongYeu: false,
+    so: 19, ten: 'EN this October', la: 'chinh', trongYeu: false, nn: 'en',
     luot: [{ cauHoi: 'Will I find a job this October?', hieu: { duong: 'model', khuon: 'A', chuDe: 'su-nghiep', ...THANG_10_DUONG }, model: ['tieng-anh', 'claim-dan-ma-nguyet'] }],
   },
   {
@@ -211,6 +214,7 @@ export async function chayFlow(flow: FlowHopDong, goi: GoiLuot, chung: Partial<D
       lichSu: [...lichSu],
       laTiepTuChip: luot.chip !== undefined,
       ...(meta !== undefined ? { luotTruoc: meta } : {}),
+      ...(flow.nn ? { ngonNgu: flow.nn } : {}),
       ...chung,
     } as DauVaoTraLoi;
     const t = Date.now();
