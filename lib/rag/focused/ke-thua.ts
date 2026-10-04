@@ -16,8 +16,9 @@
  */
 
 import type { TinNhan } from '@/lib/ai/prompt';
-import { lapKeHoach, type KeHoachTruyVan } from '../planner';
+import { lapKeHoach, lapKeHoachVoiChuDe, type KeHoachTruyVan } from '../planner';
 import { ghepKeHoach, nhanDangDoiTuong, type DoiTuongCauHoi } from './doi-tuong';
+import { khopCum } from './khop';
 
 type SaoTheoCung = Parameters<typeof lapKeHoach>[0]['saoTheoCung'];
 
@@ -51,12 +52,63 @@ function coChuDeRieng(keHoach: KeHoachTruyVan, doiTuong: DoiTuongCauHoi | null):
   return !!doiTuong || keHoach.chuDe !== 'tong-quan';
 }
 
+/* ------------------------------------------------- chỉnh chủ đề (TOPIC) */
+
+/*
+ * Hai chỗ bảng dùng chung đọc lệch mà sửa ở planner thì đổi cả STANDARD và xả
+ * đệm (`PHIEN_BAN_PLANNER`), nên chỉnh ở đây, chỉ đường Focused đọc:
+ *   TOPIC-01 "bản thân tôi … công việc": "bản thân" là bí danh của Mệnh, Mệnh
+ *     đứng trước nên thắng, câu ra tổng quan. "Bản thân" chỉ là người hỏi tự
+ *     xưng — bỏ nó đi thì phần còn lại nói đúng chủ đề.
+ *   TOPIC-02 "nhà cửa / chỗ ở / chuyển nhà / ra ở riêng": chuyện nơi ở là gia
+ *     đạo (Điền Trạch), không phải tài chính.
+ *   TOPIC-03 mua nhà / bất động sản / vay / đầu tư / giá trị tài sản: vẫn là
+ *     tài chính — không chỉnh.
+ */
+const BAN_THAN = 'bản thân';
+const BAN_THAN_KD = 'ban than';
+const NHA_O = 'nhà cửa|chỗ ở|nơi ở|chuyển nhà|dọn nhà|ra ở riêng|ở riêng|nhà ở';
+const NHA_O_KD = 'nha cua|cho o|noi o|chuyen nha|don nha|ra o rieng|o rieng|nha o';
+const NHA_TIEN =
+  'mua nhà|bán nhà|mua đất|bán đất|bất động sản|bđs|vay tiền|vay nợ|vay ngân hàng|vay mua|vay vốn|đi vay|thế chấp|trả góp|đầu tư|giá nhà|giá trị|tài sản|đất đai|tiền|sổ đỏ|cho thuê';
+const NHA_TIEN_KD =
+  // Không có "vay" / "tien" trần: gõ không dấu "vậy", "thuận tiện" cũng ra hai chữ đó.
+  'mua nha|ban nha|mua dat|ban dat|bat dong san|bds|vay tien|vay no|vay ngan hang|vay mua|vay von|di vay|the chap|tra gop|dau tu|gia nha|gia tri|tai san|dat dai|tien bac|tien nha|tien mua|tien thue|so do|cho thue';
+/** Cung khác ngoài hai cung này được gọi tên thì người hỏi đã tự chọn chỗ nhìn — không chỉnh. */
+const CUNG_NHA = new Set(['Điền Trạch', 'Mệnh']);
+
+type DauVaoLap = Omit<DauVaoKeThua, 'laTiepTuChip' | 'lichSu'>;
+
+/** `lapKeHoach` + hai chỉnh chủ đề của Focused. Thuần, không gọi model. */
+export function lapKeHoachChinh(vao: DauVaoLap): KeHoachTruyVan {
+  const p = { cauHoi: vao.cauHoi, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem };
+  const goc = lapKeHoach(p);
+  const cung = goc.thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
+
+  if (cung[0] === 'Mệnh' && khopCum(vao.cauHoi, BAN_THAN, BAN_THAN_KD)) {
+    const bo = vao.cauHoi.replace(/b[aả]n\s+th[aâ]n/giu, ' ').replace(/\s+/g, ' ').trim();
+    const ke = lapKeHoach({ ...p, cauHoi: bo });
+    if (ke.chuDe !== 'tong-quan') return ke;
+  }
+
+  if (
+    khopCum(vao.cauHoi, NHA_O, NHA_O_KD) &&
+    !khopCum(vao.cauHoi, NHA_TIEN, NHA_TIEN_KD) &&
+    cung.every((c) => CUNG_NHA.has(c)) &&
+    (goc.chuDe === 'tai-chinh' || goc.chuDe === 'tong-quan' || goc.chuDe === 'gia-dao')
+  ) {
+    // Gọi tên Điền Trạch đứng đầu để cung trọng tâm (cách cục, lối đi) là Điền Trạch, không phải Phụ Mẫu.
+    return lapKeHoachVoiChuDe({ ...p, cauHoi: cung.includes('Điền Trạch') ? vao.cauHoi : `Điền Trạch ${vao.cauHoi}` }, 'gia-dao');
+  }
+  return goc;
+}
+
 function timNguon(vao: DauVaoKeThua): { cau: string; keHoach: KeHoachTruyVan; doiTuong: DoiTuongCauHoi | null } | null {
   const cuaNguoiDung = (vao.lichSu ?? []).filter((t) => t.vaiTro === 'nguoi-dung').map((t) => t.noiDung.trim());
   // Route có thể đã nhét câu đang hỏi vào cuối lịch sử — bỏ nó, đừng tự kế thừa chính mình.
   if (cuaNguoiDung.length && cuaNguoiDung[cuaNguoiDung.length - 1] === vao.cauHoi.trim()) cuaNguoiDung.pop();
   for (const cau of cuaNguoiDung.slice(-SO_LUOT_LUI).reverse()) {
-    const keHoach = lapKeHoach({ cauHoi: cau, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem });
+    const keHoach = lapKeHoachChinh({ ...vao, cauHoi: cau });
     const doiTuong = nhanDangDoiTuong(cau);
     if (coChuDeRieng(keHoach, doiTuong)) return { cau, keHoach, doiTuong };
   }
@@ -64,7 +116,7 @@ function timNguon(vao: DauVaoKeThua): { cau: string; keHoach: KeHoachTruyVan; do
 }
 
 export function lapKeHoachFocused(vao: DauVaoKeThua): KetQuaKeThua {
-  const goc = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung: vao.saoTheoCung, tenCachCuc: vao.tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem });
+  const goc = lapKeHoachChinh(vao);
   const doiTuong = nhanDangDoiTuong(vao.cauHoi);
 
   const datGhep = (dt: DoiTuongCauHoi) =>

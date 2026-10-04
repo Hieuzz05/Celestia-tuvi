@@ -160,7 +160,8 @@ export function tenKemHuong(d: DauMoc, nn: NgonNgu = 'vi'): string {
 
 /**
  * Chọn 1–2 mốc để nêu tên. Nghiêng một phía: mốc nặng nhất của phía đó, cộng
- * mốc nặng nhất phía kia khi hướng chỉ nghiêng nhẹ. Cân bằng: mỗi phía một.
+ * mốc nặng nhất phía kia khi hướng chỉ nghiêng nhẹ. Cân bằng: mỗi phía một, thiếu
+ * một phía thì không nêu tên nào.
  */
 export function mocChoCauChot(n: NghiengVe): DauMoc[] {
   const thuan = n.dauMoc.find((d) => d.huong === 'do');
@@ -170,8 +171,10 @@ export function mocChoCauChot(n: NghiengVe): DauMoc[] {
   const nguoc = nhom === 'vuong' ? thuan : can;
   const ra: DauMoc[] = [];
   if (nhom === 'ngang') {
-    if (thuan) ra.push(thuan);
-    if (can) ra.push(can);
+    // FALLBACK-01/02: "ngang nhau" mà chỉ nêu một phía là câu lệch. Thiếu tên một
+    // phía (guard bỏ, hay chỉ có ở metadata) thì không nêu tên phía nào — câu thân
+    // trung tính tự đứng, không mượn tên phía kia.
+    if (thuan && can) ra.push(thuan, can);
   } else if (chinh) {
     // Không có mốc phía chính (bị lọc khỏi gói) thì không nêu tên: một mốc phía
     // ngược đứng sau "đang khá thuận" là câu tự cãi mình.

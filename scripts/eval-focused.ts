@@ -38,7 +38,8 @@ import { lapLaSo, type LaSo } from '../lib/tuvi/ansao';
 import { bayGioAm, type ThoiDiemAm } from '../lib/tuvi/bay-gio';
 import { phienBanHienTai, traLoiCoCanCu, type DauVaoTraLoi, type KetQuaTraLoi } from '../lib/rag/tra-loi';
 import { traLoiFocused, type KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
-import { tapTenTuGoi, tenNgoaiTap, goiCoPhucDuc, quetTen, khoaTen } from '../lib/rag/focused/quet-ten';
+import { tapTenTuGoi, goiCoPhucDuc, quetTen, khoaTen } from '../lib/rag/focused/quet-ten';
+import { tenModelThay, tenNgoaiModelThay } from './oracle-ten-prompt';
 import { KHUYEN, KHUYEN_DAU_CAU, PHAN_QUYET, PHAN_TRAM, soAmTiet } from '../lib/rag/focused/kiem';
 import { coThangNhuan } from '../lib/rag/focused/thang-am';
 import { NHAN_CHU_DE, type ChuDe } from '../lib/rag/planner';
@@ -269,7 +270,10 @@ interface Do {
 
 function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
   const goi = kq.goi;
-  const tap = tapTenTuGoi(goi.duKien, goi.yDinh === 'tra-cuu' ? [ca.cauHoi] : []);
+  // Mục G (04/10/2026): tập đo là chữ prompt THẬT đã in (oracle render), không dùng chung hàm với guard.
+  const traCuu = goi.yDinh === 'tra-cuu';
+  const dauVaoPrompt = kq.vetFocused?.dauVaoPrompt;
+  const tap = dauVaoPrompt ? tenModelThay(dauVaoPrompt, traCuu) : new Set<string>();
   const pd = goiCoPhucDuc(goi.duKien);
   // Phần do model viết (đã qua guard) — miễn trừ SENSITIVE và câu mã không chấm khuyên / độ dài.
   // Câu chốt dự phòng do mã viết (cờ #1) — không chấm như lời model.
@@ -301,7 +305,7 @@ function cham(ma: string, laSoKhoa: string, ca: Ca, kq: KetQuaFocused): Do {
     van: kq.van,
     chip: kq.coCauTruc?.goiYTiep ?? [],
     loi502: !kq.van,
-    tenNgoaiGoi: laMa ? [] : phanModel.flatMap((c) => tenNgoaiTap(c, tap, pd)),
+    tenNgoaiGoi: laMa ? [] : dauVaoPrompt ? tenNgoaiModelThay(phanModel, dauVaoPrompt, traCuu) : ['(vết thiếu prompt — không đo được)'],
     khuyenHo: phanModel.filter((c) => KHUYEN.test(c) || KHUYEN_DAU_CAU.test(c) || PHAN_QUYET.test(c) || PHAN_TRAM.test(c)),
     nguoiLa: NGUOI.filter((n) => !nguoiDuoc.has(n) && phanModel.some((c) => reTu(n).test(boChuKhongPhaiNguoi(c, nguoiDuoc)))),
     n1: ca.thang && !laMa ? (kq.coCauTruc?.yChinh ?? []).some((y) => (y.maDuKien ?? []).some((m) => maNguyet.has(m))) : null,

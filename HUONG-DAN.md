@@ -672,10 +672,10 @@ Vài điểm đáng biết:
 khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120 "chữ", tức âm tiết), chiều kết luận do
 mã chốt từ lá số. Một số lượt do mã viết trọn, không gọi model: hỏi vận riêng của người khác (F2),
 "khi nào" không mốc (D), tháng có nhuận cần hỏi lại, và tháng nhuận đã chọn (Celes chưa tách riêng
-được vận tháng nhuận nên nói thẳng, không đọc tháng thường thay). Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
+được vận tháng nhuận nên nói thẳng, không đọc tháng thường thay). Ba lượt mã nữa (`gioi-han.ts`) KHÔNG tính lượt: mốc hỏi trước ngày sinh, người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu, và "chồng tôi" trên lá số nam (hay "vợ tôi" trên lá số nữ). Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
 không còn câu nào dựa vào nguyệt hạn, thì thử lại một lần, vẫn hỏng thì trả 502 và hoàn lượt. Câu do mã viết theo
 ngôn ngữ người dùng (VI/EN); thân bài model vẫn tiếng Việt. Mã ở `lib/rag/focused/`; luật và quyết định ở
-`docs/chien-luoc/CEL-186-ve-B-phuong-an.md`.
+`docs/chien-luoc/CEL-186-ve-B-phuong-an.md`; bộ bất biến có test ở `docs/chien-luoc/CEL-186-INVARIANTS.md`.
 
 
 ### 3.5 Chỉ định tài khoản quản trị

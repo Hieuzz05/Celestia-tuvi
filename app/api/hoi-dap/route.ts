@@ -249,7 +249,9 @@ export async function POST(req: Request) {
       );
     }
 
-    await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
+    // Lá số không có gì để đọc (Focused: trước ngày sinh, chưa hợp tuổi, lệch giới tính) — không tính lượt.
+    if (kq.khongTinhLuot) await hoanCauHoi(cho.nguon, requestId);
+    else await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
 
     /*
      * "Muốn biết vì sao không?" giờ CHỈ dành cho quản trị.

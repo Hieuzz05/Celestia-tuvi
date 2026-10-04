@@ -139,11 +139,12 @@ export function cauNhuanChuaTach(m: MocThang, namNay: number, nn: NgonNgu = 'vi'
   if (m.duong) {
     const d = m.duong;
     const ten = tenThangDuong(d, nn);
-    const thangAm = nn === 'en' ? `leap lunar month ${m.thang}${namAm(m, nn)}${ngoac(d.khoang, nn)}` : `tháng ${m.thang} nhuận âm lịch${namAm(m, nn)}${ngoac(d.khoang, nn)}`;
+    const thangAm = nn === 'en' ? `the leap lunar month ${m.thang}${namAm(m, nn)}${ngoac(d.khoang, nn)}` : `tháng ${m.thang} nhuận âm lịch${namAm(m, nn)}${ngoac(d.khoang, nn)}`;
+    // TIME-05: người dùng hỏi tháng DƯƠNG — không nhắc "hai tháng ${m.thang}" hay "tách", họ không hỏi chuyện đó.
     const cau =
       nn === 'en'
-        ? `${d.ro ? `Most of ${ten} falls in ${thangAm}` : `${ten} spans two lunar months, the longer part in ${thangAm}`} — lunar year ${m.nam} has two ${THU_TU_EN[m.thang - 1]} months. Celes cannot read a leap month separately yet, so it will not read this one, to avoid a mix-up.`
-        : `${ten} ${d.ro ? 'phần lớn rơi vào' : 'vắt qua hai tháng âm, phần dài hơn rơi vào'} ${thangAm} — năm âm ${m.nam} có hai tháng ${m.thang}. Hiện Celes chưa tách được tháng nhuận, nên chưa luận mốc này để tránh đọc nhầm.`;
+        ? `Monthly fortune follows the lunar calendar, so Celes converts the month you asked about: ${d.ro ? `most of ${ten} falls in ${thangAm}` : `${ten} spans two lunar months, the longer part being ${thangAm}`}. Celes cannot read a leap month yet, so it will not read this month.`
+        : `Vận tháng tính theo âm lịch, nên Celes quy đổi tháng bạn hỏi: ${d.ro ? `${ten.charAt(0).toLowerCase()}${ten.slice(1)} phần lớn nằm trong ${thangAm}` : `${ten.charAt(0).toLowerCase()}${ten.slice(1)} vắt qua hai tháng âm, phần dài hơn là ${thangAm}`}. Celes chưa đọc được vận của tháng nhuận, nên chưa luận tháng này.`;
     return { cau, chip: [], loiDi: [], goiModel: false };
   }
   return { cau: cauNhuan(m, nn), chip: [chipThangThuong(m, namNay, nn)], loiDi: [], goiModel: false };
@@ -162,21 +163,22 @@ export function cauThangDuong(m: MocThang, nn: NgonNgu = 'vi'): string {
   const ten = tenThangDuong(d, nn);
   const thangAm =
     nn === 'en' ? `lunar month ${m.thang}${namAm(m, nn)}${ngoac(d.khoang, nn)}` : `tháng ${m.thang} âm lịch${namAm(m, nn)}${ngoac(d.khoang, nn)}`;
+  // TIME-01: nói rõ đây là quy đổi của Celes — người hỏi gọi tháng dương, không phải tháng âm.
   if (nn === 'en') {
-    const viTri = d.ro ? `Most of it falls in ${thangAm}` : `It spans two lunar months; Celes reads the longer one, ${thangAm}`;
+    const quyDoi = d.ro
+      ? `Monthly fortune follows the lunar calendar, so Celes reads ${ten} by the lunar month covering most of it: ${thangAm}.`
+      : `Monthly fortune follows the lunar calendar; ${ten} spans two lunar months, so Celes reads the longer one: ${thangAm}.`;
     return m.trangThai === 'da-qua'
-      ? `${ten} has already passed. ${viTri}, so what follows looks back at how that lunar month tended to go; it is not a forecast for the time ahead.`
-      : d.ro
-        ? `Most of ${ten} falls in ${thangAm}, so Celes reads it by that lunar month.`
-        : `${ten} spans two lunar months; Celes reads the longer one, ${thangAm}.`;
+      ? `${ten} has already passed. ${quyDoi} What follows looks back at how that month tended to go; it is not a forecast for the time ahead.`
+      : quyDoi;
   }
-  if (m.trangThai === 'da-qua') {
-    const viTri = d.ro ? `Phần lớn tháng đó nằm trong ${thangAm}` : `Tháng đó vắt qua hai tháng âm, phần dài hơn nằm trong ${thangAm}`;
-    return `${ten} đã qua. ${viTri}, nên phần dưới đọc lại xu hướng của tháng âm ấy, không coi đây là dự báo cho thời gian sắp tới.`;
-  }
-  return d.ro
-    ? `${ten} phần lớn nằm trong ${thangAm}, nên Celes đọc theo tháng âm ấy.`
-    : `${ten} vắt qua hai tháng âm; Celes đọc theo tháng có phần dài hơn là ${thangAm}.`;
+  const thuong = `${ten.charAt(0).toLowerCase()}${ten.slice(1)}`;
+  const quyDoi = d.ro
+    ? `Vận tháng tính theo âm lịch, nên Celes đọc ${thuong} theo tháng âm chiếm phần lớn của nó: ${thangAm}.`
+    : `Vận tháng tính theo âm lịch; ${thuong} vắt qua hai tháng âm, nên Celes đọc theo tháng có phần dài hơn: ${thangAm}.`;
+  return m.trangThai === 'da-qua'
+    ? `${ten} đã qua. ${quyDoi} Phần dưới nhìn lại xu hướng của tháng ấy, không coi đây là dự báo cho thời gian sắp tới.`
+    : quyDoi;
 }
 
 /* ---------------------------------------------------- N2 tháng đã qua */
@@ -202,4 +204,59 @@ export function chipCuoiNam(namNay: number, goiY: string[], nn: NgonNgu = 'vi'):
   const chip = nn === 'en' ? `What about next year (${namSau})?` : `Sang năm ${canChi} thì sao?`;
   const con = goiY.filter((c) => !c.includes(canChi) && !c.includes(String(namSau)));
   return [chip, ...con].slice(0, 3);
+}
+
+/* ------------------------------------------- giới hạn (AGE / PERSON) */
+
+/*
+ * Ba câu dừng trọn lượt, không truy hồi, không gọi model, KHÔNG tính lượt hỏi
+ * (`khongTinhLuot`): lá số không có gì để đọc, người hỏi không mất gì.
+ */
+
+/** Mốc người dùng hỏi, dạng chữ — cho câu trước-ngày-sinh. */
+export type MocHoi =
+  | { loai: 'thang-duong'; nam: number; thang: number }
+  | { loai: 'thang-am'; nam: number; thang: number; nhuan: boolean }
+  | { loai: 'nam'; nam: number };
+
+function tenMocHoi(m: MocHoi, nn: NgonNgu): string {
+  if (m.loai === 'thang-duong') return nn === 'en' ? `${THANG_EN[m.thang - 1]} ${m.nam}` : `tháng ${m.thang}/${m.nam}`;
+  if (m.loai === 'thang-am')
+    return nn === 'en' ? `${m.nhuan ? 'leap ' : ''}lunar month ${m.thang} of ${m.nam}` : `tháng ${m.thang}${m.nhuan ? ' nhuận' : ''} âm lịch năm ${m.nam}`;
+  return nn === 'en' ? `${m.nam}` : `năm ${m.nam}`;
+}
+
+/** AGE-01: mốc hỏi kết thúc trước ngày sinh — chưa có vận nào để đọc. */
+export function cauTruocSinh(moc: MocHoi, sinh: { ngay: number; thang: number; nam: number }, nn: NgonNgu = 'vi'): CauMa {
+  const ngaySinh = `${sinh.ngay}/${sinh.thang}/${sinh.nam}`;
+  const ten = tenMocHoi(moc, nn);
+  const cau =
+    nn === 'en'
+      ? `${hoaDau(ten)} is before the birth date on this chart (${ngaySinh}), so there is no fortune to read for it yet. You can ask about any time from the birth date onward.`
+      : `${hoaDau(ten)} là trước ngày sinh của lá số này (${ngaySinh}), nên chưa có vận nào để đọc. Bạn có thể hỏi một mốc từ ngày sinh trở đi.`;
+  const chip = nn === 'en' ? ['What is this chart’s temperament like?'] : ['Tính cách của lá số này thế nào?'];
+  return { cau, chip, loiDi: [], goiModel: false };
+}
+
+/** AGE-02: chuyện người lớn (việc làm, hôn nhân, người yêu) ở tuổi chưa hợp — không kể. */
+export function cauChuaHopTuoi(tuoi: number, nam: number, nn: NgonNgu = 'vi'): CauMa {
+  const cau =
+    nn === 'en'
+      ? `In ${nam}, the person on this chart is only ${tuoi}. Work, marriage and romance are not something Celes reads at that age, so it will leave them out. You can ask about temperament, health or family for this chart instead.`
+      : `Năm ${nam}, người có lá số này mới ${tuoi} tuổi. Ở tuổi ấy, công việc, hôn nhân hay người yêu chưa phải điều để luận, nên Celes xin để phần này lại. Bạn có thể hỏi về tính cách, sức khoẻ hoặc gia đình của lá số này.`;
+  const chip = nn === 'en' ? ['What is this chart’s temperament like?', 'How is health for this chart?'] : ['Tính cách của lá số này thế nào?', 'Sức khoẻ của lá số này thế nào?'];
+  return { cau, chip, loiDi: [], goiModel: false };
+}
+
+/**
+ * PERSON-03: câu nói "chồng tôi" trên lá số nam (hay "vợ tôi" trên lá số nữ).
+ * Không đoán vì sao — chỉ nói hai điều đang lệch nhau và hỏi lại.
+ */
+export function cauLechGioi(laSoNam: boolean, nn: NgonNgu = 'vi'): CauMa {
+  const cau =
+    nn === 'en'
+      ? `The chart you are viewing is a ${laSoNam ? 'male' : 'female'} chart, while your question mentions your ${laSoNam ? 'husband' : 'wife'}. Please check that this is the chart you meant to ask about. If it is, you can ask about “my partner” and Celes will read that part of the chart.`
+      : `Lá số đang xem là lá số ${laSoNam ? 'nam' : 'nữ'}, còn câu hỏi nhắc tới ${laSoNam ? 'chồng' : 'vợ'} của bạn. Bạn kiểm tra giúp lá số này có đúng là lá số bạn muốn hỏi không nhé. Nếu đúng, bạn có thể hỏi về “bạn đời của tôi” để Celes đọc phần này.`;
+  const chip = nn === 'en' ? ['How is my partner this year?'] : ['Chuyện bạn đời của tôi năm nay thế nào?'];
+  return { cau, chip, loiDi: [], goiModel: false };
 }

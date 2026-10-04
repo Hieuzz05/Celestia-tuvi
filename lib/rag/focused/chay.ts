@@ -38,6 +38,8 @@ export interface VetFocused {
   lyDoThayChot?: string;
   soCauSuaTiengLong: number;
   soAmTiet: number;
+  /** Đầu vào prompt của lượt (tham chiếu, không chép) — chỉ cho bộ đo dựng lại chữ model thấy (oracle tên) */
+  dauVaoPrompt?: DauVaoPromptFocused;
 }
 
 export interface KetQuaChayFocused {
@@ -95,7 +97,7 @@ export async function chayFocused(v: {
   const goi = v.goi ?? goiVoiFallback;
   const batDau = v.batDau ?? Date.now();
   const hanChot = batDau + HAN_CHOT_LUOT_MS;
-  const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0 };
+  const vet: VetFocused = { lanGoi: 0, thuLai: null, boCau: [], dungDuPhong: false, soCauSuaTiengLong: 0, soAmTiet: 0, dauVaoPrompt: v.prompt };
   let provider = '';
   let model = '';
   let kiem: KetQuaKiem | null = null;

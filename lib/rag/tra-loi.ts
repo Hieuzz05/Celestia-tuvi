@@ -102,6 +102,11 @@ export interface KetQuaTraLoi {
   khoTrong: boolean;
   phienBan: Record<string, string>;
   doTreMs: { truyHoi: number; model: number; tong: number };
+  /**
+   * Lượt dừng bằng câu mã vì lá số không có gì để đọc (trước ngày sinh, chưa hợp
+   * tuổi, lệch giới tính — chỉ đường Focused đặt). Route hoàn lượt thay vì chốt.
+   */
+  khongTinhLuot?: boolean;
 }
 
 /**

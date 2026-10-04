@@ -54,3 +54,12 @@ Mẫu một mục:
 - Luật: cấp ID bằng `backlog.py xem`, script quét cả commit của mọi nhánh.
 - Nâng: máy canh, là `.claude/skills/cap-nhat-backlog/backlog.py`; cach-lam.md một dòng.
 - Lần: 2
+
+## 04/10/2026 · Bộ đo tự xác nhận qua cùng nguồn sai với guard · ai-rag
+- Thẻ: guard ten, d.sao, oracle, eval tu xac nhan, van phong
+- Chuyện gì: A/B văn phong CEL-186 — reviewer mù bắt Phá Toái, Thiên Y (chỉ có ở `d.sao`) trong bài, trong khi eval báo 0 tên ngoài gói.
+- Gốc: guard và bộ đo cùng dựng tập tên từ `tapTenTuGoi` (có `d.sao`), nên cùng mù một chỗ; đầu mốc in tên vào khối nghiêng là cửa sau thứ hai.
+- Giá: một vòng A/B ($0,11) đo trên guard hỏng, một phiên sửa + một phiên final hardening.
+- Luật: tập được phép dựng từ chữ prompt đã in; bộ đo dùng oracle render prompt, không gọi hàm guard; kèm thử đột biến.
+- Nâng: `docs/bay/ai-rag.md` (5 dòng cuối) + máy canh `GROUND-04` trong `scripts/test-focused.ts`.
+- Lần: 1

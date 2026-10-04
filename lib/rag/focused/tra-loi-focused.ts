@@ -7,6 +7,7 @@
  *
  * Thứ tự:
  *   kế hoạch (luật, kế thừa chủ đề qua chip) → phân khuôn → mốc thời gian
+ *   → trước ngày sinh / lệch giới tính / chưa hợp tuổi: câu mã, KHÔNG tính lượt
  *   → F2 / D / hỏi lại nhuận: trả ngay bằng câu mã, KHÔNG truy hồi, KHÔNG gọi model
  *   → kế hoạch lượt hai (tên cách cục, có thể gọi model phân loại)
  *   → N1 → bối cảnh lá số → truy hồi → gói → nghiêng → prompt → chạy + guard.
@@ -29,6 +30,7 @@ import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { CAU_CUOI_NAM, cauHaiVe, cauKhiNao, cauNhuanChuaTach, cauThangDaQua, cauThangDuong, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
+import { chanChuaHopTuoi, chanLechGioi, chanTruocSinh } from './gioi-han';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
@@ -38,7 +40,7 @@ import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.7';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.9';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -152,7 +154,7 @@ export async function traLoiFocused(
   const phanLoaiSo = phanKhuon({ cauHoi: vao.cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
   const thoiGianSo = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
 
-  const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon']): KetQuaTraLoi => {
+  const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon'], khongTinhLuot = false): KetQuaTraLoi => {
     const van = mucAnToan === 'SENSITIVE' ? datMienTruTheoNgonNgu(cm.cau, nn, datMienTruTamLy) : cm.cau;
     const coCauTruc: TraLoiCoCauTruc = { ketLuan: cm.cau, tomTat: cm.cau, yChinh: [], goiYTiep: cm.chip };
     return {
@@ -170,8 +172,24 @@ export async function traLoiFocused(
       khoTrong: false,
       phienBan: phienBanFocused(phienBan(), khuon),
       doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
+      ...(khongTinhLuot ? { khongTinhLuot: true } : {}),
     };
   };
+
+  // AGE-01 / PERSON-03 / AGE-02: lá số không có gì để đọc → dừng bằng mã, không tính lượt.
+  // `luotMot`: chủ đề lượt một là của luật (tất định); lượt hai có thể do model phân loại — không chặn theo chủ đề nữa.
+  const gioiHan = (tg: BoiCanhThoiGian, kh: KeHoachTruyVan, dt: typeof so.doiTuong, khuon: PhanLoai['khuon'], luotMot: boolean) => {
+    const truoc = chanTruocSinh(vao.laSo, tg, kh, nn);
+    if (truoc) return traNgay(truoc, 'focused-truoc-sinh', khuon, true);
+    const lech = chanLechGioi(vao.laSo, vao.cauHoi, dt, nn);
+    if (lech) return traNgay(lech, 'focused-lech-gioi', khuon, true);
+    const tuoi = chanChuaHopTuoi(vao.laSo, tg, vao.cauHoi, kh, dt, nn, luotMot);
+    if (tuoi) return traNgay(tuoi, 'focused-chua-hop-tuoi', khuon, true);
+    return null;
+  };
+
+  const chanSo = gioiHan(thoiGianSo, so.keHoach, so.doiTuong, phanLoaiSo.khuon, true);
+  if (chanSo) return chanSo;
 
   if (phanLoaiSo.khuon === 'F2' && so.doiTuong) return traNgay(cauVanRieng(so.doiTuong, nn), 'focused-f2', 'F2');
   if (phanLoaiSo.khuon === 'D') return traNgay(cauKhiNao(nn), 'focused-d', 'D');
@@ -199,6 +217,8 @@ export async function traLoiFocused(
   const phanLoai = phanKhuon({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, doiTuong });
   const thoiGian = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
   // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
+  const chanHai = gioiHan(thoiGian, keHoachGoc, doiTuong, phanLoai.khuon, false);
+  if (chanHai) return chanHai;
   if (thoiGian.thang?.nhuan === 'nhuan') {
     return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon);
   }

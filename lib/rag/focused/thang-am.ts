@@ -31,7 +31,14 @@ export function coThangNhuan(nam: number, thang: number): boolean {
 export function khoangDuong(nam: number, thang: number, nhuan = false): string | null {
   if (nhuan && !coThangNhuan(nam, thang)) return null;
   const dau = lunarToSolar(1, thang, nam, nhuan);
-  if (!dau) return null;
+  const cuoi = ngayCuoiThangAm(nam, thang, nhuan);
+  if (!dau || !cuoi) return null;
+  return `${dau.day}/${dau.month} – ${cuoi.getUTCDate()}/${cuoi.getUTCMonth() + 1}`;
+}
+
+/** Ngày dương cuối cùng (UTC, nửa đêm) của một tháng âm — biết tháng nhuận. Null khi không đổi được. */
+export function ngayCuoiThangAm(nam: number, thang: number, nhuan = false): Date | null {
+  if (nhuan && !coThangNhuan(nam, thang)) return null;
   const dauSau =
     !nhuan && coThangNhuan(nam, thang)
       ? lunarToSolar(1, thang, nam, true)
@@ -41,7 +48,16 @@ export function khoangDuong(nam: number, thang: number, nhuan = false): string |
   if (!dauSau) return null;
   const d = new Date(Date.UTC(dauSau.year, dauSau.month - 1, dauSau.day));
   d.setUTCDate(d.getUTCDate() - 1);
-  return `${dau.day}/${dau.month} – ${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
+  return d;
+}
+
+/** Ngày dương cuối cùng của năm âm `nam` (hôm trước Tết năm sau). */
+export function ngayCuoiNamAm(nam: number): Date | null {
+  const tet = lunarToSolar(1, 1, nam + 1);
+  if (!tet) return null;
+  const d = new Date(Date.UTC(tet.year, tet.month - 1, tet.day));
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d;
 }
 
 /** Tháng (năm âm, tháng âm) so với bây giờ */
