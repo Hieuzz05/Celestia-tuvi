@@ -26,25 +26,45 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from '../boi-canh-la-so'
 import { loiDiTiep } from '../hinh-dang-tra-loi';
 import { tinhNghiengVe, type NghiengVe } from '../nghieng-ve';
 import { ghiLanTruyHoi } from '../nhat-ky';
-import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
-import { truyHoi } from '../truy-hoi';
+import { lapKeHoach, lapKeHoachDayDu, lapKeHoachVoiChuDe, type KeHoachTruyVan, type LopHan } from '../planner';
+import { layDoanTheoId, truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { chipHaiVe, cauNhuanChuaTach, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
 import { chanChuaHopTuoi, chanTruocSinh } from './gioi-han';
-import { lapKeHoachFocused } from './ke-thua';
+import type { DoiTuongCauHoi } from './doi-tuong';
+import { lapKeHoachFocused, type KetQuaKeThua } from './ke-thua';
+import {
+  bamTraLoi,
+  cauLaSoNguoiDuocHoi,
+  claimMotDong,
+  doiTuongTuMeta,
+  giaiHoiLai,
+  khoaMeta,
+  kiemLuotTruoc,
+  kyMeta,
+  laGiaiThichLuotTruoc,
+  thoiGianTuMeta,
+  TRAN_CAN_CU_E,
+  TRAN_HOAN_CANH,
+  type ChoHoiLai,
+  type KetQuaHoiLai,
+  type LaSoCuaAi,
+  type MetaLuot,
+} from './hieu-cau';
+import type { DauVaoPromptFocused } from './prompt';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
 import { tinhMocHopLe, type NguCanhKiem } from './kiem';
 import type { BanNhap } from './hop-dong';
-import { gopHuongThang, nhomCuaHuong, type HuongThang, type NhomHuong } from './chot-huong';
+import { docChieu, gopHuongThang, nhomCuaHuong, type HuongThang, type NhomHuong } from './chot-huong';
 import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.13';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.14';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -108,7 +128,20 @@ export type KetQuaFocused = KetQuaTraLoi & {
   banNhap?: BanNhap;
   /** Chiều engine đã chốt của lượt — bộ đo so với `claims[0].direction` */
   huongEngine?: NhomHuong;
+  /** Meta lượt đã ký (spec 2.3) — chỉ khi có `CELES_META_KHOA` và lượt có văn */
+  meta?: MetaLuot;
+  /**
+   * Câu phát lại sau F2 rơi vào lối an toàn (spec 6.1: câu phát lại đi qua `doAnToan`). Route
+   * trả đúng JSON của lối đó và hoàn lượt. Không đi qua `traNgay`: đây không phải lối dừng bằng mã.
+   */
+  anToanPhatLai?: 'CRITICAL' | 'tien-luong';
 };
+
+/** Phụ thuộc tiêm được — chỉ test thay (truy hồi, lấy lại đoạn theo id) */
+export interface PhuThuocFocused {
+  truyHoi?: typeof truyHoi;
+  layDoanTheoId?: typeof layDoanTheoId;
+}
 
 /** Mục tiêu thời gian cho vết: chỉ loại và số. Không nêu tháng = năm hiệu lực (spec v2 §3.1). */
 function thoiGianVet(tg: BoiCanhThoiGian): ThoiGianVet {
@@ -136,15 +169,70 @@ export async function traLoiFocused(
   vao: DauVaoTraLoi,
   phienBan: () => Record<string, string>,
   docSoKetLuan: (namHieuLuc: number) => Promise<string[]>,
-  bayGio: ThoiDiemAm = bayGioAm()
+  bayGio: ThoiDiemAm = bayGioAm(),
+  pt: PhuThuocFocused = {}
 ): Promise<KetQuaFocused> {
   const batDau = Date.now();
   const nn: NgonNgu = vao.ngonNgu === 'en' ? 'en' : 'vi';
   const lichSu = vao.lichSu ?? [];
-  const mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
   const saoTheoCung = saoChinhTheoCung(vao.laSo);
+
+  // Bước 0 (spec 6.3): xác thực lượt trước — ràng buộc server tự tính, không lấy từ meta.
+  // Planner luật THÔ một lần trên câu người dùng vừa gõ; bước 1–2 dùng nó.
+  const { meta: luotTruoc, bo: luotTruocBo } = kiemLuotTruoc(
+    vao.luotTruoc,
+    { laSo: vao.chartHashLaSo ?? '', nguoiDung: vao.nguoiDung ?? '' },
+    lichSu,
+    PHIEN_BAN_FOCUSED
+  );
+  const tho = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem });
+
+  // Bước 1 (spec 6.1): câu hỏi lại F2 đang chờ → phát lại câu gốc.
+  const cho: ChoHoiLai | null = luotTruoc?.choHoiLai ?? null;
+  const hoiLai: KetQuaHoiLai | null = cho ? await giaiHoiLai(vao.cauHoi, cho, tho.chuDe, nn) : null;
+  const phatLai = !!cho && (hoiLai === 'nguoi-duoc-hoi' || hoiLai === 'nguoi-hoi');
+  const cauHoi = !cho || !phatLai ? vao.cauHoi : hoiLai === 'nguoi-duoc-hoi' ? (cauLaSoNguoiDuocHoi(cho) ?? cho.cauHoiGoc) : cho.cauHoiGoc;
+  const laSoCuaAi: LaSoCuaAi = phatLai && hoiLai === 'nguoi-duoc-hoi' ? 'nguoi-duoc-hoi' : 'nguoi-hoi';
+
+  let mucAnToan = vao.mucAnToan ?? doAnToan(vao.cauHoi).muc;
+  if (cauHoi !== vao.cauHoi) {
+    // Câu phát lại chưa qua cổng an toàn của route (spec 6.1) — đo lại ở đây.
+    const at = doAnToan(cauHoi);
+    if (at.muc === 'CRITICAL' || at.tienLuong) {
+      return {
+        van: '',
+        loiDi: [],
+        coCauTruc: null,
+        goi: dungGoiBangChung(cauHoi, tho, [], []),
+        kiemDuyet: null,
+        ngonNgu: null,
+        soYBiBo: 0,
+        provider: 'an-toan',
+        model: 'focused-an-toan-phat-lai',
+        runId: null,
+        khoTrong: false,
+        phienBan: phienBanFocused(phienBan(), 'F2'),
+        doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
+        khongTinhLuot: true,
+        anToanPhatLai: at.muc === 'CRITICAL' ? 'CRITICAL' : 'tien-luong',
+      };
+    }
+    if (at.muc === 'SENSITIVE') mucAnToan = 'SENSITIVE';
+  }
+
+  // Lá số là của người dùng: đọc người được hỏi qua quan hệ (F1). Của người được hỏi mà chip 1
+  // không viết lại được câu: ép không đối tượng, bỏ nhánh F2 (spec 6.1).
+  const apHoiLai = (k: KetQuaKeThua, tenCachCuc?: string[]): KetQuaKeThua => {
+    if (!phatLai || !k.doiTuong) return k;
+    if (hoiLai === 'nguoi-hoi') return { ...k, doiTuong: { ...k.doiTuong, loai: 'quan-he' } };
+    return {
+      keHoach: lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem }),
+      doiTuong: null,
+    };
+  };
+
   const dauVaoKeHoach = {
-    cauHoi: vao.cauHoi,
+    cauHoi,
     laTiepTuChip: vao.laTiepTuChip,
     lichSu,
     saoTheoCung,
@@ -153,9 +241,12 @@ export async function traLoiFocused(
   };
 
   // Lượt một: chỉ luật, đủ để phân khuôn và bắt F2 trước mọi việc tốn kém.
-  const so = lapKeHoachFocused(dauVaoKeHoach);
-  const phanLoaiSo = phanKhuon({ cauHoi: vao.cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
-  const thoiGianSo = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
+  const so = apHoiLai(lapKeHoachFocused(dauVaoKeHoach));
+  const phanLoaiSo = phanKhuon({ cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
+  const thoiGianSo = boiCanhThoiGian({ cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
+
+  // Bước 2 (spec 6.2): "vì sao" trỏ về kết luận lượt trước — mượn tham số lượt trước, bỏ bước 3.
+  const mGT: MetaLuot | null = cauHoi === vao.cauHoi && luotTruoc && laGiaiThichLuotTruoc(vao.cauHoi, tho, luotTruoc) ? luotTruoc : null;
 
   const vetHieu = (kh: KeHoachTruyVan, khuon: PhanLoai['khuon'], coDoiTuong: boolean, tg: BoiCanhThoiGian, nguon: string) => ({
     chuDe: kh.chuDe,
@@ -164,20 +255,80 @@ export async function traLoiFocused(
     coDoiTuong,
     thoiGian: thoiGianVet(tg),
     nguon,
-    giaiThichLuotTruoc: false,
+    giaiThichLuotTruoc: !!mGT,
     coChoHoiLai: khuon === 'F2',
   });
-  const nguonSo = so.keThuaTu ? 'ke-thua' : 'luat';
+  const nguonSo = phatLai ? 'phat-lai-hoi-lai' : so.keThuaTu ? 'ke-thua' : 'luat';
+
+  /** Meta của lượt (spec 2.3) — thiếu khoá thì không phát. Ký trên văn cuối cùng đã trả. */
+  const phatMeta = (o: {
+    van: string;
+    keHoach: KeHoachTruyVan;
+    khuon: PhanLoai['khuon'];
+    tg: BoiCanhThoiGian;
+    doiTuong: MetaLuot['doiTuong'];
+    laSoCuaAi: LaSoCuaAi;
+    ketLuanChinh: MetaLuot['ketLuanChinh'];
+    canCuF: string[];
+    canCuE: MetaLuot['canCuE'];
+    hoanCanh: string[];
+    choHoiLai: ChoHoiLai | null;
+  }): MetaLuot | undefined => {
+    const khoa = khoaMeta();
+    if (!khoa || !o.van) return undefined;
+    return kyMeta(
+      {
+        v: 1,
+        phienBan: PHIEN_BAN_FOCUSED,
+        chuDe: o.keHoach.chuDe,
+        yDinh: o.keHoach.yDinh,
+        khuon: o.khuon,
+        keHoach: { cungLienQuan: [...o.keHoach.cungLienQuan], lopHan: [...o.keHoach.lopHan] },
+        namHieuLuc: o.tg.namHieuLuc,
+        cuaSo: o.tg.thang?.cuaSo ?? null,
+        doiTuong: o.doiTuong,
+        laSoCuaAi: o.laSoCuaAi,
+        thoiGian: thoiGianVet(o.tg),
+        ketLuanChinh: o.ketLuanChinh,
+        canCuF: o.canCuF,
+        canCuE: o.canCuE.slice(0, TRAN_CAN_CU_E),
+        hoanCanh: o.hoanCanh.slice(0, TRAN_HOAN_CANH).map((h) => h.slice(0, 60)),
+        choHoiLai: o.choHoiLai,
+        laSo: vao.chartHashLaSo ?? '',
+        nguoiDung: vao.nguoiDung ?? '',
+        bamTraLoi: bamTraLoi(o.van),
+      },
+      khoa
+    );
+  };
 
   const traNgay = (cm: CauMa, model: string, khuon: PhanLoai['khuon'], khongTinhLuot = false): KetQuaFocused => {
     const van = mucAnToan === 'SENSITIVE' ? datMienTruTheoNgonNgu(cm.cau, nn, datMienTruTamLy) : cm.cau;
     const coCauTruc: TraLoiCoCauTruc = { ketLuan: cm.cau, tomTat: cm.cau, yChinh: [], goiYTiep: cm.chip };
+    // Chỉ lượt F2 mang câu hỏi lại đang chờ (spec 6.1); giải xong thì lượt sau không mang nữa.
+    const choMoi: ChoHoiLai | null =
+      model === 'focused-f2' && so.doiTuong
+        ? { loai: 'la-so-cua-ai', cauHoiGoc: cauHoi, doiTuong: { vai: so.doiTuong.vai, nhan: so.doiTuong.nhan }, daGiai: false }
+        : null;
+    const meta = phatMeta({
+      van,
+      keHoach: so.keHoach,
+      khuon,
+      tg: thoiGianSo,
+      doiTuong: so.doiTuong ? { vai: so.doiTuong.vai, nhan: so.doiTuong.nhan, cung: so.doiTuong.cung || null } : null,
+      laSoCuaAi: choMoi ? 'chua-ro' : laSoCuaAi,
+      ketLuanChinh: null,
+      canCuF: [],
+      canCuE: [],
+      hoanCanh: luotTruoc?.hoanCanh ?? [],
+      choHoiLai: choMoi,
+    });
     return {
       van,
       loiDi: cm.loiDi,
       coCauTruc,
       // Gói rỗng nhưng đủ trường: nhánh quản trị ở route đọc `goi.duKien`, `phienBan.engine`.
-      goi: dungGoiBangChung(vao.cauHoi, so.keHoach, [], []),
+      goi: dungGoiBangChung(cauHoi, so.keHoach, [], []),
       kiemDuyet: null,
       ngonNgu: null,
       soYBiBo: 0,
@@ -188,6 +339,7 @@ export async function traLoiFocused(
       phienBan: phienBanFocused(phienBan(), khuon),
       doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
       ...(khongTinhLuot ? { khongTinhLuot: true } : {}),
+      ...(meta ? { meta } : {}),
       vetPreview: {
         requestId: vao.requestId ?? '',
         phienBan: PHIEN_BAN_FOCUSED,
@@ -201,6 +353,7 @@ export async function traLoiFocused(
         lan: [],
         msTong: Date.now() - batDau,
         msTruyHoi: 0,
+        ...(luotTruocBo ? { luotTruocBo } : {}),
       },
     };
   };
@@ -211,56 +364,79 @@ export async function traLoiFocused(
   const gioiHan = (tg: BoiCanhThoiGian, kh: KeHoachTruyVan, dt: typeof so.doiTuong, khuon: PhanLoai['khuon'], luotMot: boolean) => {
     const truoc = chanTruocSinh(vao.laSo, tg, kh, nn);
     if (truoc) return traNgay(truoc, 'focused-truoc-sinh', khuon, true);
-    const tuoi = chanChuaHopTuoi(vao.laSo, tg, vao.cauHoi, kh, dt, nn, luotMot);
+    const tuoi = chanChuaHopTuoi(vao.laSo, tg, cauHoi, kh, dt, nn, luotMot);
     if (tuoi) return traNgay(tuoi, 'focused-chua-hop-tuoi', khuon, true);
     return null;
   };
 
-  const chanSo = gioiHan(thoiGianSo, so.keHoach, so.doiTuong, phanLoaiSo.khuon, true);
-  if (chanSo) return chanSo;
+  let keHoachGoc: KeHoachTruyVan;
+  let doiTuong: DoiTuongCauHoi | null;
+  let nguonKeHoach: string;
+  let thoiGian: BoiCanhThoiGian;
+  let phanLoai: PhanLoai;
 
-  // F2: chưa biết lá số đang mở là của ai — hỏi lại, không tính lượt; chip đầu là câu gốc trên chủ lá số.
-  if (phanLoaiSo.khuon === 'F2' && so.doiTuong) {
-    return traNgay(hoiLaiVanRieng(vao.cauHoi, so.doiTuong, nn), 'focused-f2', 'F2', true);
-  }
-  // Có cửa sổ tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường
-  // thay vào, không tính lượt (spec v2 §3.3).
-  if (thoiGianSo.thang?.cuaSo.some((w) => w.nhuan)) {
-    return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon, true);
-  }
-
-  // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
-  const tenCachCuc = tenCachCucCho(vao.laSo, so.keHoach.cungLienQuan[0]);
-  const hai = lapKeHoachFocused({ ...dauVaoKeHoach, tenCachCuc });
-  let keHoachGoc = hai.keHoach;
-  // Chỉ câu tự đứng, chưa rõ chủ đề mới nhờ model phân loại. Câu có người được
-  // hỏi hay câu kế thừa đã chắc chủ đề — để model đoán lại là mở lại cờ #2.
-  if (!keHoachGoc.chacChan && !hai.doiTuong && !hai.keThuaTu && vao.dungModelPhanLoai !== false) {
-    keHoachGoc = await lapKeHoachDayDu({
-      cauHoi: vao.cauHoi,
-      saoTheoCung,
-      tenCachCuc,
-      namXem: vao.namXem,
-      thangXem: vao.thangXem,
-    });
-  }
-  const doiTuong = hai.doiTuong;
-  const nguonKeHoach = hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai';
-  const thoiGian = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
-  // Tháng mà planner bỏ sót ("this October"): đọc như câu hỏi một tháng. Sao chép, không sửa planner.
-  if (thoiGian.thang && keHoachGoc.phamViThoiGian !== 'thang') {
+  if (mGT) {
+    // Chủ đề, khuôn, người được hỏi, mốc: của lượt trước. Cung và lớp hạn đúng bộ đã dựng F### lượt trước.
+    const kh0 = lapKeHoachVoiChuDe({ cauHoi, saoTheoCung, namXem: mGT.namHieuLuc, thangXem: vao.thangXem }, mGT.chuDe);
     keHoachGoc = {
-      ...keHoachGoc,
-      phamViThoiGian: 'thang',
-      lopHan: [...new Set<LopHan>([...keHoachGoc.lopHan, 'nguyet-han'])],
+      ...kh0,
+      yDinh: 'giai-thich',
+      chacChan: true,
+      cungLienQuan: [...mGT.keHoach.cungLienQuan],
+      lopHan: [...mGT.keHoach.lopHan],
+      phamViThoiGian: mGT.cuaSo?.length ? 'thang' : kh0.phamViThoiGian,
     };
-  }
-  const phanLoai = phanKhuon({ cauHoi: vao.cauHoi, keHoach: keHoachGoc, doiTuong });
-  // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
-  const chanHai = gioiHan(thoiGian, keHoachGoc, doiTuong, phanLoai.khuon, false);
-  if (chanHai) return chanHai;
-  if (thoiGian.thang?.cuaSo.some((w) => w.nhuan)) {
-    return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon, true);
+    doiTuong = doiTuongTuMeta(mGT);
+    nguonKeHoach = 'luot-truoc';
+    thoiGian = thoiGianTuMeta(mGT, bayGio);
+    phanLoai = { ...phanKhuon({ cauHoi, keHoach: keHoachGoc, doiTuong }), khuon: mGT.khuon };
+  } else {
+    const chanSo = gioiHan(thoiGianSo, so.keHoach, so.doiTuong, phanLoaiSo.khuon, true);
+    if (chanSo) return chanSo;
+
+    // F2: chưa biết lá số đang mở là của ai — hỏi lại, không tính lượt; chip đầu là câu gốc trên chủ lá số.
+    if (phanLoaiSo.khuon === 'F2' && so.doiTuong) {
+      return traNgay(hoiLaiVanRieng(cauHoi, so.doiTuong, nn), 'focused-f2', 'F2', true);
+    }
+    // Có cửa sổ tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường
+    // thay vào, không tính lượt (spec v2 §3.3).
+    if (thoiGianSo.thang?.cuaSo.some((w) => w.nhuan)) {
+      return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon, true);
+    }
+
+    // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
+    const tenCachCuc = tenCachCucCho(vao.laSo, so.keHoach.cungLienQuan[0]);
+    const hai = apHoiLai(lapKeHoachFocused({ ...dauVaoKeHoach, tenCachCuc }), tenCachCuc);
+    keHoachGoc = hai.keHoach;
+    // Chỉ câu tự đứng, chưa rõ chủ đề mới nhờ model phân loại. Câu có người được
+    // hỏi hay câu kế thừa đã chắc chủ đề — để model đoán lại là mở lại cờ #2.
+    if (!keHoachGoc.chacChan && !hai.doiTuong && !hai.keThuaTu && vao.dungModelPhanLoai !== false) {
+      keHoachGoc = await lapKeHoachDayDu({
+        cauHoi,
+        saoTheoCung,
+        tenCachCuc,
+        namXem: vao.namXem,
+        thangXem: vao.thangXem,
+      });
+    }
+    doiTuong = hai.doiTuong;
+    nguonKeHoach = phatLai ? 'phat-lai-hoi-lai' : hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai';
+    thoiGian = boiCanhThoiGian({ cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio });
+    // Tháng mà planner bỏ sót ("this October"): đọc như câu hỏi một tháng. Sao chép, không sửa planner.
+    if (thoiGian.thang && keHoachGoc.phamViThoiGian !== 'thang') {
+      keHoachGoc = {
+        ...keHoachGoc,
+        phamViThoiGian: 'thang',
+        lopHan: [...new Set<LopHan>([...keHoachGoc.lopHan, 'nguyet-han'])],
+      };
+    }
+    phanLoai = phanKhuon({ cauHoi, keHoach: keHoachGoc, doiTuong });
+    // Lưới thứ hai: kế hoạch đầy đủ (model phân loại) có thể ra tháng khác lượt một.
+    const chanHai = gioiHan(thoiGian, keHoachGoc, doiTuong, phanLoai.khuon, false);
+    if (chanHai) return chanHai;
+    if (thoiGian.thang?.cuaSo.some((w) => w.nhuan)) {
+      return traNgay(cauNhuanChuaTach(thoiGian.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoai.khuon, true);
+    }
   }
   const keHoach = themLopChoThang(keHoachGoc);
 
@@ -277,18 +453,47 @@ export async function traLoiFocused(
     ...(cuaSo?.length ? { cuaSo } : {}),
   });
 
-  const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
+  const kqTruyHoi = await (pt.truyHoi ?? truyHoi)(keHoach, vao.cauHinhTruyHoi);
   const runId =
     vao.ghiNhatKy === false
       ? null
       : await ghiLanTruyHoi(keHoach, kqTruyHoi, {
           requestId: vao.requestId,
-          cauHoi: vao.cauHoi,
+          cauHoi: cauHoi,
           namHieuLuc,
           thangHieuLuc,
         });
 
-  const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
+  // Giải thích lượt trước: đoạn RAG lượt trước đã dẫn lấy lại theo định danh bền, đứng trước
+  // đoạn truy hồi mới, khử trùng theo chunkId (spec 2.3, delta #2). Không truy hồi lại để tìm chúng.
+  const doanCu = mGT?.canCuE.length ? await (pt.layDoanTheoId ?? layDoanTheoId)(mGT.canCuE) : [];
+  const canCuEMat = mGT ? mGT.canCuE.length - doanCu.length : 0;
+  const daCo = new Set(doanCu.map((d) => d.chunkId));
+  const daChon = [...doanCu, ...kqTruyHoi.daChon.filter((d) => !daCo.has(d.chunkId))];
+  const goi = dungGoiBangChung(cauHoi, keHoach, duKien, daChon);
+  const maF = new Set(goi.duKien.map((d) => d.id));
+  const canCuFMat = mGT ? mGT.canCuF.filter((m) => !maF.has(m)).length : 0;
+  const luotTruocPrompt: DauVaoPromptFocused['luotTruoc'] =
+    mGT?.ketLuanChinh
+      ? {
+          claim: claimMotDong(mGT.ketLuanChinh.claim),
+          ...(mGT.ketLuanChinh.direction ? { chieu: mGT.ketLuanChinh.direction } : {}),
+          maCanCu: [
+            ...mGT.canCuF.filter((m) => maF.has(m)),
+            ...goi.bangChung.filter((e) => daCo.has(e.chunkId)).map((e) => e.id),
+          ],
+        }
+      : undefined;
+  // Lá số của ai: lượt vừa phát lại sau F2, hoặc lượt "vì sao" mang theo từ lượt trước.
+  const ai: LaSoCuaAi = mGT ? mGT.laSoCuaAi : laSoCuaAi;
+  const nguoiCuaLaSo = mGT ? mGT.doiTuong : cho ? cho.doiTuong : null;
+  const laSoCuaAiPrompt: DauVaoPromptFocused['laSoCuaAi'] =
+    ai === 'nguoi-duoc-hoi' && nguoiCuaLaSo
+      ? { loai: 'nguoi-duoc-hoi', vai: nguoiCuaLaSo.vai, nhan: nguoiCuaLaSo.nhan }
+      : phatLai && hoiLai === 'nguoi-hoi'
+        ? { loai: 'nguoi-hoi' }
+        : undefined;
+  const hoanCanhTruoc = luotTruoc?.hoanCanh ?? [];
   const daNoiTruoc = await docSoKetLuan(namHieuLuc);
 
   // Hướng theo từng cửa sổ âm (spec v2 §3.3): cùng chiều → một hướng; khác chiều → hai nửa,
@@ -322,7 +527,7 @@ export async function traLoiFocused(
       goi,
       nghieng: x,
       khuon: phanLoai.khuon,
-      cauTraCuu: keHoach.yDinh === 'tra-cuu' ? vao.cauHoi : undefined,
+      cauTraCuu: keHoach.yDinh === 'tra-cuu' ? cauHoi : undefined,
     });
     for (const ten of t) tapTen.add(ten);
   }
@@ -333,17 +538,17 @@ export async function traLoiFocused(
   const chipMa = phanLoai.khuon === 'E' && phanLoai.haiVe ? chipHaiVe(phanLoai.haiVe, nn) : undefined;
   // Hỏi danh tính bạn đời ("chồng tôi có phải tên X"): câu đã duyệt (brief §11) đứng
   // đầu. Giữ là câu mã vì nó chỉ nói GIỚI HẠN ("lá số không xác nhận được tên"), không kết luận.
-  const ngoaiTam = nhanDangNgoaiTam(vao.cauHoi);
-  if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(vao.cauHoi, ngoaiTam, nn));
+  const ngoaiTam = nhanDangNgoaiTam(cauHoi);
+  if (ngoaiTam) cauMa.unshift(cauKetLuanNgoaiTam(cauHoi, ngoaiTam, nn));
 
   const mocHopLe = tinhMocHopLe({
-    cauHoi: vao.cauHoi,
+    cauHoi: cauHoi,
     thoiGian,
     namSinh: [vao.laSo.thongTin.nam, vao.laSo.thongTin.amLich.nam],
     vanGoi: [...goi.duKien.map((d) => d.noiDung), ...goi.bangChung.map((e) => e.noiDung)],
   });
   const ctx: NguCanhKiem = {
-    cauHoi: vao.cauHoi,
+    cauHoi: cauHoi,
     phanLoai,
     mucAnToan,
     chuDe: keHoach.chuDe,
@@ -366,6 +571,7 @@ export async function traLoiFocused(
         : undefined,
     chipTruoc: chipTruocTu(lichSu),
     maNguyetHan: new Set(goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id)),
+    ...(mGT?.ketLuanChinh?.direction ? { huongLuotTruoc: docChieu(mGT.ketLuanChinh.direction) } : {}),
     ...(huongThang ? { huongThang } : {}),
     ...(maTheoCuaSo ? { maTheoCuaSo } : {}),
     ngonNgu: nn,
@@ -383,7 +589,7 @@ export async function traLoiFocused(
   const kq = await chayFocused({
     prompt: {
       goi,
-      cauHoiGoc: vao.cauHoi,
+      cauHoiGoc: cauHoi,
       lichSu,
       daNoiTruoc,
       nghieng,
@@ -393,6 +599,9 @@ export async function traLoiFocused(
       laTiepTuChip: vao.laTiepTuChip === true,
       cauMa,
       ngonNgu: nn,
+      ...(luotTruocPrompt ? { luotTruoc: luotTruocPrompt } : {}),
+      ...(laSoCuaAiPrompt ? { laSoCuaAi: laSoCuaAiPrompt } : {}),
+      ...(hoanCanhTruoc.length ? { hoanCanhTruoc } : {}),
     },
     ctx,
     batDau,
@@ -411,11 +620,11 @@ export async function traLoiFocused(
       thoiGian,
       nguonKeHoach
     ),
-    hoanCanhSo: 0,
+    hoanCanhSo: hoanCanhTruoc.length,
     ...(thoiGian.thang ? { cuaSo: cuaSoVet(thoiGian, huongThang) } : {}),
     maDuKien: goi.duKien.map((d) => d.id),
     maNguon: goi.bangChung.map((e) => e.id),
-    chunkIds: kqTruyHoi.daChon.map((d) => d.chunkId),
+    chunkIds: daChon.map((d) => d.chunkId),
     lan,
     ...(lan[0]?.loi.length ? { lyDoVietLai: lan[0].loi.map((l) => l.ma) } : {}),
     ...(kq.van && kq.banNhap
@@ -432,9 +641,39 @@ export async function traLoiFocused(
     msTong: Date.now() - batDau,
     msTruyHoi: kqTruyHoi.doTreMs,
     usdUocTinh: usdUocTinh(lan),
+    ...(luotTruocBo ? { luotTruocBo } : {}),
+    ...(canCuEMat ? { canCuEMat } : {}),
+    ...(canCuFMat ? { canCuFMat } : {}),
   };
 
   const ban = kq.banNhap;
+  const maClaim = [...new Set(ban?.claims.flatMap((c) => c.evidenceIds) ?? [])];
+  const theoMaE = new Map(goi.bangChung.map((e) => [e.id, e]));
+  const meta = phatMeta({
+    van: kq.van,
+    keHoach,
+    khuon: phanLoai.khuon,
+    tg: thoiGian,
+    doiTuong: doiTuong
+      ? { vai: doiTuong.vai, nhan: doiTuong.nhan, cung: doiTuong.cung || null }
+      : ai === 'nguoi-duoc-hoi' && nguoiCuaLaSo
+        ? { vai: nguoiCuaLaSo.vai, nhan: nguoiCuaLaSo.nhan, cung: null }
+        : null,
+    laSoCuaAi: ai,
+    ketLuanChinh: ban?.claims[0]
+      ? {
+          claim: claimMotDong(ban.claims[0].claim),
+          ...(ban.claims[0].direction ? { direction: ban.claims[0].direction } : {}),
+        }
+      : null,
+    canCuF: maClaim.filter((m) => m.startsWith('F')),
+    canCuE: maClaim.flatMap((m) => {
+      const e = theoMaE.get(m);
+      return e ? [{ chunkId: e.chunkId, documentId: e.documentId, versionId: e.versionId }] : [];
+    }),
+    hoanCanh: [...new Set([...(ban?.hoanCanhNhanRa ?? []), ...hoanCanhTruoc])],
+    choHoiLai: null,
+  });
   const coCauTruc: TraLoiCoCauTruc | null = ban
     ? {
         ketLuan: ban.claims[0]?.claim,
@@ -480,5 +719,6 @@ export async function traLoiFocused(
     vetPreview,
     ...(ban ? { banNhap: ban } : {}),
     ...(nghieng ? { huongEngine: nhomCuaHuong(nghieng.huong) } : {}),
+    ...(meta ? { meta } : {}),
   };
 }

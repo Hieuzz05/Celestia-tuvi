@@ -15,21 +15,13 @@ for (const k of Object.keys(process.env)) {
   if (/SUPABASE|_API_KEY$|^AI_GHIM_MODEL$|^AI_FALLBACK_ORDER$|^CELES_/.test(k)) delete process.env[k];
 }
 process.env.GROQ_API_KEY = 'khoa-gia-test';
+process.env.CELES_META_KHOA = 'khoa-meta-test';
 
 import type { KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
 
 /** Khoá lượt: "<số flow>#<thứ tự lượt, từ 1>". Lý do ghi ngay cạnh — commit nào gỡ. */
 const CHUA_DAT: Record<string, string> = {
-  '3#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '4#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '4#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '5#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '6#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '6#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '7#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
   '18#1': 'NỢ — planner không bắt "this year" nên khuôn ra G; spec 3.1 cấm thêm bảng từ / sửa planner',
-  '24#1': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
-  '30#2': 'F — F2 chờ hỏi lại + MetaLuot + giải thích lượt trước (spec 6)',
 };
 
 /**
@@ -65,7 +57,10 @@ async function main() {
     if (!u.includes('api.groq.com')) return new Response('khong co mang trong test', { status: 500 });
     const body = typeof init?.body === 'string' ? init.body : '';
     let noiDung = traLoiGia(body);
-    if (body.includes('bộ phân loại câu hỏi')) {
+    if (body.includes('LÁ SỐ CỦA AI')) {
+      // Bộ hỏi lại giả (spec 6.1): chỉ câu người dùng tự nói lá số là của mình mới ra nguoi-hoi
+      noiDung = /lá số này của tôi/i.test(body.split('Người dùng vừa gõ')[1] ?? '') ? 'nguoi-hoi' : 'khong-lien-quan';
+    } else if (body.includes('bộ phân loại câu hỏi')) {
       const msgs = (JSON.parse(body).messages ?? []) as { role: string; content: string }[];
       const cau = msgs.filter((m) => m.role === 'user').pop()?.content ?? '';
       noiDung = PHAN_LOAI_GIA[cau] ? JSON.stringify(PHAN_LOAI_GIA[cau]) : 'khong-ro';

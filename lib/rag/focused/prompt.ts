@@ -381,6 +381,32 @@ export interface DauVaoPromptFocused {
   ngonNgu?: NgonNgu;
   /** Bản lần một và lỗi cứng của nó — chỉ có ở lần viết lại (spec 5.3) */
   vietLai?: { answer: string; loi: LoiCung[] };
+  /** Giải thích lượt trước (spec 6.2): kết luận vừa đưa + mã căn cứ THEO GÓI LƯỢT NÀY */
+  luotTruoc?: { claim: string; chieu?: string; maCanCu: string[] };
+  /** Câu hỏi lại F2 đã giải (spec 6.1) */
+  laSoCuaAi?: { loai: 'nguoi-duoc-hoi'; vai: string; nhan: string } | { loai: 'nguoi-hoi' };
+  /** Hoàn cảnh người đọc đã kể, mang từ lượt trước (spec 6.3 bước 5) */
+  hoanCanhTruoc?: string[];
+}
+
+/** Dòng "lá số của ai" sau khi người dùng trả lời câu hỏi lại (spec 6.1) */
+export function dongLaSoCuaAi(l: NonNullable<DauVaoPromptFocused['laSoCuaAi']>): string {
+  if (l.loai === 'nguoi-hoi') {
+    return 'Lá số đang mở là của chính người dùng. Câu hỏi về người thân thì đọc qua quan hệ, không luận vận riêng của người kia.';
+  }
+  return l.vai === 'con'
+    ? "Lá số đang mở là của người được hỏi (con của người dùng). Gọi người đó bằng 'bé' hoặc 'con bạn', không gọi 'bạn'."
+    : `Lá số đang mở là của người được hỏi (${l.nhan} của người dùng). Gọi người đó bằng '${l.nhan} bạn', không gọi 'bạn'.`;
+}
+
+/** Khối LƯỢT TRƯỚC (spec 6.2, nguyên văn). `claim` đã bỏ xuống dòng và cắt ≤200 ký tự. */
+export function khoiLuotTruoc(l: NonNullable<DauVaoPromptFocused['luotTruoc']>): string {
+  const chieu = l.chieu ? ` (chiều: ${l.chieu})` : '';
+  const ma = l.maCanCu.length ? l.maCanCu.join(', ') : 'không còn mã nào trong gói lượt này';
+  return (
+    `LƯỢT TRƯỚC\nKết luận Celes vừa đưa: «${l.claim}»${chieu}. Căn cứ đã dùng: ${ma} (mã theo gói LƯỢT NÀY). ` +
+    'Người dùng hỏi vì sao. Giải thích ĐÚNG kết luận này bằng ĐÚNG các căn cứ này; được bổ sung căn cứ khác trong gói nếu cần. Không đổi kết luận.'
+  );
 }
 
 /** Ghim ngôn ngữ (spec 8.2) — dòng đầu system khi người đọc dùng tiếng Anh */
@@ -417,9 +443,12 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
         .join('\n')}`
     );
   }
-  if (bc.dieuTuKe.length) {
-    phan.push(`ĐIỀU NGƯỜI ĐỌC TỰ KỂ (bối cảnh, KHÔNG phải dữ kiện lá số):\n${bc.dieuTuKe.map((d) => `- ${d}`).join('\n')}`);
+  const tuKe = [...new Set([...bc.dieuTuKe, ...(v.hoanCanhTruoc ?? [])])];
+  if (tuKe.length) {
+    phan.push(`ĐIỀU NGƯỜI ĐỌC TỰ KỂ (bối cảnh, KHÔNG phải dữ kiện lá số):\n${tuKe.map((d) => `- ${d}`).join('\n')}`);
   }
+  if (v.luotTruoc) phan.push(khoiLuotTruoc(v.luotTruoc));
+  if (v.laSoCuaAi) phan.push(dongLaSoCuaAi(v.laSoCuaAi));
   if (bc.machDangNoi.length) {
     phan.push(
       `ĐANG NÓI DỞ — đi tiếp mạch này, đừng luận lại từ đầu:\n${bc.machDangNoi

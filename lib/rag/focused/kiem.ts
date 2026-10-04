@@ -16,7 +16,7 @@ import { boDau, tenBiaChan } from '../thuc-the';
 import type { NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
 import type { ChuDe } from '../planner';
-import { nhomCuaHuong, soChieu, type HuongThang } from './chot-huong';
+import { nhomCuaHuong, soChieu, type HuongThang, type NhomHuong } from './chot-huong';
 import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
@@ -70,6 +70,8 @@ export interface NguCanhKiem {
   maTheoCuaSo?: Record<string, string[]>;
   /** Ngôn ngữ của chip dự phòng. Thiếu = 'vi'. */
   ngonNgu?: NgonNgu;
+  /** Giải thích lượt trước (spec 6.2): chiều của kết luận vừa đưa — claims[0] không được lật */
+  huongLuotTruoc?: NhomHuong;
 }
 
 /* -------------------------------------------------------------- tiện ích */
@@ -313,6 +315,12 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
               : `claims[0] nói "${ban.claims[0]?.direction}" nhưng hướng đã chốt là "${nhomCuaHuong(ctx.nghieng.huong)}"`,
         });
       }
+    }
+    if (ctx.huongLuotTruoc && ban.claims[0]?.direction !== ctx.huongLuotTruoc) {
+      bao({
+        ma: 'NGUOC_HUONG',
+        chiTiet: `đang giải thích kết luận lượt trước (chiều "${ctx.huongLuotTruoc}") nhưng claims[0] nói "${ban.claims[0]?.direction ?? 'không có chiều'}" — không đổi kết luận`,
+      });
     }
     const ht = ctx.huongThang;
     if (ht?.kieu === 'hai-nua') {

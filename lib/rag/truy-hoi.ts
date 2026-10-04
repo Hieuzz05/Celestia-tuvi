@@ -273,3 +273,69 @@ export async function truyHoi(
     khoTrong: false,
   };
 }
+
+/** Định danh bền của một đoạn nguồn qua các lượt (CEL-186 v2 §2.3) — E### chỉ sống trong một lượt. */
+export interface DinhDanhDoan {
+  chunkId: string;
+  documentId: string;
+  versionId: string;
+}
+
+/**
+ * Lấy lại đúng các đoạn lượt trước đã dẫn, KHÔNG truy hồi lại (đường Focused, "giải thích
+ * lượt trước"). Đọc-chỉ, cùng điều kiện các hàm truy hồi: phiên bản đã xuất bản, đoạn không
+ * bị loại trừ, `version_id` khớp. Đoạn không còn thì không có trong kết quả; thứ tự theo `ids`.
+ * STANDARD không gọi hàm này.
+ */
+export async function layDoanTheoId(ids: readonly DinhDanhDoan[]): Promise<DoanUngVien[]> {
+  if (!ids.length) return [];
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('knowledge_chunks')
+    .select(
+      'id, version_id, document_id, noi_dung, duong_de_muc, knowledge_document_versions!inner(phien_ban, trang_thai), knowledge_documents!inner(tieu_de, he_phai, muc_tin_cay)'
+    )
+    .in('id', ids.map((d) => d.chunkId))
+    .neq('trang_thai', 'loai_tru')
+    .eq('knowledge_document_versions.trang_thai', 'da_xuat_ban');
+  if (error || !data) {
+    console.warn('[RAG] Không lấy lại được đoạn lượt trước:', error?.message);
+    return [];
+  }
+  type Mot<T> = T | T[] | null;
+  const mot = <T,>(x: Mot<T>): T | null => (Array.isArray(x) ? (x[0] ?? null) : x);
+  const theoId = new Map<string, DoanUngVien>();
+  for (const r of data as unknown as {
+    id: string;
+    version_id: string;
+    document_id: string;
+    noi_dung: string;
+    duong_de_muc: string | null;
+    knowledge_document_versions: Mot<{ phien_ban: string }>;
+    knowledge_documents: Mot<{ tieu_de: string; he_phai: string; muc_tin_cay: string }>;
+  }[]) {
+    const v = mot(r.knowledge_document_versions);
+    const d = mot(r.knowledge_documents);
+    if (!v || !d) continue;
+    theoId.set(
+      r.id,
+      veUngVien({
+        chunk_id: r.id,
+        document_id: r.document_id,
+        version_id: r.version_id,
+        noi_dung: r.noi_dung,
+        duong_de_muc: r.duong_de_muc,
+        tieu_de: d.tieu_de,
+        he_phai: d.he_phai,
+        muc_tin_cay: d.muc_tin_cay,
+        phien_ban: v.phien_ban,
+        diem: 0,
+      })
+    );
+  }
+  return ids.flatMap((x) => {
+    const d = theoId.get(x.chunkId);
+    return d && d.versionId === x.versionId && d.documentId === x.documentId ? [d] : [];
+  });
+}

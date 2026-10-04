@@ -85,6 +85,10 @@ export interface DauVaoTraLoi {
    * ngôn ngữ này); đường STANDARD bỏ qua. Thiếu = 'vi'.
    */
   ngonNgu?: 'vi' | 'en';
+  /** Meta lượt trước client gửi lại (chưa tin) — chỉ đường Focused đọc, tự kiểm (focused/hieu-cau.ts) */
+  luotTruoc?: unknown;
+  /** Băm người dùng hiện tại do route tự tính — ràng buộc meta lượt (spec 2.3) */
+  nguoiDung?: string;
 }
 
 export interface KetQuaTraLoi {

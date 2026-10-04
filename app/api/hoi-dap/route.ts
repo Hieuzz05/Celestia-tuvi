@@ -17,6 +17,7 @@ import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
 import { chonNgonNgu, COOKIE_NGON_NGU } from '@/lib/rag/focused/ngon-ngu';
 import type { KetQuaFocused } from '@/lib/rag/focused/tra-loi-focused';
 import { ghiVetPreview } from '@/lib/rag/focused/vet';
+import { bam16, docMetaLuot } from '@/lib/rag/focused/hieu-cau';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
@@ -38,6 +39,8 @@ interface Body {
   tuChip?: boolean;
   /** Ngôn ngữ giao diện ('vi' | 'en') — câu do mã viết ở đường Focused theo nó */
   ngonNgu?: string;
+  /** MetaLuot ký HMAC của lượt trợ lý trước (đường Focused, spec 2.3). Sai hình dạng → bỏ */
+  luotTruoc?: unknown;
 }
 
 /** Đọc một cookie từ header thô — route này không dùng gì khác của cookie. */
@@ -197,9 +200,16 @@ export async function POST(req: Request) {
       body.gioiTinh as string
     );
 
+    // Meta lượt trước: giới hạn cỡ + kiểm hình dạng ở đây; chữ ký và ràng buộc kiểm ở Focused.
+    // Không đi vào lichSu. Ràng buộc người dùng bằng mã băm, không đưa userId thô vào meta.
+    const luotTruoc =
+      body.luotTruoc && JSON.stringify(body.luotTruoc).length <= 4000 ? docMetaLuot(body.luotTruoc) : null;
+
     const kq = await traLoiCoCanCu({
       laSo,
       cauHoi,
+      ...(luotTruoc ? { luotTruoc } : {}),
+      nguoiDung: bam16(cong.userId ?? ''),
       namXem,
       thangXem,
       lichSu,
@@ -246,6 +256,25 @@ export async function POST(req: Request) {
     // Vết Preview của đường Focused (spec 5.4): chỉ mã và số; Production không bao giờ ghi.
     ghiVetPreview((kq as KetQuaFocused).vetPreview);
 
+    /*
+     * Câu phát lại sau hỏi lại "lá số này của ai" (spec 6.1) rơi vào lối an toàn: cùng hai nhánh ở
+     * đầu route, chỉ là câu nguy hiểm nằm ở lượt TRƯỚC. Không trừ lượt, không meta.
+     */
+    const phatLai = (kq as KetQuaFocused).anToanPhatLai;
+    if (phatLai) {
+      await hoanCauHoi(cho.nguon, requestId);
+      return NextResponse.json(
+        phatLai === 'CRITICAL'
+          ? {
+              traLoi: LOI_NHAN_KHAN_CAP,
+              loiDi: [{ nhan: `Gọi ${SO_KHAN_CAP.capCuu}`, duong: `tel:${SO_KHAN_CAP.capCuu}` }],
+              goiYTiep: [],
+              anToan: true,
+            }
+          : { traLoi: LOI_NHAN_TIEN_LUONG, goiYTiep: GOI_Y_TIEN_LUONG }
+      );
+    }
+
     if (!kq.van) {
       await hoanCauHoi(cho.nguon, requestId);
       return NextResponse.json(
@@ -291,6 +320,8 @@ export async function POST(req: Request) {
        * ngay giữa những câu Celes vừa nói.
        */
       loiDi: kq.loiDi,
+      // Trạng thái lượt (đường Focused, có khoá): client giữ ở sessionStorage, gửi lại lượt sau
+      ...((kq as KetQuaFocused).meta ? { meta: (kq as KetQuaFocused).meta } : {}),
       canCu: !laQuanTri ? undefined : {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
         cachNoi: kq.coCauTruc?.cachNoi ?? null,

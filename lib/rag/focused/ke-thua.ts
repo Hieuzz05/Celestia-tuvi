@@ -41,11 +41,11 @@ export interface KetQuaKeThua {
 }
 
 /** Câu ngắn tới mức này mà không có chủ đề thì coi là câu nối tiếp. */
-const TRAN_AM_TIET_CAU_NGAN = 6;
+export const TRAN_AM_TIET_CAU_NGAN = 6;
 /** Chỉ lùi chừng này lượt người dùng: xa hơn thì chủ đề cũ không còn là ngữ cảnh. */
 const SO_LUOT_LUI = 4;
 
-const soAmTiet = (s: string) => s.split(/[^\p{L}\p{M}\d]+/u).filter(Boolean).length;
+export const soAmTiet = (s: string) => s.split(/[^\p{L}\p{M}\d]+/u).filter(Boolean).length;
 
 /** Câu tự đứng được: có chủ đề cụ thể, hoặc nói về một người cụ thể. */
 function coChuDeRieng(keHoach: KeHoachTruyVan, doiTuong: DoiTuongCauHoi | null): boolean {
