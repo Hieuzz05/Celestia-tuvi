@@ -16,7 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1, thư mục chính `D:/SAPP BA/tuvi-ai`) | [CODE] CEL-186 vé B — Focused Chat. CEL-189 đã lên Production (03/10) → đang: merge origin/main vào nhánh → regression → bật cờ Preview RIÊNG nhánh → eval model thật (≤ $2, ghim model Production) → Barnum → reviewer → UAT. Cờ Production vẫn TẮT khi gộp main. Phương án: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` | `viec/cel-186-focused-chat` | `lib/rag/focused/**`, `lib/rag/tra-loi.ts`, `lib/ai/fallback.ts` (chỉ biến eval), `app/api/hoi-dap/route.ts`, `scripts/test-focused.ts`, `scripts/eval-focused.ts` | 03/10/2026 |
+| Claude (máy 1, thư mục chính `D:/SAPP BA/tuvi-ai`) | [CODE] CEL-186 Answer Contract v2 — spec ĐÃ DUYỆT / FREEZE 04/10 (`D:\Celestia\CEL-186-answer-contract-v2-spec.md`), đang code theo patch plan từ commit A0. Cờ Production vẫn TẮT, không gộp main | `viec/cel-186-focused-chat` | `lib/rag/focused/**`, `lib/rag/tra-loi.ts`, `lib/rag/boi-canh-la-so.ts`, `lib/rag/truy-hoi.ts` (chỉ thêm hàm), `lib/ai/fallback.ts` (chỉ biến eval), `app/api/hoi-dap/route.ts`, `app/hoi-dap/page.tsx`, `scripts/test-*.ts`, `.github/workflows/kiem-tra.yml` | 04/10/2026 |
 
 
 ## Đang vướng — đừng đụng vào
