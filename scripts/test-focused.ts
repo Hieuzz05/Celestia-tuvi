@@ -691,6 +691,7 @@ for (const ca of CA_DOI_TUONG) {
     ['Năm nay việc tới, điều đó nhất định.', 'CHAC_CHAN_GIA'],
     ['Không phải lo, năm nay chắc chắn có việc.', 'CHAC_CHAN_GIA'],
     ['Đây không phải dấu hiệu xấu mà chắc chắn là lúc đổi nghề.', 'CHAC_CHAN_GIA'],
+    ['Không có gì phải lo, việc tốt sẽ xảy ra.', 'CHAC_CHAN_GIA'],
     ['Theo tài liệu, năm nay công việc ổn.', 'LO_NGUON'],
     ['Theo F001, năm nay công việc ổn.', 'LO_MA'],
   ];
@@ -706,7 +707,9 @@ for (const ca of CA_DOI_TUONG) {
     'Điều này không phải dấu hiệu chắc chắn bạn bị cho nghỉ.',
     'Đây không phải căn cứ để kết luận khoản vay chắc chắn mất.',
     'Điều này không có nghĩa là chắc chắn mất tiền, mà là khoản vay khó đòi.',
-    'Đây không đủ để kết luận chắc chắn rằng khoản vay mất.']) {
+    'Đây không đủ để kết luận chắc chắn rằng khoản vay mất.',
+    'Celes chưa có đủ căn cứ để khẳng định một thay đổi nhà cụ thể sẽ xảy ra.',
+    'Lá số không có căn cứ để nói chắc chắn chuyện này.']) {
     kiem(!ma(c).includes('CHAC_CHAN_GIA'), `"${c}" bị CHAC_CHAN_GIA nhầm`);
   }
   // Mốc: tháng 10/2026 dương phủ tháng 8 và 9 âm; tháng kế (11) không lạ; hỏi "năm nay" mà nói "sang 2027" là lệch (delta #6).

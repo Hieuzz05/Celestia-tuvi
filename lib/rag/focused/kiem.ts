@@ -127,7 +127,7 @@ const CHAC_CHAN_GIA = re(
  * "không có nghĩa là chắc chắn mất tiền", "không đủ để kết luận chắc chắn". Chỉ xét trong cùng
  * vế câu (sau dấu , ; : hay "mà", "nhưng" gần nhất) — tái hiện 502 của eval mù I: mọi lượt trượt đều đúng dạng này.
  */
-const PHU_DINH_VE = re('(?:không|chưa|chẳng) (?:phải|hẳn|có nghĩa|đủ|thể)');
+const PHU_DINH_VE = re('(?:không|chưa|chẳng) (?:có )?(?:phải|hẳn|nghĩa|đủ|thể|căn cứ)');
 function chacChanGia(s: string): RegExpExecArray | null {
   CHAC_CHAN_GIA.lastIndex = 0;
   for (let m = CHAC_CHAN_GIA.exec(s); m; m = CHAC_CHAN_GIA.exec(s)) {
