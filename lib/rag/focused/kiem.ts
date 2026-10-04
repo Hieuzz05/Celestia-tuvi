@@ -202,7 +202,7 @@ export function kiemMotCau(noiDung: string, ctx: NguCanhKiem, laCauChot = false)
   if (ngoai.some((t) => !t.startsWith('Lưu Hóa'))) ly.add('ten-ngoai-goi');
   if (tenBiaChan(s).length) ly.add('ten-bia');
   const { khuon } = ctx.phanLoai;
-  if (laCauChot && ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C')) {
+  if (laCauChot && ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'D')) {
     const tapChot = new Set(
       ctx.nghieng.dauMoc.map((d) => khoaTen(d.ten)).filter((k) => ctx.tapTen.has(k))
     );
@@ -227,8 +227,8 @@ export function kiemMotCau(noiDung: string, ctx: NguCanhKiem, laCauChot = false)
   // 5. G (hoặc không có hướng engine) thì không được nói "nghiêng về"
   if ((khuon === 'G' || !ctx.nghieng) && NGHIENG_VE.test(s)) ly.add('nghieng-ve');
 
-  // 6. Không mốc lạ
-  if (mocLa(s, ctx)) ly.add('moc-la');
+  // 6. Không mốc lạ. "Khi nào" (D) chỉ đọc mức năm: mốc nhỏ hơn năm bằng chữ cũng là mốc lạ.
+  if (mocLa(s, ctx) || (khuon === 'D' && MOC_NHO_HON_NAM.test(s))) ly.add('moc-la');
 
   // 7. Tháng đã qua thì không nói như dự báo
   if (ctx.thoiGian.thang?.trangThai === 'da-qua' && TUONG_LAI.test(s)) ly.add('tuong-lai');
@@ -244,6 +244,10 @@ function chonMotVe(s: string, haiVe: [string, string]): boolean {
     return new RegExp(`chọn\\s+${ve}|${ve}[^.!?]{0,24}(?:tốt|hợp|lợi|ổn|đáng)\\s+hơn|${ve}\\s+hơn`, 'iu').test(t);
   });
 }
+
+/** Mốc nhỏ hơn một năm nói bằng chữ — số tháng đã có `THANG` bắt. */
+export const MOC_NHO_HON_NAM =
+  /(?<![\p{L}\p{M}])(?:cuối năm|đầu năm|giữa năm|nửa (?:đầu|cuối|sau) năm|(?:sau|trước|quanh|dịp) Tết|quý (?:một|hai|ba|bốn|I{1,3}|IV|[1-4])|mùa (?:xuân|hạ|hè|thu|đông)|tháng (?:giêng|chạp|tới|sau|sắp tới)|vài tháng tới|mấy tháng tới)(?![\p{L}\p{M}])/iu;
 
 function mocLa(s: string, ctx: NguCanhKiem): boolean {
   for (const m of s.matchAll(NAM)) if (Number(m[1]) !== ctx.thoiGian.namHieuLuc) return true;
@@ -285,7 +289,7 @@ export function kiemLuot(ban: BanThoFocused, ctx: NguCanhKiem): KetQuaKiem {
    */
   const ngoaiPhamVi = !!ban.ngoaiPhamVi && ban.cau.length === 0 && !!ban.cauChot;
   const coNghieng =
-    !ngoaiPhamVi && !!ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'F1');
+    !ngoaiPhamVi && !!ctx.nghieng && (khuon === 'A' || khuon === 'B' || khuon === 'C' || khuon === 'D' || khuon === 'F1');
 
   // Câu thân: làm sạch, kiểm, giữ mã F### thật.
   let cau = ban.cau

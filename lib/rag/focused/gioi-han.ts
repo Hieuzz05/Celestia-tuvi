@@ -1,18 +1,21 @@
 /**
  * GIỚI HẠN CỦA LÁ SỐ — đường Focused (CEL-186, final hardening 04/10/2026).
  *
- * Ba thứ lá số không trả lời được, bắt bằng luật TRƯỚC truy hồi và trước model:
- *   AGE-01  mốc hỏi kết thúc trước ngày sinh → chưa có vận nào để đọc;
- *   AGE-02  chuyện người lớn (việc làm, hôn nhân, người yêu) ở tuổi chưa hợp;
- *   PERSON-03 "chồng tôi" trên lá số nam / "vợ tôi" trên lá số nữ → hỏi lại.
+ * Hai chỗ dừng trước truy hồi và trước model:
+ *   AGE-01  mốc hỏi kết thúc trước ngày sinh → chưa có vận nào để đọc (DỮ KIỆN);
+ *   AGE-02  chuyện người lớn (việc làm, hôn nhân, người yêu) ở tuổi chưa hợp —
+ *           NGOẠI LỆ TẠM duy nhất (chủ dự án 04/10): đóng băng, không thêm từ khoá,
+ *           bước 2 hạ thành cách nói. Danh sách lối dừng: `scripts/test-loi-chi-ma.ts`.
  *
- * Hàm thuần, không gọi model. Không suy đoán xu hướng tính dục hay danh tính:
- * chỉ nói hai dữ kiện đang lệch và để người hỏi tự kiểm.
+ * PERSON-03 (lệch giới) đã bỏ 04/10: lá số đang mở có thể không phải của người
+ * hỏi, và người nam vẫn có thể có chồng — luật chữ không đủ để dừng lượt.
+ *
+ * Hàm thuần, không gọi model.
  */
 
 import type { LaSo } from '@/lib/tuvi/ansao';
 import type { ChuDe, KeHoachTruyVan } from '../planner';
-import { cauChuaHopTuoi, cauLechGioi, cauTruocSinh, type CauMa, type MocHoi } from './cau-ma';
+import { cauChuaHopTuoi, cauTruocSinh, type CauMa, type MocHoi } from './cau-ma';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { khopCum } from './khop';
 import type { NgonNgu } from './ngon-ngu';
@@ -126,36 +129,4 @@ export function chanChuaHopTuoi(
     (theoChuDe && CHU_DE_NGUOI_LON.has(keHoach.chuDe) && !hoc);
   if (!nguoiLon) return null;
   return cauChuaHopTuoi(tuoi, tg.namHieuLuc, nn);
-}
-
-/* ------------------------------------------------------- lệch giới tính */
-
-// Đường từ khoá chỉ bắt câu NGƯỜI HỎI tự nói về mình: "anh ấy đã có vợ",
-// "lấy vợ cho thằng cả" là người thứ ba, không phải lệch giới.
-const TOI = '(?:tôi|mình|em|tui|tớ)';
-const TOI_KD = '(?:toi|minh|em|tui|to)';
-const CHONG = `ông xã|my husband|${TOI} (?:(?:sẽ|đã|có|nên|được|muốn|chưa) ){0,2}(?:lấy chồng|có chồng)|chồng của ${TOI}`;
-const CHONG_KD = `ong xa|${TOI_KD} (?:(?:se|da|co|nen|duoc|muon|chua) ){0,2}(?:lay chong|co chong)|chong cua ${TOI_KD}`;
-const VO = `bà xã|my wife|${TOI} (?:(?:sẽ|đã|có|nên|được|muốn|chưa) ){0,2}(?:lấy vợ|có vợ)|vợ của ${TOI}`;
-const VO_KD = `ba xa|${TOI_KD} (?:(?:se|da|co|nen|duoc|muon|chua) ){0,2}(?:lay vo|co vo)|vo cua ${TOI_KD}`;
-
-/**
- * PERSON-03. "chồng tôi" (qua `nhanDangDoiTuong`, đã loại "mẹ chồng", "nhà
- * chồng"…), "ông xã", "tôi lấy chồng" trên lá số nam — và chiều ngược trên lá
- * số nữ. Câu đã nói về người khác ("con gái tôi lấy chồng", "anh ấy có vợ")
- * thì không xét.
- */
-export function chanLechGioi(
-  laSo: Pick<LaSo, 'thongTin'>,
-  cauHoi: string,
-  doiTuong: DoiTuongCauHoi | null,
-  nn: NgonNgu
-): CauMa | null {
-  const nam = laSo.thongTin.gioiTinh === 'nam';
-  const noiChong =
-    (doiTuong?.vai === 'vo-chong' && doiTuong.nhan === 'chồng') || (!doiTuong && khopCum(cauHoi, CHONG, CHONG_KD));
-  const noiVo = (doiTuong?.vai === 'vo-chong' && doiTuong.nhan === 'vợ') || (!doiTuong && khopCum(cauHoi, VO, VO_KD));
-  if (nam && noiChong && !noiVo) return cauLechGioi(true, nn);
-  if (!nam && noiVo && !noiChong) return cauLechGioi(false, nn);
-  return null;
 }

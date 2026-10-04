@@ -670,9 +670,7 @@ Vài điểm đáng biết:
 
 **Đường Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`).** Cùng truy hồi và gói bằng chứng,
 khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120 "chữ", tức âm tiết), chiều kết luận do
-mã chốt từ lá số. Một số lượt do mã viết trọn, không gọi model: hỏi vận riêng của người khác (F2),
-"khi nào" không mốc (D), tháng có nhuận cần hỏi lại, và tháng nhuận đã chọn (Celes chưa tách riêng
-được vận tháng nhuận nên nói thẳng, không đọc tháng thường thay). Ba lượt mã nữa (`gioi-han.ts`) KHÔNG tính lượt: mốc hỏi trước ngày sinh, người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu, và "chồng tôi" trên lá số nam (hay "vợ tôi" trên lá số nữ). Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
+mã chốt từ lá số. "Khi nào" (D) đi qua model và chỉ đọc ở mức năm, không nêu tháng / mùa / quý. Luật chữ chỉ được định tuyến, không được tự kết thúc lượt: lượt do mã viết trọn (không gọi model) chỉ còn dữ kiện (mốc hỏi trước ngày sinh — không tính lượt; tháng có nhuận cần hỏi lại; tháng nhuận đã chọn, vì Celes chưa tách riêng được vận tháng nhuận), câu HỎI LẠI khi hỏi vận riêng của người khác (F2: lá số đang mở là của ai — không tính lượt, chip đầu trả lời câu gốc trong một chạm), và đúng một ngoại lệ tạm AGE-02 (người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu — không tính lượt). Danh sách này do `scripts/test-loi-chi-ma.ts` (CI) canh. Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
 không còn câu nào dựa vào nguyệt hạn, thì thử lại một lần, vẫn hỏng thì trả 502 và hoàn lượt. Câu do mã viết theo
 ngôn ngữ người dùng (VI/EN); thân bài model vẫn tiếng Việt. Mã ở `lib/rag/focused/`; luật và quyết định ở
 `docs/chien-luoc/CEL-186-ve-B-phuong-an.md`; bộ bất biến có test ở `docs/chien-luoc/CEL-186-INVARIANTS.md`.

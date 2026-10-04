@@ -69,8 +69,15 @@ const KHI_NAO_CO_DAU =
 const KHI_NAO_KHONG_DAU =
   'khi nao|bao gio|luc nao|thoi diem nao|thoi gian nao|nam nao|thang nao|den bao gio|may tuoi|nam bao nhieu tuoi';
 
+/*
+ * Cụm thói quen không hỏi mốc: "lúc nào cũng mệt", "năm nào cũng vất vả",
+ * "chưa bao giờ có người yêu". Gỡ chúng ra trước khi dò (lỗi eval 04/10, ca 05).
+ */
+const THOI_QUEN =
+  /(?<![\p{L}\p{M}])(?:(?:lúc|khi|năm|tháng|ngày|luc|nam|thang|ngay) (?:nào|nao)(?: mà| ma)? (?:cũng|cung)|(?:bao giờ|bao gio) (?:cũng|cung)|(?:chưa|chẳng|không|ko|chua|chang|khong) (?:bao giờ|bao gio))(?![\p{L}\p{M}])/giu;
+
 export function laHoiKhiNao(cauHoi: string): boolean {
-  return khop(cauHoi, KHI_NAO_CO_DAU, KHI_NAO_KHONG_DAU);
+  return khop(cauHoi.normalize('NFC').replace(THOI_QUEN, ' '), KHI_NAO_CO_DAU, KHI_NAO_KHONG_DAU);
 }
 
 /* ----------------------------------------------------------- A hay B */

@@ -24,17 +24,18 @@ import { PHIEN_BAN_NGON_NGU } from '../lib/rag/ngon-ngu';
 import { PHIEN_BAN_VALIDATOR } from '../lib/rag/kiem-duyet';
 import { nhanDangDoiTuong, ghepKeHoach, cauGhep } from '../lib/rag/focused/doi-tuong';
 import { coThangNhuan, khoangDuong, soVoiBayGio, laCuoiNamAm, thangAmChuYeu, ngayCuoiThangAm, ngayCuoiNamAm } from '../lib/rag/focused/thang-am';
-import { chanChuaHopTuoi, chanLechGioi, chanTruocSinh, tuoiAmTai, TUOI_NGUOI_LON } from '../lib/rag/focused/gioi-han';
+import { chanChuaHopTuoi, chanTruocSinh, tuoiAmTai, TUOI_NGUOI_LON } from '../lib/rag/focused/gioi-han';
 import { lapKeHoachChinh, lapKeHoachFocused } from '../lib/rag/focused/ke-thua';
-import { phanKhuon, laXinSau, tachHaiVe, boiCanhThoiGian } from '../lib/rag/focused/phan-loai';
+import { phanKhuon, laXinSau, tachHaiVe, boiCanhThoiGian, laHoiKhiNao } from '../lib/rag/focused/phan-loai';
 import {
   CAU_CUOI_NAM,
   CAU_HAI_VE,
-  CAU_KHI_NAO,
-  CAU_VAN_RIENG,
   cauVanRieng,
+  chipLaSoCuaNguoiDuocHoi,
+  chuNhan,
+  chipQuanHe,
+  hoiLaiVanRieng,
   cauHaiVe,
-  cauKhiNao,
   cauNhuanChuaTach,
   chipCuoiNam,
   cauThangDaQua,
@@ -51,7 +52,7 @@ import {
 import { datMienTruTamLy } from '../lib/rag/an-toan';
 import { loiDiTiep } from '../lib/rag/hinh-dang-tra-loi';
 import { goiCoPhucDuc, khoaTen, quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
-import { kiemMotCau, kiemLuot, chonChip, doiNayThanhDo, soAmTiet, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
+import { kiemMotCau, kiemLuot, chonChip, doiNayThanhDo, soAmTiet, MOC_NHO_HON_NAM, type NguCanhKiem, type BanThoFocused } from '../lib/rag/focused/kiem';
 import { tenModelThay, tenNgoaiModelThay, tenTrongChu } from './oracle-ten-prompt';
 import { docFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
 import { ghepVan, chayFocused } from '../lib/rag/focused/chay';
@@ -333,7 +334,8 @@ for (const ca of CA_DOI_TUONG) {
   const nd = (noiDung: string) => ({ vaiTro: 'nguoi-dung' as const, noiDung });
   const bayGio = { nam: 2026, thang: 8, ngay: 10 };
 
-  // F2 → chip quan hệ → F1, đúng cung lục thân, không đọc cung tiền của người hỏi.
+  // F2 hỏi lại (04/10): chip 2 → F1 đúng cung lục thân; chip 1 = câu gốc trên chủ lá số,
+  // MỘT chạm trả lời được câu gốc — giữ chủ đề, không ra F2 lần nữa.
   for (const [cau, cung, coLoi] of [
     ['Anh tôi có giàu không?', 'Huynh Đệ', false],
     ['Bố tôi năm nay sức khỏe thế nào?', 'Phụ Mẫu', false],
@@ -344,14 +346,52 @@ for (const ca of CA_DOI_TUONG) {
       hong.push(`"${cau}" phải là vận riêng`);
       continue;
     }
-    const cm = cauVanRieng(dt);
+    const cm = hoiLaiVanRieng(cau, dt);
     kiem(!cm.goiModel, `F2 "${cau}" không được gọi model`);
     kiem(cm.loiDi.length > 0 === coLoi, `F2 "${cau}" lối sang hai lá số sai`);
-    const kq = lapKeHoachFocused({ ...vao, cauHoi: cm.chip[0], laTiepTuChip: true, lichSu: [nd(cau)] });
-    const pl = phanKhuon({ cauHoi: cm.chip[0], keHoach: kq.keHoach, doiTuong: kq.doiTuong });
-    kiem(pl.khuon === 'F1', `chip "${cm.chip[0]}" ra khuôn ${pl.khuon}, cần F1`);
-    kiem(kq.keHoach.cungLienQuan[0] === cung, `chip "${cm.chip[0]}" cung đầu ${kq.keHoach.cungLienQuan[0]}, cần ${cung}`);
-    kiem(!kq.keHoach.cungLienQuan.includes('Tài Bạch'), `chip "${cm.chip[0]}" còn Tài Bạch`);
+    kiem(cm.chip.length === 2, `F2 "${cau}" cần hai chip: ${cm.chip.join(' | ')}`);
+    const quanHe = cm.chip[1];
+    const kq = lapKeHoachFocused({ ...vao, cauHoi: quanHe, laTiepTuChip: true, lichSu: [nd(cau)] });
+    const pl = phanKhuon({ cauHoi: quanHe, keHoach: kq.keHoach, doiTuong: kq.doiTuong });
+    kiem(pl.khuon === 'F1', `chip "${quanHe}" ra khuôn ${pl.khuon}, cần F1`);
+    kiem(kq.keHoach.cungLienQuan[0] === cung, `chip "${quanHe}" cung đầu ${kq.keHoach.cungLienQuan[0]}, cần ${cung}`);
+    kiem(!kq.keHoach.cungLienQuan.includes('Tài Bạch'), `chip "${quanHe}" còn Tài Bạch`);
+  }
+  // Câu F2 ghép "<người> bạn" — không được ra "bạn bạn", "anh bạn", "lá số của vợ chồng bạn".
+  for (const [cau, can] of [
+    ['Bạn tôi năm nay thế nào?', 'người bạn ấy'],
+    ['Anh tôi năm nay công việc thế nào?', 'anh của bạn'],
+    ['Bố mẹ tôi năm nay sức khỏe thế nào?', 'một người trong bố mẹ bạn'],
+    ['Mẹ tôi năm nay sức khỏe thế nào?', 'mẹ bạn'],
+  ] as const) {
+    const dt = nhanDangDoiTuong(cau);
+    if (!dt) {
+      hong.push(`"${cau}" không nhận ra người được hỏi`);
+      continue;
+    }
+    kiem(chuNhan(dt) === can, `F2 "${cau}" ghép "${chuNhan(dt)}", cần "${can}"`);
+    kiem(!/bạn bạn|anh bạn,/u.test(cauVanRieng(dt)), `F2 "${cau}" câu vỡ: ${cauVanRieng(dt)}`);
+  }
+  for (const [cau, chipCan, chuDe] of [
+    ['Mẹ tôi năm nay sức khỏe thế nào?', 'Người có lá số này năm nay sức khỏe thế nào?', 'suc-khoe'],
+    ['Năm nay con gái tôi học hành ra sao?', 'Năm nay người có lá số này học hành ra sao?', 'su-nghiep'],
+    ['Bố của tôi có giàu không?', 'Người có lá số này có giàu không?', 'tai-chinh'],
+    ['mẹ mình năm nay sức khỏe thế nào', 'Người có lá số này năm nay sức khỏe thế nào', 'suc-khoe'],
+  ] as const) {
+    const dt = nhanDangDoiTuong(cau);
+    if (!dt || dt.loai !== 'van-rieng') {
+      hong.push(`"${cau}" phải là vận riêng`);
+      continue;
+    }
+    const chip = chipLaSoCuaNguoiDuocHoi(cau, dt);
+    kiem(chip === chipCan, `F2 chip câu gốc "${cau}" ra "${chip}", cần "${chipCan}"`);
+    if (!chip) continue;
+    kiem(hoiLaiVanRieng(cau, dt).chip[0] === chip, `F2 "${cau}" chip đầu không phải câu gốc`);
+    // Một chạm: không còn người được hỏi → không F2 lần hai, chủ đề là chủ đề câu gốc hỏi.
+    const kq = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cau)] });
+    const pl = phanKhuon({ cauHoi: chip, keHoach: kq.keHoach, doiTuong: kq.doiTuong });
+    kiem(pl.khuon !== 'F2' && !kq.doiTuong, `chip "${chip}" vẫn ra F2 — vòng hỏi lại`);
+    kiem(kq.keHoach.chuDe === chuDe, `chip "${chip}" ra ${kq.keHoach.chuDe}, cần ${chuDe}`);
   }
 
   // E: chip hai vế giữ chủ đề của câu gốc.
@@ -365,11 +405,9 @@ for (const ca of CA_DOI_TUONG) {
     }
   }
 
-  // D: chip năm giữ chủ đề, không còn chip "tháng nào".
+  // D (đi qua model từ 04/10): chip năm sau giữ chủ đề của câu "khi nào".
   const cauD = 'Khi nào tôi lấy chồng?';
-  const d = cauKhiNao();
-  kiem(!d.chip.some((c) => /tháng nào/i.test(c)), 'D còn chip "tháng nào" (quyết định #5)');
-  for (const chip of d.chip) {
+  for (const chip of chipCuoiNam(2026, [])) {
     const kq = lapKeHoachFocused({ ...vao, cauHoi: chip, laTiepTuChip: true, lichSu: [nd(cauD)] });
     kiem(kq.keHoach.chuDe === 'tinh-cam', `chip D "${chip}" ra ${kq.keHoach.chuDe}, cần tinh-cam`);
   }
@@ -706,28 +744,23 @@ for (const ca of CA_DOI_TUONG) {
   kiem(kiemLuot({ ...ban, cau: [cauNen, cauDuKien2] }, ctx()).cau.some((c) => c.noiDung === cauDuKien2.noiDung), 'câu "dự kiến" bị bỏ nhầm');
 
   // Câu do mã viết: chữ đã duyệt (chủ dự án 04/10), không lộ "dữ kiện", EN không còn chữ Việt.
-  kiem(
-    CAU_KHI_NAO.vi ===
-      'Lá số hiện chưa đủ để chọn ra một năm hay một tháng tốt nhất nếu chưa đặt các mốc cạnh nhau. Bạn có thể chọn một mốc cụ thể để Celes đọc riêng.',
-    `câu khi nào lệch chữ đã duyệt: ${CAU_KHI_NAO.vi}`
-  );
   const mocNhuan = { nam: 2025, thang: 6, trangThai: 'da-qua' as const, nhuan: 'nhuan' as const };
   const mocQua = { nam: 2026, thang: 3, trangThai: 'da-qua' as const, nhuan: null };
   const dtMe = nhanDangDoiTuong('Mẹ tôi năm nay thế nào?');
   const cauMaVi = [
-    CAU_KHI_NAO.vi, CAU_HAI_VE.vi, CAU_VAN_RIENG.vi, CAU_CUOI_NAM.vi, ...CAU_NGOAI_TAM,
+    CAU_HAI_VE.vi, ...(dtMe ? [cauVanRieng(dtMe)] : []), CAU_CUOI_NAM.vi, ...CAU_NGOAI_TAM,
     cauNhuanChuaTach(mocNhuan, 2026).cau, cauThangDaQua(mocQua),
     cauChotDuPhong({ nghieng: tangMon, chuDe: 'tai-chinh', cauHoi: 'Tiền bạc?', moc: 'Năm nay' }),
   ];
   for (const c of cauMaVi) kiem(!/dữ kiện/iu.test(c), `câu mã còn "dữ kiện": ${c}`);
   const cauMaEn: string[] = [
-    CAU_KHI_NAO.en, CAU_HAI_VE.en, CAU_VAN_RIENG.en, CAU_CUOI_NAM.en, ...CAU_NGOAI_TAM_EN, MIEN_TRU_TAM_LY_EN,
+    CAU_HAI_VE.en, CAU_CUOI_NAM.en, ...CAU_NGOAI_TAM_EN, MIEN_TRU_TAM_LY_EN,
     cauNhuanChuaTach(mocNhuan, 2026, 'en').cau, ...cauNhuanChuaTach(mocNhuan, 2026, 'en').chip,
     cauThangDaQua(mocQua, 'en'), cauThangDaQua({ ...mocQua, nhuan: 'nhuan' }, 'en'),
-    ...cauKhiNao('en').chip, chipCuoiNam(2026, [], 'en').join(' '),
+    chipCuoiNam(2026, [], 'en').join(' '),
     cauHaiVe(['nghỉ việc', 'ở lại'], 'en').cau, ...cauHaiVe(['nghỉ việc', 'ở lại'], 'en').chip,
     ...CHIP_DU_PHONG.en,
-    ...(dtMe ? [cauVanRieng(dtMe, 'en').cau, ...cauVanRieng(dtMe, 'en').chip] : []),
+    ...(dtMe ? [cauVanRieng(dtMe, 'en'), chipQuanHe(dtMe, 'en')] : []),
     ...loiDiTheoNgonNgu(loiDiTiep({ chuDe: 'su-nghiep', lopHan: ['luu-nien'], yDinh: 'co-khong' }), 'en').map((l) => l.nhan),
   ];
   for (const c of cauMaEn) kiem(!conChuViet(c), `câu mã EN còn chữ Việt: ${c}`);
@@ -937,6 +970,39 @@ for (const ca of CA_DOI_TUONG) {
     thoiGian: { namHieuLuc: 2026, thang: { nam: 2026, thang: 3, trangThai: 'da-qua', nhuan: null }, cuoiNam: false },
   });
   kiem(moc.includes('ĐÃ QUA') && moc.includes('Bính Ngọ') && moc.includes('còn 4 tháng'), `khối mốc thiếu: ${moc}`);
+  // D đọc mức năm: khối mốc không tự mời "còn N tháng" / "Sau Tết" (celes-domain 04/10).
+  const mocD = khoiMoc(
+    { bayGio: { nam: 2026, thang: 8 } as never, thoiGian: { namHieuLuc: 2026, thang: null, cuoiNam: false } as never, doiDaiVanSauTet: true },
+    'D'
+  );
+  kiem(mocD.includes('Bính Ngọ') && !/còn \d+ tháng|Sau Tết/u.test(mocD), `khối mốc D còn mốc nhỏ hơn năm: ${mocD}`);
+
+  // "Khi nào" thật → D; cụm thói quen ("… nào cũng", "chưa bao giờ") không phải hỏi mốc (eval 04/10 ca 05).
+  for (const [cau, d] of [
+    ['Khi nào tôi có việc mới?', true],
+    ['khi nao toi co viec moi', true],
+    ['Năm 2027 tháng nào tôi có việc?', true],
+    ['Năm nào cũng vất vả, năm nay tiền bạc ra sao?', false],
+    ['Lúc nào cũng mệt, năm nay sức khỏe tôi thế nào?', false],
+    ['Tôi chưa bao giờ có người yêu, năm nay có không?', false],
+    ['nam nao cung vat va, nam nay tien bac ra sao', false],
+    ['Chưa bao giờ có người yêu, khi nào tôi mới có?', true],
+  ] as const) {
+    kiem(laHoiKhiNao(cau) === d, `laHoiKhiNao("${cau}") phải ${d}`);
+  }
+  for (const [cau, bat] of [
+    ['Cuối năm công việc mở hơn.', true],
+    ['Sau Tết bạn dễ có việc.', true],
+    ['Quý ba là lúc thuận.', true],
+    ['Mùa thu dễ có tin vui.', true],
+    ['Vài tháng tới đường việc mở.', true],
+    ['Năm 2026 mở hơn cho việc mới.', false],
+    ['Lượt này chưa chọn ra tháng nào.', false],
+    ['Việc học theo mùa thi dễ căng.', false],
+  ] as const) {
+    kiem(MOC_NHO_HON_NAM.test(cau) === bat, `MOC_NHO_HON_NAM("${cau}") phải ${bat}`);
+  }
+
   const doc = docFocused('```json\n{"cauChot":"A.","chieuCauChot":"thuan","cau":[{"noiDung":"B.","maDuKien":["F001"],"phia":"lạ"}],"goiYTiep":["C?"]}\n```');
   kiem(!!doc && doc.cau[0].phia === 'nen' && doc.chieuCauChot === 'thuan', 'docFocused đọc sai');
   kiem(docFocused('không phải json') === null, 'docFocused nhận văn xuôi');
@@ -1101,37 +1167,11 @@ for (const ca of CA_DOI_TUONG) {
     kiem(!!chanTruocSinh(tre, tg, kh, 'vi'), 'chéo tháng × trước sinh: không chặn');
   }
 
-  // PERSON-03 — quan hệ lệch giới tính lá số → câu hỏi lại tất định, không suy đoán.
-  const lechGioi = (laSo: LaSo, cauHoi: string) => chanLechGioi(laSo, cauHoi, nhanDangDoiTuong(cauHoi), 'vi');
-  for (const [laSo, cauHoi, chan] of [
-    [lon, 'Chồng tôi năm nay thế nào?', true],
-    [lon, 'Khi nào tôi lấy chồng?', true],
-    [lon, 'Vợ tôi năm nay thế nào?', false],
-    [lon, 'Mẹ chồng tôi có khó tính không?', false],
-    [lon, 'Con gái tôi năm nay có lấy chồng không?', false],
-    [tre, 'Vợ tôi năm nay thế nào?', true],
-    [tre, 'Chồng tôi năm nay thế nào?', false],
-    [tre, 'Chuyện bạn đời của tôi năm nay thế nào?', false],
-    // phan-bien 04/10 S4: người thứ ba "có vợ / có chồng" không phải lệch giới.
-    [tre, 'Anh ấy đã có vợ, tôi có nên tiếp tục không?', false],
-    [lon, 'Cô ấy có chồng rồi, tôi nên làm gì?', false],
-    [tre, 'Năm nay có nên lấy vợ cho thằng cả không?', false],
-    [tre, 'Khi nào tôi lấy vợ?', true],
-    [lon, 'Bao giờ tôi có chồng?', true],
-    [lon, 'Tôi có nên lấy chồng năm nay không?', true],
-  ] as const) {
-    const c = lechGioi(laSo, cauHoi);
-    kiem(!!c === chan, `PERSON-03 "${cauHoi}" trên lá số ${laSo.thongTin.gioiTinh} chặn=${!!c}, cần ${chan}`);
-    if (c) {
-      kiem(!c.goiModel && !/đồng tính|xu hướng|giới tính của bạn/u.test(c.cau), `PERSON-03 câu suy đoán: ${c.cau}`);
-      kiem(c.chip.length === 1 && !lechGioi(laSo, c.chip[0]), `PERSON-03 chip lại bị chặn: ${c.chip.join('|')}`);
-    }
-  }
-  kiem(!conChuViet(chanLechGioi(lon, 'Chồng tôi thế nào?', nhanDangDoiTuong('Chồng tôi thế nào?'), 'en')?.cau ?? 'x'), 'PERSON-03 EN còn chữ Việt');
-  // Chip "bạn đời của tôi" đọc đúng cung Phu Thê.
+  // PERSON-03 đã bỏ (04/10): "chồng tôi" trên lá số nam đi đường thường, không dừng lượt.
+  // Chip "bạn đời của tôi" vẫn đọc đúng cung Phu Thê.
   {
     const { kh } = keHoachVa(lon, 'Chuyện bạn đời của tôi năm nay thế nào?');
-    kiem(kh.chuDe === 'tinh-cam' && kh.cungLienQuan[0] === 'Phu Thê', `PERSON-03 chip bạn đời ra ${kh.chuDe}/${kh.cungLienQuan[0]}`);
+    kiem(kh.chuDe === 'tinh-cam' && kh.cungLienQuan[0] === 'Phu Thê', `chip bạn đời ra ${kh.chuDe}/${kh.cungLienQuan[0]}`);
   }
 
   // TOPIC-01..03.
@@ -1191,25 +1231,27 @@ async function kiemNoi() {
     process.env.CELES_FOCUSED_CHAT = '1';
     kiem(focusedBat(), 'cờ "1" không bật Focused');
 
-    // F2 / D đi trọn đường qua traLoiCoCanCu: không truy hồi, không gọi model.
+    // F2 đi trọn đường qua traLoiCoCanCu: hỏi lại, không truy hồi, không gọi model, KHÔNG tính lượt.
     const f2 = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Bố tôi năm nay sức khỏe thế nào?' });
     kiem(f2.provider === 'ma' && f2.model === 'focused-f2', `F2 ra ${f2.provider}/${f2.model}`);
-    kiem(!!f2.van && f2.van.startsWith('Lá số này là của bạn'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
+    kiem(f2.khongTinhLuot === true, 'F2 hỏi lại mà vẫn tính lượt');
+    kiem(!!f2.van && f2.van.startsWith('Celes chưa biết lá số đang mở là của ai'), `F2 văn sai: ${f2.van.slice(0, 60)}`);
+    kiem(!/Lá số này là của bạn/u.test(f2.van), 'F2 còn câu cũ "Lá số này là của bạn"');
+    kiem((f2.coCauTruc?.goiYTiep ?? [])[0] === 'Người có lá số này năm nay sức khỏe thế nào?', `F2 chip đầu: ${f2.coCauTruc?.goiYTiep?.[0]}`);
     kiem((f2.coCauTruc?.goiYTiep ?? []).some((c) => c.includes('hợp nhau')), 'F2 thiếu chip quan hệ');
     // Route đọc mấy trường này ở nhánh quản trị — thiếu là 502 (mục 13.3).
     kiem(Array.isArray(f2.goi.duKien) && Array.isArray(f2.goi.bangChung), 'F2 gói thiếu trường');
     kiem(!!f2.phienBan.engine && !!f2.phienBan.phuongPhap && f2.phienBan.focused === 'F2', 'F2 phienBan thiếu khoá');
     kiem(f2.kiemDuyet === null && f2.runId === null, 'F2 có kiểm duyệt / runId');
 
-    // dsLaSo[0] là lá số nam: "lấy vợ". "Lấy chồng" trên lá số nam là PERSON-03 (hỏi lại, không tính lượt).
-    const d = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Khi nào tôi lấy vợ?' });
-    kiem(d.provider === 'ma' && d.model === 'focused-d', `D ra ${d.provider}/${d.model}`);
-    kiem(!d.khongTinhLuot, 'D (câu mã thường) không được miễn lượt');
-    const lech = await traLoiCoCanCu({ ...vaoGoc, cauHoi: 'Khi nào tôi lấy chồng?' });
-    kiem(lech.model === 'focused-lech-gioi' && lech.khongTinhLuot === true, `lá số nam + "lấy chồng" ra ${lech.model}`);
-    kiem(!(d.coCauTruc?.goiYTiep ?? []).some((c) => /tháng nào/i.test(c)), 'D còn chip "Tháng nào" (#5)');
+    // D không còn dừng bằng mã: hai câu trong ảnh UAT 04/10 phải đi tiếp tới truy hồi / model.
+    // (Offline không có model nên lượt có thể hỏng sau đó — chỉ cần KHÔNG phải câu mã.)
+    for (const cauHoi of ['Khi nào tôi có việc mới?', 'hiện tại tôi đang thất nghiệp, khi nào thì tìm đc việc mới']) {
+      const r = await traLoiCoCanCu({ ...vaoGoc, cauHoi }).catch(() => null);
+      kiem(!r || r.provider !== 'ma', `"${cauHoi}" vẫn dừng bằng mã: ${r?.model}`);
+    }
 
-    // AGE-01/02, PERSON-03 đầu-cuối: dừng bằng mã TRƯỚC truy hồi (gói rỗng), không model, hoàn lượt.
+    // AGE-01/02 đầu-cuối: dừng bằng mã TRƯỚC truy hồi (gói rỗng), không model, hoàn lượt.
     {
       const tre = lapLaSo({ ngay: 22, thang: 5, nam: 2026, gio: 16, gioiTinh: 'nu' });
       for (const [vao, model] of [
@@ -1219,7 +1261,6 @@ async function kiemNoi() {
         [{ ...vaoGoc, laSo: tre, cauHoi: 'This year, how is my work going?', ngonNgu: 'en' as const }, 'focused-chua-hop-tuoi'],
         // UAT U18: năm gọi bằng tiếng Anh — planner chỉ đọc tiếng Việt, lớp Focused tự đọc năm.
         [{ ...vaoGoc, laSo: tre, cauHoi: 'How was my health in 2025?', ngonNgu: 'en' as const }, 'focused-truoc-sinh'],
-        [{ ...vaoGoc, cauHoi: 'Chồng tôi năm nay thế nào?' }, 'focused-lech-gioi'],
       ] as const) {
         const r = await traLoiFocused(vao, phienBanHienTai, async () => [], bayGio);
         kiem(r.provider === 'ma' && r.model === model && r.khongTinhLuot === true && r.goi.duKien.length === 0,

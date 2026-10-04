@@ -6,20 +6,22 @@
  * duyệt. Model không viết lại, không "diễn giải" các câu này.
  *
  * Hai loại:
- *   - TRỌN LƯỢT (`goiModel: false`): D, F2, tháng nhuận. Lượt trả ngay, không
- *     truy hồi, không gọi model.
+ *   - TRỌN LƯỢT (`goiModel: false`): trước ngày sinh, tháng nhuận (DỮ KIỆN); F2
+ *     (HỎI LẠI, không tính lượt); AGE-02 (ngoại lệ tạm). Danh sách cho phép và
+ *     luật của từng loại: `scripts/test-loi-chi-ma.ts`. D không còn ở đây (04/10).
  *   - CÂU DẪN (`goiModel: true`): E, N2, N4. Câu mã đứng đầu, model đọc phần
  *     dưới qua guard như mọi khuôn khác.
  *
  * Chip chỉ là thứ engine trả lời được (#5): không có "Tháng nào đáng chú ý hơn?".
  *
  * Mọi câu có bản VI và EN (chủ dự án 04/10): theo `ngonNgu` của người dùng.
- * Bản VI của D, tháng nhuận, N2 là nguyên văn chủ dự án duyệt 04/10 — đổi chữ
- * là phải duyệt lại.
+ * Bản VI của tháng nhuận, N2 là nguyên văn chủ dự án duyệt 04/10 — đổi chữ
+ * là phải duyệt lại. Câu hỏi lại F2 (04/10, bước 1) chờ chủ dự án duyệt.
  */
 
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import type { LoiDiTiep } from '../hinh-dang-tra-loi';
+import { boDau } from '../thuc-the';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import type { NgonNgu } from './ngon-ngu';
 import type { MocThang } from './phan-loai';
@@ -32,22 +34,6 @@ export interface CauMa {
 }
 
 const hoaDau = (s: string) => s.charAt(0).toLocaleUpperCase('vi') + s.slice(1);
-
-/* ------------------------------------------------------------ khuôn D */
-
-export const CAU_KHI_NAO: Record<NgonNgu, string> = {
-  vi: 'Lá số hiện chưa đủ để chọn ra một năm hay một tháng tốt nhất nếu chưa đặt các mốc cạnh nhau. Bạn có thể chọn một mốc cụ thể để Celes đọc riêng.',
-  en: 'Your chart cannot single out one best year or month without setting the options side by side. You can pick a specific year or month for Celes to read on its own.',
-};
-
-const CHIP_KHI_NAO: Record<NgonNgu, string[]> = {
-  vi: ['Năm nay thì sao?', 'Sang năm thì sao?'],
-  en: ['What about this year?', 'What about next year?'],
-};
-
-export function cauKhiNao(nn: NgonNgu = 'vi'): CauMa {
-  return { cau: CAU_KHI_NAO[nn], chip: CHIP_KHI_NAO[nn], loiDi: [], goiModel: false };
-}
 
 /* ------------------------------------------------------------ khuôn E */
 
@@ -69,10 +55,28 @@ export function cauHaiVe(haiVe: [string, string], nn: NgonNgu = 'vi'): CauMa {
 
 /* ----------------------------------------------------------- khuôn F2 */
 
-export const CAU_VAN_RIENG: Record<NgonNgu, string> = {
-  vi: 'Lá số này là của bạn, nên Celes không dùng nó để kết luận vận riêng của người khác. Celes vẫn có thể đọc mối quan hệ giữa hai người hoặc phần liên quan trực tiếp tới bạn.',
-  en: 'This chart is yours, so Celes does not use it to draw conclusions about another person’s own fortunes. Celes can still read the relationship between the two of you, or the part that concerns you directly.',
-};
+/*
+ * F2 là lượt HỎI LẠI (chủ dự án 04/10): server không biết lá số đang mở là của
+ * người hỏi hay của chính người được hỏi — đó là dữ kiện còn thiếu, không phải
+ * chuyện luật chữ đoán được. Không tính lượt, và MỘT chạm phải trả lời được câu
+ * gốc: chip đầu là chính câu người dùng, đổi "mẹ tôi" thành "người có lá số này".
+ */
+export function cauVanRieng(dt: DoiTuongCauHoi, nn: NgonNgu = 'vi'): string {
+  return nn === 'en'
+    ? 'Celes does not know whose chart is open. If it belongs to the person you are asking about, Celes can read your question on it right away. If it is your own chart, Celes will not use it to guess that person’s own fortunes, but can still read the relationship between the two of you.'
+    : `Celes chưa biết lá số đang mở là của ai. Nếu đây là lá số của ${chuNhan(dt)}, Celes đọc được câu hỏi này ngay trên lá số. Nếu đây là lá số của bạn, Celes không dùng nó để đoán vận riêng của ${chuNhan(dt)}, nhưng vẫn đọc được mối quan hệ giữa hai người.`;
+}
+
+/** Nhãn số nhiều: một lá số chỉ của MỘT người, nên nói "một người trong …". */
+const NHAN_SO_NHIEU = new Set(['bố mẹ', 'cha mẹ', 'ba mẹ', 'vợ chồng', 'anh chị em', 'anh em', 'chị em', 'bạn bè', 'đồng nghiệp', 'con cái']);
+
+/** "<người> bạn" trong câu F2 — tránh "bạn bạn", "anh bạn", "lá số của vợ chồng bạn". */
+export function chuNhan(dt: DoiTuongCauHoi): string {
+  if (dt.nhan === 'bạn') return 'người bạn ấy';
+  if (dt.nhan === 'anh') return 'anh của bạn';
+  if (NHAN_SO_NHIEU.has(dt.nhan)) return `một người trong ${dt.nhan} bạn`;
+  return `${dt.nhan} bạn`;
+}
 
 /** Lối sang nối hai lá số — cùng nhãn và đường với `loiDiTiep`. */
 const LOI_HAI_LA_SO: Record<NgonNgu, LoiDiTiep> = {
@@ -89,9 +93,35 @@ export function chipQuanHe(dt: DoiTuongCauHoi, nn: NgonNgu = 'vi'): string {
   return nn === 'en' ? 'How do this person and I get along?' : `Tôi với ${dt.nhan} tôi có hợp nhau không?`;
 }
 
-export function cauVanRieng(dt: DoiTuongCauHoi, nn: NgonNgu = 'vi'): CauMa {
+export const NGUOI_CO_LA_SO = 'người có lá số này';
+
+/**
+ * Câu gốc, người được hỏi đổi thành chủ lá số: "Mẹ tôi năm nay sức khỏe thế nào?"
+ * → "Người có lá số này năm nay sức khỏe thế nào?". Giữ nguyên chủ đề, mốc, lời
+ * người dùng — chip này là câu của họ, không phải câu Celes đặt (nên cả giao diện
+ * EN cũng giữ chữ họ gõ). Không tìm thấy cụm người thì null.
+ */
+export function chipLaSoCuaNguoiDuocHoi(cauHoi: string, dt: DoiTuongCauHoi): string | null {
+  const cum = `(?:${thoat(dt.nhan)}|${thoat(boDau(dt.nhan))}) (?:của |cua )?(?:tôi|mình|em|tớ|toi|minh)`;
+  const re = new RegExp(`(?<![\\p{L}\\p{M}])${cum}(?![\\p{L}\\p{M}])`, 'iu');
+  const goc = cauHoi.normalize('NFC');
+  const m = re.exec(goc);
+  if (!m) return null;
+  const ra = `${goc.slice(0, m.index)}${NGUOI_CO_LA_SO}${goc.slice(m.index + m[0].length)}`.trim();
+  return m.index === 0 ? hoaDau(ra) : ra;
+}
+
+const thoat = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export function hoiLaiVanRieng(cauHoi: string, dt: DoiTuongCauHoi, nn: NgonNgu = 'vi'): CauMa {
   const banDoi = dt.vai === 'vo-chong' || dt.vai === 'nguoi-yeu';
-  return { cau: CAU_VAN_RIENG[nn], chip: [chipQuanHe(dt, nn)], loiDi: banDoi ? [LOI_HAI_LA_SO[nn]] : [], goiModel: false };
+  const doc = chipLaSoCuaNguoiDuocHoi(cauHoi, dt);
+  return {
+    cau: cauVanRieng(dt, nn),
+    chip: [...(doc ? [doc] : []), chipQuanHe(dt, nn)],
+    loiDi: banDoi ? [LOI_HAI_LA_SO[nn]] : [],
+    goiModel: false,
+  };
 }
 
 /* ------------------------------------------------------- tháng nhuận */
@@ -209,7 +239,7 @@ export function chipCuoiNam(namNay: number, goiY: string[], nn: NgonNgu = 'vi'):
 /* ------------------------------------------- giới hạn (AGE / PERSON) */
 
 /*
- * Ba câu dừng trọn lượt, không truy hồi, không gọi model, KHÔNG tính lượt hỏi
+ * Hai câu dừng trọn lượt, không truy hồi, không gọi model, KHÔNG tính lượt hỏi
  * (`khongTinhLuot`): lá số không có gì để đọc, người hỏi không mất gì.
  */
 
@@ -245,18 +275,5 @@ export function cauChuaHopTuoi(tuoi: number, nam: number, nn: NgonNgu = 'vi'): C
       ? `In ${nam}, the person on this chart is only ${tuoi}. Work, marriage and romance are not something Celes reads at that age, so it will leave them out. You can ask about temperament, health or family for this chart instead.`
       : `Năm ${nam}, người có lá số này mới ${tuoi} tuổi. Ở tuổi ấy, công việc, hôn nhân hay người yêu chưa phải điều để luận, nên Celes xin để phần này lại. Bạn có thể hỏi về tính cách, sức khoẻ hoặc gia đình của lá số này.`;
   const chip = nn === 'en' ? ['What is this chart’s temperament like?', 'How is health for this chart?'] : ['Tính cách của lá số này thế nào?', 'Sức khoẻ của lá số này thế nào?'];
-  return { cau, chip, loiDi: [], goiModel: false };
-}
-
-/**
- * PERSON-03: câu nói "chồng tôi" trên lá số nam (hay "vợ tôi" trên lá số nữ).
- * Không đoán vì sao — chỉ nói hai điều đang lệch nhau và hỏi lại.
- */
-export function cauLechGioi(laSoNam: boolean, nn: NgonNgu = 'vi'): CauMa {
-  const cau =
-    nn === 'en'
-      ? `The chart you are viewing is a ${laSoNam ? 'male' : 'female'} chart, while your question mentions your ${laSoNam ? 'husband' : 'wife'}. Please check that this is the chart you meant to ask about. If it is, you can ask about “my partner” and Celes will read that part of the chart.`
-      : `Lá số đang xem là lá số ${laSoNam ? 'nam' : 'nữ'}, còn câu hỏi nhắc tới ${laSoNam ? 'chồng' : 'vợ'} của bạn. Bạn kiểm tra giúp lá số này có đúng là lá số bạn muốn hỏi không nhé. Nếu đúng, bạn có thể hỏi về “bạn đời của tôi” để Celes đọc phần này.`;
-  const chip = nn === 'en' ? ['How is my partner this year?'] : ['Chuyện bạn đời của tôi năm nay thế nào?'];
   return { cau, chip, loiDi: [], goiModel: false };
 }

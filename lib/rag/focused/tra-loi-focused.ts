@@ -7,8 +7,9 @@
  *
  * Thứ tự:
  *   kế hoạch (luật, kế thừa chủ đề qua chip) → phân khuôn → mốc thời gian
- *   → trước ngày sinh / lệch giới tính / chưa hợp tuổi: câu mã, KHÔNG tính lượt
- *   → F2 / D / hỏi lại nhuận: trả ngay bằng câu mã, KHÔNG truy hồi, KHÔNG gọi model
+ *   → trước ngày sinh / chưa hợp tuổi (ngoại lệ tạm): câu mã, KHÔNG tính lượt
+ *   → F2 (hỏi lại, KHÔNG tính lượt) / tháng nhuận: câu mã, KHÔNG truy hồi, KHÔNG gọi model
+ *   → mọi khuôn khác, kể cả D ("khi nào"), đi qua model (chủ dự án 04/10)
  *   → kế hoạch lượt hai (tên cách cục, có thể gọi model phân loại)
  *   → N1 → bối cảnh lá số → truy hồi → gói → nghiêng → prompt → chạy + guard.
  *
@@ -28,9 +29,9 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoachDayDu, type KeHoachTruyVan, type LopHan } from '../planner';
 import { truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
-import { CAU_CUOI_NAM, cauHaiVe, cauKhiNao, cauNhuanChuaTach, cauThangDaQua, cauThangDuong, cauVanRieng, chipCuoiNam, type CauMa } from './cau-ma';
+import { CAU_CUOI_NAM, cauHaiVe, cauNhuanChuaTach, cauThangDaQua, cauThangDuong, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
-import { chanChuaHopTuoi, chanLechGioi, chanTruocSinh } from './gioi-han';
+import { chanChuaHopTuoi, chanTruocSinh } from './gioi-han';
 import { lapKeHoachFocused } from './ke-thua';
 import { cauKetLuanNgoaiTam, nhanDangNgoaiTam } from './ngoai-tam';
 import { datMienTruTheoNgonNgu, loiDiTheoNgonNgu, type NgonNgu } from './ngon-ngu';
@@ -40,7 +41,7 @@ import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.9';
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.10';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -149,7 +150,7 @@ export async function traLoiFocused(
     thangXem: vao.thangXem,
   };
 
-  // Lượt một: chỉ luật, đủ để phân khuôn và bắt F2 / D trước mọi việc tốn kém.
+  // Lượt một: chỉ luật, đủ để phân khuôn và bắt F2 trước mọi việc tốn kém.
   const so = lapKeHoachFocused(dauVaoKeHoach);
   const phanLoaiSo = phanKhuon({ cauHoi: vao.cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
   const thoiGianSo = boiCanhThoiGian({ cauHoi: vao.cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
@@ -176,13 +177,12 @@ export async function traLoiFocused(
     };
   };
 
-  // AGE-01 / PERSON-03 / AGE-02: lá số không có gì để đọc → dừng bằng mã, không tính lượt.
+  // AGE-01 (dữ kiện) / AGE-02 (ngoại lệ tạm, đóng băng): dừng bằng mã, không tính lượt.
+  // Mọi lối dừng ở tệp này phải có trong danh sách của `scripts/test-loi-chi-ma.ts`.
   // `luotMot`: chủ đề lượt một là của luật (tất định); lượt hai có thể do model phân loại — không chặn theo chủ đề nữa.
   const gioiHan = (tg: BoiCanhThoiGian, kh: KeHoachTruyVan, dt: typeof so.doiTuong, khuon: PhanLoai['khuon'], luotMot: boolean) => {
     const truoc = chanTruocSinh(vao.laSo, tg, kh, nn);
     if (truoc) return traNgay(truoc, 'focused-truoc-sinh', khuon, true);
-    const lech = chanLechGioi(vao.laSo, vao.cauHoi, dt, nn);
-    if (lech) return traNgay(lech, 'focused-lech-gioi', khuon, true);
     const tuoi = chanChuaHopTuoi(vao.laSo, tg, vao.cauHoi, kh, dt, nn, luotMot);
     if (tuoi) return traNgay(tuoi, 'focused-chua-hop-tuoi', khuon, true);
     return null;
@@ -191,8 +191,10 @@ export async function traLoiFocused(
   const chanSo = gioiHan(thoiGianSo, so.keHoach, so.doiTuong, phanLoaiSo.khuon, true);
   if (chanSo) return chanSo;
 
-  if (phanLoaiSo.khuon === 'F2' && so.doiTuong) return traNgay(cauVanRieng(so.doiTuong, nn), 'focused-f2', 'F2');
-  if (phanLoaiSo.khuon === 'D') return traNgay(cauKhiNao(nn), 'focused-d', 'D');
+  // F2: chưa biết lá số đang mở là của ai — hỏi lại, không tính lượt; chip đầu là câu gốc trên chủ lá số.
+  if (phanLoaiSo.khuon === 'F2' && so.doiTuong) {
+    return traNgay(hoiLaiVanRieng(vao.cauHoi, so.doiTuong, nn), 'focused-f2', 'F2', true);
+  }
   // Đã chọn tháng nhuận: engine chưa tách nguyệt hạn tháng nhuận → dừng, KHÔNG đọc tháng thường thay vào.
   if (thoiGianSo.thang?.nhuan === 'nhuan') {
     return traNgay(cauNhuanChuaTach(thoiGianSo.thang, bayGio.nam, nn), 'focused-nhuan-chua-tach', phanLoaiSo.khuon);
@@ -303,7 +305,11 @@ export async function traLoiFocused(
     mocChot: mocChoChot(thoiGian, keHoach, bayGio, nn),
     cauMa,
     chipMa,
-    chipCuoiNam: thoiGian.cuoiNam ? (g) => chipCuoiNam(bayGio.nam, g, nn) : undefined,
+    // D đọc mức năm: lối đi tiếp là năm sau, không phải một tháng.
+    chipCuoiNam:
+      thoiGian.cuoiNam || (phanLoai.khuon === 'D' && namHieuLuc === bayGio.nam)
+        ? (g) => chipCuoiNam(bayGio.nam, g, nn)
+        : undefined,
     chipTruoc: chipTruocTu(lichSu),
     boChotModel: !!ngoaiTam,
     maNguyetHan: new Set(goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id)),

@@ -4,7 +4,19 @@ Mỗi dòng là một luật đã khoá bằng mã **và** bằng test chạy tr
 khi ghi khác). Sửa mã làm đỏ một test ở đây là phá một bất biến: dừng và hỏi, đừng sửa kỳ vọng
 cho xanh. Thông điệp lỗi trong test mang đúng mã bất biến (`AGE-01 …`, `GROUND-04 …`) để grep.
 
-Phiên bản lúc khoá: `focused-2026.10.9`, planner `2026.10.4` (không đổi, nên không xả đệm STANDARD).
+Phiên bản lúc khoá: `focused-2026.10.10`, planner `2026.10.4` (không đổi, nên không xả đệm STANDARD).
+
+## STOP — luật dừng lượt (chủ dự án 04/10, sau lỗi UAT "khi nào")
+
+Luật chữ được ĐỊNH TUYẾN, không được tự kết thúc lượt. Một lượt trả bằng mã (không gọi model) chỉ
+khi thuộc một trong ba loại; danh sách cho phép nằm ở `scripts/test-loi-chi-ma.ts` (CI).
+
+| ID | Luật | Lớp | Test |
+|---|---|---|---|
+| STOP-01 | **Dữ kiện:** chỉ mốc trước ngày sinh (AGE-01) và tháng nhuận chưa tách (TIME-02) | `tra-loi-focused.ts` | `test-loi-chi-ma` |
+| STOP-02 | **Hỏi lại:** chỉ khi thiếu dữ kiện thật (F2: lá số đang mở là của ai). Không tính lượt, chip đầu trả lời được câu gốc trong MỘT chạm, chip đó không ra F2 lần nữa | `hoiLaiVanRieng` | `test-loi-chi-ma`; "F2 chip câu gốc…", "vòng hỏi lại" |
+| STOP-03 | **Ngoại lệ tạm:** đúng MỘT mục, AGE-02. Không tính lượt, đóng băng (không thêm từ khoá), bước 2 hạ thành cách nói. Thêm ngoại lệ thứ hai → đỏ | `chanChuaHopTuoi` | `test-loi-chi-ma` (trần 1) |
+| STOP-04 | "Khi nào" (khuôn D) đi qua model, đọc mức NĂM, không nêu tháng / mùa / quý; "cuối năm", "sau Tết" (guard `MOC_NHO_HON_NAM` → thử lại); khối mốc không đưa "còn N tháng" / "Sau Tết". Cụm thói quen ("năm nào cũng", "lúc nào cũng", "chưa bao giờ") được gỡ trước khi dò D, nên trả lời bình thường. `focused-d` quay lại → đỏ | `KHOI_KHUON.D`, `MOC_NHO_HON_NAM`, `THOI_QUEN`, `khoiMoc` | `test-loi-chi-ma`; bảng `laHoiKhiNao`, `MOC_NHO_HON_NAM`, `khoiMoc D` trong `test-focused` |
 
 ## TIME — thời gian
 
@@ -33,10 +45,9 @@ Phiên bản lúc khoá: `focused-2026.10.9`, planner `2026.10.4` (không đổi
 
 | ID | Luật | Lớp | Test |
 |---|---|---|---|
-| PERSON-01 | Hỏi vận riêng của người khác (bố thi, chồng thăng chức) → F2: câu mã, không đọc cung của người hỏi | `doi-tuong.ts`, F2 | bảng `loai: 'van-rieng'`, "F2 ra …" (đầu-cuối) |
+| PERSON-01 | Hỏi vận riêng của người khác (bố thi, chồng thăng chức) → F2: hỏi lại lá số đang mở là của ai (STOP-02), không tính lượt, không đoán vận người kia trên lá số của người hỏi | `doi-tuong.ts`, `hoiLaiVanRieng` | bảng `loai: 'van-rieng'`, "F2 ra …" (đầu-cuối) |
 | PERSON-02 | Câu quan hệ (tôi với bố có hợp không) → đọc cung lục thân, không gán nét sao thành tính cách người hỏi | `chot-huong.ts` `cumChoChuDe` | "dự phòng lục thân sai", chip F2 → F1 |
-| PERSON-03 | "chồng tôi" trên lá số nam / "vợ tôi" trên lá số nữ → câu hỏi lại tất định, không model, không suy đoán xu hướng; "mẹ chồng", "con gái lấy chồng", người thứ ba ("anh ấy đã có vợ", "lấy vợ cho thằng cả") không bắt — đường từ khoá đòi người hỏi tự xưng ("tôi lấy chồng") | `gioi-han.ts` `chanLechGioi` | `PERSON-03` (8 ca + EN) + đầu-cuối `focused-lech-gioi` |
-| PERSON-04 | Chip của câu hỏi lại ("bạn đời của tôi") đọc đúng Phu Thê và không bị chặn lại | `chanLechGioi`, planner | `PERSON-03 chip bạn đời…`, `PERSON-03 chip lại bị chặn` |
+| ~~PERSON-03/04~~ | Đã bỏ 04/10 (chủ dự án): lá số đang mở có thể không phải của người hỏi, người nam vẫn có thể có chồng — luật chữ không đủ để dừng lượt. "Chồng tôi" trên lá số nam đi đường thường | — | chip "bạn đời của tôi" vẫn ra Phu Thê |
 
 ## AGE — tuổi và ngày sinh
 
@@ -89,12 +100,11 @@ và đổi STANDARD.
 
 ## Ngoài bộ bất biến
 
-- **Giả định đã biết, chưa khoá:** ba lớp chặn mới coi lá số đang chat là của người hỏi. Giao diện cho
-  chat trên lá số đang xem bất kỳ (`idDangXem ?? idMacDinh`): vợ xem lá số chồng mà hỏi "chồng tôi"
-  sẽ nhận câu hỏi lại, và chip "bạn đời của tôi" đọc Phu Thê của lá số đang xem. Sửa tận gốc cần
-  biết quan hệ người hỏi ↔ lá số — nợ sau Production.
-- **Tiêu chí hoàn lượt:** chỉ ba lớp chặn mới (`khongTinhLuot`) được hoàn; câu mã F2 / D / tháng nhuận
-  vẫn tính lượt như trước. Chưa thống nhất thành một luật — nợ, quyết khi định giá gói.
+- **Giả định đã biết, chưa khoá:** server chưa biết lá số đang mở là của ai (giao diện cho chat trên
+  lá số đang xem bất kỳ, `idDangXem ?? idMacDinh`). F2 vì thế HỎI LẠI thay vì khẳng định. Sửa tận gốc
+  ở tầng dữ liệu là bước 2 — điều kiện để bật Production.
+- **Tiêu chí hoàn lượt:** trước sinh, F2, AGE-02 (`khongTinhLuot`) được hoàn; câu tháng nhuận vẫn tính
+  lượt như trước. Chưa thống nhất thành một luật — nợ, quyết khi định giá gói.
 
 - Cờ `CELES_FOCUSED_CHAT` tắt → STANDARD nguyên vẹn: `test-focused` ("phienBanHienTai của STANDARD
   mang khoá focused"), `test-fallback-giu-nguyen`, `test-moi-truong-dem`, bộ vàng planner 100/100.

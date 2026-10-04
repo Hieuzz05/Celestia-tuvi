@@ -92,7 +92,11 @@ const KHOI_KHUON: Record<PhanLoai['khuon'], string> = {
   C: `KHUÔN LƯỢT NÀY: người hỏi đang cân một quyết định.
 "cauChot" đọc BỐI CẢNH của quyết định (quãng này đỡ hay cản việc ấy), KHÔNG nói họ nên làm gì.
 "cau": 1–2 căn cứ. Không câu nào được là lời khuyên hay lựa chọn hộ.`,
-  D: '',
+  D: `KHUÔN LƯỢT NÀY: câu có chữ hỏi thời điểm ("khi nào", "bao giờ"…).
+Nếu người hỏi THẬT SỰ hỏi bao giờ một việc tới: lượt này đọc ở mức NĂM. "cauChot" nói năm đang đọc (theo khối MỐC THỜI GIAN) mở hay cản việc ấy. Nói bằng lời của mình (không lặp một câu quen) rằng lượt này chưa chọn ra tháng nào, và họ muốn xem tháng nào thì hỏi riêng tháng đó. Người hỏi có kể hoàn cảnh (đang thất nghiệp, vừa chia tay…) thì nhắc tới hoàn cảnh ấy.
+KHÔNG nêu tháng, mùa, quý, "cuối năm", "đầu năm", "sau Tết" hay bất kỳ mốc nào nhỏ hơn một năm.
+Nếu câu chỉ có chữ ấy mà không hỏi thời điểm ("lúc nào cũng mệt…", "chưa bao giờ…") thì trả lời đúng điều họ hỏi như mọi câu khác.
+"cau": 1–2 căn cứ.`,
   E: `KHUÔN LƯỢT NÀY: người hỏi đưa ra hai phương án.
 Câu mở đã có sẵn (do Celes viết), để "cauChot" RỖNG.
 "cau": 1–2 câu về bối cảnh chung của quãng này. KHÔNG so hai phương án, KHÔNG nói phương án nào hợp hơn, KHÔNG nhắc lại tên phương án như một lựa chọn.
@@ -249,7 +253,11 @@ export interface MocTinhSan {
   doiDaiVanSauTet?: boolean;
 }
 
-export function khoiMoc(m: MocTinhSan): string {
+/**
+ * `khuon` D: bỏ hai dòng tự mời mốc nhỏ hơn năm ("còn N tháng", "Sau Tết") —
+ * "khi nào" chỉ đọc mức năm (chủ dự án 04/10).
+ */
+export function khoiMoc(m: MocTinhSan, khuon?: PhanLoai['khuon']): string {
   const { namHieuLuc, thang } = m.thoiGian;
   const dong = [`Năm đang đọc: năm âm ${namHieuLuc} (${canChiCuaNam(namHieuLuc)}).`];
   if (thang) {
@@ -276,11 +284,11 @@ export function khoiMoc(m: MocTinhSan): string {
   } else {
     dong.push('Câu hỏi không chỉ một tháng cụ thể — không tự nêu tháng nào.');
   }
-  if (namHieuLuc === m.bayGio.nam) {
+  if (namHieuLuc === m.bayGio.nam && khuon !== 'D') {
     const con = 12 - m.bayGio.thang;
     dong.push(con > 0 ? `Năm âm ${namHieuLuc} còn ${con} tháng sau tháng hiện tại.` : `Năm âm ${namHieuLuc} đang ở tháng cuối.`);
   }
-  if (m.doiDaiVanSauTet) dong.push('Sau Tết, người hỏi bước sang một đại vận mới.');
+  if (m.doiDaiVanSauTet && khuon !== 'D') dong.push('Sau Tết, người hỏi bước sang một đại vận mới.');
   return `MỐC THỜI GIAN (do Celes tính sẵn, chỉ dùng các mốc này):\n${dong.join('\n')}`;
 }
 
@@ -326,7 +334,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
 
   const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
   if (nghieng) phan.push(nghieng);
-  phan.push(khoiMoc(v.moc));
+  phan.push(khoiMoc(v.moc, v.phanLoai.khuon));
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).
   const maThang = v.goi.duKien.filter((d) => d.loai === 'nguyet-han').map((d) => d.id);
   if (v.moc.thoiGian.thang && maThang.length) {
