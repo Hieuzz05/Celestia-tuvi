@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1, thư mục chính `D:/SAPP BA/tuvi-ai`) | [CODE] CEL-186 Answer Contract v2 — spec ĐÃ DUYỆT / FREEZE 04/10 (`D:\Celestia\CEL-186-answer-contract-v2-spec.md`), đang code theo patch plan từ commit A0. Cờ Production vẫn TẮT, không gộp main | `viec/cel-186-focused-chat` | `lib/rag/focused/**`, `lib/rag/tra-loi.ts`, `lib/rag/boi-canh-la-so.ts`, `lib/rag/truy-hoi.ts` (chỉ thêm hàm), `lib/ai/fallback.ts` (chỉ biến eval), `app/api/hoi-dap/route.ts`, `app/hoi-dap/page.tsx`, `scripts/test-*.ts`, `.github/workflows/kiem-tra.yml` | 04/10/2026 |
 
 
 ## Đang vướng — đừng đụng vào
@@ -31,6 +30,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN** (Focused trên Production vẫn TẮT, cờ `CELES_FOCUSED_CHAT` không bật): CEL-186 vé B — chat Focused + Answer Contract v2 (eval I5 23/30 flow, CI xanh), sửa log `retrieval_runs.y_dinh` (chủ đề sang `bo_loc.chuDe`). Việc nối tiếp: CEL-191 (spec `D:\Celestia\CEL-191-spec.md`, rẽ nhánh từ main mới), CEL-192 (DISCOVERY, chờ chủ dự án chọn hướng) | `8af2173` + merge `551ee54` | 05/10/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-189 tách đệm `noi_dung_ai` theo môi trường (production / Preview / local), `/api/phien-ban` có `phamViDem`. Kiểm Production: commit `1bdfe6b`, nhanh=main, moiTruong=production, phamViDem=production. KHÔNG chạy `--ghi-production`, KHÔNG xoá đệm Production | `8bc5554`, `667848a` + merge `1bdfe6b` | 03/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/test-man-hinh`: bộ đo giao diện `test-man-hinh.mjs` P1–P5 (khách thật, ảnh toàn trang CDP, vùng chạm hộp DOM / `::after`, CLS cửa sổ phiên) + `docs/thiet-ke/celes-ui-quality-checklist.md`. Chạy tay, không vào CI. Kết quả 157 OK / 17 SAI = nợ UI có sẵn (`.pill-tag` 32px, `.btn-sm` 37–39px, link logo 24px). Việc tiếp: (1, ưu tiên) sửa xanh giả của mệnh bàn ở 390/820 (rộng 0 trong tab chưa mở vẫn báo OK); (2) vé CSS vùng chạm < 44px. Hai việc tiếp là việc riêng, chưa ai nhận | `02d26a8` + `568d444` + gộp `03d56f7` | 03/10/2026 |
 | **ĐÃ GỘP MAIN / production**: CEL-186 vé A — trục thời gian planner, năm/tháng hiệu lực, chip sang năm; năm sinh viết số không còn thành năm được hỏi | `bbfae60` + merge `10e351f` | 03/10/2026 |
