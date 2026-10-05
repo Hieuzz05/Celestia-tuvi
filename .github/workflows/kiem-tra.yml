@@ -79,6 +79,8 @@ jobs:
         run: npx tsx scripts/test-hop-dong-focused.ts
       - name: PRIV-01 — trace Production không giữ câu hỏi, truy vấn, văn validator, băm lá số
         run: npx tsx scripts/test-priv-01.ts
+      - name: Lõi chẩn đoán P0 — tầng hỏng sớm nhất, cờ không dừng chẩn đoán, nhãn ngoài
+        run: npx tsx scripts/test-p0-chan-doan.ts
       - name: Hiểu câu qua lượt — meta ký, dựng lại F###, hỏi lại lá số của ai, giải thích lượt trước (CEL-186 v2 F)
         run: npx tsx scripts/test-hieu-cau.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
