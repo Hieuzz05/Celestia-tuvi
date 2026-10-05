@@ -75,6 +75,10 @@ jobs:
         run: npx tsx scripts/test-hieu-cau-truong.ts
       - name: CEL-194 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat
         run: npx tsx scripts/test-nghiem-ly.ts
+      - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
+        run: npx tsx scripts/test-phan-hoi.ts
+      - name: P0 §14 độ phủ tầng viết — hàm đếm claim/F/điểm bắt buộc
+        run: npx tsx scripts/test-do-phu-viet.ts
       - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
         run: npx tsx scripts/test-loi-chi-ma.ts
       - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)

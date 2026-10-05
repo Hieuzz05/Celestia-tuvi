@@ -21,6 +21,7 @@ const TAB = [
   { href: '/admin/knowledge', nhan: 'Kho tri thức' },
   { href: '/admin/luan-giai', nhan: 'Cấu hình luận giải' },
   { href: '/admin/nhan-xet', nhan: 'Nhận xét bài luận' },
+  { href: '/admin/can-duyet', nhan: 'Cần duyệt' },
   { href: '/admin/nghiem-ly', nhan: 'Nghiệm lý của tôi' },
   { href: '/admin/retrieval-lab', nhan: 'Retrieval Lab' },
   { href: '/admin/support', nhan: 'Ủng hộ' },

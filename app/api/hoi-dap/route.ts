@@ -229,6 +229,8 @@ export async function POST(req: Request) {
     // PRIV-01: không ghi câu hỏi, không băm lá số vào ai_requests.
     await ghiVetTraLoi({
       requestId,
+      // CEL-195: chủ lượt — API phản hồi 👍👎 chỉ ghi được lên lượt có user_id của chính người bấm
+      ...(cong.userId ? { userId: cong.userId } : {}),
       runId: kq.runId,
       phienBan: kq.phienBan,
       provider: kq.provider,
@@ -302,6 +304,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       traLoi: kq.van,
+      // CEL-195: khoá cho nút 👍👎 — UUID ngẫu nhiên, máy chủ kiểm chủ lượt khi nhận phản hồi
+      requestId,
       model: `${kq.provider}/${kq.model}`,
       /*
        * Chip gợi ý cho lượt sau — gửi cho MỌI bậc quyền, khác với canCu.

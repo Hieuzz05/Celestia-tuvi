@@ -148,9 +148,9 @@ export default function TrangNghiemLy() {
       {thongBao && <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>{thongBao}</p>}
 
       {d && (
-        <section className="flex flex-col gap-[10px] rounded-[var(--radius-cards)] p-[16px]" style={{ background: 'var(--surface-panel)' }}>
+        <section className="flex flex-col gap-[12px] rounded-[var(--radius-cards)] p-[16px]" style={{ background: 'var(--surface-panel)' }}>
           <h2 className="text-[16px] font-semibold">{dangSua ? `Phiên bản mới cho ${f.id}` : 'Nghiệm lý mới'}</h2>
-          <div className="grid gap-[10px] sm:grid-cols-2">
+          <div className="grid gap-[12px] sm:grid-cols-2">
             <input className={o} style={st} placeholder="Mã (NL-...)" value={f.id} disabled={dangSua} onChange={(e) => setF({ ...f, id: e.target.value })} />
             <select className={o} style={st} value={f.cung} onChange={(e) => setF({ ...f, cung: e.target.value })}>
               <option value="">Mọi cung</option>
@@ -176,7 +176,7 @@ export default function TrangNghiemLy() {
             )}
           </div>
           <textarea className={o} style={st} rows={2} placeholder="Câu nghĩa trung tính, ≤ 45 chữ, không 'bạn'" value={f.y} onChange={(e) => setF({ ...f, y: e.target.value })} />
-          <div className="flex gap-[10px]">
+          <div className="flex gap-[12px]">
             <button className="btn-primary" onClick={luu}>{dangSua ? 'Lưu phiên bản mới' : 'Tạo'}</button>
             {dangSua && <button className="link-text" onClick={() => { setDangSua(false); setF(FORM_TRONG); }}>Huỷ</button>}
           </div>
@@ -185,7 +185,7 @@ export default function TrangNghiemLy() {
 
       {d?.muc.map((m) => (
         <section key={m.id} className="flex flex-col gap-[8px] rounded-[var(--radius-cards)] border p-[16px]" style={st}>
-          <div className="flex flex-wrap items-center gap-[10px]">
+          <div className="flex flex-wrap items-center gap-[12px]">
             <strong>{m.id}</strong>
             <span className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
               {NHAN_TRANG_THAI[m.trang_thai]}{m.phien_ban_dang_dung ? ` · dùng v${m.phien_ban_dang_dung}` : ''}
