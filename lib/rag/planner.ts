@@ -870,6 +870,27 @@ export function lapKeHoach({ cauHoi, saoTheoCung, tenCachCuc, namXem, thangXem }
   );
 }
 
+/**
+ * Dựng kế hoạch với CHỦ ĐỀ đã chốt từ bên ngoài — cho lớp Focused (CEL-186), nơi
+ * vài câu được chỉnh chủ đề mà không sửa bảng dùng chung ("nhà cửa" là chuyện
+ * gia đạo, không phải tài chính). Ý định, thời gian, cung gọi đích danh vẫn theo
+ * luật. Không đổi đầu ra của `lapKeHoach`, nên không đổi `PHIEN_BAN_PLANNER`.
+ */
+export function lapKeHoachVoiChuDe(vao: DauVaoPlanner, chuDe: ChuDe): KeHoachTruyVan {
+  const cum = cumTu(boDauCauHoi(vao.cauHoi));
+  return dungKeHoach(
+    vao.cauHoi,
+    vao.saoTheoCung,
+    chuDe,
+    doanYDinh(cum, boDauCauHoi(vao.cauHoi)),
+    true,
+    vao.tenCachCuc,
+    undefined,
+    vao.namXem,
+    vao.thangXem
+  );
+}
+
 // ------------------------------------------------ Nhánh phân loại bằng model
 
 const CHU_DE_HOP_LE: ChuDe[] = [

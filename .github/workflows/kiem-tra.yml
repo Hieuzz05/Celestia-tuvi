@@ -67,6 +67,20 @@ jobs:
         run: npx tsx scripts/test-linh-vat-an-toan.ts
       - name: Chỗ đặt linh vật (mục 12, ảnh khoá, vùng nội dung)
         run: npx tsx scripts/test-cho-dat-celes.ts
+      - name: Dữ kiện phần đang hỏi (nghiêng về, mốc, cờ Focused tắt)
+        run: npx tsx scripts/test-du-kien.ts
+      - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
+        run: npx tsx scripts/test-focused.ts
+      - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
+        run: npx tsx scripts/test-loi-chi-ma.ts
+      - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)
+        run: npx tsx scripts/test-boi-canh-dong-bang.ts
+      - name: Behavior Contract offline — người / ý / thời gian 30 flow (CEL-186 v2)
+        run: npx tsx scripts/test-hop-dong-focused.ts
+      - name: Hiểu câu qua lượt — meta ký, dựng lại F###, hỏi lại lá số của ai, giải thích lượt trước (CEL-186 v2 F)
+        run: npx tsx scripts/test-hieu-cau.ts
+      - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
+        run: npx tsx scripts/test-fallback-giu-nguyen.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
 

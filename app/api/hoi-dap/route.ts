@@ -14,6 +14,10 @@ import {
   SO_KHAN_CAP,
 } from '@/lib/rag/an-toan';
 import { traLoiCoCanCu } from '@/lib/rag/tra-loi';
+import { chonNgonNgu, COOKIE_NGON_NGU } from '@/lib/rag/focused/ngon-ngu';
+import type { KetQuaFocused } from '@/lib/rag/focused/tra-loi-focused';
+import { ghiVetPreview } from '@/lib/rag/focused/vet';
+import { bam16, docMetaLuot } from '@/lib/rag/focused/hieu-cau';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
@@ -33,6 +37,25 @@ interface Body {
   lichSu?: TinNhan[];
   /** Câu hỏi này đến từ chip gợi ý (goiYTiep) do chính Celes vừa đề xuất ở lượt trước */
   tuChip?: boolean;
+  /** Ngôn ngữ giao diện ('vi' | 'en') — câu do mã viết ở đường Focused theo nó */
+  ngonNgu?: string;
+  /** MetaLuot ký HMAC của lượt trợ lý trước (đường Focused, spec 2.3). Sai hình dạng → bỏ */
+  luotTruoc?: unknown;
+}
+
+/** Đọc một cookie từ header thô — route này không dùng gì khác của cookie. */
+function docCookie(req: Request, ten: string): string | null {
+  for (const phan of (req.headers.get('cookie') ?? '').split(';')) {
+    const i = phan.indexOf('=');
+    if (i > 0 && phan.slice(0, i).trim() === ten) {
+      try {
+        return decodeURIComponent(phan.slice(i + 1).trim());
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
 }
 
 const soHopLe = (v: unknown, min: number, max: number) =>
@@ -177,13 +200,21 @@ export async function POST(req: Request) {
       body.gioiTinh as string
     );
 
+    // Meta lượt trước: giới hạn cỡ + kiểm hình dạng ở đây; chữ ký và ràng buộc kiểm ở Focused.
+    // Không đi vào lichSu. Ràng buộc người dùng bằng mã băm, không đưa userId thô vào meta.
+    const luotTruoc =
+      body.luotTruoc && JSON.stringify(body.luotTruoc).length <= 4000 ? docMetaLuot(body.luotTruoc) : null;
+
     const kq = await traLoiCoCanCu({
       laSo,
       cauHoi,
+      ...(luotTruoc ? { luotTruoc } : {}),
+      nguoiDung: bam16(cong.userId ?? ''),
       namXem,
       thangXem,
       lichSu,
       laTiepTuChip: body.tuChip === true,
+      ngonNgu: chonNgonNgu(body.ngonNgu, docCookie(req, COOKIE_NGON_NGU)),
       // Đã đo ở trên, trước khi đặt chỗ — truyền xuống để khỏi đo lại
       mucAnToan: anToan.muc,
       requestId,
@@ -222,6 +253,28 @@ export async function POST(req: Request) {
      * lần hỏng hiếm ở phía model, không phải lỗi cấu trúc; nhưng đường lùi này vẫn cần có, vì lần
      * hỏng kế tiếp — hiếm tới đâu — không được phép lại là một bong bóng trắng im lặng.
      */
+    // Vết Preview của đường Focused (spec 5.4): chỉ mã và số; Production không bao giờ ghi.
+    ghiVetPreview((kq as KetQuaFocused).vetPreview);
+
+    /*
+     * Câu phát lại sau hỏi lại "lá số này của ai" (spec 6.1) rơi vào lối an toàn: cùng hai nhánh ở
+     * đầu route, chỉ là câu nguy hiểm nằm ở lượt TRƯỚC. Không trừ lượt, không meta.
+     */
+    const phatLai = (kq as KetQuaFocused).anToanPhatLai;
+    if (phatLai) {
+      await hoanCauHoi(cho.nguon, requestId);
+      return NextResponse.json(
+        phatLai === 'CRITICAL'
+          ? {
+              traLoi: LOI_NHAN_KHAN_CAP,
+              loiDi: [{ nhan: `Gọi ${SO_KHAN_CAP.capCuu}`, duong: `tel:${SO_KHAN_CAP.capCuu}` }],
+              goiYTiep: [],
+              anToan: true,
+            }
+          : { traLoi: LOI_NHAN_TIEN_LUONG, goiYTiep: GOI_Y_TIEN_LUONG }
+      );
+    }
+
     if (!kq.van) {
       await hoanCauHoi(cho.nguon, requestId);
       return NextResponse.json(
@@ -230,7 +283,9 @@ export async function POST(req: Request) {
       );
     }
 
-    await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
+    // Lá số không có gì để đọc (Focused: trước ngày sinh, chưa hợp tuổi, lệch giới tính) — không tính lượt.
+    if (kq.khongTinhLuot) await hoanCauHoi(cho.nguon, requestId);
+    else await chotCauHoi(requestId, `${kq.provider}/${kq.model}`);
 
     /*
      * "Muốn biết vì sao không?" giờ CHỈ dành cho quản trị.
@@ -265,6 +320,8 @@ export async function POST(req: Request) {
        * ngay giữa những câu Celes vừa nói.
        */
       loiDi: kq.loiDi,
+      // Trạng thái lượt (đường Focused, có khoá): client giữ ở sessionStorage, gửi lại lượt sau
+      ...((kq as KetQuaFocused).meta ? { meta: (kq as KetQuaFocused).meta } : {}),
       canCu: !laQuanTri ? undefined : {
         duKien: kq.goi.duKien.map((f) => ({ id: f.id, noiDung: f.noiDung })),
         cachNoi: kq.coCauTruc?.cachNoi ?? null,

@@ -59,7 +59,7 @@ export function laCauKeSao(cau: string, tran = 2, boQua: readonly string[] = [])
  * đây chỉ cần một phép thử trên một câu, và nó phải khớp CÓ DẤU — bỏ dấu thì
  * "cản" trùng "cần", và câu "những yếu tố cần thiết" sẽ bị lôi đi sửa oan.
  */
-const TIENG_LONG_MOT_CAU =
+export const TIENG_LONG_MOT_CAU =
   /đẩy tới|yếu tố đỡ|yếu tố cản|yếu tố đang (?:đỡ|cản)|(?:các|những|nhiều|một số|vài)\s+yếu\s+tố|lực đỡ|nghiêng về phía (?:thuận|cản)|hai lực ngang nhau/iu;
 
 /**

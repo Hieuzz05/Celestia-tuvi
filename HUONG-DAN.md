@@ -668,6 +668,13 @@ Vài điểm đáng biết:
 - **Kho trống thì Celes thu hẹp kết luận**, nói rõ là chưa đủ căn cứ chuyên môn — chứ **không** tự
   bổ sung học thuyết từ trí nhớ của model. Đây là chủ ý, không phải thiếu sót.
 
+**Đường Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`).** Cùng truy hồi và gói bằng chứng,
+khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120 "chữ", tức âm tiết), chiều kết luận do
+mã chốt từ lá số. "Khi nào" (D) đi qua model và chỉ đọc ở mức năm, không nêu tháng / mùa / quý. Luật chữ chỉ được định tuyến, không được tự kết thúc lượt: lượt do mã viết trọn (không gọi model) chỉ còn dữ kiện (mốc hỏi trước ngày sinh — không tính lượt; tháng có nhuận cần hỏi lại; tháng nhuận đã chọn, vì Celes chưa tách riêng được vận tháng nhuận), câu HỎI LẠI khi hỏi vận riêng của người khác (F2: lá số đang mở là của ai — không tính lượt, chip đầu trả lời câu gốc trong một chạm), và đúng một ngoại lệ tạm AGE-02 (người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu — không tính lượt). Danh sách này do `scripts/test-loi-chi-ma.ts` (CI) canh. Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
+không còn câu nào dựa vào nguyệt hạn, thì thử lại một lần, vẫn hỏng thì trả 502 và hoàn lượt. Câu do mã viết theo
+ngôn ngữ người dùng (VI/EN); thân bài model vẫn tiếng Việt. Mã ở `lib/rag/focused/`; luật và quyết định ở
+`docs/chien-luoc/CEL-186-ve-B-phuong-an.md`; bộ bất biến có test ở `docs/chien-luoc/CEL-186-INVARIANTS.md`.
+
 
 ### 3.5 Chỉ định tài khoản quản trị
 
@@ -704,6 +711,8 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Cho đăng nhập | Database + Auth |
 | `SUPABASE_SERVICE_ROLE_KEY` | Cho kho tri thức | Đọc/ghi kho tri thức phía server |
 | `ADMIN_EMAILS` | Nên có khi public | Giới hạn quyền vào `/admin` |
+| `CELES_FOCUSED_CHAT` | Không | `1` = chat đi đường Focused (CEL-186 vé B). Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ đặt cho Preview của nhánh khi chủ dự án cho phép |
+| `AI_GHIM_MODEL`, `AI_TRAN_USD`, `AI_GIA_VAO_USD`, `AI_GIA_RA_USD` | Không — chỉ script eval | Ghim một model cho MỌI lời gọi (không lùi) và trần tiền cứng; vượt trần thì dừng trước khi gọi. KHÔNG đặt trên Vercel |
 
 ---
 

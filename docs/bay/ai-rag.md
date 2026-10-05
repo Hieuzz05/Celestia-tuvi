@@ -153,3 +153,17 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   câu văn vào thì từ nối lấn át tên sao.
 - **Mã thực thể phải là duy nhất** — `thuc-the.ts` tự kiểm và ném lỗi ngay khi nạp module. Thêm sao
   mới mà bỏ dấu ra trùng sao cũ thì khai mã tay trong `ID_RIENG`, lấy tên vòng làm phần phân biệt.
+
+**Guard tên và đổi văn phong (CEL-186, 04/10/2026).** Chi tiết bất biến: `docs/chien-luoc/CEL-186-INVARIANTS.md`.
+
+- **Tập tên được phép dựng từ mặt chữ prompt đã in**, không từ cấu trúc dữ liệu đứng sau nó. Đầu mốc
+  in kèm tên vào khối nghiêng là cấp quyền; một dòng không in ra thì không cấp gì.
+- **Metadata khác bằng chứng model thấy.** `d.sao[]` không có trong prompt; cho nó cấp quyền là để
+  Phá Toái, Thiên Y lọt guard (A/B 04/10) trong khi bộ đo vẫn báo 0 tên ngoài gói.
+- **Validator và bộ đo không được tự xác nhận qua cùng nguồn sai.** Oracle dựng bằng cách render
+  prompt thật rồi quét chữ (`scripts/oracle-ten-prompt.ts`), cấm gọi hàm guard dùng. Kèm thử đột biến:
+  mở lại cửa sau thì test phải đỏ.
+- **Đổi văn phong đo bằng đúng dữ kiện, lỗi nặng, thử lại / 502 TRƯỚC, dễ đọc SAU.** Dễ đọc thắng mà
+  đúng dữ kiện thua (8–4, 11–5) là trượt, không tinh chỉnh tiếp để ép qua.
+- **"Viết đời thường hơn" kéo model bịa nét đời sống.** Lời dặn giọng phải ghi rõ ranh giới: CÁI GÌ
+  (dữ kiện, hướng) do mã chốt, model chỉ được đổi CÁCH NÓI.

@@ -19,7 +19,32 @@ import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { CongUngHo } from '@/components/support/CongUngHo';
 import { useQuyen } from '@/lib/support/useQuyen';
 import { bamLaSoTrinhDuyet, docHoiThoai, luuLuot, xoaHoiThoai } from '@/lib/store/hoi-thoai';
-import { dien, useT } from '@/lib/i18n/context';
+
+/*
+ * Trạng thái lượt của Celes (meta ký sẵn ở máy chủ): một bản cho mỗi hội thoại, sống qua tải lại
+ * trang trong cùng tab, mất khi đóng tab. Storage hỏng thì coi như không có — lượt sau chạy như
+ * câu mới, không lỗi.
+ */
+const KHOA_META = 'celes-meta:';
+function docMeta(khoa: string | null): unknown {
+  if (!khoa) return undefined;
+  try {
+    const x = sessionStorage.getItem(KHOA_META + khoa);
+    return x ? JSON.parse(x) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+function ghiMeta(khoa: string | null, meta: unknown) {
+  if (!khoa) return;
+  try {
+    if (meta && typeof meta === 'object') sessionStorage.setItem(KHOA_META + khoa, JSON.stringify(meta));
+    else sessionStorage.removeItem(KHOA_META + khoa);
+  } catch {
+    // bỏ qua: không có meta thì lượt sau là câu mới
+  }
+}
+import { dien, useNgonNgu, useT } from '@/lib/i18n/context';
 import { QuayLai } from '@/components/QuayLai';
 
 interface TinNhan {
@@ -56,6 +81,7 @@ function khoaCua(form: ThongTinForm) {
  */
 function TrangHoiDap() {
   const t = useT();
+  const { ngonNgu } = useNgonNgu();
   const { duocVao, dangDoc } = useTaiKhoan();
   const boiCanh = useBoiCanh();
   const quyenCeles = useQuyen();
@@ -220,6 +246,7 @@ function TrangHoiDap() {
     // đi rồi xử theo câu trả lời thật: đúng một nguồn sự thật, và khi hết lượt
     // thì cổng mở vì máy chủ nói thế, không phải vì một con số cũ trong bộ nhớ.
     const lichSu = tinNhan.map((m) => ({ vaiTro: m.vaiTro, noiDung: m.noiDung }));
+    const luotTruoc = docMeta(khoaHoiThoai);
     setTinNhan((ds) => [...ds, { vaiTro: 'nguoi-dung', noiDung: cau }]);
     setCauHoi('');
     setDangChay(true);
@@ -240,6 +267,8 @@ function TrangHoiDap() {
           cauHoi: cau,
           lichSu,
           tuChip,
+          ngonNgu,
+          ...(luotTruoc ? { luotTruoc } : {}),
         }),
       });
       const data = await res.json();
@@ -254,6 +283,7 @@ function TrangHoiDap() {
       }
 
       if (!res.ok) throw new Error(data.loi ?? 'Không nhận được trả lời');
+      ghiMeta(khoaHoiThoai, data.meta);
       setTinNhan((ds) => [
         ...ds,
         {
@@ -270,6 +300,7 @@ function TrangHoiDap() {
       if (khoaHoiThoai) void luuLuot(khoaHoiThoai, cau, data.traLoi, data.model);
       quyenCeles.taiLai();
     } catch {
+      ghiMeta(khoaHoiThoai, null);
       setLoi(t.hoiCeles.loi);
     } finally {
       setDangChay(false);
@@ -606,6 +637,7 @@ function TrangHoiDap() {
               <button
                 onClick={() => {
                   setTinNhan([]);
+                  ghiMeta(khoaHoiThoai, null);
                   if (khoaHoiThoai) void xoaHoiThoai(khoaHoiThoai);
                 }}
                 className="link-text self-start"

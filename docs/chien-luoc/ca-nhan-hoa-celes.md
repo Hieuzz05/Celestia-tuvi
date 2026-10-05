@@ -296,8 +296,9 @@ và bộ vàng 62 câu (đang 100%) phải chạy lại.
 Hai thứ dùng lại được ngay nhờ quyết định này:
 - `nghieng-ve.ts:129` + `planner.ts:75` đã có sẵn ánh xạ chủ đề → cung, Phase 4 truy hồi
   theo `chu_de` không phải viết mới.
-- `lib/rag/nhat-ky.ts:51` đã ghi `y_dinh: keHoach.chuDe` vào `retrieval_runs` ⇒ chủ đề
-  **đã được tính sẵn mỗi lượt**, Phase 3 chỉ việc ghi thêm.
+- `lib/rag/nhat-ky.ts` ghi chủ đề mỗi lượt vào `retrieval_runs.bo_loc.chuDe` ⇒ chủ đề
+  **đã được tính sẵn mỗi lượt**, Phase 3 chỉ việc ghi thêm. (Tới 05/10/2026 chủ đề bị ghi nhầm
+  vào cột `y_dinh`; từ đó `y_dinh` ghi đúng ý định. Dòng cũ: đọc `y_dinh` như chủ đề.)
 
 ### Chưa thêm index
 

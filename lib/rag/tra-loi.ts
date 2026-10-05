@@ -28,6 +28,7 @@ import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, ty
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
 import { boDanDat, tinhHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
+import { focusedBat, traLoiFocused } from './focused/tra-loi-focused';
 
 /**
  * Ghép toàn bộ đường đi: planner → bối cảnh lá số → truy hồi → gói bằng chứng →
@@ -79,6 +80,15 @@ export interface DauVaoTraLoi {
    * lúc đó con số eval không so được với lần trước.
    */
   dungModelPhanLoai?: boolean;
+  /**
+   * Ngôn ngữ giao diện của người hỏi. Chỉ đường Focused đọc (câu do mã viết theo
+   * ngôn ngữ này); đường STANDARD bỏ qua. Thiếu = 'vi'.
+   */
+  ngonNgu?: 'vi' | 'en';
+  /** Meta lượt trước client gửi lại (chưa tin) — chỉ đường Focused đọc, tự kiểm (focused/hieu-cau.ts) */
+  luotTruoc?: unknown;
+  /** Băm người dùng hiện tại do route tự tính — ràng buộc meta lượt (spec 2.3) */
+  nguoiDung?: string;
 }
 
 export interface KetQuaTraLoi {
@@ -96,6 +106,11 @@ export interface KetQuaTraLoi {
   khoTrong: boolean;
   phienBan: Record<string, string>;
   doTreMs: { truyHoi: number; model: number; tong: number };
+  /**
+   * Lượt dừng bằng câu mã vì lá số không có gì để đọc (trước ngày sinh, chưa hợp
+   * tuổi, lệch giới tính — chỉ đường Focused đặt). Route hoàn lượt thay vì chốt.
+   */
+  khongTinhLuot?: boolean;
 }
 
 /**
@@ -344,7 +359,25 @@ async function ketLuanBaiTongQuan(chartHash: string | undefined, namXem: number)
   }
 }
 
+/**
+ * Sổ kết luận chung: bài luận giải v3 đã kết luận gì, rồi bảng tám lĩnh vực (bản cũ). Tám câu là trần —
+ * nhiều hơn thì khối này lấn át chính dữ kiện lá số.
+ */
+async function docDaNoiTruoc(vao: DauVaoTraLoi, namHieuLuc: number): Promise<string[]> {
+  const [soV3, bangCu] = await Promise.all([
+    import('./v3/so-ket-luan').then((m) => m.soKetLuanV3(vao.chartHashLaSo, namHieuLuc)).catch(() => [] as string[]),
+    ketLuanBaiTongQuan(vao.chartHash, namHieuLuc),
+  ]);
+  return [...soV3, ...bangCu].slice(0, 8);
+}
+
 export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
+  /*
+   * CEL-186 vé B: đường Focused, sau cờ đọc mỗi lượt. Tắt cờ thì mọi dòng
+   * dưới đây chạy y như trước — test-focused.ts chụp mẫu để giữ điều đó.
+   */
+  if (focusedBat()) return traLoiFocused(vao, phienBanHienTai, (nam) => docDaNoiTruoc(vao, nam));
+
   const batDau = Date.now();
 
   // Planner cần biết sao nào đứng ở cung nào để viết lại truy vấn bằng đúng
@@ -401,13 +434,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
         });
 
   const goi = dungGoiBangChung(vao.cauHoi, keHoach, duKien, kqTruyHoi.daChon);
-  // Sổ kết luận chung: bài luận giải v3 đã kết luận gì, rồi bảng tám lĩnh vực (bản cũ). Tám câu là trần —
-  // nhiều hơn thì khối này lấn át chính dữ kiện lá số.
-  const [soV3, bangCu] = await Promise.all([
-    import('./v3/so-ket-luan').then((m) => m.soKetLuanV3(vao.chartHashLaSo, namHieuLuc)).catch(() => [] as string[]),
-    ketLuanBaiTongQuan(vao.chartHash, namHieuLuc),
-  ]);
-  const daNoiTruoc = [...soV3, ...bangCu].slice(0, 8);
+  const daNoiTruoc = await docDaNoiTruoc(vao, namHieuLuc);
 
   const nghieng = canTinhNghieng(keHoach)
     ? tinhNghiengVe({

@@ -56,10 +56,12 @@ export async function ghiLanTruyHoi(
         request_id: meta.requestId ?? null,
         cau_hoi: meta.cauHoi,
         truy_van: kq.truyVan,
-        y_dinh: keHoach.chuDe,
+        // Cột y_dinh từng ghi nhầm chủ đề (tới 05/10/2026). Chủ đề nằm ở bo_loc.chuDe.
+        y_dinh: keHoach.yDinh,
         thuc_the: keHoach.thucThe.map((t) => t.id),
         cung_lien_quan: keHoach.cungLienQuan,
         bo_loc: {
+          chuDe: keHoach.chuDe,
           hePhai: kq.cauHinh.hePhai ?? null,
           locThucThe: kq.cauHinh.locThucThe,
           phamViThoiGian: keHoach.phamViThoiGian,

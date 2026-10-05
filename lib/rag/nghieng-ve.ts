@@ -214,16 +214,30 @@ const TRONG_LOP: Record<LopDauMoc, number> = {
  * đưa vào prompt cũng chỉ để model tự nghĩ ra nghĩa cho nó — tức là mở đường
  * cho bịa. Thà nêu ba dữ kiện có nghĩa còn hơn sáu cái tên trống.
  */
-function dauMocCuaCung(cung: Cung, lop: LopDauMoc, ngonNgu: 'vi' | 'en'): DauMoc[] {
+function dauMocCuaCung(
+  cung: Cung,
+  lop: LopDauMoc,
+  ngonNgu: 'vi' | 'en',
+  focused = false,
+): DauMoc[] {
   const k = KHUON[ngonNgu];
   const ra: DauMoc[] = [];
 
   for (const s of cung.sao) {
     const chinh = laChinhTinh(s);
-    const net = chinh ? k.netSao[s.ten]?.manh : k.netPhuTinh[s.ten];
-    if (!net) continue;
-
     const manh = !s.doSang || SANG_RO.has(s.doSang);
+    /*
+     * Focused (CEL-186 vé B, 4.2): chính tinh hãm đứng ở phía cản, nên nghĩa đi
+     * kèm phải là nét "cần" (điều còn thiếu), không phải nét lúc sáng. Đường cũ
+     * giữ nguyên để không đổi bài của các bề mặt khác.
+     */
+    const canHam = focused && chinh && !manh ? k.netSao[s.ten]?.can : undefined;
+    const net = canHam
+      ? `${ngonNgu === 'vi' ? 'cần' : 'needs'} ${canHam}`
+      : chinh
+        ? k.netSao[s.ten]?.manh
+        : k.netPhuTinh[s.ten];
+    if (!net) continue;
 
     /*
      * Cát mà hãm địa thì không tính là đỡ.
@@ -301,13 +315,21 @@ export function tinhNghiengVe(vao: {
   namXem: number;
   thangXem: number;
   ngonNgu?: 'vi' | 'en';
+  /**
+   * Cung đọc nghiêng, khi lớp gọi đã biết chính xác (Focused: câu về con đọc
+   * Tử Tức, không qua chủ đề gia-dao → Điền Trạch). Thiếu thì suy từ chủ đề.
+   */
+  cungChinh?: string;
+  /** Bật các sửa của Focused (4.2, 4.3). Tắt thì kết quả y nguyên đường cũ. */
+  focused?: boolean;
 }): NghiengVe | null {
   try {
     const ngonNgu = vao.ngonNgu ?? 'vi';
     const k = KHUON[ngonNgu];
     const cap = capTu(vao.lopHan);
 
-    const tenCung = CUNG_THEO_CHU_DE[vao.chuDe];
+    const fo = vao.focused === true;
+    const tenCung = vao.cungChinh ?? CUNG_THEO_CHU_DE[vao.chuDe];
     if (!tenCung) return null;
     const cung = vao.laSo.cungs.find((c) => c.tenCung === tenCung);
     if (!cung) return null;
@@ -333,12 +355,12 @@ export function tinhNghiengVe(vao: {
     const chamNam = lienQuan(iNam);
     const chamThang = cap === 'thang' ? lienQuan(iThang) : false;
 
-    const dauMoc: DauMoc[] = [...dauMocCuaCung(cung, 'nen', ngonNgu)];
+    const dauMoc: DauMoc[] = [...dauMocCuaCung(cung, 'nen', ngonNgu, fo)];
 
     // Đại vận: chỉ lấy khi quãng ấy thật sự đi qua phần đang hỏi. Cung đại vận
     // nằm ở góc khác hẳn thì sao của nó không nói gì về chuyện này.
     if (cungDai && chamDaiVan && cungDai.chiIndex !== cung.chiIndex) {
-      dauMoc.push(...dauMocCuaCung(cungDai, 'dai-van', ngonNgu));
+      dauMoc.push(...dauMocCuaCung(cungDai, 'dai-van', ngonNgu, fo));
     }
 
     /*
@@ -358,12 +380,15 @@ export function tinhNghiengVe(vao: {
        */
       const cungNam = vao.laSo.cungs[iNam];
       if (chamNam && cungNam.chiIndex !== cung.chiIndex) {
-        dauMoc.push(...dauMocCuaCung(cungNam, 'nam', ngonNgu));
+        dauMoc.push(...dauMocCuaCung(cungNam, 'nam', ngonNgu, fo));
       }
 
       const netLuu = ngonNgu === 'vi' ? NET_LUU_VI : NET_LUU_EN;
       for (const s of luuTinhTheoNam(vao.namXem)) {
         if (s.chiIndex !== cung.chiIndex) continue;
+        // Focused: Lưu Thái Tuế không thuận không cản, nên không được đứng ở
+        // phía nào. Nó vẫn có mặt trong gói F### (khối 'luu-tinh') làm mốc năm.
+        if (fo && s.tinhChat === 'trung') continue;
         const y = netLuu[s.ten];
         if (!y) continue;
         dauMoc.push({
@@ -379,7 +404,7 @@ export function tinhNghiengVe(vao: {
       if (cap === 'thang' && chamThang) {
         const cungThang = vao.laSo.cungs[iThang];
         if (cungThang.chiIndex !== cung.chiIndex) {
-          dauMoc.push(...dauMocCuaCung(cungThang, 'thang', ngonNgu));
+          dauMoc.push(...dauMocCuaCung(cungThang, 'thang', ngonNgu, fo));
         }
       }
     }
@@ -392,11 +417,24 @@ export function tinhNghiengVe(vao: {
     // Xếp nặng trước: model đọc từ trên xuống và bám vào thứ gặp đầu tiên, nên
     // thứ tự ở đây quyết định bài nêu tên dữ kiện nào.
     dauMoc.sort((a, b) => b.trong - a.trong);
+    const huong = huongTu(do_, can);
+    let chon = dauMoc.slice(0, 6);
+    /*
+     * Focused (4.3): cân bằng thì câu chốt phải nêu được một mốc mỗi phía. Top 6
+     * toàn một phía thì đổi mốc nhẹ nhất lấy mốc nặng nhất của phía còn thiếu.
+     */
+    if (fo && huong === 'can-bang') {
+      for (const phia of ['do', 'can'] as const) {
+        if (chon.some((d) => d.huong === phia)) continue;
+        const bu = dauMoc.find((d) => d.huong === phia);
+        if (bu) chon = [...chon.slice(0, Math.max(chon.length - 1, 0)), bu];
+      }
+    }
 
     const bai = luanHan(vao.laSo, cap, vao.namXem, vao.thangXem, ngonNgu);
 
     return {
-      huong: huongTu(do_, can),
+      huong,
       cap,
       cung: tenCung,
       phanDoi: k.chuDeCung[tenCung] ?? tenCung,
@@ -407,7 +445,7 @@ export function tinhNghiengVe(vao: {
         : khoangTuoiDaiVan(bai.subline),
       // Sáu là đủ chất liệu. Nhiều hơn thì model quay ra liệt kê thay vì luận,
       // và bài thành một bảng tra cứu có dấu chấm câu.
-      dauMoc: dauMoc.slice(0, 6),
+      dauMoc: chon,
       cachCuc: nhanDangCachCuc(vao.laSo, tenCung)
         .filter((c) => c.loai !== 'han')
         .map((c) => c.ten)
