@@ -236,7 +236,7 @@ npx tsx scripts/test-an-toan.ts       # lớp an toàn chat: bắt đúng câu k
 npx tsx scripts/test-hop-dong-tra-loi.ts # nhịp/kiểu lượt chat: không chạm kết luận, thứ tự khối — offline
 npx tsx scripts/test-sua-chua-tach.ts  # lớp sửa câu giữ nguyên xuống dòng, tiêu đề, danh sách; ráp lại đúng nguyên văn — offline
 npx tsx scripts/test-dau-an.ts         # dấu ấn Celes: cổng (an toàn, ketLuan, bỏ dẫn dắt, câu nối), chống lặp, đầu-cuối trên văn cuối — offline
-npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (tập DB bỏ qua nếu thiếu .env.local)
+npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (lượt thật: BỎ QUA, nhật ký không lưu chữ từ PRIV-01)
 npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
 npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
 npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
