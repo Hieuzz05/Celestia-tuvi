@@ -32,6 +32,8 @@ Nó là nguồn đáng tin hơn bảng dưới, vì bảng dưới do người g
 | `schema-ai-models.sql` | `ai_model_configs` — chuỗi model quản lý được từ `/admin/models` | rồi |
 | `schema-noi-dung-ai.sql` | `noi_dung_ai` — bộ nhớ đệm nội dung do AI sinh | rồi |
 | `va-danh-gia-bai.sql` | `danh_gia_bai_luan` — quản trị viên chấm bài luận (Hay/Chưa hay, 1–5, nhận xét, gợi ý cách viết). Chưa chạy thì nút Lưu ở thẻ chấm báo lỗi, trang người dùng không ảnh hưởng | **chưa** |
+| `va-priv-01.sql` | PRIV-01: nới NOT NULL `retrieval_runs.cau_hoi/truy_van` + chú thích cột — trace Production không giữ văn người dùng. Mã không phụ thuộc tệp này (ghi chuỗi canh `[an]` khi cột còn NOT NULL) | **chưa** (MIGRATION_NOT_APPLIED) |
+| `va-priv-01-don.sql` | Làm trắng văn trace CŨ. **DỪNG**: dữ liệu cũ không phân biệt Production / Preview / eval — chờ chủ dự án chọn (A) hay (B) trong tệp | **không chạy** |
 
 `chat_messages` nằm trong `schema.sql` từ đầu dự án nhưng mãi tới 19/09/2026 mới
 có mã dùng tới (trí nhớ hội thoại, CEL-088). **Không cần chạy thêm SQL nào** —

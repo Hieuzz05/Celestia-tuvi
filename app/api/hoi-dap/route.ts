@@ -226,10 +226,9 @@ export async function POST(req: Request) {
 
     // Ghi vết trước khi rẽ nhánh: nhật ký hỏng không được làm mất dấu vết để chẩn đoán sau này,
     // dù lượt này có chốt hay hoàn lại.
+    // PRIV-01: không ghi câu hỏi, không băm lá số vào ai_requests.
     await ghiVetTraLoi({
       requestId,
-      chartHash,
-      cauHoi,
       runId: kq.runId,
       phienBan: kq.phienBan,
       provider: kq.provider,

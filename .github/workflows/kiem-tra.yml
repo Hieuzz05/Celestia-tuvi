@@ -77,6 +77,8 @@ jobs:
         run: npx tsx scripts/test-boi-canh-dong-bang.ts
       - name: Behavior Contract offline — người / ý / thời gian 30 flow (CEL-186 v2)
         run: npx tsx scripts/test-hop-dong-focused.ts
+      - name: PRIV-01 — trace Production không giữ câu hỏi, truy vấn, văn validator, băm lá số
+        run: npx tsx scripts/test-priv-01.ts
       - name: Hiểu câu qua lượt — meta ký, dựng lại F###, hỏi lại lá số của ai, giải thích lượt trước (CEL-186 v2 F)
         run: npx tsx scripts/test-hieu-cau.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)

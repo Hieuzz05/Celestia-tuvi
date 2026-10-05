@@ -1,0 +1,40 @@
+-- ============================================================
+-- PRIV-01 — DỌN dữ liệu trace cũ. ĐANG DỪNG — KHÔNG CHẠY.
+-- ============================================================
+--
+-- Vì sao dừng (luật batch §2.1): dòng cũ KHÔNG phân biệt được Production với eval / Preview.
+--   * retrieval_runs.che_do = 'that' được ghi bởi CẢ Production, Preview (cùng database), và
+--     mọi script eval chạy với ghiNhatKy mặc định — không cột nào ghi môi trường.
+--   * ai_requests không có che_do, không có cột môi trường.
+-- Xoá / làm trắng theo che_do sẽ xoá luôn vết eval có giá trị; giữ thì còn văn người dùng thật.
+-- Cần chủ dự án quyết một trong hai, rồi mới bỏ chú thích khối tương ứng:
+--   (A) Làm trắng TẤT CẢ văn trước mốc (mất cả vết eval cũ — vết eval mới nằm ở D:\Celestia\eval).
+--   (B) Giữ nguyên, chỉ chặn từ nay (mã PRIV-01) và dọn sau khi có cột môi trường.
+--
+-- Mốc: thời điểm deploy mã PRIV-01 lên Production. Thay :MOC bằng giá trị thật, vd '2026-10-06 00:00+07'.
+-- Tệp chỉ dùng UPDATE (làm trắng), không DELETE dòng: retrieval_results / ai_requests.run_id trỏ vào
+-- retrieval_runs, xoá dòng sẽ xoá dây chuyền số liệu vận hành (độ trễ, model, chunk) không chứa văn.
+--
+-- Chạy `va-priv-01.sql` TRƯỚC (nới NOT NULL), nếu không lệnh dưới sẽ lỗi.
+
+-- (A) — bỏ chú thích để chạy:
+-- begin;
+-- update public.retrieval_runs
+--    set cau_hoi = null, truy_van = null
+--  where che_do = 'that' and tao_luc < :MOC;
+-- update public.ai_requests
+--    set cau_hoi = null,
+--        chart_hash = null,
+--        ket_qua_kiem_duyet = case
+--          when ket_qua_kiem_duyet is null then null
+--          else jsonb_build_object(
+--            'dat', ket_qua_kiem_duyet->'dat',
+--            'phuSong', ket_qua_kiem_duyet->'phuSong',
+--            'phienBan', ket_qua_kiem_duyet->'phienBan',
+--            'loi', coalesce((
+--              select jsonb_agg(jsonb_build_object('ma', l->'ma', 'mucDo', l->'mucDo'))
+--                from jsonb_array_elements(ket_qua_kiem_duyet->'loi') l
+--            ), '[]'::jsonb))
+--        end
+--  where tao_luc < :MOC;
+-- commit;
