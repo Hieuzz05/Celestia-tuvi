@@ -235,6 +235,7 @@ npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hì
 npx tsx scripts/test-an-toan.ts       # lớp an toàn chat: bắt đúng câu khủng hoảng, không bắt nhầm "Tử Tức" — offline
 npx tsx scripts/test-hop-dong-tra-loi.ts # nhịp/kiểu lượt chat: không chạm kết luận, thứ tự khối — offline
 npx tsx scripts/test-sua-chua-tach.ts  # lớp sửa câu giữ nguyên xuống dòng, tiêu đề, danh sách; ráp lại đúng nguyên văn — offline
+npx tsx scripts/test-han-luu-nhat-ky.ts  # hạn lưu nhật ký 90 ngày / sổ khách 2 ngày, xoá đệm chung luôn lọc be_mat — offline
 npx tsx scripts/test-dau-an.ts         # dấu ấn Celes: cổng (an toàn, ketLuan, bỏ dẫn dắt, câu nối), chống lặp, đầu-cuối trên văn cuối — offline
 npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (lượt thật: BỎ QUA, nhật ký không lưu chữ từ PRIV-01)
 npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
@@ -258,7 +259,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
