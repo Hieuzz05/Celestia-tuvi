@@ -15,7 +15,7 @@ import { docChieu, type NhomHuong } from './chot-huong';
 export interface KetLuan {
   /** Một câu tóm ý, ≤200 ký tự; không bắt trùng nguyên văn answer */
   claim: string;
-  /** F### và/hoặc E### có trong gói lượt này; ≥1 */
+  /** F### và/hoặc E### (và T### khi có nghiệm lý — luôn kèm ≥1 F###) có trong gói lượt này; ≥1 */
   evidenceIds: string[];
   /** Bắt buộc ở claims[0] khi lượt có hướng engine */
   direction?: NhomHuong;
@@ -53,6 +53,8 @@ export type MaLoiCung =
   | 'LO_MA'
   | 'NGUOC_HUONG'
   | 'THIEU_THANG'
+  // CEL-194: claim dẫn T### mà không dẫn F###
+  | 'T_THIEU_F'
   // Tầng C (CEL-191): chỉ đo, không chặn
   | 'GIONG_BAO_CAO'
   | 'PHAN_QUYET';
@@ -74,6 +76,7 @@ export const TANG_CUA: Record<MaLoiCung, TangLoi> = {
   NGUOC_HUONG: 'A',
   THIEU_THANG: 'A',
   LO_MA: 'A',
+  T_THIEU_F: 'A',
   CHON_HO: 'B',
   PHAN_TRAM: 'B',
   CHAC_CHAN_GIA: 'B',

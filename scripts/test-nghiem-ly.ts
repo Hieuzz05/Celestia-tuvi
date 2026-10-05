@@ -5,14 +5,17 @@
  * (trường phái, trạng thái, phiên bản đang dùng, duyệt, người duyệt, thời điểm duyệt, hình nội dung)
  * thiếu một là phải rơi.
  */
-import { QUAN_HE } from '../lib/rag/thu-vien/kieu';
+import { QUAN_HE, type MucThuVien } from '../lib/rag/thu-vien/kieu';
 import {
   batNghiemLyFocused,
   chuanHoaNoiDung,
   locNghiemLyDungDuoc,
   type DongMuc,
   type DongPhienBan,
+  type NghiemLy,
 } from '../lib/rag/thu-vien/nghiem-ly';
+import { chonNghiemLy, khoiNghiemLy, vetNghiemLy } from '../lib/rag/focused/nghiem-ly-luot';
+import { lapLaSo } from '../lib/tuvi/ansao';
 import { TEN_CUNG } from '../lib/tuvi/constants';
 
 let hong = 0;
@@ -103,6 +106,41 @@ kiem(batNghiemLyFocused({ CELES_OWNER_KNOWLEDGE_FOCUSED: '1' }), 'cờ = 1 bật
   kiem(!c({ ...ND, cheDo: 'override' }).ok, 'override thiếu dich');
   const ov = c({ ...ND, cheDo: 'override', dich: ['NL-B'] });
   kiem(ov.ok && ov.noiDung.dich?.[0] === 'NL-B', 'override có dich phải qua');
+}
+
+// T### trong lượt Focused: khớp, giải T↔T tất định, khối prompt, vết.
+{
+  const laSo = lapLaSo({ ngay: 15, thang: 6, nam: 1990, gio: 8, gioiTinh: 'nam' });
+  const menh = laSo.cungs.find((c) => c.tenCung === 'Mệnh')!;
+  const saoMenh = menh.sao[0].ten;
+  const nl = (id: string, x: Partial<MucThuVien> = {}, v = 1): NghiemLy => ({
+    phienBan: v,
+    muc: {
+      id, schemaVersion: 1, chuDe: ['su-nghiep'], y: `nghĩa ${id}`, nhan: { chieu: 'cat', muc: 'vua', linhVuc: [] },
+      cheDo: 'add', canCu: [], truongPhai: 'celes', duyet: 'da-duyet', dotTrich: 'x',
+      dieuKien: { cung: ['Mệnh'], sao: [{ ten: saoMenh, quanHe: 'o-cung' }] }, ...x,
+    },
+  });
+  const khongKhop = nl('NL-Z', { dieuKien: { cung: ['Mệnh'], sao: [{ ten: 'Sao Không Có', quanHe: 'o-cung' }] } });
+  const r = chonNghiemLy(laSo, [nl('NL-B', {}, 3), nl('NL-A'), khongKhop], ['Mệnh']);
+  kiem(r.ds.map((t) => `${t.id}:${t.mucId}@${t.phienBan}`).join(',') === 'T001:NL-A@1,T002:NL-B@3', `gán T theo id + phiên bản: ${r.ds.map((t) => t.id + t.mucId)}`);
+  kiem(r.soDuyet === 3 && r.soKhop === 2, `đếm duyệt/khớp: ${r.soDuyet}/${r.soKhop}`);
+  kiem(chonNghiemLy(laSo, [nl('NL-A')], ['Quan Lộc']).ds.length === 0, 'chỉ khớp trên cung liên quan (điều kiện cung Mệnh, đọc Quan Lộc)');
+
+  // override gỡ đích; vòng A↔B: id nhỏ hơn thắng; thứ tự đầu vào không đổi kết quả.
+  const ov = chonNghiemLy(laSo, [nl('NL-A'), nl('NL-B', { cheDo: 'override', dich: ['NL-A'] })], ['Mệnh']);
+  kiem(ov.ds.map((t) => t.mucId).join() === 'NL-B' && ov.biGo.join() === 'NL-A', `override: ${ov.ds.map((t) => t.mucId)} / ${ov.biGo}`);
+  const vong = chonNghiemLy(laSo, [nl('NL-B', { cheDo: 'neutralize', dich: ['NL-A'] }), nl('NL-A', { cheDo: 'override', dich: ['NL-B'] })], ['Mệnh']);
+  kiem(vong.ds.map((t) => t.mucId).join() === 'NL-A' && vong.ds[0].id === 'T001', `vòng A↔B: ${vong.ds.map((t) => t.mucId)}`);
+  const vong2 = chonNghiemLy(laSo, [nl('NL-A', { cheDo: 'override', dich: ['NL-B'] }), nl('NL-B', { cheDo: 'neutralize', dich: ['NL-A'] })], ['Mệnh']);
+  kiem(JSON.stringify(vong2) === JSON.stringify(vong), 'tất định theo id');
+  const md = chonNghiemLy(laSo, [nl('NL-A'), nl('NL-B', { cheDo: 'modify', dich: ['NL-A'] })], ['Mệnh']);
+  kiem(md.ds.length === 2 && md.ds[1].dieuChinh?.join() === 'NL-A', 'modify giữ cả hai');
+  kiem(khoiNghiemLy(md.ds).includes('T002. [cung Mệnh · thuận · vừa · điều chỉnh T001] nghĩa NL-B'), `khối prompt: ${khoiNghiemLy(md.ds)}`);
+  kiem(khoiNghiemLy([]) === '', 'không có T thì không có khối (prompt y như cờ tắt)');
+  const v = vetNghiemLy(r);
+  kiem(v.mode === 'bat' && v.soTrongGoi === 2 && !JSON.stringify(v).includes('nghĩa'), `vết không chứa câu nghĩa: ${JSON.stringify(v)}`);
+  kiem(vetNghiemLy(null).mode === 'tat', 'vết cờ tắt');
 }
 
 console.log(hong ? `\n${hong} mục hỏng` : 'Tất cả đạt.');

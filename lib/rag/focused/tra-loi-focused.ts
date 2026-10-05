@@ -63,6 +63,8 @@ import { boiCanhThoiGian, phanKhuon, type BoiCanhThoiGian, type PhanLoai } from 
 import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
+import { chonNghiemLy, vetNghiemLy } from './nghiem-ly-luot';
+import { batNghiemLyFocused, docNghiemLyDaDuyet } from '../thu-vien/nghiem-ly';
 
 /** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). 10.16 = CEL-191 (hiểu câu theo trường, validator ba tầng). */
 export const PHIEN_BAN_FOCUSED = 'focused-2026.10.16';
@@ -144,6 +146,8 @@ export interface PhuThuocFocused {
   /** Phân loại bằng model (CEL-191) — test tiêm vào để không gọi model. */
   phanLoai?: typeof phanLoaiFocused;
   layDoanTheoId?: typeof layDoanTheoId;
+  /** Nghiệm lý đã duyệt (CEL-194) — test tiêm vào để không chạm DB. */
+  docNghiemLy?: typeof docNghiemLyDaDuyet;
 }
 
 /** Mục tiêu thời gian cho vết: chỉ loại và số. Không nêu tháng = năm hiệu lực (spec v2 §3.1). */
@@ -499,6 +503,11 @@ export async function traLoiFocused(
   const daCo = new Set(doanCu.map((d) => d.chunkId));
   const daChon = [...doanCu, ...kqTruyHoi.daChon.filter((d) => !daCo.has(d.chunkId))];
   const goi = dungGoiBangChung(cauHoi, keHoach, duKien, daChon);
+  // CEL-194: nghiệm lý của chủ dự án — cờ tắt thì không đọc DB, không đổi prompt, không đổi validator.
+  const kqNghiemLy = batNghiemLyFocused()
+    ? chonNghiemLy(vao.laSo, await (pt.docNghiemLy ?? docNghiemLyDaDuyet)(), keHoach.cungLienQuan)
+    : null;
+  const nghiemLy = kqNghiemLy?.ds ?? [];
   const maF = new Set(goi.duKien.map((d) => d.id));
   const canCuFMat = mGT ? mGT.canCuF.filter((m) => !maF.has(m)).length : 0;
   const luotTruocPrompt: DauVaoPromptFocused['luotTruoc'] =
@@ -559,6 +568,8 @@ export async function traLoiFocused(
     });
     for (const ten of t) tapTen.add(ten);
   }
+  // Sao trong điều kiện của T### đã được engine xác nhận đúng quan hệ — được gọi tên.
+  for (const n of nghiemLy) for (const ten of n.sao) tapTen.add(ten);
 
   // Câu mã đứng đầu và chip mã. Spec v2 bỏ câu E / N2 / N4 do mã viết: model tự
   // nói giới hạn của quyết định, tháng đã qua, quãng cuối năm (prompt.ts).
@@ -585,6 +596,7 @@ export async function traLoiFocused(
     phucDucLaSao: goiCoPhucDuc(goi.duKien),
     maHopLe: new Set(goi.duKien.map((d) => d.id)),
     maNguonHopLe: new Set(goi.bangChung.map((e) => e.id)),
+    ...(kqNghiemLy ? { maNghiemLyHopLe: new Set(nghiemLy.map((n) => n.id)) } : {}),
     nghieng,
     thoiGian,
     tuoiHopLe: tuoiTrongGoi(goi),
@@ -630,6 +642,7 @@ export async function traLoiFocused(
       ...(luotTruocPrompt ? { luotTruoc: luotTruocPrompt } : {}),
       ...(laSoCuaAiPrompt ? { laSoCuaAi: laSoCuaAiPrompt } : {}),
       ...(hoanCanhTruoc.length ? { hoanCanhTruoc } : {}),
+      ...(nghiemLy.length ? { nghiemLy } : {}),
     },
     ctx,
     batDau,
@@ -673,6 +686,7 @@ export async function traLoiFocused(
     ...(luotTruocBo ? { luotTruocBo } : {}),
     ...(canCuEMat ? { canCuEMat } : {}),
     ...(canCuFMat ? { canCuFMat } : {}),
+    ...(kqNghiemLy ? { nghiemLy: vetNghiemLy(kqNghiemLy) } : {}),
   };
 
   const ban = kq.banNhap;
@@ -714,6 +728,7 @@ export async function traLoiFocused(
           noiDung: c.claim,
           maDuKien: c.evidenceIds.filter((m) => m.startsWith('F')),
           maNguon: c.evidenceIds.filter((m) => m.startsWith('E')),
+          ...(nghiemLy.length ? { maNghiemLy: c.evidenceIds.filter((m) => m.startsWith('T')) } : {}),
         })),
         goiYTiep: kq.chip,
       }

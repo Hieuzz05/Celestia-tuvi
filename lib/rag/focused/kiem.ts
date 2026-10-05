@@ -46,6 +46,8 @@ export interface NguCanhKiem {
   maHopLe: ReadonlySet<string>;
   /** Mã E### có trong gói */
   maNguonHopLe: ReadonlySet<string>;
+  /** Mã T### (nghiệm lý đã duyệt, đã khớp) — CHỈ có khi cờ CELES_OWNER_KNOWLEDGE_FOCUSED bật (CEL-194) */
+  maNghiemLyHopLe?: ReadonlySet<string>;
   nghieng: NghiengVe | null;
   thoiGian: BoiCanhThoiGian;
   /** Khoảng tuổi đại vận có trong gói, `[từ, đến]` */
@@ -175,6 +177,8 @@ export const MOC_NHO_HON_NAM =
 
 /** Mã máy lộ ra văn: F###/E### và nhãn cửa sổ W1–W3 (spec 5.1 LO_MA). */
 const MA_MAY = /\b[FE]\d{3}\b|\bW[1-3]\b/u;
+/** Mã nghiệm lý lộ ra văn (CEL-194) — chỉ kiểm khi lượt có T###, để cờ tắt thì validator y như cũ. */
+const MA_NGHIEM_LY_MAY = /\bT\d{3}\b|\bNL-[A-Z0-9]/u;
 
 /* ------------------------------------------------------------- mốc hợp lệ */
 
@@ -293,9 +297,14 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
   }
 
   // Căn cứ
-  const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m);
+  const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m) || !!ctx.maNghiemLyHopLe?.has(m);
   const sai = [...new Set(ban.claims.flatMap((c) => c.evidenceIds.filter((m) => !hopLe(m))))];
   if (sai.length) bao({ ma: 'MA_KHONG_HOP_LE', chiTiet: `mã ${sai.join(', ')} không có trong DỮ KIỆN hay NGUỒN THAM CHIẾU` });
+  // T### là cách đọc, không phải căn cứ: claim dẫn T phải dẫn kèm F của gói (CEL-194).
+  const tKhongF = ban.claims.find(
+    (c) => c.evidenceIds.some((m) => ctx.maNghiemLyHopLe?.has(m)) && !c.evidenceIds.some((m) => ctx.maHopLe.has(m))
+  );
+  if (tKhongF) bao({ ma: 'T_THIEU_F', chiTiet: `claim dẫn ${tKhongF.evidenceIds.join(', ')} nhưng không có mã F### nào — nghiệm lý phải đi kèm dữ kiện lá số` });
   if (!ban.outOfScope && !ban.claims.some((c) => c.evidenceIds.some(hopLe))) {
     bao({ ma: 'KHONG_CAN_CU', chiTiet: '"claims" không có kết luận nào dẫn mã F### / E### có trong gói' });
   }
@@ -340,7 +349,7 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
     const bc = GIONG_BAO_CAO.find((c) => cum.has(c));
     if (bc) bao({ ma: 'GIONG_BAO_CAO', chiTiet: `văn có giọng báo cáo (cụm "${bc}", viết không dấu)` });
   }
-  const m = MA_MAY.exec(ban.answer);
+  const m = MA_MAY.exec(ban.answer) ?? (ctx.maNghiemLyHopLe ? MA_NGHIEM_LY_MAY.exec(ban.answer) : null);
   if (m) bao({ ma: 'LO_MA', chiTiet: `văn có mã nội bộ "${m[0]}"`, doan: doanQuanh(ban.answer, m.index) });
 
   // Hướng và tháng — chỉ khi có kết luận

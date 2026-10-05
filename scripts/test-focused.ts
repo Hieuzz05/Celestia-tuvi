@@ -698,6 +698,19 @@ for (const ca of CA_DOI_TUONG) {
     ['Theo F001, năm nay công việc ổn.', 'LO_MA'],
   ];
   for (const [c, x] of truot) kiem(ma(c).includes(x as never), `"${c}" không ra ${x}: ${ma(c)}`);
+  // CEL-194 — T### nghiệm lý. Cờ tắt (không có maNghiemLyHopLe): T là mã lạ, "T001" trong văn không bị bắt (y như cũ).
+  {
+    const coT = ctx({ maNghiemLyHopLe: new Set(['T001']) });
+    const claimT = (ids: string[]) => [{ claim: 'Công việc năm nay khá thuận', evidenceIds: ids, direction: 'thuan' as const }];
+    kiem(ma(qua, coT, claimT(['T001', 'F001'])).length === 0, `T + F phải qua: ${ma(qua, coT, claimT(['T001', 'F001']))}`);
+    kiem(ma(qua, coT, claimT(['T001'])).includes('T_THIEU_F'), 'claim chỉ dẫn T phải ra T_THIEU_F');
+    kiem(ma(qua, coT, claimT(['T001', 'E001'])).includes('T_THIEU_F'), 'claim dẫn T + E (không F) phải ra T_THIEU_F');
+    kiem(ma(qua, coT, claimT(['T002', 'F001'])).includes('MA_KHONG_HOP_LE'), 'T ngoài gói phải ra MA_KHONG_HOP_LE');
+    kiem(ma(qua, ctx(), claimT(['T001', 'F001'])).includes('MA_KHONG_HOP_LE'), 'cờ tắt: T001 là mã lạ');
+    kiem(ma('Theo T001, năm nay công việc ổn.', coT, claimT(['T001', 'F001'])).includes('LO_MA'), 'LO_MA phải bắt T###');
+    kiem(ma('Theo NL-SU-NGHIEP, năm nay ổn.', coT, claimT(['T001', 'F001'])).includes('LO_MA'), 'LO_MA phải bắt mã NL-');
+    kiem(!ma('Theo T001, năm nay công việc ổn.').includes('LO_MA'), 'cờ tắt: validator phải y như cũ với T###');
+  }
   // Tên quét theo câu: chữ hoa đầu câu thứ hai không phải tên riêng; claim cũng bị quét.
   kiem(!ma('Năm nay khá thuận. Suy cho cùng, nền vẫn vững.').some((x) => x.startsWith('TEN')), `"Suy…" đầu câu bị coi là tên: ${ma('Năm nay khá thuận. Suy cho cùng, nền vẫn vững.')}`);
   kiem(ma(qua, ctx(), [{ ...claimTot[0], claim: 'Thất Sát làm việc gấp' }]).includes('TEN_NGOAI_GOI'), 'tên lạ trong claim lọt');

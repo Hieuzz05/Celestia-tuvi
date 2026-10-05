@@ -14,6 +14,7 @@ import type { TinNhan } from '@/lib/ai/prompt';
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
 import { dungKhoiChoPrompt, type GoiBangChung } from '../bang-chung';
+import { khoiNghiemLy, type NghiemLyTrongGoi } from './nghiem-ly-luot';
 import { dungChuanNgonNgu } from '../chuan-ngon-ngu';
 import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
 import type { MucAnToan } from '../an-toan';
@@ -408,6 +409,8 @@ export interface DauVaoPromptFocused {
   laSoCuaAi?: { loai: 'nguoi-duoc-hoi'; vai: string; nhan: string } | { loai: 'nguoi-hoi' };
   /** Hoàn cảnh người đọc đã kể, mang từ lượt trước (spec 6.3 bước 5) */
   hoanCanhTruoc?: string[];
+  /** Nghiệm lý T### (CEL-194) — chỉ có khi cờ bật và có mục khớp; rỗng = prompt y như cờ tắt */
+  nghiemLy?: NghiemLyTrongGoi[];
 }
 
 /** Dòng "lá số của ai" sau khi người dùng trả lời câu hỏi lại (spec 6.1) */
@@ -443,6 +446,9 @@ export function khoiVietLai(v: NonNullable<DauVaoPromptFocused['vietLai']>): str
 export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; user: string } {
   const bc = chonBoiCanhHoiThoai(v.cauHoiGoc, v.lichSu, v.laTiepTuChip);
   const phan: string[] = [dungKhoiChoPrompt({ ...v.goi, cauHoi: v.cauHoiGoc })];
+  // T### đứng ngay sau dữ kiện + nguồn, trước mọi khối dẫn khác: cách đọc ưu tiên của lượt.
+  const t = khoiNghiemLy(v.nghiemLy ?? []);
+  if (t) phan.push(t);
 
   const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
   if (nghieng) phan.push(nghieng);

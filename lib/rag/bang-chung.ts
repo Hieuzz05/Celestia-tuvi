@@ -133,6 +133,8 @@ export interface YChinh {
   noiDung: string;
   maDuKien: string[];
   maNguon: string[];
+  /** T### nghiệm lý (CEL-194, chỉ Focused khi cờ bật) */
+  maNghiemLy?: string[];
   /**
    * Dữ kiện kéo theo hướng ngược lại.
    *
