@@ -71,6 +71,8 @@ jobs:
         run: npx tsx scripts/test-du-kien.ts
       - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
         run: npx tsx scripts/test-focused.ts
+      - name: CEL-191 hiểu câu theo trường — bảng timeIntent, cổng gọi model, gộp luật trước
+        run: npx tsx scripts/test-hieu-cau-truong.ts
       - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
         run: npx tsx scripts/test-loi-chi-ma.ts
       - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)

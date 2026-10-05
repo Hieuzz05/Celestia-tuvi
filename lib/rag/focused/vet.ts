@@ -51,6 +51,8 @@ export interface VetPreview {
   lan: LanGoiVet[];
   /** Mã lỗi lần 1 */
   lyDoVietLai?: string[];
+  /** Điểm tầng C (CEL-191): mã + số lần, chỉ đo, không viết lại */
+  diemC?: { ma: string; dem: number }[];
   ketQua?: { soKyTu: number; soAmTiet: number; soClaim: number; maClaim: string[]; soChip: number };
   msTong: number;
   msTruyHoi: number;

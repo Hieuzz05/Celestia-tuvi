@@ -63,7 +63,7 @@ function thangAmTest(namAm: number, thangAm: number, nhuan = false): ThangDangHo
   const cuaSo = cuaSoCuaThangAm(namAm, thangAm, nhuan, HOM_NAY_TEST);
   return { muc: { loai: 'thang-am', namAm, thangAm, nhuan }, trangThai: cuaSo[0]?.trangThai ?? 'da-qua', cuaSo };
 }
-import { kiemCung, chonChip, soAmTiet, tinhMocHopLe, MOC_NHO_HON_NAM, type NguCanhKiem } from '../lib/rag/focused/kiem';
+import { kiemBaTang, kiemCung, chonChip, soAmTiet, tinhMocHopLe, MOC_NHO_HON_NAM, type NguCanhKiem } from '../lib/rag/focused/kiem';
 import { CLAIM_TOI_DA, docBanNhap, type BanNhap } from '../lib/rag/focused/hop-dong';
 import { tenModelThay, tenNgoaiModelThay, tenTrongChu } from './oracle-ten-prompt';
 import { dungPromptFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
@@ -688,9 +688,10 @@ for (const ca of CA_DOI_TUONG) {
     ['Tới 50 tuổi mới yên.', 'MOC_BIA'],
     ['Khả năng thăng chức gần 100%.', 'PHAN_TRAM'],
     ['Năm nay chắc chắn bạn sẽ có việc.', 'CHAC_CHAN_GIA'],
-    ['Năm nay việc tới, điều đó nhất định.', 'CHAC_CHAN_GIA'],
-    ['Không phải lo, năm nay chắc chắn có việc.', 'CHAC_CHAN_GIA'],
-    ['Đây không phải dấu hiệu xấu mà chắc chắn là lúc đổi nghề.', 'CHAC_CHAN_GIA'],
+    // CEL-191 §7 (a): danh sách đóng của tầng B.
+    ['Năm nay chắc chắn sẽ có việc.', 'CHAC_CHAN_GIA'],
+    ['Năm sau bạn nhất định sẽ cưới.', 'CHAC_CHAN_GIA'],
+    ['Chuyện đó sẽ xảy ra.', 'CHAC_CHAN_GIA'],
     ['Không có gì phải lo, việc tốt sẽ xảy ra.', 'CHAC_CHAN_GIA'],
     ['Theo tài liệu, năm nay công việc ổn.', 'LO_NGUON'],
     ['Theo Bắc phái, năm nay công việc ổn.', 'LO_NGUON'],
@@ -715,8 +716,25 @@ for (const ca of CA_DOI_TUONG) {
     'Đây không đủ để kết luận chắc chắn rằng khoản vay mất.',
     'Celes chưa có đủ căn cứ để khẳng định một thay đổi nhà cụ thể sẽ xảy ra.',
     'Lá số không có căn cứ để nói chắc chắn chuyện này.',
-    'Điều này không đồng nghĩa với việc chắc chắn nhận việc ngay trong tháng.']) {
+    'Điều này không đồng nghĩa với việc chắc chắn nhận việc ngay trong tháng.',
+    // CEL-191 §7 (b)
+    'Celes không thể chắc chắn bạn sẽ đổi việc.',
+    'Điều này không đồng nghĩa là chắc chắn bạn sẽ mất tiền.',
+    'Chuyện này chưa chắc chắn sẽ tới.']) {
     kiem(!ma(c).includes('CHAC_CHAN_GIA'), `"${c}" bị CHAC_CHAN_GIA nhầm`);
+  }
+  // CEL-191 §7 (c): giọng chắc nhưng không phải lời tiên tri — không chặn, chỉ ghi điểm C.
+  for (const c of ['Chắc chắn là bạn nên nghỉ ngơi một chút.', 'Năm nay việc tới, điều đó nhất định.',
+    'Không phải lo, năm nay chắc chắn có việc.', 'Đây không phải dấu hiệu xấu mà chắc chắn là lúc đổi nghề.']) {
+    const k = kiemBaTang({ answer: c, claims: claimTot, suggestedQuestions: [] }, ctx());
+    kiem(k.chan.length === 0, `"${c}" bị chặn: ${k.chan.map((l) => l.ma)}`);
+    kiem(k.do.some((d) => d.ma === 'PHAN_QUYET'), `"${c}" không có điểm C PHAN_QUYET: ${JSON.stringify(k.do)}`);
+  }
+  // Mọi lỗi chặn mang tầng A hoặc B; mã C không bao giờ lọt vào `chan`.
+  {
+    const k = kiemBaTang({ answer: 'Theo F001, chắc chắn sẽ ổn. Tóm lại, năm nay ổn.', claims: claimTot, suggestedQuestions: [] }, ctx());
+    kiem(k.chan.every((l) => l.tang === 'A' || l.tang === 'B') && k.chan.some((l) => l.tang === 'A') && k.chan.some((l) => l.tang === 'B'), `tầng sai: ${JSON.stringify(k.chan)}`);
+    kiem(k.do.some((d) => d.ma === 'GIONG_BAO_CAO'), `thiếu điểm GIONG_BAO_CAO: ${JSON.stringify(k.do)}`);
   }
   // Mốc: tháng 10/2026 dương phủ tháng 8 và 9 âm; tháng kế (11) không lạ; hỏi "năm nay" mà nói "sang 2027" là lệch (delta #6).
   const tgT9 = { namHieuLuc: 2026, cuoiNam: false, thang: thangDuongTest(2026, 10) };
@@ -810,9 +828,14 @@ for (const ca of CA_DOI_TUONG) {
   kiem(maLoi({ ...banTot, claims: [{ claim: 'x', evidenceIds: [] }] }).includes('KHONG_CAN_CU'), 'claim không mã không ra KHONG_CAN_CU');
   kiem(maLoi({ ...banTot, answer: 'Đây không phải chuyện lá số nói tới.', claims: [], outOfScope: true }).length === 0, 'ngoài phạm vi vẫn bị đòi căn cứ');
   kiem(maLoi({ ...banTot, claims: [{ claim: 'x', evidenceIds: ['E001'], direction: 'thuan' }] }).length === 0, 'claim chỉ dẫn E### hợp lệ bị chặn');
-  for (const lo of ['Theo F001, năm nay công việc ổn.', 'Nguồn E012 nói năm nay ổn.', 'Quãng W1 khá thuận.', 'Dựa trên các dữ kiện, năm nay ổn.', 'Tóm lại, năm nay ổn.']) {
+  for (const lo of ['Theo F001, năm nay công việc ổn.', 'Nguồn E012 nói năm nay ổn.', 'Quãng W1 khá thuận.']) {
     const l = kiemCung({ ...banTot, answer: lo }, ctx());
     kiem(l.some((x) => x.ma === 'LO_MA'), `"${lo}" không ra LO_MA`);
+  }
+  // CEL-191: giọng báo cáo tách khỏi LO_MA, xuống tầng C — không chặn, có điểm.
+  for (const bc of ['Dựa trên các dữ kiện, năm nay ổn.', 'Tóm lại, năm nay ổn.']) {
+    const k = kiemBaTang({ ...banTot, answer: bc }, ctx());
+    kiem(k.chan.length === 0 && k.do.some((d) => d.ma === 'GIONG_BAO_CAO'), `"${bc}": chan=${k.chan.map((l) => l.ma)} do=${JSON.stringify(k.do)}`);
   }
   const doanLo = kiemCung({ ...banTot, answer: 'Năm nay công việc khá thuận, theo F001 thì nền vững.' }, ctx()).find((x) => x.ma === 'LO_MA');
   kiem(!!doanLo?.doan?.includes('F001') && (doanLo.doan.length ?? 0) <= 60, `LO_MA thiếu đoạn quanh mã: ${doanLo?.doan}`);
@@ -856,7 +879,7 @@ for (const ca of CA_DOI_TUONG) {
     kiem(!p.system.startsWith('Write'), 'VI bị ghim EN');
     kiem(dungPromptFocused({ ...dv, ngonNgu: 'en' }).system.startsWith('Write `answer` and `suggestedQuestions` entirely in English.'), 'EN không ghim ngôn ngữ');
     kiem(dungPromptFocused({ ...dv, phanLoai: { ...dv.phanLoai, sau: true } }).user.includes('Người hỏi muốn nghe kỹ.'), 'thiếu câu "nghe kỹ"');
-    const vl = dungPromptFocused({ ...dv, vietLai: { answer: 'Bản cũ.', loi: [{ ma: 'LO_MA', chiTiet: 'văn có mã nội bộ "F001"', doan: 'theo F001 thì' }] } }).user;
+    const vl = dungPromptFocused({ ...dv, vietLai: { answer: 'Bản cũ.', loi: [{ ma: 'LO_MA', tang: 'A', chiTiet: 'văn có mã nội bộ "F001"', doan: 'theo F001 thì' }] } }).user;
     kiem(vl.includes('Viết lại TOÀN BỘ câu trả lời.') && vl.includes('văn có mã nội bộ "F001"') && vl.includes('theo F001 thì') && vl.includes('Bản cũ.'), 'khối viết lại thiếu lỗi / đoạn / bản cũ');
     kiem(!p.user.includes('Viết lại TOÀN BỘ'), 'lần một có khối viết lại');
 
@@ -1470,6 +1493,12 @@ async function kiemNoi() {
       const users: string[] = [];
       const kq = await chayFocused({ prompt: promptGia, ctx: ctxGia, goi: traGia([banSach], users) as never });
       kiem(users.length === 1 && kq.van === banSach.answer && kq.vet.thuLai === null, `bản sạch vẫn viết lại: ${users.length}`);
+      // CEL-191 §7: bản nháp chỉ có lỗi tầng C → trả nguyên văn, không viết lại, không 502, vết có điểm C.
+      const usersC: string[] = [];
+      const banC = { ...banSach, answer: 'Tóm lại, năm nay công việc khá ổn, chắc chắn là có nền đỡ.' };
+      const kqC = await chayFocused({ prompt: promptGia, ctx: ctxGia, goi: traGia([banC], usersC) as never });
+      kiem(usersC.length === 1 && kqC.van === banC.answer && kqC.vet.thuLai === null && kqC.vet.loi.length === 0, `chỉ lỗi C mà vẫn viết lại / 502: ${usersC.length} "${kqC.van}"`);
+      kiem(kqC.vet.diemC.some((d) => d.ma === 'GIONG_BAO_CAO') && kqC.vet.diemC.some((d) => d.ma === 'PHAN_QUYET'), `vết thiếu điểm C: ${JSON.stringify(kqC.vet.diemC)}`);
       const bd = await chayFocused({ prompt: promptGia, ctx: ctxGia, goi: traGia([{ ...banSach, answer: '**Năm nay** công việc khá ổn.' }], []) as never });
       kiem(bd.van === 'Năm nay công việc khá ổn.', `markdown không bị bỏ: ${bd.van}`);
       const cm = await chayFocused({ prompt: promptGia, ctx: { ...ctxGia, cauMa: ['Câu mã.'] }, goi: traGia([banSach], []) as never });

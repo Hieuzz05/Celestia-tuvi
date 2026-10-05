@@ -52,10 +52,39 @@ export type MaLoiCung =
   | 'LO_NGUON'
   | 'LO_MA'
   | 'NGUOC_HUONG'
-  | 'THIEU_THANG';
+  | 'THIEU_THANG'
+  // Tầng C (CEL-191): chỉ đo, không chặn
+  | 'GIONG_BAO_CAO'
+  | 'PHAN_QUYET';
+
+/**
+ * Tầng của mã lỗi (CEL-191 §7). A = sai sự thật / hợp đồng, B = vi phạm chính sách: cả hai viết lại
+ * một lần, vẫn sai thì 502. C = chất lượng: chỉ ghi điểm vào vết, KHÔNG viết lại, KHÔNG chặn.
+ */
+export type TangLoi = 'A' | 'B' | 'C';
+export const TANG_CUA: Record<MaLoiCung, TangLoi> = {
+  SCHEMA: 'A',
+  KHONG_CAN_CU: 'A',
+  MA_KHONG_HOP_LE: 'A',
+  TEN_NGOAI_GOI: 'A',
+  LUU_HOA: 'A',
+  TEN_BIA: 'A',
+  MOC_BIA: 'A',
+  MOC_NHO_HON_NAM: 'A',
+  NGUOC_HUONG: 'A',
+  THIEU_THANG: 'A',
+  LO_MA: 'A',
+  CHON_HO: 'B',
+  PHAN_TRAM: 'B',
+  CHAC_CHAN_GIA: 'B',
+  LO_NGUON: 'B',
+  GIONG_BAO_CAO: 'C',
+  PHAN_QUYET: 'C',
+};
 
 export interface LoiCung {
   ma: MaLoiCung;
+  tang: TangLoi;
   /** Mô tả cho prompt viết lại — KHÔNG chép câu người dùng, KHÔNG ghi vào vết */
   chiTiet: string;
   /** ≤60 ký tự quanh chỗ lỗi trong answer, chỉ để đưa vào prompt viết lại */

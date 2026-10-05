@@ -26,7 +26,8 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from '../boi-canh-la-so'
 import { loiDiTiep } from '../hinh-dang-tra-loi';
 import { tinhNghiengVe, type NghiengVe } from '../nghieng-ve';
 import { ghiLanTruyHoi } from '../nhat-ky';
-import { lapKeHoach, lapKeHoachDayDu, lapKeHoachVoiChuDe, type KeHoachTruyVan, type LopHan } from '../planner';
+import { lapKeHoach, lapKeHoachVoiChuDe, type KeHoachTruyVan, type LopHan } from '../planner';
+import { canGoiModel, gopTheoTruong, phanLoaiFocused, type KetQuaGop } from './hieu-cau-truong';
 import { layDoanTheoId, truyHoi } from '../truy-hoi';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { chipHaiVe, cauNhuanChuaTach, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
@@ -63,8 +64,8 @@ import { tenDuocGoiTrongLuot, type MocTinhSan } from './prompt';
 import { goiCoPhucDuc } from './quet-ten';
 import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet';
 
-/** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.15';
+/** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). 10.16 = CEL-191 (hiểu câu theo trường, validator ba tầng). */
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.16';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -140,6 +141,8 @@ export type KetQuaFocused = KetQuaTraLoi & {
 /** Phụ thuộc tiêm được — chỉ test thay (truy hồi, lấy lại đoạn theo id) */
 export interface PhuThuocFocused {
   truyHoi?: typeof truyHoi;
+  /** Phân loại bằng model (CEL-191) — test tiêm vào để không gọi model. */
+  phanLoai?: typeof phanLoaiFocused;
   layDoanTheoId?: typeof layDoanTheoId;
 }
 
@@ -372,6 +375,8 @@ export async function traLoiFocused(
   let keHoachGoc: KeHoachTruyVan;
   let doiTuong: DoiTuongCauHoi | null;
   let nguonKeHoach: string;
+  /** CEL-191: nguồn từng trường + ký hiệu thời gian của model — chỉ mã, ghi vào trace. */
+  let hieuTruong: { nguonTruong: KetQuaGop['nguonTruong']; timeIntentModel: KetQuaGop['timeIntentModel']; cong: string | null } | null = null;
   let thoiGian: BoiCanhThoiGian;
   let phanLoai: PhanLoai;
 
@@ -408,16 +413,28 @@ export async function traLoiFocused(
     const tenCachCuc = tenCachCucCho(vao.laSo, so.keHoach.cungLienQuan[0]);
     const hai = apHoiLai(lapKeHoachFocused({ ...dauVaoKeHoach, tenCachCuc }), tenCachCuc);
     keHoachGoc = hai.keHoach;
-    // Chỉ câu tự đứng, chưa rõ chủ đề mới nhờ model phân loại. Câu có người được
-    // hỏi hay câu kế thừa đã chắc chủ đề — để model đoán lại là mở lại cờ #2.
-    if (!keHoachGoc.chacChan && !hai.doiTuong && !hai.keThuaTu && vao.dungModelPhanLoai !== false) {
-      keHoachGoc = await lapKeHoachDayDu({
-        cauHoi,
-        saoTheoCung,
-        tenCachCuc,
-        namXem: vao.namXem,
-        thangXem: vao.thangXem,
+    // CEL-191: luật trước; model chỉ điền chỗ trống, gộp theo TỪNG TRƯỜNG (hieu-cau-truong.ts).
+    // Câu có người được hỏi hay câu kế thừa đã chắc chủ đề — để model đoán lại là mở lại cờ #2.
+    const parserRong =
+      keHoachGoc.phamViThoiGian === 'khong-ro' &&
+      boiCanhThoiGian({ cauHoi, keHoach: keHoachGoc, namXem: vao.namXem, bayGio }).thang === null;
+    const cong = canGoiModel({
+      keHoach: keHoachGoc,
+      cauHoi,
+      parserRong,
+      coDoiTuong: !!hai.doiTuong,
+      keThua: !!hai.keThuaTu,
+      dungModelPhanLoai: vao.dungModelPhanLoai,
+    });
+    if (cong.goi) {
+      const gop = gopTheoTruong({
+        luat: keHoachGoc,
+        model: await (pt.phanLoai ?? phanLoaiFocused)(cauHoi),
+        vao: { cauHoi, saoTheoCung, tenCachCuc, namXem: vao.namXem, thangXem: vao.thangXem },
+        parserRong,
       });
+      keHoachGoc = gop.keHoach;
+      hieuTruong = { nguonTruong: gop.nguonTruong, timeIntentModel: gop.timeIntentModel, cong: cong.lyDo };
     }
     doiTuong = hai.doiTuong;
     nguonKeHoach = phatLai ? 'phat-lai-hoi-lai' : hai.keThuaTu ? 'ke-thua' : keHoachGoc === hai.keHoach ? 'luat' : 'model-phan-loai';
@@ -462,6 +479,17 @@ export async function traLoiFocused(
           cauHoi: cauHoi,
           namHieuLuc,
           thangHieuLuc,
+          ...(hieuTruong
+            ? {
+                boLocThem: {
+                  nguonTruongChuDe: hieuTruong.nguonTruong.chuDe,
+                  nguonTruongYDinh: hieuTruong.nguonTruong.yDinh,
+                  nguonTruongThoiGian: hieuTruong.nguonTruong.thoiGian,
+                  timeIntentModel: hieuTruong.timeIntentModel,
+                  congPhanLoai: hieuTruong.cong,
+                },
+              }
+            : {}),
         });
 
   // Giải thích lượt trước: đoạn RAG lượt trước đã dẫn lấy lại theo định danh bền, đứng trước
@@ -627,6 +655,7 @@ export async function traLoiFocused(
     chunkIds: daChon.map((d) => d.chunkId),
     lan,
     ...(lan[0]?.loi.length ? { lyDoVietLai: lan[0].loi.map((l) => l.ma) } : {}),
+    ...(kq.vet.diemC.length ? { diemC: kq.vet.diemC } : {}),
     ...(kq.van && kq.banNhap
       ? {
           ketQua: {

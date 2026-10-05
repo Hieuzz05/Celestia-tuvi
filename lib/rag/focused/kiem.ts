@@ -20,7 +20,7 @@ import { nhomCuaHuong, soChieu, type HuongThang, type NhomHuong } from './chot-h
 import { CHIP_DU_PHONG, type NgonNgu } from './ngon-ngu';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { nhanDangDoiTuong } from './doi-tuong';
-import type { BanNhap, LoiCung } from './hop-dong';
+import { TANG_CUA, type BanNhap, type LoiCung, type MaLoiCung } from './hop-dong';
 import { laChipNgoaiTam } from './ngoai-tam';
 import { laHoiKhiNao, type BoiCanhThoiGian, type PhanLoai } from './phan-loai';
 import { tenNgoaiTap } from './quet-ten';
@@ -110,7 +110,7 @@ function doanQuanh(s: string, i: number): string {
 
 /* ----------------------------------------------------------- bảng chữ */
 
-/** Giọng báo cáo — thuộc `LO_MA` (spec 5.1). */
+/** Giọng báo cáo — tầng C `GIONG_BAO_CAO` (CEL-191: tách khỏi `LO_MA`, chỉ đo). */
 const GIONG_BAO_CAO = [
   'dua tren cac du kien', 'yeu to nay cho thay', 'co the thay rang', 'diem can nhin la', 'tom lai',
   'du kien la so', 'theo la so cua ban', 'ma f',
@@ -121,13 +121,13 @@ export const PHAN_QUYET = re(
   '(?<!(?:không|chưa) )chắc chắn|nhất định|chắc luôn|sẽ không|không bao giờ|trăm phần trăm|không thể nào|sẽ xảy ra|không hợp nhau|không hợp với nhau'
 );
 /**
- * `CHAC_CHAN_GIA` (delta #3): tập con TỐI THIỂU của `PHAN_QUYET`. "Không / chưa
- * chắc chắn" và "không thể nào biết / nói / đoán / khẳng định" là rào đón.
+ * `CHAC_CHAN_GIA` (tầng B): danh sách ĐÓNG các cụm khẳng định sự việc sẽ xảy ra (CEL-191 §7).
+ * "Chắc chắn" đứng một mình, "nhất định" không kèm "sẽ", "không thể nào" xuống tầng C (`PHAN_QUYET`,
+ * chỉ đo): "chắc chắn là bạn nên nghỉ ngơi" không phải lời tiên tri. "Không / chưa chắc chắn sẽ"
+ * và phủ định trong cùng vế (`PHU_DINH_VE`) vẫn là rào đón.
  */
-const CHAC_CHAN_GIA = re(
-  '(?<!(?:không|chưa) )chắc chắn|nhất định|trăm phần trăm|sẽ xảy ra|không thể nào(?! (?:biết|nói|đoán|khẳng định))',
-  'giu'
-);
+// Chen tối đa hai tiếng giữa "chắc chắn" và "sẽ" ("chắc chắn bạn sẽ có việc") — vẫn là khẳng định sẽ xảy ra.
+const CHAC_CHAN_GIA = re('(?<!(?:không|chưa) )chắc chắn (?:[\\p{L}\\p{M}]+ ){0,2}sẽ|nhất định sẽ|trăm phần trăm|sẽ xảy ra', 'giu');
 /**
  * Phủ định đứng xa hơn một từ vẫn là rào đón: "không phải dấu hiệu chắc chắn bị cho nghỉ",
  * "không có nghĩa là chắc chắn mất tiền", "không đủ để kết luận chắc chắn". Chỉ xét trong cùng
@@ -252,18 +252,37 @@ function chonMotVe(s: string, haiVe: [string, string]): boolean {
 
 /* ------------------------------------------------------------- cả lượt */
 
+export interface KetQuaKiem {
+  /** Tầng A ∪ B — vào vòng viết lại, vẫn còn thì 502. */
+  chan: LoiCung[];
+  /** Tầng C — chỉ điểm (mã + số lần), ghi vào vết. */
+  do: { ma: MaLoiCung; dem: number }[];
+}
+
 /**
- * Validator cứng (spec 5.1). Thuần, không sửa `ban`. Mỗi mã lỗi báo tối đa một lần.
+ * Validator cứng (spec 5.1). Thuần, không sửa `ban`. Mỗi mã lỗi chặn báo tối đa một lần.
  * Quét tên trên từng câu của `answer` và trên từng `claims[].claim` (spec 5.2).
+ * Chỉ trả lỗi CHẶN (tầng A ∪ B); điểm tầng C ở `kiemBaTang`.
  */
 export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
-  if (!ban) return [{ ma: 'SCHEMA', chiTiet: 'bản trả về không phải một object JSON đúng schema' }];
+  return kiemBaTang(ban, ctx).chan;
+}
+
+/** Validator ba tầng (CEL-191 §7): `chan` = A ∪ B, `do` = điểm C. */
+export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
+  if (!ban) return { chan: [{ ma: 'SCHEMA', tang: 'A', chiTiet: 'bản trả về không phải một object JSON đúng schema' }], do: [] };
   const loi: LoiCung[] = [];
   const co = new Set<LoiCung['ma']>();
-  const bao = (l: LoiCung) => {
+  const diemC = new Map<MaLoiCung, number>();
+  const bao = (l: Omit<LoiCung, 'tang'>) => {
+    const tang = TANG_CUA[l.ma];
+    if (tang === 'C') {
+      diemC.set(l.ma, (diemC.get(l.ma) ?? 0) + 1);
+      return;
+    }
     if (co.has(l.ma)) return;
     co.add(l.ma);
-    loi.push(l);
+    loi.push({ ...l, tang });
   };
   const cau = tachCau(ban.answer);
 
@@ -309,6 +328,7 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
   for (const s of cau) {
     const cc = chacChanGia(s);
     if (cc) bao({ ma: 'CHAC_CHAN_GIA', chiTiet: `"${cc[0]}" — lá số chỉ nói xu hướng, không nói chắc điều sẽ xảy ra`, doan: s.slice(0, 60) });
+    else if (PHAN_QUYET.test(s)) bao({ ma: 'PHAN_QUYET', chiTiet: 'câu có giọng phán quyết' });
     if (khuon === 'C' || khuon === 'E') {
       const chon =
         CHON_HO.test(s) || CHON_HO_DAU_CAU.test(s) || (khuon === 'E' && !!ctx.phanLoai.haiVe && chonMotVe(s, ctx.phanLoai.haiVe));
@@ -318,7 +338,7 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
     const nguon = RO_RI_RAG.find((c) => cum.has(c) && (HE_PHAI_CO_DAU[c]?.test(s) ?? true));
     if (nguon) bao({ ma: 'LO_NGUON', chiTiet: `văn nhắc nguồn (cụm "${nguon}", viết không dấu)`, doan: s.slice(0, 60) });
     const bc = GIONG_BAO_CAO.find((c) => cum.has(c));
-    if (bc) bao({ ma: 'LO_MA', chiTiet: `văn có giọng báo cáo (cụm "${bc}", viết không dấu) — nói thẳng bằng lời thường` });
+    if (bc) bao({ ma: 'GIONG_BAO_CAO', chiTiet: `văn có giọng báo cáo (cụm "${bc}", viết không dấu)` });
   }
   const m = MA_MAY.exec(ban.answer);
   if (m) bao({ ma: 'LO_MA', chiTiet: `văn có mã nội bộ "${m[0]}"`, doan: doanQuanh(ban.answer, m.index) });
@@ -382,7 +402,7 @@ export function kiemCung(ban: BanNhap | null, ctx: NguCanhKiem): LoiCung[] {
       }
     }
   }
-  return loi;
+  return { chan: loi, do: [...diemC].map(([ma, dem]) => ({ ma, dem })) };
 }
 
 /* ------------------------------------------------------------------ chip */
