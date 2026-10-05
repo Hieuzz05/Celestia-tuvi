@@ -63,3 +63,18 @@ Mẫu một mục:
 - Luật: tập được phép dựng từ chữ prompt đã in; bộ đo dùng oracle render prompt, không gọi hàm guard; kèm thử đột biến.
 - Nâng: `docs/bay/ai-rag.md` (5 dòng cuối) + máy canh `GROUND-04` trong `scripts/test-focused.ts`.
 - Lần: 1
+
+## 05/10/2026 · Sao gốc lọt làm căn cứ năm xem · engine
+- Thẻ: vong thai tue, tang tue dieu, sao goc, lop thoi gian, van han, formation
+- Chuyện gì: bài vận hạn 2026 và 2027 (lá 24/08/2000 20:30 nam) cùng dựng một mục trên Tang Tuế Điếu
+  và Thiên Mã gặp Tuế Phá. Hai tổ hợp này đọc vòng Thái Tuế của lá GỐC, tức vòng năm sinh. Quét 60
+  lá mẫu: 570 lần lọt.
+- Gốc: dữ kiện không mang lớp thời gian, nên không test nào hỏi được câu "dữ kiện này có đổi khi đổi
+  năm không". `theoHan` đặt tên vận hạn cho một luật quét tam phương Mệnh. Bài dài lại không có
+  kiểm FORMATION như chat, nên không chặn được tên tổ hợp.
+- Giá: lỗi lọt vào bài thật. Chủ dự án phải đối chiếu tay với một bài luận độc lập mới thấy.
+- Luật: mỗi dữ kiện mang `lop`. Dữ kiện `ban-menh` phải giống hệt nhau giữa hai năm xem. Muốn gọi một
+  tổ hợp "của năm" thì dựng từ lưu tinh, không dựng từ vòng gốc.
+- Nâng: `docs/bay/engine.md` và máy canh `scripts/test-lop-du-kien.ts` (CI), trên nhánh
+  `viec/van-han-lop-goc`.
+- Lần: 1
