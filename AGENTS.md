@@ -229,6 +229,7 @@ npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả
 npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
 npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
+npx tsx scripts/test-lop-du-kien.ts   # lớp thời gian dữ kiện: gốc không mang năm, vòng Thái Tuế gốc không vào gói hạn, bài dài chặn cách cục bịa — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
 npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
 npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
@@ -258,7 +259,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, lớp thời gian dữ kiện, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, build) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng

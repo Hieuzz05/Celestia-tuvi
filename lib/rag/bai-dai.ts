@@ -3,14 +3,15 @@ import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { dungGoiBangChung, dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
-import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
+import { TEN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
+import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho, type DuKienLaSo } from './boi-canh-la-so';
 import { docObjectJson, laChuoiJson } from './doc-json';
 import { boCauTenBia, CHUAN_NGON_NGU_CELES } from './chuan-ngon-ngu';
 import { soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, type ChuDe } from './planner';
-import { nhanDangThucThe } from './thuc-the';
+import { boDau, nhanDangThucThe } from './thuc-the';
 import { truyHoi } from './truy-hoi';
 import { mucChacChan, type MucChacChan } from './uu-tien-nguon';
 import { chonMauVang, khoiMauVang } from './mau-vang';
@@ -165,7 +166,34 @@ export interface DauVaoBaiDai {
   ghiNhatKy?: boolean;
 }
 
-export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
+/**
+ * Tên cách cục bài nhắc tới mà dữ kiện không có. Cùng luật `cach-cuc-khong-ton-tai`
+ * của chat (`kiem-duyet.ts`). So trên chữ đã bỏ dấu, theo chuỗi con.
+ *
+ * Bài dài trước đây chỉ kiểm tên sao, nên model nhắc "Tang Tuế Điếu" mà không
+ * có dữ kiện nào chống lưng cũng lọt. Lỗi 05/10/2026, xem `theoHan` trong
+ * `lib/tuvi/cach-cuc.ts`.
+ */
+export function cachCucNgoaiDuKien(van: string, duKien: Pick<DuKienLaSo, 'tenCachCuc'>[]): string[] {
+  const choPhep = new Set(duKien.map((f) => f.tenCachCuc).filter((x): x is string => !!x).map(boDau));
+  // Tên dài trước, khớp xong thì xoá khỏi văn: "Tuần và Triệt án ngữ" chứa
+  // "Triệt án ngữ", so chuỗi con trần trụi sẽ bắt nhầm tên ngắn bên trong.
+  let con = boDau(van);
+  const bia: string[] = [];
+  for (const t of [...TEN_CACH_CUC].sort((a, b) => b.length - a.length)) {
+    const k = boDau(t);
+    if (!con.includes(k)) continue;
+    con = con.split(k).join(' ');
+    if (!choPhep.has(k)) bia.push(t);
+  }
+  return bia;
+}
+
+/**
+ * Kế hoạch truy vấn của bài dài — hàm thuần, tách ra để bài kiểm lớp dữ kiện
+ * (`scripts/test-lop-du-kien.ts`) dựng đúng bối cảnh mà bài thật dùng.
+ */
+export function keHoachBaiDai(vao: Pick<DauVaoBaiDai, 'laSo' | 'chuDe' | 'cauHoiThem'>) {
   const cd = CHU_DE[vao.chuDe];
 
   // Planner một người lo phần truy vấn; chủ đề bài dài đã biết trước nên ép
@@ -188,6 +216,11 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
         ? (['ban-menh', 'dai-van', 'luu-nien', 'nguyet-han'] as const).slice()
         : keHoachGoc.lopHan,
   };
+  return { cauHoi, keHoach };
+}
+
+export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
+  const { cauHoi, keHoach } = keHoachBaiDai(vao);
 
   const { duKien } = chonBoiCanh({
     laSo: vao.laSo,
@@ -327,6 +360,13 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
       soYBiBo += 1;
       return null;
     }
+    // Cách cục không có trong dữ kiện: bịa. Loại cả ý, giống như bịa sao.
+    const biaCachCuc = cachCucNgoaiDuKien(`${tieuDe} ${noiDung}`, duKien);
+    if (biaCachCuc.length) {
+      loi.push(`"${tieuDe}" nhắc cách cục ${biaCachCuc.join(', ')} không có trong dữ kiện`);
+      soYBiBo += 1;
+      return null;
+    }
     // Khẳng định chuyên môn mà không mã nào → loại
     const coSao = nhanDangThucThe(noiDung).some((t) => t.loai === 'STAR' || t.loai === 'TRANSFORMATION');
     if (dk.length === 0 && ng.length === 0 && coSao) {
@@ -368,14 +408,34 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
       .replace(/\s+([.,;])/g, '$1')
       .trim();
 
+  /*
+   * Các phần chữ tự do (ba điều, ghép lại, mang theo, và cấu trúc khi phải lấy
+   * bản thô) không đi qua `chuan`. Câu nào nhắc cách cục mà dữ kiện không có
+   * thì bỏ đúng câu ấy. Bỏ cả phần thì mất luôn những ý đúng nằm cạnh nó.
+   */
+  const boCauCachCucBia = (x: string) => {
+    const giu = x.split(/(?<=[.!?])\s+/).filter((cau) => {
+      const t = cachCucNgoaiDuKien(cau, duKien);
+      if (t.length) loi.push(`Bỏ câu nhắc cách cục ${t.join(', ')} không có trong dữ kiện`);
+      return !t.length;
+    });
+    return giu.join(' ');
+  };
+  const sachChuoi = (ds: string[]) => ds.map(boCauCachCucBia).filter((x) => x.trim());
+
   const coCauTruc: BaiDaiCoCauTruc = {
-    baDieu: mangChuoi(tho.baDieu).slice(0, 3).map(bocMa),
-    cauTruc: cauTruc ?? { tieuDe: 'Cấu trúc tạo nên bạn', noiDung: String(tho.cauTruc?.noiDung ?? ''), maDuKien: [], maNguon: [] },
+    baDieu: sachChuoi(mangChuoi(tho.baDieu).slice(0, 3).map(bocMa)),
+    cauTruc: cauTruc ?? {
+      tieuDe: 'Cấu trúc tạo nên bạn',
+      noiDung: boCauCachCucBia(String(tho.cauTruc?.noiDung ?? '')),
+      maDuKien: [],
+      maNguon: [],
+    },
     diemManh,
     choDeKet,
     giaiDoan,
-    ghepLai: typeof tho.ghepLai === 'string' ? bocMa(tho.ghepLai) : '',
-    mangTheo: mangChuoi(tho.mangTheo).slice(0, 3).map(bocMa),
+    ghepLai: typeof tho.ghepLai === 'string' ? boCauCachCucBia(bocMa(tho.ghepLai)) : '',
+    mangTheo: sachChuoi(mangChuoi(tho.mangTheo).slice(0, 3).map(bocMa)),
     cachNoi: typeof tho.cachNoi === 'string' ? tho.cachNoi : undefined,
   };
 
