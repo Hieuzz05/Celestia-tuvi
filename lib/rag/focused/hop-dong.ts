@@ -53,7 +53,7 @@ export type MaLoiCung =
   | 'LO_MA'
   | 'NGUOC_HUONG'
   | 'THIEU_THANG'
-  // CEL-194: claim dẫn T### mà không dẫn F###
+  // CEL-196: claim dẫn T### mà không dẫn F###
   | 'T_THIEU_F'
   // Tầng C (CEL-191): chỉ đo, không chặn
   | 'GIONG_BAO_CAO'

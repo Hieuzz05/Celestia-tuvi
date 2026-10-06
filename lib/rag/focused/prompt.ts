@@ -409,7 +409,7 @@ export interface DauVaoPromptFocused {
   laSoCuaAi?: { loai: 'nguoi-duoc-hoi'; vai: string; nhan: string } | { loai: 'nguoi-hoi' };
   /** Hoàn cảnh người đọc đã kể, mang từ lượt trước (spec 6.3 bước 5) */
   hoanCanhTruoc?: string[];
-  /** Nghiệm lý T### (CEL-194) — chỉ có khi cờ bật và có mục khớp; rỗng = prompt y như cờ tắt */
+  /** Nghiệm lý T### (CEL-196) — chỉ có khi cờ bật và có mục khớp; rỗng = prompt y như cờ tắt */
   nghiemLy?: NghiemLyTrongGoi[];
 }
 

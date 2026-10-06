@@ -63,7 +63,7 @@ export interface VetPreview {
   canCuEMat?: number;
   /** Mã F### của lượt trước không dựng lại được */
   canCuFMat?: number;
-  /** Nghiệm lý T### (CEL-194, chỉ khi cờ bật): id / phiên bản / chế độ / số đếm — không câu nghĩa */
+  /** Nghiệm lý T### (CEL-196, chỉ khi cờ bật): id / phiên bản / chế độ / số đếm — không câu nghĩa */
   nghiemLy?: {
     mode: 'tat' | 'bat';
     soDuyet: number;

@@ -1,5 +1,5 @@
 /**
- * NGHIỆM LÝ TRONG MỘT LƯỢT FOCUSED — mã T### (CEL-194, sau cờ CELES_OWNER_KNOWLEDGE_FOCUSED).
+ * NGHIỆM LÝ TRONG MỘT LƯỢT FOCUSED — mã T### (CEL-196, sau cờ CELES_OWNER_KNOWLEDGE_FOCUSED).
  *
  * Luồng: nghiệm lý ĐÃ LỌC (`locNghiemLyDungDuoc`: celes, đang dùng, phiên bản đã duyệt) →
  * `khopThuVien` (matcher dùng chung, không đổi) trên cung liên quan → giải T↔T tất định →

@@ -146,7 +146,7 @@ export interface PhuThuocFocused {
   /** Phân loại bằng model (CEL-191) — test tiêm vào để không gọi model. */
   phanLoai?: typeof phanLoaiFocused;
   layDoanTheoId?: typeof layDoanTheoId;
-  /** Nghiệm lý đã duyệt (CEL-194) — test tiêm vào để không chạm DB. */
+  /** Nghiệm lý đã duyệt (CEL-196) — test tiêm vào để không chạm DB. */
   docNghiemLy?: typeof docNghiemLyDaDuyet;
 }
 
@@ -503,7 +503,7 @@ export async function traLoiFocused(
   const daCo = new Set(doanCu.map((d) => d.chunkId));
   const daChon = [...doanCu, ...kqTruyHoi.daChon.filter((d) => !daCo.has(d.chunkId))];
   const goi = dungGoiBangChung(cauHoi, keHoach, duKien, daChon);
-  // CEL-194: nghiệm lý của chủ dự án — cờ tắt thì không đọc DB, không đổi prompt, không đổi validator.
+  // CEL-196: nghiệm lý của chủ dự án — cờ tắt thì không đọc DB, không đổi prompt, không đổi validator.
   const kqNghiemLy = batNghiemLyFocused()
     ? chonNghiemLy(vao.laSo, await (pt.docNghiemLy ?? docNghiemLyDaDuyet)(), keHoach.cungLienQuan)
     : null;

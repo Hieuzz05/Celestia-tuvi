@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Eyebrow, Shell } from '@/components/ui';
 
 /**
- * Nghiệm lý của tôi (CEL-194, QĐ-13) — chủ dự án soạn và ký các phát biểu có điều kiện.
+ * Nghiệm lý của tôi (CEL-196, QĐ-13) — chủ dự án soạn và ký các phát biểu có điều kiện.
  *
  * Mỗi lần sửa là một PHIÊN BẢN mới; duyệt nằm trên phiên bản. Chat chỉ dùng phiên bản đang
  * dùng của mục đang dùng, đã duyệt — và chỉ khi máy chủ bật cờ CELES_OWNER_KNOWLEDGE_FOCUSED.

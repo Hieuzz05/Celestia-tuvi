@@ -46,7 +46,7 @@ export interface NguCanhKiem {
   maHopLe: ReadonlySet<string>;
   /** Mã E### có trong gói */
   maNguonHopLe: ReadonlySet<string>;
-  /** Mã T### (nghiệm lý đã duyệt, đã khớp) — CHỈ có khi cờ CELES_OWNER_KNOWLEDGE_FOCUSED bật (CEL-194) */
+  /** Mã T### (nghiệm lý đã duyệt, đã khớp) — CHỈ có khi cờ CELES_OWNER_KNOWLEDGE_FOCUSED bật (CEL-196) */
   maNghiemLyHopLe?: ReadonlySet<string>;
   nghieng: NghiengVe | null;
   thoiGian: BoiCanhThoiGian;
@@ -177,7 +177,7 @@ export const MOC_NHO_HON_NAM =
 
 /** Mã máy lộ ra văn: F###/E### và nhãn cửa sổ W1–W3 (spec 5.1 LO_MA). */
 const MA_MAY = /\b[FE]\d{3}\b|\bW[1-3]\b/u;
-/** Mã nghiệm lý lộ ra văn (CEL-194) — chỉ kiểm khi lượt có T###, để cờ tắt thì validator y như cũ. */
+/** Mã nghiệm lý lộ ra văn (CEL-196) — chỉ kiểm khi lượt có T###, để cờ tắt thì validator y như cũ. */
 const MA_NGHIEM_LY_MAY = /\bT\d{3}\b|\bNL-[A-Z0-9]/u;
 
 /* ------------------------------------------------------------- mốc hợp lệ */
@@ -300,7 +300,7 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
   const hopLe = (m: string) => ctx.maHopLe.has(m) || ctx.maNguonHopLe.has(m) || !!ctx.maNghiemLyHopLe?.has(m);
   const sai = [...new Set(ban.claims.flatMap((c) => c.evidenceIds.filter((m) => !hopLe(m))))];
   if (sai.length) bao({ ma: 'MA_KHONG_HOP_LE', chiTiet: `mã ${sai.join(', ')} không có trong DỮ KIỆN hay NGUỒN THAM CHIẾU` });
-  // T### là cách đọc, không phải căn cứ: claim dẫn T phải dẫn kèm F của gói (CEL-194).
+  // T### là cách đọc, không phải căn cứ: claim dẫn T phải dẫn kèm F của gói (CEL-196).
   const tKhongF = ban.claims.find(
     (c) => c.evidenceIds.some((m) => ctx.maNghiemLyHopLe?.has(m)) && !c.evidenceIds.some((m) => ctx.maHopLe.has(m))
   );

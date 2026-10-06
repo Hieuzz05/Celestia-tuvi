@@ -1,5 +1,5 @@
 /**
- * CEL-194 — Nghiệm lý của tôi: bộ lọc "đã duyệt" + chuẩn hoá đầu vào admin. Offline.
+ * CEL-196 — Nghiệm lý của tôi: bộ lọc "đã duyệt" + chuẩn hoá đầu vào admin. Offline.
  *
  * Bộ lọc là chỗ DUY NHẤT quyết định nghiệm lý nào được vào chat Focused. Mỗi điều kiện
  * (trường phái, trạng thái, phiên bản đang dùng, duyệt, người duyệt, thời điểm duyệt, hình nội dung)
@@ -26,7 +26,7 @@ const kiem = (ok: boolean, ten: string) => {
   }
 };
 
-console.log('CEL-194 nghiệm lý: bộ lọc + chuẩn hoá');
+console.log('CEL-196 nghiệm lý: bộ lọc + chuẩn hoá');
 
 const ND = {
   y: 'Tử Vi ở Mệnh gặp Thiên Phủ: nền vững, giữ được việc.',

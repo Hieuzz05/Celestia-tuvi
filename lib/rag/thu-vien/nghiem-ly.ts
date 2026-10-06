@@ -1,5 +1,5 @@
 /**
- * NGHIỆM LÝ CỦA TÔI — mục thư viện do chủ dự án soạn và ký (CEL-194, QĐ-13).
+ * NGHIỆM LÝ CỦA TÔI — mục thư viện do chủ dự án soạn và ký (CEL-196, QĐ-13).
  *
  * Đọc từ hai bảng có phiên bản (`supabase/va-qd13-thu-vien.sql`). Chỉ mục:
  *   truong_phai = 'celes' · trang_thai = 'dang-dung' · phiên bản đang dùng có duyet = 'da-duyet'

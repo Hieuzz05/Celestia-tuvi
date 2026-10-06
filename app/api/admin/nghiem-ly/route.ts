@@ -7,7 +7,7 @@ import { BANG_MUC, BANG_PHIEN_BAN, MA_NGHIEM_LY, chuanHoaNoiDung, xoaDemNghiemLy
 import { TEN_CUNG } from '@/lib/tuvi/constants';
 
 /**
- * NGHIỆM LÝ CỦA TÔI — chỉ quản trị viên (CEL-194, QĐ-13). Bảng: supabase/va-qd13-thu-vien.sql.
+ * NGHIỆM LÝ CỦA TÔI — chỉ quản trị viên (CEL-196, QĐ-13). Bảng: supabase/va-qd13-thu-vien.sql.
  *
  * GET                                   → mọi mục + mọi phiên bản (mới trước)
  * POST { hanhDong: 'tao', id, noiDung } → mục mới (nhap) + phiên bản 1 (chua)

@@ -73,7 +73,7 @@ jobs:
         run: npx tsx scripts/test-focused.ts
       - name: CEL-191 hiểu câu theo trường — bảng timeIntent, cổng gọi model, gộp luật trước
         run: npx tsx scripts/test-hieu-cau-truong.ts
-      - name: CEL-194 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat
+      - name: CEL-196 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat
         run: npx tsx scripts/test-nghiem-ly.ts
       - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
         run: npx tsx scripts/test-phan-hoi.ts

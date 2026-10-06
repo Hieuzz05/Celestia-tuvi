@@ -698,7 +698,7 @@ for (const ca of CA_DOI_TUONG) {
     ['Theo F001, năm nay công việc ổn.', 'LO_MA'],
   ];
   for (const [c, x] of truot) kiem(ma(c).includes(x as never), `"${c}" không ra ${x}: ${ma(c)}`);
-  // CEL-194 — T### nghiệm lý. Cờ tắt (không có maNghiemLyHopLe): T là mã lạ, "T001" trong văn không bị bắt (y như cũ).
+  // CEL-196 — T### nghiệm lý. Cờ tắt (không có maNghiemLyHopLe): T là mã lạ, "T001" trong văn không bị bắt (y như cũ).
   {
     const coT = ctx({ maNghiemLyHopLe: new Set(['T001']) });
     const claimT = (ids: string[]) => [{ claim: 'Công việc năm nay khá thuận', evidenceIds: ids, direction: 'thuan' as const }];
