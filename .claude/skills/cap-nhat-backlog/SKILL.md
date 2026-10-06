@@ -16,8 +16,10 @@ Excel làm đổi định dạng của cả những ô không đụng tới.
 python .claude/skills/cap-nhat-backlog/backlog.py xem          # ID kế tiếp, mấy dòng cuối
 python .claude/skills/cap-nhat-backlog/backlog.py tim CEL-186  # dòng Backlog + các bước Logic của ID đó
 ```
-ID kế tiếp được tính trên cả sheet LẪN commit của mọi nhánh, vì nhánh chưa gộp có thể đã giữ ID.
-Lấy số script đưa ra, không tự cộng.
+ID kế tiếp được tính trên sheet, trên Backlog của mọi nhánh remote (script tự `git fetch`) LẪN
+commit của mọi nhánh, vì nhánh chưa gộp có thể đã giữ ID. Lấy số script đưa ra, không tự cộng.
+Nhánh chưa push thì máy kia không thấy: **push nhánh ngay sau commit đầu mang ID mới**. Trùng vẫn
+lọt thì CI `kiem-id-cel.yml` đỏ; nhánh gộp main sau là nhánh cấp lại.
 
 ## 2. Viết tệp yêu cầu
 Viết bằng công cụ **Write** ra thư mục tạm. Đừng gõ JSON trên dòng lệnh: harness nuốt một lớp gạch

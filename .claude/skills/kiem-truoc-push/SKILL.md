@@ -18,6 +18,11 @@ git log --oneline origin/main..HEAD
 Đọc từng dòng. Có commit không thuộc việc này, kiểu CEL khác hay merge lạ, thì nêu lên đầu báo cáo.
 Đã từng xảy ra: `d99019d` (CEL-183) suýt lọt theo một nhánh "chỉ có tài liệu".
 
+```bash
+npx tsx scripts/kiem-id-cel.ts
+```
+ID CEL mới của nhánh không được trùng main hay nhánh remote khác (CI `kiem-id-cel.yml` cũng chạy).
+
 ## 2. Bài kiểm
 ```bash
 node scripts/kiem-nhanh.mjs --chay

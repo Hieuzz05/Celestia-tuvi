@@ -98,5 +98,8 @@ jobs:
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
 
+      - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
+        run: npx tsx scripts/test-kiem-id-cel.ts
+
       - name: Build
         run: npx next build

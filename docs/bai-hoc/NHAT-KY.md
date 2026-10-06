@@ -53,7 +53,19 @@ Mẫu một mục:
 - Giá: đã trùng CEL-150 một lần, phải gỡ ở `87f5b0c`.
 - Luật: cấp ID bằng `backlog.py xem`, script quét cả commit của mọi nhánh.
 - Nâng: máy canh, là `.claude/skills/cap-nhat-backlog/backlog.py`; cach-lam.md một dòng.
-- Lần: 2
+- Lặp 05/10: máy 1 cấp CEL-194 (nghiệm lý QĐ-13) lúc 21:17 trên `viec/batch-p0-cel191` chưa push;
+  N1 push CEL-194 (hạn lưu nhật ký, `1e80349`) lúc 21:21. Lúc cấp, nhánh kia chưa lên remote nên
+  `backlog.py xem` không thể thấy. Gốc thật: chỗ duy nhất thấy được cả hai là lúc nhánh thứ hai
+  push, mà ở đó không có gì canh. Giá: đổi sang CEL-196 ở `fb2b023` (ba sheet, chú thích mã, bước
+  CI), gộp xlsx bằng script ba phía.
+- Máy canh (05/10): CI `.github/workflows/kiem-id-cel.yml` chạy `scripts/kiem-id-cel.ts` trên MỌI
+  lần đẩy (kể cả chỉ đổi xlsx). ID mới của nhánh trùng main, hoặc trùng ID mới của nhánh remote
+  khác, mà khác "Tính năng" thì đỏ. Dựng lại ca 05/10 (`--dau 184fc44 --main c226d67`) thì bắt
+  được. `backlog.py` nay fetch, quét Backlog của mọi nhánh remote, nhắc push ngay sau commit mang ID.
+- **Đọc git log:** bốn commit `6eae482`, `bb95480`, `19f20a2`, `184fc44` ghi CEL-194 trong thông
+  điệp nhưng nghĩa là **CEL-196** (nghiệm lý QĐ-13). CEL-194 thật là hạn lưu nhật ký của N1
+  (`1e80349`). Không sửa lịch sử vì các commit đó đã push.
+- Lần: 3
 
 ## 04/10/2026 · Bộ đo tự xác nhận qua cùng nguồn sai với guard · ai-rag
 - Thẻ: guard ten, d.sao, oracle, eval tu xac nhan, van phong

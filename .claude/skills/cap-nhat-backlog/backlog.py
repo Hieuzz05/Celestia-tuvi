@@ -48,11 +48,46 @@ def cot(ws, ten):
     return td.index(ten) + 1
 
 
+def _so_trong_sheet(ws):
+    return [int(m.group(1)) for (v,) in ws.iter_rows(min_row=2, max_col=1, values_only=True)
+            if v and (m := re.fullmatch(r'CEL-(\d+)', str(v).strip()))]
+
+
+def _so_tren_nhanh_remote():
+    """ID trong Backlog của mọi nhánh remote (sau git fetch). Nhánh kia có thể đã push ID trong
+    backlog mà chưa có tiêu đề commit nào ghi ID đó, nên chỉ quét git log là không đủ."""
+    import io
+    so, da_doc = [], set()
+    try:
+        subprocess.run(['git', 'fetch', '--quiet', 'origin'], capture_output=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        print('(không fetch được origin — ID kế tiếp có thể đã bị nhánh khác giữ)')
+    try:
+        refs = subprocess.run(['git', 'for-each-ref', '--format=%(refname)', 'refs/remotes/origin'],
+                              capture_output=True, text=True).stdout.split()
+    except OSError:
+        return so
+    for ref in refs:
+        blob = subprocess.run(['git', 'rev-parse', '--verify', '--quiet', f'{ref}:{TEP}'],
+                              capture_output=True, text=True).stdout.strip()
+        if not blob or blob in da_doc:
+            continue
+        da_doc.add(blob)
+        du = subprocess.run(['git', 'cat-file', 'blob', blob], capture_output=True).stdout
+        try:
+            wb = openpyxl.load_workbook(io.BytesIO(du), read_only=True)
+            so += _so_trong_sheet(wb['Backlog'])
+        except Exception:  # bản xlsx cũ hỏng / thiếu sheet: bỏ qua, không chặn việc cấp
+            pass
+    return so
+
+
 def id_ke_tiep(ws):
-    """Lớn nhất trong sheet VÀ trong commit của mọi nhánh: nhánh chưa gộp đã có thể giữ một ID
-    mà bản backlog ở nhánh này chưa thấy (đã trùng CEL-150 một lần, phải gỡ ở 87f5b0c)."""
-    so = [int(m.group(1)) for (v,) in ws.iter_rows(min_row=2, max_col=1, values_only=True)
-          if v and (m := re.fullmatch(r'CEL-(\d+)', str(v).strip()))]
+    """Lớn nhất trong sheet, trong Backlog của mọi nhánh remote, VÀ trong commit của mọi nhánh:
+    nhánh chưa gộp có thể đã giữ một ID mà bản backlog ở nhánh này chưa thấy (trùng CEL-150, gỡ ở
+    87f5b0c; trùng CEL-194, đổi sang CEL-196 ở fb2b023). Nhánh CHƯA push thì không công cụ nào
+    thấy được: push nhánh ngay sau commit đầu mang ID mới; CI kiem-id-cel.yml bắt phần còn lọt."""
+    so = _so_trong_sheet(ws) + _so_tren_nhanh_remote()
     try:
         log = subprocess.run(['git', 'log', '--all', '--format=%s', '-n', '500'],
                              capture_output=True, text=True, encoding='utf-8').stdout
@@ -82,6 +117,7 @@ def them_dong(ws, du_lieu):
 
 def xem(wb):
     print('ID kế tiếp:', id_ke_tiep(wb['Backlog']))
+    print('  → dùng ID này thì push nhánh ngay sau commit đầu mang nó: nhánh chưa push thì máy kia không thấy.')
     for ten in ('Backlog', 'Logic chi tiết', 'Nhật ký thay đổi'):
         ws = wb[ten]
         print(f'\n== {ten} ({ws.max_row - 1} dòng)')
