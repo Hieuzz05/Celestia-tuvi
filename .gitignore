@@ -45,6 +45,9 @@ next-env.d.ts
 # và nó xuất hiện/biến mất theo việc có ai đang mở file hay không.
 ~$*.xlsx
 scripts/_*.ts
+# Script đo / dò một lần (scripts/tam-*). Tệp nào đáng giữ thì đổi tên bỏ "tam-" rồi commit.
+# tam-doi-chieu-la-so.ts đã được theo dõi từ trước nên không bị luật này bỏ qua.
+scripts/tam-*
 
 # Ảnh của scripts/test-man-hinh.mjs — để xem lại, không phải nội dung
 /.anh-man-hinh/
