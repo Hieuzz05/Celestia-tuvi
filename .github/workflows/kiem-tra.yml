@@ -59,6 +59,8 @@ jobs:
         run: npx tsx scripts/test-hop-dong-tra-loi.ts
       - name: Lớp sửa câu không làm sập xuống dòng
         run: npx tsx scripts/test-sua-chua-tach.ts
+      - name: Hạn lưu nhật ký (xoá đệm chung luôn lọc be_mat)
+        run: npx tsx scripts/test-han-luu-nhat-ky.ts
       - name: Dấu ấn Celes — cổng, chống lặp, đầu-cuối trên văn cuối
         run: npx tsx scripts/test-dau-an.ts
       - name: Dấu ấn Celes — độ phủ thư viện và cổng (UNREACHABLE = 0)

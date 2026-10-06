@@ -7,14 +7,13 @@
  *      > 0 là CHẶN (mã thoát 1): có câu đã duyệt mà không khoá hợp lệ nào tới được.
  *   2. Bộ vàng planner → UNHIT_ON_GOLD. Chỉ cảnh báo: bộ vàng chưa chạm,
  *      nhưng khoá hợp lệ khác vẫn tới được.
- *   3. 15 lượt thật gần nhất (`retrieval_runs`, che_do = 'that') → phân bố.
- *      Cảnh báo khi một câu chiếm > 25%. Thiếu DB thì bỏ qua tập này, có báo.
+ *   3. (Đã bỏ — PRIV-01) Lượt thật: nhật ký không còn lưu câu chữ; script báo BỎ QUA.
  *
  * Cổng 1b, CHẶN: SENSITIVE / CRITICAL / tra-cuu / tong-quan:mo-ta khi planner
  * không chắc / câu nối tiếp / bài không có ketLuan — tất cả phải ra 0 dấu ấn.
  *
  * NO_KET_LUAN_GATE chỉ đo được trên đầu vào dựng (1b). Câu trả lời không lưu
- * vào DB (`retrieval_runs`, `ai_requests` không giữ văn bản), nên tập 2 và 3
+ * vào DB (`retrieval_runs`, `ai_requests` không giữ văn bản), nên tập 2
  * giả định mọi lượt CÓ ketLuan — số ở đó là trần trên. Tụt độ phủ vì cổng
  * này là tụt đúng, không phải hồi quy.
  *
@@ -34,7 +33,6 @@
  *
  *   npx tsx scripts/do-coverage-dau-an.ts
  */
-import { existsSync, readFileSync } from 'node:fs';
 import { chonDauAn, kiemCauDauAn, SO_BIEN_THE, THU_VIEN_DAN_LUAN, type DauVaoDauAn } from '../lib/rag/dau-an';
 import { doAnToan } from '../lib/rag/an-toan';
 import { BO_VANG_PLANNER } from '../lib/rag/bo-vang';
@@ -206,62 +204,13 @@ const demVang = doTap(
 const unhit = moiBienThe.filter((b) => !demVang.has(b));
 console.log(`  UNHIT_ON_GOLD: ${unhit.length}/${moiBienThe.length}${unhit.length ? `  → ${unhit.join(', ')}` : ''}`);
 
-// ── 3. Lượt thật ─────────────────────────────────────────────────────────────
+// ── 3. Lượt thật — đã bỏ (PRIV-01, 05/10/2026) ─────────────────────────────────
 /*
- * `retrieval_runs` không lưu lịch sử hội thoại, nên `laCauNoi` dựng lại GẦN
- * ĐÚNG: có lượt trước của cùng người chạy trong 30 phút thì coi như đã có một
- * câu trả lời, rồi đưa qua chính `laCauNoiTiep`. Cờ chip gợi ý không dựng lại được.
+ * Tập này từng đọc `retrieval_runs.cau_hoi` của 15 lượt production gần nhất. Từ PRIV-01 nhật ký
+ * vận hành không lưu câu chữ (cột ghi ''), nên không còn lượt thật nào để đo. Đọc tiếp là đo 15
+ * chuỗi rỗng mà vẫn báo XANH — tệ hơn không đo. Phân bố dấu ấn đo trên bộ vàng (tập 2) và đầu
+ * vào dựng (1b); muốn đo trên câu thật thì dùng một bộ ca có kiểm soát, không dùng log.
  */
-const CUA_SO_NOI_MS = 30 * 60 * 1000;
-
-async function luotThat() {
-  console.log('\n=== 3. 15 LƯỢT THẬT (cảnh báo > 25%) ===');
-  if (!existsSync('.env.local')) {
-    console.log('  BỎ QUA: không có .env.local');
-    return;
-  }
-  for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
-    const s = d.trim();
-    if (!s || s.startsWith('#')) continue;
-    const [k, ...p] = s.split('=');
-    const v = p.join('=').trim();
-    if (v) process.env[k.trim()] = v;
-  }
-  try {
-    const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
-    const { laCauNoiTiep } = await import('../lib/rag/tiep-noi');
-    const sb = taoSupabaseAdmin();
-    if (!sb) {
-      console.log('  BỎ QUA: thiếu SUPABASE_SERVICE_ROLE_KEY');
-      return;
-    }
-    const { data, error } = await sb
-      .from('retrieval_runs')
-      .select('cau_hoi, tao_luc, nguoi_chay')
-      .eq('che_do', 'that')
-      .order('tao_luc', { ascending: false })
-      .limit(60);
-    if (error) throw error;
-    const hang = data ?? [];
-    const ds: Luot[] = hang.slice(0, 15).map((r, i) => {
-      const truoc = hang.slice(i + 1).find((t) => t.nguoi_chay && t.nguoi_chay === r.nguoi_chay);
-      const gan =
-        truoc !== undefined && new Date(r.tao_luc).getTime() - new Date(truoc.tao_luc).getTime() < CUA_SO_NOI_MS;
-      const lichSu = gan
-        ? [
-            { vaiTro: 'nguoi-dung' as const, noiDung: truoc.cau_hoi },
-            { vaiTro: 'tro-ly' as const, noiDung: '…' },
-          ]
-        : [];
-      return { cauHoi: r.cau_hoi, laCauNoi: laCauNoiTiep(r.cau_hoi, lichSu) };
-    });
-    doTap('Lượt thật', ds, true);
-  } catch (e) {
-    console.log(`  BỎ QUA: không đọc được DB — ${(e as Error).message}`);
-  }
-}
-
-luotThat().then(() => {
-  console.log(`\n${chan ? `ĐỎ — ${chan} lỗi chặn` : 'XANH — UNREACHABLE = 0, mọi cổng không-dấu-ấn = 0, thư viện qua cổng'}`);
-  process.exit(chan ? 1 : 0);
-});
+console.log('\n=== 3. LƯỢT THẬT ===\n  BỎ QUA: nhật ký vận hành không lưu câu chữ (PRIV-01) — không tính là đã đo');
+console.log(`\n${chan ?`ĐỎ — ${chan} lỗi chặn` : 'XANH — UNREACHABLE = 0, mọi cổng không-dấu-ấn = 0, thư viện qua cổng'}`);
+process.exit(chan ? 1 : 0);
