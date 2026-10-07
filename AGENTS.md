@@ -217,49 +217,15 @@ mục tạm **và in đường dẫn ra màn hình** — không in thì chủ d�
 ## Kiểm tra trước khi commit
 
 Trong lúc làm: `node scripts/kiem-nhanh.mjs --chay` — chỉ chạy tsc, lint và các bài CI phủ đúng tệp
-vừa đổi (đọc đồ thị import). Danh sách đầy đủ dưới đây là thứ CI chạy; tay chỉ cần khi đổi cấu
+vừa đổi (đọc đồ thị import). Danh sách đầy đủ (docs/quy-trinh/danh-sach-kiem-tra.md) là thứ CI chạy; tay chỉ cần khi đổi cấu
 hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/kiem-truoc-push`.
 
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
 node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (đang 5 lỗi set-state-in-effect)
-npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
-npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline
-npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt
-npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
-npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
-npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
-npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
-npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
-npx tsx scripts/test-an-toan.ts       # lớp an toàn chat: bắt đúng câu khủng hoảng, không bắt nhầm "Tử Tức" — offline
-npx tsx scripts/test-hop-dong-tra-loi.ts # nhịp/kiểu lượt chat: không chạm kết luận, thứ tự khối — offline
-npx tsx scripts/test-sua-chua-tach.ts  # lớp sửa câu giữ nguyên xuống dòng, tiêu đề, danh sách; ráp lại đúng nguyên văn — offline
-npx tsx scripts/test-han-luu-nhat-ky.ts  # hạn lưu nhật ký 90 ngày / sổ khách 2 ngày, xoá đệm chung luôn lọc be_mat — offline
-npx tsx scripts/test-dau-an.ts         # dấu ấn Celes: cổng (an toàn, ketLuan, bỏ dẫn dắt, câu nối), chống lặp, đầu-cuối trên văn cuối — offline
-npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UNREACHABLE = 0, mọi cổng chặn đủ — offline (lượt thật: BỎ QUA, nhật ký không lưu chữ từ PRIV-01)
-npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
-npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
-npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
-npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
-npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
-npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
-npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
-npx tsx scripts/test-moi-truong-dem.ts  # đệm AI tách theo môi trường: production giữ khoá cũ, Preview/local có tiền tố, cấu hình chỉ production ghi — offline
-npx tsx scripts/test-kiem-id-cel.ts     # hàm so ID CEL giữa nhánh / main / nhánh khác — offline
-npx tsx scripts/kiem-id-cel.ts          # máy canh trùng ID CEL (cần git fetch); CI chạy riêng ở kiem-id-cel.yml trên MỌI lần đẩy
-npx tsx scripts/test-priv-01.ts        # PRIV-01: vết Production không giữ câu hỏi, văn trả lời, băm lá số không muối — offline
-npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng sớm nhất, cờ không chặn chẩn đoán, nhãn judge/người — offline
-npx tsx scripts/test-nghiem-ly.ts      # nghiệm lý của chủ dự án (QĐ-13) + khối T###: T phải kèm F, vòng T↔T giải tất định, cờ tắt giữ nguyên — offline
-npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
-npx tsx scripts/test-do-phu-viet.ts    # độ phủ tầng viết (đo, chưa đổi Writer) — offline
-npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
-npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
-npx tsx scripts/eval-focused.ts        # model thật: 30+ ca Focused + Barnum 6×6; BẮT BUỘC AI_GHIM_MODEL + AI_TRAN_USD (≤ $2) + giá — xem đầu tệp
-npx tsx scripts/eval-phu-du-kien.ts --sinh|--cham  # model thật: A/B mã cũ–mới trên dữ kiện cung chính/xung chiếu (xem đầu tệp)
-npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
-node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
-npm run kiem-tra-sso      # trạng thái đăng nhập Google
+# ...còn 36 bài (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID...):
+# xem docs/quy-trinh/danh-sach-kiem-tra.md. CI chạy các bài OFFLINE trong đó.
 ```
 
 Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua. Sửa bớt được lỗi cũ thì HẠ
@@ -288,29 +254,10 @@ Cách sửa lỗi `set-state-in-effect` khi cần nạp dữ liệu lúc mở tr
 RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt state trong `.then` của effect. Xem
 `app/admin/models/page.tsx` hoặc `app/admin/knowledge/page.tsx`.
 
-## App di động — ĐANG LÀM (GĐ1, từ 27/09/2026)
+## App di động — ĐANG LÀM
 
-`apps/celes-app/` (Expo + expo-router) mở lại ngày 27/09/2026: chủ dự án chọn dựng app riêng
-(không PWA), iOS trước, một bộ code cho cả Android. Luồng và giao diện ĐÃ DUYỆT nằm trên canvas
-"Celes iOS — luồng app" (12 màn, kèm ghi chú token và ba giọng viết). Chốt:
-- Từ 29/09/2026 app theo thiết kế **Aurora bản 8** (`docs/thiet-ke/celes-ios/aurora/gen.py`,
-  bản dựng thử https://celes-thiet-ke.vercel.app): theme tối mặc định nền `#0B0A0D`, mỗi tab một
-  màu vùng, thẻ bo 20 / nút 14, nút chính vẫn gradient `#D32298`, font riêng của app. Web CHƯA
-  đổi theo. Lá số hiện ĐẦY ĐỦ như web, mạnh–yếu có biểu đồ radar.
-- Năm tab: Hôm nay · Lá số · Celes · Hành trình · Mối quan hệ. Tài khoản mở từ ảnh đại diện.
-- Thanh toán TẠM ẨN trên iOS; mở lại thì dùng mua trong app (quy định 3.1.1), không PayOS.
-- Làm bản nội bộ trước (Expo Go → TestFlight khi có tài khoản Apple Developer).
-
-Luật màn hẹp (390px không cuộn ngang, vùng chạm ≥ 44px): xem `docs/bay/giao-dien.md`.
-Đọc `apps/celes-app/README.md` trước nếu buộc phải sửa app.
-
-Điểm dễ vấp nhất: **app không có bản sao engine an sao**, nó đọc thẳng `lib/tuvi/`
-qua `metro.config.js` và bí danh `@tuvi/*`. Sửa engine là cả web lẫn app cùng đổi.
-Đừng "tiện tay" sao chép engine sang app.
-
-Web ở gốc kho và app là hai dự án npm tách biệt. `tsconfig.json` và
-`eslint.config.mjs` của web đều đã loại trừ `apps/` — nếu thấy `npm run lint` ở
-gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
+`apps/celes-app/` (Expo, iOS trước). Chi tiết nạp tự động khi sửa trong `apps/celes-app/**` (`.claude/rules/app-di-dong.md`).
+Điểm dễ vấp nhất: **app đọc thẳng `lib/tuvi/` qua `@tuvi/*`, không có bản sao engine** — sửa engine là web lẫn app cùng đổi.
 
 ## Việc còn dang dở
 

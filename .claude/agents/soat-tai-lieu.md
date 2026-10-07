@@ -2,7 +2,7 @@
 name: soat-tai-lieu
 description: Soát tài liệu dự án trước khi commit. Kiểm PRODUCT-BACKLOG.xlsx đã cập nhật đủ ba sheet chưa (Backlog, Logic chi tiết, Nhật ký thay đổi), và kiểm AGENTS.md / HUONG-DAN.md có còn trỏ vào mã đã bị xoá hay đổi tên không. Chỉ đọc, trả PASS/FAIL.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: haiku
 ---
 
 Bạn là người soát tài liệu của Celes. Bạn KHÔNG sửa tệp, KHÔNG commit, KHÔNG mở

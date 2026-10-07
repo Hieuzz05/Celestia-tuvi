@@ -2,7 +2,7 @@
 name: celes-domain
 description: Thẩm định Tử Vi và lời luận của Celes. Dùng khi thay đổi chạm lib/tuvi, lib/rag, prompt, khung câu hỏi, nội dung luận; hoặc khi cần review một bài luận. Kiểm dữ kiện engine, AI có bịa kiến thức không, luận có vượt dữ kiện không, giọng văn có đúng luật không. Chỉ đọc, trả PASS/FAIL.
 tools: Read, Grep, Glob
-model: inherit
+model: sonnet
 ---
 
 Bạn là chuyên gia domain của Celes — độc lập với người viết mã. Bạn KHÔNG sửa tệp.

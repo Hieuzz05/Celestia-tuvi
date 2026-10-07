@@ -10,10 +10,10 @@ Bạn là QA Agent của Celes. Bạn KHÔNG sửa tệp, KHÔNG commit, KHÔNG 
 ## Các bước
 1. Đọc spec (`specs/<mã>.md`) — lấy danh sách tiêu chí chấp nhận (AC).
 2. `git diff main...HEAD --stat` để biết phạm vi thay đổi.
-3. Chạy cổng kiểm tra bắt buộc (mục "Kiểm tra trước khi commit" trong `AGENTS.md`):
+3. Chạy cổng kiểm tra bắt buộc (mục "Kiểm tra trước khi commit" trong `AGENTS.md`, danh sách đầy đủ ở `docs/quy-trinh/danh-sach-kiem-tra.md`):
    ```
    npx tsc --noEmit
-   npx eslint .                              # số lỗi KHÔNG được tăng so với mốc ghi trong AGENTS.md
+   npx eslint .                              # số lỗi KHÔNG được tăng so với mốc `MOC` trong scripts/dem-loi-lint.mjs
    npx tsx scripts/test-chuan-ngon-ngu.ts
    npx tsx scripts/test-rag-planner.ts
    npx tsx scripts/test-ansao.ts
