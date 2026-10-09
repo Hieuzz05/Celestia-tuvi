@@ -191,6 +191,8 @@ export const vi = {
     tieuDeCoTen: 'Lá số của {ten}',
     moTa: 'Đọc tổng quan trước, rồi đi sâu từng chủ đề hoặc xem lĩnh vực nào thuận lợi, lĩnh vực nào cần chăm chút.',
     viSao: 'Muốn biết vì sao không?',
+    docTiepCau: 'Đọc tiếp',
+    thuGonCau: 'Thu lại',
     viSaoDong: 'Thu gọn',
     viSaoTieuDe: 'Celes dựa vào đâu',
     viSaoMo: 'Điều trên dựa vào những chi tiết sau trong bản đồ của bạn:',

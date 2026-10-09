@@ -189,6 +189,7 @@ function KhoiCard({
 }) {
   const t = useT();
   const [moCanCu, setMoCanCu] = useState(false);
+  const [moThan, setMoThan] = useState(false);
 
   const doiTrangThai = () => {
     const moi = !moCanCu;
@@ -236,11 +237,37 @@ function KhoiCard({
         </p>
       )}
 
-      {khoi.doan.map((d, i) => (
-        <p key={i} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          {d}
-        </p>
-      ))}
+      {/*
+        THÂN BÀI nằm sau nút; KẾT LUẬN ở trên thì luôn hiện.
+
+        Cấu trúc khối này vốn đã đúng — kết luận trước, dẫn giải sau — nhưng in
+        cả hai cùng lúc thì tám khối liền nhau thành một bức tường. Đo 09/10/2026
+        ở khổ 390px: 14 đoạn từ 25 chữ trở lên, 626 chữ nằm trong chúng.
+
+        Người đọc lướt kết luận của cả tám lĩnh vực trước, rồi mở đúng lĩnh vực
+        mình quan tâm. KHÔNG cắt chữ nào: bấm mở là thấy đủ như cũ.
+      */}
+      {khoi.doan.length > 0 && (
+        <>
+          {moThan && (
+            <div className="flex flex-col gap-[12px]">
+              {khoi.doan.map((d, i) => (
+                <p key={i} className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+                  {d}
+                </p>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            className="link-text link-action inline-flex min-h-[44px] items-center self-start sm:min-h-[32px]"
+            aria-expanded={moThan}
+            onClick={() => setMoThan(!moThan)}
+          >
+            {moThan ? t.luanSau.dongChang : `${t.quickRead.docTiepCau} (${khoi.doan.length} đoạn)`}
+          </button>
+        </>
+      )}
 
       {/*
         CÂU GIỮ LẠI — khép phần.

@@ -193,6 +193,8 @@ export const en: TuDien = {
     tieuDeCoTen: '{ten}’s chart',
     moTa: 'Start with the overview, then go deeper topic by topic.',
     viSao: 'Want to know why?',
+    docTiepCau: 'Read more',
+    thuGonCau: 'Show less',
     viSaoDong: 'Collapse',
     viSaoTieuDe: 'What Celes works from',
     viSaoMo: 'That read rests on the following details in your map:',

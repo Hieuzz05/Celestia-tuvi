@@ -133,6 +133,16 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
 }
 
 /** Một thẻ đầu trang dựng từ một câu tổng quan */
+/**
+ * Tách một bài thành các đoạn.
+ *
+ * Một chỗ duy nhất biết thế nào là 'một đoạn', nên thẻ lớn và thẻ nhỏ không
+ * bao giờ đếm đoạn khác nhau.
+ */
+function tachDoan(van: string): string[] {
+  return van.split(/\n\s*\n/).filter((x) => x.trim());
+}
+
 function TheDau({
   nhan,
   tieuDe,
@@ -147,6 +157,7 @@ function TheDau({
   cham?: ChamBaiTongQuan | null;
 }) {
   const [mo, setMo] = useState(false);
+  const [moDoan, setMoDoan] = useState(false);
   return (
     /*
       min-h lúc chờ: đo 24/09/2026 CLS 0,24 trên desktop (ngưỡng "kém" 0,1) — thẻ
@@ -181,15 +192,41 @@ function TheDau({
         </p>
       ) : (
         <>
-          {cau.luanGiai
-            .split(/\n\s*\n/)
-            .filter((x) => x.trim())
-            .map((d, i) => (
-              // Thẻ lớn: 16px trên điện thoại (20px thành 17 dòng, một bức tường chữ), 18px từ md
-              <p key={i} className={lon ? 'body-text md:text-[18px] md:leading-[1.55]' : 'body-text'} style={{ color: 'var(--fg)' }}>
-                {d}
-              </p>
-            ))}
+          {(() => {
+            /*
+             * Hiện ĐOẠN ĐẦU, phần còn lại nằm sau nút.
+             *
+             * Đo 09/10/2026 ở khổ 390px: /la-so có 14 đoạn từ 25 chữ trở lên và
+             * 626 chữ nằm trong chúng — bốn năm thẻ liền nhau, mỗi thẻ 4-6 đoạn,
+             * thành một bức tường. Người dùng kêu "nhiều chữ quá, không đọc" là
+             * kêu đúng chỗ này.
+             *
+             * KHÔNG cắt chữ nào: `doan` giữ nguyên bản luận, chỉ đổi lượng hiện ra
+             * lúc mới mở. Bấm "Đọc tiếp" là thấy đủ như cũ.
+             */
+            const doan = tachDoan(cau.luanGiai);
+            const hien = moDoan ? doan : doan.slice(0, 1);
+            return (
+              <>
+                {hien.map((d, i) => (
+                  // Thẻ lớn: 16px trên điện thoại (20px thành 17 dòng, một bức tường chữ), 18px từ md
+                  <p key={i} className={lon ? 'body-text md:text-[18px] md:leading-[1.55]' : 'body-text'} style={{ color: 'var(--fg)' }}>
+                    {d}
+                  </p>
+                ))}
+                {doan.length > 1 && (
+                  <button
+                    type="button"
+                    className="link-text link-action inline-flex min-h-[44px] items-center self-start sm:min-h-[32px]"
+                    aria-expanded={moDoan}
+                    onClick={() => setMoDoan(!moDoan)}
+                  >
+                    {moDoan ? 'Thu lại' : `Đọc tiếp (${doan.length - 1} đoạn)`}
+                  </button>
+                )}
+              </>
+            );
+          })()}
           <button type="button" className="link-text link-action inline-flex min-h-[44px] items-center self-start sm:min-h-[32px]" aria-expanded={mo} onClick={() => setMo(!mo)}>
             {mo ? 'Thu gọn' : 'Muốn biết vì sao không?'}
           </button>

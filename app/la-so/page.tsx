@@ -14,6 +14,7 @@ import { TabLaSo, type MucTab } from '@/components/laso/TabLaSo';
 import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { BangLuanGiai } from '@/components/laso/BangLuanGiai';
 import { BuocNhapSinh, MAC_DINH, type ThongTinSinhForm } from '@/components/laso/BuocNhapSinh';
+import { DaiCanCuoc } from '@/components/laso/DaiCanCuoc';
 import { CanhBaoRoiTrang } from '@/components/laso/CanhBaoRoiTrang';
 import { TuViChart } from '@/components/laso/TuViChart';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
@@ -802,6 +803,18 @@ function TrangLaSo() {
             </NutVien>
           </div>
         </div>
+
+        {/*
+          Dải căn cước: sáu dữ kiện engine tính sẵn + một dòng tóm tắt có màu.
+
+          Đặt NGAY dưới tiêu đề vì đo 09/10/2026 ở khổ 390px thấy màn đầu tiên
+          không có một dữ kiện nào thuộc về người đang đọc — chỉ tiêu đề, ba
+          dòng hướng dẫn và hai nút viền. Người dùng phải cuộn gần một màn rưỡi
+          mới gặp thứ đầu tiên nói về họ.
+
+          Tất định, không gọi model, nên nó hiện cùng trang chứ không chờ.
+        */}
+        <DaiCanCuoc laSo={laSo} namXem={namXem} />
       </section>
 
       {/*

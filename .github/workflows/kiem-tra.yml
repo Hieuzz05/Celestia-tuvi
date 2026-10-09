@@ -100,6 +100,8 @@ jobs:
 
       - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
         run: npx tsx scripts/test-kiem-id-cel.ts
+      - name: Tách câu đầu — cắt chứ không viết lại, chạy trên nội dung engine thật
+        run: npx tsx scripts/test-tach-cau.ts
 
       - name: Build
         run: npx next build

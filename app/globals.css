@@ -298,6 +298,18 @@ body {
   color: var(--fg);
 }
 
+/*
+ * Eyebrow có màu nhấn — chỉ cho các thẻ góc nhìn ở đầu `/la-so`.
+ *
+ * KHÔNG đổi `.eyebrow` gốc: nhãn ấy dùng ở hơn mười màn, tô màu hết thì màu
+ * mất nghĩa và thành trang trí. Ở đây nó có việc: ba thẻ đầu là thứ người đọc
+ * gặp trước tiên, và một điểm màu giúp mắt bám vào thứ bậc thay vì trôi qua
+ * một khối chữ đen trắng đều nhau.
+ */
+.eyebrow-nhan {
+  color: var(--accent-chu, var(--accent));
+}
+
 .body-lg {
   font-size: 20px;
   line-height: 1.4;
@@ -821,3 +833,101 @@ body {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   DẢI CĂN CƯỚC — dữ kiện lá số ngay dưới tiêu đề /la-so (CEL-209)
+   Sáu ô dữ kiện + một dòng tóm tắt có màu. Giữ nguyên ngôn ngữ thẻ hiện có:
+   nền surface-card, bo theo --radius-cards, bóng --shadow-card.
+--------------------------------------------------------------------------- */
+
+.dcc {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dcc__o {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 560px) {
+  .dcc__o { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 900px) {
+  .dcc__o { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+.dcc__o li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--surface-card);
+  border-radius: var(--radius-cards);
+  box-shadow: var(--shadow-card);
+}
+
+.dcc__nhan {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-subtle, var(--fg-muted));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dcc__gia {
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+/* Dòng tóm tắt: hai màu nhóm của bản đồ Mạnh–Yếu, gặp lại ở tab kia */
+.dcc__tom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-body, var(--fg-muted));
+}
+
+/*
+ * `inline` chứ không `inline-flex`: flex co cụm lại làm "Thuận ở" bị tách
+ * thành hai dòng ("Thuận" / "ở") khi hết chỗ. Để chữ chảy như văn bản thường
+ * thì chỉ chỗ nào thật sự dài mới xuống dòng.
+ */
+.dcc__ve {
+  display: inline;
+}
+
+.dcc__ve strong { color: var(--fg); font-weight: 600; }
+
+.dcc__ve--phu {
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.dcc__cham {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 999px;
+  vertical-align: 0.1em;
+}
+
+.dcc__cham[data-huong='thuan'] { background: var(--tier-manh); }
+.dcc__cham[data-huong='gang'] { background: var(--tier-gang); }

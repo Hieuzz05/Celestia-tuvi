@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { GocNhin } from '@/lib/tuvi/quick-read';
+import { tachCauDau } from '@/lib/tach-cau';
 import { ghiSuKien } from '@/lib/analytics';
 import { NhanPill, The } from '@/components/ui';
 import { useT } from '@/lib/i18n/context';
@@ -31,6 +32,18 @@ export function GocNhinCard({
   const t = useT();
   const [moCanCu, setMoCanCu] = useState(false);
 
+  /*
+   * Hiện MỘT câu, phần còn lại nằm sau nút.
+   *
+   * Thẻ này in trọn 4-6 câu ngay khi mở, và bốn thẻ liền nhau thành một tường
+   * chữ — đúng chỗ người dùng kêu "nhiều chữ quá, không đọc". Nội dung KHÔNG
+   * mất đi: `tachCauDau` chỉ cắt, không viết lại, nên bấm mở là thấy nguyên
+   * văn cũ.
+   */
+  const [moThem, setMoThem] = useState(false);
+  const cau = useMemo(() => tachCauDau(gocNhin.noiDung), [gocNhin.noiDung]);
+  const coThem = cau.conLai.length > 0;
+
   const doiTrangThai = () => {
     const moi = !moCanCu;
     setMoCanCu(moi);
@@ -39,7 +52,7 @@ export function GocNhinCard({
 
   return (
     <The className="flex flex-col gap-[12px]">
-      <span className="eyebrow">{gocNhin.nhomChu}</span>
+      <span className="eyebrow eyebrow-nhan">{gocNhin.nhomChu}</span>
 
       <TieuDe
         className={chinh ? 'heading-sm' : nho ? 'text-[17px] font-semibold' : 'text-[20px] font-semibold'}
@@ -49,16 +62,24 @@ export function GocNhinCard({
       </TieuDe>
 
       <p className={chinh ? 'body-lg' : nho ? 'body-sm' : 'body-text'} style={chinh ? { color: 'var(--fg)' } : undefined}>
-        {gocNhin.noiDung}
+        {moThem ? gocNhin.noiDung : cau.cauDau}
       </p>
 
-      <button
-        onClick={doiTrangThai}
-        className="link-text link-action self-start"
-        aria-expanded={moCanCu}
-      >
-        {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
-      </button>
+      <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[4px]">
+        {coThem && (
+          <button
+            onClick={() => setMoThem((v) => !v)}
+            className="link-text link-action"
+            aria-expanded={moThem}
+          >
+            {moThem ? t.quickRead.thuGonCau : t.quickRead.docTiepCau}
+          </button>
+        )}
+
+        <button onClick={doiTrangThai} className="link-text link-action" aria-expanded={moCanCu}>
+          {moCanCu ? t.quickRead.viSaoDong : t.quickRead.viSao}
+        </button>
+      </div>
 
       {moCanCu && (
         <div
