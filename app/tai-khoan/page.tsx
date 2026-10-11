@@ -34,9 +34,9 @@ export default function TaiKhoanPage() {
     try {
       await datTenHienThi(ten);
       setTaiKhoan((tk) => (tk ? { ...tk, tenHienThi: ten.trim() } : tk));
-      setThongBao({ loai: 'ok', noiDung: 'Đã lưu tên hiển thị.' });
+      setThongBao({ loai: 'ok', noiDung: t.taiKhoan.daLuu });
     } catch (err) {
-      setThongBao({ loai: 'loi', noiDung: err instanceof Error ? err.message : 'Có lỗi xảy ra' });
+      setThongBao({ loai: 'loi', noiDung: err instanceof Error ? err.message : t.taiKhoan.coLoi });
     } finally {
       setDangLuu(false);
     }
@@ -45,9 +45,9 @@ export default function TaiKhoanPage() {
   if (!supabaseDaCauHinh) {
     return (
       <Shell className="py-[60px]">
-        <h1 className="heading">Chưa bật đăng nhập</h1>
+        <h1 className="heading">{t.taiKhoan.chuaBat}</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
-          Tính năng tài khoản cần Supabase. Xem hướng dẫn trong tệp HUONG-DAN.md.
+          {t.taiKhoan.canSupabase}
         </p>
       </Shell>
     );
@@ -56,12 +56,12 @@ export default function TaiKhoanPage() {
   if (daTai && !taiKhoan) {
     return (
       <Shell className="py-[60px]">
-        <h1 className="heading">Chưa đăng nhập</h1>
+        <h1 className="heading">{t.taiKhoan.chuaDangNhap}</h1>
         <p className="body-text mt-[18px]" style={{ color: 'var(--fg-muted)' }}>
-          Đăng nhập để đặt tên hiển thị và quản lý lá số đã lưu.
+          {t.taiKhoan.moiDangNhap}
         </p>
         <a href="/dang-nhap" className="btn-primary mt-[24px] inline-block">
-          Đăng nhập
+          {t.taiKhoan.dangNhap}
         </a>
       </Shell>
     );
@@ -73,8 +73,8 @@ export default function TaiKhoanPage() {
       <div className="flex items-center gap-[16px]">
         <CelesMascot cho="dau-trang" minhHoa="using-laptop" cao={64} caoNho={56} ngay />
         <div className="min-w-0">
-          <p className="eyebrow">Tài khoản</p>
-          <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
+          <p className="eyebrow">{t.taiKhoan.eyebrow}</p>
+          <h1 className="heading mt-[10px]">{t.taiKhoan.tieuDe}</h1>
         </div>
       </div>
 
@@ -83,18 +83,18 @@ export default function TaiKhoanPage() {
         style={{ borderColor: 'var(--line)', background: 'var(--surface-card)' }}
       >
         <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-          Email đăng nhập
+          {t.taiKhoan.email}
         </span>
         <span className="text-[15px]">{taiKhoan?.email ?? '—'}</span>
       </div>
 
       <form onSubmit={luu} className="flex flex-col gap-[16px]">
-        <Field label="Tên hiển thị">
+        <Field label={t.taiKhoan.tenHienThi}>
           <input
             value={ten}
             onChange={(e) => setTen(e.target.value)}
             maxLength={60}
-            placeholder="Tên bạn muốn hiện trên thanh điều hướng"
+            placeholder={t.taiKhoan.goiYTen}
             className="field-input"
           />
         </Field>
@@ -109,7 +109,7 @@ export default function TaiKhoanPage() {
         )}
 
         <button type="submit" disabled={dangLuu} className="btn-primary self-start">
-          {dangLuu ? 'Đang lưu…' : 'Lưu tên hiển thị'}
+          {dangLuu ? t.taiKhoan.dangLuu : t.taiKhoan.luu}
         </button>
       </form>
 

@@ -4,9 +4,12 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { cungDaiVan, cungTieuHan } from '@/lib/tuvi/ansao';
-import { chiTietDiemTungCung, TEN_MUC, type ChiTietDiemCung, type GopDiem } from '@/lib/rag/v3/du-kien';
+import { chiTietDiemTungCung, type ChiTietDiemCung, type GopDiem } from '@/lib/rag/v3/du-kien';
 import { CHU_DE_V3 } from '@/lib/rag/v3/khung';
 import { ghiSuKien } from '@/lib/analytics';
+import { dien, useT } from '@/lib/i18n/context';
+import type { TuDien } from '@/lib/i18n/vi';
+import { tenMuc } from './ten-muc';
 
 /**
  * BẢN ĐỒ MẠNH – YẾU 12 lĩnh vực (chủ dự án duyệt 25/09/2026, thiết kế lại 25/09).
@@ -28,89 +31,35 @@ import { ghiSuKien } from '@/lib/analytics';
  */
 
 type Muc = ChiTietDiemCung['muc'];
-const NHOM: Record<Muc, { moTa: string; mau: string }> = {
-  'Mạnh': { moTa: 'Nơi bạn dễ phát huy nhất — nên dựa vào', mau: 'var(--tier-manh)' },
-  'Bình': { moTa: 'Không nổi bật, cũng ít trắc trở', mau: 'var(--tier-binh)' },
-  'Cần gắng': { moTa: 'Dễ gặp trở ngại hơn — biết trước để chuẩn bị', mau: 'var(--tier-gang)' },
+const MAU: Record<Muc, string> = {
+  'Mạnh': 'var(--tier-manh)',
+  'Bình': 'var(--tier-binh)',
+  'Cần gắng': 'var(--tier-gang)',
 };
+const moTaNhom = (m: Muc, t: TuDien) =>
+  ({ 'Mạnh': t.manhYeu.nhomManh, 'Bình': t.manhYeu.nhomBinh, 'Cần gắng': t.manhYeu.nhomGang })[m];
 
-/** Tên hiển thị khi tên lĩnh vực của engine quá cộc để đứng một mình */
-const TEN_GON: Record<string, string> = { 'Ra ngoài': 'Đi xa, ra ngoài' };
-const tenLv = (s: string) => TEN_GON[s] ?? s;
-
-/** Nghĩa ngắn của từng sao — vài chữ, đủ để người chưa biết tử vi hiểu vì sao */
-const NGHIA_NGAN: Record<string, string> = {
-  'Tả Phù': 'có người giúp sức',
-  'Hữu Bật': 'có người giúp sức',
-  'Văn Xương': 'học hành, diễn đạt tốt',
-  'Văn Khúc': 'khéo léo, có duyên ăn nói',
-  'Thiên Khôi': 'gặp người đi trước nâng đỡ',
-  'Thiên Việt': 'gặp người có vị thế nâng đỡ',
-  'Lộc Tồn': 'giữ được của, vững vàng',
-  'Hóa Lộc': 'mở ra cơ hội, tài lộc',
-  'Hóa Quyền': 'nắm được quyền quyết định',
-  'Hóa Khoa': 'được công nhận, có tiếng tốt',
-  'Thiên Quan': 'hay gặp may, được phù hộ',
-  'Thiên Phúc': 'hay gặp may, được phù hộ',
-  'Ân Quang': 'được người khác nhớ tới, giúp đỡ',
-  'Thiên Quý': 'được người khác nhớ tới, giúp đỡ',
-  'Long Trì': 'có chừng mực, dễ được việc',
-  'Phượng Các': 'có gu, dễ gây thiện cảm',
-  'Thiên Mã': 'năng động, dịch chuyển mang lại cơ hội',
-  'Tam Thai': 'có vị thế, được nể trọng',
-  'Bát Tọa': 'có vị thế, được nể trọng',
-  'Thiên Đức': 'hiền hòa, ít gặp chuyện xấu',
-  'Nguyệt Đức': 'hiền hòa, ít gặp chuyện xấu',
-  'Giải Thần': 'gặp khó thường có lối thoát',
-  'Kình Dương': 'dễ va chạm, nóng vội',
-  'Đà La': 'dễ chậm trễ, dây dưa',
-  'Hỏa Tinh': 'dễ nóng nảy, bốc đồng',
-  'Linh Tinh': 'dễ bực bội âm ỉ',
-  'Địa Không': 'dễ hụt hẫng, công cốc',
-  'Địa Kiếp': 'dễ mất mát bất ngờ',
-  'Hóa Kỵ': 'hay vướng mắc, phải làm lại',
-  'Thiên Hình': 'khắt khe, dễ va vấp',
-  'Kiếp Sát': 'dễ mất đúng lúc đang cần',
-  'Đại Hao': 'dễ hao hụt, tốn kém',
-  'Tiểu Hao': 'dễ hao hụt, tốn kém',
-  'Tang Môn': 'dễ buồn phiền, lo âu',
-  'Bạch Hổ': 'dễ có tranh chấp, sóng gió',
-  'Thiên Riêu': 'dễ bị cám dỗ, sa đà',
-};
-
-const THE_SAO_CHINH: Record<string, string> = {
-  M: 'Sao chính đang ở thế rất vững',
-  V: 'Sao chính đang ở thế vững',
-  D: 'Sao chính đang ở thế khá vững',
-  L: 'Sao chính ở thế tương đối ổn',
-  B: 'Sao chính ở mức bình thường',
-  H: 'Sao chính đang yếu',
-};
+/** Chữ của bản đồ nằm ở từ điển (vi/en); engine vẫn trả tên cung tiếng Việt làm khoá */
+const tra = (bang: object, k: string) => (bang as Record<string, string>)[k];
+/** Tên lĩnh vực theo cung — bản VI trùng LINH_VUC_CUNG, riêng "Ra ngoài" được nói rõ thành "Đi xa, ra ngoài" */
+const tenLv = (cung: string, linhVuc: string, t: TuDien) => tra(t.manhYeuLinhVuc, cung) ?? linhVuc;
 
 /** Một dòng "vì sao": lời thường + tên sao (cho người biết tử vi) */
-function yNghia(g: GopDiem): { loi: string; sao?: string } {
-  if (g.loai === 'chinh') return { loi: THE_SAO_CHINH[g.doSang ?? 'B'] ?? 'Sao chính', sao: g.sao };
+function yNghia(g: GopDiem, t: TuDien): { loi: string; sao?: string } {
+  if (g.loai === 'chinh') return { loi: tra(t.manhYeuTheSao, g.doSang ?? 'B') ?? t.manhYeu.saoChinh, sao: g.sao };
   if (g.loai === 'vcd')
     return {
-      loi: 'Không có sao chính, mượn sức từ lĩnh vực đối diện',
-      sao: g.sao ? `mượn ${g.sao}` : undefined,
+      loi: t.manhYeu.vcd,
+      sao: g.sao ? dien(t.manhYeu.muon, { sao: g.sao }) : undefined,
     };
-  if (g.loai === 'tuan')
-    return { loi: 'Cả điều tốt lẫn điều xấu ở đây đều được giảm nhẹ', sao: g.sao };
-  const nghia = NGHIA_NGAN[g.sao ?? ''] ?? g.ten;
+  if (g.loai === 'tuan') return { loi: t.manhYeu.tuan, sao: g.sao };
+  const nghia = tra(t.manhYeuNghia, g.sao ?? '') ?? g.ten;
   const dac = g.loai === 'hung' && g.doSang === 'D';
   return {
-    loi: nghia.charAt(0).toUpperCase() + nghia.slice(1) + (dac ? ' (đã bớt nặng vì sao ở vị trí tốt)' : ''),
+    loi: nghia.charAt(0).toUpperCase() + nghia.slice(1) + (dac ? t.manhYeu.botNang : ''),
     sao: g.sao,
   };
 }
-
-/** Tên ngắn cho nhãn quanh biểu đồ — nhãn dài chen nhau ở màn 360px */
-const TEN_NGAN: Record<string, string> = {
-  'Mệnh': 'Bản thân', 'Phụ Mẫu': 'Cha mẹ', 'Phúc Đức': 'Tinh thần', 'Điền Trạch': 'Nhà cửa',
-  'Quan Lộc': 'Sự nghiệp', 'Nô Bộc': 'Bạn bè', 'Thiên Di': 'Đi xa', 'Tật Ách': 'Sức khỏe',
-  'Tài Bạch': 'Tiền bạc', 'Tử Tức': 'Con cái', 'Phu Thê': 'Tình duyên', 'Huynh Đệ': 'Anh em',
-};
 
 /**
  * BIỂU ĐỒ RADAR 12 cung — hình dạng của cả lá số trong một cái nhìn.
@@ -134,6 +83,7 @@ function RadarManhYeu({
   daThay: boolean;
   onChon: (cung: string) => void;
 }) {
+  const t = useT();
   const menh = laSo.cungs.find((c) => c.tenCung === 'Mệnh');
   const theoCung = new Map(ds.map((d) => [d.cung, d]));
   const vong = Array.from({ length: 12 }, (_, k) => laSo.cungs[((menh?.chiIndex ?? 0) + k) % 12]?.tenCung)
@@ -160,7 +110,7 @@ function RadarManhYeu({
         viewBox={`0 ${C - R - 48} ${W} ${2 * (R + 48)}`}
         className="w-full max-w-[420px]"
         role="group"
-        aria-label="Biểu đồ radar độ thuận lợi của 12 lĩnh vực"
+        aria-label={t.manhYeu.radarAria}
       >
         {luoi.map((p, i) => (
           <polygon key={i} points={p} fill="none" stroke="var(--line)" strokeWidth={1} />
@@ -190,7 +140,7 @@ function RadarManhYeu({
                 cx={x}
                 cy={y}
                 r={chon ? 7 : 5}
-                fill={NHOM[d.muc].mau}
+                fill={MAU[d.muc]}
                 stroke={chon ? 'var(--fg)' : 'var(--surface-card)'}
                 strokeWidth={2}
               />
@@ -207,7 +157,7 @@ function RadarManhYeu({
               key={d.cung}
               role="button"
               tabIndex={0}
-              aria-label={`${tenLv(d.linhVuc)} — ${TEN_MUC[d.muc]}`}
+              aria-label={`${tenLv(d.cung, d.linhVuc, t)} — ${tenMuc(d.muc, t)}`}
               aria-pressed={chon}
               className="cursor-pointer outline-none focus-visible:[&>rect]:stroke-[var(--accent)]"
               onClick={() => onChon(d.cung)}
@@ -238,15 +188,14 @@ function RadarManhYeu({
                 fontWeight={chon ? 700 : 600}
                 fill={d.muc === 'Bình' && !chon ? 'var(--fg-muted)' : 'var(--fg)'}
               >
-                {TEN_NGAN[d.cung] ?? d.linhVuc}
+                {tra(t.manhYeuTenNgan, d.cung) ?? d.linhVuc}
               </text>
             </g>
           );
         })}
       </svg>
       <figcaption className="caption max-w-[440px] text-center">
-        Hình phình ra ở hướng nào, lĩnh vực đó càng thuận lợi. Vòng nét đứt là mức trung bình của lá số. Hai lĩnh vực đối
-        diện nhau trên vòng là hai cung chiếu thẳng vào nhau. Chạm vào tên để xem lý do.
+        {t.manhYeu.radarChu}
       </figcaption>
     </figure>
   );
@@ -281,6 +230,7 @@ function Nhan({ children }: { children: React.ReactNode }) {
 }
 
 function DanhSachLyDo({ tieuDe, mau, ds }: { tieuDe: string; mau: string; ds: GopDiem[] }) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-[8px]">
       <p className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: mau }}>
@@ -288,7 +238,7 @@ function DanhSachLyDo({ tieuDe, mau, ds }: { tieuDe: string; mau: string; ds: Go
       </p>
       <ul className="flex flex-col gap-[8px]">
         {ds.map((g, k) => {
-          const y = yNghia(g);
+          const y = yNghia(g, t);
           return (
             <li key={k} className="flex items-start gap-[8px]">
               <span className="mt-[8px] h-[6px] w-[6px] shrink-0 rounded-full" style={{ background: mau }} aria-hidden />
@@ -309,9 +259,9 @@ function DanhSachLyDo({ tieuDe, mau, ds }: { tieuDe: string; mau: string; ds: Go
 }
 
 function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) {
+  const t = useT();
   const { mo, daThay, thuoc, cungDv, cungTh, namXem, duongChuyenSau, duocVao } = c;
   const dangMo = mo === d.cung;
-  const nhom = NHOM[d.muc];
   const binh = d.muc === 'Bình';
   const chuDe = chuDeCuaCung(d.cung);
   const giup = d.trongCung.filter((g) => g.diem > 0).sort((a, b) => b.diem - a.diem);
@@ -343,14 +293,14 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
         <span className="flex min-w-0 flex-col">
           <span className="flex flex-wrap items-center gap-x-[8px] gap-y-[4px]">
             <span className="text-[16px] font-semibold leading-[22px]" style={{ color: binh ? 'var(--fg-muted)' : 'var(--fg)' }}>
-              {tenLv(d.linhVuc)}
+              {tenLv(d.cung, d.linhVuc, t)}
             </span>
-            {cungDv === d.cung && <Nhan>Vận hiện tại</Nhan>}
-            {cungTh === d.cung && <Nhan>Năm {namXem}</Nhan>}
+            {cungDv === d.cung && <Nhan>{t.manhYeu.vanHienTai}</Nhan>}
+            {cungTh === d.cung && <Nhan>{dien(t.manhYeu.nam, { nam: namXem })}</Nhan>}
           </span>
           <span className="caption" style={{ color: 'var(--fg-muted)' }}>
-            Cung {d.cung}
-            <span className="sr-only"> — {TEN_MUC[d.muc]}</span>
+            {dien(t.manhYeu.cung, { cung: d.cung })}
+            <span className="sr-only"> — {tenMuc(d.muc, t)}</span>
           </span>
         </span>
 
@@ -373,7 +323,7 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
             style={{
               [phai ? 'left' : 'right']: '50%',
               width: daThay ? `${rong}%` : '0%',
-              background: nhom.mau,
+              background: MAU[d.muc],
               borderRadius: phai ? '0 999px 999px 0' : '999px 0 0 999px',
               transitionDelay: `${i * 40}ms`,
             }}
@@ -389,30 +339,30 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
       >
         <div className="overflow-hidden">
           <div className="flex flex-col gap-[16px] px-[8px] pb-[16px] pt-[4px]">
-            {giup.length > 0 && <DanhSachLyDo tieuDe="Điều giúp bạn" mau="var(--tier-manh)" ds={giup} />}
-            {tro.length > 0 && <DanhSachLyDo tieuDe="Điều gây trở ngại" mau="var(--tier-gang)" ds={tro} />}
-            {ghiChu.length > 0 && <DanhSachLyDo tieuDe="Cần biết thêm" mau="var(--fg-muted)" ds={ghiChu} />}
+            {giup.length > 0 && <DanhSachLyDo tieuDe={t.manhYeu.giup} mau="var(--tier-manh)" ds={giup} />}
+            {tro.length > 0 && <DanhSachLyDo tieuDe={t.manhYeu.troNgai} mau="var(--tier-gang)" ds={tro} />}
+            {ghiChu.length > 0 && <DanhSachLyDo tieuDe={t.manhYeu.canBiet} mau="var(--fg-muted)" ds={ghiChu} />}
             {giup.length === 0 && tro.length === 0 && (
               <p className="body-sm" style={{ color: 'var(--fg)' }}>
-                Không có sao nào nổi trội ở đây — lĩnh vực này chủ yếu chịu ảnh hưởng từ các lĩnh vực liên quan.
+                {t.manhYeu.khongNoi}
               </p>
             )}
             {(hoTro.length > 0 || keoXuong.length > 0) && (
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 {hoTro.length > 0 && (
                   <>
-                    Được tiếp sức từ <strong style={{ color: 'var(--fg)' }}>{hoTro.map((s) => tenLv(s.linhVuc)).join(', ')}</strong>.{' '}
+                    {t.manhYeu.tiepSuc} <strong style={{ color: 'var(--fg)' }}>{hoTro.map((x) => tenLv(x.cung, x.linhVuc, t)).join(', ')}</strong>.{' '}
                   </>
                 )}
                 {keoXuong.length > 0 && (
                   <>
-                    Bị ảnh hưởng không tốt từ <strong style={{ color: 'var(--fg)' }}>{keoXuong.map((s) => tenLv(s.linhVuc)).join(', ')}</strong>.
+                    {t.manhYeu.anhHuong} <strong style={{ color: 'var(--fg)' }}>{keoXuong.map((x) => tenLv(x.cung, x.linhVuc, t)).join(', ')}</strong>.
                   </>
                 )}
               </p>
             )}
             {d.cung === 'Tật Ách' && (
-              <p className="caption">Chỉ để tham khảo về xu hướng, không thay cho lời khuyên của bác sĩ.</p>
+              <p className="caption">{t.manhYeu.yTe}</p>
             )}
             {lienKet && chuDe && (
               <Link
@@ -420,7 +370,7 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
                 className="link-text link-action self-start"
                 onClick={() => ghiSuKien('deep_read_cta', { viTri: 'ban-do-manh-yeu', chuDe: chuDe.id })}
               >
-                Đọc phân tích chi tiết về {chuDe.ten.toLowerCase()} →
+                {dien(t.manhYeu.docChiTiet, { chuDe: (tra(t.chuDeSau, chuDe.id) ?? chuDe.ten).toLowerCase() })}
               </Link>
             )}
           </div>
@@ -431,14 +381,15 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
 }
 
 function NhomCung({ m, ds, thuTu, c }: { m: Muc; ds: ChiTietDiemCung[]; thuTu: Map<string, number>; c: ChungDong }) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-[4px]">
       <div className="flex flex-wrap items-baseline gap-x-[8px] gap-y-[4px] px-[8px]">
-        <span className="inline-block h-[10px] w-[10px] shrink-0 self-center rounded-full" style={{ background: NHOM[m].mau }} aria-hidden />
+        <span className="inline-block h-[10px] w-[10px] shrink-0 self-center rounded-full" style={{ background: MAU[m] }} aria-hidden />
         <h3 className="whitespace-nowrap text-[15px] font-semibold" style={{ color: 'var(--fg)' }}>
-          {TEN_MUC[m]}
+          {tenMuc(m, t)}
         </h3>
-        <span className="caption w-full pl-[18px] sm:w-auto sm:pl-0">{NHOM[m].moTa}</span>
+        <span className="caption w-full pl-[18px] sm:w-auto sm:pl-0">{moTaNhom(m, t)}</span>
       </div>
       <ol className="flex flex-col">
         {ds.map((d) => (
@@ -466,6 +417,7 @@ export function BanDoManhYeu({
   duongChuyenSau: string;
   duocVao: boolean;
 }) {
+  const t = useT();
   const ds = useMemo(() => chiTietDiemTungCung(laSo).sort((a, b) => b.diem - a.diem), [laSo]);
   // Mức giữa = trung vị; một thước chung cho hai phía để độ lệch so được với nhau
   const giua = (ds[5].diem + ds[6].diem) / 2;
@@ -485,8 +437,8 @@ export function BanDoManhYeu({
   useEffect(() => {
     const el = khoiRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
-      const t = setTimeout(() => setDaThay(true), 0);
-      return () => clearTimeout(t);
+      const hen = setTimeout(() => setDaThay(true), 0);
+      return () => clearTimeout(hen);
     }
     const io = new IntersectionObserver(
       (entries) => {
@@ -523,12 +475,12 @@ export function BanDoManhYeu({
   return (
     <section ref={khoiRef} className="card flex flex-col gap-[24px]" aria-labelledby="ban-do-manh-yeu">
       <div className="flex flex-col gap-[8px]">
-        <span className="eyebrow">Điểm mạnh – điểm yếu</span>
+        <span className="eyebrow">{t.manhYeu.eyebrow}</span>
         <h2 id="ban-do-manh-yeu" className="text-[22px] font-semibold leading-snug md:text-[24px]" style={{ color: 'var(--fg)' }}>
-          Lĩnh vực nào thuận lợi, lĩnh vực nào cần chăm chút
+          {t.manhYeu.tieuDe}
         </h2>
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes so 12 lĩnh vực trong lá số của bạn với nhau — không so với người khác. Chạm vào từng dòng để xem lý do.
+          {t.manhYeu.moTa}
         </p>
       </div>
 
@@ -537,8 +489,8 @@ export function BanDoManhYeu({
       {/* Nhìn một giây là biết: mạnh nhất và cần chăm chút nhất */}
       <div className="grid grid-cols-2 gap-[12px]">
         {[
-          { d: dau, nhan: 'Thuận lợi nhất', mau: 'var(--tier-manh)' },
-          { d: cuoi, nhan: 'Cần chăm chút nhất', mau: 'var(--tier-gang)' },
+          { d: dau, nhan: t.manhYeu.thuanNhat, mau: 'var(--tier-manh)' },
+          { d: cuoi, nhan: t.manhYeu.chamNhat, mau: 'var(--tier-gang)' },
         ].map(({ d, nhan, mau }) => (
           <button
             key={nhan}
@@ -551,7 +503,7 @@ export function BanDoManhYeu({
               {nhan}
             </span>
             <span className="text-[17px] font-semibold leading-[22px]" style={{ color: 'var(--fg)' }}>
-              {tenLv(d.linhVuc)}
+              {tenLv(d.cung, d.linhVuc, t)}
             </span>
           </button>
         ))}
@@ -561,7 +513,7 @@ export function BanDoManhYeu({
         {/* Cách đọc thanh — một câu, vừa cả cột hẹp của điện thoại (nhãn trục ba chữ ở đó bị gãy dòng) */}
         <p className="caption flex items-center gap-[8px] px-[8px]" style={{ color: 'var(--fg-muted)' }}>
           <span aria-hidden className="inline-block h-[12px] w-[2px] shrink-0 rounded-full" style={{ background: 'var(--line-strong)' }} />
-          Vạch giữa là mức trung bình của lá số. Thanh lệch sang phải là thuận hơn, sang trái là kém hơn.
+          {t.manhYeu.cachDoc}
         </p>
         <NhomCung m="Mạnh" ds={nhomDs('Mạnh')} thuTu={thuTuDong} c={chung} />
         <NhomCung m="Bình" ds={nhomDs('Bình')} thuTu={thuTuDong} c={chung} />
@@ -575,13 +527,13 @@ export function BanDoManhYeu({
           style={{ background: 'color-mix(in srgb, var(--accent) 7%, transparent)' }}
         >
           <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent-chu)' }}>
-            Celes nhận xét
+            {t.manhYeu.nhanXet}
           </span>
           <p className={`body-text ${moTomTat ? '' : 'line-clamp-3'}`} style={{ color: 'var(--fg)' }}>
             {tomTat}
           </p>
           <button type="button" className="link-text link-action" onClick={() => setMoTomTat((v) => !v)} aria-expanded={moTomTat}>
-            {moTomTat ? 'Thu gọn' : 'Đọc tiếp'}
+            {moTomTat ? t.manhYeu.thuGon : t.manhYeu.docTiep}
           </button>
         </div>
       ) : dangDocTomTat ? (
@@ -595,18 +547,16 @@ export function BanDoManhYeu({
       <div className="flex flex-col gap-[8px]">
         {cungDv && (
           <p className="caption">
-            <Nhan>Vận hiện tại</Nhan> Lĩnh vực mà giai đoạn 10 năm này của bạn đang đi qua.
+            <Nhan>{t.manhYeu.vanHienTai}</Nhan> {t.manhYeu.chuVan}
           </p>
         )}
         {cungTh && (
           <p className="caption">
-            <Nhan>Năm {namXem}</Nhan> Lĩnh vực được chú ý nhiều nhất trong năm {namXem}.
+            <Nhan>{dien(t.manhYeu.nam, { nam: namXem })}</Nhan> {dien(t.manhYeu.chuNam, { nam: namXem })}
           </p>
         )}
         <p className="caption">
-          Cách tính: mỗi cung được cộng điểm từ các sao tốt, trừ điểm từ các sao xấu, và tính thêm ảnh hưởng của các cung liên
-          quan; 12 lĩnh vực sau đó được xếp hạng với nhau. Đây là so sánh để biết nên dựa vào đâu, chú ý chỗ nào — không phải
-          lời phán tốt hay xấu.
+          {t.manhYeu.cachTinh}
         </p>
       </div>
     </section>

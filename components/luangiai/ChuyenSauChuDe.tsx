@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import type { LaSo } from '@/lib/tuvi/ansao';
-import { diemTungCung, TEN_MUC } from '@/lib/rag/v3/du-kien';
+import { diemTungCung } from '@/lib/rag/v3/du-kien';
 import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
 import { ghiSuKien } from '@/lib/analytics';
+import { dien, useT } from '@/lib/i18n/context';
+import { tenMuc } from './ten-muc';
 
 /**
  * TAB "CHUYÊN SÂU" ở /la-so (25/09/2026) — lối vào 14 chủ đề ngay trên trang lá số.
@@ -36,6 +38,8 @@ export function ChuyenSauChuDe({
   duongChuyenSau: string;
   duocVao: boolean;
 }) {
+  const t = useT();
+  const tenCD = (c: { id: string; ten: string }) => (t.chuDeSau as Record<string, string>)[c.id] ?? c.ten;
   const mucCung = useMemo(() => new Map(diemTungCung(laSo).map((d) => [d.cung, d.muc])), [laSo]);
   const tongCau = [...SO_CAU.values()].reduce((a, b) => a + b, 0);
   const toi = (chuDe: string) => {
@@ -46,13 +50,12 @@ export function ChuyenSauChuDe({
   return (
     <section className="flex flex-col gap-[24px]" aria-labelledby="tab-chuyen-sau-tieu-de">
       <div className="card flex flex-col gap-[12px]" style={{ borderTop: '3px solid var(--accent)' }}>
-        <span className="eyebrow">Luận giải chuyên sâu</span>
+        <span className="eyebrow">{t.chuyenSau.nhan}</span>
         <h2 id="tab-chuyen-sau-tieu-de" className="text-[22px] font-semibold leading-snug md:text-[24px]" style={{ color: 'var(--fg)' }}>
-          {CHU_DE_V3.length} chủ đề, {tongCau} câu hỏi cụ thể về chính bạn
+          {dien(t.chuyenSau.tieuDe, { chuDe: CHU_DE_V3.length, cau: tongCau })}
         </h2>
         <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-          Mỗi chủ đề đi sâu vào một phần đời — công việc, tiền bạc, tình cảm, gia đình, sức khỏe… Mỗi câu được luận từ nhiều
-          cung trên lá số, kèm phần căn cứ để bạn biết Celes dựa vào đâu.
+          {t.chuyenSau.moTa}
         </p>
         <div className="flex flex-wrap items-center gap-[12px] pt-[4px]">
           <Link
@@ -60,15 +63,15 @@ export function ChuyenSauChuDe({
             className="btn-primary"
             onClick={() => ghiSuKien('deep_read_cta', { viTri: 'tab-chuyen-sau' })}
           >
-            {duocVao ? 'Bắt đầu đọc' : 'Đăng nhập để đọc'}
+            {duocVao ? t.chuyenSau.batDau : t.chuyenSau.dangNhapDeDoc}
           </Link>
-          <span className="caption">{duocVao ? 'Miễn phí, bài đọc được lưu lại cho lần sau.' : 'Miễn phí — cần tài khoản để Celes lưu bài cho bạn.'}</span>
+          <span className="caption">{duocVao ? t.chuyenSau.mienPhiLuu : t.chuyenSau.mienPhiCanTk}</span>
         </div>
       </div>
 
       <div className="flex flex-col gap-[12px]">
         <p className="caption px-[4px]">
-          Nhãn màu cho biết lĩnh vực đó trong lá số của bạn đang thuận lợi hay cần chăm chút — gợi ý nên đọc chỗ nào trước.
+          {t.chuyenSau.nhanMau}
         </p>
         <ol className="grid gap-[12px] sm:grid-cols-2">
           {CHU_DE_V3.map((c, i) => {
@@ -90,14 +93,14 @@ export function ChuyenSauChuDe({
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col gap-[4px]">
                     <span className="text-[16px] font-semibold leading-[22px]" style={{ color: 'var(--fg)' }}>
-                      {c.ten}
+                      {tenCD(c)}
                     </span>
                     <span className="caption flex flex-wrap items-center gap-x-[8px] gap-y-[4px]">
-                      <span>{SO_CAU.get(c.id)} câu hỏi</span>
+                      <span>{dien(t.chuyenSau.soCauHoi, { so: SO_CAU.get(c.id) ?? 0 })}</span>
                       {muc && (
                         <span className="inline-flex items-center gap-[4px]" style={{ color: MAU_MUC[muc] }}>
                           <span className="inline-block h-[8px] w-[8px] rounded-full" style={{ background: MAU_MUC[muc] }} aria-hidden />
-                          {TEN_MUC[muc]}
+                          {tenMuc(muc, t)}
                         </span>
                       )}
                     </span>

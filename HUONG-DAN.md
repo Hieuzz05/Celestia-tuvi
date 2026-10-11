@@ -1039,7 +1039,10 @@ Ngôn ngữ mặc định lấy theo `navigator.languages`, lưu vào localStora
 route `/vi` và `/en` — brand spec cho phép dùng locale state, mà tách route thì phải dựng lại
 toàn bộ cây app router cho thứ chưa có nội dung SEO riêng.
 
-**Chưa phủ tiếng Anh**: các trang công cụ sâu (`/luan-giai`, `/hoi-dap`, `/hop-tuoi`, `/ho-so`,
-`/tai-khoan`, `/gioi-thieu`, `/cau-chuyen`, `/admin`) vẫn chỉ có tiếng Việt, và nội dung AI sinh
-ra luôn trả lời tiếng Việt. Nút đổi ngôn ngữ vẫn hiện ở đó, nên người đọc tiếng Anh sẽ gặp
-tiếng Việt khi đi sâu — cần dịch nốt trước khi mở cho người dùng nước ngoài.
+**Phủ tiếng Anh (CEL-058/081, 11/10/2026)**: khung chữ của các trang sâu (`/luan-giai`,
+`/luan-giai/sau`, `/hoi-dap`, `/hop-tuoi`, `/ho-so`, `/tai-khoan`, `/la-so`) đã đi qua
+`lib/i18n` — khối khoá nằm giữa hai dòng `// ---- trang sâu (CEL-058/081) ----` trong `vi.ts`/`en.ts`.
+**Còn tiếng Việt, có chủ đích**: nội dung AI sinh ra (bài luận, câu trả lời chat), các câu gợi ý
+gửi vào chat (chúng là câu hỏi cho Celes), metadata server của `/gioi-thieu`, và `/admin`.
+**Còn tiếng Việt, chưa làm**: `/dang-nhap`. Tên cung/sao trong câu EN vẫn để tiếng Việt
+(ví dụ "Quan Lộc palace") — đó là tên riêng, không dịch.

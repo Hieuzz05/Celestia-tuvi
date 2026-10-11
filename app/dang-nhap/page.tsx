@@ -182,7 +182,7 @@ export default function DangNhapPage() {
 
   return (
     <Shell className="flex flex-col gap-[16px] py-[32px]">
-      <QuayLai theoTrangTruoc macDinh={{ href: '/', nhan: 'Quay lại' }} />
+      <QuayLai theoTrangTruoc macDinh={{ href: '/' }} />
       {/* Hai cột: form bên trái, panel nhắc lại thứ người dùng sắp giữ lại bên phải.
           Đăng nhập ở đây không phải cổng chặn mà là bước lưu giá trị vừa nhận. */}
       <div className="mx-auto grid w-full max-w-[940px] gap-[32px] lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">

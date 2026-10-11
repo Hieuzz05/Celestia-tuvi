@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ghiSuKien } from '@/lib/analytics';
+import { useT } from '@/lib/i18n/context';
 
 // Tách sang tệp riêng (CEL-188) để tệp bài luận này không bao giờ import linh
 // vật — bài kiểm chỗ đặt cấm tệp này. Giữ xuất lại cho nơi gọi cũ.
@@ -29,6 +30,7 @@ export interface CauV3 {
  * `doRo` vẫn nằm trong dữ liệu để đo và để dùng lại khi cần.
  */
 export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
+  const t = useT();
   const [mo, setMo] = useState(false);
 
   const tieuDe = (
@@ -51,7 +53,7 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
       <article className="flex flex-col gap-[8px]">
         {tieuDe}
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa viết được câu này. Mở lại trang sau ít phút để thử lại.
+          {t.docSau.cauChuaViet}
         </p>
       </article>
     );
@@ -76,11 +78,11 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
           setMo(!mo);
         }}
       >
-        {mo ? 'Thu gọn' : 'Muốn biết vì sao không?'}
+        {mo ? t.docSau.thuGon : t.docSau.viSao}
       </button>
       {mo && (
         <div className="flex flex-col gap-[8px] pl-[16px]" style={{ borderLeft: '2px solid var(--accent)' }}>
-          <p className="eyebrow">Căn cứ trên lá số của bạn</p>
+          <p className="eyebrow">{t.docSau.canCu}</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {cau.viSao}
           </p>

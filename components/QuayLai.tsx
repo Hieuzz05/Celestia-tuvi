@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useT } from '@/lib/i18n/context';
+import type { TuDien } from '@/lib/i18n/vi';
 
 /**
  * NÚT QUAY LẠI dùng chung cho các trang con (25/09/2026).
@@ -21,15 +23,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 const KHOA_TRUOC = 'celes:trang-truoc';
 
-const TEN_TRANG: [string, string][] = [
-  ['/la-so', 'Về lá số'],
-  ['/luan-giai/sau', 'Về luận giải chuyên sâu'],
-  ['/luan-giai', 'Về khám phá chủ đề'],
-  ['/home', 'Về trang Hôm nay'],
-  ['/hoi-dap', 'Về Hỏi Celes'],
-  ['/hanh-trinh', 'Về Hành trình'],
-  ['/ho-so', 'Về danh sách lá số'],
-  ['/hop-tuoi', 'Về Kết nối'],
+const TEN_TRANG: [string, keyof TuDien['veTrang']][] = [
+  ['/la-so', 'laSo'],
+  ['/luan-giai/sau', 'luanSau'],
+  ['/luan-giai', 'luanGiai'],
+  ['/home', 'home'],
+  ['/hoi-dap', 'hoiDap'],
+  ['/hanh-trinh', 'hanhTrinh'],
+  ['/ho-so', 'hoSo'],
+  ['/hop-tuoi', 'hopTuoi'],
 ];
 
 /** Chỉ nhận đường nội bộ — `ve` đến từ URL, không được thành lối chuyển hướng ra ngoài */
@@ -42,8 +44,11 @@ export function themVe(href: string, ve: string): string {
   return `${href}${href.includes('?') ? '&' : '?'}ve=${encodeURIComponent(ve)}`;
 }
 
-const nhanCho = (duong: string) =>
-  TEN_TRANG.find(([p]) => duong === p || duong.startsWith(`${p}?`))?.[1] ?? 'Quay lại';
+/** Nhãn theo trang đích, theo ngôn ngữ đang chọn; trang lạ thì "Quay lại" */
+const nhanCho = (duong: string, t: TuDien) => {
+  const khoa = TEN_TRANG.find(([p]) => duong === p || duong.startsWith(`${p}?`))?.[1];
+  return khoa ? t.veTrang[khoa] : t.chung.quayLai;
+};
 
 /**
  * Ghi lại trang đang đứng MỖI KHI bấm một liên kết nội bộ — kể cả tab đang mở
@@ -69,7 +74,7 @@ export function GhiTrangTruoc() {
 }
 
 type PropsQuayLai = {
-  macDinh: { href: string; nhan: string };
+  macDinh: { href: string };
   chiKhiCoVe?: boolean;
   theoTrangTruoc?: boolean;
   className?: string;
@@ -84,8 +89,9 @@ type PropsQuayLai = {
  * mặc định vốn không hiện nên fallback rỗng là đúng.
  */
 export function QuayLai(p: PropsQuayLai) {
+  const t = useT();
   return (
-    <Suspense fallback={p.chiKhiCoVe ? null : <LienKetQuayLai href={p.macDinh.href} nhan={p.macDinh.nhan} className={p.className} />}>
+    <Suspense fallback={p.chiKhiCoVe ? null : <LienKetQuayLai href={p.macDinh.href} nhan={nhanCho(p.macDinh.href, t)} className={p.className} />}>
       <NutQuayLai {...p} />
     </Suspense>
   );
@@ -123,13 +129,14 @@ function NutQuayLai({
   theoTrangTruoc = false,
   className = '',
 }: {
-  macDinh: { href: string; nhan: string };
+  macDinh: { href: string };
   /** Trang gốc (có trên thanh điều hướng): chỉ hiện nút khi trang trước dặn đường về */
   chiKhiCoVe?: boolean;
   /** Không có `ve` thì về trang vừa rời (đăng nhập: bị chặn giữa chừng, về đúng chỗ đang đứng) */
   theoTrangTruoc?: boolean;
   className?: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const params = useSearchParams();
   const ve = duongVeHopLe(params.get('ve'));
@@ -138,7 +145,7 @@ function NutQuayLai({
   return (
     <LienKetQuayLai
       href={ve ?? macDinh.href}
-      nhan={ve ? nhanCho(ve) : macDinh.nhan}
+      nhan={nhanCho(ve ?? macDinh.href, t)}
       className={className}
       onClick={(e) => {
         if (ve || !theoTrangTruoc) return;

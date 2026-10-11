@@ -563,17 +563,17 @@ function TrangLaSo() {
             {gioiHanKhoa !== null && gioiHanKhoa === khoaSau && (
               <div className="card flex flex-col gap-[8px]" style={{ borderTop: '3px solid var(--accent)' }}>
                 <p className="body-text" style={{ color: 'var(--fg)' }}>
-                  Hôm nay bạn đã mở khá nhiều lá số mới khi chưa đăng nhập, nên phần dưới đây là bản đọc nhanh.
+                  {t.laSoSau.gioiHan}
                 </p>
                 <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  Đăng nhập miễn phí để Celes viết luận giải tổng quan cho lá số này. Những lá số bạn đã mở trước đó vẫn xem lại được.
+                  {t.laSoSau.moiDangNhap}
                 </p>
                 <Link
                   href={`/dang-nhap?intent=deep_read&next=${encodeURIComponent(duongVe)}`}
                   className="btn-outline btn-sm self-start"
                   onClick={() => ghiSuKien('auth_gate_viewed', { nguon: 'gioi_han_khach' })}
                 >
-                  Đăng nhập để đọc tiếp
+                  {t.laSoSau.docTiep}
                 </Link>
               </div>
             )}
@@ -615,10 +615,10 @@ function TrangLaSo() {
           {dungV3 && laSo && !canBangCu && duocVao && tongQuan.banMoi && (
             <div className="card flex flex-col gap-[8px]">
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Kho tri thức của Celes vừa được cập nhật sau khi phần tổng quan này được viết. Bạn có thể để Celes viết lại theo kho mới — mỗi lần kho cập nhật chỉ viết lại một lần.
+                {t.laSoSau.khoMoi}
               </p>
               <button type="button" onClick={tongQuan.taoBanMoi} className="btn-outline btn-sm self-start">
-                Tạo bản mới
+                {t.laSoSau.banMoi}
               </button>
             </div>
           )}

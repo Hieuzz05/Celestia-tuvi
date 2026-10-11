@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useT } from '@/lib/i18n/context';
+import { dien, useT } from '@/lib/i18n/context';
 import { O, OChon, Truong } from '@/components/ui';
 import type { GioiTinh } from '@/lib/tuvi/ansao';
 
@@ -13,18 +13,18 @@ import type { GioiTinh } from '@/lib/tuvi/ansao';
  * biết gì thì đọc được ngay từ chữ đầu tiên. Không mất gì, được một nhóm.
  */
 export const GIO_OPTIONS = [
-  { value: 23, label: '23:00 – 00:59 · giờ Tý' },
-  { value: 1, label: '01:00 – 02:59 · giờ Sửu' },
-  { value: 3, label: '03:00 – 04:59 · giờ Dần' },
-  { value: 5, label: '05:00 – 06:59 · giờ Mão' },
-  { value: 7, label: '07:00 – 08:59 · giờ Thìn' },
-  { value: 9, label: '09:00 – 10:59 · giờ Tỵ' },
-  { value: 11, label: '11:00 – 12:59 · giờ Ngọ' },
-  { value: 13, label: '13:00 – 14:59 · giờ Mùi' },
-  { value: 15, label: '15:00 – 16:59 · giờ Thân' },
-  { value: 17, label: '17:00 – 18:59 · giờ Dậu' },
-  { value: 19, label: '19:00 – 20:59 · giờ Tuất' },
-  { value: 21, label: '21:00 – 22:59 · giờ Hợi' },
+  { value: 23, khung: '23:00 – 00:59', chi: 'Tý' },
+  { value: 1, khung: '01:00 – 02:59', chi: 'Sửu' },
+  { value: 3, khung: '03:00 – 04:59', chi: 'Dần' },
+  { value: 5, khung: '05:00 – 06:59', chi: 'Mão' },
+  { value: 7, khung: '07:00 – 08:59', chi: 'Thìn' },
+  { value: 9, khung: '09:00 – 10:59', chi: 'Tỵ' },
+  { value: 11, khung: '11:00 – 12:59', chi: 'Ngọ' },
+  { value: 13, khung: '13:00 – 14:59', chi: 'Mùi' },
+  { value: 15, khung: '15:00 – 16:59', chi: 'Thân' },
+  { value: 17, khung: '17:00 – 18:59', chi: 'Dậu' },
+  { value: 19, khung: '19:00 – 20:59', chi: 'Tuất' },
+  { value: 21, khung: '21:00 – 22:59', chi: 'Hợi' },
 ];
 
 /**
@@ -67,21 +67,21 @@ export function FormSinh({
 
   return (
     <div className="grid gap-[16px] sm:grid-cols-2">
-      <Truong nhan="Họ tên">
+      <Truong nhan={t.formSinh.hoTen}>
         <O
           value={giaTri.hoTen}
           onChange={(e) => set('hoTen', e.target.value)}
-          placeholder="Nguyễn Văn A"
+          placeholder={t.formSinh.hoTenVD}
         />
       </Truong>
-      <Truong nhan="Ngày sinh (dương lịch)">
+      <Truong nhan={t.onboarding.ngayNhan}>
         <O type="date" value={giaTri.ngaySinh} onChange={(e) => set('ngaySinh', e.target.value)} />
       </Truong>
-      <Truong nhan="Giờ sinh">
+      <Truong nhan={t.formSinh.gioSinh}>
         <OChon value={veKhungGio(giaTri.gio)} onChange={(e) => set('gio', Number(e.target.value))}>
           {GIO_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {dien(t.formSinh.khungGio, { khung: o.khung, chi: o.chi })}
             </option>
           ))}
         </OChon>
@@ -114,13 +114,13 @@ export function FormSinh({
           </div>
         )}
       </Truong>
-      <Truong nhan="Giới tính">
+      <Truong nhan={t.onboarding.gioiTinh}>
         <OChon
           value={giaTri.gioiTinh}
           onChange={(e) => set('gioiTinh', e.target.value as GioiTinh)}
         >
-          <option value="nam">Nam</option>
-          <option value="nu">Nữ</option>
+          <option value="nam">{t.onboarding.nam}</option>
+          <option value="nu">{t.onboarding.nu}</option>
         </OChon>
       </Truong>
     </div>

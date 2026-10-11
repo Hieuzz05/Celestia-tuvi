@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CAU_HINH_Y_DINH, type YDinhKetNoi } from '@/lib/ket-noi/y-dinh';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Kết quả so hai người.
@@ -43,14 +44,17 @@ export function KetQuaKetNoi({
   tenB: string;
   bangKyThuat: React.ReactNode;
 }) {
+  const t = useT();
   const cauHinh = CAU_HINH_Y_DINH[duLieu.yDinh];
+  const nhanYDinh = (t.yDinhNhan as Record<string, string>)[duLieu.yDinh] ?? cauHinh.nhan;
+  // Câu gợi ý đi vào chat — giữ tiếng Việt vì bộ hiểu câu của chat đọc tiếng Việt
   const cauHoiTiep = `Nếu hai người ${tenA} và ${tenB} đi tiếp với nhau, điều gì dễ gây khó khăn nhất?`;
 
   return (
     <section className="flex flex-col gap-[24px]">
       <div>
         <p className="eyebrow">
-          {tenA} &amp; {tenB} · {cauHinh.nhan.toUpperCase()}
+          {tenA} &amp; {tenB} · {nhanYDinh.toUpperCase()}
         </p>
         <h2 className="heading-sm mt-[10px]">{duLieu.dangChuY.tieuDe}</h2>
         <p className="body-text mt-[12px]" style={{ color: 'var(--fg-body)' }}>
@@ -81,7 +85,7 @@ export function KetQuaKetNoi({
           className="flex flex-col gap-[8px] rounded-[var(--radius-cards)] p-[18px]"
           style={{ background: 'var(--surface-panel)' }}
         >
-          <p className="eyebrow">CÂU HỎI CỦA BẠN</p>
+          <p className="eyebrow">{t.hopTuoi.cauHoiBan}</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {duLieu.cauHoiCuaBan.cauHoi}
           </p>
@@ -95,11 +99,11 @@ export function KetQuaKetNoi({
           không điểm liên quan — xem ghi chú ở components/CanCu.tsx. */}
       <details className="rounded-[var(--radius-cards)] p-[14px]" style={{ boxShadow: 'var(--shadow-card)' }}>
         <summary className="cursor-pointer text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-          Muốn biết vì sao không?
+          {t.hopTuoi.viSao}
         </summary>
         <div className="mt-[12px] flex flex-col gap-[12px]">
           <div className="flex flex-col gap-[4px]">
-            <span className="eyebrow">CELES DỰA VÀO ĐÂU</span>
+            <span className="eyebrow">{t.hopTuoi.duaVao}</span>
             {duLieu.canCu.duKien.map((d) => (
               <span key={d.id} className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
                 {d.noiDung}
@@ -109,7 +113,7 @@ export function KetQuaKetNoi({
 
           {duLieu.canCu.cachNoi && (
             <div className="flex flex-col gap-[4px]">
-              <span className="eyebrow">KHI ĐẶT CẠNH NHAU</span>
+              <span className="eyebrow">{t.hopTuoi.canhNhau}</span>
               <span className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
                 {duLieu.canCu.cachNoi}
               </span>
@@ -117,14 +121,13 @@ export function KetQuaKetNoi({
           )}
 
           <div className="flex flex-col gap-[4px]">
-            <span className="eyebrow">PHƯƠNG PHÁP</span>
+            <span className="eyebrow">{t.hopTuoi.phuongPhap}</span>
             <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
               {duLieu.canCu.phuongPhap}
             </span>
             {!duLieu.canCu.coNguon && (
               <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                Chưa có nguồn tài liệu nào trong kho khớp với chủ đề này, nên phần nhận định chuyên
-                môn đã được thu hẹp lại.
+                {t.hopTuoi.khongNguon}
               </span>
             )}
           </div>
@@ -132,19 +135,18 @@ export function KetQuaKetNoi({
       </details>
 
       <Link href={`/hoi-dap?q=${encodeURIComponent(cauHoiTiep)}`} className="link-text link-action">
-        Hỏi Celes thêm về hai người →
+        {t.hopTuoi.hoiThem}
       </Link>
 
       <details className="rounded-[var(--radius-cards)] p-[14px]" style={{ boxShadow: 'var(--shadow-card)' }}>
         <summary className="cursor-pointer text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-          Xem căn cứ kỹ thuật
+          {t.hopTuoi.canCuKyThuat}
         </summary>
         <div className="mt-[14px]">{bangKyThuat}</div>
       </details>
 
       <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-        Celes đưa góc nhìn để hai người hiểu nhau hơn, không thay bạn quyết định. Không có mối quan
-        hệ nào quy được về một con số.
+        {t.hopTuoi.chanTrang}
       </p>
     </section>
   );

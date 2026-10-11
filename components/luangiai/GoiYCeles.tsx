@@ -1,3 +1,6 @@
+'use client';
+
+import { dien, useT } from '@/lib/i18n/context';
 import type { CauV3 } from './CauTraLoiV3';
 
 /**
@@ -10,6 +13,7 @@ import type { CauV3 } from './CauTraLoiV3';
  * Không tốn thêm lượt gọi model nào.
  */
 export function GoiYCeles({ cau, moTa }: { cau: CauV3[] | null; moTa?: string }) {
+  const t = useT();
   const daCo = new Set<string>();
   const ds = (cau ?? [])
     .filter((c) => !c.chuaViet && c.goiY?.trim())
@@ -30,10 +34,10 @@ export function GoiYCeles({ cau, moTa }: { cau: CauV3[] | null; moTa?: string })
     >
       <div className="flex flex-col gap-[4px]">
         <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent-chu)' }}>
-          Gợi ý của Celes
+          {t.docSau.goiYNhan}
         </span>
         <h2 id="goi-y-celes" className="text-[20px] font-semibold leading-snug" style={{ color: 'var(--fg)' }}>
-          Vài điều bạn có thể cân nhắc
+          {t.docSau.goiYTieuDe}
         </h2>
         {moTa && (
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
@@ -50,14 +54,14 @@ export function GoiYCeles({ cau, moTa }: { cau: CauV3[] | null; moTa?: string })
                 {c.goiY}
               </span>
               <span className="caption" style={{ color: 'var(--fg-muted)' }}>
-                Từ phần “{c.cauHoi}”
+                {dien(t.docSau.goiYTu, { cau: c.cauHoi })}
               </span>
             </span>
           </li>
         ))}
       </ul>
       <p className="caption" style={{ color: 'var(--fg-muted)' }}>
-        Đây là gợi ý để tham khảo, không phải việc bắt buộc — bạn chọn điều hợp với mình.
+        {t.docSau.goiYChan}
       </p>
     </section>
   );

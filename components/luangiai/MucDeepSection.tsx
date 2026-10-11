@@ -9,6 +9,7 @@ import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
 import { NGUONG_NOI } from '@/lib/tuvi/do-noi-bat';
 import { ChuSao } from './ChuSao';
 import { KhoiGuong } from './KhoiGuong';
+import { dien, useNgonNgu } from '@/lib/i18n/context';
 
 /**
  * Một PHẦN ở bản đọc sâu.
@@ -39,6 +40,7 @@ export function MucDeepSection({
   /** Tên sao và cách cục CÓ THẬT trên lá số — chỉ tô màu những tên này */
   tenCoThat?: readonly string[];
 }) {
+  const { t, ngonNgu } = useNgonNgu();
   const [moCanCu, setMoCanCu] = useState(false);
 
   /*
@@ -52,15 +54,15 @@ export function MucDeepSection({
     return (
       <section id={muc.id} className="flex flex-col gap-[12px] scroll-mt-[90px]">
         <p className="eyebrow">
-          Chặng {soChang} · Phần {soPhan}
+          {dien(t.mucSau.changPhan, { chang: soChang, phan: soPhan })}
         </p>
         <h2 className="heading-sm">{muc.tieuDe}</h2>
         <p className="body-text" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa có đủ căn cứ để đi xa hơn ở phần này.
+          {t.mucSau.thieuCanCu}
         </p>
         {onThuLai && (
           <button onClick={onThuLai} className="link-text self-start">
-            Thử lại phần này
+            {t.mucSau.thuLai}
           </button>
         )}
       </section>
@@ -72,12 +74,12 @@ export function MucDeepSection({
     và một nhãn đứng một mình không nói gì với người đọc ngoài việc trang bị
     thiếu. Phần đời vẫn đủ, chỉ ngắn hơn — đúng ý của việc bỏ chỉ tiêu sản lượng.
   */
-  const tieuChiThuong = muc.tieuChi.filter((t) => !t.laGuong && !t.thieuCanCu);
-  const guong = muc.tieuChi.find((t) => t.laGuong);
+  const tieuChiThuong = muc.tieuChi.filter((x) => !x.laGuong && !x.thieuCanCu);
+  const guong = muc.tieuChi.find((x) => x.laGuong);
 
   // Phần mà cung gương ứng vào — để chân khối gương nói được đang nối đi đâu
   const mucGuong = MUC_CUA_CUNG[muc.cungGuong];
-  const tenPhanGuong = mucGuong ? CHU_12_CUNG.vi[mucGuong]?.nhan : undefined;
+  const tenPhanGuong = mucGuong ? CHU_12_CUNG[ngonNgu][mucGuong]?.nhan : undefined;
   const tenChangGuong = mucGuong ? CHANG[CHANG_CUA_MUC[mucGuong]].tieuDe : undefined;
 
   return (
@@ -85,14 +87,14 @@ export function MucDeepSection({
       <div className="flex flex-col gap-[8px]">
         <div className="flex flex-wrap items-center gap-[12px]">
           <span className="eyebrow">
-            Chặng {soChang} · Phần {soPhan}
+            {dien(t.mucSau.changPhan, { chang: soChang, phan: soPhan })}
           </span>
           {muc.doNoiBat >= NGUONG_NOI && (
             <span
               className="rounded-full px-[10px] py-[2px] text-[11px] font-semibold"
               style={{ background: 'var(--color-cream, #FFF1BD)', color: '#240029' }}
             >
-              Đáng chú ý nhất
+              {t.mucSau.dangChuY}
             </span>
           )}
         </div>
@@ -104,7 +106,7 @@ export function MucDeepSection({
           className="text-[11px]"
           style={{ fontFamily: 'var(--font-mono, monospace)', color: 'var(--fg-muted)' }}
         >
-          Đọc từ: {muc.cungGoc} · cùng {muc.cungTamHop.join(', ')} · soi qua {muc.cungGuong}
+          {dien(t.mucSau.docTu, { goc: muc.cungGoc, tamHop: muc.cungTamHop.join(', '), guong: muc.cungGuong })}
         </p>
       </div>
 
@@ -138,21 +140,21 @@ export function MucDeepSection({
         </p>
       )}
 
-      {tieuChiThuong.map((t) => (
-        <div key={t.nhan} className="flex flex-col gap-[8px]">
+      {tieuChiThuong.map((tc) => (
+        <div key={tc.nhan} className="flex flex-col gap-[8px]">
           {/* body-lg 18/600 — KHÔNG phải h3, xem ghi chú đầu tệp */}
           <p className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
-            {t.nhan}
+            {tc.nhan}
           </p>
           <ChuSao
-            van={t.noiDung}
+            van={tc.noiDung}
             ten={tenCoThat}
             className="body-text"
             style={{ color: 'var(--fg-body)', lineHeight: 1.7 }}
           />
-          {t.luongNguoc && (
+          {tc.luongNguoc && (
             <ChuSao
-              van={t.luongNguoc}
+              van={tc.luongNguoc}
               ten={tenCoThat}
               className="body-sm"
               style={{ color: 'var(--fg-muted)', lineHeight: 1.65 }}
@@ -193,7 +195,7 @@ export function MucDeepSection({
           className="flex flex-col gap-[4px] pl-[12px]"
           style={{ borderLeft: '2px solid var(--accent)' }}
         >
-          <p className="eyebrow">Điều Celes muốn bạn giữ lại</p>
+          <p className="eyebrow">{t.mucSau.giuLai}</p>
           <ChuSao
             van={muc.giuLai}
             ten={tenCoThat}
@@ -213,10 +215,10 @@ export function MucDeepSection({
           className="link-text link-action"
           aria-expanded={moCanCu}
         >
-          {moCanCu ? 'Thu gọn' : 'Vì sao Celes nói vậy?'}
+          {moCanCu ? t.docSau.thuGon : t.mucSau.viSao}
         </button>
         <Link href={duongHoi(muc.cauHoiGoiY)} className="link-text link-action">
-          Hỏi Celes về phần này
+          {t.mucSau.hoiCeles}
         </Link>
       </div>
 
@@ -230,20 +232,24 @@ export function MucDeepSection({
           className="flex flex-col gap-[12px] rounded-[14px] px-[16px] py-[14px]"
           style={{ background: 'var(--bg-soft, rgba(0,0,0,0.03))' }}
         >
-          <p className="eyebrow">Celes dựa vào đâu</p>
+          <p className="eyebrow">{t.mucSau.duaVao}</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Phần này đọc từ {muc.cungGoc}, đối chiếu với {muc.cungTamHop.join(' và ')}, rồi soi
-            ngược qua {muc.cungGuong}. Độ nổi bật {muc.doNoiBat}/100 — con số này quyết định phần
-            được viết dài hay ngắn.
+            {dien(t.mucSau.canCuMo, {
+              goc: muc.cungGoc,
+              tamHop: muc.cungTamHop.join(t.mucSau.va),
+              guong: muc.cungGuong,
+              diem: muc.doNoiBat,
+            })}
           </p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Mức chắc chắn:{' '}
-            {muc.doNoiBat >= NGUONG_NOI
-              ? 'nhiều tín hiệu cùng hướng'
-              : muc.doNoiBat <= 30
-                ? 'ít tín hiệu — đọc như một nền phẳng'
-                : 'có tín hiệu, chưa áp đảo'}
-            .
+            {dien(t.mucSau.chacChan, {
+              muc:
+                muc.doNoiBat >= NGUONG_NOI
+                  ? t.mucSau.chacNhieu
+                  : muc.doNoiBat <= 30
+                    ? t.mucSau.chacIt
+                    : t.mucSau.chacVua,
+            })}
           </p>
         </div>
       )}

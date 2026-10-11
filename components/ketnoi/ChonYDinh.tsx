@@ -1,6 +1,7 @@
 'use client';
 
 import { DANH_SACH_Y_DINH, type YDinhKetNoi } from '@/lib/ket-noi/y-dinh';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Chọn mục đích so sánh.
@@ -16,6 +17,8 @@ export function ChonYDinh({
   giaTri: YDinhKetNoi;
   onChon: (y: YDinhKetNoi) => void;
 }) {
+  const t = useT();
+  const tra = (bang: object, k: string) => (bang as Record<string, string>)[k];
   return (
     <div className="grid gap-[12px] sm:grid-cols-2 lg:grid-cols-3">
       {DANH_SACH_Y_DINH.map((y) => {
@@ -39,10 +42,10 @@ export function ChonYDinh({
               className="text-[15px] font-medium"
               style={{ color: dangChon ? 'var(--fg)' : 'var(--fg-body)' }}
             >
-              {y.nhan}
+              {tra(t.yDinhNhan, y.id) ?? y.nhan}
             </span>
             <span className="text-[12px] leading-[1.45]" style={{ color: 'var(--fg-muted)' }}>
-              {y.moTa}
+              {tra(t.yDinhMoTa, y.id) ?? y.moTa}
             </span>
           </button>
         );

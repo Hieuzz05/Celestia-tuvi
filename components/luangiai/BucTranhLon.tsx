@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DangDocV3 } from './CauTraLoiV3';
 import { VietLaiQuanTri } from './VietLaiQuanTri';
+import { dien, useT } from '@/lib/i18n/context';
 
 /**
  * BỨC TRANH LỚN CỦA CUỘC ĐỜI (26/09/2026) — tầng cuối của luận giải chuyên sâu.
@@ -27,6 +28,7 @@ export function BucTranhLon({
   /** Bối cảnh người đọc — chọn đúng bản "Tóm lại" của từng chủ đề */
   boiCanh?: unknown;
 }) {
+  const t = useT();
   const [ket, setKet] = useState<Ket>({ dang: true });
   const { ngay, thang, nam, gio, gioiTinh, namXem } = thongTin;
 
@@ -43,19 +45,19 @@ export function BucTranhLon({
         setKet(
           ok
             ? { dang: false, bucTranh: d.bucTranh ?? null, soChuDe: d.soChuDe, can: d.canToiThieu }
-            : { dang: false, bucTranh: null, loi: d?.loi ?? 'Celes chưa ghép được bức tranh lớn.' }
+            : { dang: false, bucTranh: null, loi: d?.loi ?? t.docSau.bucChuaGhep }
         );
       })
       .catch(() => {
-        if (!huy) setKet({ dang: false, bucTranh: null, loi: 'Không kết nối được. Thử lại sau ít phút.' });
+        if (!huy) setKet({ dang: false, bucTranh: null, loi: t.trangSau.loiMang });
       });
     return () => {
       huy = true;
     };
-  }, [ngay, thang, nam, gio, gioiTinh, namXem, vietLai]);
+  }, [ngay, thang, nam, gio, gioiTinh, namXem, vietLai, t]);
 
   // Cùng chỗ với lần chờ đầu ở /luan-giai/sau (loại trừ nhau): có Celes.
-  if (ket.dang) return <DangDocV3 celes chu="Celes đang ghép các phần bạn đã đọc thành một bức tranh" />;
+  if (ket.dang) return <DangDocV3 celes chu={t.docSau.bucDangGhep} />;
   if (ket.bucTranh) {
     return (
       <section className="card flex flex-col gap-[16px]" style={{ borderTop: '3px solid var(--accent)' }}>
@@ -68,7 +70,7 @@ export function BucTranhLon({
             </p>
           ))}
         <p className="caption">
-          Ghép từ phần tổng quan và {ket.soChuDe} chủ đề bạn đã đọc. Đọc thêm chủ đề, bức tranh sẽ đầy đủ hơn.
+          {dien(t.docSau.bucGhepTu, { so: ket.soChuDe ?? 0 })}
         </p>
         {onVietLai && <VietLaiQuanTri phan="bức tranh lớn" onVietLai={onVietLai} />}
       </section>
@@ -85,10 +87,10 @@ export function BucTranhLon({
   return (
     <div className="card flex flex-col gap-[12px]">
       <p className="body-text" style={{ color: 'var(--fg)' }}>
-        Bức tranh lớn được ghép từ những chủ đề bạn đã đọc hết. Bạn đọc thêm {con} chủ đề nữa, Celes sẽ nối chúng thành một câu chuyện về cả cuộc đời.
+        {dien(t.docSau.bucCanThem, { so: con })}
       </p>
       <button type="button" className="btn-primary self-start" onClick={onMoChuDe}>
-        Chọn một chủ đề để đọc
+        {t.docSau.chonChuDe}
       </button>
     </div>
   );
