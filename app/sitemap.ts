@@ -12,5 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${URL_GOC}/`, lastModified: nay, changeFrequency: 'weekly', priority: 1 },
     { url: `${URL_GOC}/la-so`, lastModified: nay, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${URL_GOC}/gioi-thieu`, lastModified: nay, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${URL_GOC}/tu-dien`, lastModified: nay, changeFrequency: 'monthly', priority: 0.6 },
   ];
 }

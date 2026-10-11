@@ -29,6 +29,7 @@ export const en: TuDien = {
     khamPha: 'Explore',
     cachHoatDong: 'How it works',
     cauChuyen: 'Our story',
+    tuDien: 'Tử Vi glossary',
     veCelestia: 'About Celestia',
     batDauMienPhi: 'Start free',
     batDauNgan: 'Start',
@@ -315,6 +316,43 @@ export const en: TuDien = {
     xemHanhTrinh: 'See the whole journey',
     chuaCoTieuDe: 'No map saved yet',
     chuaCoMo: 'Create your first map so Celes has something to read with you each day.',
+  },
+
+  // Glossary (CEL-075) — meanings come from the quick read; only names and templates live here
+  tuDien: {
+    eyebrow: 'Glossary',
+    tieuDe: 'Tử Vi glossary',
+    intro:
+      'The words you will meet when reading a chart, explained in plain language. Each note below is a common pattern, not a verdict on anyone in particular.',
+    timNhan: 'Search the glossary',
+    timGoiY: 'A star, a house…',
+    mucLuc: 'Sections of the glossary',
+    khongThay: 'Nothing matches “{q}” yet.',
+    nhom: {
+      chinhTinh: 'The fourteen main stars',
+      cung: 'The twelve houses',
+      phuTinh: 'Minor stars and the Four Transformations',
+      trangSinh: 'The Trường Sinh cycle',
+      khaiNiem: 'Time and other terms',
+    },
+    moNhom: {
+      chinhTinh:
+        'Each star has two notes: the trait usually seen when it sits in the Self house (Mệnh), and what is usually needed when it sits in the Body house (Thân). These describe the star alone, before brightness or the stars beside it.',
+      cung: 'Each house is one side of life.',
+      phuTinh:
+        'Stars that travel with the main stars and colour the house they sit in. Each note is the trait usually seen when a chart holds that star; a few are tied to a particular year or stretch, and then the note only fits while that star is in play.',
+      trangSinh:
+        'Twelve stages of one cycle, fixed to each house from the moment the chart is drawn, showing whether that house leans toward gathering strength, drawing in, or beginning anew.',
+      khaiNiem: 'How a chart divides time, and a few special positions that only some charts have, such as Tuần and Triệt.',
+    },
+    thanCu: 'Body house (Thân)',
+    daiVan: 'Ten-year stretch (Đại vận)',
+    tieuHan: 'Yearly cycle (Tiểu hạn)',
+    nguyetHan: 'Monthly cycle (Nguyệt hạn)',
+    tuanTriet: 'Tuần, Triệt',
+    mauTrangSinh: 'This house {net}',
+    cuoi: 'To see which star sits in which of your own houses, you need your chart.',
+    moLaSo: 'Create a free chart',
   },
 
   hanhTrinh: {
