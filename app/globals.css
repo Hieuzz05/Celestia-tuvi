@@ -685,14 +685,73 @@ body {
   display: none;
 }
 
+/*
+ * Chỉ hiện khi in (CEL-074): phần "Căn cứ trên lá số của bạn" đang gập vẫn nằm
+ * trong DOM để bản in không mất chữ. Không lớp nào được đặt display khác cho nó
+ * ở màn hình — quy tắc này ngoài @layer nên thắng tiện ích `flex` của Tailwind.
+ */
+.chi-khi-in {
+  display: none;
+}
+
 @media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+
+  /*
+   * Bản in luôn là giấy trắng chữ tím, kể cả khi người đọc đang ở theme Đêm —
+   * không thì ra chữ gần trắng trên giấy trắng và thẻ "Tóm lại" nền tím đậm.
+   * Giá trị chép từ bộ token Ngày ở :root phía trên; đổi bên đó thì đổi theo.
+   */
+  :root,
+  :root[data-theme="night"] {
+    color-scheme: light;
+    --bg: #fff;
+    --surface-card: #fff;
+    --surface-panel: #fff;
+    --surface-wash: #fff;
+    --line: var(--color-plum-tinted);
+    --fg: var(--color-aubergine);
+    --fg-body: var(--color-aubergine);
+    --fg-soft: var(--color-heather);
+    --fg-muted: var(--color-heather);
+    --fg-subtle: #8c698c;
+    --accent-chu: #b62b8b;
+    --chart-tot: var(--color-forest);
+    --chart-cat: var(--color-forest);
+    --tier-manh: var(--color-forest);
+    --tier-gang: #b45f06;
+    --shadow-card: rgba(41, 0, 41, 0.11) 0 0 0 1px;
+    --shadow-elevated: none;
+  }
+
+  html,
   body {
     background: #fff;
+  }
+
+  body {
     color: var(--color-aubergine);
   }
 
   .no-print {
     display: none !important;
+  }
+
+  .chi-khi-in {
+    display: flex !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
   }
 }
 

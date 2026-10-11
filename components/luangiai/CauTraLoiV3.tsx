@@ -71,7 +71,7 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
       ))}
       <button
         type="button"
-        className="link-text link-action inline-flex min-h-[44px] items-center self-start text-[14px] sm:min-h-[32px]"
+        className="no-print link-text link-action inline-flex min-h-[44px] items-center self-start text-[14px] sm:min-h-[32px]"
         aria-expanded={mo}
         onClick={() => {
           if (!mo) ghiSuKien('why_opened', { cau: cau.id });
@@ -80,14 +80,16 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
       >
         {mo ? t.docSau.thuGon : t.docSau.viSao}
       </button>
-      {mo && (
-        <div className="flex flex-col gap-[8px] pl-[16px]" style={{ borderLeft: '2px solid var(--accent)' }}>
-          <p className="eyebrow">{t.docSau.canCu}</p>
-          <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            {cau.viSao}
-          </p>
-        </div>
-      )}
+      {/* Đang gập thì vẫn vẽ nhưng chỉ hiện khi in (CEL-074) — Lưu PDF không mất phần căn cứ */}
+      <div
+        className={`flex flex-col gap-[8px] pl-[16px]${mo ? '' : ' chi-khi-in'}`}
+        style={{ borderLeft: '2px solid var(--accent)' }}
+      >
+        <p className="eyebrow">{t.docSau.canCu}</p>
+        <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
+          {cau.viSao}
+        </p>
+      </div>
     </article>
   );
 }
