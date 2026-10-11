@@ -2,7 +2,7 @@
 # Chỉ chạy các bài kiểm OFFLINE: không cần khoá, không gọi model, không chạm
 # database — nên không cần secret nào và không tốn tiền. Các bài chạm DB thật
 # hoặc model thật (test-hoi-thoai, eval-chat-quyet-dinh, test-rag-toan-tuyen)
-# vẫn chạy tay theo AGENTS.md.
+# vẫn chạy tay theo docs/quy-trinh/danh-sach-kiem-tra.md.
 name: Kiem tra
 
 on:

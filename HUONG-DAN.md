@@ -949,7 +949,7 @@ phương pháp. Kết quả:
 | Đường dẫn | Vai trò |
 |---|---|
 | `/` | Landing công khai — mở bằng nỗi băn khoăn của người đọc, không nhắc kỹ thuật |
-| `/cau-chuyen` | Câu chuyện thương hiệu: vì sao có Celes, và Celes không làm gì |
+| `/#cau-chuyen` | Câu chuyện thương hiệu: vì sao có Celes, và Celes không làm gì — một mục trong trang chủ (route riêng `/cau-chuyen` đã gộp vào `/`, chân trang trỏ về neo này) |
 | `/home` | Nơi người đã đăng nhập đáp xuống: điều đáng chú ý hôm nay, giai đoạn đang đi qua, ô trò chuyện |
 | `/la-so` | Khám phá bản đồ: nhập thông tin sinh → góc nhìn nhanh → bảng luận giải 8 lĩnh vực → mệnh bàn |
 | `/hanh-trinh` | Hành trình: quãng dài → từng năm → từng tháng, có mốc "đang ở đây" |
