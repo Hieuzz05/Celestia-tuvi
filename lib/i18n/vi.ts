@@ -185,6 +185,12 @@ export const vi = {
     xong: 'Xem điều Celes thấy',
   },
 
+  // Lưu bài đang đọc thành PDF qua hộp thoại in (CEL-074)
+  luuPdf: {
+    nut: 'Lưu PDF',
+    goiY: 'Mở hộp thoại in — chọn “Lưu thành PDF” để giữ phần này.',
+  },
+
   quickRead: {
     tieuDeChinh: 'Lá số của bạn',
     xemBan12Cung: 'Xem bàn 12 cung ↓',

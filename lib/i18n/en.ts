@@ -187,6 +187,12 @@ export const en: TuDien = {
     xong: 'See what Celes sees',
   },
 
+  // Lưu bài đang đọc thành PDF qua hộp thoại in (CEL-074)
+  luuPdf: {
+    nut: 'Save as PDF',
+    goiY: 'Opens the print dialog — choose “Save as PDF” to keep this section.',
+  },
+
   quickRead: {
     tieuDeChinh: 'Your chart',
     xemBan12Cung: 'See the 12-palace chart ↓',

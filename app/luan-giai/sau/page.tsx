@@ -6,6 +6,7 @@ import { CauTraLoiV3, DangDocV3, type CauV3 } from '@/components/luangiai/CauTra
 import { GoiYCeles } from '@/components/luangiai/GoiYCeles';
 import { BucTranhLon } from '@/components/luangiai/BucTranhLon';
 import { DiSauHon } from '@/components/luangiai/DiSauHon';
+import { NutLuuPdf } from '@/components/luangiai/NutLuuPdf';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
 import { ghiSuKien } from '@/lib/analytics';
@@ -240,6 +241,8 @@ function TrangSau() {
   // Đường về đúng chủ đề đang đọc — cho các câu "Muốn đi sâu hơn" dẫn sang Hỏi Celes
   const veChuDe = `/luan-giai/sau?${new URLSearchParams({ ...Object.fromEntries(params.entries()), chuDe: chon }).toString()}`;
   const trangThai = bai[chon];
+  // Chỉ cho lưu khi chủ đề đã viết xong cả hai nửa và phần tóm lại — in sớm là bản thiếu
+  const coTheIn = !laBuc && !!trangThai && !trangThai.dang && !!trangThai.cau && !trangThai.conCho && !trangThai.dangTom;
   const soDaDoc = CHU_DE_V3.filter((c) => {
     const tt = bai[c.id];
     return Boolean(tt && !tt.dang && tt.cau);
@@ -306,7 +309,7 @@ function TrangSau() {
 
   return (
     <Shell className="flex flex-col gap-[16px] py-[24px]">
-      {nutVe}
+      <div className="no-print">{nutVe}</div>
       <div className="flex flex-col gap-[24px] lg:flex-row lg:items-start lg:gap-[32px]">
         {/*
           ---------- Mục lục chủ đề ----------
@@ -316,7 +319,7 @@ function TrangSau() {
         */}
         <nav
           aria-label="Chủ đề"
-          className="shrink-0 lg:sticky lg:top-[80px] lg:w-[272px] lg:rounded-[var(--radius-cards)] lg:bg-[var(--surface-card)] lg:p-[16px] lg:shadow-[var(--shadow-card)]"
+          className="no-print shrink-0 lg:sticky lg:top-[80px] lg:w-[272px] lg:rounded-[var(--radius-cards)] lg:bg-[var(--surface-card)] lg:p-[16px] lg:shadow-[var(--shadow-card)]"
         >
           <div className="mb-[12px] flex items-baseline justify-between gap-[8px] lg:px-[8px]">
             <Eyebrow>Chủ đề</Eyebrow>
@@ -403,13 +406,16 @@ function TrangSau() {
               >
                 Luận giải chuyên sâu · Năm xem {namXem}
               </span>
-              <XuatLuanGiai
-                thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem, ten: params.get('ten') ?? '' }}
-                chuDeDangXem={laBuc ? null : chuDe.id}
-                daDoc={daDocTron}
-                danChuDe={DAN_CHU_DE}
-                onDaNap={daNapKhiXuat}
-              />
+              <div className="no-print flex flex-wrap items-center gap-[8px]">
+                {coTheIn && <NutLuuPdf />}
+                <XuatLuanGiai
+                  thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem, ten: params.get('ten') ?? '' }}
+                  chuDeDangXem={laBuc ? null : chuDe.id}
+                  daDoc={daDocTron}
+                  danChuDe={DAN_CHU_DE}
+                  onDaNap={daNapKhiXuat}
+                />
+              </div>
             </div>
             <h1 className="heading">{laBuc ? 'Bức tranh lớn của cuộc đời bạn' : chuDe.ten}</h1>
             <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
@@ -437,13 +443,15 @@ function TrangSau() {
           )}
 
           {!laBuc && TRUONG_THEO_CHU_DE[chuDe.id] && boiCanh && !canHoiBoiCanh && (
-            <HoiBoiCanh key={`gon-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} gon onXong={doiBoiCanh} />
+            <div className="no-print">
+              <HoiBoiCanh key={`gon-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} gon onXong={doiBoiCanh} />
+            </div>
           )}
 
           {laBuc ? null : canHoiBoiCanh && boiCanh ? (
             // Celes hỏi thêm trước khi đọc: màn vào, chưa có bài. Màn hẹp xếp
             // dọc để form không bị bóp 96px.
-            <div className="flex flex-col gap-[16px] sm:flex-row sm:items-start">
+            <div className="no-print flex flex-col gap-[16px] sm:flex-row sm:items-start">
               <CelesMascot cho="rong" minhHoa="curious" cao={80} caoNho={64} />
               <div className="min-w-0 flex-1">
                 <HoiBoiCanh key={`hoi-${chuDe.id}`} chuDe={chuDe.id} boiCanh={boiCanh} onXong={doiBoiCanh} />
@@ -481,9 +489,13 @@ function TrangSau() {
                 </section>
               )}
               {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
-              {!trangThai.conCho && <DiSauHon chuDe={chuDe.id} ve={veChuDe} />}
+              {!trangThai.conCho && (
+                <div className="no-print">
+                  <DiSauHon chuDe={chuDe.id} ve={veChuDe} />
+                </div>
+              )}
               {!trangThai.conCho && trangThai.banMoi && (
-                <div className="card flex flex-col gap-[8px]">
+                <div className="no-print card flex flex-col gap-[8px]">
                   <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                     Kho tri thức của Celes vừa được cập nhật sau khi phần này được viết. Bạn có thể để Celes viết lại theo kho mới — mỗi lần kho cập nhật chỉ viết lại một lần.
                   </p>
@@ -493,10 +505,12 @@ function TrangSau() {
                 </div>
               )}
               {!trangThai.conCho && !trangThai.dangTom && (
-                <VietLaiQuanTri phan={`chủ đề ${chuDe.ten}`} onVietLai={vietLaiQuanTri} ketQua={trangThai.vietLaiHong} />
+                <div className="no-print">
+                  <VietLaiQuanTri phan={`chủ đề ${chuDe.ten}`} onVietLai={vietLaiQuanTri} ketQua={trangThai.vietLaiHong} />
+                </div>
               )}
               {trangThai.loi && (
-                <div className="flex flex-col gap-[12px]">
+                <div className="no-print flex flex-col gap-[12px]">
                   <p className="body-sm" style={{ color: 'var(--chart-hung)' }}>
                     {trangThai.loi}
                   </p>
@@ -519,7 +533,7 @@ function TrangSau() {
 
           {/* Cuối bài: lùi về chủ đề trước (viền) và đi tiếp (nút chính duy nhất) */}
           {laBuc && (
-            <div className="flex flex-wrap items-center gap-[12px] pt-[24px]" style={{ borderTop: '1px solid var(--line)' }}>
+            <div className="no-print flex flex-wrap items-center gap-[12px] pt-[24px]" style={{ borderTop: '1px solid var(--line)' }}>
               <button type="button" className="btn-outline" onClick={() => moChuDe(CHU_DE_V3[CHU_DE_V3.length - 1].id)}>
                 ← Đọc lại: {CHU_DE_V3[CHU_DE_V3.length - 1].ten}
               </button>
@@ -527,7 +541,7 @@ function TrangSau() {
           )}
           {!laBuc && trangThai && !trangThai.dang && !trangThai.conCho && (truoc || tiep || iChon === CHU_DE_V3.length - 1) && (
             <div
-              className="flex flex-wrap items-center gap-[12px] pt-[24px]"
+              className="no-print flex flex-wrap items-center gap-[12px] pt-[24px]"
               style={{ borderTop: '1px solid var(--line)' }}
             >
               {truoc && (
