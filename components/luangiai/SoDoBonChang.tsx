@@ -10,6 +10,7 @@ import {
   type MucId,
 } from '@/lib/tuvi/chang-cung';
 import { CHU_12_CUNG } from '@/lib/tuvi/chu-12-cung';
+import { useNgonNgu } from '@/lib/i18n/context';
 
 /**
  * SƠ ĐỒ "BỐN CHẶNG, MƯỜI HAI TẤM GƯƠNG".
@@ -71,18 +72,19 @@ export function SoDoBonChang({
   dangDoc?: MucId | null;
   onChon?: (muc: MucId) => void;
 }) {
+  const { t, ngonNgu } = useNgonNgu();
   const cap = capGuong();
   const mucGuong = dangDoc ? MUC_CUA_CUNG[GUONG[CUNG_CUA_MUC[dangDoc]]] : null;
 
   return (
     <figure className="flex flex-col gap-[12px]">
-      <figcaption className="eyebrow">Bốn chặng, mười hai tấm gương</figcaption>
+      <figcaption className="eyebrow">{t.docSau.bonChang}</figcaption>
 
       <svg
         viewBox={`-6 0 ${RONG + 12} ${CAO}`}
         className="w-full"
         role="img"
-        aria-label="Sơ đồ bốn chặng và mười hai tấm gương: mỗi phần được soi bằng một phần khác"
+        aria-label={t.docSau.bonChangAria}
       >
         {/* Tên bốn chặng */}
         {THU_TU_CHANG.map((c, i) => {
@@ -162,7 +164,7 @@ export function SoDoBonChang({
                   fontWeight: laDoc ? 600 : 400,
                 }}
               >
-                {CHU_12_CUNG.vi[m]?.nhan ?? m}
+                {CHU_12_CUNG[ngonNgu][m]?.nhan ?? m}
               </text>
             </g>
           );
@@ -170,8 +172,7 @@ export function SoDoBonChang({
       </svg>
 
       <p className="caption" style={{ color: 'var(--fg-muted)' }}>
-        Nét đứt là tấm gương: phần này được đọc qua phần kia. Bốn trong sáu đường bắc cầu sang
-        chặng khác — nên không phần nào đọc một mình.
+        {t.docSau.bonChangChu}
       </p>
     </figure>
   );

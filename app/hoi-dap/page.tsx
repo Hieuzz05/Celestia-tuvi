@@ -330,7 +330,7 @@ function TrangHoiDap() {
   if (!duocVao)
     return (
       <Shell className="flex flex-col gap-[16px] py-[32px]">
-        <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} />
+        <QuayLai chiKhiCoVe macDinh={{ href: '/la-so' }} />
         <div className="mx-auto max-w-[620px]">
           <CongDangNhap nguon="ask_celes" toanTrang />
         </div>
@@ -339,7 +339,7 @@ function TrangHoiDap() {
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
-      <QuayLai chiKhiCoVe macDinh={{ href: '/la-so', nhan: 'Về lá số' }} className="-mb-[16px]" />
+      <QuayLai chiKhiCoVe macDinh={{ href: '/la-so' }} className="-mb-[16px]" />
       {/* Celes 56px cạnh tiêu đề: đây là nơi người dùng đang TRÒ CHUYỆN. */}
       <div className="flex items-center gap-[16px]">
         {/* Đầu trang chỉ serious > listening > default (P2). KHÔNG BAO GIỜ
@@ -416,11 +416,11 @@ function TrangHoiDap() {
               style={{ color: 'var(--fg-muted)', borderTop: '1px solid var(--line)' }}
             >
               <span>
-                Mệnh <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
+                {t.trangLuanGiai.menh} <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
               </span>
               <span style={{ color: 'var(--fg)' }}>{laSo.cuc.ten}</span>
               <span>
-                Thân cư <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
+                {t.trangLuanGiai.thanCu} <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
               </span>
             </div>
           )}

@@ -2,6 +2,7 @@
 
 import type { MucSau } from '@/lib/rag/ban-doc-sau';
 import { ChuSao } from './ChuSao';
+import { dien, useT } from '@/lib/i18n/context';
 
 /**
  * KHỐI GƯƠNG — đọc một phần QUA cung đối diện.
@@ -45,9 +46,10 @@ export function KhoiGuong({
   /** Tên sao và cách cục có thật trên lá số — chỉ tô màu những tên này */
   tenCoThat?: readonly string[];
 }) {
+  const t = useT();
   const chan = muc.guongNoiBo
-    ? tenPhanGuong && `↔ cặp với: ${tenPhanGuong}`
-    : tenChangGuong && `↑ nối về: ${tenChangGuong}`;
+    ? tenPhanGuong && dien(t.docSau.capVoi, { ten: tenPhanGuong })
+    : tenChangGuong && dien(t.docSau.noiVe, { ten: tenChangGuong });
 
   return (
     <aside

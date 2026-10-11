@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useT } from '@/lib/i18n/context';
 import { themVe } from '@/components/QuayLai';
 
 /**
@@ -19,12 +22,13 @@ const TO_MO: Record<string, string[]> = {
 };
 
 export function DiSauHon({ chuDe, ve }: { chuDe: string; ve: string }) {
+  const t = useT();
   const ds = TO_MO[chuDe];
   if (!ds?.length) return null;
   return (
     <section className="flex flex-col gap-[12px]" aria-labelledby="di-sau-hon">
       <h2 id="di-sau-hon" className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>
-        Muốn đi sâu hơn?
+        {t.docSau.diSauHon}
       </h2>
       <ul className="flex flex-wrap gap-[8px]">
         {ds.map((cau) => (

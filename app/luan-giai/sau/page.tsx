@@ -8,6 +8,7 @@ import { BucTranhLon } from '@/components/luangiai/BucTranhLon';
 import { DiSauHon } from '@/components/luangiai/DiSauHon';
 import { Eyebrow, Shell } from '@/components/ui';
 import { useTaiKhoan } from '@/components/auth/useTaiKhoan';
+import { dien, useT } from '@/lib/i18n/context';
 import { ghiSuKien } from '@/lib/analytics';
 import { CAU_HOI_V3, CHU_DE_V3 } from '@/lib/rag/v3/khung';
 import { QuayLai } from '@/components/QuayLai';
@@ -39,21 +40,7 @@ const SO_CAU = new Map(
 const BUC_TRANH = 'buc-tranh';
 
 /** `conCho`: nửa sau của chủ đề còn đang viết — nửa đầu đã hiện */
-/**
- * CÂU DẪN của từng chủ đề — nỗi băn khoăn thật người đọc mang tới (review chủ dự án
- * 25/09/2026: "một câu dẫn phản ánh pain point"). Tĩnh, không tốn lượt gọi.
- */
-const DAN_CHU_DE: Record<string, string> = {
-  'tinh-cach': 'Bạn thật sự là người thế nào — điều gì giúp bạn đi xa, và điều gì dễ khiến bạn tự làm khó mình?',
-  'su-nghiep': 'Bạn tạo ra giá trị bằng cách nào, hợp đứng ở đâu, và bao giờ con đường nghề nghiệp mới thật sự bật lên?',
-  'tien-bac': 'Tiền của bạn đến bằng cách nào, giữ được bao nhiêu, và khi nào mới thật sự tích thành tài sản?',
-  'tinh-duyen': 'Bạn yêu theo kiểu nào, dễ gặp người ra sao, và điều gì quyết định một cuộc hôn nhân bền với bạn?',
-  'con-cai': 'Duyên con cái đến sớm hay muộn, và quan hệ giữa bạn với con thay đổi thế nào theo năm tháng?',
-  'gia-dinh': 'Gia đình gốc là nền tựa hay là phần bạn phải tự gánh — và nó theo bạn tới đâu?',
-  'suc-khoe': 'Thể trạng của bạn bền đến đâu, vùng nào đáng để ý hơn, và giai đoạn nào cần giữ sức hơn?',
-  'ra-ngoai': 'Ra ngoài, đi xa có làm vận của bạn sáng hơn không — hay chỗ quen mới là chỗ bạn đứng vững?',
-  'van-han': 'Đời bạn lên xuống theo những chặng nào, bạn đang đứng ở đâu, và vài năm tới đang dẫn tới đâu?',
-};
+/** Câu dẫn của từng chủ đề nằm ở t.danChuDe (review chủ dự án 25/09/2026: "một câu dẫn phản ánh pain point") */
 
 /** `tomLai`: phần ghép các câu thành một câu chuyện — `dangTom` khi đang viết */
 type TrangThai =
@@ -61,7 +48,10 @@ type TrangThai =
   | { dang: false; cau: CauV3[] | null; loi?: string; conCho?: boolean; tomLai?: string | null; dangTom?: boolean; banMoi?: boolean; vietLaiHong?: string[] };
 
 function TrangSau() {
+  const t = useT();
   const { duocVao, dangDoc } = useTaiKhoan();
+  const tenCD = (c: { id: string; ten: string }) => (t.chuDeSau as Record<string, string>)[c.id] ?? c.ten;
+  const danCD = t.danChuDe as Record<string, string>;
   const params = useSearchParams();
 
   const ngay = Number(params.get('ngay'));
@@ -75,7 +65,7 @@ function TrangSau() {
   const veLaSo = coLaSo
     ? `/la-so?ngay=${ngay}&thang=${thang}&nam=${nam}&gio=${gio}&gt=${gioiTinh}&ten=${encodeURIComponent(params.get('ten') ?? '')}&tab=chuyen-sau`
     : '/la-so';
-  const nutVe = <QuayLai macDinh={{ href: veLaSo, nhan: 'Về lá số' }} />;
+  const nutVe = <QuayLai macDinh={{ href: veLaSo }} />;
 
   // Mở thẳng chủ đề được chỉ định (?chuDe=...) — Bản đồ mạnh–yếu ở /la-so dẫn sang đúng mặt đời vừa chạm
   const [chon, setChon] = useState<string>(() => {
@@ -136,7 +126,7 @@ function TrangSau() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ngay, thang, nam, gio, gioiTinh, namXem, nhom: chuDe, chi, taoMoi, vietLai, boiCanh }),
       }).then(async (res) => ({ ok: res.ok, d: await res.json() }));
-    const loiMang = 'Không kết nối được. Thử lại sau ít phút.';
+    const loiMang = t.trangSau.loiMang;
     // Đủ các câu rồi mới xin phần "Tóm lại" — route không viết tóm lại từ bài dở dang
     const layTomLai = () =>
       fetch('/api/luan-giai-v3', {
@@ -149,8 +139,8 @@ function TrangSau() {
         .catch(() => null)
         .then((tomLai: string | null) =>
           setBai((cu) => {
-            const t = cu[chuDe];
-            return t && !t.dang ? { ...cu, [chuDe]: { ...t, tomLai, dangTom: false } } : cu;
+            const hien = cu[chuDe];
+            return hien && !hien.dang ? { ...cu, [chuDe]: { ...hien, tomLai, dangTom: false } } : cu;
           })
         );
     goi(ids.slice(0, giua))
@@ -160,7 +150,7 @@ function TrangSau() {
           ...cu,
           [chuDe]: ok
             ? { dang: false, cau: d.cau as CauV3[], conCho: conLai.length > 0, dangTom: conLai.length === 0, banMoi: Boolean(d.banMoi), vietLaiHong: d.vietLaiHong }
-            : { dang: false, cau: null, loi: d?.loi ?? 'Celes chưa viết được phần này.' },
+            : { dang: false, cau: null, loi: d?.loi ?? t.trangSau.chuaVietDuoc },
         }));
         if (ok && !conLai.length) return layTomLai();
         if (!ok) return;
@@ -173,7 +163,7 @@ function TrangSau() {
               [chuDe]: {
                 dang: false,
                 cau: ok2 ? [...dau, ...((d2.cau as CauV3[]) ?? [])] : dau,
-                loi: ok2 ? undefined : d2?.loi ?? 'Celes chưa viết xong phần còn lại.',
+                loi: ok2 ? undefined : d2?.loi ?? t.trangSau.chuaVietXong,
                 dangTom: ok2,
                 banMoi: Boolean((truoc && !truoc.dang && truoc.banMoi) || d2?.banMoi),
                 vietLaiHong: [...((truoc && !truoc.dang && truoc.vietLaiHong) || []), ...(d2?.vietLaiHong ?? [])],
@@ -191,7 +181,7 @@ function TrangSau() {
           return { ...cu, [chuDe]: { dang: false, cau: null, loi: loiMang } };
         });
       });
-  }, [duocVao, coLaSo, chon, bai, daGui, lamMoi, vietLaiCho, boiCanh, ngay, thang, nam, gio, gioiTinh, namXem]);
+  }, [duocVao, coLaSo, chon, bai, daGui, lamMoi, vietLaiCho, boiCanh, ngay, thang, nam, gio, gioiTinh, namXem, t]);
 
   if (dangDoc) {
     return (
@@ -223,9 +213,9 @@ function TrangSau() {
       <Shell className="flex flex-col gap-[16px] py-[32px]">
         {nutVe}
         <div className="card mx-auto flex max-w-[520px] flex-col gap-[12px]">
-          <h1 className="heading-sm">Chưa có lá số</h1>
+          <h1 className="heading-sm">{t.trangSau.chuaCoLaSo}</h1>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Tạo lá số trước rồi quay lại — phần chuyên sâu đọc từ chính lá số đó.
+            {t.trangSau.chuaCoLaSoMo}
           </p>
         </div>
       </Shell>
@@ -315,13 +305,13 @@ function TrangSau() {
           dọc đẩy bài đọc xuống dưới cả màn hình đầu.
         */}
         <nav
-          aria-label="Chủ đề"
+          aria-label={t.trangSau.chuDe}
           className="shrink-0 lg:sticky lg:top-[80px] lg:w-[272px] lg:rounded-[var(--radius-cards)] lg:bg-[var(--surface-card)] lg:p-[16px] lg:shadow-[var(--shadow-card)]"
         >
           <div className="mb-[12px] flex items-baseline justify-between gap-[8px] lg:px-[8px]">
-            <Eyebrow>Chủ đề</Eyebrow>
+            <Eyebrow>{t.trangSau.chuDe}</Eyebrow>
             <span className="caption" style={{ color: 'var(--fg-muted)' }}>
-              Đã đọc {soDaDoc}/{CHU_DE_V3.length}
+              {dien(t.trangSau.daDoc, { so: soDaDoc, tong: CHU_DE_V3.length })}
             </span>
           </div>
           <ol className="-mx-[16px] flex gap-[8px] overflow-x-auto px-[16px] pb-[4px] lg:mx-0 lg:flex-col lg:gap-[4px] lg:overflow-visible lg:px-0 lg:pb-0">
@@ -356,9 +346,9 @@ function TrangSau() {
                     >
                       {daDoc && !dangMo ? '✓' : i + 1}
                     </span>
-                    <span className="flex-1">{c.ten}</span>
+                    <span className="flex-1">{tenCD(c)}</span>
                     <span className="caption hidden lg:inline" style={{ color: 'var(--fg-muted)' }}>
-                      {SO_CAU.get(c.id)} câu
+                      {dien(t.trangSau.soCau, { so: SO_CAU.get(c.id) ?? 0 })}
                     </span>
                   </button>
                 </li>
@@ -384,7 +374,7 @@ function TrangSau() {
                 >
                   ✦
                 </span>
-                <span className="flex-1">Bức tranh lớn</span>
+                <span className="flex-1">{t.trangSau.bucTranh}</span>
               </button>
             </li>
           </ol>
@@ -401,26 +391,26 @@ function TrangSau() {
                   color: 'var(--accent-chu)',
                 }}
               >
-                Luận giải chuyên sâu · Năm xem {namXem}
+                {dien(t.trangSau.nhan, { nam: namXem })}
               </span>
               <XuatLuanGiai
                 thongTin={{ ngay, thang, nam, gio, gioiTinh, namXem, ten: params.get('ten') ?? '' }}
                 chuDeDangXem={laBuc ? null : chuDe.id}
                 daDoc={daDocTron}
-                danChuDe={DAN_CHU_DE}
+                danChuDe={danCD}
                 onDaNap={daNapKhiXuat}
               />
             </div>
-            <h1 className="heading">{laBuc ? 'Bức tranh lớn của cuộc đời bạn' : chuDe.ten}</h1>
+            <h1 className="heading">{laBuc ? t.trangSau.bucTranhTieuDe : tenCD(chuDe)}</h1>
             <p className="body-text max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
               {laBuc
-                ? 'Đây là kiểu cuộc đời nào, lợi thế lớn nhất và bài toán cứ lặp lại là gì, các mặt đời nối với nhau ra sao — và bạn đang đứng ở đâu.'
-                : DAN_CHU_DE[chuDe.id]}
+                ? t.trangSau.bucTranhDan
+                : danCD[chuDe.id]}
             </p>
             {/* Sức khỏe: MỘT dòng lưu ý ở đầu chủ đề thay cho câu an toàn gắn vào từng câu (26/09/2026) */}
             {!laBuc && chuDe.id === 'suc-khoe' && (
               <p className="caption max-w-[620px]">
-                Đây là dự đoán xu hướng từ lá số để bạn lưu ý — không thay cho khám và chẩn đoán y khoa.
+                {t.trangSau.luuYSucKhoe}
               </p>
             )}
           </header>
@@ -458,13 +448,13 @@ function TrangSau() {
                 <CauTraLoiV3 key={c.id} cau={c} so={i + 1} />
               ))}
               {/* Nửa sau của chủ đề còn đang viết — nửa đầu đã đọc được */}
-              {trangThai.conCho && <DangDocV3 key={`${chon}-tiep`} chu="Celes đang viết tiếp các câu còn lại" />}
+              {trangThai.conCho && <DangDocV3 key={`${chon}-tiep`} chu={t.trangSau.vietTiep} />}
               {/* TÓM LẠI: ghép các câu thành một câu chuyện (review 25/09/2026) — đặt trước phần gợi ý */}
               {!trangThai.conCho && (trangThai.dangTom || trangThai.tomLai) && (
                 <section className="card flex flex-col gap-[12px]" style={{ borderTop: '3px solid var(--accent)' }} aria-labelledby="tom-lai">
-                  <span className="eyebrow">Tóm lại</span>
+                  <span className="eyebrow">{t.trangSau.tomLai}</span>
                   <h2 id="tom-lai" className="text-[20px] font-semibold leading-snug" style={{ color: 'var(--fg)' }}>
-                    {chuDe.ten} của bạn, gói trong một đoạn
+                    {dien(t.trangSau.tomLaiTieuDe, { chuDe: tenCD(chuDe) })}
                   </h2>
                   {trangThai.tomLai ? (
                     trangThai.tomLai
@@ -476,19 +466,19 @@ function TrangSau() {
                         </p>
                       ))
                   ) : (
-                    <DangDocV3 key={`${chon}-tom`} chu="Celes đang ghép các câu thành một câu chuyện" />
+                    <DangDocV3 key={`${chon}-tom`} chu={t.trangSau.dangGhep} />
                   )}
                 </section>
               )}
-              {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={`Rút ra từ các câu của phần ${chuDe.ten.toLowerCase()}.`} />}
+              {!trangThai.conCho && <GoiYCeles cau={trangThai.cau} moTa={dien(t.trangSau.rutRa, { chuDe: tenCD(chuDe).toLowerCase() })} />}
               {!trangThai.conCho && <DiSauHon chuDe={chuDe.id} ve={veChuDe} />}
               {!trangThai.conCho && trangThai.banMoi && (
                 <div className="card flex flex-col gap-[8px]">
                   <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                    Kho tri thức của Celes vừa được cập nhật sau khi phần này được viết. Bạn có thể để Celes viết lại theo kho mới — mỗi lần kho cập nhật chỉ viết lại một lần.
+                    {t.trangSau.khoMoi}
                   </p>
                   <button type="button" onClick={taoBanMoi} className="btn-outline btn-sm self-start">
-                    Tạo bản mới
+                    {t.trangSau.taoBanMoi}
                   </button>
                 </div>
               )}
@@ -501,7 +491,7 @@ function TrangSau() {
                     {trangThai.loi}
                   </p>
                   <button type="button" className="btn-outline btn-sm self-start" onClick={thuLai}>
-                    Thử lại phần còn lại
+                    {t.trangSau.thuLaiConLai}
                   </button>
                 </div>
               )}
@@ -512,7 +502,7 @@ function TrangSau() {
                 {trangThai.loi}
               </p>
               <button type="button" className="btn-outline btn-sm self-start" onClick={thuLai}>
-                Thử lại
+                {t.trangSau.thuLai}
               </button>
             </div>
           )}
@@ -521,7 +511,7 @@ function TrangSau() {
           {laBuc && (
             <div className="flex flex-wrap items-center gap-[12px] pt-[24px]" style={{ borderTop: '1px solid var(--line)' }}>
               <button type="button" className="btn-outline" onClick={() => moChuDe(CHU_DE_V3[CHU_DE_V3.length - 1].id)}>
-                ← Đọc lại: {CHU_DE_V3[CHU_DE_V3.length - 1].ten}
+                {dien(t.trangSau.docLai, { chuDe: tenCD(CHU_DE_V3[CHU_DE_V3.length - 1]) })}
               </button>
             </div>
           )}
@@ -532,16 +522,16 @@ function TrangSau() {
             >
               {truoc && (
                 <button type="button" className="btn-outline" onClick={() => moChuDe(truoc.id)}>
-                  ← Đọc lại: {truoc.ten}
+                  {dien(t.trangSau.docLai, { chuDe: tenCD(truoc) })}
                 </button>
               )}
               {tiep ? (
                 <button type="button" className="btn-primary" onClick={() => moChuDe(tiep.id)}>
-                  Đọc tiếp: {tiep.ten} →
+                  {dien(t.trangSau.docTiep, { chuDe: tenCD(tiep) })}
                 </button>
               ) : (
                 <button type="button" className="btn-primary" onClick={() => moChuDe(BUC_TRANH)}>
-                  Xem bức tranh lớn →
+                  {t.trangSau.xemBucTranh}
                 </button>
               )}
             </div>
@@ -553,8 +543,9 @@ function TrangSau() {
 }
 
 export default function TrangLuanGiaiChuyenSau() {
+  const t = useT();
   return (
-    <Suspense fallback={<Shell className="py-[40px]">Đang mở bài đọc…</Shell>}>
+    <Suspense fallback={<Shell className="py-[40px]">{t.trangSau.dangMo}</Shell>}>
       <TrangSau />
     </Suspense>
   );

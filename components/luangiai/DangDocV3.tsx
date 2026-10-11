@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from 'react';
 import { CelesMascot } from '@/components/CelesMascot';
+import { useT } from '@/lib/i18n/context';
 
 /**
  * Trạng thái chờ của luận giải v3.
@@ -16,7 +17,9 @@ import { CelesMascot } from '@/components/CelesMascot';
  * layout; ảnh hiện trễ 3 giây bằng CSS, cùng mốc với `lau` — bài đệm về sớm
  * thì không bao giờ thấy linh vật.
  */
-export function DangDocV3({ chu = 'Celes đang mở bài', celes = false }: { chu?: string; celes?: boolean }) {
+export function DangDocV3({ chu: chuTruyen, celes = false }: { chu?: string; celes?: boolean }) {
+  const t = useT();
+  const chu = chuTruyen ?? t.docSau.dangMoBai;
   const [lau, setLau] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setLau(true), 3000);
@@ -25,13 +28,12 @@ export function DangDocV3({ chu = 'Celes đang mở bài', celes = false }: { ch
   const chuDoc = (
     <div className="flex min-w-0 flex-col gap-[8px]">
       <p className="body-text" style={{ color: 'var(--fg)' }}>
-        {lau ? 'Celes đang viết phần này cho lá số của bạn' : chu}
+        {lau ? t.docSau.dangVietPhan : chu}
         <span className="dot-dang-doc" aria-hidden />
       </p>
       {lau && (
         <p className="body-sm max-w-[560px]" style={{ color: 'var(--fg-muted)' }}>
-          Lần đầu mất khoảng nửa phút, vì mỗi câu được luận từ đúng những cung liên quan. Bài được lưu
-          lại, các lần mở sau hiện ngay.
+          {t.docSau.lanDau}
         </p>
       )}
     </div>

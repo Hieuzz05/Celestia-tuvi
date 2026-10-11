@@ -6,6 +6,7 @@ import { CAU_HOI_V3 } from '@/lib/rag/v3/khung';
 import { CauTraLoiV3, DangDocV3, type CauV3 } from './CauTraLoiV3';
 import { GoiYCeles } from './GoiYCeles';
 import { ChamBaiAdmin, type ChamBaiTongQuan } from './ChamBaiAdmin';
+import { dien, useT } from '@/lib/i18n/context';
 
 export interface ThongTinLaSoV3 {
   ngay: number;
@@ -23,11 +24,8 @@ export interface ThongTinLaSoV3 {
  *
  * Câu đã lên thẻ thì KHÔNG lặp lại ở danh sách bên dưới.
  */
-export const THE_DAU: { id: string; nhan: string; tieuDe: string }[] = [
-  { id: 'TQ02', nhan: 'Điểm nổi bật', tieuDe: 'Điểm mạnh nổi bật nhất của bạn' },
-  { id: 'TQ03', nhan: 'Điều cần lưu ý', tieuDe: 'Điều bạn nên để ý nhất' },
-  { id: 'TQ08', nhan: 'Giai đoạn hiện tại', tieuDe: 'Mười năm bạn đang đi qua' },
-];
+/** Nhãn và tiêu đề từng thẻ nằm ở t.tongQuanV3.<id>Nhan / <id>TieuDe */
+export const THE_DAU: { id: string }[] = [{ id: 'TQ02' }, { id: 'TQ03' }, { id: 'TQ08' }];
 
 /**
  * Tải nhóm tổng quan MỘT lần cho cả trang (ba thẻ đầu + danh sách).
@@ -146,6 +144,7 @@ function TheDau({
   lon?: boolean;
   cham?: ChamBaiTongQuan | null;
 }) {
+  const t = useT();
   const [mo, setMo] = useState(false);
   return (
     /*
@@ -168,7 +167,7 @@ function TheDau({
       {!cau ? (
         <div className="flex flex-col gap-[12px]" aria-hidden>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-            Celes đang mở bài
+            {t.docSau.dangMoBai}
             <span className="dot-dang-doc" />
           </p>
           {[92, 100, 84, 96, 60].map((w, i) => (
@@ -177,7 +176,7 @@ function TheDau({
         </div>
       ) : cau.chuaViet ? (
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.
+          {t.tongQuanV3.phanChuaViet}
         </p>
       ) : (
         <>
@@ -191,11 +190,11 @@ function TheDau({
               </p>
             ))}
           <button type="button" className="link-text link-action inline-flex min-h-[44px] items-center self-start sm:min-h-[32px]" aria-expanded={mo} onClick={() => setMo(!mo)}>
-            {mo ? 'Thu gọn' : 'Muốn biết vì sao không?'}
+            {mo ? t.docSau.thuGon : t.docSau.viSao}
           </button>
           {mo && (
             <div className="flex flex-col gap-[8px] pt-[12px]" style={{ borderTop: '1px solid var(--line)' }}>
-              <p className="eyebrow">Căn cứ trên lá số của bạn</p>
+              <p className="eyebrow">{t.docSau.canCu}</p>
               <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 {cau.viSao}
               </p>
@@ -210,14 +209,17 @@ function TheDau({
 
 /** Ba thẻ đầu trang: thẻ lớn điểm nổi bật, hai thẻ nhỏ đứng cạnh nhau */
 export function BaTheDauV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDoc: boolean; cham?: ChamBaiTongQuan | null }) {
+  const t = useT();
   const lay = (id: string) => (dangDoc ? undefined : cau?.find((c) => c.id === id));
+  const chuThe = t.tongQuanV3 as Record<string, string>;
+  const chu = (id: string) => ({ nhan: chuThe[`${id}Nhan`], tieuDe: chuThe[`${id}TieuDe`] });
   const [a, b, c] = THE_DAU;
   return (
     <>
-      <TheDau nhan={a.nhan} tieuDe={a.tieuDe} cau={lay(a.id)} lon cham={cham} />
+      <TheDau {...chu(a.id)} cau={lay(a.id)} lon cham={cham} />
       <div className="grid gap-[16px] md:grid-cols-2">
-        <TheDau nhan={b.nhan} tieuDe={b.tieuDe} cau={lay(b.id)} cham={cham} />
-        <TheDau nhan={c.nhan} tieuDe={c.tieuDe} cau={lay(c.id)} cham={cham} />
+        <TheDau {...chu(b.id)} cau={lay(b.id)} cham={cham} />
+        <TheDau {...chu(c.id)} cau={lay(c.id)} cham={cham} />
       </div>
     </>
   );
@@ -232,20 +234,20 @@ export function BaTheDauV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDo
  */
 export function TongQuanV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDoc: boolean; cham?: ChamBaiTongQuan | null }) {
   // TQ04 (mạnh ở mặt nào, yếu ở mặt nào) đã nằm trong Bản đồ mạnh–yếu — không lặp ở danh sách
-  const boQua = new Set([...THE_DAU.map((x) => x.id), 'TQ04']);
+  const t = useT();
+  const boQua = new Set<string>([...THE_DAU.map((x) => x.id), 'TQ04']);
   const conLai = (cau ?? []).filter((c) => !boQua.has(c.id));
   if (!dangDoc && !cau) return null;
 
   return (
     <section className="flex flex-col gap-[24px]">
       <div className="flex flex-col gap-[8px] pb-[16px]" style={{ borderBottom: '1px solid var(--line)' }}>
-        <Eyebrow>{`Luận giải tổng quan · ${conLai.length || CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !boQua.has(q.id)).length} câu hỏi`}</Eyebrow>
+        <Eyebrow>{dien(t.tongQuanV3.nhan, { so: conLai.length || CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !boQua.has(q.id)).length })}</Eyebrow>
         <h2 className="heading-sm" style={{ color: 'var(--fg)' }}>
-          Bức tranh chung của lá số
+          {t.tongQuanV3.tieuDe}
         </h2>
         <p className="body-sm max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
-          Những câu người ta hay tự hỏi khi xem lá số, mỗi câu kèm phần căn cứ nếu bạn muốn biết
-          Celes dựa vào đâu.
+          {t.tongQuanV3.moTa}
         </p>
       </div>
 
@@ -262,7 +264,7 @@ export function TongQuanV3({ cau, dangDoc, cham }: { cau: CauV3[] | null; dangDo
             ))}
           </ol>
           {/* Gợi ý của mọi câu tổng quan (cả ba thẻ đầu) gom về một chỗ — không câu nào tự kết bằng lời khuyên */}
-          <GoiYCeles cau={cau} moTa="Rút ra từ phần đánh giá chung và luận giải tổng quan ở trên." />
+          <GoiYCeles cau={cau} moTa={t.tongQuanV3.goiYMoTa} />
         </>
       )}
     </section>

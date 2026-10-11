@@ -144,7 +144,7 @@ export default function TrangDanhSachLaSo() {
               gio: h.gio,
               gioiTinh: h.gioiTinh,
             });
-            tomTat = `Mệnh ${CHI[ls.menhIndex]} · ${ls.cuc.ten} · ${ls.banMenh.ten}`;
+            tomTat = `${t.trangLuanGiai.menh} ${CHI[ls.menhIndex]} · ${ls.cuc.ten} · ${ls.banMenh.ten}`;
           } catch {
             tomTat = t.danhSach.khongTinhDuoc;
           }

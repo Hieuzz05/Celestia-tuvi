@@ -17,6 +17,7 @@ import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { QuayLai } from '@/components/QuayLai';
 import { CelesMascot } from '@/components/CelesMascot';
 import { dien, useT } from '@/lib/i18n/context';
+import type { TuDien } from '@/lib/i18n/vi';
 
 function TrangLuanGiai() {
   const t = useT();
@@ -121,7 +122,7 @@ function TrangLuanGiai() {
         setLoi(loiQuota.message);
         setMoCong(true);
       } else {
-        setLoi('Phần diễn giải đang tạm gián đoạn. Lá số của bạn vẫn được giữ nguyên — thử lại sau một chút.');
+        setLoi(t.trangLuanGiai.loiTamDung);
       }
     } finally {
       setDangChay(false);
@@ -134,7 +135,7 @@ function TrangLuanGiai() {
   if (!duocVao)
     return (
       <Shell className="flex flex-col gap-[16px] py-[32px]">
-        <QuayLai theoTrangTruoc macDinh={{ href: '/home', nhan: 'Về trang Hôm nay' }} />
+        <QuayLai theoTrangTruoc macDinh={{ href: '/home' }} />
         <div className="mx-auto max-w-[620px]">
           <CongDangNhap nguon="deep_read" toanTrang />
         </div>
@@ -143,10 +144,10 @@ function TrangLuanGiai() {
 
   return (
     <Shell className="flex flex-col gap-[24px] py-[20px]">
-      <QuayLai theoTrangTruoc macDinh={{ href: '/home', nhan: 'Về trang Hôm nay' }} className="-mb-[16px]" />
+      <QuayLai theoTrangTruoc macDinh={{ href: '/home' }} className="-mb-[16px]" />
       <div>
-        <p className="eyebrow">KHÁM PHÁ SÂU HƠN</p>
-        <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì?</h1>
+        <p className="eyebrow">{t.trangLuanGiai.eyebrow}</p>
+        <h1 className="heading mt-[10px]">{t.trangLuanGiai.tieuDe}</h1>
       </div>
 
       <section className="grid gap-[24px] lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -157,17 +158,18 @@ function TrangLuanGiai() {
         */}
         <KhoiGap
           moSan={!laSo}
-          nhanMo="Đổi người, đổi thời điểm"
+          nhanMo={t.trangLuanGiai.doiNguoi}
           tomTat={
             <>
-              {form.hoTen || 'Người vừa nhập'} · {tachNgaySinh(form.ngaySinh).ngay}/
-              {tachNgaySinh(form.ngaySinh).thang}/{tachNgaySinh(form.ngaySinh).nam} · năm {namXem}
+              {form.hoTen || t.trangLuanGiai.nguoiVuaNhap} · {tachNgaySinh(form.ngaySinh).ngay}/
+              {tachNgaySinh(form.ngaySinh).thang}/{tachNgaySinh(form.ngaySinh).nam} ·{' '}
+              {dien(t.trangLuanGiai.namTomTat, { nam: namXem })}
             </>
           }
         >
         <div className="flex flex-col gap-[16px]">
           {hoSos.length > 0 && (
-            <Field label="Chọn một người đã lưu">
+            <Field label={t.trangLuanGiai.chonNguoiLuu}>
               <select
                 className="field-input"
                 defaultValue=""
@@ -182,10 +184,10 @@ function TrangLuanGiai() {
                   });
                 }}
               >
-                <option value="">— Nhập thủ công —</option>
+                <option value="">{t.trangLuanGiai.nhapTay}</option>
                 {hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}
+                    {h.hoTen || t.danhSach.khongTen} — {h.ngay}/{h.thang}/{h.nam}
                   </option>
                 ))}
               </select>
@@ -195,7 +197,7 @@ function TrangLuanGiai() {
           <FormSinh giaTri={form} onChange={setForm} />
 
           <div className="grid grid-cols-2 gap-[12px]">
-            <Field label="Năm xem hạn">
+            <Field label={t.trangLuanGiai.namXemHan}>
               <input
                 type="number"
                 value={namXem}
@@ -203,7 +205,7 @@ function TrangLuanGiai() {
                 className="field-input"
               />
             </Field>
-            <Field label="Tháng xem hạn">
+            <Field label={t.trangLuanGiai.thangXemHan}>
               <select
                 value={thangXem}
                 onChange={(e) => setThangXem(Number(e.target.value))}
@@ -211,18 +213,18 @@ function TrangLuanGiai() {
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                   <option key={m} value={m}>
-                    Tháng {m}
+                    {dien(t.banDo.thang, { thang: m })}
                   </option>
                 ))}
               </select>
             </Field>
           </div>
 
-          <Field label="Câu hỏi riêng (tuỳ chọn)">
+          <Field label={t.trangLuanGiai.cauHoiRieng}>
             <input
               value={cauHoi}
               onChange={(e) => setCauHoi(e.target.value)}
-              placeholder="VD: Năm nay có nên chuyển việc không?"
+              placeholder={t.trangLuanGiai.cauHoiVD}
               className="field-input"
             />
           </Field>
@@ -233,11 +235,11 @@ function TrangLuanGiai() {
               style={{ color: 'var(--fg-muted)', borderTop: '1px solid var(--line)' }}
             >
               <span>
-                Mệnh <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
+                {t.trangLuanGiai.menh} <b style={{ color: 'var(--fg)' }}>{CHI[laSo.menhIndex]}</b>
               </span>
               <span style={{ color: 'var(--fg)' }}>{laSo.cuc.ten}</span>
               <span>
-                Thân cư <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
+                {t.trangLuanGiai.thanCu} <b style={{ color: 'var(--fg)' }}>{laSo.thanCuCung}</b>
               </span>
             </div>
           )}
@@ -247,7 +249,7 @@ function TrangLuanGiai() {
 
         <div className="flex flex-col gap-[16px]">
           <div className="grid gap-[12px] sm:grid-cols-2">
-            {(Object.entries(CHU_DE) as [ChuDeId, (typeof CHU_DE)[ChuDeId]][]).map(([id, cd]) => (
+            {(Object.keys(CHU_DE) as ChuDeId[]).map((id) => (
               <button
                 key={id}
                 onClick={() => chay(id)}
@@ -259,10 +261,10 @@ function TrangLuanGiai() {
                 }}
               >
                 <span className="text-[15px] font-medium" style={{ color: 'var(--fg)' }}>
-                  {cd.nhan}
+                  {nhanChuDe(id, t)}
                 </span>
                 <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                  {cd.moTa}
+                  {moTaChuDe(id, t)}
                 </span>
               </button>
             ))}
@@ -277,7 +279,7 @@ function TrangLuanGiai() {
               <div className="flex items-center gap-[16px]">
                 <CelesMascot cho="cho" trangThai="thinking" cao={80} caoNho={64} />
                 <p className="body-text min-w-0" style={{ color: 'var(--fg-muted)' }}>
-                  {dien(t.luanChuDe.dangDoc, { chuDe: CHU_DE[chuDe].nhan })}
+                  {dien(t.luanChuDe.dangDoc, { chuDe: nhanChuDe(chuDe, t) })}
                 </p>
               </div>
             )}
@@ -291,15 +293,14 @@ function TrangLuanGiai() {
             {ketQua && !dangChay && (
               <article className="flex flex-col gap-[12px]">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="subheading">{CHU_DE[chuDe].nhan}</h2>
+                  <h2 className="subheading">{nhanChuDe(chuDe, t)}</h2>
                   <span className="caption">
-                    Celestia soạn từ lá số của bạn
+                    {t.trangLuanGiai.soanTu}
                   </span>
                 </div>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} />
                 <p className="mt-[14px] text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                  Nội dung do AI tạo ra, mang tính tham khảo — không thay thế tư vấn chuyên môn về y
-                  tế, tài chính hay pháp lý.
+                  {t.trangLuanGiai.canhBao}
                 </p>
               </article>
             )}
@@ -328,9 +329,24 @@ function TrangLuanGiai() {
   );
 }
 
+/** Nhãn chủ đề theo ngôn ngữ — CHU_DE trong lib/ai/prompt giữ bản Việt cho prompt */
+const KHOA_CHU_DE = {
+  'tong-quan': 'tongQuan',
+  'su-nghiep': 'suNghiep',
+  'tai-chinh': 'taiChinh',
+  'tinh-duyen': 'tinhDuyen',
+  'suc-khoe': 'sucKhoe',
+  'gia-dao': 'giaDao',
+  'van-han': 'vanHan',
+} as const satisfies Record<ChuDeId, keyof TuDien['chuDeLuan']>;
+
+const nhanChuDe = (id: ChuDeId, t: TuDien) => t.chuDeLuan[KHOA_CHU_DE[id]];
+const moTaChuDe = (id: ChuDeId, t: TuDien) => t.chuDeLuan[`${KHOA_CHU_DE[id]}Mo`];
+
 export default function LuanGiaiPage() {
+  const t = useT();
   return (
-    <Suspense fallback={<Shell className="py-[40px]">Đang tải…</Shell>}>
+    <Suspense fallback={<Shell className="py-[40px]">{t.trangLuanGiai.dangTai}</Shell>}>
       <TrangLuanGiai />
     </Suspense>
   );
