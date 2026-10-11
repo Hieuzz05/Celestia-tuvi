@@ -27,6 +27,7 @@ export const vi = {
     khamPha: 'Khám phá',
     cachHoatDong: 'Cách hoạt động',
     cauChuyen: 'Câu chuyện Celestia',
+    tuDien: 'Từ điển Tử Vi',
     veCelestia: 'Về Celestia',
     batDauMienPhi: 'Bắt đầu miễn phí',
     batDauNgan: 'Bắt đầu',
@@ -308,6 +309,43 @@ export const vi = {
     xemHanhTrinh: 'Xem cả hành trình',
     chuaCoTieuDe: 'Chưa có bản đồ nào được lưu',
     chuaCoMo: 'Lập bản đồ đầu tiên để Celes có thứ để đọc cùng bạn mỗi ngày.',
+  },
+
+  // Từ điển thuật ngữ (CEL-075) — lời giải nghĩa lấy từ bản đọc nhanh, ở đây chỉ có tên và khuôn
+  tuDien: {
+    eyebrow: 'Từ điển',
+    tieuDe: 'Từ điển Tử Vi',
+    intro:
+      'Những chữ bạn sẽ gặp khi đọc lá số, giải thích bằng lời thường. Mỗi lời dưới đây là nét thường gặp, không phải lời phán cho riêng ai.',
+    timNhan: 'Tìm trong từ điển',
+    timGoiY: 'Một sao, một cung…',
+    mucLuc: 'Các nhóm trong từ điển',
+    khongThay: 'Chưa có mục nào khớp “{q}”.',
+    nhom: {
+      chinhTinh: 'Mười bốn chính tinh',
+      cung: 'Mười hai cung',
+      phuTinh: 'Phụ tinh và Tứ Hóa',
+      trangSinh: 'Vòng Trường Sinh',
+      khaiNiem: 'Thời gian và các khái niệm khác',
+    },
+    moNhom: {
+      chinhTinh:
+        'Mỗi sao có hai lời: nét thường gặp khi sao đứng ở cung Mệnh, và điều thường cần khi sao đứng ở cung Thân. Đây là nét của riêng sao ấy, chưa tính độ sáng hay các sao đi cùng.',
+      cung: 'Mỗi cung là một mặt của đời sống.',
+      phuTinh:
+        'Các sao đi kèm chính tinh, tô thêm màu cho cung chúng đứng. Lời dưới mỗi sao là nét thường gặp khi lá số có sao đó; vài sao gắn với một năm hay một quãng thời gian thì lời chỉ đúng lúc sao ấy ứng vào.',
+      trangSinh:
+        'Mười hai giai đoạn của một chu kỳ, gắn cố định với mỗi cung từ lúc lập lá số, cho biết sức của cung ấy thiên về dâng lên, thu lại hay chuẩn bị bắt đầu.',
+      khaiNiem: 'Cách lá số chia thời gian, và vài vị trí đặc biệt chỉ có ở một số lá số, như Tuần và Triệt.',
+    },
+    thanCu: 'Cung Thân',
+    daiVan: 'Đại vận',
+    tieuHan: 'Tiểu hạn',
+    nguyetHan: 'Nguyệt hạn',
+    tuanTriet: 'Tuần, Triệt',
+    mauTrangSinh: 'Cung này {net}',
+    cuoi: 'Muốn biết sao nào đứng ở cung nào của chính bạn thì cần lá số của bạn.',
+    moLaSo: 'Lập lá số miễn phí',
   },
 
   hanhTrinh: {
