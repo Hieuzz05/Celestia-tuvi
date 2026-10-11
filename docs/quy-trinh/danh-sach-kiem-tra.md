@@ -40,4 +40,5 @@ npx tsx scripts/eval-phu-du-kien.ts --sinh|--cham  # model thật: A/B mã cũ�
 npx tsx scripts/test-rag-toan-tuyen.ts  # chạm DB thật + model thật; chạy khi đổi schema/SQL
 node scripts/test-hover-nhay.mjs   # mệnh bàn không được nhấp nháy khi rê chuột
 npm run kiem-tra-sso      # trạng thái đăng nhập Google
+npm run e2e               # E2E Playwright (CEL-076): trình duyệt thật, máy tính + 390px; chặn mọi /api/* — KHÔNG gọi model, KHÔNG chạm DB; dùng Chrome đã cài; KHÔNG nằm trong CI
 ```
