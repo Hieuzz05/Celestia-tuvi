@@ -223,7 +223,7 @@ hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/k
 ```
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
-node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (đang 5 lỗi set-state-in-effect)
+node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (mốc 0 — mọi lỗi lint đều chặn)
 # ...còn 36 bài (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID...):
 # xem docs/quy-trinh/danh-sach-kiem-tra.md. CI chạy các bài OFFLINE trong đó.
 ```

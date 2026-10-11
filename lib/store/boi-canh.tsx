@@ -133,11 +133,13 @@ export function BoiCanhProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setNhapState(doc<LaSoNhap>(KHOA.nhap));
-    setNamXem(doc<number>(KHOA.nam));
-    setThangXem(doc<number>(KHOA.thang));
-    setCheDoBanDo(doc<string>(KHOA.cheDo));
-    taiLai();
+    Promise.resolve({ nhap: doc<LaSoNhap>(KHOA.nhap), nam: doc<number>(KHOA.nam), thang: doc<number>(KHOA.thang), cheDo: doc<string>(KHOA.cheDo) }).then((d) => {
+      setNhapState(d.nhap);
+      setNamXem(d.nam);
+      setThangXem(d.thang);
+      setCheDoBanDo(d.cheDo);
+      return taiLai();
+    });
   }, [taiLai]);
 
   const xemHoSo = useCallback((id: string | null) => {

@@ -58,13 +58,13 @@ function TrangLuanGiai() {
     const thang = Number(params.get('thang'));
     const nam = Number(params.get('nam'));
     if (!ngay || !thang || !nam) return;
-    setForm({
+    Promise.resolve({
       hoTen: params.get('ten') ?? '',
       ngaySinh: `${nam}-${String(thang).padStart(2, '0')}-${String(ngay).padStart(2, '0')}`,
       // Không `|| 9`: giờ 0 (sinh sau nửa đêm, giờ Tý) từng bị đổi thành 9 giờ — giờ Tỵ
       gio: params.get('gio') !== null && Number.isInteger(Number(params.get('gio'))) ? Number(params.get('gio')) : 9,
       gioiTinh: (params.get('gt') as ThongTinForm['gioiTinh']) || 'nam',
-    });
+    }).then(setForm);
   }, [params]);
 
 

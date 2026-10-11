@@ -54,7 +54,7 @@ Mỗi kết quả trúng đều phải đọc tận mắt. Có khoá thật ho�
 | Mục | Kết quả |
 |---|---|
 | Commit trên nhánh | 3 commit, đều thuộc CEL-xxx |
-| tsc / lint | ĐẠT / ĐẠT (mốc 5) |
+| tsc / lint | ĐẠT / ĐẠT (mốc 0) |
 | <từng bài kiem-nhanh chọn> | ĐẠT |
 | Build | để CI (không đổi route) |
 | Bí mật | sạch |
