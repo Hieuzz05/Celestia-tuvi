@@ -27,6 +27,7 @@ npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC
 npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
 npx tsx scripts/test-moi-truong-dem.ts  # đệm AI tách theo môi trường: production giữ khoá cũ, Preview/local có tiền tố, cấu hình chỉ production ghi — offline
 npx tsx scripts/test-kiem-id-cel.ts     # hàm so ID CEL giữa nhánh / main / nhánh khác — offline
+npx tsx scripts/do-chat-luong-luan.ts   # bộ đo chất lượng luận T1–T11 (CEL-197): CI tự kiểm bộ chấm; --tep <a.json> đo văn đã lưu, --ca-tai-hien in gói câu "đổi việc" — offline
 npx tsx scripts/kiem-id-cel.ts          # máy canh trùng ID CEL (cần git fetch); CI chạy riêng ở kiem-id-cel.yml trên MỌI lần đẩy
 npx tsx scripts/test-priv-01.ts        # PRIV-01: vết Production không giữ câu hỏi, văn trả lời, băm lá số không muối — offline
 npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng sớm nhất, cờ không chặn chẩn đoán, nhãn judge/người — offline

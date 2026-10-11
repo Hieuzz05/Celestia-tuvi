@@ -1,0 +1,493 @@
+[
+  {
+    "id": "G1",
+    "ghiChu": "Bài tốt: chốt hướng, luận năm bằng sao lưu (mô phỏng gói CÓ lưu tinh — STANDARD hiện chưa đưa, CEL-199)",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng, nên việc đang cầm trong tay có sức nặng hơn việc mới.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm còn đất",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": [],
+          "luongNguoc": "Địa Kiếp cũng ngồi ở đây, nên thứ bạn dựng năm nay có thể hao một phần trước khi đứng vững."
+        },
+        {
+          "tieuDe": "Chuyện bên ngoài",
+          "noiDung": "Lưu Thái Tuế năm nay đóng ở phần ra ngoài, gặp người lạ của bạn, nên chuyện thị phi và phải nói cho ra lẽ với người bên ngoài sẽ nhiều hơn mọi năm.",
+          "maDuKien": [
+            "F008",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ],
+      "hoiLai": "Điều khiến bạn muốn đi là công việc hay là người quản lý trực tiếp?"
+    },
+    "kyVong": {
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": true,
+      "T5": true,
+      "T6": true,
+      "T7": true,
+      "T8": true,
+      "T9": true,
+      "T10": null,
+      "T11": null
+    }
+  },
+  {
+    "id": "B-T1",
+    "ghiChu": "Câu quyết định mà không có kết luận",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "tomTat": "Tiểu hạn năm nay rơi vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng là bộ của người được giao trách nhiệm, nên bạn dễ được trao thêm quyền ở chỗ cũ.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": false,
+      "T3": true,
+      "T4": true
+    }
+  },
+  {
+    "id": "B-T2",
+    "ghiChu": "Kết luận ba phải",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Bạn có thể đổi, cũng có thể ở lại, còn tuỳ vào hoàn cảnh lúc đó.",
+      "tomTat": "Tiểu hạn năm nay rơi vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng là bộ của người được giao trách nhiệm, nên bạn dễ được trao thêm quyền ở chỗ cũ.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T2": false,
+      "T3": true
+    }
+  },
+  {
+    "id": "B-T3",
+    "ghiChu": "Gọi tên sao không có trong gói",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại.",
+      "tomTat": "Thiên Riêu chiếu vào phần công việc của bạn năm nay, nên dễ vướng chuyện tai tiếng nếu bạn chuyển đi vội.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Thiên Riêu đóng ở phần công việc làm bạn dễ bị hiểu lầm ở chỗ mới.",
+          "maDuKien": [
+            "F011"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": true,
+      "T3": false
+    }
+  },
+  {
+    "id": "B-T4",
+    "ghiChu": "Khẳng định chuyên môn không dẫn dữ kiện",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại.",
+      "tomTat": "Bạn có nền vững ở chỗ đang làm.",
+      "yChinh": [
+        {
+          "tieuDe": "Uy",
+          "noiDung": "Tử Vi thủ mệnh nên bạn có uy.",
+          "maDuKien": [],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": true,
+      "T4": false
+    }
+  },
+  {
+    "id": "B-T5",
+    "ghiChu": "Quá dài so với nhịp",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "nhanBan": 14,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": true,
+      "T5": false,
+      "T6": true
+    }
+  },
+  {
+    "id": "B-T5-ngan",
+    "ghiChu": "Quá ngắn, không đủ ý",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Nên ở lại.",
+      "tomTat": "Phần công việc của bạn năm nay vững.",
+      "yChinh": [
+        {
+          "tieuDe": "A",
+          "noiDung": "Tử Vi ở phần công việc giữ bạn lại.",
+          "maDuKien": [
+            "F011"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T5": false,
+      "T6": true
+    }
+  },
+  {
+    "id": "B-T6",
+    "ghiChu": "Câu cụt: dừng giữa chừng ở hư từ, thiếu dấu kết",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng, nên",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T6": false,
+      "T7": true
+    }
+  },
+  {
+    "id": "B-T7",
+    "ghiChu": "Không nói với người đọc, sáo ngữ máy",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Nhìn chung, tiểu hạn năm nay rơi đúng vào phần công việc, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Điều này cho thấy rằng Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay dễ được trao thêm quyền ở chỗ cũ.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T6": true,
+      "T7": false
+    }
+  },
+  {
+    "id": "B-T8",
+    "ghiChu": "Lộ từ cấm mặt trước và tiếng lóng nội bộ",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Theo Nam phái, tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Có nhiều yếu tố đỡ hơn yếu tố cản: Tử Vi và Thiên Tướng ở phần công việc giúp bạn được trao thêm quyền ở chỗ cũ.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T7": true,
+      "T8": false
+    }
+  },
+  {
+    "id": "B-T9-ke",
+    "ghiChu": "Kê tên sao lưu rồi luận bằng sao gốc",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Năm nay có Lưu Thái Tuế, Lưu Tang Môn.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T9": false
+    }
+  },
+  {
+    "id": "B-T9-tinh",
+    "ghiChu": "Luận năm chỉ bằng sao gốc — đúng Tử Vi, nhưng rớt T9 theo đòi hỏi sản phẩm",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": true,
+      "T3": true,
+      "T9": false,
+      "T10": null
+    }
+  },
+  {
+    "id": "B-T9-hoa",
+    "ghiChu": "Luận bằng \"Lưu Hóa Kỵ\" — engine không an lưu Tứ Hóa, không được tính là sao lưu",
+    "cauHoi": "Năm 2026 tôi có nên đổi việc không?",
+    "namXem": 2026,
+    "traLoi": {
+      "ketLuan": "Năm 2026 nghiêng về phía nên ở lại và đổi cách làm hơn là đổi chỗ làm.",
+      "tomTat": "Tiểu hạn năm nay rơi đúng vào phần công việc của bạn, nơi có Tử Vi và Thiên Tướng, nên việc đang cầm trong tay có sức nặng hơn việc mới.",
+      "yChinh": [
+        {
+          "tieuDe": "Việc đang làm còn đất",
+          "noiDung": "Tử Vi và Thiên Tướng ở phần công việc là bộ của người được giao trách nhiệm, nên năm nay bạn dễ được trao thêm quyền ở chỗ cũ hơn là phải đi tìm chỗ mới.",
+          "maDuKien": [
+            "F011",
+            "F016"
+          ],
+          "maNguon": [],
+          "luongNguoc": "Địa Kiếp cũng ngồi ở đây, nên thứ bạn dựng năm nay có thể hao một phần trước khi đứng vững."
+        },
+        {
+          "tieuDe": "Chuyện bên ngoài",
+          "noiDung": "Lưu Hóa Kỵ năm nay nhắm vào phần công việc của bạn, nên chuyện thị phi và hiểu lầm với người cùng làm sẽ nhiều hơn mọi năm.",
+          "maDuKien": [
+            "F008",
+            "F016"
+          ],
+          "maNguon": []
+        }
+      ],
+      "hoiLai": "Điều khiến bạn muốn đi là công việc hay là người quản lý trực tiếp?"
+    },
+    "kyVong": {
+      "T9": false
+    }
+  },
+  {
+    "id": "G2",
+    "ghiChu": "Tháng (âm lịch, như engine): luận bằng sao lưu năm (mô phỏng gói CÓ lưu tinh, CEL-199)",
+    "cauHoi": "Tháng 9 năm 2026 tiền bạc của tôi thế nào?",
+    "namXem": 2026,
+    "thangXem": 9,
+    "traLoi": {
+      "tomTat": "Tháng 9 năm 2026 tiền của bạn đi theo đường giữ được hơn là đường kiếm thêm.",
+      "yChinh": [
+        {
+          "tieuDe": "Giữ tiền",
+          "noiDung": "Nguyệt hạn tháng này về đúng phần bản thân bạn, nơi có Vũ Khúc và Thiên Phủ cùng Hóa Quyền, nên bạn dễ tự cầm lấy việc chi tiêu trong nhà.",
+          "maDuKien": [
+            "F015",
+            "F002"
+          ],
+          "maNguon": []
+        },
+        {
+          "tieuDe": "Lợi qua người quen",
+          "noiDung": "Lưu Lộc Tồn năm nay đóng ở phần bạn bè, người cộng sự của bạn, nên khoản lợi tháng này dễ đến qua quan hệ hơn là tự mình kiếm thêm.",
+          "maDuKien": [
+            "F010"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": null,
+      "T3": true,
+      "T4": true,
+      "T5": true,
+      "T6": true,
+      "T7": true,
+      "T8": true,
+      "T9": true,
+      "T10": null
+    }
+  },
+  {
+    "id": "G3",
+    "ghiChu": "Đại vận: nêu quãng tuổi bằng số",
+    "cauHoi": "Đại vận hiện tại của tôi thế nào?",
+    "namXem": 2026,
+    "traLoi": {
+      "tomTat": "Quãng 36–45 tuổi của bạn là mười năm của nhà cửa và những chuyện phải nói cho ra lẽ.",
+      "yChinh": [
+        {
+          "tieuDe": "Mười năm này",
+          "noiDung": "Đại vận này đóng ở phần nhà cửa, nơi có Thiên Cơ và Cự Môn, nên bạn hay phải tính toán, bàn bạc và đổi ý nhiều lần trước khi chốt một việc lớn trong nhà.",
+          "maDuKien": [
+            "F013"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": null,
+      "T3": true,
+      "T5": true,
+      "T6": true,
+      "T9": null,
+      "T10": true,
+      "T11": null
+    }
+  },
+  {
+    "id": "B-T10",
+    "ghiChu": "Đại vận mà không nêu tuổi",
+    "cauHoi": "Đại vận hiện tại của tôi thế nào?",
+    "namXem": 2026,
+    "traLoi": {
+      "tomTat": "Giai đoạn hiện tại của bạn là quãng của nhà cửa và những chuyện phải nói cho ra lẽ.",
+      "yChinh": [
+        {
+          "tieuDe": "Giai đoạn này",
+          "noiDung": "Đại vận này đóng ở phần nhà cửa, nơi có Thiên Cơ và Cự Môn, nên bạn hay phải tính toán, bàn bạc và đổi ý nhiều lần trước khi chốt một việc lớn trong nhà.",
+          "maDuKien": [
+            "F013"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T10": false
+    }
+  },
+  {
+    "id": "G4",
+    "ghiChu": "Tra cứu: chỉ nói về sao đang hỏi",
+    "cauHoi": "Sao Thiên Phủ ở mệnh tôi nghĩa là gì?",
+    "namXem": 2026,
+    "traLoi": {
+      "tomTat": "Thiên Phủ ở phần bản thân bạn là sao của người biết giữ và biết tích luỹ.",
+      "yChinh": [
+        {
+          "tieuDe": "Thiên Phủ",
+          "noiDung": "Thiên Phủ đứng cùng Vũ Khúc và có Hóa Quyền, nên bạn quen tự quản tiền và việc của mình, ít khi để người khác cầm hộ.",
+          "maDuKien": [
+            "F002"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T1": null,
+      "T3": true,
+      "T9": null,
+      "T10": null,
+      "T11": true
+    }
+  },
+  {
+    "id": "B-T11",
+    "ghiChu": "Tra cứu mà kéo thêm sao không có trong phần đang tra",
+    "cauHoi": "Sao Thiên Phủ ở mệnh tôi nghĩa là gì?",
+    "namXem": 2026,
+    "traLoi": {
+      "tomTat": "Thiên Phủ ở phần bản thân bạn là sao của người biết giữ và biết tích luỹ.",
+      "yChinh": [
+        {
+          "tieuDe": "Thiên Phủ",
+          "noiDung": "Thiên Phủ gặp Thái Âm thì bạn càng giỏi tích luỹ, ít khi để người khác cầm hộ tiền của mình.",
+          "maDuKien": [
+            "F002"
+          ],
+          "maNguon": []
+        }
+      ]
+    },
+    "kyVong": {
+      "T11": false
+    }
+  }
+]

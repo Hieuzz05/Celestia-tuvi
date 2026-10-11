@@ -224,7 +224,7 @@ hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/k
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
 node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (mốc 0 — mọi lỗi lint đều chặn)
-# ...còn 36 bài (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID...):
+# ...còn 37 bài (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID, bộ đo chất lượng luận...):
 # xem docs/quy-trinh/danh-sach-kiem-tra.md. CI chạy các bài OFFLINE trong đó.
 ```
 
@@ -232,7 +232,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, quyền riêng tư vết, harness P0, nghiệm lý, phản hồi, độ phủ tầng viết, hàm so ID CEL, build; máy canh trùng ID CEL chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, quyền riêng tư vết, harness P0, nghiệm lý, phản hồi, độ phủ tầng viết, hàm so ID CEL, bộ đo chất lượng luận, build; máy canh trùng ID CEL chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
