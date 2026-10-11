@@ -101,5 +101,8 @@ jobs:
       - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
         run: npx tsx scripts/test-kiem-id-cel.ts
 
+      - name: Bộ đo chất lượng luận T1–T11 — tự kiểm bộ chấm trên mẫu viết tay (CEL-197)
+        run: npx tsx scripts/do-chat-luong-luan.ts
+
       - name: Build
         run: npx next build
