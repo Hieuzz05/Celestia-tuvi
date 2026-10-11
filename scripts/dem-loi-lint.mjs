@@ -5,7 +5,7 @@
 // được nhiều hơn mốc". Sửa bớt được lỗi nào thì HẠ mốc xuống, đừng bao giờ nâng lên.
 import { execFileSync } from 'node:child_process';
 
-const MOC = 5;
+const MOC = 0;
 
 let raw;
 try {

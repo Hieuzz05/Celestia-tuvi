@@ -146,8 +146,10 @@ function TrangHoiDap() {
           }
         : null;
     if (!f) return;
-    setForm(f);
-    setKhoaDaChot(khoaCua(f));
+    Promise.resolve(f).then((f) => {
+      setForm(f);
+      setKhoaDaChot(khoaCua(f));
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boiCanh.dangTai, boiCanh.hoSos, boiCanh.nhap, idDangDung]);
 

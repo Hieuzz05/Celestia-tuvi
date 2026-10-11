@@ -63,16 +63,17 @@ export default function DangNhapPage() {
   // Callback OAuth chuyển về đây kèm lý do khi đăng nhập thất bại.
   // Nút "Tạo tài khoản" trên thanh điều hướng mở thẳng chế độ đăng ký qua ?che=
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const loi = q.get('loi');
-    if (loi) setThongBao({ loai: 'loi', noiDung: loi });
-    if (q.get('che') === 'dang-ky') setChe('dang-ky');
-    const it = q.get('intent');
-    if (it) {
-      setYDinh(it);
-      // Tới đây từ một cổng thì mặc định là tạo tài khoản, không phải đăng nhập
-      setChe('dang-ky');
-    }
+    Promise.resolve(new URLSearchParams(window.location.search)).then((q) => {
+      const loi = q.get('loi');
+      if (loi) setThongBao({ loai: 'loi', noiDung: loi });
+      if (q.get('che') === 'dang-ky') setChe('dang-ky');
+      const it = q.get('intent');
+      if (it) {
+        setYDinh(it);
+        // Tới đây từ một cổng thì mặc định là tạo tài khoản, không phải đăng nhập
+        setChe('dang-ky');
+      }
+    });
   }, []);
 
   // Chỉ hiện nút SSO của provider thực sự được bật trong Supabase — bằng không

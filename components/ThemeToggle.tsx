@@ -12,14 +12,24 @@ function apDung(theme: Theme) {
   document.documentElement.style.colorScheme = theme === 'day' ? 'light' : 'dark';
 }
 
+function docTheme(): Theme {
+  let luu: Theme | null = null;
+  try {
+    luu = window.localStorage.getItem(KHOA_THEME) as Theme | null;
+  } catch {
+    // Chế độ riêng tư chặn localStorage — rơi về theme đang gắn trên trang
+  }
+  return luu ?? (document.documentElement.getAttribute('data-theme') as Theme) ?? 'day';
+}
+
 export function ThemeToggle() {
   const t = useT();
   // Design system gốc là theme sáng nên Ngày là mặc định
   const [theme, setTheme] = useState<Theme>('day');
 
+  // Đọc tách khỏi setState, đặt state trong .then (mẫu chữa set-state-in-effect, AGENTS.md)
   useEffect(() => {
-    const luu = window.localStorage.getItem(KHOA_THEME) as Theme | null;
-    setTheme(luu ?? (document.documentElement.getAttribute('data-theme') as Theme) ?? 'day');
+    Promise.resolve(docTheme()).then(setTheme);
   }, []);
 
   const doi = () => {
