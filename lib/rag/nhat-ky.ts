@@ -33,50 +33,65 @@ export function bamLaSo(ngay: number, thang: number, nam: number, gio: number, g
   return createHash('sha256').update(`${ngay}-${thang}-${nam}-${gio}-${gioiTinh}`).digest('hex').slice(0, 16);
 }
 
-export async function ghiLanTruyHoi(
-  keHoach: KeHoachTruyVan,
-  kq: KetQuaTruyHoi,
-  meta: {
-    requestId?: string;
-    cauHoi: string;
-    cheDo?: 'that' | 'thu_nghiem';
-    nguoiChay?: string;
-    /** Năm thật sự được đọc trong lượt (năm người hỏi gọi tên, hoặc năm đang xem) */
-    namHieuLuc?: number;
-    thangHieuLuc?: number;
-  }
-): Promise<string | null> {
+/**
+ * PRIV-01 (05/10/2026): trace Production (`che_do = 'that'`) không giữ văn người dùng — câu hỏi
+ * thô, truy vấn (ghép từ câu hỏi), văn trả lời, mô tả / trích đoạn của validator, băm lá số không
+ * muối (sha256 ngày giờ sinh dò ngược được bằng vét cạn). Giữ ID, mã, số, phiên bản, model, độ trễ.
+ * `thu_nghiem` (quản trị viên thử truy hồi ở /admin) vẫn giữ văn. Máy canh: scripts/test-priv-01.ts.
+ *
+ * Chuỗi canh thay vì null vì `retrieval_runs.cau_hoi / truy_van` còn NOT NULL tới khi chạy
+ * `supabase/va-priv-01.sql`.
+ */
+export const AN = '[an]';
+
+export interface MetaLanTruyHoi {
+  requestId?: string;
+  cauHoi: string;
+  cheDo?: 'that' | 'thu_nghiem';
+  nguoiChay?: string;
+  /** Năm thật sự được đọc trong lượt (năm người hỏi gọi tên, hoặc năm đang xem) */
+  namHieuLuc?: number;
+  thangHieuLuc?: number;
+  /** Trường bổ sung vào bo_loc — CHỈ mã / số / phiên bản, không văn. */
+  boLocThem?: Record<string, string | number | boolean | null>;
+}
+
+/** Dòng chèn vào retrieval_runs — hàm thuần, để test PRIV-01 kiểm được không cần DB. */
+export function dongLanTruyHoi(keHoach: KeHoachTruyVan, kq: KetQuaTruyHoi, meta: MetaLanTruyHoi) {
+  const cheDo = meta.cheDo ?? 'that';
+  const giuVan = cheDo === 'thu_nghiem';
+  return {
+    request_id: meta.requestId ?? null,
+    cau_hoi: giuVan ? meta.cauHoi : AN,
+    truy_van: giuVan ? kq.truyVan : AN,
+    // Cột y_dinh từng ghi nhầm chủ đề (tới 05/10/2026). Chủ đề nằm ở bo_loc.chuDe.
+    y_dinh: keHoach.yDinh,
+    thuc_the: keHoach.thucThe.map((t) => t.id),
+    cung_lien_quan: keHoach.cungLienQuan,
+    bo_loc: {
+      chuDe: keHoach.chuDe,
+      hePhai: kq.cauHinh.hePhai ?? null,
+      locThucThe: kq.cauHinh.locThucThe,
+      phamViThoiGian: keHoach.phamViThoiGian,
+      namHieuLuc: meta.namHieuLuc ?? null,
+      thangMucTieu: keHoach.thangMucTieu ?? null,
+      thangHieuLuc: meta.thangHieuLuc ?? null,
+      ...(meta.boLocThem ?? {}),
+    },
+    cau_hinh: kq.cauHinh,
+    phien_ban: { planner: keHoach.phienBan, truyHoi: kq.phienBan },
+    do_tre_ms: kq.doTreMs,
+    che_do: cheDo,
+    nguoi_chay: meta.nguoiChay ?? null,
+  };
+}
+
+export async function ghiLanTruyHoi(keHoach: KeHoachTruyVan, kq: KetQuaTruyHoi, meta: MetaLanTruyHoi): Promise<string | null> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return null;
 
   try {
-    const { data, error } = await supabase
-      .from('retrieval_runs')
-      .insert({
-        request_id: meta.requestId ?? null,
-        cau_hoi: meta.cauHoi,
-        truy_van: kq.truyVan,
-        // Cột y_dinh từng ghi nhầm chủ đề (tới 05/10/2026). Chủ đề nằm ở bo_loc.chuDe.
-        y_dinh: keHoach.yDinh,
-        thuc_the: keHoach.thucThe.map((t) => t.id),
-        cung_lien_quan: keHoach.cungLienQuan,
-        bo_loc: {
-          chuDe: keHoach.chuDe,
-          hePhai: kq.cauHinh.hePhai ?? null,
-          locThucThe: kq.cauHinh.locThucThe,
-          phamViThoiGian: keHoach.phamViThoiGian,
-          namHieuLuc: meta.namHieuLuc ?? null,
-          thangMucTieu: keHoach.thangMucTieu ?? null,
-          thangHieuLuc: meta.thangHieuLuc ?? null,
-        },
-        cau_hinh: kq.cauHinh,
-        phien_ban: { planner: keHoach.phienBan, truyHoi: kq.phienBan },
-        do_tre_ms: kq.doTreMs,
-        che_do: meta.cheDo ?? 'that',
-        nguoi_chay: meta.nguoiChay ?? null,
-      })
-      .select('id')
-      .single();
+    const { data, error } = await supabase.from('retrieval_runs').insert(dongLanTruyHoi(keHoach, kq, meta)).select('id').single();
 
     if (error || !data) return null;
 
@@ -102,12 +117,11 @@ export async function ghiLanTruyHoi(
   }
 }
 
+/** PRIV-01: không cauHoi, không chartHash — kiểu không nhận nên lối gọi cũ đỏ ở tsc. */
 export interface VetTraLoi {
   requestId: string;
   userId?: string;
-  chartHash?: string;
   tinhNang?: string;
-  cauHoi?: string;
   runId?: string | null;
   phienBan: Record<string, string>;
   provider?: string;
@@ -116,25 +130,36 @@ export interface VetTraLoi {
   kiemDuyet?: KetQuaKiemDuyet;
 }
 
+/** Kiểm duyệt chỉ còn mã / mức / số / phiên bản — `moTa` và `tai` chứa văn trả lời. */
+export function rutGonKiemDuyet(k?: KetQuaKiemDuyet | null) {
+  if (!k) return null;
+  return { dat: k.dat, phuSong: k.phuSong, phienBan: k.phienBan, loi: k.loi.map((l) => ({ ma: l.ma, mucDo: l.mucDo })) };
+}
+
+/** Dòng chèn vào ai_requests — hàm thuần, test PRIV-01 kiểm trực tiếp. */
+export function dongVetTraLoi(v: VetTraLoi) {
+  return {
+    request_id: v.requestId,
+    user_id: v.userId ?? null,
+    chart_hash: null,
+    tinh_nang: v.tinhNang ?? 'hoi-dap',
+    cau_hoi: null,
+    run_id: v.runId ?? null,
+    phien_ban: v.phienBan,
+    provider: v.provider ?? null,
+    model: v.model ?? null,
+    do_tre_ms: v.doTreMs ?? null,
+    ket_qua_kiem_duyet: rutGonKiemDuyet(v.kiemDuyet),
+    dat: v.kiemDuyet?.dat ?? null,
+  };
+}
+
 export async function ghiVetTraLoi(v: VetTraLoi): Promise<void> {
   const supabase = taoSupabaseAdmin();
   if (!supabase) return;
 
   try {
-    await supabase.from('ai_requests').insert({
-      request_id: v.requestId,
-      user_id: v.userId ?? null,
-      chart_hash: v.chartHash ?? null,
-      tinh_nang: v.tinhNang ?? 'hoi-dap',
-      cau_hoi: v.cauHoi ?? null,
-      run_id: v.runId ?? null,
-      phien_ban: v.phienBan,
-      provider: v.provider ?? null,
-      model: v.model ?? null,
-      do_tre_ms: v.doTreMs ?? null,
-      ket_qua_kiem_duyet: v.kiemDuyet ?? null,
-      dat: v.kiemDuyet?.dat ?? null,
-    });
+    await supabase.from('ai_requests').insert(dongVetTraLoi(v));
   } catch (e) {
     console.warn('[RAG] Không ghi được vết trả lời:', e instanceof Error ? e.message : e);
   }

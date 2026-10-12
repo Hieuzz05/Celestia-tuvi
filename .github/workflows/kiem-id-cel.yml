@@ -1,0 +1,33 @@
+# Máy canh trùng ID CEL giữa các nhánh (scripts/kiem-id-cel.ts).
+# Tách khỏi kiem-tra.yml vì hai lẽ:
+#  - kiem-tra.yml bỏ qua lần đẩy chỉ đổi *.xlsx, mà commit cấp ID thường chỉ đổi PRODUCT-BACKLOG.xlsx;
+#  - máy canh cần cả lịch sử và mọi nhánh remote (fetch-depth: 0), bài kia không cần.
+# Bài test hàm so ID (offline) nằm ở kiem-tra.yml để kiem-nhanh chọn được.
+# Đã trùng hai lần: CEL-150 (gỡ ở 87f5b0c), CEL-194 (05/10/2026, đổi sang CEL-196 ở fb2b023).
+name: Kiem ID CEL
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: kiem-id-cel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kiem-id-cel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Không trùng ID CEL với main và các nhánh remote đang mở
+        run: npx tsx scripts/kiem-id-cel.ts

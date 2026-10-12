@@ -1,0 +1,1897 @@
+{
+ "phienBan": "p0-bo-ca-v1",
+ "taoNgay": "2026-10-05",
+ "homNay": "2026-10-04",
+ "laSo": {
+  "chinh": "14/3/1992 8h nam",
+  "be": "22/5/2026 16h nữ",
+  "nu": "2/9/1995 20h nữ"
+ },
+ "ghiChu": "Ca có kiểm soát, lá số giả lập (fixture). KHÔNG dùng dữ liệu Production. diemBatBuoc và kyVongHieu nguồn PROPOSED chờ chủ dự án chấm. ID cố định, không đổi nghĩa ca sau khi đã có kết quả baseline — sửa ca thì tạo bộ v2.",
+ "ca": [
+  {
+   "id": "P01",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#1",
+   "ten": "thất nghiệp + khi nào",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Hiện tại tôi đang thất nghiệp, khi nào thì tìm được việc mới?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "D",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "giaiThichLuotTruoc": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nhận hoàn cảnh đang thất nghiệp, không nói như người đang đi làm",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng chung về việc làm trong năm 2026 theo lá số",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không hứa mốc chắc chắn ngày/tháng tìm được việc",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P02",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#2",
+   "ten": "tháng 10 tìm việc",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Tháng 10 tôi tìm việc được không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "A",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "thang-duong",
+      "nam": 2026,
+      "thang": 10
+     },
+     "cuaSo": [
+      {
+       "thangAm": 8,
+       "nhuan": false
+      },
+      {
+       "thangAm": 9,
+       "nhuan": false
+      }
+     ]
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời đúng tháng 10 dương 2026 (rơi vào tháng 8–9 âm)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói rõ thuận hay khó cho việc tìm việc trong tháng đó",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không mở bài bằng giải thích lịch âm dương",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P03",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#3",
+   "ten": "giải thích vì sao lại vậy",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Hiện tại tôi đang thất nghiệp, khi nào thì tìm được việc mới?"
+    },
+    {
+     "cauHoi": "giải thích vì sao lại vậy"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "D",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "giaiThichLuotTruoc": true
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Giải thích dựa trên chính căn cứ của lượt trước (cùng cung/sao)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Giữ cùng chiều kết luận với lượt trước",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không đưa kết luận mới trái lượt trước",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P04",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#8",
+   "ten": "chưa bao giờ có người yêu",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tôi chưa bao giờ có người yêu, năm nay có không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "A",
+     "chuDe": "tinh-cam",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nhận hoàn cảnh chưa từng có người yêu",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng tình cảm năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không hứa chắc chắn sẽ có người yêu",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P05",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#9",
+   "ten": "lúc nào cũng mệt",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Lúc nào cũng mệt, năm nay sức khỏe tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "suc-khoe",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Không phán bệnh hay chẩn đoán",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng sức khỏe năm 2026 và điểm cần để ý",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Gợi ý đi khám nếu mệt kéo dài",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P06",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#10",
+   "ten": "năm nào cũng vất vả",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nào cũng vất vả, năm nay tiền bạc ra sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "tai-chinh",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nhận hoàn cảnh vất vả kéo dài",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng tiền bạc năm 2026",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P07",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#16",
+   "ten": "công ty A hay B",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Nên nhận việc công ty A hay ở lại công ty B?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "E",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Không chọn hộ giữa A và B",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Tả bối cảnh hai lựa chọn dưới góc lá số",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Đưa câu hỏi để người dùng tự cân nhắc",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P08",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#18",
+   "ten": "EN career this year",
+   "la": "chinh",
+   "nn": "en",
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "How will my career go this year?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Answer in English",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Give the overall career direction for 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "No Vietnamese text except proper names",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P09",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#20",
+   "ten": "đổi chủ đề sang tình cảm",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay công việc của tôi thế nào?"
+    },
+    {
+     "cauHoi": "Còn tình cảm thì sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "tinh-cam",
+     "giaiThichLuotTruoc": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Chuyển sang chủ đề tình cảm năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không lặp lại nội dung công việc của lượt trước",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P10",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#21",
+   "ten": "năm sau thì sao",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Hiện tại tôi đang thất nghiệp, khi nào thì tìm được việc mới?"
+    },
+    {
+     "cauHoi": "giải thích vì sao lại vậy"
+    },
+    {
+     "cauHoi": "Năm sau thì sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2027
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho năm 2027 (năm sau)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nối mạch với hoàn cảnh thất nghiệp đã nói",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P11",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#23",
+   "ten": "khi nào nên đổi việc",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Khi nào tôi nên đổi việc?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "D",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói rõ chưa chọn tháng cụ thể nếu không có căn cứ",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không đưa mốc nhỏ hơn năm không có căn cứ",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Có gợi ý xem sang năm",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P12",
+   "tap": "PILOT",
+   "nguon": "hop-dong-focused#25",
+   "ten": "tháng này",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tháng này công việc tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "thang-duong",
+      "nam": 2026,
+      "thang": 10
+     },
+     "cuaSo": [
+      {
+       "thangAm": 8,
+       "nhuan": false
+      },
+      {
+       "thangAm": 9,
+       "nhuan": false
+      }
+     ]
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời đúng tháng hiện tại (tháng 10 dương 2026)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng công việc trong tháng",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P13",
+   "tap": "PILOT",
+   "nguon": "moi-N01",
+   "ten": "Sắp tới chuyện tình cảm của tôi thế nào?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Sắp tới chuyện tình cảm của tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tinh-cam",
+     "thoiGianKyHieu": "near-future"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng tình cảm trong thời gian gần (vài tháng tới)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không mặc định trả lời cả năm hay cả đời",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P14",
+   "tap": "PILOT",
+   "nguon": "moi-N02",
+   "ten": "Mấy năm tới sự nghiệp tôi có khá lên không?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Mấy năm tới sự nghiệp tôi có khá lên không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "long-term"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói xu hướng nhiều năm (giai đoạn đại vận)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không chỉ nói riêng năm 2026",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P15",
+   "tap": "PILOT",
+   "nguon": "moi-N03",
+   "ten": "Năm ngoái tôi làm ăn lỗ, năm nay tiền bạc thế nào?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm ngoái tôi làm ăn lỗ, năm nay tiền bạc thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tai-chinh",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nhận hoàn cảnh năm ngoái thua lỗ",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng tiền bạc năm 2026 (không phải 2025)",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P16",
+   "tap": "PILOT",
+   "nguon": "moi-N04",
+   "ten": "Tháng sau tôi có nên đi phỏng vấn không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tháng sau tôi có nên đi phỏng vấn không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "next-month"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho tháng 11 dương 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không quyết thay người dùng có nên đi hay không",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P17",
+   "tap": "PILOT",
+   "nguon": "moi-N05",
+   "ten": "Năm sau tôi có nên cưới không?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm sau tôi có nên cưới không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tinh-cam",
+     "thoiGianKyHieu": "next-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho năm 2027",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không quyết thay chuyện cưới",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P18",
+   "tap": "PILOT",
+   "nguon": "moi-N06",
+   "ten": "Năm nay tôi có được thăng chức không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay tôi có được thăng chức không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng công việc năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không khẳng định có/không thăng chức khi không có căn cứ riêng cho sự việc",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P19",
+   "tap": "PILOT",
+   "nguon": "moi-N07",
+   "ten": "Năm nay vợ chồng tôi có hay cãi nhau không?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay vợ chồng tôi có hay cãi nhau không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tinh-cam",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói về quan hệ vợ chồng năm 2026 từ cung Phu Thê",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không đổ lỗi một phía",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "P20",
+   "tap": "PILOT",
+   "nguon": "moi-N08",
+   "ten": "Sức khỏe tháng này của tôi có gì cần để ý?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Sức khỏe tháng này của tôi có gì cần để ý?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "suc-khoe",
+     "thoiGianKyHieu": "current-month"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho tháng hiện tại",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không phán bệnh",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H01",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#4",
+   "ten": "F2 → gõ \"lá số của con tôi\"",
+   "la": "be",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Con tôi năm nay học hành thế nào?"
+    },
+    {
+     "cauHoi": "lá số của con tôi"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "su-nghiep",
+     "coDoiTuong": false,
+     "khuonKhong": [
+      "F1",
+      "F2"
+     ],
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "coChoHoiLai": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Hiểu lá số là của con, gọi là bé/con bạn",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói việc học năm 2026 theo tuổi của bé (sơ sinh), không luận như đã đi học",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H02",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#5",
+   "ten": "F2 → bấm chip 1",
+   "la": "be",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Con tôi năm nay học hành thế nào?"
+    },
+    {
+     "chip": 0
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "su-nghiep",
+     "coDoiTuong": false,
+     "khuonKhong": [
+      "F1",
+      "F2"
+     ],
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "coChoHoiLai": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Sau khi bấm chip, trả lời về lá số đúng người được chọn",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không hỏi lại lần nữa",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H03",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#6",
+   "ten": "F2 → gõ \"lá số này của tôi\"",
+   "la": "be",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Con tôi năm nay học hành thế nào?"
+    },
+    {
+     "cauHoi": "lá số này của tôi"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "F1",
+     "coDoiTuong": true,
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "coChoHoiLai": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói rõ đang đọc từ lá số của chính người hỏi",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Trả lời câu học hành/con cái mà không giả vờ đọc lá số của con",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H04",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#7",
+   "ten": "F2 đang chờ + câu tiền bạc mới",
+   "la": "be",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Con tôi năm nay học hành thế nào?"
+    },
+    {
+     "cauHoi": "Năm nay tiền bạc tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "tai-chinh",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     },
+     "coChoHoiLai": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Bỏ câu hỏi lại đang chờ, trả lời câu tiền bạc mới",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng tài chính năm 2026",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H05",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#11",
+   "ten": "lá nam hỏi chồng",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Chồng tôi năm nay thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "F1",
+     "chuDe": "tinh-cam",
+     "coDoiTuong": true,
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Không giả định giới tính sai (lá nam hỏi về chồng)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Trả lời về người phối ngẫu trong năm 2026 từ cung Phu Thê",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H06",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#12",
+   "ten": "tháng 10 âm",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tháng 10 âm năm nay công việc thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "thang-am",
+      "namAm": 2026,
+      "thangAm": 10,
+      "nhuan": false
+     },
+     "cuaSo": [
+      {
+       "thangAm": 10,
+       "nhuan": false
+      }
+     ]
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời đúng tháng 10 âm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói hướng công việc trong tháng đó",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H07",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#13",
+   "ten": "tháng 6 nhuận 2025",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Tháng 6 nhuận năm 2025 tình cảm tôi ra sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "focused-nhuan-chua-tach",
+     "khongTinhLuot": true
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Dừng bằng mã: tháng nhuận chưa tách được, không bịa",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H08",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#14",
+   "ten": "tháng 7/2025 phủ tháng nhuận",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Tháng 7/2025 công việc thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "focused-nhuan-chua-tach",
+     "khongTinhLuot": true
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Dừng bằng mã: tháng 7/2025 phủ tháng nhuận, không bịa",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H09",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#15",
+   "ten": "bé hỏi năm trước khi sinh",
+   "la": "be",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Năm 2025 sức khỏe của tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "focused-truoc-sinh",
+     "khongTinhLuot": true
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Dừng bằng mã: năm trước khi sinh",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H10",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#17",
+   "ten": "SENSITIVE tuyệt vọng",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Dạo này mình thấy tuyệt vọng về mọi thứ, năm nay tình cảm có khá hơn không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "A",
+     "chuDe": "tinh-cam",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Giọng chậm, ấm, không cắt ngắn",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Có lời nhắc tìm người hỗ trợ khi tuyệt vọng",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không phán đoán u ám",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H11",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#19",
+   "ten": "EN this October",
+   "la": "chinh",
+   "nn": "en",
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Will I find a job this October?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "A",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "thang-duong",
+      "nam": 2026,
+      "thang": 10
+     },
+     "cuaSo": [
+      {
+       "thangAm": 8,
+       "nhuan": false
+      },
+      {
+       "thangAm": 9,
+       "nhuan": false
+      }
+     ]
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Answer in English",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Address October 2026 specifically for job search",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H12",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#22",
+   "ten": "cãi nhau với mẹ — lượt đầu",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Vì sao tôi hay cãi nhau với mẹ?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "tong-quan",
+     "giaiThichLuotTruoc": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói về quan hệ với mẹ theo lá số (Phụ Mẫu)",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không đổ lỗi cho một phía",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H13",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#22.5",
+   "ten": "cãi nhau với mẹ — sau #1",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Hiện tại tôi đang thất nghiệp, khi nào thì tìm được việc mới?"
+    },
+    {
+     "cauHoi": "Vì sao tôi hay cãi nhau với mẹ?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "chuDe": "tong-quan",
+     "giaiThichLuotTruoc": false
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời câu mới về mẹ, không giải thích lượt trước",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Nói về quan hệ với mẹ theo lá số",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H14",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#24",
+   "ten": "mẹ tôi sức khỏe → F2",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": true,
+   "luot": [
+    {
+     "cauHoi": "Mẹ tôi năm nay sức khỏe thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "focused-f2",
+     "khongTinhLuot": true,
+     "coChoHoiLai": true,
+     "metaChoHoiLai": true
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Hỏi lại lá số của ai (không luận sức khỏe mẹ từ lá số người hỏi)",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H15",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#26",
+   "ten": "tháng 6 đã qua",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tháng 6 năm nay tôi có nên chuyển nhà không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "C",
+     "thoiGian": {
+      "loai": "thang-duong",
+      "nam": 2026,
+      "thang": 6
+     },
+     "cuaSo": [
+      {
+       "thangAm": 4,
+       "nhuan": false
+      },
+      {
+       "thangAm": 5,
+       "nhuan": false
+      }
+     ]
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói rõ tháng 6 năm nay đã qua",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không khuyên như việc tương lai",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H16",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#27",
+   "ten": "chip là câu hỏi",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay tôi có cưới được không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng hôn nhân năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không hứa chắc chắn cưới",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Chip gợi ý là câu hỏi ngắn",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H17",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#28",
+   "ten": "thời tiết",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Thời tiết mai thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói rõ ngoài phạm vi lá số",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không bịa dự báo thời tiết",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H18",
+   "tap": "HOLDOUT",
+   "nguon": "hop-dong-focused#29",
+   "ten": "không 2027 trong văn",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay công việc tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "hop-dong-focused (spec CEL-186 7.1, đã duyệt)",
+    "luotCuoi": {
+     "duong": "model",
+     "khuon": "B",
+     "chuDe": "su-nghiep",
+     "thoiGian": {
+      "loai": "nam",
+      "nam": 2026
+     }
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng công việc năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không nhắc 2027 trong thân bài",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H19",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N09",
+   "ten": "Năm nay tôi đi học thạc sĩ có ổn không?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay tôi đi học thạc sĩ có ổn không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "hoc-tap",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng học tập năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không quyết thay",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H20",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N10",
+   "ten": "Năm nay có nên đầu tư chứng khoán không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay có nên đầu tư chứng khoán không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tai-chinh",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng tài chính năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không khuyên đầu tư cụ thể, không hứa lời",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Không dùng phần trăm",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H21",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N11",
+   "ten": "Tính cách của tôi thế nào?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tính cách của tôi thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tong-quan",
+     "thoiGianKyHieu": "none"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Mô tả tính cách từ cung Mệnh",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không gắn với năm cụ thể",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H22",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N12",
+   "ten": "Will my love life improve next year?",
+   "la": "chinh",
+   "nn": "en",
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Will my love life improve next year?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tinh-cam",
+     "thoiGianKyHieu": "next-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Answer in English",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Answer for 2027",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H23",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N13",
+   "ten": "How is my health this month?",
+   "la": "nu",
+   "nn": "en",
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "How is my health this month?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "suc-khoe",
+     "thoiGianKyHieu": "current-month"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Answer in English",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Answer for the current month",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "No diagnosis",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H24",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N14",
+   "ten": "Gần đây tôi hay mất ngủ, có sao không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Gần đây tôi hay mất ngủ, có sao không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "suc-khoe",
+     "thoiGianKyHieu": "near-future"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Không phán bệnh",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Gợi ý đi khám nếu kéo dài",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M3",
+     "moTa": "Nói điểm cần để ý về sức khỏe gần đây",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H25",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N15",
+   "ten": "Năm 2027 công việc của tôi ra sao?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm 2027 công việc của tôi ra sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "explicit-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho năm 2027",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H26",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N16",
+   "ten": "Tôi có hợp làm kinh doanh không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Tôi có hợp làm kinh doanh không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "none"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói thiên hướng nghề nghiệp từ lá số",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không quyết thay",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H27",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N17",
+   "ten": "Năm nay tôi có bị mất tiền không?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay tôi có bị mất tiền không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tai-chinh",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Nói hướng tiền bạc năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không khẳng định chắc chắn mất tiền",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H28",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N18",
+   "ten": "Còn tháng 11 thì sao?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Năm nay tiền bạc tôi thế nào?"
+    },
+    {
+     "cauHoi": "Còn tháng 11 thì sao?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "tai-chinh",
+     "thoiGianKyHieu": "explicit-month"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời riêng tháng 11",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Giữ chủ đề tiền bạc",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H29",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N19",
+   "ten": "Bố mẹ tôi năm nay thế nào?",
+   "la": "nu",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Bố mẹ tôi năm nay thế nào?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Không luận bố mẹ như chính người hỏi; hỏi lại hoặc nói rõ đọc từ cung Phụ Mẫu",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  },
+  {
+   "id": "H30",
+   "tap": "HOLDOUT",
+   "nguon": "moi-N20",
+   "ten": "Khoảng cuối năm nay tôi có nên chuyển việc không?",
+   "la": "chinh",
+   "nn": null,
+   "trongYeu": false,
+   "luot": [
+    {
+     "cauHoi": "Khoảng cuối năm nay tôi có nên chuyển việc không?"
+    }
+   ],
+   "kyVongHieu": {
+    "nguon": "PROPOSED",
+    "luotCuoi": {
+     "chuDe": "su-nghiep",
+     "thoiGianKyHieu": "current-year"
+    }
+   },
+   "diemBatBuoc": [
+    {
+     "id": "M1",
+     "moTa": "Trả lời cho cuối năm 2026",
+     "trangThai": "PROPOSED"
+    },
+    {
+     "id": "M2",
+     "moTa": "Không quyết thay",
+     "trangThai": "PROPOSED"
+    }
+   ]
+  }
+ ]
+}

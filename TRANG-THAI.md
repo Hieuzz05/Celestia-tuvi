@@ -16,6 +16,13 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1) | Bộ đo chất lượng luận offline (CEL-197) — làm lần lượt, từng nhánh, chưa gộp | `viec/do-chat-luong-luan` | scripts/ mới, .github/workflows/kiem-tra.yml | 11/10 |
+| Claude (máy 1) | Dịch EN các trang sâu (CEL-058/081) — làm lần lượt, từng nhánh, chưa gộp | `viec/en-trang-sau` | lib/i18n/*, app/luan-giai, hoi-dap, hop-tuoi, ho-so, tai-khoan, gioi-thieu | 11/10 |
+| Claude (máy 1) | Xuất PDF bằng bản in (CEL-074) — làm lần lượt, từng nhánh, chưa gộp | `viec/xuat-pdf` | app/globals.css (@media print), nút in ở la-so / luan-giai | 11/10 |
+| Claude (máy 1) | Từ điển thuật ngữ (CEL-075) — làm lần lượt, từng nhánh, chưa gộp | `viec/tu-dien` | app/tu-dien mới, lib/i18n | 11/10 |
+| Claude (máy 1) | Bộ E2E Playwright (CEL-076) — làm lần lượt, từng nhánh, chưa gộp | `viec/e2e` | e2e/ mới, package.json | 11/10 |
+| Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
+| Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
 
 
 ## Đang vướng — đừng đụng vào

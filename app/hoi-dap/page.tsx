@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { MarkdownLuanGiai } from '@/components/MarkdownLuanGiai';
 import { CanCu, type CanCuTraLoi } from '@/components/CanCu';
+import { PhanHoiLuot } from '@/components/PhanHoiLuot';
 import { FormSinh, tachNgaySinh, type ThongTinForm } from '@/components/FormSinh';
 import { ghiSuKien } from '@/lib/analytics';
 import { useBoiCanh } from '@/lib/store/boi-canh';
@@ -55,6 +56,8 @@ interface TinNhan {
   goiYTiep?: string[];
   /** Lối đi tiếp sang bề mặt khác — bảng tra ở máy chủ dựng, không phải model */
   loiDi?: { nhan: string; duong: string }[];
+  /** Khoá cho 👍👎 (CEL-195) — chỉ có ở lượt vừa trả lời, không ở lượt nạp lại từ lịch sử */
+  requestId?: string;
 }
 
 function formTuHoSo(h: HoSo): ThongTinForm {
@@ -292,6 +295,7 @@ function TrangHoiDap() {
           canCu: data.canCu,
           goiYTiep: Array.isArray(data.goiYTiep) ? data.goiYTiep : [],
           loiDi: Array.isArray(data.loiDi) ? data.loiDi : [],
+          requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
         },
       ]);
       // Cất CẢ CẶP sau khi đã có câu trả lời. Cất câu hỏi ngay lúc gửi thì model
@@ -546,6 +550,8 @@ function TrangHoiDap() {
                         ))}
                       </div>
                     )}
+
+                    {m.requestId && <PhanHoiLuot key={m.requestId} requestId={m.requestId} />}
 
                     <CanCu canCu={m.canCu} />
                   </div>

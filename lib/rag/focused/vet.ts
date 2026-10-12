@@ -51,6 +51,8 @@ export interface VetPreview {
   lan: LanGoiVet[];
   /** Mã lỗi lần 1 */
   lyDoVietLai?: string[];
+  /** Điểm tầng C (CEL-191): mã + số lần, chỉ đo, không viết lại */
+  diemC?: { ma: string; dem: number }[];
   ketQua?: { soKyTu: number; soAmTiet: number; soClaim: number; maClaim: string[]; soChip: number };
   msTong: number;
   msTruyHoi: number;
@@ -61,6 +63,15 @@ export interface VetPreview {
   canCuEMat?: number;
   /** Mã F### của lượt trước không dựng lại được */
   canCuFMat?: number;
+  /** Nghiệm lý T### (CEL-196, chỉ khi cờ bật): id / phiên bản / chế độ / số đếm — không câu nghĩa */
+  nghiemLy?: {
+    mode: 'tat' | 'bat';
+    soDuyet: number;
+    soKhop: number;
+    soTrongGoi: number;
+    biGo: string[];
+    muc: { t: string; id: string; v: number; cheDo: string }[];
+  };
 }
 
 export const vetBat = (env: Env = process.env) => env.CELES_FOCUSED_TRACE === '1' && !laProductionThat(env);

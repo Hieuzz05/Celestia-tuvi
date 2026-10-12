@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { KhongCoModelError } from '@/lib/ai/fallback';
 import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
 import { luanBaiDai } from '@/lib/rag/bai-dai';
-import { bamLaSo, ghiVetTraLoi } from '@/lib/rag/nhat-ky';
+import { ghiVetTraLoi } from '@/lib/rag/nhat-ky';
 import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { nhanPhuongPhap } from '@/lib/tuvi/phuong-phap';
 import { thangAmHienTai } from '@/lib/tuvi/bay-gio';
@@ -98,10 +98,9 @@ export async function POST(req: Request) {
 
     // Ghi vết sau khi có bài: nhật ký hỏng không được làm mất bài.
     await ghiVetTraLoi({
+      // PRIV-01: không ghi câu hỏi, không băm lá số vào ai_requests.
       requestId,
-      chartHash: bamLaSo(ngay!, thang!, nam!, gio!, gioiTinh),
       tinhNang: 'luan-giai',
-      cauHoi: `${chuDe}${cauHoi ? ` · ${cauHoi}` : ''}`,
       runId: kq.runId,
       phienBan: kq.phienBan,
       provider: kq.provider,

@@ -101,7 +101,7 @@ Thêm một bài hồi quy chứng minh: tắt cờ thì STANDARD không đổi.
 
 - Nhánh: `viec/cel-186-focused-chat`, tách từ main `10e351f`.
 - Cỡ: **Lớn**. Đổi hợp đồng trả lời, prompt, schema đầu ra, thêm cờ.
-- Nguồn: brief Vé B mục 2–15, N1–N4, researcher, celes-domain, phan-bien. Đối chiếu thêm `docs/thiet-ke/CEL-186-quick-answer.md` mục 19 (trên nhánh quick).
+- Nguồn: brief Vé B mục 2–15, N1–N4, researcher, celes-domain, phan-bien. Đối chiếu thêm `docs/thiet-ke/CEL-186-quick-answer.md` mục 19 (chép từ nhánh quick sang main ngày 06/10/2026, trước khi xoá nhánh).
 
 ## 0. Nguyên tắc
 
@@ -119,6 +119,7 @@ Thêm một bài hồi quy chứng minh: tắt cờ thì STANDARD không đổi.
    - lấy phần chủ đề nặng và `nhieuVe`;
    - lấy `ngoai-tam` (danh tính bạn đời);
    - `xinSau` viết lại, chỉ khớp theo cụm.
+   - **P4 (`vetAnToan`, ghi vết lượt dừng sớm vì an toàn) BỎ, không port** — chủ dự án quyết 06/10/2026: nó ghi vết chữ người dùng, đi ngược PRIV-01 (nhật ký không lưu chữ). Nhánh quick đã xoá; mã còn trong lịch sử git nếu cần tra.
 
 ## 1. Planner: thêm trường `nguoiDuocHoi` (sửa S1, S6)
 

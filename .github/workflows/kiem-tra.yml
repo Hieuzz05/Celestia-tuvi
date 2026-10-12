@@ -61,6 +61,8 @@ jobs:
         run: npx tsx scripts/test-hop-dong-tra-loi.ts
       - name: Lớp sửa câu không làm sập xuống dòng
         run: npx tsx scripts/test-sua-chua-tach.ts
+      - name: Hạn lưu nhật ký (xoá đệm chung luôn lọc be_mat)
+        run: npx tsx scripts/test-han-luu-nhat-ky.ts
       - name: Dấu ấn Celes — cổng, chống lặp, đầu-cuối trên văn cuối
         run: npx tsx scripts/test-dau-an.ts
       - name: Dấu ấn Celes — độ phủ thư viện và cổng (UNREACHABLE = 0)
@@ -73,18 +75,33 @@ jobs:
         run: npx tsx scripts/test-du-kien.ts
       - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
         run: npx tsx scripts/test-focused.ts
+      - name: CEL-191 hiểu câu theo trường — bảng timeIntent, cổng gọi model, gộp luật trước
+        run: npx tsx scripts/test-hieu-cau-truong.ts
+      - name: CEL-196 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat
+        run: npx tsx scripts/test-nghiem-ly.ts
+      - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
+        run: npx tsx scripts/test-phan-hoi.ts
+      - name: P0 §14 độ phủ tầng viết — hàm đếm claim/F/điểm bắt buộc
+        run: npx tsx scripts/test-do-phu-viet.ts
       - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
         run: npx tsx scripts/test-loi-chi-ma.ts
       - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)
         run: npx tsx scripts/test-boi-canh-dong-bang.ts
       - name: Behavior Contract offline — người / ý / thời gian 30 flow (CEL-186 v2)
         run: npx tsx scripts/test-hop-dong-focused.ts
+      - name: PRIV-01 — trace Production không giữ câu hỏi, truy vấn, văn validator, băm lá số
+        run: npx tsx scripts/test-priv-01.ts
+      - name: Lõi chẩn đoán P0 — tầng hỏng sớm nhất, cờ không dừng chẩn đoán, nhãn ngoài
+        run: npx tsx scripts/test-p0-chan-doan.ts
       - name: Hiểu câu qua lượt — meta ký, dựng lại F###, hỏi lại lá số của ai, giải thích lượt trước (CEL-186 v2 F)
         run: npx tsx scripts/test-hieu-cau.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
         run: npx tsx scripts/test-fallback-giu-nguyen.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
+
+      - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
+        run: npx tsx scripts/test-kiem-id-cel.ts
 
       - name: Build
         run: npx next build

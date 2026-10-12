@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/suc-khoe-ai",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/don-nhat-ky",
+      "schedule": "30 3 * * *"
     }
   ]
 }

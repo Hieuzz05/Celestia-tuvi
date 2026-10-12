@@ -23,8 +23,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
 - **Một thư mục chỉ cho một phiên checkout tại một thời điểm.** Phiên thứ hai dùng `git worktree add`.
   Ngày 27/09, hai phiên `git checkout` cùng lúc trong thư mục chính và hai nhánh lẫn commit của nhau.
   Thư mục chính đang có thay đổi chưa commit trên nhánh không phải việc của mình thì coi như có phiên khác.
-- **Cấp ID `CEL-` bằng `python .claude/skills/cap-nhat-backlog/backlog.py xem`.** Đừng nhìn sheet
-  rồi tự cộng 1: nhánh chưa gộp có thể đã giữ ID đó (trùng CEL-150, phải gỡ ở `87f5b0c`).
+- **Cấp ID `CEL-` bằng `backlog.py xem`, rồi push nhánh ngay sau commit đầu mang ID.** Máy canh:
+  CI `kiem-id-cel.yml` đỏ khi trùng main / nhánh khác; nhánh gộp main sau thì cấp lại (CEL-150, CEL-194).
 - **Memory của Claude là CỤC BỘ một máy, máy kia không đọc được.** Bài học dùng chung phải vào
   `docs/bai-hoc/` hoặc `docs/bay/`, không ghi riêng vào memory.
 

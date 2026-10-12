@@ -14,8 +14,8 @@ import { goiVoiFallback } from '@/lib/ai/fallback';
 import { datMienTruTamLy } from '../an-toan';
 import { boMarkdown } from '../sua-chua';
 import { datMienTruTheoNgonNgu } from './ngon-ngu';
-import { docBanNhap, type BanNhap, type LoiCung } from './hop-dong';
-import { chonChip, kiemCung, type NguCanhKiem } from './kiem';
+import { docBanNhap, type BanNhap, type LoiCung, type MaLoiCung } from './hop-dong';
+import { chonChip, kiemBaTang, type NguCanhKiem } from './kiem';
 import { dungPromptFocused, type DauVaoPromptFocused } from './prompt';
 import type { LanGoiVet } from './vet';
 
@@ -30,8 +30,10 @@ export interface VetFocused {
   lanGoi: number;
   /** Mã lỗi lần một (nối bằng dấu phẩy), nếu có viết lại */
   thuLai: string | null;
-  /** Lỗi cứng của bản cuối (rỗng = sạch) */
+  /** Lỗi CHẶN (tầng A ∪ B) của bản cuối (rỗng = sạch) */
   loi: LoiCung[];
+  /** Điểm tầng C của bản cuối — chỉ đo, không viết lại (CEL-191 §7) */
+  diemC: { ma: MaLoiCung; dem: number }[];
   /** Từng lần gọi model: thời gian, token, mã lỗi (vết Preview, spec 5.4) */
   lan: LanGoiVet[];
   /** Đầu vào prompt của lượt (tham chiếu, không chép) — chỉ cho bộ đo dựng lại chữ model thấy (oracle tên) */
@@ -60,7 +62,7 @@ export async function chayFocused(v: {
   const goi = v.goi ?? goiVoiFallback;
   const batDau = v.batDau ?? Date.now();
   const hanChot = batDau + HAN_CHOT_LUOT_MS;
-  const vet: VetFocused = { lanGoi: 0, thuLai: null, loi: [], lan: [], dauVaoPrompt: v.prompt };
+  const vet: VetFocused = { lanGoi: 0, thuLai: null, loi: [], diemC: [], lan: [], dauVaoPrompt: v.prompt };
   let provider = '';
   let model = '';
   let ban: BanNhap | null = null;
@@ -79,9 +81,10 @@ export async function chayFocused(v: {
 
     const doc = docBanNhap(kq.text);
     const banDoc = doc ? { ...doc, answer: boMarkdown(doc.answer) } : null;
-    const loi = kiemCung(banDoc, v.ctx);
+    const { chan: loi, do: diemC } = kiemBaTang(banDoc, v.ctx);
     vet.lan.push({ stt: lan === 0 ? 1 : 2, ms: Date.now() - t0, tokVao: kq.tokensIn, tokRa: kq.tokensOut, loi: loi.map((l) => ({ ma: l.ma })) });
     vet.loi = loi;
+    vet.diemC = diemC;
     if (!loi.length) {
       ban = banDoc;
       break;

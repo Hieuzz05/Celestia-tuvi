@@ -813,12 +813,13 @@ function dungKeHoach(
   tenCachCuc?: string[],
   phanLoaiBangModel?: boolean,
   namXem?: number,
-  thangXem?: number
+  thangXem?: number,
+  thoiGianGhiDe?: ThoiGianKeHoach
 ): KeHoachTruyVan {
   const cum = cumTu(boDauCauHoi(cauHoi));
   // Tính ở đây, không ở lapKeHoach: nhánh model chỉ trả chủ đề và ý định, phạm
-  // vi thời gian vẫn phải có cho nó.
-  const thoiGian = doanPhamViThoiGian(tuCua(boDauCauHoi(cauHoi)), namXem, thangXem);
+  // vi thời gian vẫn phải có cho nó. Ghi đè chỉ đến từ lớp Focused (CEL-191).
+  const thoiGian = thoiGianGhiDe ?? doanPhamViThoiGian(tuCua(boDauCauHoi(cauHoi)), namXem, thangXem);
   const thucThe = nhanDangThucThe(cauHoi);
   const cungGoiTen = thucThe.filter((t) => t.loai === 'PALACE').map((t) => t.ten);
   const cungLienQuan = [...new Set([...cungGoiTen, ...CUNG_THEO_CHU_DE[chuDe]])];
@@ -891,12 +892,43 @@ export function lapKeHoachVoiChuDe(vao: DauVaoPlanner, chuDe: ChuDe): KeHoachTru
   );
 }
 
+/** Trục thời gian của một kế hoạch — dạng `doanPhamViThoiGian` trả về. */
+export interface ThoiGianKeHoach {
+  phamViThoiGian: PhamViThoiGian;
+  namMucTieu?: number;
+  thangMucTieu?: number;
+}
+
+/**
+ * Dựng kế hoạch từ các TRƯỜNG đã chốt ở ngoài — cho lớp Focused gộp luật với model theo từng
+ * trường (CEL-191). Không truyền `thoiGian` thì thời gian vẫn theo luật. Cùng tiền lệ với
+ * `lapKeHoachVoiChuDe`: không đổi đầu ra của `lapKeHoach` / `lapKeHoachDayDu`, nên không đổi
+ * `PHIEN_BAN_PLANNER`.
+ */
+export function lapKeHoachTheoTruong(
+  vao: DauVaoPlanner,
+  truong: { chuDe: ChuDe; yDinh: YDinh; chacChan: boolean; phanLoaiBangModel?: boolean; thoiGian?: ThoiGianKeHoach }
+): KeHoachTruyVan {
+  return dungKeHoach(
+    vao.cauHoi,
+    vao.saoTheoCung,
+    truong.chuDe,
+    truong.yDinh,
+    truong.chacChan,
+    vao.tenCachCuc,
+    truong.phanLoaiBangModel,
+    vao.namXem,
+    vao.thangXem,
+    truong.thoiGian
+  );
+}
+
 // ------------------------------------------------ Nhánh phân loại bằng model
 
-const CHU_DE_HOP_LE: ChuDe[] = [
+export const CHU_DE_HOP_LE: ChuDe[] = [
   'su-nghiep', 'tai-chinh', 'tinh-cam', 'gia-dao', 'suc-khoe', 'tong-quan',
 ];
-const Y_DINH_HOP_LE: YDinh[] = [
+export const Y_DINH_HOP_LE: YDinh[] = [
   'quyet-dinh', 'co-khong', 'thoi-diem', 'giai-thich', 'tra-cuu', 'mo-ta',
 ];
 

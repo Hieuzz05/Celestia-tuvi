@@ -53,7 +53,19 @@ Mẫu một mục:
 - Giá: đã trùng CEL-150 một lần, phải gỡ ở `87f5b0c`.
 - Luật: cấp ID bằng `backlog.py xem`, script quét cả commit của mọi nhánh.
 - Nâng: máy canh, là `.claude/skills/cap-nhat-backlog/backlog.py`; cach-lam.md một dòng.
-- Lần: 2
+- Lặp 05/10: máy 1 cấp CEL-194 (nghiệm lý QĐ-13) lúc 21:17 trên `viec/batch-p0-cel191` chưa push;
+  N1 push CEL-194 (hạn lưu nhật ký, `1e80349`) lúc 21:21. Lúc cấp, nhánh kia chưa lên remote nên
+  `backlog.py xem` không thể thấy. Gốc thật: chỗ duy nhất thấy được cả hai là lúc nhánh thứ hai
+  push, mà ở đó không có gì canh. Giá: đổi sang CEL-196 ở `fb2b023` (ba sheet, chú thích mã, bước
+  CI), gộp xlsx bằng script ba phía.
+- Máy canh (05/10): CI `.github/workflows/kiem-id-cel.yml` chạy `scripts/kiem-id-cel.ts` trên MỌI
+  lần đẩy (kể cả chỉ đổi xlsx). ID mới của nhánh trùng main, hoặc trùng ID mới của nhánh remote
+  khác, mà khác "Tính năng" thì đỏ. Dựng lại ca 05/10 (`--dau 184fc44 --main c226d67`) thì bắt
+  được. `backlog.py` nay fetch, quét Backlog của mọi nhánh remote, nhắc push ngay sau commit mang ID.
+- **Đọc git log:** bốn commit `6eae482`, `bb95480`, `19f20a2`, `184fc44` ghi CEL-194 trong thông
+  điệp nhưng nghĩa là **CEL-196** (nghiệm lý QĐ-13). CEL-194 thật là hạn lưu nhật ký của N1
+  (`1e80349`). Không sửa lịch sử vì các commit đó đã push.
+- Lần: 3
 
 ## 04/10/2026 · Bộ đo tự xác nhận qua cùng nguồn sai với guard · ai-rag
 - Thẻ: guard ten, d.sao, oracle, eval tu xac nhan, van phong
@@ -62,4 +74,19 @@ Mẫu một mục:
 - Giá: một vòng A/B ($0,11) đo trên guard hỏng, một phiên sửa + một phiên final hardening.
 - Luật: tập được phép dựng từ chữ prompt đã in; bộ đo dùng oracle render prompt, không gọi hàm guard; kèm thử đột biến.
 - Nâng: `docs/bay/ai-rag.md` (5 dòng cuối) + máy canh `GROUND-04` trong `scripts/test-focused.ts`.
+- Lần: 1
+
+## 05/10/2026 · Sao gốc lọt làm căn cứ năm xem · engine
+- Thẻ: vong thai tue, tang tue dieu, sao goc, lop thoi gian, van han, formation
+- Chuyện gì: bài vận hạn 2026 và 2027 (lá 24/08/2000 20:30 nam) cùng dựng một mục trên Tang Tuế Điếu
+  và Thiên Mã gặp Tuế Phá. Hai tổ hợp này đọc vòng Thái Tuế của lá GỐC, tức vòng năm sinh. Quét 60
+  lá mẫu: 570 lần lọt.
+- Gốc: dữ kiện không mang lớp thời gian, nên không test nào hỏi được câu "dữ kiện này có đổi khi đổi
+  năm không". `theoHan` đặt tên vận hạn cho một luật quét tam phương Mệnh. Bài dài lại không có
+  kiểm FORMATION như chat, nên không chặn được tên tổ hợp.
+- Giá: lỗi lọt vào bài thật. Chủ dự án phải đối chiếu tay với một bài luận độc lập mới thấy.
+- Luật: mỗi dữ kiện mang `lop`. Dữ kiện `ban-menh` phải giống hệt nhau giữa hai năm xem. Muốn gọi một
+  tổ hợp "của năm" thì dựng từ lưu tinh, không dựng từ vòng gốc.
+- Nâng: `docs/bay/engine.md` và máy canh `scripts/test-lop-du-kien.ts` (CI), trên nhánh
+  `viec/van-han-lop-goc`.
 - Lần: 1
