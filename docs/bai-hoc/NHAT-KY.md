@@ -74,7 +74,13 @@ Mẫu một mục:
 - Giá: một vòng A/B ($0,11) đo trên guard hỏng, một phiên sửa + một phiên final hardening.
 - Luật: tập được phép dựng từ chữ prompt đã in; bộ đo dùng oracle render prompt, không gọi hàm guard; kèm thử đột biến.
 - Nâng: `docs/bay/ai-rag.md` (5 dòng cuối) + máy canh `GROUND-04` trong `scripts/test-focused.ts`.
-- Lần: 1
+- Lần: 2
+- Lặp 16/10: `scripts/test-cach-cuc.ts` chỉ kiểm "luật có phát ít nhất một lần", không có đáp án theo sách,
+  nên Nhật Nguyệt tịnh minh phát 20% lá số (đúng sách ~3%) mà bài vẫn xanh; mẫu quét lại chỉ dùng giờ
+  chi lẻ nên Tả Hữu không bao giờ vào tam phương Mệnh. Sửa ở 2983612 (nhánh viec/sua-do-sang-cach-cuc):
+  đáp án độc lập `DUNG_SACH` hai chiều cho 3 cách, quét giờ chẵn lẻ. Đề xuất máy canh (chờ chủ dự án):
+  bài cách cục ĐỎ khi có mã cách cục phát ra mà không có dòng `DUNG_SACH`, làm cùng khung cách cục ở phiên
+  [CODE] sau.
 
 ## 05/10/2026 · Sao gốc lọt làm căn cứ năm xem · engine
 - Thẻ: vong thai tue, tang tue dieu, sao goc, lop thoi gian, van han, formation
