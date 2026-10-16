@@ -51,6 +51,8 @@ jobs:
         run: npx tsx scripts/test-lop-du-kien.ts
       - name: Bảng sự thật lớp hạn (lưu tứ hoá, tứ hoá đại vận, điểm trùng)
         run: npx tsx scripts/test-tu-hoa-han.ts
+      - name: Luật tổ hợp lớp hạn (cấu trúc bảng, hàm khớp, luật không bao giờ khớp)
+        run: npx tsx scripts/test-luat-to-hop.ts
       - name: Bài luận 12 cung
         run: npx tsx scripts/test-12-cung.ts
       - name: Bối cảnh người đọc + cấu hình luận giải

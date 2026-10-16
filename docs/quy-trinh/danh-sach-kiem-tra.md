@@ -11,6 +11,7 @@ npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc 
 npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, sàn 2 trần 8 — offline
 npx tsx scripts/test-lop-du-kien.ts   # lớp thời gian dữ kiện: gốc không mang năm, vòng Thái Tuế gốc không vào gói hạn, bài dài chặn cách cục bịa — offline
 npx tsx scripts/test-tu-hoa-han.ts    # bảng sự thật lớp hạn: lưu tứ hoá theo can năm, tứ hoá theo can cung đại vận, điểm trùng — so bảng sách + đếm tay — offline
+npx tsx scripts/test-luat-to-hop.ts   # luật tổ hợp lớp hạn: bảng hợp lệ (≥2 sách, có thành phần hạn), hàm khớp trên bảng mẫu, luật quét 0 lần = viết sai — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
 npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
 npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
