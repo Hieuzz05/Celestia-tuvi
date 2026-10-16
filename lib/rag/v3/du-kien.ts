@@ -8,7 +8,8 @@ import {
   type LaSo,
 } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
-import { CHINH_TINH as DS_CHINH_TINH, TU_HOA } from '@/lib/tuvi/constants';
+import { CHINH_TINH as DS_CHINH_TINH } from '@/lib/tuvi/constants';
+import { canCuaNam, luuTuHoaTheoNam, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
@@ -672,13 +673,13 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
   };
   const moTaNam = (nam: number) => {
     const c = laSo.cungs[cungTieuHan(laSo, tuoiAm(laSo, nam))];
-    const can = mod(nam + 6, 10);
-    const [loc, quyen, khoa, ky] = TU_HOA[can];
-    const oDau = (ten: string) => laSo.cungs.find((x) => x.sao.some((s) => s.ten === ten))?.tenCung ?? '?';
-    const nghiaHoa = (hoaTen: string, sao: string) => {
-      const cung = oDau(sao);
-      return `${hoaTen} vào ${sao} (${cung}) — ở mặt đời ${LINH_VUC_CUNG[cung] ?? cung}: ${KHUON.vi.netPhuTinh[hoaTen] ?? ''}`;
-    };
+    const can = canCuaNam(nam);
+    // Vị trí lấy từ bảng sự thật lớp hạn (lib/tuvi/tu-hoa-han.ts), dùng chung với chat.
+    // Chuỗi in ra giữ nguyên dạng "Hóa X vào Sao (Cung)": truy-hoi-v3.ts bóc lại bằng regex.
+    const luuHoa = luuTuHoaTheoNam(laSo, nam);
+    const [loc, quyen, khoa, ky] = luuHoa.map((h) => h.sao);
+    const nghiaHoa = (h: HoaHan) =>
+      `${h.hoa} vào ${h.sao} (${h.tenCung}) — ở mặt đời ${LINH_VUC_CUNG[h.tenCung] ?? h.tenCung}: ${KHUON.vi.netPhuTinh[h.hoa] ?? ''}`;
     const luu = luuTinhTheoNam(nam)
       .map((s) => `${s.ten} ở ${laSo.cungs[s.chiIndex].tenCung}`)
       .join('; ');
@@ -687,7 +688,7 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
       noiDung:
         `Năm ${nam} (${CAN[can]} ${CHI[mod(nam + 8, 12)]}, ${tuoiAm(laSo, nam)} tuổi âm): tiểu hạn tại cung ${c.tenCung} ` +
         `(${c.sao.filter((s) => s.loai === 'chinh-tinh').map(tenSao).join(', ') || 'không có chính tinh'}${c.sao.some((s) => s.loai === 'tu-hoa') ? '; ' + c.sao.filter((s) => s.loai === 'tu-hoa').map((s) => s.ten).join(', ') : ''}${phuNangCua(c)}). ` +
-        `Lưu tứ hóa theo can năm: ${[nghiaHoa('Hóa Lộc', loc), nghiaHoa('Hóa Quyền', quyen), nghiaHoa('Hóa Khoa', khoa), nghiaHoa('Hóa Kỵ', ky)].join('; ')}. ` +
+        `Lưu tứ hóa theo can năm: ${luuHoa.map(nghiaHoa).join('; ')}. ` +
         `Lưu tinh: ${luu}. Nghĩa: Thái Tuế — ${KHUON.vi.netPhuTinh['Thái Tuế'] ?? ''}.`,
       sao: [...c.sao.map((s) => s.ten), loc, quyen, khoa, ky, 'Hóa Lộc', 'Hóa Quyền', 'Hóa Khoa', 'Hóa Kỵ', 'Thái Tuế', 'Lộc Tồn', 'Kình Dương', 'Đà La', 'Thiên Mã', 'Thiên Khốc', 'Thiên Hư'],
     };

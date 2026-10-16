@@ -1007,7 +1007,7 @@ liệu của mình còn nguyên và nên làm gì tiếp.
 người dùng mới nhìn thấy đầu tiên; gọi model mất 15-45 giây và có thể hỏng khi hết quota, nên
 không được đặt ở chặn đầu. AI vẫn dùng cho bài dài theo chủ đề và phần hỏi đáp.
 
-Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_CHINH_TINH` trong tệp đó.
+Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_VI` trong `lib/tuvi/quick-read-noi-dung.ts`.
 
 ### Ghi sự kiện phễu
 
@@ -1023,8 +1023,8 @@ không phải đi rải lại khắp app.
 **Celestia** là thương hiệu — tên sản phẩm, tên miền, logo. **Celes** là người dùng trò chuyện
 cùng. Đừng dùng lẫn: người dùng không "hỏi Celestia", họ "hỏi Celes".
 
-Nhân cách Celes định nghĩa ở một chỗ duy nhất — hằng `NHAN_CACH_CELES` trong
-`lib/ai/prompt.ts` — và được chèn vào đầu cả prompt hội thoại lẫn prompt bài dài. Sửa giọng
+Nhân cách Celes định nghĩa ở một chỗ duy nhất — hằng `CHUAN_NGON_NGU_CELES` trong
+`lib/rag/chuan-ngon-ngu.ts` — và được chèn vào đầu cả prompt hội thoại lẫn prompt bài dài. Sửa giọng
 văn thì sửa đúng chỗ đó, không rải ra từng prompt.
 
 Mỗi câu trả lời đi theo năm nhịp: **Phản chiếu → Góc nhìn chính → Vì sao → Điều cần lưu ý →
