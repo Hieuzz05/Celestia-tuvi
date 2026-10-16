@@ -40,6 +40,15 @@ export interface DuKienLaSo {
     | 'tam-hop'
     /** Lưu tinh năm ở cung đang hỏi — CHỈ đường Focused (CEL-186 Vé B), nối cuối danh sách */
     | 'luu-tinh';
+  /**
+   * Lớp nguồn THỜI GIAN của dữ kiện: nó đúng cho cả đời, hay chỉ cho một quãng.
+   * Không vào prompt (prompt chỉ in `id. noiDung`); dùng cho trace và cho bài
+   * kiểm `scripts/test-lop-du-kien.ts`. Luật: dữ kiện `ban-menh` không đổi theo
+   * năm xem và không được nói thay cho năm xem. Lỗi 05/10/2026: vòng Thái Tuế
+   * của lá số gốc từng vào bài vận hạn như căn cứ của năm đang xem.
+   * Gán bằng `LOP_THEO_LOAI`, nên không chỗ nào tự đặt tay được.
+   */
+  lop: LopDuKien;
   /** Câu mô tả dữ kiện, viết đủ để đứng một mình */
   noiDung: string;
   cung?: string;
@@ -47,6 +56,26 @@ export interface DuKienLaSo {
   /** Chỉ dữ kiện loai 'cach-cuc': tên được phép gọi thẳng trong bài */
   tenCachCuc?: string;
 }
+
+export type LopDuKien = 'ban-menh' | 'dai-han' | 'tieu-han' | 'luu-nien' | 'nguyet-han';
+
+/**
+ * Loại dữ kiện quyết định lớp thời gian. Mọi cách cục engine phát ra đều được
+ * dựng từ sao gốc, nên chúng thuộc `ban-menh`, kể cả cách cục `loai: 'han'`.
+ * `luu-nien` (loại) là dữ kiện TIỂU HẠN, còn `luu-tinh` mới là sao lưu NIÊN.
+ */
+const LOP_THEO_LOAI: Record<DuKienLaSo['loai'], LopDuKien> = {
+  cuc: 'ban-menh',
+  menh: 'ban-menh',
+  than: 'ban-menh',
+  cung: 'ban-menh',
+  'tam-hop': 'ban-menh',
+  'cach-cuc': 'ban-menh',
+  'dai-van': 'dai-han',
+  'luu-nien': 'tieu-han',
+  'luu-tinh': 'luu-nien',
+  'nguyet-han': 'nguyet-han',
+};
 
 function motTaCung(c: Cung): string {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
@@ -124,9 +153,9 @@ export function saoChinhTheoCung(laSo: LaSo): Record<string, string[]> {
 export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }: DauVaoBoiCanh): BoiCanhLaSo {
   const duKien: DuKienLaSo[] = [];
   let dem = 0;
-  const them = (d: Omit<DuKienLaSo, 'id'>) => {
+  const them = (d: Omit<DuKienLaSo, 'id' | 'lop'>) => {
     dem += 1;
-    duKien.push({ id: `F${String(dem).padStart(3, '0')}`, ...d });
+    duKien.push({ id: `F${String(dem).padStart(3, '0')}`, lop: LOP_THEO_LOAI[d.loai], ...d });
   };
 
   const tim = (ten: string) => laSo.cungs.find((c) => c.tenCung === ten);
@@ -148,9 +177,11 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }:
    * nó nằm sau mười dữ kiện cung thì model đã dựng xong luận điểm bằng sao lẻ
    * trước khi đọc tới.
    *
-   * Cách cục `loai: 'han'` chỉ vào prompt khi câu hỏi thật sự đang nói về một
-   * quãng thời gian. Tang Môn / Thái Tuế / Tuế Phá mô tả không khí một NĂM, đưa
-   * vào bài luận tính cách là nói sai chuyện.
+   * Cách cục `loai: 'han'` (hiện chỉ còn Tuần/Triệt án ngữ) chỉ vào prompt khi
+   * câu hỏi thật sự đang nói về một quãng thời gian. Nó vẫn là dữ kiện GỐC, mang
+   * lớp `ban-menh`. Tổ hợp vòng Thái Tuế (Tang Tuế Điếu, Mã gặp Tuế Phá) đã gỡ
+   * khỏi engine, vì vòng của lá số gốc là vòng của năm sinh, không phải của năm
+   * đang xem. Xem `theoHan` trong `lib/tuvi/cach-cuc.ts`.
    */
   const xetHan = keHoach.lopHan.some((l) => l !== 'ban-menh');
   for (const cc of nhanDangCachCuc(laSo, keHoach.cungLienQuan[0])) {

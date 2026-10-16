@@ -13,3 +13,9 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Engine không tự chặn ngày không có thật**: 31/4 lặng lẽ thành 1/5 (số Julian tràn sang tháng
   sau), `Date.parse('1990-04-31')` của V8 cũng vậy. Mọi chỗ nhận ngày sinh từ bên ngoài phải qua
   `laNgayDuongCoThat` (`lib/tuvi/kiem-ngay.ts`) trước khi gọi `lapLaSo`.
+- **Sao trên lá số GỐC không làm căn cứ cho một năm cụ thể.** Vòng Thái Tuế gốc an theo chi năm
+  SINH, nên một luật quét tam phương của Mệnh rồi gọi tên tổ hợp mang nghĩa vận hạn (Tang Tuế Điếu,
+  Mã gặp Tuế Phá) sẽ phát y hệt cho năm nào cũng vậy — đã lọt vào bài vận hạn 2026 và 2027 tới
+  05/10/2026. Sao gốc chỉ thành căn cứ năm khi nó nằm đúng cung tiểu hạn / đại hạn của năm đó; tổ
+  hợp "của năm" phải dựng từ lưu tinh. Mỗi dữ kiện mang `lop` (`LOP_THEO_LOAI` trong
+  `lib/rag/boi-canh-la-so.ts`); máy canh: `scripts/test-lop-du-kien.ts` (CI).

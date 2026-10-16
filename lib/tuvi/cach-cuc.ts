@@ -30,7 +30,7 @@ import { tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
  * engine thì bộ test chạy được offline mà không cần dựng một kế hoạch truy vấn.
  */
 
-export const PHIEN_BAN_CACH_CUC = '2026.10.2';
+export const PHIEN_BAN_CACH_CUC = '2026.10.3';
 
 export interface CachCuc {
   /** Mã ổn định, dùng cho trace và bộ vàng: 'TU_PHU_VU_TUONG_LIEM' */
@@ -376,36 +376,24 @@ function maDauDoiKiem(pv: PhamVi): CachCuc[] {
 /**
  * Cách cục chỉ có nghĩa khi đang nói về một quãng thời gian.
  *
- * Tang Môn / Thái Tuế / Điếu Khách và Tuế Phá đều thuộc vòng Thái Tuế — chúng
- * mô tả không khí của một NĂM, không mô tả con người. Đưa chúng vào bài luận
- * tính cách là nói sai chuyện, nên lớp gọi phải lọc theo lớp hạn.
+ * KHÔNG phát Tang Tuế Điếu hay Thiên Mã gặp Tuế Phá ở đây (gỡ 05/10/2026).
+ * Hai bộ ấy đọc trên vòng Thái Tuế, và lời điều kiện của chúng nói về một quãng.
+ * Nhưng `pv` là sao của lá số gốc, nên vòng Thái Tuế trong đó là vòng của năm
+ * SINH: nó có nghĩa bản mệnh, nhưng không nói gì về năm đang xem. Bản trước phát chúng như căn cứ của năm đang xem: lá Canh Thìn 2000 có
+ * Thái Tuế gốc ở Thìn, trong khi lưu Thái Tuế 2026 ở Ngọ, vậy mà bài vận hạn
+ * 2026 vẫn có cả một mục dựng trên vòng của năm 2000. Đổi sang 2027 thì mục ấy
+ * vẫn y nguyên. Muốn đọc lại hai bộ này thì phải an vòng Thái Tuế của năm xem
+ * (engine chưa có lưu Điếu Khách / Tuế Phá) và dựng tổ hợp ở lớp dữ kiện hạn,
+ * không dựng ở đây. Hai tên này vẫn nằm trong `TEN_CACH_CUC`, để validator bắt
+ * khi model tự viết chúng ra mà không có dữ kiện nào.
+ * Canh: `scripts/test-lop-du-kien.ts`.
+ *
+ * Tuần/Triệt án ngữ thì vẫn giữ. Tuần và Triệt an theo năm sinh và đóng cố định
+ * trên lá số gốc, nên câu điều kiện của nó nói về nhịp lộ ra của một cung, không
+ * khẳng định gì về năm đang xem.
  */
 function theoHan(pv: PhamVi): CachCuc[] {
   const ra: CachCuc[] = [];
-
-  if (duCa(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])) {
-    ra.push({
-      ma: 'TANG_TUE_DIEU',
-      ten: 'Tang Tuế Điếu',
-      cung: pv.goc.tenCung,
-      dieuKien: `Tang Môn, Thái Tuế và Điếu Khách cùng hội về ${nhan(pv)}: ${viTri(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])}. Bộ này báo một quãng nhiều chuyện phải đối đáp và nhiều việc ngoài ý muốn chen vào, không báo một sự việc cụ thể nào.`,
-      sao: ['Tang Môn', 'Thái Tuế', 'Điếu Khách'],
-      loai: 'han',
-    });
-  }
-
-  const cM = pv.sao.get('Thiên Mã');
-  const cTP = pv.sao.get('Tuế Phá');
-  if (cM && cTP) {
-    ra.push({
-      ma: 'MA_GAP_TUE_PHA',
-      ten: 'Thiên Mã gặp Tuế Phá',
-      cung: pv.goc.tenCung,
-      dieuKien: `Thiên Mã tại ${cM.tenCung} và Tuế Phá tại ${cTP.tenCung} cùng nằm trong tam phương tứ chính của ${nhan(pv)}. Quãng có xu hướng dịch chuyển, nhưng thứ đang chạy dễ bị cắt ngang giữa đường.`,
-      sao: ['Thiên Mã', 'Tuế Phá'],
-      loai: 'han',
-    });
-  }
 
   if (pv.goc.coTuan || pv.goc.coTriet) {
     const ten = [pv.goc.coTuan ? 'Tuần' : null, pv.goc.coTriet ? 'Triệt' : null]
@@ -485,7 +473,7 @@ export function nhanDangCachCuc(laSo: LaSo, cungTrongTam?: string): CachCuc[] {
    *
    * Xếp theo loại rồi `slice` trần trụi thì nhóm 'han' luôn nằm cuối và luôn
    * bị cắt đầu tiên — nghĩa là lá số nào nhiều cách cục bản mệnh thì Tuần/Triệt
-   * và Tang Tuế Điếu không bao giờ tới được model, kể cả khi câu hỏi đang hỏi
+   * án ngữ không bao giờ tới được model, kể cả khi câu hỏi đang hỏi
    * đúng về vận hạn. Đó là cùng một lỗi vừa sửa ở Tả Hữu, chỉ đổi chỗ.
    */
   const chinhPhu = ra.filter((c) => c.loai !== 'han');
@@ -502,7 +490,12 @@ export function nhanDangCachCuc(laSo: LaSo, cungTrongTam?: string): CachCuc[] {
  * Tên chỉ để validator chặn, không còn luật nào phát ra. Bài canh "không luật nào
  * phát 0 lần" trong `scripts/test-cach-cuc.ts` bỏ qua đúng danh sách này.
  */
-export const TEN_CHI_DE_CHAN: string[] = ['Hình Tù giáp Ấn'];
+export const TEN_CHI_DE_CHAN: string[] = [
+  'Hình Tù giáp Ấn',
+  // Hai cách theo vòng Thái Tuế GỐC: không còn làm căn cứ năm xem (CEL-085, xem `theoHan`).
+  'Tang Tuế Điếu',
+  'Thiên Mã gặp Tuế Phá',
+];
 
 /** Mọi tên cách cục engine có thể phát ra — validator dùng để bắt tên bịa */
 export const TEN_CACH_CUC: string[] = [
@@ -513,8 +506,6 @@ export const TEN_CACH_CUC: string[] = [
   ...BO_PHU_TINH.map((b) => b.ten),
   'Mã đầu đới kiếm',
   ...TEN_CHI_DE_CHAN,
-  'Tang Tuế Điếu',
-  'Thiên Mã gặp Tuế Phá',
   'Tuần án ngữ',
   'Triệt án ngữ',
   'Tuần và Triệt án ngữ',

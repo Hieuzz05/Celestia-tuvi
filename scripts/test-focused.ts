@@ -635,7 +635,7 @@ for (const ca of CA_DOI_TUONG) {
   kiem(tenCungTrongCau('Có Phúc Đức ở đây.', true).length === 0, 'Phúc Đức là sao (có trong gói) vẫn bị coi là cung');
 
   const duKien: DuKienLaSo[] = [
-    { id: 'F001', loai: 'cung', noiDung: 'Quan Lộc có Tả Phù, Hữu Bật, Thiên Phủ.', cung: 'Quan Lộc', sao: ['Tả Phù', 'Hữu Bật', 'Thiên Phủ'] },
+    { id: 'F001', loai: 'cung', lop: 'ban-menh', noiDung: 'Quan Lộc có Tả Phù, Hữu Bật, Thiên Phủ.', cung: 'Quan Lộc', sao: ['Tả Phù', 'Hữu Bật', 'Thiên Phủ'] },
   ];
   const tap = tapTenTuGoi(duKien);
   kiem(tenNgoaiTap('Tả Hữu đứng cạnh nên có người đỡ.', tap).length === 0, 'Tả Hữu bị chặn dù đủ Tả Phù + Hữu Bật');
@@ -646,9 +646,9 @@ for (const ca of CA_DOI_TUONG) {
 
 {
   const duKien: DuKienLaSo[] = [
-    { id: 'F001', loai: 'cung', noiDung: 'Quan Lộc có Thiên Phủ, Hóa Khoa.', cung: 'Quan Lộc', sao: ['Thiên Phủ', 'Hóa Khoa'] },
-    { id: 'F002', loai: 'luu-nien', noiDung: 'Tiểu hạn năm 2026 vào Quan Lộc, có Đà La.', cung: 'Quan Lộc', sao: ['Đà La'] },
-    { id: 'F003', loai: 'dai-van', noiDung: 'Đại vận 33–42 tuổi ở Quan Lộc.', cung: 'Quan Lộc' },
+    { id: 'F001', loai: 'cung', lop: 'ban-menh', noiDung: 'Quan Lộc có Thiên Phủ, Hóa Khoa.', cung: 'Quan Lộc', sao: ['Thiên Phủ', 'Hóa Khoa'] },
+    { id: 'F002', loai: 'luu-nien', lop: 'tieu-han', noiDung: 'Tiểu hạn năm 2026 vào Quan Lộc, có Đà La.', cung: 'Quan Lộc', sao: ['Đà La'] },
+    { id: 'F003', loai: 'dai-van', lop: 'dai-han', noiDung: 'Đại vận 33–42 tuổi ở Quan Lộc.', cung: 'Quan Lộc' },
   ];
   const nghieng: NghiengVe = {
     huong: 'thuan-nhe', cap: 'nam', cung: 'Quan Lộc', phanDoi: 'công việc', cham: { daiVan: true, nam: true, thang: false },
@@ -976,8 +976,8 @@ for (const ca of CA_DOI_TUONG) {
 
     // (1) d.sao có Thiên Y, noiDung không → câu nhắc Thiên Y bị loại; khối in đầu mốc KHÔNG tên.
     const dkMeta: DuKienLaSo[] = [
-      { id: 'F001', loai: 'cung', noiDung: 'Tật Ách có Thiên Phủ.', cung: 'Tật Ách', sao: ['Thiên Phủ', 'Thiên Y'] },
-      { id: 'F002', loai: 'luu-nien', noiDung: 'Tiểu hạn năm 2026 vào Tật Ách, có Đà La.', cung: 'Tật Ách', sao: ['Đà La'] },
+      { id: 'F001', loai: 'cung', lop: 'ban-menh', noiDung: 'Tật Ách có Thiên Phủ.', cung: 'Tật Ách', sao: ['Thiên Phủ', 'Thiên Y'] },
+      { id: 'F002', loai: 'luu-nien', lop: 'tieu-han', noiDung: 'Tiểu hạn năm 2026 vào Tật Ách, có Đà La.', cung: 'Tật Ách', sao: ['Đà La'] },
     ];
     const r1 = tenDuocGoiTrongLuot({ goi: { duKien: dkMeta }, nghieng: nThienY, khuon: 'B' });
     kiem(!r1.tapTen.has(khoaTen('Thiên Y')), '(1) Thiên Y chỉ ở d.sao vẫn được phép');
@@ -1107,7 +1107,7 @@ for (const ca of CA_DOI_TUONG) {
           { ten: 'Thiên Phủ', lop: 'nen', huong: 'do', trong: 2, y: 'giữ được nền' },
         ],
       };
-      const dkG: DuKienLaSo[] = [{ id: 'F001', loai: 'cung', noiDung: 'Tật Ách có Thiên Phủ.', cung: 'Tật Ách', sao: ['Thiên Phủ', 'Thiên Y'] }];
+      const dkG: DuKienLaSo[] = [{ id: 'F001', loai: 'cung', lop: 'ban-menh', noiDung: 'Tật Ách có Thiên Phủ.', cung: 'Tật Ách', sao: ['Thiên Phủ', 'Thiên Y'] }];
       const pG = {
         goi: dungGoiBangChung(cauHoi, kh, dkG, []), cauHoiGoc: cauHoi, lichSu: [], daNoiTruoc: [], nghieng: nG,
         phanLoai: { khuon: 'B' as const, loaiSuKien: 'trung-tinh' as const, sau: false }, mucAnToan: 'NORMAL' as const,
@@ -1193,8 +1193,8 @@ for (const ca of CA_DOI_TUONG) {
   // Hàm thuần của phần nối.
   const tuoi = tuoiTrongGoi({
     duKien: [
-      { id: 'F001', loai: 'dai-van', noiDung: 'Đại vận 33–42 tuổi đóng tại cung Quan Lộc' },
-      { id: 'F002', loai: 'luu-nien', noiDung: 'Năm 2026 (37 tuổi âm) tiểu hạn tại cung Tài Bạch' },
+      { id: 'F001', loai: 'dai-van', lop: 'dai-han', noiDung: 'Đại vận 33–42 tuổi đóng tại cung Quan Lộc' },
+      { id: 'F002', loai: 'luu-nien', lop: 'tieu-han', noiDung: 'Năm 2026 (37 tuổi âm) tiểu hạn tại cung Tài Bạch' },
     ] as DuKienLaSo[],
   });
   kiem(JSON.stringify(tuoi) === '[[33,42],[37,37]]', `tuoiTrongGoi sai: ${JSON.stringify(tuoi)}`);
@@ -1466,7 +1466,7 @@ async function kiemNoi() {
     // Ca bổ sung 10 (spec 5.3): trượt luật cứng → viết lại TOÀN bài đúng một lần → vẫn trượt thì văn rỗng (502 + hoàn lượt).
     const cauHoi = 'Năm nay công việc của tôi thế nào?';
     const kh = lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach;
-    const dk = [{ id: 'F001', loai: 'cung' as const, noiDung: 'Quan Lộc có Thiên Phủ.', cung: 'Quan Lộc' }];
+    const dk = [{ id: 'F001', loai: 'cung' as const, lop: 'ban-menh' as const, noiDung: 'Quan Lộc có Thiên Phủ.', cung: 'Quan Lộc' }];
     const thoiGian = { namHieuLuc: 2026, thang: null, cuoiNam: false };
     const phanLoai = { khuon: 'A' as const, loaiSuKien: 'trung-tinh' as const, sau: false };
     const promptGia = {

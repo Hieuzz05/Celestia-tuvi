@@ -2,7 +2,13 @@
  * CEL-186 Answer Contract v2 — commit A0: đóng băng đầu ra trước mọi thay đổi.
  *
  *   npx tsx scripts/test-boi-canh-dong-bang.ts          # so với ảnh chụp đã commit (CI)
- *   npx tsx scripts/test-boi-canh-dong-bang.ts --sinh   # sinh lại ảnh chụp — CHỈ chạy trên mã 5f29293
+ *   npx tsx scripts/test-boi-canh-dong-bang.ts --sinh   # sinh lại ảnh chụp — CHỈ khi đổi có chủ đích
+ *
+ * Lịch sử ảnh chụp: sinh trên mã 5f29293. Sinh lại MỘT lần ngày 05/10/2026 (nhánh
+ * viec/van-han-lop-goc) khi gỡ tổ hợp vòng Thái Tuế gốc khỏi `theoHan` và thêm trường `lop`.
+ * Trước khi sinh lại đã chứng minh trên đủ 192 ca: phần chênh chỉ gồm hai tổ hợp bị gỡ, mã F###
+ * đánh số lại, trường `lop`, và suất cách cục được nhường cho mục kế tiếp trong trần 8. Dữ kiện
+ * ngoài cách cục, `saoTheoCung` và mã theo cửa sổ giữ nguyên.
  *
  * 1. `chonBoiCanh` trên 6 lá `mau-ansao.json` × câu của Behavior Contract × có/không tháng ×
  *    `focused` tắt/bật phải ra y hệt ảnh chụp `du-lieu/boi-canh-dong-bang.json`. Các commit sau
