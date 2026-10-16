@@ -15,7 +15,7 @@ import {
 import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from './boi-canh-la-so';
 import { laChuoiJson } from './doc-json';
 import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
-import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG } from './nghieng-ve';
+import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG, PHIEN_BAN_NGHIENG_LOP_HAN } from './nghieng-ve';
 import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
 import { chonDauAn, PHIEN_BAN_DAU_AN, type DauAnLuot } from './dau-an';
 import { doiTenCung, suaCauTiengLong } from './sua-chua';
@@ -182,6 +182,14 @@ export function dauAnChoLuot(vao: {
  * ra câu hỏi người ta không hỏi. Chặng dài cũng KHÔNG: hướng của một năm không
  * đại diện được cho cả chặng.
  */
+/**
+ * Cờ server CELES_LOP_HAN (CEL-200): câu vận hạn cân theo lớp hạn. Đọc ở đây rồi
+ * truyền xuống bằng tham số — engine và các hàm dựng dữ kiện không đọc env.
+ * Tắt (mặc định) = đường cũ nguyên vẹn. Chỉ bật trên production khi chat, bài
+ * luận v3 và Hành trình đều đã đổi (quyết định lượt 4, 16/10/2026).
+ */
+export const lopHanBat = () => process.env.CELES_LOP_HAN === '1';
+
 export function canTinhNghieng(keHoach: Pick<KeHoachTruyVan, 'yDinh' | 'phamViThoiGian'>): boolean {
   if (keHoach.yDinh === 'quyet-dinh' || keHoach.yDinh === 'co-khong' || keHoach.yDinh === 'thoi-diem') return true;
   if (keHoach.yDinh !== 'mo-ta') return false;
@@ -414,11 +422,13 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   // tháng 3, không đọc tháng đang xem.
   const thangHieuLuc = keHoach.thangMucTieu ?? vao.thangXem;
 
+  const coLopHan = lopHanBat();
   const { duKien } = chonBoiCanh({
     laSo: vao.laSo,
     keHoach,
     namXem: namHieuLuc,
     thangXem: thangHieuLuc,
+    ...(coLopHan ? { lopHanMoi: true } : {}),
   });
 
   const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
@@ -443,6 +453,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
         lopHan: keHoach.lopHan,
         namXem: namHieuLuc,
         thangXem: thangHieuLuc,
+        ...(coLopHan ? { lopHanMoi: true } : {}),
       })
     : null;
 
@@ -533,7 +544,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       model: kq.model,
       runId,
       khoTrong: kqTruyHoi.khoTrong,
-      phienBan: phienBanHienTai(),
+      phienBan: phienBanHienTai(coLopHan),
       doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
     };
   }
@@ -640,18 +651,19 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     model: kq.model,
     runId,
     khoTrong: kqTruyHoi.khoTrong,
-    phienBan: phienBanHienTai(),
+    phienBan: phienBanHienTai(coLopHan),
     doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
   };
 }
 
-export function phienBanHienTai(): Record<string, string> {
+/** `lopHan`: lượt này có chạy phép cân theo lớp hạn không — để vết ghi đúng phiên bản phép cân */
+export function phienBanHienTai(lopHan = false): Record<string, string> {
   return {
     engine: PHUONG_PHAP.id,
     phuongPhap: PHUONG_PHAP.phienBan,
     planner: PHIEN_BAN_PLANNER,
     cachCuc: PHIEN_BAN_CACH_CUC,
-    nghieng: PHIEN_BAN_NGHIENG,
+    nghieng: lopHan ? PHIEN_BAN_NGHIENG_LOP_HAN : PHIEN_BAN_NGHIENG,
     truyHoi: PHIEN_BAN_TRUY_HOI,
     schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
     validator: PHIEN_BAN_VALIDATOR,

@@ -11,6 +11,7 @@ import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
+import { luuTuHoaTheoNam, tuHoaDaiVan, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
 import type { KeHoachTruyVan } from './planner';
 
 /**
@@ -39,7 +40,11 @@ export interface DuKienLaSo {
     | 'nguyet-han'
     | 'tam-hop'
     /** Lưu tinh năm ở cung đang hỏi — CHỈ đường Focused (CEL-186 Vé B), nối cuối danh sách */
-    | 'luu-tinh';
+    | 'luu-tinh'
+    /** Lưu tứ hoá theo can năm xem — CHỈ khi cờ lớp hạn bật (CEL-200), nối cuối danh sách */
+    | 'luu-tu-hoa'
+    /** Tứ hoá theo can cung đại vận — CHỈ khi cờ lớp hạn bật (CEL-200), nối cuối danh sách */
+    | 'tu-hoa-dai-van';
   /**
    * Lớp nguồn THỜI GIAN của dữ kiện: nó đúng cho cả đời, hay chỉ cho một quãng.
    * Không vào prompt (prompt chỉ in `id. noiDung`); dùng cho trace và cho bài
@@ -74,8 +79,17 @@ const LOP_THEO_LOAI: Record<DuKienLaSo['loai'], LopDuKien> = {
   'dai-van': 'dai-han',
   'luu-nien': 'tieu-han',
   'luu-tinh': 'luu-nien',
+  // Hai hệ tên lớp (L9, phương án CEL-200): ở đây theo `LopDuKien` — `luu-nien` là
+  // sao lưu / lưu hoá của năm, `dai-han` là lớp đại vận. Không phải `LopHan` của planner.
+  'luu-tu-hoa': 'luu-nien',
+  'tu-hoa-dai-van': 'dai-han',
   'nguyet-han': 'nguyet-han',
 };
+
+/** "Hóa Lộc vào Thiên Đồng (cung Phúc Đức), …" — đúng sao, đúng cung như bảng sự thật lớp hạn */
+function moTaHoaHan(ds: HoaHan[]): string {
+  return ds.map((h) => `${h.hoa} vào ${h.sao} (cung ${h.tenCung})`).join(', ');
+}
 
 function motTaCung(c: Cung): string {
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
@@ -117,6 +131,11 @@ export interface DauVaoBoiCanh {
    * sổ một lần, chung một bộ đếm F###.
    */
   cuaSo?: { ma: string; namAm: number; thangAm: number; nhuan: boolean; tuNgay: string; denNgay: string }[];
+  /**
+   * Câu vận hạn cân theo lớp hạn (CEL-200, cờ server `CELES_LOP_HAN`). Thiếu = đúng
+   * từng byte như trước: hai mục tứ hoá theo hạn chỉ NỐI VÀO CUỐI.
+   */
+  lopHanMoi?: boolean;
 }
 
 export interface BoiCanhLaSo {
@@ -150,7 +169,7 @@ export function saoChinhTheoCung(laSo: LaSo): Record<string, string[]> {
   return ra;
 }
 
-export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }: DauVaoBoiCanh): BoiCanhLaSo {
+export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo, lopHanMoi }: DauVaoBoiCanh): BoiCanhLaSo {
   const duKien: DuKienLaSo[] = [];
   let dem = 0;
   const them = (d: Omit<DuKienLaSo, 'id' | 'lop'>) => {
@@ -311,7 +330,7 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }:
    *
    * Khối hướng nghiêng nêu lưu tinh làm căn cứ, nhưng gói cũ không có mục nào
    * chứa chúng — câu nêu "Lưu Thiên Mã" không trỏ được về F### nào. Chỉ 9 lưu
-   * tinh engine có; không có lưu Tứ Hóa.
+   * tinh engine có. Lưu tứ hoá đi riêng ở mục `luu-tu-hoa` cuối hàm, sau cờ lớp hạn.
    */
   if (focused && cungChinh && keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
     const luu = luuTinhTheoNam(namXem).filter((s) => s.chiIndex === cungChinh.chiIndex);
@@ -322,6 +341,36 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }:
         cung: cungChinh.tenCung,
         sao: luu.map((s) => s.ten),
       });
+    }
+  }
+
+  /*
+   * Tứ hoá theo hạn (CEL-200): căn cứ của lớp hạn, ngang tầng sao lưu (chủ dự án
+   * chốt 16/10/2026). Đặt lên sao của lá số gốc nên mỗi cặp (hoá, sao) có cung thật;
+   * câu trả lời nhắc lưu Hóa phải trỏ được về mục này.
+   */
+  if (lopHanMoi && xetHan) {
+    if (keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
+      const luu = luuTuHoaTheoNam(laSo, namXem);
+      if (luu.length) {
+        them({
+          loai: 'luu-tu-hoa',
+          noiDung: `Năm ${namXem} (${canChiCuaNam(namXem)}) lưu tứ hoá: ${moTaHoaHan(luu)}.`,
+          sao: luu.map((h) => h.sao),
+        });
+      }
+    }
+    if (keHoach.lopHan.includes('dai-van')) {
+      const dv = cungDaiVan(laSo, tuoiAm);
+      const hoa = tuHoaDaiVan(laSo, tuoiAm);
+      if (dv?.daiVan && hoa.length) {
+        them({
+          loai: 'tu-hoa-dai-van',
+          noiDung: `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (can ${dv.can}) tứ hoá: ${moTaHoaHan(hoa)}.`,
+          cung: dv.tenCung,
+          sao: hoa.map((h) => h.sao),
+        });
+      }
     }
   }
 
