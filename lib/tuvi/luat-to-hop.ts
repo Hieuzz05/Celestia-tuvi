@@ -8,8 +8,9 @@
  *
  * Tệp chia hai phần:
  *  - Kiểu dữ liệu + hàm khớp + hàm kiểm bảng (commit 2a, không cần duyệt nội dung).
- *  - `LUAT_TO_HOP` — bảng hạt giống. Để RỖNG đến khi chủ dự án duyệt từng dòng (commit 2b).
- *    Mỗi dòng phải có ≥2 sách ghi giống nhau, kèm sách:dòng.
+ *  - `LUAT_TO_HOP` — bảng hạt giống, chủ dự án duyệt từng dòng (commit 2b, 17/10/2026; bản
+ *    trình `D:\Celestia\BANG-LUAT-TO-HOP-2b.md`). Mỗi dòng phải có ≥2 nguồn ĐỘC LẬP (khác nhóm
+ *    trong `NHOM_NGUON`) ghi giống nhau, kèm sách:dòng.
  *
  * Hàm thuần, không đọc biến môi trường: web và app cùng đọc qua `@tuvi/*`.
  */
@@ -27,8 +28,14 @@ export type ThanhPhan =
   | { loai: 'sao'; ten: string; lop: 'goc' | 'luu' | 'bat-ky' }
   | { loai: 'hoa'; hoa: TenHoa; nguon: NguonHoa | 'han' | 'bat-ky' };
 
-/** Các thành phần phải cùng nằm ở đâu so với cung đang xét */
-export type PhamViToHop = 'dong-cung' | 'tam-phuong';
+/**
+ * Các thành phần phải cùng nằm ở đâu so với cung đang xét.
+ *  - `xung-chieu`: sao gốc / hoá gốc phải ĐỒNG CUNG với cung xét; sao lưu / hoá theo hạn ở cung
+ *    đó hoặc cung xung. Đúng câu sách «hạn ngộ KÌNH có lưu KÌNH xung» (Ứng dụng – Phụ Tinh 2067).
+ *    Không cho sao gốc nằm ở cung xung: nếu không, năm Kình gốc và Lưu Kình cùng đóng cung A thì
+ *    luật lại khớp ở cung đối diện A — một cung không có sao nào (phản biện 2b, 17/10/2026).
+ */
+export type PhamViToHop = 'dong-cung' | 'xung-chieu' | 'tam-phuong';
 
 /** Cung nào của lớp hạn được đem ra xét luật */
 export type CungXet = 'cung-hoi' | 'tieu-han' | 'dai-van' | 'nguyet-han';
@@ -39,6 +46,11 @@ export interface NguonSach {
   /** Tên tệp sách trong kho tài liệu (D:/Tài liệu tử vi/markdown) */
   sach: string;
   dong: number;
+  /**
+   * Nguyên văn trích từ đúng dòng đó, phải nói đúng tổ hợp của luật (không phải một bộ sao rộng
+   * hơn có chứa nó). Bài CI đối chiếu với tệp sách khi máy có kho tài liệu.
+   */
+  trich: string;
 }
 
 export interface LuatToHop {
@@ -57,6 +69,8 @@ export interface ViTriThanhPhan {
   /** Tên hiển thị: tên sao ('Lưu Kình Dương') hoặc 'Hóa Kỵ (Liêm Trinh)' */
   ten: string;
   chiIndex: number;
+  /** Thuộc lá số gốc (sao gốc, hoá gốc) — khác sao lưu / hoá theo hạn */
+  laGoc: boolean;
 }
 
 export interface KhopLuat {
@@ -67,13 +81,68 @@ export interface KhopLuat {
   viTri: ViTriThanhPhan[];
 }
 
-/** Bảng hạt giống — RỖNG cho đến khi chủ dự án duyệt (commit 2b) */
-export const LUAT_TO_HOP: readonly LuatToHop[] = [];
+/**
+ * Nhóm nguồn: hai tệp cùng nhóm chỉ tính là MỘT nguồn khi đếm ≥2. Nhóm theo gốc câu chữ, không
+ * hẳn theo tác giả: Vũ Tài Lục, Chìa khoá và Ảo bí cùng chép phú của Tử Vi Đẩu Số Toàn Thư (gộp
+ * cả ba là đếm thiếu ở những đoạn không phải phú — chấp nhận, thà thiếu còn hơn đếm hai lần một
+ * câu). Tệp không có ở đây không được dùng làm nguồn (bài CI chặn trên bảng thật).
+ */
+export const NHOM_NGUON: Readonly<Record<string, string>> = {
+  'Tử Vi đẩu số toàn thư - Vũ Tài Lục.md': 'phu-toan-thu',
+  'Chìa khóa Tử Vi.md': 'phu-toan-thu',
+  'Tử Vi ảo bí - Việt Viêm Tử.md': 'phu-toan-thu',
+  'Tử vi tổng hợp.md': 'nguyen-phat-loc',
+  'Tử Vi hàm số - Nguyễn Phát Lộc.md': 'nguyen-phat-loc',
+  'Tử Vi ứng dụng - Chính Tinh.md': 'tu-vi-ung-dung',
+  'Tử Vi ứng dụng - Phụ Tinh.md': 'tu-vi-ung-dung',
+  'Tử Vi nghiệm lý toàn thư - Thiên Lương.md': 'thien-luong',
+  'Tử vi nghiệm lý 1974 - Thiên Lương.md': 'thien-luong',
+  'Phú Tử Vi Lê Quý Đôn.md': 'le-quy-don',
+  'Số Tử Vi dưới mắt khoa học.md': 'ha-thuc-hong',
+  'Tử Vi Bổ Túc - Nguyễn Mạnh Bảo.md': 'nguyen-manh-bao',
+  'Tử Vi khảo luận.md': 'tu-vi-khao-luan',
+  'Tự Điển Tử Vi - Đắc Lộc.md': 'dac-loc',
+};
 
-function vungXet(chiIndex: number, phamVi: PhamViToHop): Set<number> {
-  if (phamVi === 'dong-cung') return new Set([chiIndex]);
-  const { tamHop, xungChieu } = tamPhuongTuChinh(chiIndex);
-  return new Set([chiIndex, ...tamHop, xungChieu]);
+const PHU_TINH = 'Tử Vi ứng dụng - Phụ Tinh.md';
+
+/**
+ * Bảng hạt giống — chủ dự án duyệt 17/10/2026, sau phản biện và soát lại từng dòng nguồn. Đã
+ * cân nhắc và để ngoài (chờ thêm sách): Bạch Hổ + Lưu Hổ (chỉ nhóm Ứng dụng nói đúng Hổ đơn; Hàm
+ * số 2567/2587 nói bộ Tang Hổ), Đà gốc + Lưu Đà (nghĩa chỉ một nguồn), Tang Môn + Lưu Tang (chỉ
+ * nhóm Nguyễn Phát Lộc), song Lộc Tồn (Tổng hợp 1102 trung tính, Chính Tinh 4301/4303 là một lá
+ * cụ thể), Lưu Kình + Lưu Tang (chỉ khớp ở tam phương, ~31% số năm), Thất Sát + «刑忌» (một câu
+ * phú).
+ */
+export const LUAT_TO_HOP: readonly LuatToHop[] = [
+  {
+    ma: 'KINH_TRUNG_LUU',
+    thanhPhan: [
+      { loai: 'sao', ten: 'Kình Dương', lop: 'goc' },
+      { loai: 'sao', ten: 'Kình Dương', lop: 'luu' },
+    ],
+    phamVi: 'xung-chieu',
+    // Sách nói Mệnh và hạn; không dòng nào cho áp vào cung hỏi bất kỳ
+    apDung: ['tieu-han', 'dai-van'],
+    chieu: 'can-tro',
+    nghia: 'Giai đoạn này dễ va chạm hoặc bị khiêu khích; giữ bình tĩnh, tránh đối đầu trực diện.',
+    nguon: [
+      { sach: 'Tử Vi đẩu số toàn thư - Vũ Tài Lục.md', dong: 762, trich: 'Kình Dương trùng phùng lưu Dương' },
+      { sach: 'Tử Vi ảo bí - Việt Viêm Tử.md', dong: 5465, trich: 'Kình-dương trùng phùng lưu Dương' },
+      { sach: 'Chìa khóa Tử Vi.md', dong: 253, trich: 'Kình Dương trùng phùng lưu Dương' },
+      { sach: PHU_TINH, dong: 2067, trich: 'hạn ngộ KÌNH có lưu KÌNH xung' },
+      { sach: 'Tử Vi ứng dụng - Chính Tinh.md', dong: 4812, trich: 'Kình cố định gặp Kình lưu động xung hội họp' },
+    ],
+  },
+];
+
+/** Vị trí có nằm trong vùng xét không — ở `xung-chieu` sao gốc chỉ được đồng cung */
+function trongVung(chiIndex: number, phamVi: PhamViToHop, v: ViTriThanhPhan): boolean {
+  if (v.chiIndex === chiIndex) return true;
+  const xung = (chiIndex + 6) % 12;
+  if (phamVi === 'dong-cung') return false;
+  if (phamVi === 'xung-chieu') return !v.laGoc && v.chiIndex === xung;
+  return v.chiIndex === xung || tamPhuongTuChinh(chiIndex).tamHop.includes(v.chiIndex);
 }
 
 /** Mọi chỗ một thành phần xuất hiện trên lá số + lớp hạn */
@@ -82,11 +151,11 @@ function timThanhPhan(laSo: LaSo, lh: LopHan, tp: ThanhPhan): ViTriThanhPhan[] {
     const ra: ViTriThanhPhan[] = [];
     if (tp.lop !== 'luu') {
       for (const c of laSo.cungs)
-        if (c.sao.some((s) => s.ten === tp.ten)) ra.push({ thanhPhan: tp, ten: tp.ten, chiIndex: c.chiIndex });
+        if (c.sao.some((s) => s.ten === tp.ten)) ra.push({ thanhPhan: tp, ten: tp.ten, chiIndex: c.chiIndex, laGoc: true });
     }
     if (tp.lop !== 'goc') {
       const tenLuu = `Lưu ${tp.ten}`;
-      for (const s of lh.luuTinh) if (s.ten === tenLuu) ra.push({ thanhPhan: tp, ten: tenLuu, chiIndex: s.chiIndex });
+      for (const s of lh.luuTinh) if (s.ten === tenLuu) ra.push({ thanhPhan: tp, ten: tenLuu, chiIndex: s.chiIndex, laGoc: false });
     }
     return ra;
   }
@@ -94,7 +163,7 @@ function timThanhPhan(laSo: LaSo, lh: LopHan, tp: ThanhPhan): ViTriThanhPhan[] {
     tp.nguon === 'bat-ky' ? ['goc', 'nam', 'dai-van'] : tp.nguon === 'han' ? ['nam', 'dai-van'] : [tp.nguon];
   return [...lh.tuHoaGoc, ...lh.luuTuHoa, ...lh.tuHoaDaiVan]
     .filter((h) => h.hoa === tp.hoa && nguon.includes(h.nguon) && h.chiIndex >= 0)
-    .map((h) => ({ thanhPhan: tp, ten: `${h.hoa} (${h.sao})`, chiIndex: h.chiIndex }));
+    .map((h) => ({ thanhPhan: tp, ten: `${h.hoa} (${h.sao})`, chiIndex: h.chiIndex, laGoc: h.nguon === 'goc' }));
 }
 
 /** Cung của từng loại cung xét; null khi lớp đó không có (ngoài đại vận, không truyền tháng) */
@@ -123,11 +192,10 @@ export function khopLuatToHop(
       const chi = cungCua(lh, cungHoi, cx);
       if (chi === null || daXet.has(chi)) continue;
       daXet.add(chi);
-      const vung = vungXet(chi, luat.phamVi);
       const viTri: ViTriThanhPhan[] = [];
       let du = true;
       for (const tp of luat.thanhPhan) {
-        const trong = timThanhPhan(laSo, lh, tp).filter((v) => vung.has(v.chiIndex));
+        const trong = timThanhPhan(laSo, lh, tp).filter((v) => trongVung(chi, luat.phamVi, v));
         if (!trong.length) {
           du = false;
           break;
@@ -154,7 +222,8 @@ function doiTuong(tp: ThanhPhan): string[] {
 
 /**
  * Lỗi cấu trúc của một bảng luật. Rỗng = hợp lệ. Bài CI gọi trên `LUAT_TO_HOP`; tên sao có
- * thật hay không do bài CI đối chiếu với lá số quét (tệp này không giữ danh sách sao).
+ * thật hay không do bài CI đối chiếu với lá số quét (tệp này không giữ danh sách sao). Tệp sách
+ * lạ (không có trong `NHOM_NGUON`) tự thành một nhóm ở đây; bài CI chặn riêng trên bảng thật.
  */
 export function kiemBangLuat(bang: readonly LuatToHop[]): string[] {
   const loi: string[] = [];
@@ -172,10 +241,12 @@ export function kiemBangLuat(bang: readonly LuatToHop[]): string[] {
       dt.forEach((k) => daCo.add(k));
     }
     if (!l.thanhPhan.some(laThanhPhanHan)) loi.push(`${n}: phải có ít nhất một sao lưu hoặc hoá theo hạn`);
+    if (l.phamVi === 'xung-chieu' && l.thanhPhan.every(laThanhPhanHan))
+      loi.push(`${n}: xung-chieu cần ít nhất một sao / hoá gốc làm neo ở cung xét`);
     if (!l.apDung.length) loi.push(`${n}: thiếu cung áp dụng`);
     if (!l.nghia.trim()) loi.push(`${n}: thiếu câu nghĩa`);
-    const sach = new Set(l.nguon.filter((s) => s.sach && s.dong > 0).map((s) => s.sach));
-    if (sach.size < 2) loi.push(`${n}: cần ≥2 sách khác nhau có số dòng`);
+    const nhom = new Set(l.nguon.filter((s) => s.sach && s.dong > 0 && s.trich.trim()).map((s) => NHOM_NGUON[s.sach] ?? s.sach));
+    if (nhom.size < 2) loi.push(`${n}: cần ≥2 nguồn độc lập (khác nhóm sách) có số dòng và trích`);
   }
   return loi;
 }
