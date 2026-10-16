@@ -23,6 +23,10 @@ NGUON = {
     'InterTight': 'https://github.com/google/fonts/raw/main/ofl/intertight/InterTight%5Bwght%5D.ttf',
     'JetBrainsMono': 'https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf',
 }
+# Be Vietnam Pro (chữ chính từ 16/10/2026) chỉ có bản tĩnh — mỗi độ đậm một file.
+BE_VN = {400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold'}
+for w, ten in BE_VN.items():
+    NGUON[f'BeVietnamPro{w}'] = f'https://github.com/google/fonts/raw/main/ofl/bevietnampro/BeVietnamPro-{ten}.ttf'
 
 LATIN = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD'
 VIET = 'U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB'
@@ -78,6 +82,9 @@ kq['inter-tight-700-latin-vi.woff2'] = cat(tai('InterTight', NGUON['InterTight']
                                            {'wght': 700})
 kq['jetbrains-mono-400-latin-vi.woff2'] = cat(tai('JetBrainsMono', NGUON['JetBrainsMono']), os.path.join(RA, 'jetbrains-mono-400-latin-vi.woff2'),
                                               {'wght': 400})
+for w in BE_VN:
+    ten = f'be-vietnam-pro-{w}-latin-vi.woff2'
+    kq[ten] = cat(tai(f'BeVietnamPro{w}', NGUON[f'BeVietnamPro{w}']), os.path.join(RA, ten), None)
 for k, v in kq.items():
     print(f'{k}: {v/1024:.1f} KB')
 print('Tổng:', round(sum(kq.values()) / 1024, 1), 'KB')

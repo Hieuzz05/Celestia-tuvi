@@ -920,8 +920,13 @@ Vài luật dễ vi phạm khi sửa giao diện:
   liên kết, viền, chữ nhấn hay logo. Muốn nhấn mạnh thì dùng mực Aubergine `#240029`.
 - **Không dùng đen hay xám trung tính.** Chữ, viền và bóng đều ngả tím: bóng luôn là
   `rgba(32-41, 0, 36, x)`.
-- **Bo góc chỉ có bốn bậc**: 999px (pill/badge) · 14px (thẻ) · 6px (nút) · 3px (ô nhập). Thêm bậc
-  thứ năm là làm nhoè ranh giới "chất liệu" giữa các thành phần.
+- **Bo góc chỉ có ba bậc** (phong cách Your Best Version, từ 16/10/2026): 999px (nút `.btn-*`,
+  pill/badge) · 22px (thẻ) · 12px (ô nhập, ô chọn dạng khối, ảnh). Thêm bậc thứ tư là làm nhoè ranh
+  giới "chất liệu" giữa các thành phần. `--radius-buttons` là 12px chứ không phải 999 — nó đang
+  dùng cho ô chọn dạng khối (dải năm, ô giờ sinh, menu), thành viên thuốc là vỡ hình.
+- **Chữ chính là Be Vietnam Pro** (tự phục vụ, 5 độ đậm, `app/fonts/be-vietnam-pro-*`), tiêu đề đậm
+  800. Inter Tight chỉ còn cho chữ CELESTIA trong dấu thương hiệu. Toàn bộ lớp này là một khối cuối
+  `app/globals.css`.
 - **Gradient hoàng hôn chỉ dùng cho dải hero tràn màn**, không bao giờ cho thẻ, nút hay icon.
 - **Chữ viết tay (Permanent Marker)** tối đa 3 lần mỗi trang và chỉ đặt trên dải gradient — ra nền
   trắng là mất tương phản.

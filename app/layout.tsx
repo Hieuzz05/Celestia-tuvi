@@ -19,8 +19,8 @@ import { URL_GOC } from '@/lib/trang-web';
  * còn 116KB, chữ hiện sớm hơn. Cách cắt lại: docs/bay/giao-dien.md (mục font).
  */
 
-// Kaio không có bản web miễn phí — Inter Tight 700 là một trong ba substitute mà
-// design system chỉ định, dùng cho toàn bộ display headline từ 36px trở lên.
+// Inter Tight 700: từ 16/10/2026 chỉ còn chữ CELESTIA trong dấu thương hiệu (components/Logo.tsx)
+// dùng — tiêu đề đã chuyển sang Be Vietnam Pro. Giữ để dấu thương hiệu không đổi.
 const displaySans = localFont({
   src: "./fonts/inter-tight-700-latin-vi.woff2",
   weight: "700",
@@ -29,12 +29,18 @@ const displaySans = localFont({
   display: "swap",
 });
 
-// Bản biến thiên, trục wght 400–700 đủ cho mọi độ đậm đang dùng
-const inter = localFont({
-  src: "./fonts/inter-latin-vi.woff2",
-  weight: "400 700",
-  style: "normal",
-  variable: "--font-inter",
+// Chữ chính từ 16/10/2026: Be Vietnam Pro, theo phong cách Your Best Version.
+// Bản tĩnh, mỗi độ đậm một file (~16KB) — trình duyệt chỉ tải độ đậm trang thật sự dùng.
+// Inter Tight ở trên vẫn giữ cho chữ CELESTIA trong dấu thương hiệu.
+const beVietnam = localFont({
+  src: [
+    { path: "./fonts/be-vietnam-pro-400-latin-vi.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/be-vietnam-pro-500-latin-vi.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/be-vietnam-pro-600-latin-vi.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/be-vietnam-pro-700-latin-vi.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/be-vietnam-pro-800-latin-vi.woff2", weight: "800", style: "normal" },
+  ],
+  variable: "--font-be",
   display: "swap",
 });
 
@@ -89,7 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="vi"
       data-theme="day"
-      className={`${inter.variable} ${displaySans.variable} ${monoLabel.variable} ${annotation.variable} h-full antialiased`}
+      className={`${beVietnam.variable} ${displaySans.variable} ${monoLabel.variable} ${annotation.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

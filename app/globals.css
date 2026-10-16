@@ -821,3 +821,132 @@ body {
     animation: none;
   }
 }
+
+/* ==========================================================================
+ * PHONG CÁCH YOUR BEST VERSION — chủ dự án duyệt 16/10/2026 (nhánh viec/thu-phong-cach-ybv)
+ *
+ * Chỉ đổi "chất liệu": font, bo góc, bóng, độ đậm chữ, dáng nút/ô nhập.
+ * GIỮ nguyên: bố cục, bảng màu (aubergine / fuchsia / gradient hero), linh vật,
+ * dấu thương hiệu, mệnh bàn. Gom hết vào một khối để so và gỡ trong một lần xoá.
+ * ========================================================================== */
+:root {
+  /* Bo góc mềm kiểu YBV. --radius-buttons vẫn dùng cho các ô chọn dạng khối
+     (năm trên dải thời gian, ô chọn giờ sinh) nên giữ 12px, không thành viên thuốc;
+     nút thật (.btn-*) tự lấy --radius-full bên dưới. */
+  --radius-inputs: 12px;
+  --radius-buttons: 12px;
+  --radius-images: 12px;
+  --radius-cards: 22px;
+
+  /* Nền ngả tím rất nhạt để thẻ trắng nổi lên như YBV (#f3f4f8 bên đó, pha theo mực aubergine). */
+  --bg: #f6f3f7;
+  --surface-panel: #f8f5f9;
+  --line: #ebe3ec;
+
+  /* Bóng YBV: viền 1px + một quầng mờ rất rộng phía dưới, vẫn pha tím của hệ. */
+  --shadow-card: 0 0 0 1px var(--line), 0 1px 2px rgba(36, 0, 41, 0.04), 0 8px 24px -12px rgba(36, 0, 41, 0.12);
+  --shadow-elevated: 0 0 0 1px var(--line), 0 1px 2px rgba(36, 0, 41, 0.04), 0 18px 40px -18px rgba(36, 0, 41, 0.22);
+  --shadow-image: 0 1px 2px rgba(36, 0, 41, 0.05), 0 12px 32px -14px rgba(36, 0, 41, 0.2);
+}
+:root[data-theme="night"] {
+  --line: rgba(212, 204, 212, 0.14);
+  --shadow-card: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 0 0 1px var(--line), 0 18px 40px -18px rgba(0, 0, 0, 0.55);
+}
+.hero-band {
+  --shadow-card: 0 0 0 1px rgba(36, 0, 41, 0.08), 0 8px 24px -12px rgba(36, 0, 41, 0.14);
+}
+
+@theme inline {
+  --font-sans: var(--font-be);
+}
+
+body {
+  font-family: var(--font-be), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: normal;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tiêu đề: cùng họ chữ với thân bài, đậm 800, khít chữ — giọng chữ của YBV.
+   Line-height nới hơn bản Inter một chút: dấu chồng của tiếng Việt (Ể, Ỗ) cần chỗ. */
+.display,
+.heading,
+.heading-sm {
+  font-family: var(--font-be), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+}
+.display { letter-spacing: -0.035em; line-height: 1.08; }
+.display-hero { letter-spacing: -0.03em; line-height: 1.12; }
+.heading { letter-spacing: -0.03em; line-height: 1.15; }
+.heading-sm { letter-spacing: -0.02em; line-height: 1.25; }
+.subheading { font-weight: 700; letter-spacing: -0.015em; }
+
+/* Eyebrow: bỏ mono, thành nhãn chữ đậm nhỏ như CardTitle của YBV. */
+.eyebrow {
+  font-family: var(--font-be), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+.field-label { font-size: 13px; font-weight: 600; letter-spacing: 0; }
+.annotation { font-family: var(--font-annotation), var(--font-be), cursive; }
+
+/* Nút: viên thuốc, chữ đậm, nhún nhẹ khi bấm. */
+.btn-primary,
+.btn-outline {
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: filter 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:active:not(:disabled),
+.btn-outline:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-outline {
+  background: var(--surface-card);
+  border-color: var(--line);
+}
+.btn-outline:hover:not(:disabled) {
+  background: var(--surface-panel);
+}
+
+/* Thẻ nhãn: nền pha màu, không viền — giống Chip của YBV. */
+.pill-tag {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+  font-weight: 600;
+}
+.pill-tag:hover,
+.pill-tag[data-active="true"] {
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
+}
+.badge-ok { border-color: transparent; font-weight: 600; }
+
+/* Ô nhập: nền xám tím nhạt, bo 12px, vòng focus mờ thay cho viền đậm. */
+.field-input {
+  background: var(--surface-panel);
+  border-color: var(--line);
+}
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: none;
+}
+
+/* Vòng focus bàn phím: bo vừa phải, không ăn theo bo viên thuốc của nút. */
+:where(a, button, [role='button'], [role='menuitem'], input, select, textarea, summary, [tabindex]):focus-visible {
+  border-radius: 12px;
+}
+.btn-primary:focus-visible,
+.btn-outline:focus-visible,
+.pill-tag:focus-visible {
+  border-radius: var(--radius-full);
+}
+
+.nav-link { font-weight: 600; }
+.link-text { font-weight: 600; }
+.step-num { font-weight: 700; }
