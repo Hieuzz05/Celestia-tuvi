@@ -23,6 +23,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Bộ E2E Playwright (CEL-076) — làm lần lượt, từng nhánh, chưa gộp | `viec/e2e` | e2e/ mới, package.json | 11/10 |
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
+| Claude (máy 1) | Sửa bảng độ sáng theo Tử Vi hàm số + sửa cách cục Hình Tù giáp Ấn, Mã đầu đới kiếm, Nhật Nguyệt tịnh minh. **Chạm vùng Chung `lib/tuvi/` (web + app cùng đổi)** | `viec/sua-do-sang-cach-cuc` | lib/tuvi/dosang.ts, lib/tuvi/cach-cuc.ts, scripts/test-* | 16/10 |
 
 
 ## Đang vướng — đừng đụng vào
