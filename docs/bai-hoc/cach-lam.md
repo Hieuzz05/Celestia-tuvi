@@ -17,6 +17,9 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   đổi chữ quan trọng ở mặt trước, hoặc đóng một tính năng lớn. Gồm `phan-bien`, `danh-gia-tac-dong`,
   `bien-tap-vi`. Lỗi nhỏ thì không gọi.
 - **Nói "đã kiểm" chỉ khi đã chạy.** Mới đọc diff thì nói là mới đọc diff.
+- **Mỗi câu mô tả hiện trạng trong giải pháp phải có dẫn chứng chạy ngay lượt đó** (tệp:dòng, kết quả
+  grep kho). Không suy từ tên tệp, trí nhớ phiên hay lời subagent chưa tự kiểm; chưa kiểm thì ghi "chưa
+  kiểm". Ngày 16/10 sáu khẳng định sai về Celes phải rút qua ba lượt.
 
 ## Phối hợp hai máy
 

@@ -90,3 +90,19 @@ Mẫu một mục:
 - Nâng: `docs/bay/engine.md` và máy canh `scripts/test-lop-du-kien.ts` (CI), trên nhánh
   `viec/van-han-lop-goc`.
 - Lần: 1
+
+## 16/10/2026 · Khẳng định hiện trạng sai, phải sửa nhiều lượt · quy-trinh
+- Thẻ: hien-trang, khang-dinh, kiem-ma, doi-chieu-kho, giai-phap
+- Chuyện gì: phiên giải đáp luồng luận giải vận hạn trình giải pháp kèm nhiều khẳng định về cái Celes đang
+  có mà sau đó phải rút: "engine đã tính sẵn lưu tứ hoá" (chỉ v3 tự tính), "app dùng cach-cuc" (không),
+  ví dụ "Bạch Hổ Quan Lộc 1 đoạn" (kho có 0), "sang cuộc chat khác là mất" (mỗi lá số chỉ MỘT luồng
+  chat, đọc lại 60 tin), "Quick Read hiện ngay sau lập lá số" (chỉ là dự phòng khi v3 hỏng), "bảng độ
+  sáng chưa chuẩn" (chưa đối chiếu sách; đối chiếu Tử Vi khảo luận thì khớp phần lớn).
+- Gốc: khẳng định suy từ tên tệp, từ trí nhớ phiên trước nén ngữ cảnh, hoặc từ một kết luận của
+  subagent mà phiên chính chưa tự kiểm; phản biện chạy SAU khi đã viết giải pháp nên bắt muộn.
+- Giá: ba lượt phản biện, chủ dự án phải đọc rồi hỏi lại nhiều lần ("hiện tại làm gì có…"), tệp giải đáp
+  viết lại hai lần.
+- Luật: mỗi câu mô tả hiện trạng trong một giải pháp phải kèm dẫn chứng đã chạy trong CHÍNH lượt đó
+  (tệp:dòng hoặc kết quả grep kho); chưa kiểm thì ghi rõ "chưa kiểm", không trình như sự thật.
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo".
+- Lần: 1
