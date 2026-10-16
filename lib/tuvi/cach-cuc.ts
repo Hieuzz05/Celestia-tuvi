@@ -30,7 +30,7 @@ import { tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
  * engine thì bộ test chạy được offline mà không cần dựng một kế hoạch truy vấn.
  */
 
-export const PHIEN_BAN_CACH_CUC = '2026.09.1';
+export const PHIEN_BAN_CACH_CUC = '2026.10.2';
 
 export interface CachCuc {
   /** Mã ổn định, dùng cho trace và bộ vàng: 'TU_PHU_VU_TUONG_LIEM' */
@@ -48,9 +48,6 @@ export interface CachCuc {
 }
 
 // ---------------------------------------------------------------- tiện ích
-
-/** Độ sáng đủ để sao thể hiện được nét của nó */
-const SANG_RO = new Set(['M', 'V', 'D']);
 
 interface PhamVi {
   /** Cung gốc đang xét */
@@ -149,10 +146,17 @@ function boChinhTinh(pv: PhamVi): CachCuc[] {
 /**
  * Nhật Nguyệt tịnh minh / hãm.
  *
- * Thái Dương và Thái Âm là cặp duy nhất mà ĐỘ SÁNG quyết định nghĩa nhiều hơn
- * vị trí: cùng một cặp sao, cùng sáng thì là cách tốt vào bậc nhất, cùng hãm
- * thì ngược hẳn. Nên hai luật này đọc doSang chứ không đọc chi.
+ * Tịnh minh là cách có VỊ TRÍ cố định, không phải "hai sao cùng sáng trong tam
+ * phương": cung ở Sửu thì Thái Dương tại Tỵ, Thái Âm tại Dậu hợp chiếu; cung ở
+ * Mùi thì Thái Dương tại Mão, Thái Âm tại Hợi (Tử Vi hàm số 814, Khảo luận,
+ * Ảo bí 5568; chữ "Nguyệt ở Hợi" cho Sửu ở HS là lỗi quét). Bản trước bắt mọi
+ * cặp sáng trong tam phương nên phát ở 20% lá số, trong khi đúng sách chỉ ~3%.
+ * Sửa 16/10/2026. Hai vị trí ấy cả hai sao đều sáng, nên không cần đọc doSang.
+ *
+ * Nhật Nguyệt hãm vẫn đọc độ sáng: cùng một cặp, cùng hãm thì sức bị kìm.
  */
+const TINH_MINH: Record<string, [string, string]> = { Sửu: ['Tỵ', 'Dậu'], Mùi: ['Mão', 'Hợi'] };
+
 function nhatNguyet(pv: PhamVi): CachCuc[] {
   if (!duCa(pv, ['Thái Dương', 'Thái Âm'])) return [];
 
@@ -160,12 +164,13 @@ function nhatNguyet(pv: PhamVi): CachCuc[] {
   const sA = doSang(pv, 'Thái Âm');
   const viT = viTri(pv, ['Thái Dương', 'Thái Âm']);
 
-  if (sD && sA && SANG_RO.has(sD) && SANG_RO.has(sA)) {
+  const can = TINH_MINH[pv.goc.chi];
+  if (can && pv.sao.get('Thái Dương')!.chi === can[0] && pv.sao.get('Thái Âm')!.chi === can[1]) {
     return [{
       ma: 'NHAT_NGUYET_TINH_MINH',
       ten: 'Nhật Nguyệt tịnh minh',
       cung: pv.goc.tenCung,
-      dieuKien: `Thái Dương và Thái Âm cùng chiếu ${nhan(pv)} và cả hai đều sáng (${viT}; độ sáng ${sD} và ${sA}). Cặp này sáng cùng lúc là cách hiếm — nó cho cả mặt bộc lộ ra ngoài lẫn mặt thu vào bên trong đều dùng được.`,
+      dieuKien: `${nhan(pv)} có Thái Dương ở ${can[0]} và Thái Âm ở ${can[1]} cùng chiếu về, đúng vị trí của cách Nhật Nguyệt tịnh minh (${viT}). Hai nguồn sáng cùng chiếu một cung cho cả mặt bộc lộ ra ngoài lẫn mặt thu vào bên trong đều dùng được; gặp Tuần, Triệt hay Không Kiếp thì ánh sáng ấy bị che bớt.`,
       sao: ['Thái Dương', 'Thái Âm'],
       loai: 'chinh',
     }];
@@ -311,63 +316,60 @@ function voChinhDieu(pv: PhamVi): CachCuc[] {
 }
 
 /**
- * Mã đầu đới kiếm — Kình Dương cư NGỌ, có Thiên Mã trong tam phương.
+ * Mã đầu đới kiếm — cung ở NGỌ, Kình Dương tọa thủ, Thiên Hình và Thiên Mã
+ * hợp chiếu (Tử Vi hàm số 815).
  *
+ * Sửa 16/10/2026. Bản trước chỉ cần Kình ở Ngọ bất kỳ đâu trong tam phương
+ * cùng Thiên Mã, và ghi "Ngọ là chỗ Kình đắc địa", trái với chính `dosang.ts`
+ * (Kình chỉ đắc ở tứ mộ). Sách đọc cách này hai mặt, theo chính tinh đi cùng:
+ * Đồng, Âm gặp Kình ở Ngọ thì uy quyền, trấn giữ (HS 1662, 2016); Thất Sát
+ * gặp Kình, Hình ở Ngọ thì sách xếp vào thế tai nạn, tù tội (HS 1857, 1890).
+ * Kình ở Ngọ chỉ có ở tuổi Bính, Mậu, nên lời "nhất là tuổi Bính, Mậu" của sách
+ * luôn đúng và không cần điều kiện riêng.
+ *
+ * Lịch sử bản đầu:
  * Bản đầu bắt Kình Dương ĐỒNG CUNG Thiên Mã, và đó là mã chết: quét 6.912 lá số
  * không ra lần nào. Kình Dương an theo Lộc Tồn (theo can năm), Thiên Mã an theo
  * tam hợp chi năm nên chỉ rơi vào Dần/Thân/Tỵ/Hợi — hai quỹ đạo không gặp nhau
  * trong engine này. Một luật không bao giờ phát ra là luật viết sai, không phải
  * luật hiếm.
  *
- * Dạng Nam phái đứng vững: Kình Dương ở Ngọ là chỗ nó đắc địa, "kiếm" mới thành
- * kiếm chứ không thành vết thương; "mã" là Thiên Mã hội về. Đo được 8,3%.
  */
 function maDauDoiKiem(pv: PhamVi): CachCuc[] {
-  const cK = pv.sao.get('Kình Dương');
+  if (pv.goc.chi !== 'Ngọ') return [];
+  const ngay = (ten: string) => pv.goc.sao.some((s) => s.ten === ten);
+  const cH = pv.sao.get('Thiên Hình');
   const cM = pv.sao.get('Thiên Mã');
-  if (!cK || !cM || cK.chi !== 'Ngọ') return [];
+  if (!ngay('Kình Dương') || !cH || !cM) return [];
+
+  const mat = ngay('Thất Sát')
+    ? 'Có Thất Sát cùng đóng nên mặt rủi ro nặng hơn: dễ gặp tai nạn, dễ va chạm với pháp luật. Gan dạ và sức mạnh là có thật, nhưng phải đặt an toàn và kỷ luật lên trước mới dùng được.'
+    : ngay('Thiên Đồng') || ngay('Thái Âm')
+      ? 'Có Thiên Đồng, Thái Âm đi cùng nên mặt thuận nổi hơn: có uy, hợp việc trấn giữ, gánh trách nhiệm lớn. Thiên Hình vẫn chiếu về, nên quyền luôn đi kèm kỷ luật, và nóng vội thì va chạm, thương tổn vẫn có thể đến.'
+      : 'Cách này có hai mặt: uy và gan dạ đi cùng va chạm, thương tổn. Mặt nào nổi hơn tuỳ các sao gặp thêm ở hạn.';
 
   return [{
     ma: 'MA_DAU_DOI_KIEM',
     ten: 'Mã đầu đới kiếm',
     cung: pv.goc.tenCung,
-    dieuKien: `Kình Dương đóng tại cung Ngọ — chỗ nó đắc địa — và Thiên Mã tại ${cM.tenCung} (${cM.chi}) cùng hội về tam phương tứ chính của ${nhan(pv)}. Đây là cách đi xa có sức bật nhưng phải chịu va: thuận ở môi trường cạnh tranh, bất lợi ở môi trường cần yên.`,
-    sao: ['Kình Dương', 'Thiên Mã'],
+    dieuKien: `Kình Dương đóng ngay ${nhan(pv)}, Thiên Hình ở ${cH.tenCung} (${cH.chi}) và Thiên Mã ở ${cM.tenCung} (${cM.chi}) cùng chiếu về. ${mat}`,
+    sao: ['Kình Dương', 'Thiên Hình', 'Thiên Mã'],
     loai: 'phu',
   }];
 }
 
-/**
- * Hình Tù giáp Ấn — Thiên Hình và Liêm Trinh kẹp hai bên cung có Quốc Ấn.
+/*
+ * Hình Tù giáp Ấn — KHÔNG phát (gỡ 16/10/2026).
  *
- * "Giáp" trong Tử Vi là hai cung LIỀN KỀ, không phải tam phương. Đây là cách
- * cục duy nhất trong bộ v1 đọc theo quan hệ liền kề, nên nó không dùng PhamVi
- * mà quét thẳng trên 12 cung.
+ * Bản trước bắt Quốc Ấn bị Thiên Hình và Liêm Trinh kẹp, nhưng sách lấy "Ấn" là
+ * Thiên Tướng: Tử Vi hàm số 815 và Bổ Túc ghi Thiên Tướng thủ Mệnh hay Quan, Kình
+ * Dương và Liêm Trinh giáp hai bên. Điều kiện ấy không bao giờ xảy ra trên lá số:
+ * Liêm Trinh = Tử Vi + 4, Thiên Tướng = 8 − Tử Vi, nên khoảng cách giữa hai sao
+ * luôn chẵn và chúng không thể liền kề. Chìa khóa lại ghi Thiên Hình, Liêm Trinh
+ * ở Mệnh. Sách không thống nhất và bản phổ biến nhất không lập được, nên cách này
+ * vào sổ "chưa rõ" của đợt rà cách cục 16/10/2026. Tên vẫn nằm trong
+ * `TEN_CACH_CUC` để validator bắt khi model tự viết ra.
  */
-function hinhTuGiapAn(laSo: LaSo, goc: Cung): CachCuc[] {
-  const theoChi = new Map(laSo.cungs.map((c) => [c.chiIndex, c]));
-  const co = (c: Cung | undefined, ten: string) => !!c?.sao.some((s) => s.ten === ten);
-
-  const coAn = goc.sao.some((s) => s.ten === 'Quốc Ấn');
-  if (!coAn) return [];
-
-  const truoc = theoChi.get((goc.chiIndex + 11) % 12);
-  const sau = theoChi.get((goc.chiIndex + 1) % 12);
-
-  const kep =
-    (co(truoc, 'Thiên Hình') && co(sau, 'Liêm Trinh')) ||
-    (co(truoc, 'Liêm Trinh') && co(sau, 'Thiên Hình'));
-  if (!kep) return [];
-
-  return [{
-    ma: 'HINH_TU_GIAP_AN',
-    ten: 'Hình Tù giáp Ấn',
-    cung: goc.tenCung,
-    dieuKien: `Quốc Ấn đóng tại ${goc.tenCung} (${goc.chi}), hai cung liền kề là ${truoc!.tenCung} và ${sau!.tenCung} mang Thiên Hình và Liêm Trinh. Thẩm quyền bị kẹp giữa kỷ luật và ràng buộc — quyền có thật nhưng luôn đi kèm điều kiện.`,
-    sao: ['Quốc Ấn', 'Thiên Hình', 'Liêm Trinh'],
-    loai: 'phu',
-  }];
-}
 
 // ---------------------------------------------------------------- theo lớp hạn
 
@@ -458,7 +460,6 @@ export function nhanDangCachCuc(laSo: LaSo, cungTrongTam?: string): CachCuc[] {
       ...nhatNguyet(pv),
       ...boPhuTinh(pv),
       ...maDauDoiKiem(pv),
-      ...hinhTuGiapAn(laSo, g),
       ...theoHan(pv),
     ];
     for (const cc of tim) {
@@ -497,6 +498,12 @@ export function nhanDangCachCuc(laSo: LaSo, cungTrongTam?: string): CachCuc[] {
   ];
 }
 
+/**
+ * Tên chỉ để validator chặn, không còn luật nào phát ra. Bài canh "không luật nào
+ * phát 0 lần" trong `scripts/test-cach-cuc.ts` bỏ qua đúng danh sách này.
+ */
+export const TEN_CHI_DE_CHAN: string[] = ['Hình Tù giáp Ấn'];
+
 /** Mọi tên cách cục engine có thể phát ra — validator dùng để bắt tên bịa */
 export const TEN_CACH_CUC: string[] = [
   ...BO_CHINH_TINH.map((b) => b.ten),
@@ -505,7 +512,7 @@ export const TEN_CACH_CUC: string[] = [
   'Nhật Nguyệt hãm',
   ...BO_PHU_TINH.map((b) => b.ten),
   'Mã đầu đới kiếm',
-  'Hình Tù giáp Ấn',
+  ...TEN_CHI_DE_CHAN,
   'Tang Tuế Điếu',
   'Thiên Mã gặp Tuế Phá',
   'Tuần án ngữ',

@@ -42,8 +42,13 @@ import { khoaBoiCanh, khoiBoiCanh, lamSachBoiCanh } from '@/lib/rag/v3/boi-canh-
  * án mở trên máy khác, thấy bài viết lại, tưởng đệm không theo tài khoản — thật
  * ra đệm đúng theo lá số, chỉ là thế hệ vừa đổi. Nên: KHÔNG tăng số này khi chưa
  * hỏi chủ dự án, và gom nhiều thay đổi vào một lần tăng.
+ *
+ * 8 → 9 (16/10/2026) — chủ dự án duyệt: độ sáng theo Tử Vi hàm số (phương pháp
+ * 2026.10.1) và sửa Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn
+ * (cách cục 2026.10.2). Khoá v3 không chứa phiên bản phương pháp, nên không
+ * tăng số này thì bài đã đệm vẫn luận theo độ sáng cũ. Đếm trước: 14 bài, 5 lá số.
  */
-export const THE_HE_DEM: number = 8;
+export const THE_HE_DEM: number = 9;
 
 /**
  * Bài viết trước khi có dấu kho (26/09/2026) được coi là viết với kho lúc đó —

@@ -18,19 +18,27 @@ export const NHAN_DO_SANG: Record<DoSang, { ten: string; moTa: string }> = {
 
 type BangDoSang = { M: number[]; V: number[]; D: number[]; H: number[]; B: number[] };
 
+/*
+ * Đối chiếu Tử Vi hàm số (Nguyễn Phát Lộc) ngày 16/10/2026, sách là chuẩn khi
+ * lệch với CanChi. Sửa bảy chỗ: Tử Vi ở Tý, Hợi bình (bản trước Tý hãm, Hợi
+ * đắc; HS 2236 ghi Tử Vi không có cung hãm); Thiên Cơ ở Mùi đắc (HS 1899);
+ * Thiên Phủ ở Sửu, Mão, Dậu bình (HS 2124); Thiên Lương ở Tuất miếu, Tý vượng
+ * (HS 2044; chữ "Tý" trong dòng Hãm của sách là lỗi quét của "Tỵ"); Hỏa Tinh
+ * thêm Thìn, Linh Tinh thêm Mão và Thìn (HS 3068). Canh: `scripts/test-ansao.ts`.
+ */
 const CHINH_TINH_DO_SANG: Record<string, BangDoSang> = {
-  'Tử Vi': { M: [2, 5, 6, 8], V: [4, 10], D: [1, 7, 11], H: [0], B: [3, 9] },
+  'Tử Vi': { M: [2, 5, 6, 8], V: [4, 10], D: [1, 7], H: [], B: [0, 3, 9, 11] },
   'Liêm Trinh': { M: [4, 10], V: [0, 2, 6, 8], D: [1, 7], H: [3, 5, 9, 11], B: [] },
   'Thiên Đồng': { M: [2, 8], V: [0], D: [3, 5, 11], H: [1, 4, 6, 7, 9, 10], B: [] },
   'Vũ Khúc': { M: [1, 4, 7, 10], V: [0, 2, 6, 8], D: [3, 9], H: [5, 11], B: [] },
   'Thái Dương': { M: [5, 6], V: [2, 3, 4], D: [1, 7], H: [0, 8, 9, 10, 11], B: [] },
-  'Thiên Cơ': { M: [3, 4, 9, 10], V: [5, 7, 8], D: [0, 1, 6], H: [2, 11], B: [] },
-  'Thiên Phủ': { M: [0, 2, 6, 8], V: [4, 10], D: [1, 3, 5, 7, 9, 11], H: [], B: [] },
+  'Thiên Cơ': { M: [3, 4, 9, 10], V: [5, 8], D: [0, 1, 6, 7], H: [2, 11], B: [] },
+  'Thiên Phủ': { M: [0, 2, 6, 8], V: [4, 10], D: [5, 7, 11], H: [], B: [1, 3, 9] },
   'Thái Âm': { M: [9, 10, 11], V: [0, 8], D: [1, 7], H: [2, 3, 4, 5, 6], B: [] },
   'Tham Lang': { M: [1, 7], V: [4, 10], D: [2, 8], H: [0, 3, 5, 6, 9, 11], B: [] },
   'Cự Môn': { M: [3, 9], V: [0, 2, 6], D: [8, 11], H: [1, 4, 5, 7, 10], B: [] },
   'Thiên Tướng': { M: [2, 8], V: [0, 4, 6, 10], D: [1, 5, 7, 11], H: [3, 9], B: [] },
-  'Thiên Lương': { M: [0, 4, 6], V: [2, 3, 8, 10], D: [1, 7], H: [5, 9, 11], B: [] },
+  'Thiên Lương': { M: [4, 6, 10], V: [0, 2, 3, 8], D: [1, 7], H: [5, 9, 11], B: [] },
   'Thất Sát': { M: [0, 2, 6, 8], V: [5, 11], D: [1, 7], H: [3, 4, 9, 10], B: [] },
   'Phá Quân': { M: [0, 6], V: [1, 7], D: [4, 10], H: [2, 3, 5, 8, 9, 11], B: [] },
 };
@@ -41,8 +49,9 @@ const DAC_DIA: Record<string, number[]> = {
   'Địa Kiếp': [2, 5, 8, 11],
   'Kình Dương': [1, 4, 7, 10],
   'Đà La': [1, 4, 7, 10],
-  'Hỏa Tinh': [2, 3, 5, 6],
-  'Linh Tinh': [2, 5, 6],
+  /* Hỏa Linh đắc ở các cung ban ngày Dần, Mão, Thìn, Tỵ, Ngọ (HS 3068). */
+  'Hỏa Tinh': [2, 3, 4, 5, 6],
+  'Linh Tinh': [2, 3, 4, 5, 6],
   'Bạch Hổ': [2, 3, 8, 9],
   'Văn Xương': [1, 4, 5, 7, 10, 11],
   'Văn Khúc': [1, 4, 5, 7, 10, 11],
