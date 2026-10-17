@@ -110,5 +110,12 @@ Mẫu một mục:
   viết lại hai lần.
 - Luật: mỗi câu mô tả hiện trạng trong một giải pháp phải kèm dẫn chứng đã chạy trong CHÍNH lượt đó
   (tệp:dòng hoặc kết quả grep kho); chưa kiểm thì ghi rõ "chưa kiểm", không trình như sự thật.
-- Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo".
-- Lần: 1
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo". Lần 2 → máy canh trích nguyên văn trong
+  `scripts/test-luat-to-hop.ts` (nhánh `viec/van-han-lop-han`, 10beac8).
+- Lần: 2
+- Lặp 17/10: trình chủ dự án luật Bạch Hổ + Lưu Hổ "đủ 2 nhóm nguồn" và được duyệt; celes-domain đọc
+  lại thì Hàm số 2567/2587 nói BỘ Tang Hổ + Lưu Tang Hổ, không phải Hổ đơn — chỉ còn một nhóm. Kình
+  cũng bị gắn "cung hỏi" mà sách chỉ nói Mệnh và hạn. Gốc: số dòng lấy từ bảng tần suất (đếm chữ),
+  không đọc nguyên văn từng dòng trước khi trình. Giá: chủ dự án duyệt trên dữ kiện sai, phải duyệt
+  lại. Máy canh: mỗi nguồn trong luật phải kèm câu trích, test mở tệp sách đúng dòng và đỏ khi không
+  khớp nguyên văn / không gọi tên đủ sao; phần "bộ rộng hơn" máy không bắt — vẫn đọc bằng mắt.
