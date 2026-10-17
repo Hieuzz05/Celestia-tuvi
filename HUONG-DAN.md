@@ -712,7 +712,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | `SUPABASE_SERVICE_ROLE_KEY` | Cho kho tri thức | Đọc/ghi kho tri thức phía server |
 | `ADMIN_EMAILS` | Nên có khi public | Giới hạn quyền vào `/admin` |
 | `CELES_FOCUSED_CHAT` | Không | `1` = chat đi đường Focused (CEL-186 vé B). Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ đặt cho Preview của nhánh khi chủ dự án cho phép |
-| `CELES_LOP_HAN` | Không | `1` = chat STANDARD và Focused nhận lớp hạn: sao lưu, lưu tứ hoá, tứ hoá đại vận (CEL-200). Focused kiểm đúng quan hệ hoá–sao–cung–lớp–thời điểm, quét chữ nội bộ và giữ meta đúng chế độ. Phép cân C1/C3 chờ 3a' máy 1; máy 2 không sửa engine. Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ bật production khi chat, bài luận và Hành trình đều đã đổi |
+| `CELES_LOP_HAN` | Không | `1` = chat STANDARD và Focused nhận lớp hạn: sao lưu, lưu tứ hoá, tứ hoá đại vận (CEL-200). Focused kiểm đúng quan hệ hoá–sao–cung–lớp–thời điểm, quét chữ nội bộ và giữ meta đúng chế độ. Phép cân C1/C3 chờ 3a' máy 1; máy 2 không sửa engine. Phần mã v3 câu thời điểm cũng nhận cờ, đặt lớp hạn trước nền và thêm hoá đại vận; không tự tăng thế hệ đệm. Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ bật production khi chat, bài luận và Hành trình đều đã đổi |
 | `AI_GHIM_MODEL`, `AI_TRAN_USD`, `AI_GIA_VAO_USD`, `AI_GIA_RA_USD` | Không — chỉ script eval | Ghim một model cho MỌI lời gọi (không lùi) và trần tiền cứng; vượt trần thì dừng trước khi gọi. KHÔNG đặt trên Vercel |
 
 ---

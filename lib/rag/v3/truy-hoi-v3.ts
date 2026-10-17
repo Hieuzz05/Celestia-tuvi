@@ -222,7 +222,27 @@ function catQuanh(noiDung: string, sao: string[], dai = 650): string {
   return (dau > 0 ? '… ' : '') + s.slice(dau, dau + dai) + (dau + dai < s.length ? ' …' : '');
 }
 
+/** CEL-200: quan hệ từ chữ F, giữ vai trò lớp hạn cho truy vấn. Không gọi DB. */
+export function bocHoaVan(duKien: readonly DuKienV3[], lopHanMoi = false): { hoa: string; sao: string; cung: string; vaiTro: string }[] {
+  const ds = lopHanMoi
+    ? duKien.filter((d) => d.vaiTro.startsWith('vận năm') || d.vaiTro.startsWith('đại vận đang chạy'))
+    : duKien.filter((d) => d.vaiTro.startsWith('vận năm')).slice(0, 1);
+  const ra: { hoa: string; sao: string; cung: string; vaiTro: string }[] = [];
+  const daCo = new Set<string>();
+  for (const d of ds) {
+    for (const m of d.noiDung.matchAll(/(Hóa (?:Lộc|Quyền|Khoa|Kỵ)) vào ([^(]+?) \(([^)]+)\)/g)) {
+      const [, hoa, sao, cung] = m;
+      const key = `${d.vaiTro}|${hoa}|${sao.trim()}|${cung}`;
+      if (lopHanMoi && daCo.has(key)) continue;
+      daCo.add(key);
+      ra.push({ hoa, sao: sao.trim(), cung, vaiTro: d.vaiTro });
+    }
+  }
+  return ra;
+}
+
 export async function truyHoiChoCau(vao: {
+  lopHanMoi?: boolean;
   chuDe: string;
   /** Câu tổng quan mượn từ khoá của chủ đề nó thật sự hỏi (TQ05 → sự nghiệp) */
   chuDeTuKhoa?: string;
@@ -307,12 +327,9 @@ export async function truyHoiChoCau(vao: {
     const ten = c.noiDung.match(/^Cách cục (.+?) \(/)?.[1];
     if (ten) truyVan.push({ cung: c.cung ?? '', sao: c.sao.slice(0, 4), q: `${ten} ${tuKhoa}`, k: ten, laCung: false });
   }
-  // Vận năm: nghĩa của từng lưu tứ hóa ở đúng cung nó rơi vào
-  for (const d of vao.duKien.filter((x) => x.vaiTro.startsWith('vận năm')).slice(0, 1)) {
-    for (const m of d.noiDung.matchAll(/(Hóa (?:Lộc|Quyền|Khoa|Kỵ)) vào ([^(]+?) \(([^)]+)\)/g)) {
-      const [, hoa, sao, cung] = m;
-      truyVan.push({ cung, sao: [sao.trim(), hoa], q: `${sao.trim()} ${hoa} cung ${cung} vận hạn`, k: `${sao.trim()} ${hoa}`, laCung: false });
-    }
+  // Sau cờ đọc cả hoá năm và đại vận, đúng quan hệ đã in trong F.
+  for (const { hoa, sao, cung, vaiTro } of bocHoaVan(vao.duKien, vao.lopHanMoi)) {
+    truyVan.push({ cung, sao: [sao, hoa], q: `${sao} ${hoa} cung ${cung} vận hạn${vao.lopHanMoi && vaiTro.startsWith('đại vận') ? ' đại vận' : ''}`, k: `${sao} ${hoa}`, laCung: false });
   }
 
   const [ketQua, meta] = await Promise.all([

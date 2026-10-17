@@ -1,6 +1,6 @@
 # CEL-200 — Phương án máy 2: 3b và Commit 4 phần mã
 
-Ngày lập: 17/10/2026 (Asia/Bangkok). Trạng thái: chủ dự án đã DUYỆT ngày 17/10/2026; đang triển khai 3b, Commit 4 phần mã tiếp sau. Phần mô tả phương án bên dưới giữ làm căn cứ nghiệm thu.
+Ngày lập: 17/10/2026 (Asia/Bangkok). Trạng thái: chủ dự án đã DUYỆT ngày 17/10/2026; 3b đã commit 17a9ab3; Commit 4 phần mã đã qua QA/domain/biên tập, chờ commit và chủ dự án nghiệm thu. Phần mô tả phương án bên dưới giữ làm căn cứ nghiệm thu.
 Cỡ việc: LỚN — thay prompt, validator và cách dựng ngữ cảnh.
 
 ## 1. Môi trường và ranh giới

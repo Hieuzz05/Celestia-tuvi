@@ -244,3 +244,12 @@ ${CONG_THUC_CHUYEN_SAU}
 ${DUNG_NGUON}
 ${GIONG_GOI_Y}`;
 }
+
+
+/** CEL-200: chỉ câu thời điểm sau cờ; mẫu giọng và đường tắt giữ nguyên. */
+export function systemLopHanV3(system: string, bat = false): string {
+  if (!bat) return system;
+  return system
+    .replace('6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.', '6. Nói theo dữ kiện có thật: có thuận lợi hay điều cản trở thì đọc đúng mức, không bắt buộc phải có đủ hai mặt và không bịa phía thiếu.')
+    .replace(/17\. TAM PHƯƠNG[^\n]*/u, '17. CÂU VẬN HẠN: xét lớp hạn trước, đặt cung gốc vào vận. Nền cung gốc phải được đọc cùng vận, không lược bỏ. Chỉ nói mức làm nhẹ hoặc nặng hơn khi dữ kiện có căn cứ cụ thể; không tự chấm điểm, xếp mạnh/yếu hoặc phát minh luật hoá giải. Không dùng ẩn dụ xe/đường trong lời luận.');
+}

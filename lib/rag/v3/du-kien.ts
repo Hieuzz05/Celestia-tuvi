@@ -9,7 +9,7 @@ import {
 } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { CHINH_TINH as DS_CHINH_TINH } from '@/lib/tuvi/constants';
-import { canCuaNam, luuTuHoaTheoNam, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
+import { canCuaNam, luuTuHoaTheoNam, tuHoaDaiVan, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
@@ -31,6 +31,8 @@ export const PHIEN_BAN_DU_KIEN_V3 = '2026.10.1';
 export interface DuKienV3 {
   id: string;
   vaiTro: string;
+  /** Chỉ sau cờ CEL-200 và câu thời điểm; giữ vaiTro để truy hồi không lệch. */
+  lopHan?: 'han' | 'nen';
   noiDung: string;
   /** Tên sao có mặt trong dữ kiện này — tập được phép nêu ở phần "Vì sao" */
   sao: string[];
@@ -515,7 +517,7 @@ function cachCucHopChuDe(ten: string, chuDe: string): boolean {
 /* DỰNG GÓI DỮ KIỆN                                                            */
 /* -------------------------------------------------------------------------- */
 
-export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1): DuKienV3[] {
+export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1, lopHanMoi = false): DuKienV3[] {
   const ra: DuKienV3[] = [];
   const them = (vaiTro: string, noiDung: string, sao: string[] = [], cung?: string) =>
     ra.push({ id: `F${String(ra.length + 1).padStart(3, '0')}`, vaiTro, noiDung, sao, cung });
@@ -646,10 +648,12 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
         .map((i) => laSo.cungs[i])
         .map((c) => `${c.tenCung}: ${tomCung(c)}`)
         .join('; ');
+      const hoaHan = lopHanMoi && hoiThoiDiem(q) ? tuHoaDaiVan(laSo, ta) : [];
+      const dongHoa = hoaHan.length ? ` Tứ hoá đại vận: ${hoaHan.map((h) => `${h.hoa} vào ${h.sao} (${h.tenCung})`).join('; ')}.` : '';
       them(
         'đại vận đang chạy',
-        `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (âm) chạy qua cung ${dv.tenCung} (${tomCung(dv)}). Tam phương của cung vận — ${tp}.`,
-        [...dv.sao.map((s) => s.ten), ...[xungChieu, ...tamHop].flatMap((i) => laSo.cungs[i].sao.map((s) => s.ten))],
+        `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (âm) chạy qua cung ${dv.tenCung} (${tomCung(dv)}). Tam phương của cung vận — ${tp}.${dongHoa}`,
+        [...dv.sao.map((s) => s.ten), ...[xungChieu, ...tamHop].flatMap((i) => laSo.cungs[i].sao.map((s) => s.ten)), ...hoaHan.map((h) => h.sao)],
         dv.tenCung
       );
     }
@@ -737,6 +741,15 @@ export function dungDuKien(laSo: LaSo, q: CauHoiV3, namXem: number, thangXem = 1
         [...new Set(dau.flatMap((d) => d.trongCung.map((g) => g.sao).filter((x): x is string => Boolean(x))))]
       );
     }
+  }
+  if (lopHanMoi && hoiThoiDiem(q)) {
+    const laHan = (d: DuKienV3) => /^(?:đại vận đang chạy|vận năm|nguyệt hạn|chuỗi đại vận)/u.test(d.vaiTro);
+    const cungNen = new Set(cungVai.filter((x) => x.vai.includes('chính')).map((x) => x.c.tenCung));
+    const laNen = (d: DuKienV3) => !!d.cung && cungNen.has(d.cung) && (d.vaiTro.includes('chính') || d.vaiTro === 'cách cục');
+    // Chỉ đổi thứ tự trình bày; giữ mã F và đầy đủ sao/cách cục gốc.
+    const han = ra.filter(laHan).map((d) => ({ ...d, lopHan: 'han' as const }));
+    const nen = ra.filter((d) => !laHan(d) && laNen(d)).map((d) => ({ ...d, lopHan: 'nen' as const }));
+    return [...han, ...nen, ...ra.filter((d) => !laHan(d) && !laNen(d))];
   }
   return ra;
 }

@@ -1,10 +1,11 @@
+import { chuNguonLopHan } from '../kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
 import { CAU_HOI_V3, CHU_DE_V3, PHIEN_BAN_KHUNG_V3, type CauHoiV3 } from './khung';
 import { dungDuKien, hoiThoiDiem, maCanNhac, PHIEN_BAN_DU_KIEN_V3, saoDuocPhep, type DuKienV3 } from './du-kien';
 import { donTatDinh, kiemBai, type BaiV3, type LoiV3 } from './kiem-v3';
-import { khoiDoDai, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
+import { khoiDoDai, systemLopHanV3, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
 import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 import { NHAN_TIN_CAY } from '../uu-tien-nguon';
@@ -245,6 +246,15 @@ function datAnToan(q: CauHoiV3, bai: BaiV3): BaiV3 {
   return { ...bai, luanGiai: luan };
 }
 
+/** Khối chữ F thật model đọc; giữ mẫu cũ khi tắt, không hạ lớp hạn thành cung phụ. */
+export function khoiDuKienV3(duKien: readonly DuKienV3[], nen: ReadonlySet<string>, lopHanMoi = false): string {
+  return `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien.map((d) => {
+    const lop = lopHanMoi ? d.lopHan : undefined;
+    const phu = d.cung && nen.has(d.cung) && !lop ? ' — NỀN: câu khác của chủ đề đi sâu cung này, ở đây chỉ dùng để đỡ ý' : '';
+    return `${d.id} [${lop === 'han' ? 'LỚP HẠN — ' : lop === 'nen' ? 'NỀN CUNG GỐC — ' : ''}${d.vaiTro}${phu}] ${d.noiDung}`;
+  }).join('\n')}`;
+}
+
 export interface ChuanBiCau {
   duKien: DuKienV3[];
   tv: ReturnType<typeof dungKhoiThuVien> | null;
@@ -257,7 +267,8 @@ export interface ChuanBiCau {
 /** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
 export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
   const { q } = vao;
-  const duKien = dungDuKien(vao.laSo, q, vao.namXem);
+  const coLopHan = process.env.CELES_LOP_HAN === '1' && hoiThoiDiem(q);
+  const duKien = dungDuKien(vao.laSo, q, vao.namXem, 1, coLopHan);
   const cungChuDe = q.loai === 'chuyen-sau' ? (q.cungChinh ?? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh) : undefined;
   const tv = vao.thuVien?.length
     ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
@@ -269,6 +280,7 @@ export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number;
     cungUuTien: cungChuDe,
     cauHoi: q.cauHoi,
     duKien,
+    ...(coLopHan ? { lopHanMoi: true } : {}),
     nho: vao.nho,
     // Thư viện đã khớp đủ thì bớt đoạn sách thô — giữ độ dài prompt (mục 8.7)
     soDoan: tv && tv.daChon.length >= 6 ? 4 : undefined,
@@ -365,6 +377,7 @@ export async function luanMotCau(vao: {
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
+  const coLopHan = process.env.CELES_LOP_HAN === '1' && hoiThoiDiem(q);
   const { duKien, tv, nguon, msTruyHoi, cungChinhCau } = vao.chuanBi ?? (await chuanBiCau(vao));
   const phep = saoDuocPhep(duKien);
   const nen = cungNen(q);
@@ -377,7 +390,7 @@ export async function luanMotCau(vao: {
    * cùng một câu hỏi trên mọi lá số dùng chung ~5,8 nghìn token đầu (luật + khối câu hỏi) ở giá đệm.
    * Bản trước để sổ ý chen giữa, cắt tiền tố ngay trước "YẾU TỐ NÊN XÉT". Nội dung không đổi.
    */
-  const user = [
+  const userTho = [
     khoiDoDai(q.loai, doDai),
     `CÂU HỎI CỦA NGƯỜI ĐỌC: ${q.cauHoi}`,
     `NGƯỜI ĐỌC CẦN NHẬN ĐƯỢC: ${q.nhanDuoc}`,
@@ -396,9 +409,7 @@ ${phamViChuyenSau(q)}`
     // Đổi theo người đọc nên đứng SAU mọi khối cố định theo câu hỏi (giữ tiền tố đệm của nhà cung cấp)
     vao.boiCanh ?? '',
     khoiDaNoi(q, vao.daNoi ?? []),
-    `DỮ KIỆN LÁ SỐ (engine tính, không được sửa hay thêm):\n${duKien
-      .map((d) => `${d.id} [${d.vaiTro}${d.cung && nen.has(d.cung) ? ' — NỀN: câu khác của chủ đề đi sâu cung này, ở đây chỉ dùng để đỡ ý' : ''}] ${d.noiDung}`)
-      .join('\n')}`,
+    khoiDuKienV3(duKien, nen, coLopHan),
     tv?.khoi ?? '',
     `NGUỒN THAM CHIẾU (trích sách, chỉ dùng đoạn nói đúng tổ hợp sao – cung của lá số này):\n${
       nguon.length
@@ -415,6 +426,7 @@ ${phamViChuyenSau(q)}`
   ]
     .filter(Boolean)
     .join('\n\n');
+  const user = coLopHan ? chuNguonLopHan(userTho, true).replace('(Kho không có đoạn nào khớp — thu hẹp kết luận, chỉ dựa vào phần Nghĩa nền trong dữ kiện.)', '(Chỉ nhận định trong phạm vi dữ kiện xác nhận; thu hẹp kết luận, không suy thêm học thuyết.)') : userTho;
 
   const maDuKien = new Set(duKien.map((d) => d.id));
   const maNguon = new Set([...nguon.map((n) => n.id), ...(tv?.daChon.map((t) => t.ma) ?? [])]);
@@ -487,7 +499,7 @@ ${phamViChuyenSau(q)}`
   ];
 
   // System v3 kèm mẫu giọng chủ dự án sửa tay (Supabase) — giống nhau mọi lượt nên vẫn được đệm
-  const system = vao.thuNghiem?.system ?? (await heThongV3());
+  const system = chuNguonLopHan(systemLopHanV3(vao.thuNghiem?.system ?? (await heThongV3()), coLopHan), coLopHan);
   let soLanGoi = 0;
   let model = '';
   const token = { vao: 0, ra: 0, dem: 0 };
