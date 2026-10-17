@@ -43,3 +43,7 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.
 - **Thiếu dấu loại việc (`[CODE]`…) thì hỏi một câu ngắn**, đừng tự đoán rồi đi sai luồng.
+- **Ví dụ chủ dự án nêu (danh sách sao, bộ cách) là ví dụ, không phải luật**: kiểm bằng sách xem đủ,
+  đúng, điều kiện gì rồi mới dùng. **Điều tử vi đã có quy tắc thì không hỏi chủ dự án quyết** (vd sao
+  toạ thủ nặng hơn sao chiếu, Hàm số 737); chỉ hỏi khi sách nói ngược nhau. Giải pháp chạm chuyên môn
+  qua `chuyen-gia-tu-vi` trước khi trình (17/10/2026).
