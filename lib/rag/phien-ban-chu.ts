@@ -46,8 +46,9 @@ export const PHIEN_BAN_CHU = createHash('sha1')
       PHIEN_BAN_PLANNER,
       /*
        * Phương pháp an sao. Thêm 24/09/2026: sửa độ sáng Khốc/Hư/Hóa Kỵ mà
-       * không đổi khoá thì bài đã đệm vẫn luận theo độ sáng SAI mãi mãi — kể cả
-       * luận giải v3, vốn chỉ khoá theo phiên bản khung/dữ kiện/prompt.
+       * không đổi khoá thì bài đã đệm vẫn luận theo độ sáng SAI mãi mãi.
+       * Luận giải v3 KHÔNG đi qua dấu này: khoá v3 chỉ có `THE_HE_DEM`
+       * (lib/rag/v3/xu-ly.ts), nên đổi phương pháp thì phải tăng cả số ấy.
        */
       PHUONG_PHAP.phienBan,
     ].join('|')

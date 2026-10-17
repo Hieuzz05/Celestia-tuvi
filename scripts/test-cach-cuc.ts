@@ -27,8 +27,8 @@
  * đó đo TỈ LỆ PHÂN BIỆT trên một mẫu rộng và đặt sàn cho nó.
  */
 
-import { lapLaSo, type GioiTinh } from '../lib/tuvi/ansao';
-import { nhanDangCachCuc, TEN_CACH_CUC } from '../lib/tuvi/cach-cuc';
+import { lapLaSo, type Cung, type GioiTinh, type LaSo } from '../lib/tuvi/ansao';
+import { nhanDangCachCuc, TEN_CACH_CUC, TEN_CHI_DE_CHAN } from '../lib/tuvi/cach-cuc';
 
 let sai = 0;
 function kiem(ten: string, ok: boolean, chiTiet?: unknown) {
@@ -52,6 +52,42 @@ const MAU: [number, number, number, number, GioiTinh][] = [
 
 // ------------------------------------------------ 1. Từng luật có sống không
 
+/*
+ * Điều kiện theo sách cho ba cách đã sửa 16/10/2026, viết lại ĐỘC LẬP với engine
+ * để làm đáp án. Chuẩn là Tử Vi hàm số (HS) dòng 814-815, đối chiếu Khảo luận và
+ * Ảo bí. Engine phát mà đáp án không thoả là luật sai; đáp án thoả mà engine
+ * không phát (khi chưa chạm trần 8) là luật thiếu.
+ */
+const coSao = (c: Cung | undefined, ten: string) => !!c?.sao.some((s) => s.ten === ten);
+const chiCua = (laSo: LaSo, ten: string) => laSo.cungs.find((c) => coSao(c, ten))?.chi;
+const theoChi = (laSo: LaSo, i: number) => laSo.cungs.find((c) => c.chiIndex === ((i % 12) + 12) % 12);
+
+const DUNG_SACH: Record<string, (laSo: LaSo, g: Cung) => boolean> = {
+  // HS 814 + Ảo bí 5568: Sửu thì Nhật Tỵ Nguyệt Dậu, Mùi thì Nhật Mão Nguyệt Hợi
+  NHAT_NGUYET_TINH_MINH: (laSo, g) => {
+    const d = chiCua(laSo, 'Thái Dương');
+    const a = chiCua(laSo, 'Thái Âm');
+    return (g.chi === 'Sửu' && d === 'Tỵ' && a === 'Dậu') || (g.chi === 'Mùi' && d === 'Mão' && a === 'Hợi');
+  },
+  // HS 815: Thiên Tướng tọa thủ, Kình Dương và Liêm Trinh giáp hai bên
+  HINH_TU_GIAP_AN: (laSo, g) => {
+    if (!coSao(g, 'Thiên Tướng')) return false;
+    const t = theoChi(laSo, g.chiIndex - 1);
+    const s = theoChi(laSo, g.chiIndex + 1);
+    return (coSao(t, 'Kình Dương') && coSao(s, 'Liêm Trinh')) || (coSao(t, 'Liêm Trinh') && coSao(s, 'Kình Dương'));
+  },
+  // HS 815: cung ở Ngọ, Kình tọa thủ, Thiên Hình và Thiên Mã hợp chiếu
+  MA_DAU_DOI_KIEM: (laSo, g) => {
+    if (g.chi !== 'Ngọ' || !coSao(g, 'Kình Dương')) return false;
+    const bon = [g.chiIndex, g.chiIndex + 4, g.chiIndex + 8, g.chiIndex + 6].map((i) => theoChi(laSo, i));
+    return bon.some((c) => coSao(c, 'Thiên Hình')) && bon.some((c) => coSao(c, 'Thiên Mã'));
+  },
+};
+const saiSach: string[] = [];
+const thieuSach: string[] = [];
+const demSach = new Map<string, number>();
+const tenDaPhat = new Set<string>();
+
 console.log('\n== TỪNG LUẬT CÓ PHÁT RA ĐƯỢC KHÔNG ==\n');
 
 const dem = new Map<string, number>();
@@ -62,7 +98,13 @@ let n = 0;
 for (let nam = 1970; nam <= 2005; nam++) {
   for (const thang of [1, 3, 5, 7, 9, 11]) {
     for (const ngay of [3, 12, 21, 28]) {
-      for (const gio of [1, 9, 17]) {
+      /*
+       * Giờ phải có cả chi chẵn lẫn lẻ. Bản trước quét 1h, 9h, 17h (Sửu, Tỵ,
+       * Dậu: cả ba lẻ), mà Mệnh lệch chẵn lẻ với Tả Phù / Hữu Bật đúng bằng chỉ
+       * số giờ, nên Tả Hữu không bao giờ vào được tam phương Mệnh hay Quan và
+       * cả nửa không gian lá số không được quét. Bắt được 16/10/2026.
+       */
+      for (const gio of [1, 7, 13, 19]) {
         const laSo = lapLaSo({
           ngay,
           thang,
@@ -75,6 +117,21 @@ for (let nam = 1970; nam <= 2005; nam++) {
         soLuong.push(cc.length);
         tap.add(cc.map((c) => c.ma).sort().join(','));
         for (const c of cc) dem.set(c.ma, (dem.get(c.ma) ?? 0) + 1);
+        for (const c of cc) tenDaPhat.add(c.ten);
+
+        const nhanLa = `${ngay}/${thang}/${nam} ${gio}h`;
+        const gocs = [laSo.cungs[laSo.menhIndex], laSo.cungs.find((c) => c.tenCung === 'Quan Lộc')!];
+        for (const [ma, dung] of Object.entries(DUNG_SACH)) {
+          const phat = cc.filter((c) => c.ma === ma);
+          for (const c of phat) {
+            const g = laSo.cungs.find((x) => x.tenCung === c.cung);
+            if (!g || !dung(laSo, g)) saiSach.push(`${ma} @ ${nhanLa} ${c.cung}`);
+          }
+          if (gocs.some((g) => dung(laSo, g))) {
+            demSach.set(ma, (demSach.get(ma) ?? 0) + 1);
+            if (!phat.length && cc.length < 8) thieuSach.push(`${ma} @ ${nhanLa}`);
+          }
+        }
       }
     }
   }
@@ -89,8 +146,16 @@ kiem(
   { soTen }
 );
 
-const chet = [...dem.entries()].filter(([, d]) => d === 0).map(([m]) => m);
+/*
+ * Đối chiếu theo TÊN với TEN_CACH_CUC. Bản trước lọc `dem` tìm mục bằng 0,
+ * nhưng `dem` chỉ chứa mã đã phát ít nhất một lần, nên bài này không thể đỏ.
+ */
+const chet = TEN_CACH_CUC.filter((t) => !tenDaPhat.has(t) && !TEN_CHI_DE_CHAN.includes(t));
 kiem('Không luật nào phát 0 lần trong mẫu', chet.length === 0, chet);
+
+kiem('Cách đã phát đều thoả điều kiện sách (HS 814-815)', saiSach.length === 0, saiSach.slice(0, 5));
+kiem('Lá số thoả điều kiện sách thì có phát (khi chưa chạm trần)', thieuSach.length === 0, thieuSach.slice(0, 5));
+console.log(`  Số lá thoả điều kiện sách: ${JSON.stringify(Object.fromEntries(demSach))}`);
 
 // Luật phát quá dày cũng đáng ngờ: cái gì ai cũng có thì không phân biệt được ai
 const quaDay = [...dem.entries()].filter(([, d]) => d / n > 0.75).map(([m, d]) => `${m} ${((d / n) * 100).toFixed(0)}%`);

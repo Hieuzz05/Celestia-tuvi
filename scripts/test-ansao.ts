@@ -194,3 +194,30 @@ function kiemTraDoiChieu24_09() {
 
 console.log('\n### Đối chiếu 24/09/2026');
 kiemTraDoiChieu24_09();
+
+/*
+ * Đối chiếu Tử Vi hàm số ngày 16/10/2026 — bảy chỗ độ sáng đã sửa theo sách.
+ * Kiểm cả hàng của mỗi sao đã đụng, không chỉ ô vừa đổi, để bảng không trôi.
+ */
+function kiemTraDoiChieuHamSo16_10() {
+  const loiDs: string[] = [];
+  const hang = (ten: string, kv: string) => {
+    for (let c = 0; c < 12; c++) {
+      const ra = doSangCuaSao(ten, c);
+      if (ra !== kv[c]) loiDs.push(`${ten} ở ${CHI[c]}: ${ra}, kỳ vọng ${kv[c]}`);
+    }
+  };
+  //               Tý Sửu Dần Mão Thìn Tỵ Ngọ Mùi Thân Dậu Tuất Hợi
+  hang('Tử Vi',       'BDMBVMMDMBVB'); // HS 2236
+  hang('Thiên Cơ',    'DDHMMVDDVMMH'); // HS 1899
+  hang('Thiên Phủ',   'MBMBVDMDMBVD'); // HS 2124
+  hang('Thiên Lương', 'VDVVMHMDVHMH'); // HS 2044
+  hang('Hỏa Tinh',    'HHDDDDDHHHHH'); // HS 3068
+  hang('Linh Tinh',   'HHDDDDDHHHHH');
+  for (const l of loiDs) console.log(`  SAI: ${l}`);
+  console.log(loiDs.length ? `✗ ${loiDs.length} chỗ lệch` : '✓ Độ sáng Tử Vi/Cơ/Phủ/Lương/Hỏa/Linh đúng Tử Vi hàm số');
+  if (loiDs.length) process.exitCode = 1;
+}
+
+console.log('\n### Đối chiếu Tử Vi hàm số 16/10/2026');
+kiemTraDoiChieuHamSo16_10();
