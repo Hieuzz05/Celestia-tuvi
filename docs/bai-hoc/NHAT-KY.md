@@ -119,3 +119,23 @@ Mẫu một mục:
   không đọc nguyên văn từng dòng trước khi trình. Giá: chủ dự án duyệt trên dữ kiện sai, phải duyệt
   lại. Máy canh: mỗi nguồn trong luật phải kèm câu trích, test mở tệp sách đúng dòng và đỏ khi không
   khớp nguyên văn / không gọi tên đủ sao; phần "bộ rộng hơn" máy không bắt — vẫn đọc bằng mắt.
+
+## 18/10/2026 · Ẩn dụ và chữ nội bộ của AI suýt thành lời Celes · ai-rag
+- Thẻ: an-du, chu-noi-bo, tieng-long, loi-luan-de-hieu, xe-duong
+- Chuyện gì: chủ dự án dùng ẩn dụ "cung gốc là xe, vận hạn là đường" để giải thích cách luận. AI đưa
+  luôn ẩn dụ đó vào thiết kế, rồi gợi ý câu mẫu cho Celes: "năm nay đường gồ ghề, nhưng Quan Lộc gốc
+  của bạn…". Trước đó cũng đã có "nền", "lực cản", "đang đỡ", "tín hiệu" lọt từ nhãn nội bộ ra lời luận
+  (dấu vết: `AN_DU_CAM` ở `lib/rag/dau-an.ts`, `CUM_TIENG_LONG_CAM` ở `lib/rag/chuan-ngon-ngu.ts`).
+  Chủ dự án nói đã nhắc nhiều lần.
+- Gốc: AI đặt tên khái niệm để tự nghĩ (nhãn nội bộ, ẩn dụ của chủ dự án) rồi dùng đúng tên đó trong
+  prompt và câu mẫu. Không có bước nào tách "chữ để thiết kế" khỏi "chữ Celes được nói". Danh sách cấm
+  chỉ quét câu thư viện (`kiemCauDauAn`) và in vào prompt; lời model sinh ra trong chat không bị quét
+  bằng danh sách đó (`soatNgonNgu` chỉ bắt "yếu tố đang đỡ").
+- Giá: chủ dự án phải sửa lưng lần nữa; câu mẫu sai đã nằm trong tệp phương án C1 bản 4.
+- Luật: ẩn dụ chủ dự án dùng để giải thích và nhãn nội bộ (vững/yếu, nền, xe, đường, lực…) KHÔNG vào
+  câu mẫu hay chữ hướng dẫn model nói. Khi thiết kế, viết luôn câu Celes sẽ nói bằng lời thường (tên sao,
+  tên cung, chuyện đời cụ thể) và đọc lại câu đó như người dùng không biết tử vi.
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án". Lặp nên đề xuất máy canh: validator lời
+  chat lớp hạn (sau cờ, tăng `PHIEN_BAN_VALIDATOR`) quét `CUM_TIENG_LONG_CAM` + `AN_DU_CAM` + cụm ẩn dụ
+  xe/đường; giao máy 2 trong 3b (việc e).
+- Lần: 2
