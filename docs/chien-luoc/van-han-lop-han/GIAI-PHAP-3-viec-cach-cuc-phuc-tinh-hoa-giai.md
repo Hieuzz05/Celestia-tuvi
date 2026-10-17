@@ -1,13 +1,13 @@
 # GIẢI PHÁP 3 việc cho C1 bản 4: nhãn cách cục, phúc tinh và cứu tinh, luật hoá giải
 
-Bản 2, 17/10/2026. Bản này đã qua phản biện; mục "Phản biện" ở cuối ghi những gì bản 1 sai và đã sửa thế nào.
+Bản 5, 18/10/2026. Việc A viết lại theo ý anh: xét **hợp hay không hợp** theo bộ trên tam phương, không đếm sao tốt sao xấu. Việc B, C giữ như bản 2. Mục "Phản biện" ở cuối ghi những gì các bản trước sai và đã sửa.
 Anh chỉ cần duyệt giải pháp. Mọi câu sách đã được đọc nguyên văn trong kho `D:/Tài liệu tử vi/markdown`, có ghi
 số dòng. Phần nào sách không có thì ghi rõ "tôi tự đặt".
 
 **Ba việc này dùng để làm gì.** Theo C1 bản 4, khi xét một năm hay một đại vận, Celes xét thêm cung gốc: cung
 đang hỏi, Mệnh (thêm Thân ở hậu vận), Phúc Đức. Cung gốc tốt thì năm xấu nhẹ bớt, cung gốc xấu thì năm xấu nặng
 thêm. Mức chỉnh tối đa một bậc, không lật chiều. Muốn máy biết cung gốc tốt hay xấu thì cần ba thứ:
-- việc A: cách cục nào tốt, cách cục nào xấu;
+- việc A: sao trong cung có hợp với chính tinh không;
 - việc B: Phúc Đức thế nào là có sao cứu;
 - việc C: sao gốc nào làm nhẹ được hạn xấu.
 
@@ -16,49 +16,121 @@ máy chạy. **Celes không bao giờ nói những chữ này.** Celes nói tên
 
 ---
 
-## Việc A. Chấm một cung gốc
+## Việc A. Chấm một cung gốc: hợp hay không hợp, theo bộ
 
-### A1. Chính tinh, đọc thẳng độ sáng trong cung
-Không dùng nhãn của bốn bộ chính tinh (Tử Phủ Vũ Tướng, Sát Phá Tham, Cơ Nguyệt Đồng Lương, Cự Nhật). Engine bắt
-các bộ này trên cả tam phương, nên cung nào cũng có ít nhất một bộ; gắn nhãn cho bộ chỉ lặp lại việc đọc độ sáng.
-Thay vào đó đọc thẳng độ sáng chính tinh **đóng trong cung** (`lib/tuvi/dosang.ts`):
-- mọi chính tinh trong cung đều Miếu, Vượng hoặc Đắc: phần chính tinh **tốt**;
-- có chính tinh Hãm và không có chính tinh nào Miếu, Vượng, Đắc: **xấu**;
-- một sáng một hãm, hoặc Bình: **thường**.
+### Hai bước đổi so với bản 2
+1. **Không gắn nhãn tốt/xấu cho từng sao nữa.** Bản 2 coi cát tinh là tốt, sát tinh hãm là xấu, tức là đếm sao,
+   đúng điều anh nói là máy móc. Bây giờ máy hỏi: **sao này có hợp với bộ chính tinh của cung không.** Cùng một
+   Địa Kiếp đắc: đi với Sát Phá Tham thì hợp, đi với Cơ Nguyệt Đồng Lương thì không hợp.
+2. **Bộ lấy theo chính tinh đóng trong cung; sát tinh, cát tinh xét trên cả tam phương tứ chính.** Bản 3 chỉ xét
+   sao đóng cùng cung, nên các cặp "hợp" gần như không bao giờ xảy ra được (ví dụ Phá Quân miếu ở Tý Ngọ không bao
+   giờ đóng cùng Kình Đà Không Kiếp đắc). Bản 4 lấy bộ bằng cách bắt đủ sao trên tam phương như engine, nhưng như vậy
+   Cơ Nguyệt Đồng Lương chỉ đủ bộ khi Tử Vi ở cung lẻ, Tử Phủ Vũ Tướng Liêm chỉ đủ khi Tử Vi ở cung chẵn: nửa số cung
+   không thuộc bộ nào, và cùng một Thiên Lương gặp Địa Kiếp ra hai điểm khác nhau. Bản này lấy bộ theo chính tinh
+   của cung, và cung có hai chính tinh khác bộ thì xét cả hai bộ.
 
-### A2. Phụ tinh và cách cục: chỉ tính bộ có sao đóng ngay trong cung
-Engine bắt bộ phụ tinh trên tam phương (`cach-cuc.ts`, hàm `duCa`). Khi chấm cung gốc, chỉ tính bộ có **ít nhất
-một sao đóng ngay trong cung**. Nguồn: *Hàm số* 737: "Các sao tọa thủ ở cung nào ảnh hưởng đến cung đó mạnh hơn
-các sao chiếu vào cung đó." Mức "ít nhất một sao" là tôi tự đặt.
+Sách dùng đúng chữ "hợp". *Hàm số* 1458–1459: "Các sao hợp với Phá quân miếu địa gồm có: - Cát tinh (Xương Khúc,
+Tả Hữu, Tam Hóa). - Sát tinh đắc địa (Kình, Đà, Không, Kiếp). b) Các sao phá hoại Phá quân miếu địa gồm có: -
+Sát tinh hãm địa." *Hàm số* 1467 nói rõ là hội chiếu: "Phá miếu địa được cát tinh hỗ trợ và sát tinh đắc địa hội
+chiếu thì mới tốt".
 
-| Cách cục | Nhãn | Nguồn nguyên văn |
-|---|---|---|
-| Nhật Nguyệt tịnh minh | tốt | *Hàm số* 1775–1776, nhóm "CÁC CÁCH TỐT CỦA NHẬT, NGUYỆT": "Phú quý tột bực… Mệnh ở Mùi được Nhật ở Mão, Nguyệt ở Hợi chiếu: Ý nghĩa như trên." |
-| Nhật Nguyệt hãm | xấu | *Hàm số* 1780–1781: "CÁC CÁCH XẤU CỦA NHẬT NGUYỆT: - Nhật Nguyệt hãm địa." |
-| Khôi Việt, Xương Khúc, Tả Hữu, Long Phượng, Song Lộc, Đào Hồng | tốt | *Tử vi tổng hợp* 1405: "Có thể kể 18 cát tinh hỗ trợ. Đó là: Xương, Khúc, Tả, Hữu, Khôi, Việt, Khoa, Quyền Lộc, Đào, Hồng, Lộc Tồn, Quang, Quý, Thai, Tọa, Long, Phượng". |
-| Không Kiếp | cả hai hãm: xấu; cả hai đắc: không tính | *Hàm số* 2756: "Nếu cùng đắc địa thì phú quý được một thời. Nếu cùng hãm địa cả thì rất nguy hiểm". Theo engine, Không và Kiếp luôn cùng đắc hoặc cùng hãm. |
-| Hoả Linh | cả hai hãm: xấu; còn lại: không tính | *Hàm số* 2756 (câu trên), *Dưới mắt khoa học* 843 xếp vào lục sát. |
-| Kình Đà | không tính | *Khảo luận* 1968: "bao giờ thì phái nào cũng chỉ có Kình hoặc Đà đắc địa mà thôi". Engine cũng vậy (`dosang.ts:50-51`): luật "cả hai hãm" không bao giờ xảy ra. Kình Đà vẫn tính ở lớp hạn qua sao lưu. |
-| Khốc Hư | hãm: xấu; đắc: không tính | *Hàm số* 3831: "Bại tinh, Khốc Hư ở đâu đều làm xấu cung đó, trừ phi đắc địa". |
-| Mã đầu đới kiếm | theo nhánh engine đã chọn | Đã duyệt ở phiên sửa độ sáng (16/10). |
-| Hình Tướng Ấn | không tính | Sách gọi là **Binh** Hình Tướng Ấn (*Khảo luận* 2639), có Phục Binh; bộ trong engine thiếu sao này (`cach-cuc.ts:203`). Sửa bộ ở nhánh khung cách cục rồi mới gắn tốt. |
-| Tuần, Triệt án ngữ | không tính ở việc A | Sách nói Tuần Triệt lúc làm nhẹ, lúc gây trở ngại (*Hàm số* 4236, 4250). Chỉ dùng ở việc C, ở vị trí sách nói rõ. |
+### A1. Bộ của cung và độ sáng
+- **Bộ của cung** là bộ của các chính tinh đóng trong cung, theo đúng cách chia bốn bộ của engine
+  (`cach-cuc.ts:100-126`): Tử Phủ Vũ Tướng Liêm, Sát Phá Tham, Cơ Nguyệt Đồng Lương, Cự Nhật. Ví dụ cung Tử Vi
+  Thất Sát thuộc cả Tử Phủ Vũ Tướng Liêm lẫn Sát Phá Tham. Cung vô chính diệu không có bộ, chỉ dùng luật vô chính
+  diệu ở A3.
+- **Độ sáng chính tinh** đọc ở chính tinh **đóng trong cung** (`dosang.ts`): mọi chính tinh Miếu, Vượng, Đắc là
+  sáng; có Hãm mà không có sao sáng là hãm; còn lại là thường.
+- **Sát tinh** (Kình Dương, Đà La, Địa Không, Địa Kiếp, Hoả Tinh, Linh Tinh) xét **từng sao** trên tam phương tứ
+  chính, mỗi sao theo độ sáng của chính nó.
+- **Cát tinh** xét theo **đủ cặp** trên tam phương, đúng bảng bộ phụ tinh engine đang có (`cach-cuc.ts:201-266`):
+  Khôi Việt, Xương Khúc, Tả Hữu, Song Lộc, Đào Hồng, Long Phượng. Một sao lẻ không tính.
 
-**Luật Không Kiếp hãm.** Cung có Không Kiếp cùng hãm thì các bộ tốt trong cung không được kéo cung lên.
-*Hàm số* 2745: "Kiếp Không hãm địa làm giảm sự tốt đẹp của cát tinh".
+### A2. Bảng hợp và không hợp
 
-### A3. Chấm điểm cung, theo thứ tự
-1. Cung **vô chính diệu**:
-   - có Thái Dương, Thái Âm sáng cùng chiếu và không có nhãn xấu: **+1**. *Hàm số* 1777: "Mệnh vô chính diệu
-     cũng Nhật Nguyệt sáng sủa hội chiếu Người rất thông minh, học một biết mười".
-   - còn lại: **0** (chưa rõ, không chỉnh).
-2. Có Không Kiếp cùng hãm: **−1**.
-3. Phần chính tinh tốt, có ít nhất một bộ tốt, không có nhãn xấu: **+1**.
-4. Phần chính tinh xấu, hoặc có nhãn xấu, và không có bộ tốt nào: **−1**.
-5. Còn lại (kể cả có cả tốt lẫn xấu): **0**.
+| # | Bộ của cung | Gặp | Kết | Nguồn nguyên văn |
+|---|---|---|---|---|
+| 1 | Sát Phá Tham, mọi chính tinh trong cung sáng | sát tinh **đắc** | hợp | *Khảo luận* 3071 (mục 3069 "các chính tinh cung đại vận và các cung nhị, tam hợp, xung chiếu"): "Hung tinh đắc địa thì tốt, gặp đúng quan thầy trong bộ Sát Phá Tham càng tốt hơn". *Hàm số* 1458, 1467. *Hàm số* 2750: "Sát Phá Liêm Tham đắc địa được sự hội tụ… của sát tinh đắc địa như Kình, Đà, Không, Kiếp". *Khảo luận* 2610: Không Kiếp "nể mặt… các sao Sát Phá Tham nhất là Phá quân là thầy của chúng". |
+| 2 | Sát Phá Tham, chính tinh trong cung hãm hoặc thường | sát tinh đắc | hai mặt | *Hàm số* 1459: "Nếu Phá quân hãm địa gặp sát tinh đắc địa thì được giàu sang, nhưng chóng tà hay bị tai họa." |
+| 3 | Sát Phá Tham | sát tinh **hãm** | không hợp | *Hàm số* 1459 (sát tinh hãm "phá hoại Phá quân miếu địa"). *Khảo luận* 3071: "Hung tinh hãm địa thì xấu lắm." *Hàm số* 2747: Kiếp Không hãm "Đi với võ tinh hãm địa như Sát Phá, Liêm Tham… càng tác họa mạnh mẽ thêm gấp bội." |
+| 4 | Tử Phủ Vũ Tướng Liêm | sát tinh **đắc** | hai mặt | *Hàm số* 2280: "nếu bị Kình, Không, Kiếp, Hỏa Linh đắc địa đi kèm thì đắc vị trong thời loạn… đòi hỏi sự đấu tranh chật vật". *Nghiệm lý toàn thư* 467: "dẫu là Tử Phủ đắc địa gặp họ cũng đắc địa càng có sự tranh chấp quyết liệt." |
+| 5 | Tử Phủ Vũ Tướng Liêm | sát tinh **hãm** | không hợp | *Khảo luận* 2609: Không Kiếp "gặp… Tử vi, Thiên phủ… thì chúng phá cho tan tành". *Hàm số* 2305: "Tử - Vi gặp sát tinh khác nhất là Không Kiếp, Kình Đà, Linh Hỏa. Đây là trường hợp bất lợi nhất." *Hàm số* 2263 (Tử Vi bình hoà "cần tránh gặp… Kình, Đà, Không, Kiếp"). |
+| 5a | Tử Vi hoặc Thiên Phủ **miếu, vượng** trong cung | Không Kiếp hãm | hai mặt (giảm, không xoá) | *Hàm số* 2746: "chỉ có Tử - vi và Thiên phủ miếu và vượng địa mới có nhiều hiệu lực đối với Kiếp Không". Câu ngay trước, 2745: "hung họa vẫn tiềm tàng, chỉ giảm bớt được ít nhiều chớ không mất hẳn." |
+| 5b | Tử Vi trong cung, **không** ở Tý, Hợi, Mão, Dậu | Hoả Tinh, Linh Tinh hãm | hai mặt (giảm, không xoá) | *Hàm số* 2270: "Đặc biệt Tử - Vi chế được hung tính của hai sao Hỏa Tinh và Linh Tinh." 2271–2272: ở Hợi, Tý, Mão, Dậu "Tử - Vi không còn rực rỡ, do đó hiệu lực cứu giải… giảm thiểu đi nhiều". |
+| 5c | Tử Vi hoặc Thiên Phủ trong cung | Không Kiếp **đóng cùng cung** (dù đắc) | không hợp | *Khảo luận* 591: "Vua gặp kẻ cướp… Mệnh có Tử Phủ gặp Không Kiếp đồng cung". Tử Phủ đồng cung chỉ ở Dần Thân, đúng chỗ Không Kiếp đắc (`dosang.ts:48-49`). |
+| 6 | Cơ Nguyệt Đồng Lương | sát tinh hãm, hoặc Không Kiếp dù đắc | không hợp | *Khảo luận* 2609 (Không Kiếp phá tan Cơ Nguyệt Đồng Lương, không kèm điều kiện). Cùng câu này nói cả Tử Phủ, nhưng Tử Phủ có câu riêng nói hai mặt khi đắc (dòng 4); Cơ Nguyệt Đồng Lương không có câu riêng nào ngược lại, nên giữ. *Hàm số* 2017, mục cách xấu: "Đồng Không Kiếp, Hỏa Linh". *Khảo luận* 1102: "Cơ gặp sát tinh đồng cung thì trộm cướp". |
+| 6a | Cơ Nguyệt Đồng Lương | Kình, Đà, Hoả, Linh **đắc** | không xét | *Nghiệm lý toàn thư* 467: Cơ Nguyệt Đồng Lương "bị chi phối tuỳ theo bộ sao Lục Sát và vị trí đắc hay hãm địa của họ". Câu không nói chiều nào. |
+| 7 | Cự Nhật | sát tinh, khi Thái Dương hoặc Thái Âm trong cung hãm | không hợp | *Khảo luận* 736: "Nhật Nguyệt hãm cung phùng ác sát, lao toái bôn ba". Các ca khác của Cự Nhật: chưa có câu sách, không xét. |
+| 8 | Tham Lang (với Vũ Khúc) ở Sửu, Mùi | Hoả Tinh hoặc Linh Tinh **đóng cùng cung**, dù engine ghi hãm | hợp | *Hàm số* 809: "Tham hỏa tương phùng Cung Mệnh hay Quan an tại Tứ mộ, có Tham Vũ tọa thủ đồng cung" (Tham Vũ đồng cung chỉ ở Sửu, Mùi). *Hàm số* 1562: "Tham Hỏa đồng cung miếu địa… phú quí tột bực" (Tham miếu chỉ ở Sửu, Mùi). Thìn, Tuất không đưa vào vì chỉ có *Khảo luận* 578 đỡ, còn *Đẩu số toàn thư* 1992 lại đặt cách này ở Mão. |
+| 9 | Thiên Đồng ở Ngọ | Kình Dương đóng cùng cung | không xét | Sách ngược nhau. *Hàm số* 2016: "Đồng Kình ở Ngọ: có uy vũ lớn". Nhưng Đồng ở Ngọ luôn đi cùng Thái Âm hãm, và *Khảo luận* 734: "Mệnh có Thái âm gặp Kình dương hay Đà la đồng cung thì tan vỡ tình vợ chồng và hao tài tốn của", *Khảo luận* 736: "Nhật Nguyệt hãm cung phùng ác sát". |
+| 10 | Mọi bộ, chính tinh sáng | một bộ cát tinh đủ cặp | hợp | *Hàm số* 2280: "Hay nhất là cách Tử Phủ Vũ Tướng có kèm theo cát tinh kể trên." *Hàm số* 1467. *Khảo luận* 3091 (Cơ Nguyệt Đồng Lương cần Xương Khúc, Khoa Quyền Lộc). |
+| 10a | Mọi bộ, chính tinh hãm | một bộ cát tinh đủ cặp | đỡ cho chính tinh hãm (không lên +1) | *Tử vi tổng hợp* 1403: "Gặp chính tinh hãm, cần có nhiều phụ tinh tốt". |
+| 11 | Sát Phá Tham | Xương Khúc | không xét | Sách ngược nhau: *Nghiệm lý toàn thư* 203 "đụng nhằm Sát Phá Tham là tối kỵ"; *Hàm số* 1458 xếp Xương Khúc vào sao hợp Phá Quân miếu. |
+| 12 | Có Địa Không hoặc Địa Kiếp hãm trên tam phương | | dòng 10, 10a không tính | *Hàm số* 2745: "Kiếp Không hãm địa làm giảm sự tốt đẹp của cát tinh". |
 
-Luật cố ý chặt: phải có cả chính tinh sáng lẫn cát tinh ngay trong cung mới được +1. Sách chỉ nói Mệnh tốt "chế
-giảm ít nhiều" cái xấu (*Tử vi tổng hợp* 309).
+Giữ từ bản 2, vì vốn đã là luật theo bộ: Nhật Nguyệt tịnh minh hợp (*Hàm số* 1775–1776); Khốc Hư hãm không hợp
+(*Hàm số* 3831); Mã đầu đới kiếm theo nhánh engine đã duyệt 16/10. Hình Tướng Ấn, Tuần Triệt án ngữ không xét ở
+việc A (lý do như bản 2).
+
+### A3. Chấm điểm cung
+Lấy mọi dòng khớp, rồi xét theo thứ tự:
+1. Có cả **hợp** lẫn **không hợp** (kể cả dòng "hai mặt"): **0**. Celes nói cả hai mặt.
+2. Chỉ có **không hợp**: **−1**, dù chính tinh sáng.
+3. Chỉ có **hợp**: **+1**.
+4. Không khớp dòng nào:
+   - chính tinh hãm: **−1** (*Khảo luận* 3070: "Chính tinh đắc địa thì tốt, hãm địa thì xấu"), trừ khi có dòng
+     10a thì **0**;
+   - vô chính diệu có Thái Dương, Thái Âm sáng cùng chiếu: **+1** (*Hàm số* 1777);
+   - còn lại: **0**.
+
+### Đã đo (2000 lá ngẫu nhiên × 12 cung = 24.000 cung, script tạm, chưa vào mã)
+
+Mẫu lấy ngẫu nhiên đủ 24 giờ, mọi ngày từ 1950 đến 2009, nam nữ (bộ 60 lá mẫu cũ chỉ có giờ Tý, Thìn, Thân nên lệch).
+Script cài đủ bảng A2, A3 và luật Khốc Hư; chưa cài Nhật Nguyệt tịnh minh và Mã đầu đới kiếm (hiếm).
+
+| Phạm vi xét sát tinh | +1 | 0 | −1 |
+|---|---|---|---|
+| Chỉ trong cung | 29,0% | 47,1% | 23,9% |
+| Trong cung + cung xung chiếu | 21,1% | 48,8% | 30,1% |
+| **Tam phương tứ chính (bản này)** | **14,6%** | **54,0%** | **31,4%** |
+
+- Theo từng cung gốc (Mệnh, Quan Lộc, Tài Bạch, Phu Thê, Tật Ách, Phúc Đức) số gần như nhau: −1 từ 29% đến 33%.
+- **Lệch về phía làm nặng, khoảng 2 cung −1 trên 1 cung +1.** Vẫn trong mốc 40%, nhưng anh nên biết. Gốc: mỗi lá số
+  có trung bình ba bốn sát tinh hãm, nên tam phương của phần lớn cung có ít nhất một sao.
+- **Sát tinh đắc gần như không tự kéo cung lên được: chỉ 0,3% số cung lên +1 nhờ riêng sát tinh.** Lý do: cùng tam
+  phương gần như luôn có thêm một sát tinh hãm, nên cung ra "hai mặt" (0). Đúng ý sách ("giàu sang nhưng chóng tàn",
+  "tranh chấp"), Celes nói cả hai mặt. Nếu anh muốn sát tinh đắc gặp Sát Phá Tham có tiếng nói lớn hơn, cách có
+  nguồn là cho sao **đóng trong cung** nặng hơn sao chiếu (*Hàm số* 737); tôi đo rồi trình.
+- Tham Hoả tương phùng ở Sửu, Mùi: 54 lần trên 2000 lá.
+
+### Ví dụ (lá số có thể có)
+- Quan Lộc ở Dần có Tham Lang, Hoả Tinh đóng ở Ngọ chiếu về, không có sát tinh hãm: +1. Celes: "Quan Lộc của bạn
+  có Tham Lang, lại gặp Hoả Tinh. Hai sao này đi với nhau thì công việc dễ có dịp lên nhanh." (*Khảo luận* 3071.)
+- Quan Lộc có Thiên Lương, tam phương có Địa Kiếp: −1. Celes: "Quan Lộc có Thiên Lương nhưng gặp Địa Kiếp. Công việc
+  dễ đổ vỡ giữa chừng, tiền dễ hao." (*Khảo luận* 2609.)
+- Quan Lộc có Tử Vi miếu, tam phương có Kình Dương đắc: hai mặt, 0. Celes: "Quan Lộc có Tử Vi đi với Kình Dương: có
+  quyền, nhưng phải tranh giành mới giữ được." (*Hàm số* 2280, *Nghiệm lý* 467.)
+
+### Câu ngược anh cần biết
+1. ***Khảo luận* 3088**, nếu đọc lướt thì ngược ví dụ của anh: "Nếu cung Mệnh có Tử Phủ Vũ Tướng mà cung Vận có
+   Kình Đà Không Kiếp, Hỏa Linh lại có dịp đi lên". Câu này nói **Mệnh gặp vận** (lá số gốc gặp vận hạn), không nói
+   sao trên tam phương của cùng một cung gốc. Không dùng ở việc A; đoạn 3085–3092 sẽ là nguồn chính cho việc riêng
+   "xem Mệnh đặt vào vận".
+2. ***Hàm số* 2750**: Kiếp Không đắc với Tử Phủ Vũ Tướng đắc là "cách nguyên thủ". *Hàm số* 2280 và *Nghiệm lý
+   toàn thư* 467 lại nói Tử Phủ gặp sát tinh đắc là đấu tranh, tranh chấp. Bản này chọn **hai mặt** (dòng 4), không
+   chấm xấu như ví dụ của anh, vì sách không cùng nói xấu.
+3. ***Hàm số* 1856**: "Sát gặp Tứ Sát (Kình Đà Linh Hỏa): bị tật, chết trận rất thê thảm", không nêu độ sáng. Dòng 1
+   vẫn cho Thất Sát gặp sát tinh đắc là hợp, theo *Khảo luận* 3071 vì câu đó nói rõ độ sáng.
+4. **Tham Hoả ở Sửu, Mùi** (dòng 8): engine ghi Hoả Linh hãm ở Sửu, Mùi (theo *Hàm số* 3068). Dòng 8 vượt độ
+   sáng cho đúng cách này. Có nên sửa bảng độ sáng Hoả Linh hay không là việc riêng (chạm engine, kéo theo app).
+
+### Ghi sổ, chưa làm
+- Sát tinh gặp sát tinh: *Hàm số* 2756 (cùng đắc "phú quý được một thời"), *Hàm số* 3234 ("Kình Hỏa miếu địa: số
+  võ nghiệp rất hiển hách").
+- Cát tinh không hợp riêng: *Hàm số* 2289 ("Tử - Vi Không Kiếp Đào Hồng: số yểu vong").
+- Thiên thời (*Nghiệm lý toàn thư* 468 gọi là "điều kiện tiên quyết") — thuộc việc "xem Mệnh đặt vào vận".
+- Vũ Khúc, Liêm Trinh, Thiên Tướng có câu riêng (*Hàm số* 2205, 2207, 2369, 1382, 1414); bản này để chúng theo bộ
+  Tử Phủ Vũ Tướng Liêm của engine. Đưa vào bảng bộ sao đợt 2 nếu đo thấy lệch.
 
 ---
 
@@ -180,6 +252,42 @@ Máy kiểm câu (việc e của máy 2) chặn các chữ cấm này.
 2. Số lần luật Tuần Triệt khớp.
 3. Phân bố nhãn trước và sau khi thêm cung gốc. Điều kiện bật cờ của C2 giữ nguyên.
 
+## Phản biện việc A (bản 4 → bản 5)
+
+**Sập, đã sửa:**
+- Bộ bắt bằng đủ sao trên tam phương làm nửa số cung không có bộ (tuỳ Tử Vi ở cung chẵn hay lẻ). Đã đổi: bộ theo
+  chính tinh đóng trong cung.
+- Số đo trên 60 lá mẫu lệch giờ sinh, và thiếu luật Khốc Hư. Đã đo lại trên 2000 lá ngẫu nhiên: −1 là 31,4%, không
+  phải 18,6%.
+- Dòng 9 (Đồng Kình ở Ngọ) bị *Khảo luận* 734, 736 nói ngược. Đã chuyển sang "không xét".
+- Dòng 5 dùng vế "Tử Phủ hãm" của *Nghiệm lý* 467, điều kiện không bao giờ xảy ra. Đã bỏ, thay bằng *Hàm số* 2305.
+
+**Lung lay, đã sửa:** 5a, 5b từ "không tính" thành "hai mặt" (*Hàm số* 2745 "chỉ giảm bớt được ít nhiều"); 5b loại
+Tử Vi ở Tý, Hợi, Mão, Dậu (*Hàm số* 2271–2272); dòng 8 thu về Sửu, Mùi; ghi rõ chính tinh "thường" ở dòng 2; giải
+thích vì sao *Khảo luận* 2609 giữ cho Cơ Nguyệt Đồng Lương mà không giữ cho Tử Phủ; bỏ *Nghiệm lý* 466 và chữ
+"sáng" khỏi lời mẫu.
+
+**Còn lung lay:** lệch 2:1 về −1; sát tinh đắc chỉ tự kéo lên 0,3% số cung; độ sáng Hoả Linh ở tứ mộ.
+
+## Phản biện việc A (bản 3 → bản 4)
+
+**Sập, đã sửa:**
+- Bản 3 chỉ xét sao cùng cung, nên dòng Phá Quân miếu với sát tinh đắc là luật chết, và dòng "đúng cặp quan thầy" gần
+  như không khớp. Đã chuyển sang tam phương.
+- Bản 3 loại *Khảo luận* 3088 vì "nói về vận, không cùng cung" nhưng lại dùng *Khảo luận* 3071, 3091, *Nghiệm lý* 466
+  cùng loại. Bản 4 xét tam phương nên 3071 đúng phạm vi; 3088–3092 (Mệnh gặp vận) vẫn tách sang việc riêng.
+- Bản 3 chấm Tử Phủ gặp sát tinh đắc là không hợp, bỏ qua *Hàm số* 2270, 2280, 2746, *Nghiệm lý* 467. Đã sửa: đắc thì
+  hai mặt, có hai ngoại lệ 5a, 5b.
+- Tham Hoả tương phùng ở tứ mộ bị chấm −1, Đồng Kình ở Ngọ bị chấm −1. Đã thêm dòng 8, 9.
+- Bản 3 nới *Khảo luận* 1102 (chỉ nói Thiên Cơ) ra cả bộ Cơ Nguyệt Đồng Lương. Bản 4 dựa vào *Khảo luận* 2609 (nói cả
+  bộ) và để Kình Đà Hoả Linh đắc là "không xét" theo *Nghiệm lý* 467.
+
+**Lung lay, đã sửa:** lỗ hổng "chỉ có hợp mà chính tinh hãm"; cát tinh lẻ một sao (giờ đòi đủ cặp, dùng đúng bảng
+engine); cát tinh với chính tinh hãm (dòng 10a); tách bộ khác engine (giờ dùng bộ của engine); lời mẫu có lá số không
+thể có và chữ "hợp nhau" trừu tượng. Tỉ lệ −1 đo trên 60 lá mẫu: 18,6% (đo lại ở bản 5).
+
+**Còn lung lay:** (xem bản 5).
+
 ## Phản biện (bản 1 → bản 2)
 
 **Sập, đã sửa:**
@@ -209,7 +317,7 @@ Máy kiểm câu (việc e của máy 2) chặn các chữ cấm này.
 Ấn; bỏ các câu Chìa khóa mất chỗ trỏ; ngoại lệ Tử Phủ đồng cung.
 
 ## Anh duyệt
-1. Việc A: cách chấm cung (A1–A3) và bảng cách cục.
+1. Việc A: xét theo bộ trên tam phương, bảng hợp/không hợp (A2), cách chấm (A3), cách xử lý bốn câu ngược.
 2. Việc B: hai danh sách, bảng Mệnh–Phúc, ngoại lệ Không Kiếp.
 3. Việc C: luật Tuần Triệt lợi địa, mốc 30 tuổi, các câu ghi sổ.
 4. Luật gộp.
