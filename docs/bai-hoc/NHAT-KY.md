@@ -153,3 +153,18 @@ Mẫu một mục:
 - Nâng: `docs/bai-hoc/cach-lam.md` (Giao tiếp); máy canh = agent `chuyen-gia-tu-vi` (nhánh
   `viec/agent-chuyen-gia-tu-vi`, gọi bắt buộc khi giải pháp chạm chuyên môn).
 - Lần: 1
+
+## 17/10/2026 · Trình mâu thuẫn sách mà không có giải pháp · quy-trinh
+- Thẻ: sach nguoc nhau, mau thuan, de xuat, chuyen-gia-tu-vi
+- Chuyện gì: giải pháp việc A bản 6 đưa bốn chỗ "sách nói ngược nhau" để chủ dự án tự chọn bên, không
+  kèm đề xuất. Đọc lại ngữ cảnh thì ít nhất ba chỗ không ngược thật: Chìa khóa 756 "tứ sát" là Không
+  Kiếp Kình Đà (mục Thiên Không), không phải Hỏa Linh; Khảo luận 2453 nói SAO Thiên Đồng còn Bổ Túc
+  491 nói CÁCH Cơ Nguyệt Đồng Lương; Triệt ở Mệnh "chặn hung" và "thiếu niên vất vả" là hai mặt.
+- Gốc: agent chuyên gia được dặn "nêu cả hai, KHÔNG tự chọn", và tôi chép nguyên kết quả đó lên mà
+  không đọc ngữ cảnh từng câu. Câu trích một dòng tách khỏi đoạn nên trông như ngược nhau.
+- Giá: chủ dự án phải sửa lưng; phải soát lại cả bốn chỗ.
+- Luật: chỗ sách ngược nhau phải trình kèm đề xuất hoà giải (điều kiện hoà, hoặc nghiêng bên nào và vì
+  sao); chủ dự án duyệt đề xuất chứ không tự chọn từ con số không.
+- Nâng: `docs/bai-hoc/cach-lam.md` (sửa luật "ví dụ chủ dự án"); agent `chuyen-gia-tu-vi` đổi định dạng
+  đầu ra thành "Sách nói ngược nhau: đề xuất để chủ dự án duyệt" (commit `7df47b1`, đã gộp main).
+- Lần: 1
