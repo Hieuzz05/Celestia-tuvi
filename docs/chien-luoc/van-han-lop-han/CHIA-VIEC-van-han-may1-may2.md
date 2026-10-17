@@ -86,8 +86,13 @@ d. Q-nguon: bỏ các câu khiến Celes tự nói về hệ thống ("kho chưa
    "chưa đủ căn cứ" kiểu nói về nguồn), giữ cách nói mức chắc chắn. Grep lại toàn bộ prompt,
    gồm scripts/oracle-ten-prompt.ts và docs/chien-luoc/CEL-186-ve-B-phuong-an.md. PHUONG-AN
    ghi "4 prompt", nhưng con số đó đã bị phản biện bắt thiếu.
-e. Chữ nội bộ: thêm vào danh sách bắt ("lực cản", "đỡ", "tín hiệu", "chồng lớp"...), kiểm
-   CUM_TIENG_LONG_CAM có đủ chưa.
+e. Chữ nội bộ và ẩn dụ (chủ dự án đã nhắc nhiều lần, bài học 18/10 trên main): lời model sinh ra ở
+   câu vận hạn (STANDARD lẫn Focused, sau cờ) phải được validator quét bằng CUM_TIENG_LONG_CAM
+   (lib/rag/chuan-ngon-ngu.ts) + AN_DU_CAM (lib/rag/dau-an.ts) + cụm ẩn dụ xe/đường ("chiếc xe",
+   "con đường", "mặt đường", "đường xấu", "đường tốt", "xe tốt", "xe xấu", "xe vững", "xe yếu") +
+   "chồng lớp", "tín hiệu", "lực cản". Bắt được thì thay hoặc viết lại theo cơ chế sửa câu có sẵn.
+   Đừng cấm chữ "xe" trần: câu sức khỏe có thể nói tai nạn xe cộ. Đừng nới soatNgonNgu (đổi
+   PHIEN_BAN_NGON_NGU là xả toàn bộ đệm, phải hỏi chủ dự án). Test kèm thử đột biến.
 f. Q2: sửa quyết định số 1 trong AGENTS.md theo đúng câu đã chốt trong QUYET-DINH. AGENTS.md
    thuộc vùng Chung, nên phải ghi TRANG-THAI.md lên main trước theo AI-PHOI-HOP.md.
 

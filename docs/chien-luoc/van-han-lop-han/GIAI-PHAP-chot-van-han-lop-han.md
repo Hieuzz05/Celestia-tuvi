@@ -280,8 +280,11 @@ Chỉ lấy những ô có sách đỡ (*Tử vi tổng hợp* 309, Đắc Lộc
   "cân" và không lật chiều. Lý do: sách chỉ nói "ít nhiều".
 - **Xe yếu chỉ được nâng "nhẹ" lên "rõ" khi phía cản có mục mạnh đã duyệt**, theo C2.
 - **Hàng "cân" để nguyên**, vì không có sách cho ô này.
-- Celes nhận được ô trong bảng kèm lý do: sao hay cách cục nào làm nên xe, và câu sách đỡ. Nhờ vậy Celes nói
-  được kiểu: "năm nay đường gồ ghề, nhưng Quan Lộc gốc của bạn có X nên chống được".
+- Celes nhận được ô trong bảng kèm lý do (sao, cách cục, câu sách) và nói bằng lời thường, ví dụ: "Năm nay
+  Lưu Kình chiếu vào Quan Lộc nên công việc dễ va chạm, áp lực. Nhưng Quan Lộc của bạn có Thiên Phủ miếu, bạn
+  vốn làm việc chắc tay, nên chuyện này thường dừng ở mức căng thẳng chứ ít khi mất việc."
+- **"Xe", "đường" và nhãn vững/thường/yếu chỉ là chữ thiết kế, Celes không bao giờ nói** (chủ dự án chốt
+  18/10). Validator lời chat lớp hạn sẽ bắt các cụm này (giao máy 2, việc e).
 
 ### Chiều ngược lại: xem mệnh cũng phải đặt vào thời điểm
 
@@ -318,3 +321,6 @@ Hiện câu hỏi bản mệnh không nhắc vận đang đi. Tôi đề xuất 
 - Gắn nhãn cát hay hung cho cách cục là việc mới.
 
 **Còn mở:** chưa tìm được câu sách cho "cung đang hỏi là xe". Anh có sách nói việc này thì bổ sung.
+
+### Chủ dự án duyệt C1 bản 4 (18/10/2026)
+Duyệt. Kèm luật: "xe/đường" chỉ là ẩn dụ để hình dung, không dùng khi luận; không dùng từ khó hiểu, trừu tượng khi luận.
