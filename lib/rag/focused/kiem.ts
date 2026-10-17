@@ -1,3 +1,4 @@
+import { loiHoaLopHan, loiChuLopHan, type BangHoaLoi } from '../kiem-lop-han';
 /**
  * GUARD — đường Focused (CEL-186 vé B, mục 6).
  *
@@ -34,6 +35,7 @@ export interface MocHopLe {
 }
 
 export interface NguCanhKiem {
+  bangHoa?: BangHoaLoi;
   cauHoi: string;
   phanLoai: PhanLoai;
   mucAnToan: MucAnToan;
@@ -311,13 +313,20 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
 
   // Tên: từng câu answer, từng claim
   for (const s of [...cau, ...ban.claims.map((c) => c.claim)]) {
-    const ngoai = tenNgoaiTap(s, ctx.tapTen, ctx.phucDucLaSao);
+    const ngoai = tenNgoaiTap(s, ctx.tapTen, ctx.phucDucLaSao, !!ctx.bangHoa);
     const luu = ngoai.filter((t) => t.startsWith('Lưu Hóa'));
     const khac = ngoai.filter((t) => !t.startsWith('Lưu Hóa'));
     if (luu.length) bao({ ma: 'LUU_HOA', chiTiet: `"${luu[0]}" không có trong DỮ KIỆN — lá số không an lưu tứ hoá` });
     if (khac.length) bao({ ma: 'TEN_NGOAI_GOI', chiTiet: `tên ${khac.map((t) => `"${t}"`).join(', ')} không có trong DỮ KIỆN` });
     const bia = tenBiaChan(s);
     if (bia.length) bao({ ma: 'TEN_BIA', chiTiet: `tên ${bia.map((t) => `"${t}"`).join(', ')} không phải sao có thật` });
+  }
+
+  if (ctx.bangHoa) {
+    const chu = loiChuLopHan([ban.answer, ...ban.claims.map((c) => c.claim), ...ban.suggestedQuestions].join('\n'));
+    if (chu) bao({ ma: 'CHU_LOP_HAN', chiTiet: `Viết đời thường, bỏ cụm "${chu}"; giữ nguyên kết luận và căn cứ.` });
+    const hoa = loiHoaLopHan(ban.answer, ctx.bangHoa) ?? ban.claims.map((c) => loiHoaLopHan(c.claim, ctx.bangHoa!, c.evidenceIds, c.timeRefs)).find(Boolean);
+    if (hoa) bao({ ma: 'HOA_SAI_QUAN_HE', chiTiet: hoa });
   }
 
   // Mốc
@@ -433,7 +442,7 @@ export function chonChip(goiY: readonly string[], ctx: NguCanhKiem): string[] {
   const ra: string[] = [];
   for (const g of goiY) {
     const c = g.normalize('NFC').trim();
-    if (!c) continue;
+    if (!c || (ctx.bangHoa && loiChuLopHan(c))) continue;
     // Spec 5.1 `chonChip`: chip là câu người dùng HỎI, và chỉ nêu mốc của tập chip.
     if (!/[?？]$/u.test(c)) continue;
     if (mocNgoaiTap(c, ctx.mocHopLeChip)) continue;

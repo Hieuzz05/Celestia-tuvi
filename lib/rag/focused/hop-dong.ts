@@ -43,6 +43,8 @@ export type MaLoiCung =
   | 'MA_KHONG_HOP_LE'
   | 'TEN_NGOAI_GOI'
   | 'LUU_HOA'
+  | 'HOA_SAI_QUAN_HE'
+  | 'CHU_LOP_HAN'
   | 'TEN_BIA'
   | 'MOC_BIA'
   | 'MOC_NHO_HON_NAM'
@@ -70,6 +72,8 @@ export const TANG_CUA: Record<MaLoiCung, TangLoi> = {
   MA_KHONG_HOP_LE: 'A',
   TEN_NGOAI_GOI: 'A',
   LUU_HOA: 'A',
+  HOA_SAI_QUAN_HE: 'A',
+  CHU_LOP_HAN: 'B',
   TEN_BIA: 'A',
   MOC_BIA: 'A',
   MOC_NHO_HON_NAM: 'A',

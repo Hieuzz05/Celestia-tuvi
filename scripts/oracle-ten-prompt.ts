@@ -20,9 +20,9 @@ import { goiCoPhucDuc, khoaTen, quetTen, TEN_GHEP } from '../lib/rag/focused/que
 const GIU_CHO = '<<CAU_HOI>>';
 
 /** Tên (khoá) trong một đoạn chữ: từ điển quét + cách cục in nguyên văn. */
-export function tenTrongChu(chu: string, phucDuc: boolean): Set<string> {
+export function tenTrongChu(chu: string, phucDuc: boolean, lopHanMoi = false): Set<string> {
   const ra = new Set<string>();
-  for (const t of quetTen(chu, phucDuc)) if (t.loai !== 'cung' && t.loai !== 'luu-hoa') ra.add(khoaTen(t.ten));
+  for (const t of quetTen(chu, phucDuc)) if (t.loai !== 'cung' && (t.loai !== 'luu-hoa' || lopHanMoi)) ra.add(khoaTen(t.ten));
   // Cách cục chưa chắc có trong từ điển quét: đọc thẳng hai lối prompt in nó ra.
   for (const m of chu.matchAll(/Cách cục đọc được ở phần này: ([^.\n]+)\./gu)) for (const c of m[1].split(', ')) ra.add(khoaTen(c));
   for (const m of chu.matchAll(/Cách cục (.+?) tại /gu)) ra.add(khoaTen(m[1]));
@@ -43,7 +43,7 @@ export function tenModelThay(p: DauVaoPromptFocused, traCuu: boolean): Set<strin
     if (n > 0) conLai.set(l, n - 1);
     else rieng.push(l);
   }
-  const ra = tenTrongChu(rieng.join('\n'), phucDuc);
+  const ra = tenTrongChu(rieng.join('\n'), phucDuc, !!p.lopHanMoi);
   if (traCuu) for (const t of tenTrongChu(p.cauHoiGoc, phucDuc)) ra.add(t);
   return ra;
 }
@@ -59,7 +59,7 @@ export function tenNgoaiModelThay(cau: readonly string[], p: DauVaoPromptFocused
   for (const c of cau)
     for (const t of quetTen(c, phucDuc)) {
       if (t.loai === 'cung') continue;
-      if (t.loai === 'luu-hoa') ra.push(t.ten);
+      if (t.loai === 'luu-hoa') { if (!p.lopHanMoi) ra.push(t.ten); }
       else if (!thay.has(khoaTen(t.ten)) && !(t.loai === 'ghep' && (TEN_GHEP[t.ten] ?? []).length > 0 && TEN_GHEP[t.ten].every((x) => thay.has(khoaTen(x)))))
         ra.push(t.ten);
     }

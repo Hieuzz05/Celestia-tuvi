@@ -11,7 +11,7 @@ import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
-import { luuTuHoaTheoNam, tuHoaDaiVan, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
+import { luuTuHoaTheoNam, tuHoaDaiVan, tuHoaGoc, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
 import type { KeHoachTruyVan } from './planner';
 
 /**
@@ -44,7 +44,8 @@ export interface DuKienLaSo {
     /** Lưu tứ hoá theo can năm xem — CHỈ khi cờ lớp hạn bật (CEL-200), nối cuối danh sách */
     | 'luu-tu-hoa'
     /** Tứ hoá theo can cung đại vận — CHỈ khi cờ lớp hạn bật (CEL-200), nối cuối danh sách */
-    | 'tu-hoa-dai-van';
+    | 'tu-hoa-dai-van'
+    | 'tu-hoa-goc';
   /**
    * Lớp nguồn THỜI GIAN của dữ kiện: nó đúng cho cả đời, hay chỉ cho một quãng.
    * Không vào prompt (prompt chỉ in `id. noiDung`); dùng cho trace và cho bài
@@ -81,6 +82,7 @@ const LOP_THEO_LOAI: Record<DuKienLaSo['loai'], LopDuKien> = {
   'luu-tinh': 'luu-nien',
   // Hai hệ tên lớp (L9, phương án CEL-200): ở đây theo `LopDuKien` — `luu-nien` là
   // sao lưu / lưu hoá của năm, `dai-han` là lớp đại vận. Không phải `LopHan` của planner.
+  'tu-hoa-goc': 'ban-menh',
   'luu-tu-hoa': 'luu-nien',
   'tu-hoa-dai-van': 'dai-han',
   'nguyet-han': 'nguyet-han',
@@ -350,26 +352,31 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo, l
    * câu trả lời nhắc lưu Hóa phải trỏ được về mục này.
    */
   if (lopHanMoi && xetHan) {
-    if (keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
-      const luu = luuTuHoaTheoNam(laSo, namXem);
-      if (luu.length) {
-        them({
-          loai: 'luu-tu-hoa',
-          noiDung: `Năm ${namXem} (${canChiCuaNam(namXem)}) lưu tứ hoá: ${moTaHoaHan(luu)}.`,
-          sao: luu.map((h) => h.sao),
-        });
+    them({ loai: 'tu-hoa-goc', noiDung: `Tứ hoá gốc: ${moTaHoaHan(tuHoaGoc(laSo))}.` });
+    for (const nam of new Set(cuaSo?.length ? cuaSo.map((w) => w.namAm) : [namXem])) {
+      const ganCuaSo = () => {
+        for (const w of cuaSo ?? []) if (w.namAm === nam) maTheoCuaSo?.[w.ma]?.push(duKien[duKien.length - 1].id);
+      };
+      if (keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
+        if (focused && cuaSo?.length) {
+          const tinh = luuTinhTheoNam(nam);
+          them({ loai: 'luu-tinh', noiDung: `Năm ${nam} lưu tinh: ${tinh.map((x) => `${x.ten} tại cung ${laSo.cungs[x.chiIndex].tenCung}`).join('; ')}.`, sao: tinh.map((x) => x.ten) });
+          ganCuaSo();
+        }
+        const luu = luuTuHoaTheoNam(laSo, nam);
+        if (luu.length) {
+          them({ loai: 'luu-tu-hoa', noiDung: `Năm ${nam} (${canChiCuaNam(nam)}) lưu tứ hoá: ${moTaHoaHan(luu)}.`, sao: luu.map((h) => h.sao) });
+          ganCuaSo();
+        }
       }
-    }
-    if (keHoach.lopHan.includes('dai-van')) {
-      const dv = cungDaiVan(laSo, tuoiAm);
-      const hoa = tuHoaDaiVan(laSo, tuoiAm);
-      if (dv?.daiVan && hoa.length) {
-        them({
-          loai: 'tu-hoa-dai-van',
-          noiDung: `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (can ${dv.can}) tứ hoá: ${moTaHoaHan(hoa)}.`,
-          cung: dv.tenCung,
-          sao: hoa.map((h) => h.sao),
-        });
+      if (keHoach.lopHan.includes('dai-van')) {
+        const tuoi = nam - laSo.thongTin.amLich.nam + 1;
+        const dv = cungDaiVan(laSo, tuoi);
+        const hoa = tuHoaDaiVan(laSo, tuoi);
+        if (dv?.daiVan && hoa.length) {
+          them({ loai: 'tu-hoa-dai-van', noiDung: `Đại vận ${dv.daiVan.tuTuoi}–${dv.daiVan.denTuoi} tuổi (can ${dv.can}), tại năm ${nam}: ${moTaHoaHan(hoa)}.`, cung: dv.tenCung, sao: hoa.map((h) => h.sao) });
+          ganCuaSo();
+        }
       }
     }
   }

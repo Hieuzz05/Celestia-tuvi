@@ -1,3 +1,5 @@
+import { quetTen } from './quet-ten';
+import { chuNguonLopHan } from '../kiem-lop-han';
 /**
  * PROMPT — đường Focused (CEL-186 vé B, mục 5).
  *
@@ -227,7 +229,7 @@ export function tenDuocGoiTrongLuot(v: {
   const hien = nghiengHienThi(v.nghieng, v.goi, v.khuon);
   const tenHien = hien ? [...hien.dauMoc.map((d) => d.ten), ...hien.cachCuc] : [];
   const chu = [khoiNghiengFocused(v.nghieng, v.goi, v.khuon), ...(v.cauTraCuu ? [v.cauTraCuu] : [])];
-  return { tapTen: tapTenTuGoi(v.goi.duKien, chu, tenHien), tenHien };
+  return { tapTen: tapTenTuGoi(v.goi.duKien, chu, tenHien, !!v.nghieng?.lopHan), tenHien };
 }
 
 /**
@@ -235,9 +237,24 @@ export function tenDuocGoiTrongLuot(v: {
  * có F### trong gói, không có lời dặn khuôn bài dài, và nói rõ chiều mã đã chốt
  * để model điền `direction` của `claims[0]`.
  */
-export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 'duKien'>, khuon: PhanLoai['khuon']): string {
+export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 'duKien'>, khuon: PhanLoai['khuon'], cuaSo?: string): string {
   const hien = nghiengHienThi(n, goi, khuon);
   if (!n || !hien) return '';
+  if (n.lopHan) {
+    const tap = tapTenTuGoi(goi.duKien, [], [], true);
+    const dung = (d: DauMoc) => quetTen(d.ten).filter((t) => t.loai !== 'cung').every((t) => tap.has(khoaTen(t.ten)));
+    const dong = (d: DauMoc) => `- ${d.ten}: ${d.y}`;
+    const ben = (h: 'do' | 'can') => n.dauMoc.filter((d) => d.huong === h && dung(d)).map(dong).join('\n') || '(không có dữ kiện tương ứng)';
+    const nen = n.lopHan.nen.filter(dung).map(dong).join('\n');
+    return `DỮ KIỆN VẬN HẠN CỦA ${n.namXem} — ${n.phanDoi}
+Thuận lợi:\n${ben('do')}
+Điều cản trở:\n${ben('can')}
+CUNG GỐC ĐẶT TRONG VẬN:\n${nen}${hien.cachCuc.length ? `\nCách cục đọc được ở phần này: ${hien.cachCuc.join(', ')}.` : ''}
+HƯỚNG ĐÃ CHỐT: ${MO_TA_HUONG[n.huong]}. ${cuaSo ? `Claim của cửa sổ ${cuaSo} dùng timeRefs ["${cuaSo}"] và direction "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}"; không gán hướng phần này cho kết luận cả tháng.` : `"direction" của claims[0] là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}".`}
+Chỉ diễn đạt kết quả và căn cứ ở trên. Không tự cân lại nền, không suy thêm mức hoá giải, không bắt buộc nêu hai mặt hay bịa phía không có dữ kiện.
+Khi nhắc tứ hoá: nêu đúng hoá, sao nhận hoá, cung và lớp/năm như mục F được dẫn; khi có nhiều cửa sổ, nói rõ thời điểm trong answer và dùng timeRefs trong claim.
+Không dùng chữ thiết kế hay ẩn dụ xe/đường trong lời trả lời.`;
+  }
   const coTen = new Set(hien.dauMoc);
   // Giữ thứ tự gốc (theo trọng số) — đầu mốc không tên đứng đúng chỗ của nó.
   const dauMoc = n.dauMoc.filter((d) => coTen.has(d) || hien.anTen.includes(d));
@@ -388,6 +405,8 @@ export function moDauCu(lichSu: readonly TinNhan[]): string[] {
 }
 
 export interface DauVaoPromptFocused {
+  lopHanMoi?: boolean;
+  nghiengTheoCuaSo?: { cuaSo: string; n: NghiengVe }[];
   goi: GoiBangChung;
   /** Câu NGƯỜI DÙNG gõ — `goi.cauHoi` có thể là câu ghép tên cung (mục 15 L1) */
   cauHoiGoc: string;
@@ -450,7 +469,9 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   const t = khoiNghiemLy(v.nghiemLy ?? []);
   if (t) phan.push(t);
 
-  const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
+  const nghieng = v.lopHanMoi && v.nghiengTheoCuaSo?.length
+    ? v.nghiengTheoCuaSo.map((x) => `Cửa sổ ${x.cuaSo}:\n${khoiNghiengFocused(x.n, v.goi, v.phanLoai.khuon, x.cuaSo)}`).join('\n\n')
+    : khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
   if (nghieng) phan.push(nghieng);
   phan.push(khoiMoc(v.moc, v.phanLoai.khuon));
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).
@@ -497,7 +518,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   phan.push(dan.filter(Boolean).join('\n'));
 
   return {
-    system: v.ngonNgu === 'en' ? `${GHIM_EN}\n\n${SYSTEM_FOCUSED}` : SYSTEM_FOCUSED,
-    user: `${phan.join('\n\n')}\n\nCÂU HỎI HIỆN TẠI\n${v.cauHoiGoc}`,
+    system: chuNguonLopHan(v.ngonNgu === 'en' ? `${GHIM_EN}\n\n${SYSTEM_FOCUSED}` : SYSTEM_FOCUSED, v.lopHanMoi),
+    user: chuNguonLopHan(`${phan.join('\n\n')}\n\nCÂU HỎI HIỆN TẠI\n${v.cauHoiGoc}`, v.lopHanMoi),
   };
 }

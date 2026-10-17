@@ -277,7 +277,7 @@ Năm mức × ba loại sự kiện:
 - **N2:** "Tháng {N} âm năm nay (khoảng …) đã qua, nên đây là nhìn lại chứ không phải dự báo:"
   Câu không nêu năm thì thêm chip "Tháng {N} năm sau thì sao?".
 - **Tháng nhuận:** "Năm nay có tháng {N} nhuận; Celes đọc theo tháng {N} chính."
-- **A6:** "Câu này Celes chưa đủ căn cứ để nói nghiêng về phía nào, nhưng có một điều đọc được rõ:"
+- **A6:** "Câu này Celes chỉ có thể nói ở mức vừa phải, nhưng có một điều đọc được rõ:"
 
 ## 8. Route và vết (sửa phần "route gần như không đổi")
 
@@ -588,3 +588,6 @@ Chủ dự án hỏi "Tháng 6 năm 2025 công việc của tôi thế nào?" tr
 - "Tháng này / tháng sau / tháng tới" vẫn theo tháng âm đang chạy.
 - Đường STANDARD (planner dùng chung) vẫn hiểu "tháng N" là tháng âm — gom vào CEL-190, phải thống nhất trước khi bật cờ Production.
 - Chạy thật 10 lượt (model ghim) ≈ $0.02; tổng chi eval ≈ **$0.94 / $2**.
+
+
+CEL-200 (17/10/2026, máy 2): sau CELES_LOP_HAN, không tự thuật thiếu kho/tài liệu; lưu Hóa được nhắc khi quan hệ hoá–sao–cung–lớp và thời điểm đúng dữ kiện đã in. Không ép bài nhắc hai mặt. Meta khác chế độ không được dùng lại căn cứ. Đường tắt giữ nguyên hành vi.

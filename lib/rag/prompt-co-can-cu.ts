@@ -1,3 +1,4 @@
+import { chuNguonLopHan } from './kiem-lop-han';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { chonBoiCanhHoiThoai } from './tiep-noi';
 import { dungKhoiChoPrompt, type GoiBangChung } from './bang-chung';
@@ -271,7 +272,8 @@ export function dungPromptCoCanCu(
    * Tuỳ chọn, mặc định không có: để các bề mặt gọi thẳng hàm này (eval, thử
    * nghiệm) chạy đúng như trước mà không phải dựng thêm gì.
    */
-  hopDong?: HopDongTraLoi
+  hopDong?: HopDongTraLoi,
+  lopHanMoi = false
 ): { system: string; user: string } {
   /*
    * §12.5: không nhét toàn bộ lịch sử vào mọi request.
@@ -337,7 +339,7 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
    */
   const mauChat = khoiMauVang(chonMauVang({ beMat: 'chat', loai: ['cau-khep'], soLuong: 1 }));
 
-  return {
+  const prompt = {
     system: SYSTEM,
     user: `${dungKhoiChoPrompt(goi)}${khoiNghieng}${phanDaNoi}${phanLichSu}${canhBaoTrong}${khoiTruocYDinh}${phanYDinh}${
       mauChat ? `\n\n${mauChat}` : ''
@@ -346,4 +348,5 @@ Không câu nào trong bài được trùng một mệnh đề với khối trê
 CÂU HỎI HIỆN TẠI
 ${goi.cauHoi}`,
   };
+  return { system: chuNguonLopHan(prompt.system, lopHanMoi), user: chuNguonLopHan(prompt.user, lopHanMoi) };
 }

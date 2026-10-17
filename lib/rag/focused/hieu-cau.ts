@@ -37,6 +37,7 @@ export interface ChoHoiLai {
 }
 
 export interface MetaLuot {
+  lopHanMoi?: true;
   v: 1;
   phienBan: string;
   chuDe: ChuDe;
@@ -145,6 +146,7 @@ export function docMetaLuot(x: unknown): MetaLuot | null {
   const kl = x.ketLuanChinh;
   const ch = x.choHoiLai;
   const ok =
+    (x.lopHanMoi === undefined || x.lopHanMoi === true) &&
     laChuoi(x.phienBan, 60) &&
     laChuoi(x.chuDe, 30) &&
     laChuoi(x.yDinh, 30) &&
@@ -186,7 +188,8 @@ export function kiemLuotTruoc(
   tho: unknown,
   rb: RangBuocMeta,
   lichSu: readonly TinNhan[],
-  phienBan: string
+  phienBan: string,
+  lopHanMoi = false
 ): { meta: MetaLuot | null; bo?: LyDoBoLuotTruoc } {
   if (tho === undefined || tho === null) return { meta: null };
   const khoa = khoaMeta();
@@ -196,6 +199,7 @@ export function kiemLuotTruoc(
   const dung = Buffer.from(chuKy(than, khoa));
   const gui = Buffer.from(ky);
   if (dung.length !== gui.length || !timingSafeEqual(dung, gui)) return { meta: null, bo: 'ky' };
+  if ((m.lopHanMoi === true) !== lopHanMoi) return { meta: null, bo: 'ky' };
   if (m.laSo !== rb.laSo) return { meta: null, bo: 'la-so' };
   if (m.nguoiDung !== rb.nguoiDung) return { meta: null, bo: 'nguoi-dung' };
   const cuoi = [...lichSu].reverse().find((t) => t.vaiTro === 'tro-ly');
@@ -209,7 +213,7 @@ export function kiemLuotTruoc(
  * Gói F### của lượt trước, dựng lại từ đúng tham số đã lưu (spec 2.3). `chonBoiCanh` chỉ đọc
  * `keHoach.cungLienQuan` và `keHoach.lopHan`, nên kế hoạch tối thiểu là đủ; trường khác để rỗng.
  */
-export function dungLaiBoiCanh(laSo: LaSo, meta: Pick<MetaLuot, 'keHoach' | 'namHieuLuc' | 'cuaSo'>, thangXem: number): BoiCanhLaSo {
+export function dungLaiBoiCanh(laSo: LaSo, meta: Pick<MetaLuot, 'keHoach' | 'namHieuLuc' | 'cuaSo' | 'lopHanMoi'>, thangXem: number): BoiCanhLaSo {
   const keHoach = {
     cungLienQuan: [...meta.keHoach.cungLienQuan],
     lopHan: [...meta.keHoach.lopHan],
@@ -221,6 +225,7 @@ export function dungLaiBoiCanh(laSo: LaSo, meta: Pick<MetaLuot, 'keHoach' | 'nam
     namXem: meta.namHieuLuc,
     thangXem: cuaSo?.[0]?.thangAm ?? thangXem,
     focused: true,
+    ...(meta.lopHanMoi ? { lopHanMoi: true } : {}),
     ...(cuaSo?.length ? { cuaSo } : {}),
   });
 }

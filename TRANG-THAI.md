@@ -16,6 +16,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Codex (máy 2, worktree `D:/SAPP BA/tuvi-ai-van-han-3b`) | CEL-200 3b + Commit 4 phần mã, phương án đã duyệt 17/10; cờ tắt giữ nguyên. Đăng ký local, chưa push theo lệnh chủ dự án | `viec/van-han-3b` từ `25ad334` | lib/rag/focused/, boi-canh-la-so.ts, tra-loi.ts, validator/sửa câu/prompt, v3 (giai đoạn sau), AGENTS.md Q2; KHÔNG nghieng-ve.ts/lib/tuvi/DB/đệm | 17/10 |
 | Claude (máy 1) | Bộ đo chất lượng luận offline (CEL-197) — làm lần lượt, từng nhánh, chưa gộp | `viec/do-chat-luong-luan` | scripts/ mới, .github/workflows/kiem-tra.yml | 11/10 |
 | Claude (máy 1) | Dịch EN các trang sâu (CEL-058/081) — làm lần lượt, từng nhánh, chưa gộp | `viec/en-trang-sau` | lib/i18n/*, app/luan-giai, hoi-dap, hop-tuoi, ho-so, tai-khoan, gioi-thieu | 11/10 |
 | Claude (máy 1) | Xuất PDF bằng bản in (CEL-074) — làm lần lượt, từng nhánh, chưa gộp | `viec/xuat-pdf` | app/globals.css (@media print), nút in ở la-so / luan-giai | 11/10 |

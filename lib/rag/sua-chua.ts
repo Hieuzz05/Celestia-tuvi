@@ -343,12 +343,13 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
  */
 export async function suaCauTiengLong(
   van: string,
-  tenDuKien: string[]
+  tenDuKien: string[],
+  phamThem?: (cau: string) => boolean
 ): Promise<string> {
   const manh = tachManh(van);
   const pham = manh
     .map((m, i) => ({ c: m.text, i, loai: m.loai }))
-    .filter(({ c, i, loai }) => loai === 'NOI_DUNG' && !laTieuDe(manh, i) && TIENG_LONG_MOT_CAU.test(c));
+    .filter(({ c, i, loai }) => loai === 'NOI_DUNG' && !laTieuDe(manh, i) && (TIENG_LONG_MOT_CAU.test(c) || phamThem?.(c)));
   if (!pham.length) return van;
 
   DEM_SUA.tiengLong.soLuotGoi += 1;
@@ -372,7 +373,7 @@ Sai:  "Năm 2026 chưa rõ khả năng mua nhà, vì các yếu tố cản vẫn
 Đúng: "Năm 2026 chưa phải lúc: Hóa Kỵ đóng ở phần nền tảng vật chất, nghĩa là việc ở đây hay vướng và hay phải làm lại."
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
-{ "cau": [ { "id": "C1", "moi": "..." } ] }`;
+{ "cau": [ { "id": "C1", "moi": "..." } ] }${phamThem ? "\nĐây cũng là lượt sửa quan hệ tứ hoá: chỉ dùng đúng hoá, sao nhận hoá, cung, lớp và năm từ dữ kiện đã cho; không ghép chéo. Bỏ ẩn dụ, chữ nội bộ và lời kể về kho/tài liệu. Giữ nguyên kết luận, mức chắc chắn và các tên dữ kiện hợp lệ." : ""}`;
 
   const danhSach = pham.map((p, i) => `C${i + 1}. ${p.c}`).join('\n');
 
@@ -393,7 +394,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
       if (!goc) continue;
       const moi = lamSachCauMoi(m.moi, goc.c);
       // Sửa xong mà vẫn phạm, hoặc cụt hơn hẳn câu gốc, thì coi như hỏng
-      if (moi.length < 15 || TIENG_LONG_MOT_CAU.test(moi)) continue;
+      if (moi.length < 15 || TIENG_LONG_MOT_CAU.test(moi) || phamThem?.(moi)) continue;
       sua.set(goc.i, moi);
     }
   } catch {

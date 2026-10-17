@@ -215,12 +215,13 @@ export const khoaTen = (ten: string) => tachTu(ten).map((t) => t.chuan).join(' '
 export function tapTenTuGoi(
   duKien: readonly DuKienLaSo[],
   chu: readonly string[] = [],
-  ten: readonly string[] = []
+  ten: readonly string[] = [],
+  lopHanMoi = false
 ): Set<string> {
   const tap = new Set<string>();
   const phucDuc = goiCoPhucDuc(duKien);
   const nap = (chuoi: string) => {
-    for (const t of quetTen(chuoi, phucDuc)) if (t.loai !== 'cung' && t.loai !== 'luu-hoa') tap.add(khoaTen(t.ten));
+    for (const t of quetTen(chuoi, phucDuc)) if (t.loai !== 'cung' && (t.loai !== 'luu-hoa' || lopHanMoi)) tap.add(khoaTen(t.ten));
   };
   for (const d of duKien) {
     nap(d.noiDung);
@@ -248,11 +249,11 @@ function ghepDuocPhep(ten: string, tap: ReadonlySet<string>): boolean {
  * Những tên trong câu KHÔNG được phép: ngoài tập, lưu Tứ Hóa, hoặc tên cung.
  * Trả về tên chuẩn để ghi vào vết.
  */
-export function tenNgoaiTap(cau: string, tap: ReadonlySet<string>, phucDucLaSao = false): string[] {
+export function tenNgoaiTap(cau: string, tap: ReadonlySet<string>, phucDucLaSao = false, lopHanMoi = false): string[] {
   const sai: string[] = [];
   for (const t of quetTen(cau, phucDucLaSao)) {
     if (t.loai === 'cung') continue; // tên cung là luật "mặt trước sạch", không phải luật tên
-    if (t.loai === 'luu-hoa') sai.push(t.ten);
+    if (t.loai === 'luu-hoa') { if (!lopHanMoi) sai.push(t.ten); }
     else if (t.loai === 'ghep' ? !ghepDuocPhep(t.ten, tap) : !tap.has(khoaTen(t.ten))) sai.push(t.ten);
   }
   return sai;

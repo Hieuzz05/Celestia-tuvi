@@ -22,7 +22,7 @@ cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước k
 
 ## Ba quyết định không được tự đổi
 
-1. **Nam phái làm chuẩn** cho an sao; Bắc phái chỉ dùng đối chiếu khi luận vận hạn.
+1. **Nam phái làm chuẩn** cho an sao. Khi luận vận hạn, kết hợp sao lưu với tứ hoá theo hạn; cả hai cùng là căn cứ của lớp hạn.
 2. **Ngân sách = 0.** Mọi dịch vụ mới phải nằm trong free tier.
 3. **Celestia là thương hiệu, Celes là người dùng trò chuyện cùng.** Người dùng "hỏi Celes",
    không "hỏi AI", không "hỏi Celestia".

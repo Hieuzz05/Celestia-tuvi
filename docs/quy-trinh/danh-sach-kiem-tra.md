@@ -25,6 +25,7 @@ npx tsx scripts/do-coverage-dau-an.ts  # dấu ấn: thư viện qua checker, UN
 npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI NHẤT, không dính cả hội thoại — offline
 npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
 npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
+npx tsx scripts/test-lop-han-3b.ts   # CEL-200 máy 2: snapshot base độc lập, quan hệ hoá/cửa sổ, chữ cấm, vòng viết lại và meta đổi chế độ — offline
 npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline

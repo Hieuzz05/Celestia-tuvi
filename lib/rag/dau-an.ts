@@ -155,7 +155,7 @@ export const CUM_FILLER_CAM: readonly string[] = [
  * thay vì bắc sang căn cứ, và "gốc sâu" ở câu giải thích gợi một nguyên nhân
  * bệnh. Bắt theo nguyên âm tiết: "nhịp chung" dính, "nềnếp" thì không.
  */
-const AN_DU_CAM = /(?<!\p{L})(?:nền|nhịp|phần nổi|lớp bên dưới|gốc sâu)(?!\p{L})/iu;
+export const AN_DU_CAM = /(?<!\p{L})(?:nền|nhịp|phần nổi|lớp bên dưới|gốc sâu)(?!\p{L})/iu;
 
 /**
  * Từ v2: "dấu hiệu" trùng chữ prompt co-khong/thoi-diem dùng cho dấu hiệu ngoài

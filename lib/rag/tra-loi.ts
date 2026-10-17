@@ -1,3 +1,4 @@
+import { bangHoaChoLoi, loiChuLopHan, loiHoaLopHan, PHIEN_BAN_VALIDATOR_LOP_HAN } from './kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
@@ -18,7 +19,7 @@ import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG, PHIEN_BAN_NGHIENG_LOP_HAN } from './nghieng-ve';
 import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
 import { chonDauAn, PHIEN_BAN_DAU_AN, type DauAnLuot } from './dau-an';
-import { doiTenCung, suaCauTiengLong } from './sua-chua';
+import { doiTenCung, suaCauTiengLong, tachManh } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
@@ -486,7 +487,8 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     daNoiTruoc,
     khoiNghiengVe(nghieng),
     vao.laTiepTuChip === true,
-    hopDong
+    hopDong,
+    coLopHan
   );
 
   const truocModel = Date.now();
@@ -533,7 +535,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    */
   if (!coCauTruc) {
     return {
-      van: laChuoiJson(kq.text) ? '' : kq.text,
+      van: laChuoiJson(kq.text) || (coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') && (loiChuLopHan(kq.text) || loiHoaLopHan(kq.text, bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc])))) ? '' : kq.text,
       loiDi: [],
       coCauTruc: null,
       goi,
@@ -551,6 +553,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
 
   const daCham = chamDoChac(coCauTruc, goi);
   const ketQuaKiem = kiemDuyet(daCham, goi);
+  if (coLopHan) ketQuaKiem.phienBan = PHIEN_BAN_VALIDATOR_LOP_HAN;
   const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
   const daGom = gomLoiKhuyen(daLocY, keHoach.yDinh);
   const daLoc = {
@@ -601,9 +604,11 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * Đưa kèm tên dữ kiện engine đã đọc được: câu "yếu tố cản" không còn cái tên
    * nào để giữ lại, nên người sửa phải được đưa tên, không được tự nghĩ ra.
    */
+  const bangHoaSua = coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') ? bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc]) : null;
   const vanDaSua = await suaCauTiengLong(
     vanTho,
-    nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []
+    [...(nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []), ...(bangHoaSua ? goi.duKien.filter((d) => ['tu-hoa-goc', 'luu-tu-hoa', 'tu-hoa-dai-van'].includes(d.loai)).map((d) => d.noiDung) : [])],
+    bangHoaSua ? (c) => !!(loiChuLopHan(c) || loiHoaLopHan(c, bangHoaSua)) : undefined
   );
 
   /*
@@ -628,7 +633,26 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    *
    * CRITICAL không đi qua đây: route đã dừng từ trước, không có bài nào để nối.
    */
-  const van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanDaDoiTen) : vanDaDoiTen;
+  let van = mucAnToan === 'SENSITIVE' ? datMienTruTamLy(vanDaDoiTen) : vanDaDoiTen;
+  let cauTrucCuoi: TraLoiCoCauTruc | null = daLoc;
+  if (coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh')) {
+    const bang = bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc]);
+    const sai = loiChuLopHan(van) ?? loiHoaLopHan(van, bang);
+    // Không trả cấu trúc cũ có câu vi phạm sau khi sửa văn. Không bịa kết luận dự phòng.
+    const cu = tachManh(vanTho).filter((m) => m.loai === 'NOI_DUNG');
+    const moi = tachManh(vanDaSua).filter((m) => m.loai === 'NOI_DUNG');
+    const doi = cu.length === moi.length ? cu.flatMap((m, i) => m.text === moi[i].text ? [] : [[m.text, moi[i].text]]) : [];
+    const dongBo = (x: unknown): unknown => typeof x === 'string'
+      ? doi.reduce((v, [a, b]) => v.split(a).join(b), x)
+      : Array.isArray(x) ? x.map(dongBo)
+      : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, dongBo(v)])) : x;
+    cauTrucCuoi = dongBo(daLoc) as TraLoiCoCauTruc;
+    const vanCauTruc = dungVan(cauTrucCuoi, { yDinh: keHoach.yDinh, laCauNoi });
+    if (sai || loiChuLopHan(JSON.stringify(cauTrucCuoi)) || loiChuLopHan(vanCauTruc) || loiHoaLopHan(vanCauTruc, bang)) {
+      van = '';
+      cauTrucCuoi = null;
+    }
+  }
 
   const ketQuaNgonNgu = soatNgonNgu(
     van,
@@ -642,7 +666,7 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   return {
     van,
     loiDi,
-    coCauTruc: daLoc,
+    coCauTruc: cauTrucCuoi,
     goi,
     kiemDuyet: ketQuaKiem,
     ngonNgu: ketQuaNgonNgu,
@@ -666,7 +690,7 @@ export function phienBanHienTai(lopHan = false): Record<string, string> {
     nghieng: lopHan ? PHIEN_BAN_NGHIENG_LOP_HAN : PHIEN_BAN_NGHIENG,
     truyHoi: PHIEN_BAN_TRUY_HOI,
     schemaOutput: PHIEN_BAN_SCHEMA_OUTPUT,
-    validator: PHIEN_BAN_VALIDATOR,
+    validator: lopHan ? PHIEN_BAN_VALIDATOR_LOP_HAN : PHIEN_BAN_VALIDATOR,
     ngonNgu: PHIEN_BAN_NGON_NGU,
     uuTienNguon: PHIEN_BAN_UU_TIEN,
     dauAn: PHIEN_BAN_DAU_AN,

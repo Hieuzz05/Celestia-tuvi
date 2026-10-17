@@ -81,6 +81,8 @@ jobs:
         run: npx tsx scripts/test-du-kien.ts
       - name: Đường Focused — cờ tắt giữ STANDARD, guard, câu mã, phần nối
         run: npx tsx scripts/test-focused.ts
+      - name: Lop han Focused va validator quan he (CEL-200 may 2)
+        run: npx tsx scripts/test-lop-han-3b.ts
       - name: CEL-191 hiểu câu theo trường — bảng timeIntent, cổng gọi model, gộp luật trước
         run: npx tsx scripts/test-hieu-cau-truong.ts
       - name: CEL-196 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat

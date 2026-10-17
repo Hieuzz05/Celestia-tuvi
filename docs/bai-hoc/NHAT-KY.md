@@ -106,3 +106,13 @@ Mẫu một mục:
   (tệp:dòng hoặc kết quả grep kho); chưa kiểm thì ghi rõ "chưa kiểm", không trình như sự thật.
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo".
 - Lần: 1
+
+
+## 17/10/2026 · Kiểm từng tên không đủ kiểm quan hệ trong câu nhiều vế · ai-rag
+- Thẻ: validator, hoa sao cung, cua so, nguon, menh de, suggestedQuestions
+- Chuyện gì: review CEL-200 3b bắt được một hoá gán cho hai sao, vế sau mất nhãn lưu rồi nhận quan hệ gốc, cung sai sau dấu phẩy/nhưng bị bỏ qua, chip còn chữ cấm. Bộ kiểm ban đầu chỉ có cặp đơn đúng/sai nên vẫn xanh.
+- Gốc: cắt câu trước khi thu đủ các thuộc tính của quan hệ; chỉ lấy sao đầu, không xét kế thừa lớp và toàn bộ bề mặt chữ model sinh.
+- Giá: một vòng sửa reviewer và kiểm lại; chưa phát hành, không có lượt model trả phí.
+- Luật: kiểm quan hệ phải giữ hoá–sao–cung–lớp–thời điểm và phạm vi câu/vế; vế mơ hồ cần viết lại. Ca âm phải gồm hai sao, hai hoá, nguồn/cung sau liên từ, nhiều cửa sổ và chip.
+- Nâng: docs/bay/ai-rag.md; scripts/test-lop-han-3b.ts đã có regression và được nối CI. Không push sổ lên main vì chủ dự án cấm push trong phiên này.
+- Lần: 1

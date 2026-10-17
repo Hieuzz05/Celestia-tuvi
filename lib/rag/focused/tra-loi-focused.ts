@@ -1,3 +1,4 @@
+import { bangHoaChoLoi } from '../kiem-lop-han';
 /**
  * ĐƯỜNG FOCUSED — điều phối một lượt chat (CEL-186 vé B, mục 8 + 15).
  *
@@ -174,11 +175,12 @@ const phienBanFocused = (base: Record<string, string>, khuon: PhanLoai['khuon'])
 
 export async function traLoiFocused(
   vao: DauVaoTraLoi,
-  phienBan: () => Record<string, string>,
+  phienBan: (lopHan?: boolean) => Record<string, string>,
   docSoKetLuan: (namHieuLuc: number) => Promise<string[]>,
   bayGio: ThoiDiemAm = bayGioAm(),
   pt: PhuThuocFocused = {}
 ): Promise<KetQuaFocused> {
+  const coLopHan = process.env.CELES_LOP_HAN === '1';
   const batDau = Date.now();
   const nn: NgonNgu = vao.ngonNgu === 'en' ? 'en' : 'vi';
   const lichSu = vao.lichSu ?? [];
@@ -190,7 +192,8 @@ export async function traLoiFocused(
     vao.luotTruoc,
     { laSo: vao.chartHashLaSo ?? '', nguoiDung: vao.nguoiDung ?? '' },
     lichSu,
-    PHIEN_BAN_FOCUSED
+    PHIEN_BAN_FOCUSED,
+    coLopHan
   );
   const tho = lapKeHoach({ cauHoi: vao.cauHoi, saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem });
 
@@ -218,7 +221,7 @@ export async function traLoiFocused(
         model: 'focused-an-toan-phat-lai',
         runId: null,
         khoTrong: false,
-        phienBan: phienBanFocused(phienBan(), 'F2'),
+        phienBan: phienBanFocused(phienBan(coLopHan), 'F2'),
         doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
         khongTinhLuot: true,
         anToanPhatLai: at.muc === 'CRITICAL' ? 'CRITICAL' : 'tien-luong',
@@ -286,6 +289,7 @@ export async function traLoiFocused(
     return kyMeta(
       {
         v: 1,
+        ...(coLopHan ? { lopHanMoi: true as const } : {}),
         phienBan: PHIEN_BAN_FOCUSED,
         chuDe: o.keHoach.chuDe,
         yDinh: o.keHoach.yDinh,
@@ -343,7 +347,7 @@ export async function traLoiFocused(
       model,
       runId: null,
       khoTrong: false,
-      phienBan: phienBanFocused(phienBan(), khuon),
+      phienBan: phienBanFocused(phienBan(coLopHan), khuon),
       doTreMs: { truyHoi: 0, model: 0, tong: Date.now() - batDau },
       ...(khongTinhLuot ? { khongTinhLuot: true } : {}),
       ...(meta ? { meta } : {}),
@@ -471,6 +475,7 @@ export async function traLoiFocused(
     namXem: namHieuLuc,
     thangXem: thangHieuLuc,
     focused: true,
+    ...(coLopHan ? { lopHanMoi: true } : {}),
     ...(cuaSo?.length ? { cuaSo } : {}),
   });
 
@@ -547,6 +552,7 @@ export async function traLoiFocused(
             thangXem: w?.thangAm ?? thangHieuLuc,
             cungChinh: doiTuong?.cung,
             focused: true,
+            ...(coLopHan ? { lopHanMoi: true } : {}),
           });
           return n ? [{ cuaSo: w?.ma ?? '', n }] : [];
         });
@@ -615,6 +621,7 @@ export async function traLoiFocused(
     ...(huongThang ? { huongThang } : {}),
     ...(maTheoCuaSo ? { maTheoCuaSo } : {}),
     ngonNgu: nn,
+    ...(coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') ? { bangHoa: bangHoaChoLoi(vao.laSo, duKien, cuaSo?.length ? cuaSo.map((w) => w.namAm) : [namHieuLuc], maTheoCuaSo) } : {}),
   };
 
   const moc: MocTinhSan = {
@@ -635,6 +642,7 @@ export async function traLoiFocused(
       nghieng,
       phanLoai,
       mucAnToan,
+      ...(coLopHan ? { lopHanMoi: true, ...(cuaSo?.length ? { nghiengTheoCuaSo: nghiengDs } : {}) } : {}),
       moc,
       laTiepTuChip: vao.laTiepTuChip === true,
       cauMa,
@@ -756,7 +764,7 @@ export async function traLoiFocused(
     model: kq.model,
     runId,
     khoTrong: kqTruyHoi.khoTrong,
-    phienBan: phienBanFocused(phienBan(), phanLoai.khuon),
+    phienBan: phienBanFocused(phienBan(coLopHan), phanLoai.khuon),
     doTreMs: { truyHoi: kqTruyHoi.doTreMs, model: doTreModel, tong: Date.now() - batDau },
     // Chỉ cho scripts/eval-focused.ts đọc (thử lại, dự phòng, chiều thô). Route chọn trường, không gửi khoá này.
     vetFocused: kq.vet,
