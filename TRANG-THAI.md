@@ -24,6 +24,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
 | Claude (máy 1) | Vận hạn kết luận bằng lớp hạn (lưu tứ hoá, tứ hoá đại vận vào engine; luật tổ hợp; chat sau cờ; v3 + đệm). Đang ở bước researcher/phương án. **Chạm vùng Chung `lib/tuvi/` (web + app cùng đổi) và AGENTS.md (quyết định số 1)** | `viec/van-han-lop-han` (worktree tuvi-ai-van-han, trên nền viec/sua-do-sang-cach-cuc) | lib/tuvi/, lib/rag/nghieng-ve.ts, lib/rag/focused/, lib/rag/boi-canh-la-so.ts, lib/rag/v3/, AGENTS.md | 16/10 |
+| Claude (máy 1) | Thêm agent `chuyen-gia-tu-vi` (chuyên gia tử vi soát chuyên môn giải pháp trước khi trình). **Chạm vùng Chung AGENTS.md** (bảng subagent + luồng A/B) | `viec/agent-chuyen-gia-tu-vi` (worktree tuvi-ai-agent-cg) | .claude/agents/chuyen-gia-tu-vi.md, AGENTS.md, .claude/skills/lam-tinh-nang, chien-luoc | 17/10 |
 
 
 ## Đang vướng — đừng đụng vào
