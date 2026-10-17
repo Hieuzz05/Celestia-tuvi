@@ -37,8 +37,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 ## Vừa xong
 
 | Việc | Commit | Ngày |
-| **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
 |---|---|---|
+| **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/sua-do-sang-cach-cuc`: bảng độ sáng theo Tử Vi hàm số (Tử Vi, Thiên Cơ, Thiên Phủ, Thiên Lương, Hỏa, Linh) + Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn. phienBan 2026.10.1, PHIEN_BAN_CACH_CUC 2026.10.2, THE_HE_DEM 9 (đệm luận viết lại dần). **Vùng Chung `lib/tuvi/`: web + app cùng đổi.** | `2983612` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** (Focused trên Production vẫn TẮT, cờ `CELES_FOCUSED_CHAT` không bật): CEL-186 vé B — chat Focused + Answer Contract v2 (eval I5 23/30 flow, CI xanh), sửa log `retrieval_runs.y_dinh` (chủ đề sang `bo_loc.chuDe`). Việc nối tiếp: CEL-191 (spec `D:\Celestia\CEL-191-spec.md`, rẽ nhánh từ main mới), CEL-192 (DISCOVERY, chờ chủ dự án chọn hướng) | `8af2173` + merge `551ee54` | 05/10/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-189 tách đệm `noi_dung_ai` theo môi trường (production / Preview / local), `/api/phien-ban` có `phamViDem`. Kiểm Production: commit `1bdfe6b`, nhanh=main, moiTruong=production, phamViDem=production. KHÔNG chạy `--ghi-production`, KHÔNG xoá đệm Production | `8bc5554`, `667848a` + merge `1bdfe6b` | 03/10/2026 |
