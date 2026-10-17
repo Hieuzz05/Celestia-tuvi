@@ -93,7 +93,7 @@ async function main() {
   assert.ok(loiHoaLopHan(`Lưu Hóa Lộc vào ${luuLoc.sao}, tại cung ${luuLoc.tenCung === 'Mệnh' ? 'Quan Lộc' : 'Mệnh'}.`, bang));
   const giaMeta = bc.duKien.map((d) => ({ ...d, noiDung: 'Không có quan hệ được in', sao: [h.sao] }));
   assert.equal(bangHoaChoLoi(laSo, giaMeta, [2026]).hoa.length, 0, 'Metadata không cấp quyền cặp');
-  for (const cum of ['tín hiệu', 'chồng lớp', 'lực cản', 'chiếc xe', 'con đường', 'đường xấu', 'xe yếu', 'nền', 'nhịp', 'yếu tố đỡ']) assert.ok(loiChuLopHan(`Có ${cum} ở đây.`), cum);
+  for (const cum of ['lớp nền', 'nền sẵn', 'lớp hạn', 'tín hiệu', 'chồng lớp', 'lực cản', 'chiếc xe', 'con đường', 'đường xấu', 'xe yếu', 'nền', 'nhịp', 'yếu tố đỡ']) assert.ok(loiChuLopHan(`Có ${cum} ở đây.`), cum);
   assert.equal(loiChuLopHan('Tai nạn xe cộ là chuyện ngoài phạm vi câu hỏi.'), null);
   assert.equal(loiChuLopHan('Thu nhập ổn định.'), null);
   const nguon = 'LƯU Ý: không có nguồn tham chiếu nào. Chỉ nói dữ kiện.';

@@ -1,3 +1,4 @@
+import { lopHanBat } from './co-lop-han';
 import { bangHoaChoLoi, loiChuLopHan, loiHoaLopHan, PHIEN_BAN_VALIDATOR_LOP_HAN } from './kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
@@ -189,7 +190,7 @@ export function dauAnChoLuot(vao: {
  * Tắt (mặc định) = đường cũ nguyên vẹn. Chỉ bật trên production khi chat, bài
  * luận v3 và Hành trình đều đã đổi (quyết định lượt 4, 16/10/2026).
  */
-export const lopHanBat = () => process.env.CELES_LOP_HAN === '1';
+export { lopHanBat } from './co-lop-han';
 
 export function canTinhNghieng(keHoach: Pick<KeHoachTruyVan, 'yDinh' | 'phamViThoiGian'>): boolean {
   if (keHoach.yDinh === 'quyet-dinh' || keHoach.yDinh === 'co-khong' || keHoach.yDinh === 'thoi-diem') return true;

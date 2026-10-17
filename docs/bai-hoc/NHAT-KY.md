@@ -116,3 +116,12 @@ Mẫu một mục:
 - Luật: kiểm quan hệ phải giữ hoá–sao–cung–lớp–thời điểm và phạm vi câu/vế; vế mơ hồ cần viết lại. Ca âm phải gồm hai sao, hai hoá, nguồn/cung sau liên từ, nhiều cửa sổ và chip.
 - Nâng: docs/bay/ai-rag.md; scripts/test-lop-han-3b.ts đã có regression và được nối CI. Không push sổ lên main vì chủ dự án cấm push trong phiên này.
 - Lần: 1
+
+## 17/10/2026 · Baseline lấy nhầm khung hiện tại có thể tự xác nhận · ai-rag
+- Thẻ: baseline, snapshot, khung, co env, B4
+- Chuyện gì: reviewer vòng2 CEL-200 phát hiện generator base-root đọc dữ kiện cũ nhưng vòng lặp câu hỏi lại dùng khung hiện tại; base còn ghi cứng25ad334. Sửa B4 sẽ làm chứng cứ nguồn bị lẫn nếu chỉ sinh lại mẫu.
+- Gốc: đường dẫn base chỉ bao một phần đồ thị, metadata không ràng buộc nội dung nguồn.
+- Giá: phải dựng baseline25ad334+B4 độc lập và sửa generator trước nghiệm thu; chưa push, không tốn model.
+- Luật: generator đọc cả khung/dữ kiện từ cùng cây nguồn, alias về chính cây đó; ghi commit/tree và bản vá ngoại lệ. Kiểm env runtime qua entry point, không chỉ truyền boolean vào helper.
+- Nâng: docs/bay/ai-rag.md; test-lop-han-v3 kiểm bản vá khi ghi mẫu, băm cả khung; test-lop-han-env nối CI theo việc1 đã duyệt. Chưa đưa sổ lên main vì chủ dự án chưa cho push.
+- Lần: 1

@@ -9,7 +9,7 @@ import { khoaTen, quetTen } from './focused/quet-ten';
 export const PHIEN_BAN_VALIDATOR_LOP_HAN = '2026.10.1';
 const chuan = (s: string) => s.normalize('NFC').toLowerCase().replaceAll('hoá', 'hóa');
 const thoat = (s: string) => [...s].map((c) => '.*+?^${}()|[]'.includes(c) || c.charCodeAt(0) === 92 ? String.fromCharCode(92) + c : c).join('');
-const cumCam = [...CUM_TIENG_LONG_CAM, 'chiếc xe', 'con đường', 'mặt đường', 'đường xấu', 'đường tốt', 'xe tốt', 'xe xấu', 'xe vững', 'xe yếu', 'chồng lớp', 'tín hiệu', 'lực cản', 'kho chưa có', 'không có tài liệu', 'không có nguồn', 'chưa có căn cứ trong kho'];
+const cumCam = [...CUM_TIENG_LONG_CAM, 'chiếc xe', 'con đường', 'mặt đường', 'đường xấu', 'đường tốt', 'xe tốt', 'xe xấu', 'xe vững', 'xe yếu', 'chồng lớp', 'lớp nền', 'nền sẵn', 'lớp hạn', 'tín hiệu', 'lực cản', 'kho chưa có', 'không có tài liệu', 'không có nguồn', 'chưa có căn cứ trong kho'];
 const CAM = new RegExp(`(?<![\\p{L}\\p{M}])(?:${cumCam.map(thoat).join('|')})(?![\\p{L}\\p{M}])`, 'iu');
 export function loiChuLopHan(van: string): string | null {
   return van.match(CAM)?.[0] ?? van.match(AN_DU_CAM)?.[0] ?? null;

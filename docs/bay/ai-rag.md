@@ -169,3 +169,5 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   (dữ kiện, hướng) do mã chốt, model chỉ được đổi CÁCH NÓI.
 
 - **Validator quan hệ phải giữ đủ thuộc tính qua nhiều vế** (CEL-200, 17/10): không lấy sao đầu rồi bỏ sao sau, không mất lớp/năm/cung sau dấu phẩy hoặc liên từ; chữ model sinh gồm cả chip. Ca máy canh: `scripts/test-lop-han-3b.ts` (CI), có cặp ghép sai, nguồn không có, F/W và chuyển chế độ.
+
+- **Snapshot base-root phải đọc cả khung và dữ kiện từ cùng cây**, alias không quay về mã hiện tại. Ngoại lệ sửa lỗi ungated cần patch riêng và SHA/tree nguồn. Máy canh CEL-200: `test-lop-han-v3.ts` (khung + B4), `test-lop-han-env.ts` (env thật qua entry point, offline).

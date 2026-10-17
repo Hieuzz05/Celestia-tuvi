@@ -426,8 +426,8 @@ function moTaCung(
   const netTs = cheDo === 'chinh' && c.trangSinh && KHUON.vi.netTrangSinh[c.trangSinh] ? `${c.trangSinh}: ${KHUON.vi.netTrangSinh[c.trangSinh]}` : '';
   const nhan = nhanChuNgu(c, docLaThan);
   const tuanTriet = [
-    c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở tiền vận (khoảng trước 30 tuổi)' : ''}` : '',
-    c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — theo quan niệm phổ biến tác động mạnh ở hậu vận' : ''}` : '',
+    c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập' : ''}` : '',
+    c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — nhẹ hơn Triệt nhưng dai, theo suốt đời' : ''}` : '',
   ].filter(Boolean);
   /*
    * Lượt 3 TQ12 (01/10/2026): Thiên Di có Triệt + Địa Không hãm, model vẫn chỉ kể

@@ -1,3 +1,4 @@
+import { lopHanBat } from './co-lop-han';
 import { chuNguonLopHan } from './kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import { CHU_DE, type ChuDeId } from '@/lib/ai/prompt';
@@ -261,7 +262,7 @@ export async function luanBaiDai(vao: DauVaoBaiDai): Promise<KetQuaBaiDai> {
    * `bang-linh-vuc` vốn đã để 8000 và không gặp lỗi này — đây là chỗ hai bề mặt
    * cùng một sản phẩm đặt hai ngân sách khác nhau mà không có lý do.
    */
-  const kq = await goiVoiFallback({ system: chuNguonLopHan(dungSystem(vao.chuDe), process.env.CELES_LOP_HAN === '1'), user: chuNguonLopHan(user, process.env.CELES_LOP_HAN === '1'), maxTokens: 8000 }, vao.uuTienModel);
+  const kq = await goiVoiFallback({ system: chuNguonLopHan(dungSystem(vao.chuDe), lopHanBat()), user: chuNguonLopHan(user, lopHanBat()), maxTokens: 8000 }, vao.uuTienModel);
   const tho = docJson(kq.text);
 
   const phienBan = {

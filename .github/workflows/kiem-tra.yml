@@ -83,6 +83,8 @@ jobs:
         run: npx tsx scripts/test-focused.ts
       - name: Lop han Focused va validator quan he (CEL-200 may 2)
         run: npx tsx scripts/test-lop-han-3b.ts
+      - name: Lop han doc env qua bai dai va bang (offline)
+        run: npx tsx scripts/test-lop-han-env.ts
       - name: Du kien van han v3 sau co (CEL-200 may 2)
         run: npx tsx scripts/test-lop-han-v3.ts
       - name: CEL-191 hiểu câu theo trường — bảng timeIntent, cổng gọi model, gộp luật trước

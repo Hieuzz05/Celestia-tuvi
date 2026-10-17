@@ -1,3 +1,4 @@
+import { lopHanBat } from './co-lop-han';
 import { chuNguonLopHan } from './kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import { goiModel } from '@/lib/ai/providers';
@@ -440,8 +441,8 @@ ${thanCu}`,
    */
   const goiMotNua = async (ids: MucId[], idsKia: MucId[]) => {
     const yeuCau = {
-      system: chuNguonLopHan(dungSystem(ids, idsKia), process.env.CELES_LOP_HAN === '1'),
-      user: chuNguonLopHan(user, process.env.CELES_LOP_HAN === '1'),
+      system: chuNguonLopHan(dungSystem(ids, idsKia), lopHanBat()),
+      user: chuNguonLopHan(user, lopHanBat()),
       maxTokens: 5000,
       mucSuyNghi: vao.epModel?.mucSuyNghi,
     };

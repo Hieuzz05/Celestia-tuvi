@@ -1,3 +1,4 @@
+import { lopHanBat } from '../co-lop-han';
 import { chuNguonLopHan } from '../kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
@@ -267,7 +268,7 @@ export interface ChuanBiCau {
 /** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
 export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
   const { q } = vao;
-  const coLopHan = process.env.CELES_LOP_HAN === '1' && hoiThoiDiem(q);
+  const coLopHan = lopHanBat() && hoiThoiDiem(q);
   const duKien = dungDuKien(vao.laSo, q, vao.namXem, 1, coLopHan);
   const cungChuDe = q.loai === 'chuyen-sau' ? (q.cungChinh ?? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh) : undefined;
   const tv = vao.thuVien?.length
@@ -377,7 +378,7 @@ export async function luanMotCau(vao: {
 }): Promise<KetQuaCauV3> {
   const t0 = Date.now();
   const { q } = vao;
-  const coLopHan = process.env.CELES_LOP_HAN === '1' && hoiThoiDiem(q);
+  const coLopHan = lopHanBat() && hoiThoiDiem(q);
   const { duKien, tv, nguon, msTruyHoi, cungChinhCau } = vao.chuanBi ?? (await chuanBiCau(vao));
   const phep = saoDuocPhep(duKien);
   const nen = cungNen(q);

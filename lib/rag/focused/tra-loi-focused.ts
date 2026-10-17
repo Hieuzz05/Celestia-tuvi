@@ -1,3 +1,4 @@
+import { lopHanBat } from '../co-lop-han';
 import { bangHoaChoLoi } from '../kiem-lop-han';
 /**
  * ĐƯỜNG FOCUSED — điều phối một lượt chat (CEL-186 vé B, mục 8 + 15).
@@ -180,7 +181,7 @@ export async function traLoiFocused(
   bayGio: ThoiDiemAm = bayGioAm(),
   pt: PhuThuocFocused = {}
 ): Promise<KetQuaFocused> {
-  const coLopHan = process.env.CELES_LOP_HAN === '1';
+  const coLopHan = lopHanBat();
   const batDau = Date.now();
   const nn: NgonNgu = vao.ngonNgu === 'en' ? 'en' : 'vi';
   const lichSu = vao.lichSu ?? [];

@@ -2,8 +2,9 @@ import { khoiDuKienV3 } from '../lib/rag/v3/index';
 /** CEL-200 Commit4 máy2: thứ tự dữ kiện, giữ nền gốc, hoá đại vận, regex và cờ tắt. Offline. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, relative, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { tuHoaDaiVan } from '../lib/tuvi/tu-hoa-han';
@@ -25,15 +26,59 @@ async function main() {
   const root = baseIndex >= 0 ? resolve(process.argv[baseIndex + 1]) : process.cwd();
   const mod = await import(pathToFileURL(resolve(root,'lib/rag/v3/du-kien.ts')).href) as typeof import('../lib/rag/v3/du-kien');
   const prompt = await import(pathToFileURL(resolve(root,'lib/rag/v3/prompt-v3.ts')).href) as typeof import('../lib/rag/v3/prompt-v3');
-  const snap: string[] = [hash(prompt.SYSTEM_V3)];
-  for (const l of la) for (const q of CAU_HOI_V3) snap.push(hash(mod.dungDuKien(l,q,2026)));
-  if (process.argv.includes('--ghi-mau')) { writeFileSync(fixture, JSON.stringify({ base:'25ad334',sha256:snap },null,2)+'\n');return; }
-  assert.deepEqual(snap, JSON.parse(readFileSync(fixture,'utf8')).sha256, 'Đường tắt v3 lệch byte base25ad334');
+  const khung = await import(pathToFileURL(resolve(root,'lib/rag/v3/khung.ts')).href) as typeof import('../lib/rag/v3/khung');
+  const snap: string[] = [hash(prompt.SYSTEM_V3),hash(khung.CAU_HOI_V3)];
+  for (const l of la) for (const q of khung.CAU_HOI_V3) snap.push(hash(mod.dungDuKien(l,q,2026)));
+  if (process.argv.includes('--ghi-mau')) {
+    assert.ok(baseIndex>=0 && process.argv.includes('--base-commit'),'Ghi mẫu cần base-root và base-commit độc lập');
+    const base=process.argv[process.argv.indexOf('--base-commit')+1];
+    const patch='scripts/dong-bang/lop-han-v3-b4.patch';
+    const git=(...args:string[])=>execFileSync('git',args,{encoding:'utf8'});
+    assert.equal(git('diff','25ad334',base,'--','lib'),readFileSync(patch,'utf8').replaceAll('\r\n','\n'),'Base chỉ được cộng đúng bản vá B4 đã lưu');
+    // Không cho một root hiện tại/thiếu tệp mượn nhãn SHA lịch sử để ghi mẫu.
+    for (const file of git('ls-tree','-r','--name-only',base,'lib').trim().split('\n')) {
+      const raw=execFileSync('git',['show',`${base}:${file}`]);
+      const actual=readFileSync(resolve(root,file));
+      let text:string;
+      try { text=new TextDecoder('utf-8',{fatal:true}).decode(raw); }
+      catch { assert.ok(raw.equals(actual),`Base binary lệch: ${file}`); continue; }
+      const expected=text.replace(/['"]@\/([^'"]+)['"]/g,(_m,spec:string)=>{
+        const rel=(relative(dirname(resolve(root,file)),resolve(root,spec)) || '.').replaceAll('\\','/');
+        return `'${rel.startsWith('.') ? rel : './'+rel}'`;
+      });
+      assert.equal(actual.toString('utf8').replaceAll('\r\n','\n'),expected.replaceAll('\r\n','\n'),`Base-root không khớp commit: ${file}`);
+    }
+    const baseTree=git('rev-parse',`${base}^{tree}`).trim();
+    writeFileSync(fixture,JSON.stringify({base,baseTree,patch,reason:'25ad334 + B4 only (du-kien, TQ10, TC01); no layer feature',sha256:snap},null,2)+'\n');
+    return;
+  }
+  assert.deepEqual(snap, JSON.parse(readFileSync(fixture,'utf8')).sha256, 'Đường tắt v3 lệch baseline B4 độc lập');
   assert.equal(systemLopHanV3(SYSTEM_V3), SYSTEM_V3);
   assert.equal(systemLopHanV3(SYSTEM_V3,false), SYSTEM_V3);
   assert.ok(!systemLopHanV3(SYSTEM_V3,true).includes('6. Cân cả hai mặt'));
   assert.ok(!systemLopHanV3(SYSTEM_V3,true).includes('17. TAM PHƯƠNG'));
   assert.ok(systemLopHanV3(SYSTEM_V3,true).includes('Nền cung gốc phải được đọc cùng vận'));
+  assert.ok(systemLopHanV3(SYSTEM_V3,true).includes('không dùng chúng để đảo chiều nhận định'));
+  // Hai lá số có thật do engine tìm; kiểm trực tiếp dữ kiện Mệnh, không tự gắn sao.
+  const ca = new Map<string, typeof la[number]>();
+  for (let nam=1980;nam<=2010 && ca.size<2;nam++) for (let thang=1;thang<=12 && ca.size<2;thang++) {
+    const l=lapLaSo({ngay:15,thang,nam,gio:9,gioiTinh:'nam'});
+    const menh=l.cungs.find(c=>c.tenCung==='Mệnh')!;
+    if (menh.coTuan) ca.set('Tuần',l);
+    if (menh.coTriet) ca.set('Triệt',l);
+  }
+  assert.equal(ca.size,2);
+  for (const [ten,l] of ca) for (const bat of [false,true]) {
+    const q=CAU_HOI_V3.find(q=>q.id==='TQ10')!;
+    const text=dungDuKien(l,q,2026,1,bat).filter(d=>d.cung==='Mệnh').map(d=>d.noiDung).join('\n');
+    if (ten==='Tuần') { assert.ok(text.includes('nhẹ hơn Triệt nhưng dai, theo suốt đời')); assert.ok(!/Tuần:[^;\n]*hậu vận/u.test(text)); }
+    else { assert.ok(text.includes('rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập')); assert.ok(!/Triệt:[^;\n]*30/u.test(text)); }
+  }
+  for (const id of ['TQ10','TC01']) {
+    const q=CAU_HOI_V3.find(q=>q.id===id)!;
+    assert.ok(!/Tuần \(hậu vận\)/u.test(q.yBatBuoc+q.yeuToThem));
+    assert.ok((q.yBatBuoc+q.yeuToThem).includes('suốt đời'));
+  }
   let so = 0;
   for (const l of la) for (const q of CAU_HOI_V3) {
     const cu = dungDuKien(l,q,2026);
