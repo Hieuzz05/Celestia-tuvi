@@ -208,3 +208,113 @@ hợp; chẩn đoán "gốc là bảng bộ sao rỗng"; nguyên tắc "không k
 - **C3:** không máy móc ép model trả lời hai mặt. Bỏ kiểm tra "phải nhắc cả hai danh sách", bỏ sàn 75%.
 - **C4:** đồng ý, bắt cả hai kiểu Kình.
 - **C5:** đã chốt từ trước.
+
+## C1 bản 4: Xe và đường, đặt cung gốc vào vận (18/10/2026, đã qua phản biện)
+
+Anh đã bác Tầng 3 của bản 3, nơi sao gốc chỉ làm dẫn chứng. Lý do của anh: cung gốc là chiếc xe, vận hạn là
+con đường. Đường xấu mà xe tốt thì vẫn đi được, bớt xấu; ngược lại cũng vậy. Bản này dựng lại theo ý đó và
+kiểm từng ý bằng sách.
+
+### Sách nói gì
+
+Đã đọc nguyên văn trong kho `D:/Tài liệu tử vi/markdown`.
+
+| Nguồn | Nguyên văn | Rút ra |
+|---|---|---|
+| *Tử vi tổng hợp* (Nguyễn Phát Lộc), dòng 309 | "Đại hạn thuộc tiền vận thì nằm trong khuôn khổ của cung Mệnh. Nếu thuộc hậu vận thì lồng khung trong cung Thân. … Nếu Mệnh hay Thân tốt thì cái tốt đó ảnh hưởng đến đại hạn liên hệ và có thể chế giảm ít nhiều cái xấu của đại hạn đó. Nếu Mệnh, Thân xấu thì xấu lây đến đại hạn, ít hoặc nhiều." | Đúng ý xe: Mệnh và Thân làm nhẹ hoặc làm nặng thêm, "ít nhiều". Câu này không nói xe đổi được chiều. |
+| *Tử vi tổng hợp*, dòng 305 | "Mỗi đại hạn đóng ở một cung. Cung đó tốt hay xấu thì đại hạn cũng có ý nghĩa đó." | Sao gốc ở **cung đại vận** chính là mặt đường. Mã 3a đang bỏ phần này (`nghieng-ve.ts:524`). |
+| *Tự điển Tử Vi* (Đắc Lộc), dòng 479 | "Mệnh, Phúc tốt mà Thiên di, giải ách vận hạn ngộ hung sát thì đỡ xấu. Mệnh không tốt, Phúc không có cứu tinh mà … vận hạn ngộ hung sát thì rất nguy." | Xe gồm cả **Phúc Đức**. |
+| Đắc Lộc, dòng 477 | "Mệnh tốt không bằng vận tốt; thân xấu không bằng hạn xấu." | Khi xe và đường ngược nhau thì đường nặng hơn. Vì vậy **chiều vẫn lấy từ lớp hạn.** |
+| *Toàn thư* (Vũ Tài Lục), dòng 1414 | "Nói nhất mệnh nhị vận không có nghĩa là mệnh tốt rồi khỏi cần hạn nữa. … vận hạn mới thật sự là trọng tâm" | Đỡ thêm cho việc đường giữ chiều. |
+
+**Phần sách không có, nói thẳng:**
+- Lấy **cung đang hỏi trên lá số gốc** làm xe (ví dụ hỏi sự nghiệp thì lấy Quan Lộc gốc) là **kinh nghiệm của
+  anh**, chưa tìm thấy câu sách. Tôi đề xuất vẫn dùng, nhưng ghi nguồn là "chủ dự án", không ghi là sách.
+- Phản biện tìm thấy câu ngược với việc đổi xe từ Mệnh sang Thân sau ranh tuổi: *Khảo luận* 2830, *Nghiệm lý
+  toàn thư* 814. Sách cũng không thống nhất ranh tuổi: *Tử vi tổng hợp* 302 tính theo Cục, các dòng 792, 2826,
+  3202 lấy mốc 30 tuổi. Vì vậy **Mệnh giữ suốt đời, còn Thân chỉ cộng thêm làm xe phụ ở hậu vận**, không thay
+  Mệnh.
+
+### Ba lớp, không cộng chung một rổ
+
+**Lớp đường quyết chiều (thuận hay cản).**
+- Bộ sao lớp hạn: giữ Tầng 1 của bản 3.
+- Sao lưu, lưu hoá, hoá đại vận đứng lẻ: giữ Tầng 2 của bản 3.
+- **Mới: sao gốc ở cung đại vận và cung tiểu hạn** (*Tử vi tổng hợp* 305).
+  - Chỉ đọc chính tinh kèm độ sáng, cộng cách cục đóng tại cung đó. Không cộng phụ tinh lẻ.
+  - **Trọng số của nó phải nhỏ hơn lớp lưu.** Sao gốc cung đại vận đứng yên suốt 10 năm, nếu nặng ngang lớp
+    lưu thì mười năm sẽ ra cùng một chiều. Số cụ thể không tự đặt mà **chọn bằng phép đo**: trong cùng một đại
+    vận, các năm vẫn phải ra nhãn khác nhau, với tỉ lệ không thấp hơn đường 3a hiện tại.
+
+**Lớp xe chỉnh mức, không đổi chiều.**
+- Xe gồm ba phần, xét theo thứ tự:
+  1. **Cung đang hỏi trên lá số gốc** (kinh nghiệm của anh).
+  2. **Mệnh**, cộng thêm Thân khi đã sang hậu vận (*Tử vi tổng hợp* 309).
+  3. **Phúc Đức** (Đắc Lộc 479).
+- **Luật chống đếm đôi.** Cung đại vận hoặc tiểu hạn trùng với một phần của xe thì sao gốc ở cung đó chỉ tính
+  **một lần, ở lớp đường**. Phần xe đó bỏ qua, xét phần kế tiếp.
+- Mỗi xe được xếp **vững, thường, yếu, hoặc chưa rõ**, chỉ dựa trên những thứ có luật đã duyệt:
+  - chính tinh kèm độ sáng;
+  - cách cục gốc, sau khi được gắn nhãn cát hay hung có nguồn. Đây là việc mới vì `CachCuc` chưa có trường này,
+    anh duyệt từng dòng;
+  - với Phúc: **danh sách phúc tinh và cứu tinh lấy theo sách**, anh duyệt. Mỗi danh sách là một bộ có tên,
+    không phải cộng phụ tinh lẻ;
+  - Tuần, Triệt, Hoá Kỵ gốc, Mệnh vô chính diệu: chỉ được tính khi có luật kèm câu sách.
+- Không có căn cứ thì ghi "chưa rõ", và xe không chỉnh gì.
+
+**Lớp hoá giải.** Đây là luật bộ ở Tầng 1, có chiều mới `hoa-giai`: một sao gốc cụ thể làm nhẹ một tổ hợp lớp
+hạn cụ thể. Chỉ thêm khi có câu sách nói đúng việc **sao gốc làm nhẹ sao hạn**. Câu về Triệt ở Đắc Lộc 479 nói
+về Mệnh gốc, nên không dùng làm ví dụ.
+
+### Ghép xe với đường
+
+Chỉ lấy những ô có sách đỡ (*Tử vi tổng hợp* 309, Đắc Lộc 479):
+
+| Đường | Xe vững | Xe thường hoặc chưa rõ | Xe yếu |
+|---|---|---|---|
+| Thuận | thuận, có lực đỡ ("cái tốt ảnh hưởng đến đại hạn") | thuận | thuận nhưng bớt ("xấu lây đến đại hạn") |
+| Cân | cân | cân | cân |
+| Cản | cản nhưng đỡ ("chế giảm ít nhiều", "đỡ xấu") | cản | cản và nặng hơn ("rất nguy", Celes nói là "nặng hơn", không doạ) |
+
+- **Xe chỉ được đổi mức tối đa một bậc:** "rõ" xuống "nhẹ", hoặc "nhẹ" lên "rõ". Xe không bao giờ đưa câu về
+  "cân" và không lật chiều. Lý do: sách chỉ nói "ít nhiều".
+- **Xe yếu chỉ được nâng "nhẹ" lên "rõ" khi phía cản có mục mạnh đã duyệt**, theo C2.
+- **Hàng "cân" để nguyên**, vì không có sách cho ô này.
+- Celes nhận được ô trong bảng kèm lý do: sao hay cách cục nào làm nên xe, và câu sách đỡ. Nhờ vậy Celes nói
+  được kiểu: "năm nay đường gồ ghề, nhưng Quan Lộc gốc của bạn có X nên chống được".
+
+### Chiều ngược lại: xem mệnh cũng phải đặt vào thời điểm
+
+Hiện câu hỏi bản mệnh không nhắc vận đang đi. Tôi đề xuất thêm một dòng "quãng hiện tại" lấy từ đại vận đang
+đi. Việc này ở vùng khác (planner bản mệnh), nên **tách thành đầu việc riêng**, không gộp vào 3a'.
+
+### Đổi gì so với mã 3a
+
+- Sao gốc ở cung đại vận và cung tiểu hạn vào lớp đường.
+- Khối prompt "NỀN … CHỈ để dẫn chứng" đổi thành khối "XE", có nhãn xe và ô trong bảng.
+- Tăng `PHIEN_BAN_NGHIENG_LOP_HAN` (đã được duyệt ở C5). Cờ vẫn tắt trên production.
+- **Việc anh duyệt:**
+  - nhãn cát hay hung cho từng cách cục gốc;
+  - danh sách phúc tinh và cứu tinh;
+  - luật hoá giải.
+
+### Phản biện C1 bản 4 (18/10): Sập / Lung lay / Đứng được
+
+**Sập (đã sửa ở trên):**
+- Bản nháp nói "cung đang hỏi là xe" như thể có sách đỡ. Thực ra chưa sách nào nói vậy. Đã ghi lại nguồn là kinh nghiệm của chủ dự án.
+- Bản nháp cấm cộng phụ tinh lẻ, nhưng lại cần đọc Phúc Đức qua phúc tinh và cứu tinh, phần lớn là phụ tinh. Đã đổi sang danh sách có tên theo sách, chủ dự án duyệt.
+- Cung đại vận trùng cung đang hỏi (hoặc trùng Mệnh) thì bị đếm đôi. Đã thêm luật: chỉ tính một lần, ở lớp đường.
+
+**Lung lay (đã xử lý):**
+- Ranh tuổi chuyển sang Thân: các sách không thống nhất, có sách bác hẳn việc đổi. Đã chốt Mệnh giữ suốt đời, Thân chỉ thêm vào.
+- Bảng ghép xe với đường có ô không có sách đỡ. Đã bỏ các ô hàng "cân" và câu "chóng tàn" của Vũ Tài Lục.
+- Xe chỉnh mức đến đâu: đã giới hạn tối đa một bậc, không đưa câu về "cân".
+- Câu về Triệt bị dùng sai ngữ cảnh: đã bỏ.
+- Trọng số sao gốc ở cung đại vận: chưa có con số, sẽ chọn bằng phép đo độ khác nhau giữa các năm.
+
+**Đứng được:**
+- Đưa sao gốc ở cung đại vận vào lớp đường (*Tử vi tổng hợp* 305).
+- Đường giữ chiều, xe chỉnh mức (Đắc Lộc 477, *Tử vi tổng hợp* 309, Vũ Tài Lục 1414).
+- Gắn nhãn cát hay hung cho cách cục là việc mới.
+
+**Còn mở:** chưa tìm được câu sách cho "cung đang hỏi là xe". Anh có sách nói việc này thì bổ sung.
