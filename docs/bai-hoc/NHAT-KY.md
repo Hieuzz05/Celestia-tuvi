@@ -112,7 +112,15 @@ Mẫu một mục:
   (tệp:dòng hoặc kết quả grep kho); chưa kiểm thì ghi rõ "chưa kiểm", không trình như sự thật.
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo". Lần 2 → máy canh trích nguyên văn trong
   `scripts/test-luat-to-hop.ts` (nhánh `viec/van-han-lop-han`, 10beac8).
-- Lần: 2
+- Lần: 3
+- Lặp 17/10 (lần 3, hai chuyện): (a) giải pháp việc A ghi "câu Triệt tiền vận, Tuần hậu vận không có
+  trong 15 cuốn"; chủ dự án phản đối, chuyen-gia-tu-vi tìm ra Ảo bí 4819 nói nguyên văn — grep của AI
+  chỉ dùng vài biến thể chữ ("hậu vận", "sau 30") nên sót câu Hán Việt "hậu khán Tuần". (b) nói đường
+  luận dùng "6 đoạn sách" trong khi v3 dùng 8 (hạ 4 khi thư viện khớp đủ) — số 6 chỉ của chat. Gốc
+  chung: khẳng định PHỦ ĐỊNH ("không có", "chỉ có") cần quét hết mà AI dừng ở lần grep đầu. Giá: chủ
+  dự án phải sửa lưng; bản 7 đẩy lên nhánh với câu sai, phải sửa lại (56636f0). Máy canh đề xuất:
+  agent chuyen-gia-tu-vi bắt buộc soát mọi câu "sách không có / chỉ một sách" trước khi trình (thêm
+  vào luật đầu ra của agent và mục Kiểm và báo); với mã, câu số liệu (số đoạn, mốc) phải kèm tệp:dòng.
 - Lặp 17/10: trình chủ dự án luật Bạch Hổ + Lưu Hổ "đủ 2 nhóm nguồn" và được duyệt; celes-domain đọc
   lại thì Hàm số 2567/2587 nói BỘ Tang Hổ + Lưu Tang Hổ, không phải Hổ đơn — chỉ còn một nhóm. Kình
   cũng bị gắn "cung hỏi" mà sách chỉ nói Mệnh và hạn. Gốc: số dòng lấy từ bảng tần suất (đếm chữ),
