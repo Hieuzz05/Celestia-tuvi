@@ -24,7 +24,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
 | Claude (máy 1) | Vận hạn kết luận bằng lớp hạn (lưu tứ hoá, tứ hoá đại vận vào engine; luật tổ hợp; chat sau cờ; v3 + đệm). Đang ở bước researcher/phương án. **Chạm vùng Chung `lib/tuvi/` (web + app cùng đổi) và AGENTS.md (quyết định số 1)** | `viec/van-han-lop-han` (worktree tuvi-ai-van-han, trên nền viec/sua-do-sang-cach-cuc) | lib/tuvi/, lib/rag/nghieng-ve.ts, lib/rag/focused/, lib/rag/boi-canh-la-so.ts, lib/rag/v3/, AGENTS.md | 16/10 |
-| Claude (máy 1) | Thêm agent `chuyen-gia-tu-vi` (chuyên gia tử vi soát chuyên môn giải pháp trước khi trình). **Chạm vùng Chung AGENTS.md** (bảng subagent + luồng A/B) | `viec/agent-chuyen-gia-tu-vi` (worktree tuvi-ai-agent-cg) | .claude/agents/chuyen-gia-tu-vi.md, AGENTS.md, .claude/skills/lam-tinh-nang, chien-luoc | 17/10 |
 
 
 ## Đang vướng — đừng đụng vào
@@ -38,6 +37,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 ## Vừa xong
 
 | Việc | Commit | Ngày |
+| **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
 |---|---|---|
 | **ĐÃ GỘP MAIN** `viec/sua-do-sang-cach-cuc`: bảng độ sáng theo Tử Vi hàm số (Tử Vi, Thiên Cơ, Thiên Phủ, Thiên Lương, Hỏa, Linh) + Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn. phienBan 2026.10.1, PHIEN_BAN_CACH_CUC 2026.10.2, THE_HE_DEM 9 (đệm luận viết lại dần). **Vùng Chung `lib/tuvi/`: web + app cùng đổi.** | `2983612` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** (Focused trên Production vẫn TẮT, cờ `CELES_FOCUSED_CHAT` không bật): CEL-186 vé B — chat Focused + Answer Contract v2 (eval I5 23/30 flow, CI xanh), sửa log `retrieval_runs.y_dinh` (chủ đề sang `bo_loc.chuDe`). Việc nối tiếp: CEL-191 (spec `D:\Celestia\CEL-191-spec.md`, rẽ nhánh từ main mới), CEL-192 (DISCOVERY, chờ chủ dự án chọn hướng) | `8af2173` + merge `551ee54` | 05/10/2026 |
