@@ -25,7 +25,8 @@ này thay bản Commercialization Report).
 - Mỗi con số phải có nguồn và ngày.
 
 ## 2. Tổng hợp → phản biện
-Viết kết luận nháp, gọi `phan-bien`, sửa theo. Phương án nào bị đánh "Sập" thì bỏ hoặc nói rõ
+Viết kết luận nháp, gọi `phan-bien`, sửa theo. Kết luận chạm chuyên môn tử vi thì gọi thêm
+`chuyen-gia-tu-vi` cùng lượt. Phương án nào bị đánh "Sập" thì bỏ hoặc nói rõ
 điều kiện để nó đứng được. Đừng giấu đi.
 
 Kiểm thêm theo ba quyết định không được tự đổi trong AGENTS.md: ngân sách bằng 0, Nam phái làm
