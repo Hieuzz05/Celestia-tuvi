@@ -12,6 +12,7 @@ npx tsx scripts/test-cach-cuc.ts      # lớp cách cục: luật nào chết, s
 npx tsx scripts/test-lop-du-kien.ts   # lớp thời gian dữ kiện: gốc không mang năm, vòng Thái Tuế gốc không vào gói hạn, bài dài chặn cách cục bịa — offline
 npx tsx scripts/test-tu-hoa-han.ts    # bảng sự thật lớp hạn: lưu tứ hoá theo can năm, tứ hoá theo can cung đại vận, điểm trùng — so bảng sách + đếm tay — offline
 npx tsx scripts/test-luat-to-hop.ts   # luật tổ hợp lớp hạn: bảng hợp lệ (≥2 nguồn độc lập theo NHOM_NGUON có trích nguyên văn, có thành phần hạn, xung-chieu có neo gốc), hàm khớp trên bảng mẫu, luật quét 0 lần = viết sai; đối chiếu nguyên văn tệp sách chỉ chạy khi máy có kho (CI bỏ qua) — offline
+npx tsx scripts/test-ho-so-cung.ts    # hồ sơ cung (CEL-200, 3a' bản 7 bước C-A): địa lợi theo Tử Vi hàm số chỉ cho Phúc/Mệnh/Thân, chặn đầu / theo gót không phân nam nữ, giáp, nhị hợp, vô chính diệu mượn xung chiếu, tháo gỡ Tuần Triệt ở đại vận; quét lá mỗi nhánh phải gặp — offline
 npx tsx scripts/test-lop-han-chat.ts  # chat cân theo lớp hạn (CEL-200, cờ CELES_LOP_HAN): cờ tắt = y nguyên từng byte; cờ bật: sao gốc chỉ ở mục nền, lưu hoá đúng sao, luôn hai mặt, sao lưu trong luật không cộng lại; in bảng phân bố hướng — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
 npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
