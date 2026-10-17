@@ -196,3 +196,15 @@ hoặc không rút lại được**:
 
 **Đứng được:** các dòng dẫn HS 382/384/388/737/741/743, Khảo luận 2690–2691, Phụ Tinh 2067; thứ bậc chính > xung > tam
 hợp; chẩn đoán "gốc là bảng bộ sao rỗng"; nguyên tắc "không khẳng định khi sách không nói".
+
+## Chủ dự án chốt (17/10/2026 tối)
+
+- **C1:** Tầng 1 và Tầng 2 đồng ý. **Tầng 3 bị bác:** không được chỉ để sao gốc và cách cục gốc làm dẫn chứng.
+  - Cung gốc là "chiếc xe", vận hạn là "con đường". Đường xấu mà xe tốt thì vẫn đi được, bớt xấu; ngược lại cũng vậy.
+  - Khi luận phải đặt cung gốc vào vận để xem tốt xấu, có hoá giải được không.
+  - Tử vi phải kết hợp nhiều yếu tố: xem mệnh phải đặt vào thời điểm, xem hạn phải xét cung gốc.
+  - Máy 1 sẽ đề xuất lại thành "C1 bản 4", có qua phan-bien.
+- **C2:** đồng ý.
+- **C3:** không máy móc ép model trả lời hai mặt. Bỏ kiểm tra "phải nhắc cả hai danh sách", bỏ sàn 75%.
+- **C4:** đồng ý, bắt cả hai kiểu Kình.
+- **C5:** đã chốt từ trước.
