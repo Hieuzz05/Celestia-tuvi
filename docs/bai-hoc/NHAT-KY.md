@@ -190,3 +190,19 @@ Mẫu một mục:
   đề xuất gì, vì sao. Không dùng mã bước (C-D), tên reviewer hay tên tệp làm chủ ngữ.
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án".
 - Lần: 1
+
+## 18/10/2026 · Lại đề xuất luật ép model sau khi đã chốt không ép · ai-rag
+- Thẻ: ep model, hai mat, luat cung prompt, noi dep, can cu
+- Chuyện gì: chủ dự án đã chốt C3 "không ép trả lời hai mặt" và đã nói nhiều lần rằng luật ép cứng làm
+  model luận kém đi. Vậy mà trong mã vẫn còn "NÓI CẢ HAI MẶT, LUÔN LUÔN" (do AI thêm ngày 16/10,
+  `nghieng-ve.ts:892`) cùng đoạn đổi mốc cho đủ hai phía (:636). Khi trình phương án, AI còn đưa ra
+  phương án (A) giữ "cân hai mặt" để chủ dự án chọn.
+- Gốc: AI coi luật ép là lưới an toàn ("cho không phán một chiều"), mà không thấy rằng khi không có căn
+  cứ thì ép nói đủ hai phía chính là bắt model bịa. Quyết định ở tầng nguyên tắc (C3) không được AI
+  kéo xuống rà từng câu prompt đang chạy.
+- Giá: chủ dự án phải nhắc lại nguyên tắc; mất một vòng quyết.
+- Luật: không thêm vào prompt luật đòi model PHẢI nói một nội dung (hai mặt, điểm đẹp, lời khuyên…)
+  bất kể có căn cứ hay không. Chỉ được viết "có căn cứ thì nêu, không có thì thôi". Khi chủ dự án chốt
+  một nguyên tắc về prompt, grep mọi prompt đang chạy để tìm câu trái nguyên tắc đó.
+- Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
+- Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
