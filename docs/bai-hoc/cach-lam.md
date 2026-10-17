@@ -42,6 +42,9 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   chữ để thiết kế. Câu mẫu và chữ hướng dẫn model phải là lời thường: tên sao, tên cung, chuyện đời cụ thể.
   Lặp 18/10 (chủ dự án đã nhắc nhiều lần); máy canh: validator lời chat lớp hạn (CEL-200 3b, việc e).
 
+- **Mỗi mục xin chủ dự án quyết phải tự đứng được**: chức năng gì, người dùng gặp ở đâu, hiện chạy
+  thế nào, đổi gì (kèm ví dụ), mỗi lựa chọn dẫn tới đâu, AI đề xuất gì. Không lấy mã bước, tên
+  reviewer hay tên tệp làm chủ ngữ. Ngày 18/10, 3/5 mục xin quyết bị trả lại "chưa hiểu".
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.
 - **Thiếu dấu loại việc (`[CODE]`…) thì hỏi một câu ngắn**, đừng tự đoán rồi đi sai luồng.

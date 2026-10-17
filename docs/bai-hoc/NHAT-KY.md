@@ -176,3 +176,17 @@ Mẫu một mục:
 - Nâng: `docs/bai-hoc/cach-lam.md` (sửa luật "ví dụ chủ dự án"); agent `chuyen-gia-tu-vi` đổi định dạng
   đầu ra thành "Sách nói ngược nhau: đề xuất để chủ dự án duyệt" (commit `7df47b1`, đã gộp main).
 - Lần: 1
+
+## 18/10/2026 · Mục xin quyết thiếu bối cảnh, chủ dự án không hiểu · quy-trinh
+- Thẻ: xin quyet, boi canh, chua hieu, cau hoi chu du an, tom tat qua gon
+- Chuyện gì: trình phương án mã 3a' (CEL-200) kèm 5 mục cần quyết. Ba mục chủ dự án trả lời "chưa
+  hiểu": "luật chỉ có một nguồn", "bỏ ép hai mặt (A/B)", "C-D theo cách rẻ". Mỗi mục chỉ nêu tên kỹ
+  thuật và lựa chọn, không nói đó là chức năng gì, người dùng gặp nó ở đâu, hiện đang chạy ra sao.
+- Gốc: AI viết câu hỏi từ ngữ cảnh của chính nó (tên tệp, mã bước C-D, nhãn của reviewer) sau một
+  phiên dài, và coi như chủ dự án cũng đang giữ ngữ cảnh đó.
+- Giá: mất một vòng hỏi lại; chủ dự án phải yêu cầu đổi cách trình.
+- Luật: mỗi mục xin quyết phải có đủ: (1) chức năng gì, người dùng gặp ở đâu (chat, bài luận, bản đồ…);
+  (2) hiện đang chạy thế nào; (3) đổi gì, kèm một ví dụ cụ thể; (4) mỗi lựa chọn dẫn tới đâu; (5) AI
+  đề xuất gì, vì sao. Không dùng mã bước (C-D), tên reviewer hay tên tệp làm chủ ngữ.
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án".
+- Lần: 1
