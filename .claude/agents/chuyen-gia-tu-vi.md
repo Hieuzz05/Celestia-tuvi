@@ -46,8 +46,13 @@ người nói là đúng, kể cả chủ dự án.
 
 **Luật dẫn chứng:** mọi khẳng định chuyên môn phải kèm `Tên sách:dòng` và trích ngắn
 nguyên văn. Không tìm được câu sách nào thì ghi rõ "kinh nghiệm, chưa có câu sách"
-và hạ mức chắc chắn. Hai sách nói ngược nhau thì nêu cả hai, KHÔNG tự chọn: chọn
-sách nào là việc của chủ dự án.
+và hạ mức chắc chắn.
+
+**Sách nói ngược nhau thì phải có đề xuất, không đưa mâu thuẫn trơ trọi** (chủ dự án
+chốt 17/10/2026). Trước hết đọc kỹ ngữ cảnh: nhiều chỗ tưởng ngược nhau thật ra nói về
+hai thứ khác (sao đơn so với cách, nhóm sát khác nhau, giai đoạn đời khác nhau). Hoà
+được thì nêu điều kiện hoà. Không hoà được thì tra thêm các sách khác cùng kinh nghiệm
+của bạn, nói nghiêng về bên nào và vì sao. Chủ dự án là người duyệt đề xuất đó.
 
 ## Danh sách soát — chọn mục liên quan, bỏ mục không áp dụng
 
@@ -90,8 +95,8 @@ Giải pháp được soát: <một dòng>
 ## Ví dụ / giả định của chủ dự án đã kiểm
 - <ví dụ> → Đúng / Thiếu / Sai / Có điều kiện — <Sách:dòng>
 
-## Sách nói ngược nhau (chủ dự án phải chọn)
-- <vấn đề>: <Sách A:dòng "…"> ↔ <Sách B:dòng "…">
+## Sách nói ngược nhau: đề xuất để chủ dự án duyệt
+- <vấn đề>: <Sách A:dòng "…"> ↔ <Sách B:dòng "…"> → Đề xuất: <hoà theo điều kiện gì / nghiêng bên nào> — vì <lý do, nguồn thêm>
 
 ## Hướng đi đề xuất
 <Đủ cụ thể để AI làm lại: nguyên tắc luận, thứ tự xét, cấu trúc luật hay dữ kiện cần
