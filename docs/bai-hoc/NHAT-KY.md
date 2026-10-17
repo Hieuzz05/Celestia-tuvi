@@ -139,3 +139,17 @@ Mẫu một mục:
   chat lớp hạn (sau cờ, tăng `PHIEN_BAN_VALIDATOR`) quét `CUM_TIENG_LONG_CAM` + `AN_DU_CAM` + cụm ẩn dụ
   xe/đường; giao máy 2 trong 3b (việc e).
 - Lần: 2
+
+## 17/10/2026 · Ví dụ của chủ dự án bị áp nguyên làm luật · quy-trinh
+- Thẻ: vi du chu du an, hoa giai, hoi chu du an quyet, quy tac tu vi
+- Chuyện gì: giải pháp việc A (vận hạn) định lấy danh sách hoá giải chủ dự án nêu làm ví dụ (Hóa Khoa,
+  Giải Thần, Tử Vi, Tuần Triệt) làm luật; lại hỏi chủ dự án "có cho sao toạ thủ nặng hơn sao chiếu
+  không". Kiểm sách: danh sách đó là câu Khảo luận 2109 chỉ nói về La Võng; danh sách đủ ở Khảo luận
+  1671–1672; toạ thủ nặng hơn chiếu là quy tắc sẵn (Hàm số 737).
+- Gốc: coi lời chủ dự án là đặc tả chuyên môn, và đẩy câu hỏi chuyên môn lên người thay vì tra sách.
+  Không có bước soát chuyên môn riêng trước khi trình (phan-bien soi kiến trúc, không soi tử vi).
+- Giá: chủ dự án phải sửa lưng hai lần trong một lượt; bản 5 phải làm lại.
+- Luật: ví dụ của chủ dự án phải qua sách; điều có quy tắc tử vi thì không hỏi người quyết.
+- Nâng: `docs/bai-hoc/cach-lam.md` (Giao tiếp); máy canh = agent `chuyen-gia-tu-vi` (nhánh
+  `viec/agent-chuyen-gia-tu-vi`, gọi bắt buộc khi giải pháp chạm chuyên môn).
+- Lần: 1
