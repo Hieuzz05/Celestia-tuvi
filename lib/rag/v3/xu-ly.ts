@@ -400,7 +400,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         await dem.luu(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
       const cauDem = phamVi.map((id) => daCo.get(id)!);
-      return tra({ nhom, cau: cauDem, tuDem: true, banMoi: coBanMoi(cauDem) });
+      return tra({ nhom, cau: anNoiBo(cauDem), tuDem: true, banMoi: coBanMoi(cauDem) });
     }
 
     // Tới đây là phải gọi model — khách chưa đăng nhập thì xin lượt trước (chỉ tổng quan mới tới được đây khi là khách)
