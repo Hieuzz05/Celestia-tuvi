@@ -616,7 +616,8 @@ export const LUAT_QUAN_HE: readonly LuatQuanHe[] = [
     chuDong: du('Tử Vi', 'Thiên Phủ'),
     biTacDong: bi(mot(...TU_SAT), KHONG_KIEP),
     viTri: 'tam-phuong',
-    dieuKienCung: KHONG_DIEU_KIEN_CUNG,
+    // TH 4077 nói "Thiên Phủ - Tử Vi, đồng cung": Tử Phủ chỉ đồng cung ở Dần Thân; sát chế được ở tam phương
+    dieuKienCung: { chuDong: [2, 8], biTacDong: KAD },
     doSang: { chuDong: DAC_TRO_LEN, biTacDong: 'bat-ky' },
     canKem: KAD,
     khongDuocDungMotMinh: false,
