@@ -75,7 +75,7 @@ import type { ChuDe, LopHan } from './planner';
 
 export const PHIEN_BAN_NGHIENG = '2026.09.2';
 /** Phép cân theo lớp hạn (CEL-200) — chỉ chạy khi cờ `CELES_LOP_HAN` bật; ghi vết riêng */
-export const PHIEN_BAN_NGHIENG_LOP_HAN = '2026.10.1';
+export const PHIEN_BAN_NGHIENG_LOP_HAN = '2026.10.2';
 
 export type HuongNghieng = 'thuan-ro' | 'thuan-nhe' | 'can-bang' | 'can-nhe' | 'can-ro';
 
@@ -633,16 +633,11 @@ function tinhTheoLopHan(vao: Parameters<typeof tinhNghiengVe>[0]): NghiengVe | n
     const huong = huongTu(do_, can);
 
     /*
-     * Luôn nói hai mặt (chốt 16/10/2026): nhãn chiều chỉ quyết phần nào nói trước,
-     * không quyết bỏ phần nào. Top 6 toàn một phía thì đổi mốc nhẹ nhất lấy mốc
-     * nặng nhất của phía còn thiếu.
+     * Lấy 6 mốc nặng nhất, không chèn mốc phía thiếu (đảo quyết định "luôn nói hai
+     * mặt" ngày 16/10, theo C3/Q2): năm nghiêng hẳn một phía thì danh sách phản
+     * ánh đúng thế, phía kia có căn cứ đủ nặng mới được nêu.
      */
-    let chon = dauMoc.slice(0, 6);
-    for (const phia of ['do', 'can'] as const) {
-      if (chon.some((d) => d.huong === phia)) continue;
-      const bu = dauMoc.find((d) => d.huong === phia);
-      if (bu) chon = [...chon.slice(0, Math.max(chon.length - 1, 0)), bu];
-    }
+    const chon = dauMoc.slice(0, 6);
 
     const iTrung = lh.trung.find((t) => t.loai === 'tieu-han-trung-dai-van');
     const bai = luanHan(vao.laSo, cap, vao.namXem, vao.thangXem, ngonNgu);
@@ -822,10 +817,10 @@ của dữ kiện cộng nghĩa đời sống của nó.`;
 /**
  * Khối prompt của phép cân theo lớp hạn (CEL-200).
  *
- * Khác khối cũ ở ba chỗ, đều theo quyết định 16/10/2026:
+ * Khác khối cũ ở ba chỗ (quyết định 16/10/2026, mục hai mặt sửa theo C3/Q2):
  *   - hai danh sách chỉ gồm dữ kiện LỚP HẠN; sao gốc đứng riêng ở mục nền,
  *     ghi rõ là dẫn chứng, không quyết chiều;
- *   - luôn nói cả hai mặt — nhãn chiều chỉ quyết phần nào nói trước;
+ *   - không ép hai mặt — phía có dữ kiện thì nêu, phía mỏng thì không độn;
  *   - danh sách cấm thêm các tên nội bộ của phép cân và các câu tự nói về kho.
  */
 function khoiTheoLopHan(n: NghiengVe, lh: NonNullable<NghiengVe['lopHan']>): string {
@@ -889,11 +884,13 @@ CÁCH VIẾT — ĐÚNG THỨ TỰ NÀY, KHÔNG ĐẢO:
 
 1. TRẢ LỜI THẲNG CÂU ĐƯỢC HỎI, ngay câu đầu, theo xu hướng trên.
 
-2. NÓI CẢ HAI MẶT, LUÔN LUÔN. Xu hướng chỉ quyết phần nào nói TRƯỚC và nói NẶNG
-   hơn, không quyết bỏ phần nào. Nêu đích danh ít nhất một dữ kiện ở danh sách
-   thuận lợi và một ở danh sách cản trở — gọi thẳng tên, kèm lớp mang nó tới,
-   rồi dịch nghĩa ngay. Phía nào ghi MỎNG thì nói đúng mức là phía đó mỏng năm
-   nay, không phóng to, không bịa thêm dữ kiện cho đủ.
+2. CÓ CĂN CỨ THÌ NÊU, KHÔNG CÓ THÌ KHÔNG THÊM CHO ĐỦ. Nói phía theo xu hướng
+   trước, nêu đích danh dữ kiện của nó — gọi thẳng tên, kèm lớp mang nó tới, rồi
+   dịch nghĩa ngay. Phía kia có dữ kiện trong danh sách thì nêu đúng mức, cũng
+   gọi tên như vậy. Phía nào ghi MỎNG thì không cần nhắc tới; đừng dựng một ý
+   ngược chiều chỉ để bài có đủ hai mặt, và đừng bịa dữ kiện. Với câu hỏi thời
+   gian, luật này thay cho mọi chỉ dẫn "cân cả hai mặt" hay "nói luôn phần chưa
+   chắc / chỗ còn mở" ở trên: phần đó chỉ nói khi danh sách có dữ kiện cho nó.
 
    Tên được gọi thẳng: tên sao, tên tứ hoá (kể cả "lưu Hóa Kỵ" — nhưng chỉ đúng
    sao như danh sách trên), tên lớp hạn (đại vận, tiểu hạn, lưu niên), tên cách
@@ -905,7 +902,8 @@ CÁCH VIẾT — ĐÚNG THỨ TỰ NÀY, KHÔNG ĐẢO:
 
 CẤM — ĐÂY LÀ TIẾNG LÓNG NỘI BỘ CỦA HỆ THỐNG, KHÔNG PHẢI TIẾNG VIỆT:
 "đẩy tới", "đang đỡ", "yếu tố đỡ", "yếu tố cản", "lực đỡ", "lực cản", "tín hiệu",
-"chồng lớp", "lớp nền", "lớp hạn", "nền sẵn", "nghiêng về phía thuận", "tương quan", "hai lực ngang
+"chồng lớp", "lớp nền", "lớp hạn", "nền sẵn", "quyết chiều", "lật chiều", "dẫn chứng",
+"nghiêng về phía thuận", "tương quan", "hai lực ngang
 nhau", và mọi câu đếm dữ kiện. Nói "điều thuận lợi", "điều cản trở" bằng lời
 thường. Cũng KHÔNG nói "không có tài liệu", "không có nguồn", "kho chưa có" —
 người đọc không hỏi về kho; chưa chắc thì nói mức chắc chắn bằng lời thường.`;
