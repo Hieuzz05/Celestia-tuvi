@@ -20,6 +20,24 @@ Web tử vi cá nhân hoá. Deploy: https://celestia-tuvi.vercel.app · Repo: Hi
 Hướng dẫn vận hành đầy đủ (deploy, biến môi trường, Supabase, bật Google SSO, design system,
 cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước khi sửa gì lớn.
 
+## Vibe Board — bảng task chung mọi máy (BẮT BUỘC)
+
+Chủ dự án theo dõi việc đã / đang / sẽ làm của mọi dự án trên **Vibe Board** (repo private
+`github.com/Hieuzz05/vibe-board`), đồng bộ giữa các máy qua git. AI trên máy nào cũng phải ghi vào đó.
+
+1. **Đầu phiên, kiểm máy đã cài chưa:** có tệp `D:/VibeDashboard/task.mjs` (máy không có ổ D thì
+   `~/VibeDashboard/task.mjs`) là đã cài. Chưa có thì cài TRƯỚC khi làm việc:
+   ```bash
+   git clone https://github.com/Hieuzz05/vibe-board.git D:/VibeDashboard
+   node D:/VibeDashboard/setup.mjs --by "<Claude|Codex> (máy N)"   # không biết N thì hỏi chủ dự án một câu
+   ```
+   `setup.mjs` chép luật đầy đủ vào chỉ dẫn toàn cục của Claude Code và Codex, có hiệu lực từ phiên sau.
+   Phiên đang chạy thì đọc luật ở `D:/VibeDashboard/RULE.md` và làm theo luôn.
+2. **Đã cài:** `git -C D:/VibeDashboard pull -q`; `RULE.md` vừa đổi thì chạy lại `setup.mjs`.
+3. **Ghi theo `RULE.md`:** nhận việc, mỗi mốc, chờ duyệt, chờ nghiệm thu, dừng giữa chừng. Mô tả đủ các mục
+   (mục tiêu, bối cảnh, làm gì, xong khi…), viết cho chủ dự án đọc. Mã dự án: `celes`. Repo ở chỗ khác
+   `D:/SAPP BA/tuvi-ai` thì chạy `node D:/VibeDashboard/task.mjs project --id celes --repo "<đường dẫn>"` một lần.
+
 ## Ba quyết định không được tự đổi
 
 1. **Nam phái làm chuẩn** cho an sao; Bắc phái chỉ dùng đối chiếu khi luận vận hạn.
