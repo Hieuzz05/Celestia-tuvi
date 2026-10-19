@@ -175,7 +175,12 @@ Mẫu một mục:
   sao); chủ dự án duyệt đề xuất chứ không tự chọn từ con số không.
 - Nâng: `docs/bai-hoc/cach-lam.md` (sửa luật "ví dụ chủ dự án"); agent `chuyen-gia-tu-vi` đổi định dạng
   đầu ra thành "Sách nói ngược nhau: đề xuất để chủ dự án duyệt" (commit `7df47b1`, đã gộp main).
-- Lần: 1
+- Lần: 2
+- Lặp 19/10: trình hai điểm chuyên môn CEL-200 (Đà La đắc địa ở đâu; Nhật Nguyệt Sửu Mùi gặp Kỵ) mà
+  không đề xuất, chưa qua `chuyen-gia-tu-vi`. Chuyên gia soát xong thì cả hai chỗ AI đặt tạm đều sai:
+  Đà suýt sửa engine theo phía thiểu số (Thiên Lương + Ảo bí, trong khi ~6 nhóm nói tứ mộ đắc); Nhật
+  Nguyệt bị hạ mức 'giam' trong khi 4 nhóm sách nói Kỵ làm sáng, và TH 4091 bị đọc nhầm là câu bác.
+  Gốc mới: luật đã có trên main nhưng phiên không thấy (xem mục 18/10 "Mục xin quyết thiếu bối cảnh").
 
 ## 18/10/2026 · Mục xin quyết thiếu bối cảnh, chủ dự án không hiểu · quy-trinh
 - Thẻ: xin quyet, boi canh, chua hieu, cau hoi chu du an, tom tat qua gon
@@ -188,8 +193,18 @@ Mẫu một mục:
 - Luật: mỗi mục xin quyết phải có đủ: (1) chức năng gì, người dùng gặp ở đâu (chat, bài luận, bản đồ…);
   (2) hiện đang chạy thế nào; (3) đổi gì, kèm một ví dụ cụ thể; (4) mỗi lựa chọn dẫn tới đâu; (5) AI
   đề xuất gì, vì sao. Không dùng mã bước (C-D), tên reviewer hay tên tệp làm chủ ngữ.
-- Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án".
-- Lần: 1
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án". Lần 2 → đề xuất máy canh (dưới), chờ
+  chủ dự án duyệt.
+- Lần: 2
+- Lặp 19/10: xin duyệt "tăng PHIEN_BAN_NGHIENG_LOP_HAN" mà không nói đó là gì, ảnh hưởng gì; chủ dự án
+  hỏi "tăng cái gì?". Gốc lần này KHÔNG phải thiếu luật: `CLAUDE.md` nạp `docs/bai-hoc/cach-lam.md` từ
+  thư mục chính, mà thư mục chính đang ở nhánh `viec/toi-uu-token` rẽ trước 17/10, còn việc làm trong
+  worktree `viec/van-han-lop-han` cũng cũ → ba luật 17–18/10 (xin quyết tự đứng, sách ngược kèm hoà
+  giải, chạm chuyên môn qua chuyen-gia-tu-vi) không hề có trong ngữ cảnh. Bài học lên main không tới
+  được phiên đang chạy trên nhánh cũ. Giá: một vòng hỏi lại, chủ dự án phải nhắc luật.
+  Máy canh đề xuất: hook SessionStart so `docs/bai-hoc/cach-lam.md` đang có với
+  `git show origin/main:docs/bai-hoc/cach-lam.md`; khác thì in bản main vào ngữ cảnh (kèm dòng "bài học
+  mới hơn nhánh này"). Chặn ở đầu mọi phiên, cả hai máy, không phụ thuộc nhánh đang checkout.
 
 ## 18/10/2026 · Lại đề xuất luật ép model sau khi đã chốt không ép · ai-rag
 - Thẻ: ep model, hai mat, luat cung prompt, noi dep, can cu
