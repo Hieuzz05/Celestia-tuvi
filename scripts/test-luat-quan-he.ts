@@ -14,6 +14,7 @@
  * Không bắt câu trích phải gọi tên mọi sao của luật — câu sách hay gọi tắt bộ ("Sát Phá Tham").
  */
 import { lapLaSo, type LaSo } from '../lib/tuvi/ansao';
+import { doSangCuaSao } from '../lib/tuvi/dosang';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { NHOM_NGUON } from '../lib/tuvi/luat-to-hop';
@@ -97,6 +98,19 @@ function bangThat() {
   const phu = TUAN_TRIET.theoSao.find((s) => s.ma === 'TT_PHU')!;
   kiem(phu.tuan === 'mat' && phu.triet === 'giam', 'X10: Phủ gặp Tuần nặng, Triệt nhẹ (không bằng không)');
   kiem(soNhom(TUAN_TRIET.chanDau.nguon) >= 2, 'chặn đầu: Tổng hợp 1054 tường thuật Việt Viêm Tử → tính nhóm phu-toan-thu');
+
+  // Đà La đắc ở tứ mộ (chủ dự án chốt 19/10/2026): luật "dùng sát đắc" phải khớp engine dosang.ts
+  const daDac = [...Array(12).keys()].filter((c) => doSangCuaSao('Đà La', c) === 'D');
+  const sat = theoMa('SAT_DUNG_KINH_DA').dieuKienCung.biTacDong;
+  kiem(Array.isArray(sat) && sat.length === daDac.length && sat.every((c) => daDac.includes(c)), `Thất Sát dụng Kình Đà: cung Đà phải là cung Đà đắc trong engine (${daDac})`);
+  const vcd = theoMa('DA_DAN_THAN_VCD');
+  kiem(vcd.dieuKienCung.chuDong !== 'khong-ap-dung' && vcd.dieuKienCung.chuDong.every((c) => doSangCuaSao('Đà La', c) === 'H'), 'Đà Dần Thân vô chính diệu: là cách của Đà HÃM, không phải Đà đắc');
+  kiem(vcd.bienDoi.tuan !== 'khong-doi' && vcd.bienDoi.triet !== 'khong-doi', 'Đà Dần Thân vô chính diệu: Tuần Triệt làm giảm cách (TH 2541)');
+  const nn = theoMa('NHAT_NGUYET_SUU_MUI_DUNG_KY');
+  kiem(nn.muc === 'lat' && nn.chacChan === 'cao' && nn.nguonNguoc.length === 0, 'Nhật Nguyệt Sửu Mùi gặp Kỵ: lật thành tốt, TH 4091 không phải câu bác');
+  const ttNN = TUAN_TRIET.theoSao.find((s) => s.ma === 'TT_NHAT_NGUYET_SUU_MUI')!;
+  kiem(ttNN.tuan === 'nang' && ttNN.triet === 'nang', 'Nhật Nguyệt Kỵ Sửu Mùi gặp Tuần Triệt: nâng thành cách lớn');
+  kiem(theoMa('NHAT_NGUYET_KY_HONG_CACH').ngoaiLeCua === nn.ma, 'Kình Đà / Không Kiếp đồng cung làm hỏng cách Nhật Nguyệt Kỵ');
 
   console.log(`  bảng thật: ${LUAT_QUAN_HE.length} luật quan hệ, ${TUAN_TRIET.theoSao.length} dòng Tuần Triệt theo sao, ${moiNguon().length} nguồn`);
 }
