@@ -54,7 +54,7 @@ export interface KhoiLuat {
 /**
  * Tiếng lóng nội bộ cấm ra mặt trước — MỘT danh sách, khối `cam-tieng-long` in
  * nó vào prompt, `kiemCauDauAn` (dau-an.ts) quét câu thư viện bằng nó. Sửa ở
- * đây là đổi prompt, nên `PHIEN_BAN_CHU` đổi theo.
+ * đây là đổi giọng prompt: bài mới theo ngay, bài đã đệm giữ nguyên (10.19 C).
  *
  * Cổng `soatNgonNgu` KHÔNG dùng danh sách này: regex của nó chỉ bắt
  * "yếu tố đang đỡ", không bắt "đang đỡ" trần. Nới cổng là đổi

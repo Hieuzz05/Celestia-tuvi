@@ -18,6 +18,7 @@ import { boDau, tenBiaChan } from './thuc-the';
  * giải thích được.
  */
 
+/** Nằm trong băm khoá đệm (`PHIEN_BAN_CHU`): chỉ tăng khi đổi luật mức CHẶN — thêm / sửa cảnh báo thì đừng tăng, kẻo xả đệm 6 bề mặt vô cớ. */
 export const PHIEN_BAN_NGON_NGU = '2026.09.7';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
