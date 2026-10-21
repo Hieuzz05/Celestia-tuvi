@@ -81,6 +81,8 @@ jobs:
         run: npx tsx scripts/test-thu-vien-prompt.ts
       - name: K2 dấu logic V3 — câu lệch dấu viết lại khi mở, khách hết lượt vẫn được bài cũ, dấu không ra trình duyệt
         run: npx tsx scripts/test-dau-logic-v3.ts
+      - name: K3 tháng nói theo độ tin — hỏi một tháng thì không nói chắc, mức nặng giữ nguyên
+        run: npx tsx scripts/test-thang-chac-thap.ts
       - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
         run: npx tsx scripts/test-phan-hoi.ts
       - name: P0 §14 độ phủ tầng viết — hàm đếm claim/F/điểm bắt buộc

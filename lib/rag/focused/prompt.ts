@@ -158,6 +158,16 @@ const MO_TA_HUONG: Record<NghiengVe['huong'], string> = {
   'can-ro': 'vướng RÕ, áp đảo. Câu trả lời nói rõ điều đó, không rào đón — nhưng không "chắc chắn".',
 };
 
+/**
+ * K3 (22/10/2026): hỏi MỘT tháng thì hai hướng "rõ" không được "nói rõ, không rào đón" — vận tháng
+ * là lớp mỏng nhất. Đổi chính mô tả hướng thay vì thêm luật đứng trên nó. Nói về ĐỘ TIN, không ép
+ * nói nhẹ đi: tháng nặng vẫn là nặng.
+ */
+const MO_TA_HUONG_THANG: Partial<Record<NghiengVe['huong'], string>> = {
+  'thuan-ro': 'thuận RÕ ở tầng tháng. Nói rõ chiều thuận, nhưng theo độ tin (như "nghiêng về…", "dễ…") — vận một tháng không đủ để nói chắc.',
+  'can-ro': 'vướng RÕ ở tầng tháng. Nói rõ chiều vướng và đúng mức nặng của nó, nhưng theo độ tin (như "nghiêng về…", "dễ…") — vận một tháng không đủ để nói chắc.',
+};
+
 const NHAN_CHIEU: Record<NhomHuong, string> = { thuan: 'thuan', ngang: 'ngang', vuong: 'vuong' };
 
 /** Lớp nào có F### trong gói — `dauMoc` của lớp vắng mặt không được đưa ra (mục 4.4). */
@@ -223,10 +233,12 @@ export function tenDuocGoiTrongLuot(v: {
   nghieng: NghiengVe | null;
   khuon: PhanLoai['khuon'];
   cauTraCuu?: string;
+  /** Hỏi một tháng — để guard đọc đúng chữ khối nghiêng model thấy (K3) */
+  hoiThang?: boolean;
 }): { tapTen: Set<string>; tenHien: string[] } {
   const hien = nghiengHienThi(v.nghieng, v.goi, v.khuon);
   const tenHien = hien ? [...hien.dauMoc.map((d) => d.ten), ...hien.cachCuc] : [];
-  const chu = [khoiNghiengFocused(v.nghieng, v.goi, v.khuon), ...(v.cauTraCuu ? [v.cauTraCuu] : [])];
+  const chu = [khoiNghiengFocused(v.nghieng, v.goi, v.khuon, v.hoiThang), ...(v.cauTraCuu ? [v.cauTraCuu] : [])];
   return { tapTen: tapTenTuGoi(v.goi.duKien, chu, tenHien), tenHien };
 }
 
@@ -235,7 +247,12 @@ export function tenDuocGoiTrongLuot(v: {
  * có F### trong gói, không có lời dặn khuôn bài dài, và nói rõ chiều mã đã chốt
  * để model điền `direction` của `claims[0]`.
  */
-export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 'duKien'>, khuon: PhanLoai['khuon']): string {
+export function khoiNghiengFocused(
+  n: NghiengVe | null,
+  goi: Pick<GoiBangChung, 'duKien'>,
+  khuon: PhanLoai['khuon'],
+  hoiThang = false
+): string {
   const hien = nghiengHienThi(n, goi, khuon);
   if (!n || !hien) return '';
   const coTen = new Set(hien.dauMoc);
@@ -259,7 +276,7 @@ ${ben('do')}
 Cản lại:
 ${ben('can')}${cachCuc}
 
-HƯỚNG ĐÃ CHỐT: ${MO_TA_HUONG[n.huong]}
+HƯỚNG ĐÃ CHỐT: ${(hoiThang && MO_TA_HUONG_THANG[n.huong]) || MO_TA_HUONG[n.huong]}
 "direction" của claims[0] lượt này phải là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}". Câu trả lời chỉ được gọi tên các dữ kiện CÓ TÊN trong hai danh sách trên.`;
 }
 
@@ -345,12 +362,17 @@ function khoiThoiGian(m: MocTinhSan): string[] {
     dong.push('KẾT LUẬN THỜI GIAN: nói về cả tháng, KHÔNG giải thích âm/dương lịch.');
   }
   dong.push('Không cộng, không chấm điểm, không gọi phần nào "nặng hơn" theo số ngày.');
+  dong.push(
+    'ĐỘ TIN: vận một tháng là lớp mỏng nhất của lá số. Nói theo độ tin ("nghiêng về…", "có khả năng…", "dễ…"), KHÔNG dùng "chắc chắn", "chắc luôn". ' +
+      'Đổi cách nói, đừng lặp một cụm cho mọi câu; mỗi nhận định vẫn kèm lý do và việc cụ thể ngoài đời, đúng chuẩn thường. Không dùng "có thể… nhưng cũng có thể…" để né. ' +
+      'Đây là chuyện độ tin, không phải độ nặng: tháng vướng nặng vẫn nói đúng là nặng.'
+  );
   if (t.trangThai === 'da-qua') {
     dong.push('Tháng này ĐÃ QUA: "answer" nói như nhìn lại ("quãng đó…"), không dùng "sẽ", "sắp", "tới đây". Không viết "tháng này", "quãng này".');
   } else if (t.trangThai === 'toi') {
     dong.push(
       'Tháng này CHƯA TỚI: nói như dự báo ("tháng đó dễ…", "khi vào tháng đó…"), KHÔNG dùng "đang", KHÔNG gọi là "tháng này". ' +
-        'Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng đó đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó".'
+        'Đây chính là tháng người dùng hỏi (kể cả khi họ nói "tháng sau", "tháng tới"). Căn cứ của tháng đó đã có trong gói — KHÔNG nói "chưa có căn cứ cho tháng sau / tháng đó"; có căn cứ vẫn nói theo độ tin như trên.'
     );
   }
   return dong;
@@ -450,7 +472,7 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   const t = khoiNghiemLy(v.nghiemLy ?? []);
   if (t) phan.push(t);
 
-  const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon);
+  const nghieng = khoiNghiengFocused(v.nghieng, v.goi, v.phanLoai.khuon, !!v.moc.thoiGian.thang);
   if (nghieng) phan.push(nghieng);
   phan.push(khoiMoc(v.moc, v.phanLoai.khuon));
   // N1: hỏi một tháng thì phải có câu dựa trên lớp tháng (eval 03/10: một ca chỉ dẫn sao gốc).

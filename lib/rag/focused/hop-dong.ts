@@ -53,6 +53,8 @@ export type MaLoiCung =
   | 'LO_MA'
   | 'NGUOC_HUONG'
   | 'THIEU_THANG'
+  // K3 (22/10/2026): hỏi một tháng mà nói chắc — tháng là lớp mỏng nhất, chỉ nói theo độ tin
+  | 'THANG_CHAC_CAO'
   // CEL-196: claim dẫn T### mà không dẫn F###
   | 'T_THIEU_F'
   // Tầng C (CEL-191): chỉ đo, không chặn
@@ -80,6 +82,7 @@ export const TANG_CUA: Record<MaLoiCung, TangLoi> = {
   CHON_HO: 'B',
   PHAN_TRAM: 'B',
   CHAC_CHAN_GIA: 'B',
+  THANG_CHAC_CAO: 'B',
   LO_NGUON: 'B',
   GIONG_BAO_CAO: 'C',
   PHAN_QUYET: 'C',

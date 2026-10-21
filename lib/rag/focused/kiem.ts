@@ -144,6 +144,26 @@ function chacChanGia(s: string): RegExpExecArray | null {
   }
   return null;
 }
+/**
+ * `THANG_CHAC_CAO` (tầng B, K3 22/10/2026): hỏi MỘT tháng thì cả "chắc chắn" đứng một mình cũng
+ * chặn — vận tháng là lớp mỏng nhất, chỉ nói theo độ tin ("nghiêng về…", "có khả năng…"). Không bắt
+ * "nhất định" đứng một mình ("ở một mức nhất định"). Cùng vế có phủ định ("khó nói chắc chắn", "không
+ * ai nói chắc chắn được", "chưa có gì chắc chắn") là rào đón; có "hãy / cần / nếu" ("hãy chắc chắn
+ * bạn nghỉ đủ") là lời dặn, không phải lời đoán — cả hai tha.
+ */
+// "sẽ xảy ra" không cần ở đây: `CHAC_CHAN_GIA` đã chặn nó với mọi câu hỏi.
+const CHAC_THANG = re('chắc chắn|chắc luôn|chắc như đinh|trăm phần trăm', 'giu');
+const THA_CUNG_VE = re('không|chưa|chẳng|khó|đâu|hãy|cần|nếu');
+/** "Khó mà chắc chắn": phủ định đứng ngay trước "mà" — `mà` cắt vế nên xét riêng. */
+const PHU_DINH_SAT = /(?:không|chưa|chẳng|khó)\s+(?:mà\s+)?$/iu;
+export function chacThang(s: string): RegExpExecArray | null {
+  CHAC_THANG.lastIndex = 0;
+  for (let m = CHAC_THANG.exec(s); m; m = CHAC_THANG.exec(s)) {
+    const ve = s.slice(0, m.index).split(/[,;:]| mà | nhưng /u).pop() ?? '';
+    if (!THA_CUNG_VE.test(ve) && !PHU_DINH_SAT.test(s.slice(0, m.index))) return m;
+  }
+  return null;
+}
 export const PHAN_TRAM = /100\s*%/u;
 
 /** Lời khuyên chung — EVAL. "nên" đứng một mình thường là liên từ, nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
@@ -336,8 +356,15 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
   if (pt) bao({ ma: 'PHAN_TRAM', chiTiet: 'văn nêu phần trăm — lá số không cho con số xác suất', doan: doanQuanh(ban.answer, pt.index) });
   for (const s of cau) {
     const cc = chacChanGia(s);
+    const ct = cc || !ctx.thoiGian.thang ? null : chacThang(s);
     if (cc) bao({ ma: 'CHAC_CHAN_GIA', chiTiet: `"${cc[0]}" — lá số chỉ nói xu hướng, không nói chắc điều sẽ xảy ra`, doan: s.slice(0, 60) });
-    else if (PHAN_QUYET.test(s)) bao({ ma: 'PHAN_QUYET', chiTiet: 'câu có giọng phán quyết' });
+    else if (ct) {
+      bao({
+        ma: 'THANG_CHAC_CAO',
+        chiTiet: `"${ct[0]}" — vận một tháng là lớp mỏng nhất của lá số: nói theo độ tin ("nghiêng về…", "có khả năng…"), không nói chắc; mức nặng nhẹ giữ nguyên`,
+        doan: s.slice(0, 60),
+      });
+    } else if (PHAN_QUYET.test(s)) bao({ ma: 'PHAN_QUYET', chiTiet: 'câu có giọng phán quyết' });
     if (khuon === 'C' || khuon === 'E') {
       const chon =
         CHON_HO.test(s) || CHON_HO_DAU_CAU.test(s) || (khuon === 'E' && !!ctx.phanLoai.haiVe && chonMotVe(s, ctx.phanLoai.haiVe));
