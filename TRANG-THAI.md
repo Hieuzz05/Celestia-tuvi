@@ -24,7 +24,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
 | Claude (máy 1) | Vận hạn lớp hạn (CEL-200), bước 3a' theo bản 7: dựng hồ sơ cung `lib/tuvi/ho-so-cung.ts`, bảng luật quan hệ `lib/tuvi/luat-quan-he.ts`, thứ tự xét `lib/tuvi/xet-cung.ts` (tệp MỚI, chưa ai import, không đổi hành vi); gỡ luật ép hai mặt ở `nghieng-ve.ts` + `quy-tac-luan-giai.ts`. **Vùng Chung `lib/tuvi/` (app type-check cả tệp mới).** Phương án: D:\Celestia\PHUONG-AN-3a-ban7-ma.md | `viec/van-han-lop-han` (worktree tuvi-ai-van-han) | lib/tuvi/ (tệp mới), lib/rag/nghieng-ve.ts, lib/rag/quy-tac-luan-giai.ts, scripts/test-ho-so-cung.ts, scripts/test-luat-quan-he.ts | 18/10 |
-
+| Claude (máy 1) | Kho tri thức tối thiểu K1 (CELES-26, vòng 1 của kế hoạch 9 phiên): chặn mục nặng chưa duyệt, bỏ mục bị lật (quan hệ đã xác minh), bỏ dòng "cân cả hai" khối thư viện, lưu căn cứ cho câu trả lời V3. Không đổi khoá đệm. Codex làm X1, Gemini làm G1 song song | `viec/kho-toi-thieu` (worktree tuvi-ai-kho-toi-thieu) | lib/rag/thu-vien/khop.ts, lib/rag/thu-vien/cho-prompt.ts, lib/rag/v3/xu-ly.ts, scripts/test-* mới | 22/10 |
+| Claude (máy 1) | Khoá đệm giọng văn K2 (CELES-31 + CELES-11): tách phần giọng văn khỏi khoá đệm 7 bề mặt, chốt khoá V3 theo phiên bản logic, gỡ nút "Tạo bản mới", rồi sửa luật chung số 4 "Cân cả hai mặt". Nhánh chồng lên K1 (K1 đã commit, chờ nghiệm thu) | `viec/khoa-dem-giong` (worktree tuvi-ai-khoa-dem-giong) | lib/rag/phien-ban-chu.ts, lib/rag/chuan-ngon-ngu.ts, lib/rag/quy-tac-luan-giai.ts, lib/rag/v3/xu-ly.ts, app/la-so/page.tsx, app/luan-giai/sau/page.tsx, components/luangiai/TongQuanV3.tsx | 22/10 |
 
 ## Đang vướng — đừng đụng vào
 
