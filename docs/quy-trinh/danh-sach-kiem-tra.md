@@ -32,6 +32,7 @@ npx tsx scripts/test-priv-01.ts        # PRIV-01: vết Production không giữ 
 npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng sớm nhất, cờ không chặn chẩn đoán, nhãn judge/người — offline
 npx tsx scripts/test-nghiem-ly.ts      # nghiệm lý của chủ dự án (QĐ-13) + khối T###: T phải kèm F, vòng T↔T giải tất định, cờ tắt giữ nguyên — offline
 npx tsx scripts/test-thu-vien-prompt.ts  # K1 khối thư viện V3: mục nặng chưa duyệt bị chặn (cờ CELES_THU_VIEN_MANH_CHUA_DUYET=1 mở lại), mục bị lật đã duyệt bị bỏ, căn cứ câu V3 không ra trình duyệt — offline
+npx tsx scripts/test-dau-logic-v3.ts    # K2 dấu logic `lg` câu V3: lệch dấu = thiếu, viết lại khi mở; bản cũ hiện tạm; khách hết lượt không bị 429 — offline
 npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
 npx tsx scripts/test-do-phu-viet.ts    # độ phủ tầng viết (đo, chưa đổi Writer) — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model

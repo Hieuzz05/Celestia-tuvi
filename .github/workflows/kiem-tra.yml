@@ -79,6 +79,8 @@ jobs:
         run: npx tsx scripts/test-nghiem-ly.ts
       - name: K1 kho tối thiểu — chặn mục nặng chưa duyệt, bỏ mục bị lật đã xác minh, căn cứ không ra trình duyệt
         run: npx tsx scripts/test-thu-vien-prompt.ts
+      - name: K2 dấu logic V3 — câu lệch dấu viết lại khi mở, khách hết lượt vẫn được bài cũ, dấu không ra trình duyệt
+        run: npx tsx scripts/test-dau-logic-v3.ts
       - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
         run: npx tsx scripts/test-phan-hoi.ts
       - name: P0 §14 độ phủ tầng viết — hàm đếm claim/F/điểm bắt buộc
