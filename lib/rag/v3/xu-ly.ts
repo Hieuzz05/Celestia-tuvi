@@ -52,14 +52,6 @@ import { khoaBoiCanh, khoiBoiCanh, lamSachBoiCanh } from '@/lib/rag/v3/boi-canh-
  */
 export const THE_HE_DEM: number = 9;
 
-/**
- * Bài viết trước khi có dấu kho (26/09/2026) được coi là viết với kho lúc đó —
- * dấu đo ngay trước khi deploy. Không có dòng này thì nút "Tạo bản mới" hiện
- * trên MỌI lá số ngay sau deploy (bài cũ không mang dấu nào), mời viết lại
- * hàng loạt dù kho chưa đổi gì.
- */
-const KHO_TRUOC_DAU = '40749bb09806';
-const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
 
 /**
  * DẤU LOGIC trên từng câu, tóm lại, bức tranh lớn (K2, 22/10/2026 — quyết định 10.19 C).
@@ -74,7 +66,7 @@ const khoCua = (c: { kho?: string }) => c.kho ?? KHO_TRUOC_DAU;
  */
 export const LOGIC_V3 = [PHUONG_PHAP.phienBan, PHIEN_BAN_CACH_CUC, PHIEN_BAN_V3.duKien].join('|');
 /**
- * Bài viết trước khi có dấu được coi là viết với logic lúc deploy K2 — cùng lý do như `KHO_TRUOC_DAU`:
+ * Bài viết trước khi có dấu được coi là viết với logic lúc deploy K2 (như dấu kho từng làm, 26/09/2026):
  * không có dòng này thì deploy K2 làm MỌI bài v3 viết lại dù logic chưa đổi gì.
  */
 const LG_TRUOC_DAU = '2026.10.1|2026.10.2|2026.10.1';
@@ -91,8 +83,8 @@ const dungLogic = (c: { lg?: string }) => (c.lg ?? LG_TRUOC_DAU) === LOGIC_V3;
  * không hỏi thời điểm; chỉ đợt trích lượt 2.
  *
  * Chủ đề khác (30/09/2026): dựng bằng `scripts/dung-thu-vien.ts --chu-de <id> --dot <đợt>` rồi thêm
- * một dòng ở đây. CHƯA có gói đợt trong Supabase thì đừng thêm — dấu kho đổi, nút "Tạo bản mới"
- * hiện ra mà bài viết lại không có gì mới.
+ * một dòng ở đây. CHƯA có gói đợt trong Supabase thì đừng thêm — câu ấy sẽ được viết bằng khối thư
+ * viện rỗng.
  */
 export const THU_VIEN_THEO_CHU_DE: Record<string, { dot: string; cau: string[] }> = {
   'su-nghiep': { dot: 'sn-2,sn-2b', cau: ['SN01', 'SN02', 'SN04', 'SN05'] },
@@ -109,9 +101,8 @@ export const CAU_THU_VIEN = new Set<string>(Object.values(THU_VIEN_THEO_CHU_DE).
 const dotCuaCau = (id: string) => Object.values(THU_VIEN_THEO_CHU_DE).find((t) => t.cau.includes(id))?.dot;
 
 /**
- * Dấu kho MONG ĐỢI của một câu: câu dùng thư viện mang thêm đợt thư viện. Nhờ vậy câu Sự nghiệp
- * đã viết trước khi bật thư viện hiện nút "Tạo bản mới" — và CHỈ năm câu ấy (+ tóm lại) được viết
- * lại, không đụng câu hay chủ đề khác.
+ * Dấu kho MONG ĐỢI của một câu: câu dùng thư viện mang thêm đợt thư viện. Nút "Tạo bản mới" đọc dấu
+ * này đã gỡ (K2, 22/10/2026 — 10.19 C); dấu vẫn ghi lên câu để thu hồi (X3) biết câu nào viết với kho nào.
  */
 const khoMongDoi = (kho: string | null, id?: string) => (kho && id && CAU_THU_VIEN.has(id) ? `${kho}|tv:${dotCuaCau(id)}` : kho);
 
@@ -130,16 +121,10 @@ export interface BodyV3 {
   /** Lấy / viết "Bức tranh lớn" của cả lá số (khi đã đọc đủ số chủ đề) */
   bucTranh?: boolean;
   /**
-   * "Tạo bản mới" (chủ dự án chốt 26/09/2026, phương án C): viết lại những câu
-   * được viết với KHO TRI THỨC cũ. Cần đăng nhập; mỗi lá số chỉ một lần cho mỗi
-   * phiên bản kho — câu đã viết với kho hiện tại thì trả nguyên, không gọi model.
-   */
-  taoMoi?: boolean;
-  /**
    * VIẾT LẠI CƯỠNG BỨC — CHỈ quản trị viên (30/09/2026, chủ dự án: "tự test gen lại khi đổi cách
    * luận"). Bỏ qua đệm của phần được hỏi (câu, tóm lại, bức tranh lớn), viết lại bằng prompt/khung
-   * hiện tại rồi ghi đè đệm. Không phải quản trị thì 403. taoMoi chỉ viết lại khi KHO đổi, nên sửa
-   * prompt xong bấm "Tạo bản mới" không có tác dụng — cờ này là đường thử cho quản trị.
+   * hiện tại rồi ghi đè đệm. Không phải quản trị thì 403. Sửa prompt (giọng) không kéo bài cũ
+   * (10.19 C), nên cờ này là đường thử duy nhất cho quản trị.
    */
   vietLai?: boolean;
   /**
@@ -268,11 +253,10 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
   }
 
   const nhom = body.nhom ?? 'tong-quan';
-  const taoMoi = body.taoMoi === true;
   const vietLai = body.vietLai === true;
   if (vietLai && !(await mt.quanTri())) return tra({ loi: 'Chỉ quản trị viên được viết lại cưỡng bức.' }, 403);
-  if (nhom !== 'tong-quan' || taoMoi) {
-    const chan = await mt.canDangNhap(taoMoi ? 'regenerate' : 'deep_read');
+  if (nhom !== 'tong-quan') {
+    const chan = await mt.canDangNhap('deep_read');
     if (chan) return { traThang: chan };
   }
   const ids = CAU_HOI_V3.filter((q) =>
@@ -376,7 +360,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|k:${PHIEN_BAN_V3.khung}|${tomLai.map((t) => t.khoa).join('+')}` };
       const da = await dem.doc<{ bucTranh: string; kho?: string; lg?: string }>(khoaBuc);
       const khoBuc = await mt.phienBanKho();
-      if (!vietLai && da?.noiDung?.bucTranh && !(taoMoi && khoBuc && khoCua(da.noiDung) !== khoBuc) && dungLogic(da.noiDung)) {
+      if (!vietLai && da?.noiDung?.bucTranh && dungLogic(da.noiDung)) {
         return tra({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
       }
       const tq = ds.find((r) => r.khoaKy === `${tienToNhom}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
@@ -397,8 +381,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       const daTom = await docCoLui<{ tomLai: string; kho?: string; lg?: string }>(khoaTom);
       // Tóm lại của chủ đề có câu dùng thư viện mang dấu thư viện — viết lại khi các câu được viết lại
       const khoTom = khoMongDoi(await mt.phienBanKho(), ids.find((id) => CAU_THU_VIEN.has(id)));
-      // Tạo bản mới: tóm lại viết với kho cũ thì viết lại từ các câu (vừa được viết lại)
-      if (!vietLai && daTom?.noiDung?.tomLai && !(taoMoi && khoTom && khoCua(daTom.noiDung) !== khoTom) && dungLogic(daTom.noiDung)) {
+      if (!vietLai && daTom?.noiDung?.tomLai && dungLogic(daTom.noiDung)) {
         return tra({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
       }
       const nhomBai = await docCoLui<CauTraRaV3[]>(khoa);
@@ -429,13 +412,6 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       (cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiHienTai.get(c.id)).map((c) => [c.id, c])
     );
     const kho = await mt.phienBanKho();
-    // Có câu viết với kho cũ thì người đã đăng nhập được thấy nút "Tạo bản mới"
-    const coBanMoi = (ds: CauTraRaV3[]) => Boolean(kho) && ds.some((c) => !c.chuaViet && khoCua(c) !== khoMongDoi(kho, c.id));
-    if (taoMoi) {
-      if (!kho) return tra({ loi: 'Chưa đọc được kho tri thức, thử lại sau ít phút.' }, 503);
-      // Chỉ câu viết với kho cũ; câu đã theo kho hiện tại giữ nguyên — mỗi phiên bản kho một lần
-      for (const id of phamVi) if (daCo.get(id) && khoCua(daCo.get(id)!) !== khoMongDoi(kho, id)) daCo.delete(id);
-    }
     /*
      * Viết lại cưỡng bức, hoặc câu mang dấu logic cũ: bỏ bài đã cất của câu ấy; giữ bản cũ riêng để hiện
      * tạm khi câu viết lại hỏng. Câu lệch dấu ở NGOÀI phạm vi lượt này giữ nguyên trong đệm — lượt của nó
@@ -454,7 +430,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         await dem.luu(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
       const cauDem = phamVi.map((id) => daCo.get(id)!);
-      return tra({ nhom, cau: anNoiBo(cauDem), tuDem: true, banMoi: coBanMoi(cauDem) });
+      return tra({ nhom, cau: anNoiBo(cauDem), tuDem: true });
     }
 
     // Tới đây là phải gọi model — khách chưa đăng nhập thì xin lượt trước (chỉ tổng quan mới tới được đây khi là khách)
@@ -557,7 +533,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     // Câu viết lại hỏng không được mất bài ở đệm: ghi lại bản cũ cho câu đó
     await dem.luu(khoa, cau.map((c) => (c.chuaViet ? banCu.get(c.id) ?? c : c)), { provider, model, phienBan: PHIEN_BAN_V3 });
     if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoa.khoaKy, cau: thieu, hong: vietLaiHong });
-    return tra({ nhom, cau: anNoiBo(cauTra), tuDem: false, banMoi: coBanMoi(cauTra), ...(vietLai ? { vietLaiHong } : {}) });
+    return tra({ nhom, cau: anNoiBo(cauTra), tuDem: false, ...(vietLai ? { vietLaiHong } : {}) });
   } catch (e) {
     if (e instanceof KhongCoModelError) {
       return tra({ loi: e.message, chuaCauHinh: true }, 503);
