@@ -1,0 +1,6239 @@
+{
+  "phienBan": "2026-10-22.G1",
+  "ngayTao": "2026-10-21T18:02:40.987Z",
+  "tuanThuLuuY3": true,
+  "ghiChuQuanTrong": "Theo Lưu ý 3 (KE-HOACH-PHIEN-CODE-kho-tri-thuc-2026-10-21.md mục 9): Trạng thái duyet trong DB hiện tại có 0 mục da-duyet thật và 0 mục bi-bac thật từ Chủ dự án. Không tự ý coi các mục duyet=\"chua\" là đáp án Đúng. 30 mục sai-co-y có đáp án lỗi tất định 100%; 70 mục còn lại được đánh dấu rõ coDauVetChuDuAnDuyet=false để Chủ dự án duyệt nhanh hoặc dùng làm tập kiểm tra đối chiếu.",
+  "thongKeBo100": {
+    "tongSoMuc": 100,
+    "soMucDaDuyetThat": 0,
+    "soMucBiBacThat": 0,
+    "soMucSaiCoYTatDinh": 30,
+    "soMucUngVienChoChuDuAnDuyet": 70,
+    "chiTietSaiCoY": {
+      "daoChieuCatHung": 8,
+      "daoDoSangSao": 8,
+      "saiCungApDung": 7,
+      "catCutDieuKienSao": 7
+    }
+  },
+  "danhSach": [
+    {
+      "stt": 1,
+      "id": "sai-co-y:dao-chieu:TV-CC-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Phủ",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "modify",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "84471a65-d68c-42f2-8dbb-25077ee371e8",
+        "chunkIndex": 506,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "eb91ccf7987e5d88"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-CC-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'hung' sang 'cat' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "hung",
+          "y": "Dù có con, việc nuôi dưỡng và phát triển của con cái thường gặp nhiều trở ngại."
+        },
+        "giaTriSauSua": {
+          "chieu": "cat",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 2,
+      "id": "sai-co-y:dao-chieu:TV-GD-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp",
+              "Đà La",
+              "Kình Dương",
+              "Tiểu Hao",
+              "Đại Hao",
+              "Kiếp Sát",
+              "Phục Binh",
+              "Tang Môn",
+              "Quan Phù"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "d6f3cdcd-c170-4446-ac04-9320c756037f",
+        "tenSach": "Phú Tử Vi",
+        "chunkId": "97341006-ae49-4679-b681-c15c3f79b71b",
+        "chunkIndex": 12,
+        "duongDeMuc": "Phú Lê Quí Đôn Cho Cung Điền Trạch",
+        "dongTrongChunk": 8,
+        "sha1Trich": "fecbb06e2a46a2e1"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-GD-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'hung' sang 'cat' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "hung",
+          "y": "Gia đình khó duy trì nền điền sản ổn định, dễ thiếu chỗ dựa vật chất lâu dài."
+        },
+        "giaTriSauSua": {
+          "chieu": "cat",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 3,
+      "id": "sai-co-y:dao-chieu:TV-RN-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Việt",
+              "Thiên Khôi",
+              "Tử Vi",
+              "Thiên Phủ",
+              "Tả Phù",
+              "Hữu Bật",
+              "Thái Âm",
+              "Thái Dương",
+              "Thiên Lương",
+              "Thiên Đồng"
+            ],
+            "quanHe": "o-cung",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "98641561-514d-41ea-98d4-7930f917c3f1",
+        "chunkIndex": 244,
+        "duongDeMuc": "86. THIÊN KHÔI (1)",
+        "dongTrongChunk": 2,
+        "sha1Trich": "7d67c4e2698eb9c8"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-RN-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'cat' sang 'hung' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "cat",
+          "y": "Ra ngoài dễ gặp người có vị thế, được tin cậy, nâng đỡ và trọng dụng trong quan hệ xã hội."
+        },
+        "giaTriSauSua": {
+          "chieu": "hung",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 4,
+      "id": "sai-co-y:dao-chieu:TV-SN-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thái Tuế",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "1b4df5d0-3f40-49a0-9dfe-708b6f63cc99",
+        "chunkIndex": 239,
+        "duongDeMuc": "B. CHÒM THIÊN PHỦ:",
+        "dongTrongChunk": 3,
+        "sha1Trich": "29fa8446babd2119"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SN-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'cat' sang 'hung' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "cat",
+          "y": "Có năng lực ngôn ngữ, tư duy xét đoán và phù hợp với hoạt động chính trị, tư pháp hoặc ngoại giao."
+        },
+        "giaTriSauSua": {
+          "chieu": "hung",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 5,
+      "id": "sai-co-y:dao-chieu:TV-SK-1-0002",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Tật Ách"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tham Lang",
+              "Liêm Trinh",
+              "Kình Dương",
+              "Đà La",
+              "Địa Không",
+              "Địa Kiếp",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Hóa Kỵ"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "5ad207a3-4117-45f2-956c-29455b147222",
+        "chunkIndex": 399,
+        "duongDeMuc": "THẬP ĐẲNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "558d23a89d9a33e3"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SK-1-0002",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'hung' sang 'cat' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "hung",
+          "y": "Tổ hợp này cho thấy thể trạng dễ phát sinh bệnh tật và suy giảm sức bền."
+        },
+        "giaTriSauSua": {
+          "chieu": "cat",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 6,
+      "id": "sai-co-y:dao-chieu:TV-TB-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Vũ Khúc",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tử Vi",
+              "Thiên Phủ",
+              "Thiên Tướng",
+              "Tham Lang",
+              "Văn Xương",
+              "Văn Khúc",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "2eac4c68-4e68-4fd3-9769-94c6c93e1cae",
+        "chunkIndex": 199,
+        "duongDeMuc": "A. CHÒM TỬ VI",
+        "dongTrongChunk": 2,
+        "sha1Trich": "e4dc5e8242de535a"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TB-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'cat' sang 'hung' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "cat",
+          "y": "Có năng lực kinh doanh và tổ chức tài chính, dễ đạt mức giàu sang nổi bật khi được nhiều sao hỗ trợ."
+        },
+        "giaTriSauSua": {
+          "chieu": "hung",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 7,
+      "id": "sai-co-y:dao-chieu:TV-TC-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Văn Xương",
+              "Văn Khúc",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Hóa Khoa",
+              "Thái Tuế",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "1b4df5d0-3f40-49a0-9dfe-708b6f63cc99",
+        "chunkIndex": 239,
+        "duongDeMuc": "B. CHÒM THIÊN PHỦ:",
+        "dongTrongChunk": 3,
+        "sha1Trich": "48f7730175c4bcd6"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TC-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'cat' sang 'hung' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "cat",
+          "y": "Có năng lực ngôn ngữ, khẩu thuyết hùng hồn, thiên về hoạt động chính trị, tư pháp hoặc ngoại giao."
+        },
+        "giaTriSauSua": {
+          "chieu": "hung",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này gây đại hung, phá bại nặng nề và tai họa liên miên (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 8,
+      "id": "sai-co-y:dao-chieu:TV-TD-1-0001",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Khốc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hư",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Linh Tinh",
+              "Hóa Kỵ",
+              "Hỏa Tinh",
+              "Đà La",
+              "Kình Dương",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc).",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "d6f3cdcd-c170-4446-ac04-9320c756037f",
+        "tenSach": "Phú Tử Vi",
+        "chunkId": "188130bd-c5a0-407e-abcf-ba85dcc98da2",
+        "chunkIndex": 17,
+        "duongDeMuc": "Nhược bằng Lộc Mã phú ông ai tày. Phú Lê Quí Đôn Cho Cung Phu Thê",
+        "dongTrongChunk": 10,
+        "sha1Trich": "6a5882112b5781d6"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TD-1-0001",
+        "loaiLoi": "dao-chieu-cat-hung",
+        "moTaPhepSua": "Đảo chiều từ 'hung' sang 'cat' và viết câu y trái ngược hẳn với câu trích sách.",
+        "giaTriGoc": {
+          "chieu": "hung",
+          "y": "Đời sống hôn nhân dễ có xung đột, tổn thương cảm xúc hoặc khoảng cách khó hóa giải."
+        },
+        "giaTriSauSua": {
+          "chieu": "cat",
+          "y": "[SAI CỐ Ý - ĐẢO CHIỀU] Tổ hợp này đại cát, phú quý song toàn và thuận lợi mỹ mãn (trái ngược hoàn toàn câu trích gốc)."
+        },
+        "loiKyVongMayBat": "Mâu thuẫn chiều cát/hung và nghĩa giữa câu y/nhãn với câu trích gốc trong sách."
+      }
+    },
+    {
+      "stt": 9,
+      "id": "sai-co-y:dao-do-sang:TV-CC-1-0005",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Đường con cái khá hiếm, việc sinh và nuôi con có thể gặp nhiều trở ngại.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "a8e56ae6-c4cc-4cfa-a712-902546dc6f73",
+        "chunkIndex": 502,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 3,
+        "sha1Trich": "e2b3740cc172c3d0"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-CC-1-0005",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Thái Âm' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Thái Âm",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Thái Âm",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Thái Âm' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 10,
+      "id": "sai-co-y:dao-do-sang:TV-GD-1-0004",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Khả năng sở hữu nhà cửa và ruộng vườn khá hạn chế.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "8e9676d3-396f-491e-955e-a14cbf32f633",
+        "chunkIndex": 482,
+        "duongDeMuc": "CÁT HUNG TÍNH LÝ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "b0a9a473d87c7411"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-GD-1-0004",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Cự Môn' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Cự Môn' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 11,
+      "id": "sai-co-y:dao-do-sang:TV-RN-1-0003",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ chịu nhiều áp lực và tranh chấp hơn khi Cự Môn lạc hãm gặp các sao gây trở ngại.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "1bb4f89a-08e5-4a1a-81f4-c3d11ee5a84e",
+        "chunkIndex": 457,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 7,
+        "sha1Trich": "8cd938a67fb98b3b"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-RN-1-0003",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Cự Môn' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Cự Môn' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 12,
+      "id": "sai-co-y:dao-do-sang:TV-SN-0018",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Quan Lộc"
+        ]
+      },
+      "y": "Có khả năng đạt vị trí cao và đảm nhiệm vai trò quan trọng trong tổ chức.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "271ecaa8-631b-4f7d-bf0d-b1bd703ae92b",
+        "chunkIndex": 472,
+        "duongDeMuc": "QUAN LỘC CUNG CÁT TINH HUNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "461c7febf6096a01"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SN-0018",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Tử Vi' từ [M] sang [H], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Tử Vi",
+          "doSang": [
+            "M"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Tử Vi",
+          "doSang": [
+            "H"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Tử Vi' so với văn bản nguồn (M bị đổi thành H)."
+      }
+    },
+    {
+      "stt": 13,
+      "id": "sai-co-y:dao-do-sang:TV-SK-1-0018",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hỏa Tinh",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Linh Tinh",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Mã",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Kình Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Đà La",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Có thể tăng nguy cơ tổn thương hoặc hạn chế vận động ở tay chân.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "575daad7-91c9-43a4-84d1-abda1a96c027",
+        "tenSach": "Tử vi hàm số",
+        "chunkId": "38688747-53b2-4c6a-822c-9524ddaf3ab5",
+        "chunkIndex": 495,
+        "duongDeMuc": "3. NHỮNG Ý NGHĨA XẤU CỦA HỎA, LINH",
+        "dongTrongChunk": 7,
+        "sha1Trich": "3295cca4bbfee6c9"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SK-1-0018",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Hỏa Tinh' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Hỏa Tinh",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Hỏa Tinh",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Hỏa Tinh' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 14,
+      "id": "sai-co-y:dao-do-sang:TV-TB-1-0003",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Văn Xương",
+              "Văn Khúc",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Hóa Khoa",
+              "Thái Tuế",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Năng lực ngôn ngữ, tư duy và thuyết phục có thể hỗ trợ nghề nghiệp tạo ra tài lộc và vị thế.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "1b4df5d0-3f40-49a0-9dfe-708b6f63cc99",
+        "chunkIndex": 239,
+        "duongDeMuc": "B. CHÒM THIÊN PHỦ:",
+        "dongTrongChunk": 3,
+        "sha1Trich": "29fa8446babd2119"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TB-1-0003",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Cự Môn' từ [D] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "D"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Cự Môn",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Cự Môn' so với văn bản nguồn (D bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 15,
+      "id": "sai-co-y:dao-do-sang:TV-TC-1-0005",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "chi": [
+          "Ngọ"
+        ],
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thái Âm",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thiên về kinh doanh, buôn bán và hoạt động thực tế hơn là theo đuổi con đường quan chức.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "4fb158f7-4ab5-4114-ab38-43052bc4ccf7",
+        "chunkIndex": 124,
+        "duongDeMuc": "PHÚ ĐOÁN VỀ SAO THIÊN ĐỒNG",
+        "dongTrongChunk": 6,
+        "sha1Trich": "5bb0e1c53d213460"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TC-1-0005",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Thiên Đồng' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Thiên Đồng",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Thiên Đồng",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Thiên Đồng' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 16,
+      "id": "sai-co-y:dao-do-sang:TV-TD-1-0018",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Lộc Tồn",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Tử Vi",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Phủ",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "gioiTinh": "nu"
+      },
+      "y": "Nữ mệnh có nhiều dấu hiệu thuận lợi cho hôn nhân và địa vị của người phối ngẫu.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "a5e4a7c2-e2fb-4630-b31a-055479f13e54",
+        "chunkIndex": 310,
+        "duongDeMuc": "Luận về Nữ Mệnh",
+        "dongTrongChunk": 2,
+        "sha1Trich": "16831b56fe9bdf2d"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TD-1-0018",
+        "loaiLoi": "dao-do-sang-sao",
+        "moTaPhepSua": "Đảo độ sáng của sao 'Tử Vi' từ [H] sang [M,V], giữ nguyên câu y và câu trích.",
+        "giaTriGoc": {
+          "sao": "Tử Vi",
+          "doSang": [
+            "H"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": "Tử Vi",
+          "doSang": [
+            "M",
+            "V"
+          ]
+        },
+        "loiKyVongMayBat": "Sai độ sáng của sao 'Tử Vi' so với văn bản nguồn (H bị đổi thành M/V)."
+      }
+    },
+    {
+      "stt": 17,
+      "id": "sai-co-y:sai-cung:TV-CC-1-0002",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hỏa Tinh",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Linh Tinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Tài Bạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thất Sát",
+              "Kình Dương",
+              "Đà La",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Đường con cái có thể bị cản trở nghiêm trọng và khó duy trì sự nối tiếp.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "2554da36-31e1-4b65-8147-8ccb659cb111",
+        "chunkIndex": 507,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "a222357b29048558"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-CC-1-0002",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Tử Tức] sang [Tài Bạch] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Tử Tức"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Tài Bạch"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Tử Tức] nhưng dieuKien.cung lại ghi [Tài Bạch]."
+      }
+    },
+    {
+      "stt": 18,
+      "id": "sai-co-y:sai-cung:TV-GD-1-0002",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Tài Bạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Long Trì",
+              "Phượng Các",
+              "Nguyệt Đức",
+              "Phúc Đức",
+              "Long Đức",
+              "Thiên Quan",
+              "Thiên Phúc",
+              "Tả Phù",
+              "Hữu Bật",
+              "Thanh Long",
+              "Thiên Hỷ",
+              "Hỷ Thần"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Gia đình dễ có con cái, con cái thường được mô tả là khá giả và có diện mạo tốt.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "5555188b-3e43-4c87-b3bd-b7939f3eb026",
+        "chunkIndex": 478,
+        "duongDeMuc": "HỰC HÀNH GIẢI ĐOÁN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "d079f3508c1ab2bf"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-GD-1-0002",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Tử Tức] sang [Tài Bạch] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Tử Tức"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Tài Bạch"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Tử Tức] nhưng dieuKien.cung lại ghi [Tài Bạch]."
+      }
+    },
+    {
+      "stt": 19,
+      "id": "sai-co-y:sai-cung:TV-RN-1-0002",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thái Dương",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Phụ Mẫu"
+        ]
+      },
+      "y": "Khi ra ngoài dễ được người có vị thế đánh giá cao, trọng dụng và hỗ trợ.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "90fcb2dd-8b87-4fd9-98ab-9285ee1c4477",
+        "chunkIndex": 209,
+        "duongDeMuc": "71. THÁI ÂM (1)",
+        "dongTrongChunk": 2,
+        "sha1Trich": "0496a3bbdac0b5d3"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-RN-1-0002",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Thiên Di] sang [Phụ Mẫu] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Thiên Di"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Phụ Mẫu"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Thiên Di] nhưng dieuKien.cung lại ghi [Phụ Mẫu]."
+      }
+    },
+    {
+      "stt": 20,
+      "id": "sai-co-y:sai-cung:TV-SN-0003",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Tật Ách"
+        ]
+      },
+      "y": "Dễ tạo danh tiếng rộng và phát huy năng lực học thuật, chuyên môn hoặc thuyết phục.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "8618efe0-0ab6-4e1a-8d9e-68a3a282143d",
+        "chunkIndex": 493,
+        "duongDeMuc": "HỰC HÀNH GIẢI ĐOÁN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "d91dda0e4c3eeea3"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SN-0003",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Mệnh] sang [Tật Ách] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Mệnh"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Tật Ách"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Mệnh] nhưng dieuKien.cung lại ghi [Tật Ách]."
+      }
+    },
+    {
+      "stt": 21,
+      "id": "sai-co-y:sai-cung:TV-SK-1-0005",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Địa Không",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Địa Kiếp",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Không",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Riêu",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Cô Thần",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Quả Tú",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Nô Bộc"
+        ]
+      },
+      "y": "Dễ gặp biến cố gia đạo, gián đoạn tình cảm hoặc tai nạn ảnh hưởng đến người phối ngẫu.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "05f9be25-911e-4e69-b435-8c1cfa89c6c1",
+        "tenSach": "Tử Vi Tổng Hợp",
+        "chunkId": "08378ddb-8222-4c65-99aa-d37bc6ca5b1d",
+        "chunkIndex": 1068,
+        "duongDeMuc": "SỐ CHỒNG CHẾT SỚM",
+        "dongTrongChunk": 2,
+        "sha1Trich": "5a840ca18ffdd486"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SK-1-0005",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Phúc Đức] sang [Nô Bộc] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Phúc Đức"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Nô Bộc"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Phúc Đức] nhưng dieuKien.cung lại ghi [Nô Bộc]."
+      }
+    },
+    {
+      "stt": 22,
+      "id": "sai-co-y:sai-cung:TV-TB-1-0004",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "chi": [
+          "Tý",
+          "Ngọ",
+          "Mão",
+          "Dậu"
+        ],
+        "sao": [
+          {
+            "ten": "Tham Lang",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tật Ách"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc",
+              "Văn Xương",
+              "Văn Khúc",
+              "Tả Phù",
+              "Hữu Bật"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Tham Vũ có thêm sao tốt có thể hỗ trợ tài lộc, công danh và khả năng tích lũy.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "575daad7-91c9-43a4-84d1-abda1a96c027",
+        "tenSach": "Tử vi hàm số",
+        "chunkId": "712dc01f-664c-408f-adda-53fcd5c91eb1",
+        "chunkIndex": 274,
+        "duongDeMuc": "8. Ý NGHĨA CỦA THAM LANG VÀ MỘT SỐ SAO KHÁC",
+        "dongTrongChunk": 2,
+        "sha1Trich": "831701848baf9558"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TB-1-0004",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Mệnh] sang [Tật Ách] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Mệnh"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Tật Ách"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Mệnh] nhưng dieuKien.cung lại ghi [Tật Ách]."
+      }
+    },
+    {
+      "stt": 23,
+      "id": "sai-co-y:sai-cung:TV-TC-1-0002",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tật Ách"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Văn Xương",
+              "Văn Khúc",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Tư duy và khả năng biểu đạt nổi bật, dễ tạo danh tiếng nhờ lập luận, học vấn hoặc năng lực văn chương.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "8618efe0-0ab6-4e1a-8d9e-68a3a282143d",
+        "chunkIndex": 493,
+        "duongDeMuc": "HỰC HÀNH GIẢI ĐOÁN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "659b7eecdd319670"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TC-1-0002",
+        "loaiLoi": "sai-cung-ap-dung",
+        "moTaPhepSua": "Đổi dieuKien.cung từ [Mệnh] sang [Tật Ách] trái với cung trong đề mục/câu trích.",
+        "giaTriGoc": {
+          "cung": [
+            "Mệnh"
+          ]
+        },
+        "giaTriSauSua": {
+          "cung": [
+            "Tật Ách"
+          ]
+        },
+        "loiKyVongMayBat": "Sai cung áp dụng: văn bản nguồn nói về cung [Mệnh] nhưng dieuKien.cung lại ghi [Tật Ách]."
+      }
+    },
+    {
+      "stt": 24,
+      "id": "sai-co-y:cat-cut-sao:TV-CC-1-0021",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Khốc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ]
+      },
+      "y": "Con cái có thể gặp hạn chế về khả năng nghe nói hoặc phát triển, tạo thêm nỗi buồn cho gia đình.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "64d8d330-f680-4df0-81e3-20e5a25b525f",
+        "chunkIndex": 441,
+        "duongDeMuc": "Phú nôm cốt tủy",
+        "dongTrongChunk": 2,
+        "sha1Trich": "30978301d6e5d145"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-CC-1-0021",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Thiên Khốc, Thiên Hư, Kình Dương, Đà La, Địa Không, Địa Kiếp] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Thiên Khốc",
+            "Thiên Hư",
+            "Kình Dương",
+            "Đà La",
+            "Địa Không",
+            "Địa Kiếp"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Thiên Khốc",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 25,
+      "id": "sai-co-y:cat-cut-sao:TV-GD-1-0007",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Cơ",
+            "doSang": [
+              "M"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phụ Mẫu"
+        ]
+      },
+      "y": "Cha mẹ và nền tảng gia đình thiên về sự ổn định, chăm lo và khả năng nâng đỡ sức khỏe tinh thần.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "e7d6b24e-bb91-4200-be2d-8ea75562a3ff",
+        "tenSach": "Tử Vi Nghiệm Lý Toàn Thư",
+        "chunkId": "05fc7650-92c5-4088-826e-6ee99998e947",
+        "chunkIndex": 266,
+        "duongDeMuc": "PHỤ MẨU LIÊN QUAN GÌ TỚI TẬT ÁCH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "58043f3b69ceaf75"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-GD-1-0007",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Thiên Cơ, Thái Âm, Thiên Đồng, Thiên Lương, Thất Sát, Phá Quân, Tham Lang] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Thiên Cơ",
+            "Thái Âm",
+            "Thiên Đồng",
+            "Thiên Lương",
+            "Thất Sát",
+            "Phá Quân",
+            "Tham Lang"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Thiên Cơ",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 26,
+      "id": "sai-co-y:cat-cut-sao:TV-RN-1-0011",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ]
+      },
+      "y": "Ra ngoài cần nỗ lực lớn để tạo nền tảng ban đầu cho sự nghiệp.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f3d446cb-e76c-4fbe-9558-250a89d15f83",
+        "chunkIndex": 462,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "72ffcaa81a0132e7"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-RN-1-0011",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Liêm Trinh, Tham Lang, Kình Dương, Đà La, Hỏa Tinh, Linh Tinh] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Liêm Trinh",
+            "Tham Lang",
+            "Kình Dương",
+            "Đà La",
+            "Hỏa Tinh",
+            "Linh Tinh"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Liêm Trinh",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 27,
+      "id": "sai-co-y:cat-cut-sao:TV-SN-0006",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ]
+      },
+      "y": "Ra ngoài dễ gặp người nâng đỡ, được tin cậy và giao trọng trách trong công việc.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "98641561-514d-41ea-98d4-7930f917c3f1",
+        "chunkIndex": 244,
+        "duongDeMuc": "86. THIÊN KHÔI (1)",
+        "dongTrongChunk": 2,
+        "sha1Trich": "0e2f71d1239d7e07"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SN-0006",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Thiên Việt, Thiên Khôi, Tử Vi, Thiên Phủ, Tả Phù, Hữu Bật, Thái Âm, Thái Dương, Thiên Lương, Thiên Đồng] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Thiên Việt",
+            "Thiên Khôi",
+            "Tử Vi",
+            "Thiên Phủ",
+            "Tả Phù",
+            "Hữu Bật",
+            "Thái Âm",
+            "Thái Dương",
+            "Thiên Lương",
+            "Thiên Đồng"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Thiên Việt",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 28,
+      "id": "sai-co-y:cat-cut-sao:TV-SK-1-0010",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Phá Toái",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Phá Toái và Kiếp Sát khi gặp thêm nhóm Không Kiếp, Linh Hỏa có thể làm tăng mức độ tai nạn và thương tổn.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "694b317b-35b3-4de3-a1f4-2e4c5692d13a",
+        "chunkIndex": 317,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "09b14cd05bacf45c"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-SK-1-0010",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Phá Toái, Kiếp Sát, Địa Không, Địa Kiếp, Linh Tinh, Hỏa Tinh] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Phá Toái",
+            "Kiếp Sát",
+            "Địa Không",
+            "Địa Kiếp",
+            "Linh Tinh",
+            "Hỏa Tinh"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Phá Toái",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 29,
+      "id": "sai-co-y:cat-cut-sao:TV-TB-1-0010",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Cơ",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Cách này hỗ trợ địa vị và tạo điều kiện cải thiện tài lộc trong vận trình.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "7c0897f5-04ea-430f-abc4-25de28c5364e",
+        "chunkIndex": 514,
+        "duongDeMuc": "K",
+        "dongTrongChunk": 2,
+        "sha1Trich": "4ad40b64140d8b6b"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TB-1-0010",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Thiên Cơ, Thái Âm, Thiên Đồng, Thiên Lương, Văn Xương, Văn Khúc, Hóa Khoa, Hóa Quyền, Hóa Lộc] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Thiên Cơ",
+            "Thái Âm",
+            "Thiên Đồng",
+            "Thiên Lương",
+            "Văn Xương",
+            "Văn Khúc",
+            "Hóa Khoa",
+            "Hóa Quyền",
+            "Hóa Lộc"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Thiên Cơ",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 30,
+      "id": "sai-co-y:cat-cut-sao:TV-TC-1-0004",
+      "nhomDapAn": "sai-co-y",
+      "coDauVetChuDuAnDuyet": true,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "bat-loi",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "chi": [
+          "Tỵ"
+        ],
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Có năng lực nổi bật, tư duy đa dạng và khả năng kết hợp nhiều nguồn trợ lực để phát huy sở trường.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "6a46058f-3727-46cc-9aef-5bcf66dca42a",
+        "chunkIndex": 799,
+        "duongDeMuc": "Ö",
+        "dongTrongChunk": 2,
+        "sha1Trich": "55fffc34145ae6b3"
+      },
+      "bienDoiSaiCoY": {
+        "mucGocId": "TV-TC-1-0004",
+        "loaiLoi": "cat-cut-dieu-kien-sao",
+        "moTaPhepSua": "Cắt bỏ sao đi kèm trong [Thiên Đồng, Cự Môn, Thiên Lương, Tả Phù, Hữu Bật, Hóa Khoa, Hóa Quyền, Hóa Lộc] và bịa thêm sao 'Thiên Hình' không có trong câu trích gốc.",
+        "giaTriGoc": {
+          "sao": [
+            "Thiên Đồng",
+            "Cự Môn",
+            "Thiên Lương",
+            "Tả Phù",
+            "Hữu Bật",
+            "Hóa Khoa",
+            "Hóa Quyền",
+            "Hóa Lộc"
+          ]
+        },
+        "giaTriSauSua": {
+          "sao": [
+            "Thiên Đồng",
+            "Thiên Hình"
+          ]
+        },
+        "loiKyVongMayBat": "Điều kiện sao bị cắt cụt / bịa thêm sao 'Thiên Hình' không xuất hiện trong đoạn nguồn."
+      }
+    },
+    {
+      "stt": 31,
+      "id": "TV-CC-1-0003",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Số con thường giảm còn một hoặc hai, và con cái trưởng thành ở mức bình thường.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "modify",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "84471a65-d68c-42f2-8dbb-25077ee371e8",
+        "chunkIndex": 506,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "8e4092cda3e8f755"
+      }
+    },
+    {
+      "stt": 32,
+      "id": "TV-GD-1-0003",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Huynh Đệ"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Phủ",
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Văn Khúc",
+              "Lộc Tồn",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "o-cung",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Anh chị em có thể đông, khá giả và thường tạo được sự hỗ trợ thiết thực cho gia đình.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "947ca4d7-61c5-49b1-a9f0-f6c37929fe48",
+        "chunkIndex": 257,
+        "duongDeMuc": "91. THIÊN PHỦ",
+        "dongTrongChunk": 3,
+        "sha1Trich": "b6d64697109aa240"
+      }
+    },
+    {
+      "stt": 33,
+      "id": "TV-RN-1-0004",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ được hỗ trợ trong công việc và có khả năng phát triển, nhưng quan hệ dễ mang tính cạnh tranh.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f4117e2a-c874-4d94-b8c2-63feffb31271",
+        "chunkIndex": 458,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "f0e42d467c23bdc4"
+      }
+    },
+    {
+      "stt": 34,
+      "id": "TV-SN-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Quan Lộc"
+        ]
+      },
+      "y": "Có tố chất lãnh đạo và dễ đạt danh vọng khi được cộng tác, hỗ trợ và ghi nhận năng lực.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "7c6bb172-81f7-4c1e-bc9b-1d3d11995879",
+        "chunkIndex": 474,
+        "duongDeMuc": "HỰC HÀNH GIẢI ĐOÁN",
+        "dongTrongChunk": 3,
+        "sha1Trich": "1be5b7d37ec90aac"
+      }
+    },
+    {
+      "stt": 35,
+      "id": "TV-SK-1-0014",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Thương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Sứ",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Linh Tinh",
+              "Hỏa Tinh",
+              "Địa Kiếp",
+              "Địa Không"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Dễ phát sinh nhiều sự cố hoặc biến cố bất lợi liên quan đến an toàn và sức khỏe.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "cd5d5da9-80a8-4762-a712-dcc5057a292e",
+        "tenSach": "Tử Vi Bổ Túc",
+        "chunkId": "e7e4d95f-d6c7-4c01-af99-624386383210",
+        "chunkIndex": 147,
+        "duongDeMuc": "389. Mệnh viên",
+        "dongTrongChunk": 2,
+        "sha1Trich": "6ee1945de2ab1807"
+      }
+    },
+    {
+      "stt": 36,
+      "id": "TV-TB-1-0005",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Liêm Trinh",
+            "doSang": [
+              "M"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Phủ",
+              "Thiên Tướng",
+              "Văn Xương",
+              "Văn Khúc",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Tư duy quyết đoán và năng lực quản lý có thể tạo nền tảng tài chính, danh tiếng và địa vị cao.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "f5fac6ed-988c-44a0-b69b-aca0e6181cb8",
+        "chunkIndex": 211,
+        "duongDeMuc": "A. CHÒM TỬ VI",
+        "dongTrongChunk": 3,
+        "sha1Trich": "dadfdee3ec9f76a5"
+      }
+    },
+    {
+      "stt": 37,
+      "id": "TV-TC-1-0003",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Đại Hao",
+              "Tiểu Hao",
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "xung",
+            "toiThieu": 1
+          }
+        ],
+        "gioiTinh": "nam"
+      },
+      "y": "Người có năng lực tài chính nhưng dễ gặp giai đoạn suy giảm nếu chịu nhiều tác động bất lợi.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "74a69fbf-141d-42a6-8828-443e32ed1976",
+        "chunkIndex": 192,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "e4f20fd05c6f1066"
+      }
+    },
+    {
+      "stt": 38,
+      "id": "TV-TD-1-0002",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tham Lang",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ],
+        "gioiTinh": "nu"
+      },
+      "y": "Người phối ngẫu thường lớn tuổi hơn và có tính cách mạnh, cứng cỏi.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "339a3f67-c7c5-4668-a7e7-8221997eb43a",
+        "chunkIndex": 435,
+        "duongDeMuc": "CUNG PHU-THÊ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "202d9b0f5b159f87"
+      }
+    },
+    {
+      "stt": 39,
+      "id": "TV-CC-1-0004",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Đường con cái được mô tả là rất khó khăn và có thể thiếu người nối dõi.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "5dfdd2ab-7077-457b-a1d9-a6acafff535c",
+        "chunkIndex": 501,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "1b722aa15375efd7"
+      }
+    },
+    {
+      "stt": 40,
+      "id": "TV-GD-1-0005",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hỏa Tinh",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Văn Khúc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Gia đình vẫn có khả năng duy trì một mối nối tiếp dù số lượng con cái không nhiều.",
+      "nhan": {
+        "muc": "nhe",
+        "chieu": "trung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "2554da36-31e1-4b65-8147-8ccb659cb111",
+        "chunkIndex": 507,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "1ba4788ebbdbf967"
+      }
+    },
+    {
+      "stt": 41,
+      "id": "TV-RN-1-0005",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp",
+              "Hóa Kỵ"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ gặp áp lực, tranh luận và trở ngại khiến việc giao tiếp xã hội kém thuận lợi.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f3d446cb-e76c-4fbe-9558-250a89d15f83",
+        "chunkIndex": 462,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 4,
+        "sha1Trich": "9883ca784e664d5b"
+      }
+    },
+    {
+      "stt": 42,
+      "id": "TV-SN-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tả Phù",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Quan Lộc"
+        ]
+      },
+      "y": "Có tổ hợp hỗ trợ mạnh cho vị trí lãnh đạo và khả năng đạt địa vị cao trong công danh.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "e2b373b6-9f44-4038-be85-b01816f04c9b",
+        "chunkIndex": 219,
+        "duongDeMuc": "TAM QUAN LỘC CUNG",
+        "dongTrongChunk": 3,
+        "sha1Trich": "8309897b30464d78"
+      }
+    },
+    {
+      "stt": 43,
+      "id": "TV-SK-1-0015",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Đà La",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Kỵ",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Địa Không",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Địa Kiếp",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Nguy cơ tai họa bất ngờ và các tình huống gây tổn hại tăng lên khi nhiều sát tinh cùng hội tụ.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "c7e97340-57a7-47ff-93dd-60e0e7bc6b9a",
+        "tenSach": "Tử Vi Ứng Dụng - Chính Tinh",
+        "chunkId": "bb057e2e-ad21-445d-945e-c5e051cafca2",
+        "chunkIndex": 1118,
+        "duongDeMuc": "VIỆT”",
+        "dongTrongChunk": 2,
+        "sha1Trich": "59db8b3060312459"
+      }
+    },
+    {
+      "stt": 44,
+      "id": "TV-TB-1-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Văn Xương",
+              "Văn Khúc",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 2
+          }
+        ]
+      },
+      "y": "Thiên Đồng đắc địa gặp nhiều sao tốt hỗ trợ thì khả năng đạt mức giàu sang và tích lũy đáng kể.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "8b8aa131-c116-4401-9f5a-39e25abf8e4b",
+        "chunkIndex": 204,
+        "duongDeMuc": "A. CHÒM TỬ VI",
+        "dongTrongChunk": 2,
+        "sha1Trich": "c81e316abc547afd"
+      }
+    },
+    {
+      "stt": 45,
+      "id": "TV-TC-1-0006",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Dương",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Khôi",
+              "Văn Xương",
+              "Tả Phù",
+              "Hữu Bật"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 2
+          }
+        ]
+      },
+      "y": "Thông minh, có năng lực và dễ biểu hiện phong thái giàu bản lĩnh, thành đạt.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "f57a93b0-f658-4c72-83e7-89f7356874d8",
+        "chunkIndex": 191,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "a0d154d40476ef8b"
+      }
+    },
+    {
+      "stt": 46,
+      "id": "TV-TD-1-0004",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hồng Loan",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Địa Không",
+              "Địa Kiếp",
+              "Hỏa Tinh",
+              "Linh Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Hôn nhân có thể chịu thử thách nếu bước vào giai đoạn vận hạn nhiều sát tinh.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "906bbc01-0542-4008-877f-05bdd8e0e41d",
+        "chunkIndex": 422,
+        "duongDeMuc": "TÓM TẮT VỀ CÁC SAO QUAN TRỌNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "48711bb1671e765b"
+      }
+    },
+    {
+      "stt": 47,
+      "id": "TV-CC-1-0006",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thất Sát",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "xung",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thất Sát bị sát tinh xung phá thường báo hiệu việc sinh và nuôi con nhiều trở ngại.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "424a7688-cd35-485b-97df-ab883d1f2289",
+        "chunkIndex": 504,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "ded8b7fbd065c38b"
+      }
+    },
+    {
+      "stt": 48,
+      "id": "TV-GD-1-0006",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Đường con cái có thể ít thuận lợi hơn khi cung Tử Tức gặp nhiều yếu tố gây trở ngại.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "a8e56ae6-c4cc-4cfa-a712-902546dc6f73",
+        "chunkIndex": 502,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 3,
+        "sha1Trich": "61a746b74b4cc700"
+      }
+    },
+    {
+      "stt": 49,
+      "id": "TV-RN-1-0006",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Dương",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ chịu áp lực và gặp trở ngại ảnh hưởng đến sự ổn định của các mối quan hệ.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "0e23cb76-7e48-44cd-891a-3d0bae4d73d5",
+        "chunkIndex": 456,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 4,
+        "sha1Trich": "f2598a8bc0545386"
+      }
+    },
+    {
+      "stt": 50,
+      "id": "TV-SN-0011",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Cơ",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thái Âm",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Lương",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Có khả năng đạt vị trí nghề nghiệp và tài lộc khi năng lực chuyên môn được phát huy đúng thời điểm.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "7c0897f5-04ea-430f-abc4-25de28c5364e",
+        "chunkIndex": 514,
+        "duongDeMuc": "K",
+        "dongTrongChunk": 2,
+        "sha1Trich": "4ad40b64140d8b6b"
+      }
+    },
+    {
+      "stt": 51,
+      "id": "TV-SK-1-0026",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "chi": [
+          "Mão",
+          "Dậu"
+        ],
+        "sao": [
+          {
+            "ten": "Thất Sát",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Linh Tinh",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hỏa Tinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Dễ gặp tai nạn do té ngã, điện sét, phương tiện giao thông hoặc để lại thương tật.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "8c1bcd53-fa27-45cc-a8e3-e929e88fca9b",
+        "chunkIndex": 283,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "5f40c072402a3606"
+      }
+    },
+    {
+      "stt": 52,
+      "id": "TV-TB-1-0008",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Lương",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Văn Khúc",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc",
+              "Thiên Khôi",
+              "Thiên Việt"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thiên Lương đắc địa hội cát tinh thường hỗ trợ địa vị ổn định, phúc hưởng và sự sung túc lâu dài.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "2c0684c5-dfd2-4391-aaa0-7307e5c586b5",
+        "chunkIndex": 251,
+        "duongDeMuc": "6. Sao Thiên lương:",
+        "dongTrongChunk": 2,
+        "sha1Trich": "cf4a6f2072d2660f"
+      }
+    },
+    {
+      "stt": 53,
+      "id": "TV-TC-1-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Phá Quân",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Linh Tinh",
+              "Hỏa Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Người có xu hướng làm việc thực dụng, kỹ thuật hoặc buôn bán; đồng thời dễ chọn lối sống tu hành.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "971f76ce-b3c0-44c8-b863-dd4e6a8d9957",
+        "chunkIndex": 198,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "bad3a2225dc19a3e"
+      }
+    },
+    {
+      "stt": 54,
+      "id": "TV-TD-1-0005",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hồng Loan",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Địa Không",
+              "Địa Kiếp",
+              "Hỏa Tinh",
+              "Linh Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Hôn nhân có thể chịu thử thách nếu bước vào giai đoạn vận hạn nhiều sát tinh.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "906bbc01-0542-4008-877f-05bdd8e0e41d",
+        "chunkIndex": 422,
+        "duongDeMuc": "TÓM TẮT VỀ CÁC SAO QUAN TRỌNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "48711bb1671e765b"
+      }
+    },
+    {
+      "stt": 55,
+      "id": "TV-CC-1-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Cơ",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phụ Mẫu"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Con cái có xu hướng sống xa hoặc gắn bó với cha mẹ nuôi hay gia đình thay thế.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "35c09110-9dee-41d7-bfa5-4023c57312b2",
+        "chunkIndex": 490,
+        "duongDeMuc": "PHỤ-MẪU CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "c6a391e3292298a2"
+      }
+    },
+    {
+      "stt": 56,
+      "id": "TV-GD-1-0008",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Nhà đất ban đầu hạn chế nhưng về sau có thể tăng; tự tạo lập vẫn có triển vọng.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "8e9676d3-396f-491e-955e-a14cbf32f633",
+        "chunkIndex": 482,
+        "duongDeMuc": "CÁT HUNG TÍNH LÝ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "73918bb7b727be17"
+      }
+    },
+    {
+      "stt": 57,
+      "id": "TV-RN-1-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thất Sát",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ bận rộn, thiếu ổn định và phải tự điều chỉnh để tìm cảm giác an toàn.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f4117e2a-c874-4d94-b8c2-63feffb31271",
+        "chunkIndex": 458,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "df8aab737f811677"
+      }
+    },
+    {
+      "stt": 58,
+      "id": "TV-SN-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "chi": [
+          "Mão"
+        ],
+        "sao": [
+          {
+            "ten": "Thái Dương",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Thái Dương tại Mệnh ở Mão, được nhiều sao trợ chiếu, tạo nền tảng công danh và sự nghiệp nổi bật.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "d41240bb-2ce7-45d5-92dd-d49b335050df",
+        "chunkIndex": 795,
+        "duongDeMuc": "Ö",
+        "dongTrongChunk": 4,
+        "sha1Trich": "0dd2e4ef2f6cf05a"
+      }
+    },
+    {
+      "stt": 59,
+      "id": "TV-SK-1-0028",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Không",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Địa Kiếp",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Kiếp Sát",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Đà La",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hỏa Tinh",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tật Ách"
+        ]
+      },
+      "y": "Sức khỏe và an toàn có thể chịu rủi ro cao, đặc biệt trong tai nạn hoặc hoàn cảnh nguy hiểm.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "05f9be25-911e-4e69-b435-8c1cfa89c6c1",
+        "tenSach": "Tử Vi Tổng Hợp",
+        "chunkId": "13280637-b125-48b1-87d3-1ae0cd23228a",
+        "chunkIndex": 1049,
+        "duongDeMuc": "SỐ VÕ TƯỚNG TỬ TRẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "d5b73eb7994bbba4"
+      }
+    },
+    {
+      "stt": 60,
+      "id": "TV-TB-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Tài Bạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Việt",
+              "Thiên Khôi",
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Khúc",
+              "Văn Xương",
+              "Hóa Khoa",
+              "Hóa Quyền"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Hóa Lộc cùng các sao hỗ trợ danh tiếng làm tăng phúc khí và sự thịnh vượng tài sản.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "d6f3cdcd-c170-4446-ac04-9320c756037f",
+        "tenSach": "Phú Tử Vi",
+        "chunkId": "a8a17a9a-beb8-49dd-b32d-6e1445d64191",
+        "chunkIndex": 11,
+        "duongDeMuc": "Phú Lê Quí Đôn Cho Cung Tài Bạch",
+        "dongTrongChunk": 8,
+        "sha1Trich": "65837694e302fe9f"
+      }
+    },
+    {
+      "stt": 61,
+      "id": "TV-TC-1-0008",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hồng Loan",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Đào Hoa",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tả Phù",
+              "Hữu Bật",
+              "Thiên Khôi",
+              "Thiên Việt"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 2
+          }
+        ]
+      },
+      "y": "Có khí chất nổi bật, dễ đạt vị thế cao và thể hiện năng lực lãnh đạo, thu hút sự kính trọng.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "85901885-76b6-4e71-bab5-646f09606fd3",
+        "chunkIndex": 280,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "f21e9d9b7e200ff1"
+      }
+    },
+    {
+      "stt": 62,
+      "id": "TV-TD-1-0007",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Dễ gặp người phối ngẫu gây áp lực, bất hòa hoặc ảnh hưởng xấu đến gia đình và tài sản.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "7942ad67-418a-4535-a9d6-136775f23e25",
+        "chunkIndex": 432,
+        "duongDeMuc": "CUNG PHU-THÊ",
+        "dongTrongChunk": 6,
+        "sha1Trich": "30caf7604eea0436"
+      }
+    },
+    {
+      "stt": 63,
+      "id": "TV-CC-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Đường con cái dễ gặp trở ngại, khó có con đồng hành lâu dài với gia đình.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "cf3420c9-770f-4058-92d4-9aed974224e7",
+        "chunkIndex": 500,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 3,
+        "sha1Trich": "c5531d45ed57d21a"
+      }
+    },
+    {
+      "stt": 64,
+      "id": "TV-GD-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Phủ",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Nhà đất khó tích lũy ổn định, có thể lúc sở hữu lúc phải chuyển nhượng.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "8e9676d3-396f-491e-955e-a14cbf32f633",
+        "chunkIndex": 482,
+        "duongDeMuc": "CÁT HUNG TÍNH LÝ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "f3050fe0f8ebf4c0"
+      }
+    },
+    {
+      "stt": 65,
+      "id": "TV-RN-1-0008",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài có thể gần người có vị thế và làm ăn thuận lợi, nhưng dễ giảm mức toại nguyện khi gặp sát tinh.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "1bb4f89a-08e5-4a1a-81f4-c3d11ee5a84e",
+        "chunkIndex": 457,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 3,
+        "sha1Trich": "03ade2706f097045"
+      }
+    },
+    {
+      "stt": 66,
+      "id": "TV-SN-0016",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Phá Quân",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Kình Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Đà La",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Linh Tinh",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hỏa Tinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Năng lực nghề nghiệp thiên về kỹ thuật hoặc kinh doanh; nếu không theo các hướng này có thể chuyển sang đời sống tu hành.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "971f76ce-b3c0-44c8-b863-dd4e6a8d9957",
+        "chunkIndex": 198,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "bad3a2225dc19a3e"
+      }
+    },
+    {
+      "stt": 67,
+      "id": "TV-SK-1-0036",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Cự Môn",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Linh Tinh",
+              "Hỏa Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Dễ gặp thương tích vùng miệng hoặc các vấn đề sức khỏe do tính nóng nảy và va chạm.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "d7b6a7b3-dee4-4aa5-a369-63c23984d20d",
+        "chunkIndex": 197,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "fbe3d61d05b742a4"
+      }
+    },
+    {
+      "stt": 68,
+      "id": "TV-TB-1-0011",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Phá Quân",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Văn Xương",
+              "Văn Khúc",
+              "Tả Phù",
+              "Hữu Bật",
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Hóa Lộc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Phá Quân được nhóm văn tinh hỗ trợ thì dễ đạt điều kiện giàu sang.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "f6e18b18-54ce-49e5-bfc1-e84bf470194c",
+        "tenSach": "Tử Vi Khảo Luận",
+        "chunkId": "af0ded71-eb5a-479d-92a5-bad8039d96d0",
+        "chunkIndex": 268,
+        "duongDeMuc": "8. Sao Phá quân:",
+        "dongTrongChunk": 2,
+        "sha1Trich": "d1cddc7f04fb808b"
+      }
+    },
+    {
+      "stt": 69,
+      "id": "TV-TC-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Lộc Tồn",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Văn Khúc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Có xu hướng nổi bật, tự tin về vị thế, dễ thể hiện năng lực lãnh đạo và quyền uy.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "a0c4d42b-6445-4096-92d5-74f1dfce9783",
+        "chunkIndex": 327,
+        "duongDeMuc": "SỐ LÃ HẬU",
+        "dongTrongChunk": null,
+        "sha1Trich": "afbe8f72addad150"
+      }
+    },
+    {
+      "stt": 70,
+      "id": "TV-TD-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tả Phù",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Hỏa Tinh",
+              "Đà La",
+              "Thất Sát",
+              "Phá Quân"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ],
+        "gioiTinh": "nu"
+      },
+      "y": "Đường hôn nhân dễ thiếu ổn định, có xu hướng ở vị trí thứ yếu hoặc khó giữ vai trò chính thức.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "36cfe8ae-5f7f-4600-9efc-eea3ee0e6e0b",
+        "chunkIndex": 309,
+        "duongDeMuc": "Luận về Nữ Mệnh",
+        "dongTrongChunk": 2,
+        "sha1Trich": "96209af88037fdd5"
+      }
+    },
+    {
+      "stt": 71,
+      "id": "TV-CC-1-0010",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "chi": [
+          "Sửu",
+          "Mùi"
+        ],
+        "sao": [
+          {
+            "ten": "Thiên Lương",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thiên Lương tại Sửu hoặc Mùi gặp sát tinh thường khiến việc chăm sóc và nuôi dưỡng con cái vất vả hơn.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "424a7688-cd35-485b-97df-ab883d1f2289",
+        "chunkIndex": 504,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "fb19a4b06abc5b5b"
+      }
+    },
+    {
+      "stt": 72,
+      "id": "TV-GD-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Tử Vi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Phủ",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Huynh Đệ"
+        ]
+      },
+      "y": "Gia đình có thể có bốn hoặc năm anh chị em, với nền tảng quan hệ tương đối thuận.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "bdeea435-7faf-4b00-89e4-67f55d9d0661",
+        "chunkIndex": 428,
+        "duongDeMuc": "CUNG HUYNH ĐỆ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "ba27ca3a373451b9"
+      }
+    },
+    {
+      "stt": 73,
+      "id": "TV-RN-1-0009",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Môi trường bên ngoài dễ thiếu ổn định, khó duy trì cảm giác yên bình trong các mối quan hệ.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "0e23cb76-7e48-44cd-891a-3d0bae4d73d5",
+        "chunkIndex": 456,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "3d45c42613b8f446"
+      }
+    },
+    {
+      "stt": 74,
+      "id": "TV-SN-0017",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hồng Loan",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Đào Hoa",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Có xu hướng đạt vị trí cao, công danh thuận lợi và được hỗ trợ bởi người có năng lực.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "85901885-76b6-4e71-bab5-646f09606fd3",
+        "chunkIndex": 280,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "f21e9d9b7e200ff1"
+      }
+    },
+    {
+      "stt": 75,
+      "id": "TV-SK-1-0042",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Địa Kiếp",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Địa Không",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Hình",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Tật Ách"
+        ]
+      },
+      "y": "Có thể gặp nguy cơ chấn thương do vật sắc, va đập hoặc tai nạn cơ học.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "027c0434-d876-47bc-b71b-8a257a07ed46",
+        "chunkIndex": 455,
+        "duongDeMuc": "PHÚ ĐOÁN TẬT-ÁCH CUNG",
+        "dongTrongChunk": 4,
+        "sha1Trich": "6fc9c70679a22d13"
+      }
+    },
+    {
+      "stt": 76,
+      "id": "TV-TB-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tài Bạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Địa Không",
+              "Địa Kiếp",
+              "Thiên Riêu",
+              "Thiên Hình",
+              "Hóa Kỵ"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thái Âm sáng nhưng bị sát tinh hoặc sao mờ ám xâm phạm vẫn có thể gặp khó khăn tài chính.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "modify",
+      "nguon": {
+        "documentId": "575daad7-91c9-43a4-84d1-abda1a96c027",
+        "tenSach": "Tử vi hàm số",
+        "chunkId": "b530dbc4-f6e7-4ab1-8ea4-2c460eace48c",
+        "chunkIndex": 290,
+        "duongDeMuc": "6. Ý NGHĨA CÔNG DANH, TÀI LỘC",
+        "dongTrongChunk": 2,
+        "sha1Trich": "a698549e223ca3fd"
+      }
+    },
+    {
+      "stt": 77,
+      "id": "TV-TC-1-0011",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "chi": [
+          "Tý"
+        ],
+        "sao": [
+          {
+            "ten": "Phá Quân",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Kình Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thai Phụ",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Bát Tọa",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Kết hợp sự cứng cỏi với năng lực văn võ và khả năng bảo vệ chính kiến.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "2a7ca595-787c-4bed-83e7-9dfe6f56e33b",
+        "tenSach": "Tử Vi Nghiệm Lý (1974)",
+        "chunkId": "662fe0c1-9ad8-442a-98ca-8b8845a79b12",
+        "chunkIndex": 148,
+        "duongDeMuc": "UY VŨ BẤT KHUẤT CỦA PHAN CHÂU TRINH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "a993c095e556b574"
+      }
+    },
+    {
+      "stt": 78,
+      "id": "TV-TD-1-0010",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Nô Bộc"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Riêu",
+              "Hoa Cái",
+              "Đào Hoa",
+              "Hồng Loan",
+              "Liêm Trinh",
+              "Tham Lang"
+            ],
+            "quanHe": "o-cung",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Các mối quan hệ tình cảm dễ thiên về ham muốn, phóng túng và ít quan tâm đến chuẩn mực.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "05f9be25-911e-4e69-b435-8c1cfa89c6c1",
+        "tenSach": "Tử Vi Tổng Hợp",
+        "chunkId": "90f4d478-c2bb-4129-bda7-54e7d1aad981",
+        "chunkIndex": 844,
+        "duongDeMuc": "C. - HỌA CHO GIA ĐẠO",
+        "dongTrongChunk": 2,
+        "sha1Trich": "3612d54dabcbcc94"
+      }
+    },
+    {
+      "stt": 79,
+      "id": "TV-CC-1-0011",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "chi": [
+          "Tý",
+          "Ngọ"
+        ],
+        "sao": [
+          {
+            "ten": "Thiên Lương",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Tử Tức"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Thiên Lương tại Tý hoặc Ngọ gặp sát tinh thường gợi ý sinh con muộn hoặc việc nuôi con không thuận lợi.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "424a7688-cd35-485b-97df-ab883d1f2289",
+        "chunkIndex": 504,
+        "duongDeMuc": "TỬ-TỨC CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "9efd50b1c49071ab"
+      }
+    },
+    {
+      "stt": 80,
+      "id": "TV-GD-1-0013",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Nhà cửa và ruộng vườn khó hình thành hoặc khó duy trì khi gặp nhóm sao này.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f6bed50c-e889-4cab-b2d3-3200eab72e65",
+        "chunkIndex": 483,
+        "duongDeMuc": "CÁT HUNG TÍNH LÝ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "b0a9a473d87c7411"
+      }
+    },
+    {
+      "stt": 81,
+      "id": "TV-RN-1-0010",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Hóa Khoa",
+              "Hóa Quyền",
+              "Tả Phù",
+              "Hữu Bật",
+              "Thiên Khôi",
+              "Thiên Việt"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài dễ tạo thành tích, gặp người nâng đỡ và được tín nhiệm trong công việc.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "99e690f4-14a6-4f53-a231-b78e56aab14a",
+        "tenSach": "Tự Điển Tử Vi",
+        "chunkId": "6ff79432-b203-40db-9aba-0bdd24cdacbc",
+        "chunkIndex": 137,
+        "duongDeMuc": "23. HÓA KHOA",
+        "dongTrongChunk": 2,
+        "sha1Trich": "b68faeb93f37a255"
+      }
+    },
+    {
+      "stt": 82,
+      "id": "TV-SN-0019",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Khôi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Việt",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Quan Lộc"
+        ]
+      },
+      "y": "Công danh có xu hướng đạt vị trí cao nhờ năng lực tổ chức, học vấn và sự hỗ trợ.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "483fea7b-4406-4005-a52b-768662d90512",
+        "chunkIndex": 218,
+        "duongDeMuc": "TAM QUAN LỘC CUNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "0882244164d821da"
+      }
+    },
+    {
+      "stt": 83,
+      "id": "TV-SK-1-0045",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Hóa Khoa",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thất Sát",
+              "Phá Quân",
+              "Tham Lang"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Hóa Khoa hỗ trợ giảm mức độ tai nạn và biến cố sức khỏe trong cách Sát Phá Tham.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "neutralize",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "4e4e1d46-c30e-49cd-b0fd-875299524947",
+        "chunkIndex": 308,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "122eed3dcfcacf11"
+      }
+    },
+    {
+      "stt": 84,
+      "id": "TV-TB-1-0013",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "chi": [
+          "Dần",
+          "Thân",
+          "Tý",
+          "Ngọ"
+        ],
+        "sao": [
+          {
+            "ten": "Thất Sát",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Hóa Khoa",
+              "Lộc Tồn"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ],
+        "gioiTinh": "nam"
+      },
+      "y": "Có năng lực tạo vị thế và nguồn thu cao khi được nhiều sao hỗ trợ về danh tiếng, cơ hội và tài lộc.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "3d646cb0-6d15-4505-8cf8-b7967225944e",
+        "chunkIndex": 200,
+        "duongDeMuc": "NHẤT CUNG MỆNH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "d259876f9696c2e1"
+      }
+    },
+    {
+      "stt": 85,
+      "id": "TV-TC-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "chi": [
+          "Tý"
+        ],
+        "sao": [
+          {
+            "ten": "Phá Quân",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Kình Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thai Phụ",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Bát Tọa",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Khá bướng bỉnh, cứng đầu và coi trọng lẽ phải hơn sự thuận tiện cá nhân.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "trung",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "2a7ca595-787c-4bed-83e7-9dfe6f56e33b",
+        "tenSach": "Tử Vi Nghiệm Lý (1974)",
+        "chunkId": "662fe0c1-9ad8-442a-98ca-8b8845a79b12",
+        "chunkIndex": 148,
+        "duongDeMuc": "UY VŨ BẤT KHUẤT CỦA PHAN CHÂU TRINH",
+        "dongTrongChunk": 2,
+        "sha1Trich": "7b4bc003ec83d8b7"
+      }
+    },
+    {
+      "stt": 86,
+      "id": "TV-TD-1-0011",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Tử Vi",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Long Trì",
+              "Phượng Các",
+              "Lộc Tồn",
+              "Thiên Mã"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Người phối ngẫu có thể có tài sản, nguồn lực hoặc vị thế xã hội nổi bật.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "05f9be25-911e-4e69-b435-8c1cfa89c6c1",
+        "tenSach": "Tử Vi Tổng Hợp",
+        "chunkId": "983cb795-9be3-4b2f-8b58-ada92de96799",
+        "chunkIndex": 961,
+        "duongDeMuc": "F. - VIỆC LẬP GIA ĐÌNH",
+        "dongTrongChunk": null,
+        "sha1Trich": "ef9ebb78630e6a48"
+      }
+    },
+    {
+      "stt": 87,
+      "id": "TV-CC-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Phủ",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phụ Mẫu"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Quan hệ với cha mẹ dễ phát sinh tổn thương, bất ổn hoặc nhiều gánh nặng.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "35c09110-9dee-41d7-bfa5-4023c57312b2",
+        "chunkIndex": 490,
+        "duongDeMuc": "PHỤ-MẪU CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 4,
+        "sha1Trich": "07e2b66fb2727e17"
+      }
+    },
+    {
+      "stt": 88,
+      "id": "TV-GD-1-0014",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Phụ Mẫu"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Quan hệ với cha mẹ dễ thiếu trọn vẹn, có thể phải sống xa gia đình hoặc không giữ được nền nếp tổ nghiệp.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "1c11e7b2-f77d-40a0-a817-5ecc532ca817",
+        "chunkIndex": 495,
+        "duongDeMuc": "PHỤ-MẪU CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "debe9979bbaa0ac8"
+      }
+    },
+    {
+      "stt": 89,
+      "id": "TV-RN-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Tướng",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Ra ngoài thường phải xử lý thử thách; thêm yếu tố bất lợi dễ vướng thị phi và cạnh tranh xã hội.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "trung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "f3d446cb-e76c-4fbe-9558-250a89d15f83",
+        "chunkIndex": 462,
+        "duongDeMuc": "THIÊN-DI CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "c454affcfd53219c"
+      }
+    },
+    {
+      "stt": 90,
+      "id": "TV-SN-0020",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "chi": [
+          "Thìn",
+          "Tuất",
+          "Sửu",
+          "Mùi"
+        ],
+        "sao": [
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Hóa Quyền",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hóa Lộc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ]
+      },
+      "y": "Khi được nhiều sao trợ lực, năng lực chuyên môn và triển vọng vị trí được củng cố rõ rệt.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "14c5bc5c-fb90-43c9-a42e-117512a35718",
+        "chunkIndex": 778,
+        "duongDeMuc": "Ö",
+        "dongTrongChunk": 4,
+        "sha1Trich": "c7e7a913b0c378c4"
+      }
+    },
+    {
+      "stt": 91,
+      "id": "TV-SK-1-0047",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [],
+        "cung": [
+          "Tật Ách"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Thiên Hình",
+              "Thiên Việt"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Có thể gặp tai nạn bất ngờ liên quan đến sét đánh, va đập hoặc vật sắc nhọn.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "a7a5aa60-dcfe-470f-aba4-9d38515101ec",
+        "chunkIndex": 255,
+        "duongDeMuc": "THẬP TẬT ÁCH CUNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "66a1e815cd2b069b"
+      }
+    },
+    {
+      "stt": 92,
+      "id": "TV-TB-1-0015",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Liêm Trinh",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Liêm Trinh hãm tại Mệnh cùng nhiều sát tinh thường làm nguồn tiền khó ổn định.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "575daad7-91c9-43a4-84d1-abda1a96c027",
+        "tenSach": "Tử vi hàm số",
+        "chunkId": "509b5b40-9d8e-4b7d-b8fd-0d475b8a754b",
+        "chunkIndex": 141,
+        "duongDeMuc": "B. CỤC",
+        "dongTrongChunk": 2,
+        "sha1Trich": "af986d5522e078bc"
+      }
+    },
+    {
+      "stt": 93,
+      "id": "TV-TC-1-0014",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-cach",
+      "dotTrich": "tc-1",
+      "dieuKien": {
+        "chi": [
+          "Tý",
+          "Ngọ",
+          "Mão",
+          "Dậu"
+        ],
+        "sao": [
+          {
+            "ten": "Thiên Cơ",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thiên Lương",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tả Phù",
+              "Hữu Bật",
+              "Văn Xương",
+              "Văn Khúc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Có tư chất thanh liêm, trung lương; thiên về học thuật hoặc công việc cần uy tín.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-cach"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "b72d2e3a-a8e7-4ce0-8311-9c9c2c921190",
+        "chunkIndex": 837,
+        "duongDeMuc": "Ö",
+        "dongTrongChunk": 2,
+        "sha1Trich": "69a5bc9222bde76d"
+      }
+    },
+    {
+      "stt": 94,
+      "id": "TV-TD-1-0012",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tinh-duyen",
+      "dotTrich": "td-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Ân Quang",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Nguyệt Đức",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thái Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Mã",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Thiên Đồng",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Phu Thê"
+        ]
+      },
+      "y": "Người phối ngẫu có thể đem đến tài sản, sự nâng đỡ và điều kiện sống thuận lợi hơn.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tinh-duyen"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "323cdc45-267e-46d1-bf98-7f547d8695c8",
+        "chunkIndex": 233,
+        "duongDeMuc": "NGŨ PHU THÊ CUNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "653c2c14b3bafb35"
+      }
+    },
+    {
+      "stt": 95,
+      "id": "TV-CC-1-0013",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "con-cai",
+      "dotTrich": "cc-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thiên Tướng",
+            "doSang": [
+              "M",
+              "V"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Phụ Mẫu"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Địa Không",
+              "Địa Kiếp"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Cha mẹ và con cái có thể sớm gặp khoảng cách hoặc trở ngại trong sự gắn bó gia đình.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "con-cai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "19928aad-56f7-4a98-8a2e-2d8d71b949f8",
+        "chunkIndex": 491,
+        "duongDeMuc": "PHỤ-MẪU CUNG CÁC TINH CÁT HUNG LUẬN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "7a591225cc1e0216"
+      }
+    },
+    {
+      "stt": 96,
+      "id": "TV-GD-1-0015",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "gia-dinh",
+      "dotTrich": "gd-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "doSang": [
+              "H"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Điền Trạch"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Kình Dương",
+              "Đà La",
+              "Hỏa Tinh",
+              "Linh Tinh",
+              "Hóa Kỵ"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Nền tảng nhà đất rất yếu và khó duy trì tài sản bất động sản.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "hung",
+        "linhVuc": [
+          "gia-dinh"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "8e9676d3-396f-491e-955e-a14cbf32f633",
+        "chunkIndex": 482,
+        "duongDeMuc": "CÁT HUNG TÍNH LÝ",
+        "dongTrongChunk": 2,
+        "sha1Trich": "874a4adb4ef7c0d6"
+      }
+    },
+    {
+      "stt": 97,
+      "id": "TV-RN-1-0013",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "ra-ngoai",
+      "dotTrich": "rn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thất Sát",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Phá Quân",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tham Lang",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tử Vi",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Vũ Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Liêm Trinh",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Thiên Di"
+        ]
+      },
+      "y": "Khi nhóm sao Tử Vũ Liêm giao hội với Sát Phá Tham, đời sống và quan hệ bên ngoài dễ gặp biến động, bất ổn và khó khăn.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "ra-ngoai"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "c7e97340-57a7-47ff-93dd-60e0e7bc6b9a",
+        "tenSach": "Tử Vi Ứng Dụng - Chính Tinh",
+        "chunkId": "50636cdc-ae1f-4da4-a64e-e4e37e26e572",
+        "chunkIndex": 67,
+        "duongDeMuc": "TẢNG ĐÁ 1",
+        "dongTrongChunk": 2,
+        "sha1Trich": "8a88e6f8e4684d39"
+      }
+    },
+    {
+      "stt": 98,
+      "id": "TV-SN-0024",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "su-nghiep",
+      "dotTrich": "sn-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Thái Âm",
+            "quanHe": "o-cung"
+          },
+          {
+            "ten": "Thái Dương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Xương",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Văn Khúc",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Tả Phù",
+            "quanHe": "tam-phuong"
+          },
+          {
+            "ten": "Hữu Bật",
+            "quanHe": "tam-phuong"
+          }
+        ],
+        "cung": [
+          "Quan Lộc"
+        ]
+      },
+      "y": "Có khả năng đạt chức vụ cao và được ghi nhận về năng lực chuyên môn.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "su-nghiep"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "04bdecff-1771-491f-ab07-950e7bf0d822",
+        "tenSach": "Tử Vi Đẩu Số Toàn Thư",
+        "chunkId": "637931b0-7638-400c-99d5-fb9f998ca53f",
+        "chunkIndex": 220,
+        "duongDeMuc": "TAM QUAN LỘC CUNG",
+        "dongTrongChunk": 2,
+        "sha1Trich": "8c905b0a8090d88c"
+      }
+    },
+    {
+      "stt": 99,
+      "id": "TV-SK-1-0051",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "suc-khoe",
+      "dotTrich": "sk-1",
+      "dieuKien": {
+        "sao": [
+          {
+            "ten": "Kình Dương",
+            "doSang": [
+              "D"
+            ],
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Địa Không",
+              "Linh Tinh",
+              "Hỏa Tinh"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 1
+          }
+        ]
+      },
+      "y": "Dễ gặp tai nạn xe cộ và các vấn đề ảnh hưởng đến chân tay khi hội đủ nhóm sao bất lợi.",
+      "nhan": {
+        "muc": "vua",
+        "chieu": "hung",
+        "linhVuc": [
+          "suc-khoe"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "e7850377-ba96-4271-96a8-d691ce8228ef",
+        "chunkIndex": 301,
+        "duongDeMuc": "CƯ CUNG MẠNG-VIÊN",
+        "dongTrongChunk": 2,
+        "sha1Trich": "0d4497f73933b957"
+      }
+    },
+    {
+      "stt": 100,
+      "id": "TV-TB-1-0016",
+      "nhomDapAn": "ung-vien-cho-chu-du-an-duyet",
+      "coDauVetChuDuAnDuyet": false,
+      "trangThaiDuyetTrongDB": "chua",
+      "dapAnKyVongChoMayKiem": "chua-co-dap-an-chu-du-an",
+      "chuDe": "tien-bac",
+      "dotTrich": "tb-1",
+      "dieuKien": {
+        "chi": [
+          "Mão"
+        ],
+        "sao": [
+          {
+            "ten": "Thái Dương",
+            "quanHe": "o-cung"
+          }
+        ],
+        "cung": [
+          "Mệnh"
+        ],
+        "nhom": [
+          {
+            "ten": [
+              "Tả Phù",
+              "Hữu Bật",
+              "Thiên Khôi",
+              "Thiên Việt",
+              "Văn Xương",
+              "Văn Khúc"
+            ],
+            "quanHe": "tam-phuong",
+            "toiThieu": 2
+          }
+        ]
+      },
+      "y": "Năng lực và quý nhân hỗ trợ giúp hình thành nền tảng giàu có, danh vị và nguồn lực tài chính.",
+      "nhan": {
+        "muc": "manh",
+        "chieu": "cat",
+        "linhVuc": [
+          "tien-bac"
+        ]
+      },
+      "cheDo": "add",
+      "nguon": {
+        "documentId": "952574f6-35a1-4598-be1c-79d55b48bb88",
+        "tenSach": "Tử Vi Áo Bí Biện Chứng Học",
+        "chunkId": "d41240bb-2ce7-45d5-92dd-d49b335050df",
+        "chunkIndex": 795,
+        "duongDeMuc": "Ö",
+        "dongTrongChunk": 4,
+        "sha1Trich": "0dd2e4ef2f6cf05a"
+      }
+    }
+  ]
+}
