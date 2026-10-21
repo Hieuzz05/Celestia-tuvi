@@ -148,7 +148,23 @@ export interface CauTraRaV3 {
   /** Phiên bản prompt + model viết RIÊNG câu này (01/10/2026) — một hàng đệm ghép câu của nhiều lượt, cột model của hàng chỉ đúng cho lượt cuối */
   pb?: string;
   model?: string;
+  /**
+   * Căn cứ: TOÀN BỘ tập đã cấp cho model khi viết câu này (22/10/2026), không chỉ mã model tự nhắc —
+   * để biết bài nào phải viết lại khi một mục thư viện hay một bản tài liệu bị rút. Chỉ ở trong đệm.
+   */
+  canCu?: CanCuCauV3;
 }
+
+export interface CanCuCauV3 {
+  thuVien: { ma: string; id: string; dot: string; dau: string }[];
+  nguon: { ma: string; documentId: string; versionId: string; chunkId: string }[];
+}
+
+/** Căn cứ của một câu vừa viết — từ đúng tập dữ liệu đã đưa vào prompt */
+export const canCuCua = (k: Pick<KetQuaCauV3, 'thuVien' | 'nguon'>): CanCuCauV3 => ({
+  thuVien: (k.thuVien?.daChon ?? []).map(({ ma, id, dot, dau }) => ({ ma, id, dot, dau })),
+  nguon: k.nguon.map((n) => ({ ma: n.id, documentId: n.documentId, versionId: n.versionId, chunkId: n.chunkId })),
+});
 
 interface KhoaDem {
   chartHash: string;
@@ -183,8 +199,11 @@ export interface MoiTruongV3 {
 export type KetQuaXuLyV3 = { traThang: Response } | { status: number; json: Record<string, unknown> };
 
 const tra = (json: Record<string, unknown>, status = 200): KetQuaXuLyV3 => ({ status, json });
-/** pb / model chỉ ở trong đệm (trang chấm bài đọc) — không gửi ra trình duyệt: mặt trước không lộ tên model */
-const anNoiBo = (ds: CauTraRaV3[]) => ds.map(({ pb: _pb, model: _model, ...c }) => c);
+/**
+ * pb / model / canCu chỉ ở trong đệm (trang chấm bài đọc) — không gửi ra trình duyệt: mặt trước không lộ
+ * tên model, không lộ nguồn gốc RAG. MỌI đường trả `cau` phải đi qua đây, kể cả bài lấy từ đệm.
+ */
+export const anNoiBo = (ds: CauTraRaV3[]) => ds.map(({ pb: _pb, model: _model, canCu: _canCu, ...c }) => c);
 
 const khoaGocV3 = (namXem: number, nhom: string, boiCanh: ReturnType<typeof lamSachBoiCanh>) =>
   `nam:${namXem}|nhom:${nhom}${khoaBoiCanh(boiCanh, nhom)}`;
@@ -400,7 +419,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         await dem.luu(khoa, cu!.noiDung, { provider: cu!.provider ?? undefined, model: cu!.model ?? undefined });
       }
       const cauDem = phamVi.map((id) => daCo.get(id)!);
-      return tra({ nhom, cau: cauDem, tuDem: true, banMoi: coBanMoi(cauDem) });
+      return tra({ nhom, cau: anNoiBo(cauDem), tuDem: true, banMoi: coBanMoi(cauDem) });
     }
 
     // Tới đây là phải gọi model — khách chưa đăng nhập thì xin lượt trước (chỉ tổng quan mới tới được đây khi là khách)
@@ -456,6 +475,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         ghep: k.danY.some((y) => y.ghep) ? k.danY.filter((y) => y.ghep && y.y).map((y) => y.y).slice(0, 5) : undefined,
         pb: PHIEN_BAN_V3.prompt,
         model: k.model || undefined,
+        canCu: canCuCua(k),
       });
     }
     const cau: CauTraRaV3[] = ids.map(
