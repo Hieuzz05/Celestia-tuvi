@@ -49,3 +49,25 @@ Task Vibe: CELES-16. Kế hoạch chia phiên code: `D:\Celestia\KE-HOACH-PHIEN-
 - 10.3 / 10.14: ngưỡng cụ thể chủ dự án chốt khi có số.
 - 10.21: Cerebras đang hết tiền (CELES-19). Nếu không có lượt dùng thử thì đợt đầu chạy model miễn phí
   (~10 ngày), không chi tiền.
+
+## Duyệt kế hoạch đợt 1 (22/10/2026)
+
+Chủ dự án duyệt kế hoạch 9 phiên / 3 vòng (`D:\Celestia\KE-HOACH-PHIEN-CODE-kho-tri-thuc-2026-10-21.md`),
+kèm hai ngoại lệ **chỉ cho đợt 1 này**, không đổi luồng B trong AGENTS.md:
+
+- **Lối duyệt 7a**: trong mỗi phiên, AI chỉ dừng trình khi `danh-gia-tac-dong` bật cờ "CẦN CHỦ DỰ ÁN
+  DUYỆT"; còn lại chủ dự án nghiệm thu cuối phiên.
+- **Chỉ Claude cập nhật `PRODUCT-BACKLOG.xlsx`**, cuối mỗi vòng, khi gộp các nhánh. Codex / Gemini ghi
+  nội dung cần thêm vào `--result` trên Vibe. Lý do: git không gộp được tệp xlsx.
+
+Bốn lưu ý kỹ thuật của chủ dự án (đã đưa vào đặc tả từng phiên):
+
+1. Chỉ bỏ mục "bị lật" khi quan hệ lật đã xác minh (không áp cho nhãn override máy tự sinh chưa duyệt),
+   xét trước trần 18 mục. Lưu căn cứ = toàn bộ tập đã cấp (`thuVien.daChon` id + đợt gói; nguồn
+   `documentId` + `versionId` + `chunkId`), không chỉ mã T### model nhắc. Thu hồi đợt 1 phủ V3 (Tóm
+   lại, Bức tranh lớn, bài dự phòng thế hệ trước) và Sổ kết luận ở lượt chat mới.
+2. Trần token chặn trên đường gọi provider thật của lượt nền / thử nghiệm; cấm tuyệt đối fallback sang
+   model trả phí; không xây giữ chỗ nhiều máy (script chạy tuần tự).
+3. Đếm cả `noi_dung_ai` lẫn `muc_thu_vien`; bộ 100 mục chỉ lấy mục có vết duyệt / bác thật, thiếu thì
+   báo số thật; báo cáo so mù tách 3 cột: Đúng dữ kiện engine · Đúng nghĩa · Tự nhiên.
+4. Bản A của so mù là A0 (sau K1, K2) hoặc A0 tỉa luật trùng, trong trần thử nghiệm.
