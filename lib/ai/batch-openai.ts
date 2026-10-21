@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ghiNhanSuDung } from './usage';
+import { chanDuongTraPhiKhiThu } from './ngan-sach-thu';
 
 /**
  * OPENAI BATCH API — cho việc KHÔNG cần kết quả ngay: dựng thư viện, chấm, đo (26/09/2026).
@@ -44,6 +45,7 @@ export async function chayBatchOpenAi(
   yeuCau: YeuCauBatch[],
   opts: { nhan?: string; choToiDaMs?: number; moiLanChoMs?: number; khiCho?: (trangThai: string, xong: number, tong: number) => void } = {}
 ): Promise<Map<string, KetQuaBatch>> {
+  chanDuongTraPhiKhiThu();
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error('Thiếu OPENAI_API_KEY cho Batch API');
   if (!yeuCau.length) return new Map();

@@ -25,6 +25,7 @@ npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STA
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
 npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
+npx tsx scripts/test-ngan-sach-thu.ts # X1: trần token/ngày, cấm trả phí, ghi lỗi và restart vẫn chặn — HTTP/DB giả
 npx tsx scripts/test-moi-truong-dem.ts  # đệm AI tách theo môi trường: production giữ khoá cũ, Preview/local có tiền tố, cấu hình chỉ production ghi — offline
 npx tsx scripts/test-kiem-id-cel.ts     # hàm so ID CEL giữa nhánh / main / nhánh khác — offline
 npx tsx scripts/kiem-id-cel.ts          # máy canh trùng ID CEL (cần git fetch); CI chạy riêng ở kiem-id-cel.yml trên MỌI lần đẩy
