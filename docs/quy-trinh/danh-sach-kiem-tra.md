@@ -33,6 +33,7 @@ npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng
 npx tsx scripts/test-nghiem-ly.ts      # nghiệm lý của chủ dự án (QĐ-13) + khối T###: T phải kèm F, vòng T↔T giải tất định, cờ tắt giữ nguyên — offline
 npx tsx scripts/test-thu-vien-prompt.ts  # K1 khối thư viện V3: mục nặng chưa duyệt bị chặn (cờ CELES_THU_VIEN_MANH_CHUA_DUYET=1 mở lại), mục bị lật đã duyệt bị bỏ, căn cứ câu V3 không ra trình duyệt — offline
 npx tsx scripts/test-dau-logic-v3.ts    # K2 dấu logic `lg` câu V3: lệch dấu = thiếu, viết lại khi mở; bản cũ hiện tạm; khách hết lượt không bị 429 — offline
+npx tsx scripts/test-duong-b-v3.ts      # CELES-38 đường B (so mù): bỏ ý mã lạ / sao ngoài lá số, chỉ hạ mức chắc, sản phẩm không bật — offline
 npx tsx scripts/test-thang-chac-thap.ts # K3 Focused hỏi một tháng: mô tả hướng "rõ" nói theo độ tin, validator chặn THANG_CHAC_CAO (trừ phủ định) — offline
 npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
 npx tsx scripts/test-do-phu-viet.ts    # độ phủ tầng viết (đo, chưa đổi Writer) — offline
