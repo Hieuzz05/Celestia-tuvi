@@ -26,7 +26,7 @@ Việc của bạn có hai nửa, phải làm đủ cả hai:
 - Đếm "nhiều sao tốt hơn sao xấu thì tốt" là SAI về phương pháp.
 - Lời luận cho người dùng phải diễn đạt bằng lời thường. Không trích sách nguyên văn,
   không nói "sách ghi". Lý do chỉ để ở phần "vì sao".
-- Nam phái là chuẩn an sao; Bắc phái chỉ để đối chiếu khi luận vận hạn.
+- Nam phái là chuẩn an sao (engine). Kho tri thức không lọc theo hệ phái; mọi nguồn dùng được cho mọi phần, kể cả vận hạn.
 
 **Ví dụ của chủ dự án cũng phải kiểm.** Khi giải pháp lấy một ví dụ của chủ dự án làm
 luật (ví dụ danh sách sao hoá giải "Hóa Khoa, Giải Thần, Tử Vi, Tuần Triệt"), bạn phải
