@@ -102,5 +102,65 @@ const batCo = ['app', 'lib', 'components']
   .filter((p) => /duongB\s*:\s*true/.test(readFileSync(p, 'utf8')));
 kiem('không mã sản phẩm nào bật duongB', batCo.length === 0, batCo);
 
-console.log(sai ? `\n${sai} kiểm SAI` : '\nĐường B: ĐẠT');
-process.exit(sai ? 1 : 0);
+/*
+ * Cờ tắt = y như cũ (tích hợp đợt 1, 22/10): chạy luanMotCau với model và DB giả, ghi lại mọi lời gọi
+ * model. Không truyền cờ và truyền { duongB: false } phải gửi ĐÚNG cùng chuỗi lời gọi, không có bước
+ * lập ý hay khối dàn ý; bật cờ thì lời gọi đầu là bước lập ý.
+ */
+type LoiGoi = { system: string; user: string };
+async function chayVoiModelGia(thuNghiem: { duongB?: boolean }): Promise<LoiGoi[]> {
+  const ds: LoiGoi[] = [];
+  globalThis.fetch = (async (_url: string, init?: { body?: string }) => {
+    const b = JSON.parse(init?.body ?? '{}') as { messages?: { role: string; content: string }[] };
+    const tim = (r: string) => b.messages?.find((m) => m.role === r)?.content ?? '';
+    ds.push({ system: tim('system'), user: tim('user') });
+    return Response.json({
+      choices: [{ message: { content: '{"luanGiai":"Một đoạn.","viSao":[],"goiY":[],"danY":[]}' } }],
+      usage: { prompt_tokens: 1, completion_tokens: 1 },
+    });
+  }) as unknown as typeof fetch;
+  const { luanMotCau, CAU_HOI_V3 } = await import('../lib/rag/v3');
+  const { dungDuKien } = await import('../lib/rag/v3/du-kien');
+  const { lapLaSo } = await import('../lib/tuvi/ansao');
+  const laSo = lapLaSo({ ngay: 12, thang: 5, nam: 1990, gio: 10, gioiTinh: 'nam' });
+  const q = CAU_HOI_V3.find((x) => x.id === 'SN01')!;
+  const chuanBi = { duKien: dungDuKien(laSo, q, 2026), tv: null, nguon: [], msTruyHoi: 0 };
+  // system cố định để khỏi đọc mẫu giọng từ DB — cùng giá trị cho mọi lượt
+  await luanMotCau({ laSo, q, namXem: 2026, nho: new Map(), chuanBi, thuNghiem: { ...thuNghiem, system: 'SYS-GIA' } }).catch(() => undefined);
+  return ds;
+}
+
+async function kiemCoTat() {
+  const { _thayAdminChoTest } = await import('../lib/supabase/admin');
+  const bang = (table: string) => {
+    const kq = {
+      data: table === 'ai_model_configs' ? [{ id: '0', provider: 'groq', model: 'gia', bat: true, uu_tien: 1, api_key_ma: null, ghi_chu: null }] : [],
+      error: null,
+    };
+    const q: object = new Proxy({}, {
+      get: (_t, k) =>
+        k === 'then' ? (r: (x: typeof kq) => unknown) => Promise.resolve(kq).then(r)
+        : k === 'maybeSingle' || k === 'single' ? async () => ({ data: null, error: null })
+        : () => q,
+    });
+    return q;
+  };
+  _thayAdminChoTest({ from: bang, rpc: async () => ({ error: null }) } as never);
+  for (const k of ['AI_NHAN', 'AI_NGAN_SACH_TOKEN', 'AI_MUC_DICH', 'AI_GHIM_MODEL', 'AI_TRAN_USD']) delete process.env[k];
+  process.env.GROQ_API_KEY = 'offline-only';
+  const khong = await chayVoiModelGia({});
+  const tat = await chayVoiModelGia({ duongB: false });
+  const bat = await chayVoiModelGia({ duongB: true });
+  kiem('cờ tắt: có gọi model', khong.length > 0, khong.length);
+  kiem('cờ tắt: chuỗi lời gọi y như không truyền cờ', JSON.stringify(khong) === JSON.stringify(tat), [khong.length, tat.length]);
+  kiem('cờ tắt: không bước lập ý, không khối dàn ý', tat.every((g) => g.system !== SYSTEM_LAP_Y && !g.user.includes('DÀN Ý ĐÃ DUYỆT')));
+  kiem('cờ bật: lời gọi đầu là bước lập ý', bat[0]?.system === SYSTEM_LAP_Y, bat[0]?.system.slice(0, 60));
+  _thayAdminChoTest(null);
+}
+
+kiemCoTat()
+  .catch((e) => kiem('chạy luanMotCau với model giả', false, String(e)))
+  .finally(() => {
+    console.log(sai ? `\n${sai} kiểm SAI` : '\nĐường B: ĐẠT');
+    process.exit(sai ? 1 : 0);
+  });

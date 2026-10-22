@@ -10,11 +10,11 @@ import { spawnSync } from 'node:child_process';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { _thayAdminChoTest } from '../lib/supabase/admin';
 import {
-  docCauHinhThu, kiemTranThu, laLuotThu, tokenThuDaDung, tongSuDungThu,
+  docCauHinhThu, kiemTranThu, laLuotThu, luotThuCoPhi, tokenThuDaDung, tongSuDungThu,
   uocTokenLuotThu, VuotNganSachError,
 } from '../lib/ai/ngan-sach-thu';
 import { goiModel } from '../lib/ai/providers';
-import { goiVoiFallback, tokenDaDung } from '../lib/ai/fallback';
+import { goiVoiFallback, tienDaTinh, tokenDaDung } from '../lib/ai/fallback';
 import { embedLoTaiLieu, embedTruyVan } from '../lib/ai/embedding';
 import { chayBatchOpenAi } from '../lib/ai/batch-openai';
 import { docSuDungHomNayBatBuoc } from '../lib/ai/usage';
@@ -26,6 +26,7 @@ type Row = { provider: string; model: string; so_request: number; so_loi: number
 let rows: Row[] = [], http = 0, rpc = 0, loiDoc = false, loiGhi = false, thieuV2 = false;
 let cheDo: 'ok' | 'loi' | 'loiMotLan' | 'thieu' | 'vuot' | 'mang' | 'server' = 'ok';
 let doiHttp: (() => Promise<void>) | undefined;
+let choOpenai = false;
 const modelRows = [
   { provider: 'openai', model: 'paid', bat: true, uu_tien: 1 },
   { provider: 'groq', model: MODEL, bat: true, uu_tien: 2 },
@@ -56,7 +57,11 @@ const fake = {
 };
 const fetchCu = globalThis.fetch;
 globalThis.fetch = async (url) => {
-  assert.match(String(url), /^https:\/\/api\.groq\.com\/openai\/v1\/chat\/completions$/);
+  if (String(url).startsWith('https://api.openai.com/')) {
+    // Ngoại lệ có phí: chỉ khi test cho phép, và chỉ đúng endpoint chat
+    assert.ok(choOpenai, 'gọi OpenAI khi không được phép');
+    assert.equal(String(url), 'https://api.openai.com/v1/chat/completions');
+  } else assert.match(String(url), /^https:\/\/api\.groq\.com\/openai\/v1\/chat\/completions$/);
   http++;
   if (doiHttp) await doiHttp();
   if (cheDo === 'mang') throw new DOMException('offline timeout', 'AbortError');
@@ -71,7 +76,7 @@ globalThis.fetch = async (url) => {
 _thayAdminChoTest(fake as unknown as SupabaseClient);
 const BIEN = ['AI_NHAN', 'AI_MUC_DICH', 'AI_NGAN_SACH_TOKEN', 'AI_GROQ_TRAN_TOKEN_NGAY', 'AI_THU_TRAN_TOKEN_NGAY',
   'AI_THU_TRAN_LUOT_NGAY', 'AI_THU_TEP_DOI_SOAT', 'AI_KHONG_LUI', 'AI_GHIM_MODEL', 'AI_TRAN_USD',
-  'GROQ_API_KEY', 'OPENAI_API_KEY'];
+  'AI_GIA_VAO_USD', 'AI_GIA_RA_USD', 'GROQ_API_KEY', 'OPENAI_API_KEY'];
 const cu = Object.fromEntries(BIEN.map((k) => [k, process.env[k]]));
 const child = process.argv.includes('--restart-probe');
 const thuMuc = child ? undefined : mkdtempSync(join(tmpdir(), 'celes-x1-'));
@@ -81,7 +86,7 @@ function reset() {
   Object.assign(process.env, { AI_NHAN: 'test', AI_NGAN_SACH_TOKEN: '10000000', AI_GROQ_TRAN_TOKEN_NGAY: '10000000',
     AI_THU_TRAN_TOKEN_NGAY: '10000000', AI_THU_TRAN_LUOT_NGAY: '10000', AI_THU_TEP_DOI_SOAT: marker,
     GROQ_API_KEY: 'offline-only', OPENAI_API_KEY: 'offline-only' });
-  rows = []; http = 0; rpc = 0; loiDoc = false; loiGhi = false; cheDo = 'ok'; doiHttp = undefined;
+  rows = []; http = 0; rpc = 0; choOpenai = false; loiDoc = false; loiGhi = false; cheDo = 'ok'; doiHttp = undefined;
 }
 function xoaDauThu() { if (existsSync(marker)) unlinkSync(marker); }
 function kiemRestart() {
@@ -237,9 +242,41 @@ async function main() {
     loiGhi = true; await assert.rejects(goi, VuotNganSachError);
     assert.equal(existsSync(marker), true); xoaDauThu();
   });
+  // T-04 (22/10/2026): ngoại lệ có phí cho so mù / cổng 10.22 — hẹp, có trần, production không có
+  await muc('Ngoại lệ có phí: thiếu trần tiền / giá / ghim thì không có, model trả phí vẫn bị chặn', async () => {
+    choOpenai = true;
+    const ghimDu = { AI_GHIM_MODEL: 'openai|paid', AI_TRAN_USD: '0.01', AI_GIA_VAO_USD: '1', AI_GIA_RA_USD: '1' };
+    for (const thieu of Object.keys(ghimDu)) {
+      const env = { ...process.env, ...ghimDu, [thieu]: thieu === 'AI_GHIM_MODEL' ? '' : '0' };
+      assert.equal(luotThuCoPhi(env), null, `thiếu ${thieu} vẫn mở`);
+    }
+    assert.equal(luotThuCoPhi({ ...ghimDu }), null, 'không phải lượt thử (production) thì không có ngoại lệ');
+    process.env.AI_GHIM_MODEL = 'openai|paid';
+    await assert.rejects(() => goiVoiFallback(req), VuotNganSachError);
+    assert.equal(http, 0, 'không có AI_TRAN_USD thì không được gọi model trả phí');
+  });
+  await muc('Ngoại lệ có phí: chỉ qua fallback đã giữ chỗ; gọi provider trực tiếp vẫn chặn', async () => {
+    choOpenai = true;
+    Object.assign(process.env, { AI_GHIM_MODEL: 'openai|paid', AI_TRAN_USD: '1', AI_GIA_VAO_USD: '1', AI_GIA_RA_USD: '1' });
+    await chan(() => goiModel('openai', 'paid', 'offline-only', req));
+    const kq = await goiVoiFallback(req);
+    assert.equal(kq.provider, 'openai'); assert.equal(http, 1);
+    assert.equal(rows.length, 1); assert.equal(rows[0].model, 'paid@test', 'lượt có phí vẫn ghi nhãn @test');
+    assert.ok(tienDaTinh() > 0);
+  });
+  await muc('Ngoại lệ có phí: vượt trần tiền thì dừng trước HTTP', async () => {
+    choOpenai = true;
+    Object.assign(process.env, { AI_GHIM_MODEL: 'openai|paid', AI_GIA_VAO_USD: '1', AI_GIA_RA_USD: '1' });
+    process.env.AI_TRAN_USD = String(tienDaTinh() + 1e-6);
+    await assert.rejects(() => goiVoiFallback(req), VuotNganSachError);
+    assert.equal(http, 0);
+  });
   await muc('Không có cờ thử: provider production giữ đường cũ', async () => {
     for (const k of ['AI_NHAN', 'AI_NGAN_SACH_TOKEN', 'AI_MUC_DICH']) delete process.env[k];
     await goi(); assert.equal(http, 1); assert.equal(rpc, 0);
+    // Production không đọc ngoại lệ có phí: đặt đủ biến mà không có cờ thử thì vẫn không có
+    Object.assign(process.env, { AI_GHIM_MODEL: 'openai|paid', AI_TRAN_USD: '1', AI_GIA_VAO_USD: '1', AI_GIA_RA_USD: '1' });
+    assert.equal(luotThuCoPhi(), null);
   });
   console.log('TẤT CẢ ĐẠT: ' + soMuc + ' nhóm X1, không gọi dịch vụ thật.');
 }

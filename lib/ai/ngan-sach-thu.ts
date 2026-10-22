@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import { closeSync, existsSync, fsyncSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { isAbsolute } from 'node:path';
@@ -23,6 +24,33 @@ export const MODEL_THU_MIEN_PHI = new Set([
 
 export function modelThuDuocPhep(provider: string, model: string): boolean {
   return provider === 'groq' && MODEL_THU_MIEN_PHI.has(model);
+}
+
+/*
+ * NGOẠI LỆ CÓ PHÍ (22/10/2026, docs/chien-luoc/kho-tri-thuc-to-be-2026-10.md mục "Duyệt 22/10"): lượt thử
+ * được gọi ĐÚNG MỘT model trả phí đã ghim (`AI_GHIM_MODEL`) khi đặt đủ trần tiền cứng `AI_TRAN_USD` và giá
+ * `AI_GIA_VAO_USD` / `AI_GIA_RA_USD`. Thiếu một biến là không có ngoại lệ, X1 chặn như cũ. Không phải lượt
+ * thử (production) thì không bao giờ có ngoại lệ này.
+ * Chỉ mở bên trong `trongCuaCoPhi` — fallback.ts gọi nó SAU khi đã giữ chỗ tiền; gọi provider trực tiếp
+ * (ngoài fallback, không giữ chỗ) vẫn bị chặn.
+ */
+export function luotThuCoPhi(env: Bien = process.env): string | null {
+  if (!laLuotThu(env)) return null;
+  const ghim = (env.AI_GHIM_MODEL ?? '').trim();
+  const duong = (k: string) => Number(env[k]) > 0;
+  return ghim && duong('AI_TRAN_USD') && duong('AI_GIA_VAO_USD') && duong('AI_GIA_RA_USD') ? ghim : null;
+}
+
+const cuaCoPhi = new AsyncLocalStorage<string>();
+
+/** fallback.ts bọc lời gọi đã giữ chỗ tiền: chỉ lời gọi này (theo ngữ cảnh async) được qua cửa có phí */
+export function trongCuaCoPhi<T>(provider: string, model: string, fn: () => Promise<T>): Promise<T> {
+  return cuaCoPhi.run(`${provider}|${model}`, fn);
+}
+
+export function duocGoiCoPhi(provider: string, model: string): boolean {
+  const ghim = luotThuCoPhi();
+  return !!ghim && ghim === `${provider}|${model}` && cuaCoPhi.getStore() === ghim;
 }
 
 function soDuong(env: Bien, ten: string): number {
@@ -94,6 +122,8 @@ export function tokenThuDaDung(): number { return tokenTienTrinh; }
 
 /** Đường embedding/batch không có chính sách miễn phí đã kiểm trong X1. */
 export function chanDuongTraPhiKhiThu(): void {
+  // Ngoại lệ có phí: embedding câu hỏi (~0,0002 USD / lượt so mù) không tính vào AI_TRAN_USD — quá nhỏ để giữ chỗ
+  if (luotThuCoPhi()) return;
   if (laLuotThu()) throw new VuotNganSachError('X1 chặn embedding/batch sống trong lượt thử. Dùng căn cứ/fixture chuẩn bị trước; không tự đổi không gian vector.');
 }
 
