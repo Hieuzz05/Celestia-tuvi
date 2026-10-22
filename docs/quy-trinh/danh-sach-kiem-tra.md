@@ -5,6 +5,7 @@ Trong lúc làm chỉ cần `node scripts/kiem-nhanh.mjs --chay`; danh sách nà
 
 ```
 npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
+npx tsx scripts/test-nguyet-han.ts    # X2: đáp án đếm tay độc lập theo hai nguồn; tháng âm, chi giờ, Tý muộn — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline

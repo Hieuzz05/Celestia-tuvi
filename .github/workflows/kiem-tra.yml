@@ -39,6 +39,8 @@ jobs:
 
       - name: Engine an sao
         run: npx tsx scripts/test-ansao-chuan.ts
+      - name: Nguyệt hạn — đếm tay độc lập và biên tháng âm/chi giờ (offline)
+        run: npx tsx scripts/test-nguyet-han.ts
       - name: Planner RAG
         run: npx tsx scripts/test-rag-planner.ts
       - name: Bộ vàng planner

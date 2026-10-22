@@ -2,7 +2,7 @@
 
 CELES-28 · Codex (máy 2) · 22/10/2026 · Nhánh viec/nguyet-han.
 
-Trạng thái: phương án chuẩn bị để Claude soát trước code theo mục 4 X2 của kế hoạch bản 3. Chưa sửa engine hoặc đáp án bài kiểm. X1 giữ nguyên ở commit f7495ca trên nhánh riêng, chờ nghiệm thu.
+Trạng thái cập nhật: đang triển khai theo chỉ đạo mới của chủ dự án “tiếp tục code theo kế hoạch” sau khi đã báo điểm chờ. Phương án và các mốc chuẩn bị bên dưới được giữ để lần lại. Chưa có phản hồi Claude trên Vibe; không ghi là Claude đã duyệt. X1 giữ nguyên ở commit f7495ca trên nhánh riêng, chờ nghiệm thu.
 
 ## Kết quả cần đạt
 
@@ -17,7 +17,7 @@ Hiện cung tháng Giêng trùng cung tiểu hạn cho mọi lá số. Quy tắc
 
 Các số dòng là dòng bản Markdown cục bộ, không phải số trang PDF. Trang theo dấu trang trong bản trích.
 
-## Mã hiện tại và cách sửa
+## Mã tại mốc trước sửa và cách sửa
 
 lib/tuvi/ansao.ts:446–447 hiện trả mod12(cungTieuHan(laSo, tuoiAm) + thangAm - 1).
 
@@ -73,11 +73,11 @@ K2 đang sửa khoá đệm; origin/main chưa có nhánh K2. X2 không tự tă
 
 ## Nội dung workbook bàn giao Claude
 
-- Backlog: X2 sửa cung nguyệt hạn theo tháng sinh âm và chi giờ; trạng thái hiện mới nghiên cứu, chưa triển khai.
+- Backlog: X2 đã triển khai cung nguyệt hạn theo tháng sinh âm và chi giờ; 9 nhóm kiểm mới PASS, hồi quy bối cảnh 192 ca không lệch sau ngoại lệ cập nhật mẫu đã duyệt. Chờ nghiệm thu mã và tích hợp cùng K2; điền commit mã từ dashboard CELES-28.
 - Logic chi tiết: tiểu hạn → nghịch tháng sinh → thuận chi giờ → thuận tháng xem; giữ tháng âm đã xử lý Tý muộn; không đổi tiểu hạn/tháng nhuận.
 - Nhật ký thay đổi: vì cách hiện tại đồng nhất tháng Giêng với tiểu hạn, bỏ hai đầu vào đã có trong lá số. Chỉ ghi hoàn tất và commit mã khi X2 thực sự qua kiểm.
 
-## Cổng bàn giao
+## Cổng bàn giao ở mốc chuẩn bị (trước chỉ đạo tiếp tục code)
 
 Researcher và celes-domain đã đọc hiện trạng. Chuyên gia Tử Vi PASS công thức và cách đếm; chưa đủ nguồn đáp án nghiệm thu. Phản biện PASS để bàn giao sau khi chỉnh nhất quán đường đáp án và cổng tích hợp đệm. Đánh giá tác động: CAO, PASS bàn giao; không phát sinh việc cần chủ dự án duyệt ngoài X2 đã được giao. Bước Claude soát vẫn bắt buộc theo kế hoạch.
 
@@ -88,3 +88,44 @@ Researcher và celes-domain đã đọc hiện trạng. Chuyên gia Tử Vi PASS
 Kiểm mốc trước sửa đã chạy: scripts/test-boi-canh-dong-bang.ts PASS, 192 ca lệch 0 và 2 lời gọi model giả cho cờ tắt. kiem-nhanh --chay xác nhận chỉ đổi tài liệu, không có tệp mã cần kiểm. Đây là kiểm mốc hiện tại, chưa phải kết quả nghiệm thu công thức mới.
 
 Claude cần soát phương án, ghi nguồn đáp án được chốt và xác nhận phối hợp vùng Chung trên CELES-28. Nếu thay yêu cầu ví dụ sách bằng đếm tay độc lập thì phải ghi rõ ngoại lệ được chốt, không đổi tên đáp án thành ví dụ sách. Codex chỉ tiếp tục mã sau bước này. Không push hoặc merge trong phiên chuẩn bị.
+
+## Triển khai sau chỉ đạo mới của chủ dự án
+
+Chủ dự án đã yêu cầu “tiếp tục code theo kế hoạch” sau khi được báo thiếu ví dụ số và điểm chờ Claude. Tiếp tục đúng công thức đã qua chuyên gia/phản biện/tác động, dùng ca đếm tay độc lập được chuyên gia kiểm lại. Ghi rõ nguồn quy tắc và loại đáp án, không gọi là ví dụ sách, không giả đã có phản hồi Claude. Vibe CELES-28 ghi mốc chuyển lại đang làm. Không có quyền push/merge hoặc đổi mẫu kiểm cũ.
+
+### Bảng đáp án độc lập
+
+Tất cả chỉ số cung: Tý=0 tới Hợi=11. Cột giờ là chi giờ, không phải số giờ dương. Các đáp án cố định đã được chuyên gia kiểm bằng chuỗi tên chi, không chạy công thức triển khai.
+
+| Ca | Tiểu hạn | Tháng sinh âm | Chi giờ | Giêng | Tháng xem | Kết quả |
+|---|---|---|---|---|---|---|
+| A | Tuất (10) | 1 | Tý (0) | Tuất (10) | 1 | Tuất (10) |
+| B | Tuất (10) | 5 | Mão (3) | Dậu (9) | 1 | Dậu (9) |
+| C | Sửu (1) | 12 | Hợi (11) | Sửu (1) | 12 | Tý (0) |
+| D | Mùi (7) | 2 | Hợi (11) | Tỵ (5) | 12 | Thìn (4) |
+| E | Tý (0) | 12 | Tý (0) | Sửu (1) | 1 | Sửu (1) |
+| F | Hợi (11) | 1 | Sửu (1) | Tý (0) | 2 | Sửu (1) |
+
+Ví dụ đường đếm độc lập B: từ Tuất đếm tháng nghịch Tuất→Dậu→Thân→Mùi→Ngọ; tại Ngọ kể Tý, thuận Ngọ→Mùi→Thân→Dậu đến Mão. Giêng ở Dậu. Bài kiểm chạy trên mã cũ đã đỏ đúng ca này (Tuất 10 thay vì Dậu 9).
+
+scripts/test-nguyet-han.ts lưu nguyên sáu đáp án, thêm kiểm các tháng đi thuận và phủ đủ 12 cung, lấy tháng âm thay vì tháng dương, hai giờ cùng chi giờ, sinh Tý muộn qua tháng/năm âm. Fixture A–F là đầu vào kỹ thuật để cô lập phép tính; không phải lá số trích trong sách. Mốc Tết/Tý muộn dùng lá số thật để kiểm nối với lịch hiện có.
+
+Đã kiểm lại giờ Tý: 23:00–00:59 theo hourToChi; 01:00 thuộc Sửu. Fixture E dùng 00:00, không đổi đáp án Sửu (1) đã được chuyên gia đếm tay.
+
+Mã sửa duy nhất ở cungNguyetHan; đăng ký bài mới trong CI và danh sách kiểm. Không sửa cungTieuHan, đáp án cũ, tháng nhuận, phiên bản phương pháp, THE_HE_DEM, dữ liệu hoặc prompt. Kiểm mới sau sửa: 9 nhóm PASS; QA độc lập, domain và tác động PASS diff.
+
+Mốc kiểm chung đầu tiên: 34/35 cổng đạt (gồm typegen, tsc, lint, an sao và bài nguyệt hạn mới). Bộ bối cảnh đóng băng trượt 60/192 ca so mẫu cũ. Ở mốc này đã giữ nguyên mẫu để phân loại và xin đúng ngoại lệ bên dưới, không báo hồi quy đạt.
+
+### Duyệt cập nhật mẫu sau QA
+
+QA đã kiểm toàn bộ báo cáo D:/Celestia/X2-CELES-28-chenh-lech-boi-canh-2026-10-22.json: 60 ca chỉ đổi 120 trường noiDung/cung của cùng dữ kiện nguyệt hạn; không đổi tháng/năm xem hoặc trường khác. 132 ca không thay đổi. Chủ dự án đã chọn rõ “Cho cập nhật mẫu sau QA”.
+
+Áp dụng ngoại lệ này bằng cập nhật chọn lọc từng đường dẫn đã đối chiếu giá trị cũ và hash tệp cũ; không chạy --sinh hoặc sinh lại bộ mẫu. Thêm chú thích ngoại lệ ở bài kiểm. Điều này không cấp quyền sửa phiên bản/đệm/app hoặc push/merge. Kiểm lại các cổng sau thay đổi mẫu trước khi báo hoàn tất.
+
+### Kiểm cuối và bàn giao tích hợp
+
+- Bài nguyệt hạn: 9 nhóm PASS; mã cũ đã được kiểm đỏ tại ca B trước sửa. QA độc lập chạy 9 nhóm PASS.
+- 34 cổng trước đó đã đạt. Cổng bối cảnh trượt được chạy lại sau cập nhật chọn lọc: 192 ca lệch 0, cờ tắt có 2 lời gọi model giả PASS. Chạy lại bài nguyệt hạn và tsc đều PASS. Không cần chạy lại các cổng không bị thay đổi bởi dữ liệu mẫu.
+- Domain và tác động PASS diff; không mở rộng lời luận hoặc quy tắc lịch. Diff không chứa thay đổi phiên bản, RAG, app, DB hoặc workbook.
+- Claude cập nhật ba sheet cuối vòng, chốt phiên bản phương pháp/đệm V3/fallback khi tích hợp với K2, dựng lại app trước phát hành. X2 không tự sinh lại bài, không gọi DB/model thật.
+- Nhánh X2 chứa commit phương án 1aaa7a2 và commit mã tiếp theo; không mang commit X1 hoặc nhánh khác. Chưa push/merge. Bản dễ tìm tại D:/Celestia được cập nhật cùng tài liệu này.

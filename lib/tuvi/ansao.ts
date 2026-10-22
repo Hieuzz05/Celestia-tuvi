@@ -441,10 +441,15 @@ export function tamPhuongTuChinh(cungIndex: number): {
 }
 
 /**
- * Cung nguyệt hạn: lấy cung tiểu hạn của năm làm tháng Giêng, đếm thuận tới tháng cần xem.
+ * Từ tiểu hạn kể là tháng Giêng, nghịch đến tháng sinh âm; tại đó kể là giờ
+ * Tý, thuận tới chi giờ sinh để khởi tháng Giêng, rồi thuận tới tháng cần xem.
+ * Nguồn: Tử Vi hàm số tr.26; Số Tử Vi dưới mắt khoa học tr.74–75.
  */
 export function cungNguyetHan(laSo: LaSo, tuoiAm: number, thangAm: number): number {
-  return mod12(cungTieuHan(laSo, tuoiAm) + (thangAm - 1));
+  const thangSinh = laSo.thongTin.amLich.thang;
+  const gioChi = hourToChi(laSo.thongTin.gio);
+  const thangGieng = mod12(cungTieuHan(laSo, tuoiAm) - (thangSinh - 1) + gioChi);
+  return mod12(thangGieng + (thangAm - 1));
 }
 
 /** Cung tiểu hạn của một tuổi âm (tuổi mụ) nhất định */
