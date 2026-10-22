@@ -7,7 +7,7 @@
  * viết lại thì giữ bản cũ, và dấu không ra trình duyệt. Không chạm DB.
  */
 import { CAU_HOI_V3, PHIEN_BAN_V3 } from '../lib/rag/v3';
-import { anNoiBo, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
+import { anNoiBo, CAU_AN_THANG, cheThangBanCu, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
 
 let sai = 0;
 const kiem = (ten: string, dung: boolean, chiTiet?: unknown) => {
@@ -117,6 +117,32 @@ async function main() {
     kiem('câu nguyệt hạn + bài chưa có dấu (trước K2): không trả', !locBaiTheHeTruoc([cauCua(idNguyet[0])]).has(idNguyet[0]));
     kiem('câu nguyệt hạn + logic đúng: vẫn trả', locBaiTheHeTruoc([cauCua(idNguyet[0], LOGIC_V3)]).has(idNguyet[0]));
     kiem('câu không có nguyệt hạn + logic cũ: vẫn trả (đường lùi giữ nguyên)', loc.has(idKhac));
+  }
+
+  // 7. Bản cũ khác phienBan đang hiện tạm: che phần tháng, giữ phần khác (X2, 22/10/2026)
+  {
+    const lgCu = ['2026.10.1', ...LOGIC_V3.split('|').slice(1)].join('|');
+    const thang = /nguyệt hạn|tháng (?:\d|giêng|chạp|tư|chín)|các tháng/i;
+    const vanCu = 'Năm nay chủ đề là tích luỹ. Tháng 3 âm và tháng Chạp nổi bật vì nguyệt hạn gặp Hoá Lộc. Rủi ro lớn nhất ở giấy tờ.';
+    const baiCu = (id: string, lg?: string): CauTraRaV3 => ({ ...cauCua(id, lg), luanGiai: vanCu, yChinh: ['Tích luỹ', 'Các tháng giữa năm thuận'], goiY: 'Để ý tháng chín.' });
+    const ra = cheThangBanCu(baiCu('VH03', lgCu));
+    kiem('bản cũ khác phienBan: bỏ câu nói tháng', !thang.test(ra.luanGiai) && !ra.yChinh!.some((y) => thang.test(y)) && !ra.goiY, ra);
+    kiem('bản cũ khác phienBan: giữ câu khác + thêm câu không hứa hẹn', ra.luanGiai.includes('tích luỹ') && ra.luanGiai.includes('giấy tờ') && ra.luanGiai.endsWith(CAU_AN_THANG) && ra.yChinh!.includes('Tích luỹ'), ra.luanGiai);
+    kiem('bài chưa có dấu (trước K2) cũng bị che', cheThangBanCu(baiCu('VH03')).luanGiai !== vanCu);
+    kiem('bản đúng dấu: không đổi', cheThangBanCu(baiCu('VH03', LOGIC_V3)).luanGiai === vanCu);
+    kiem('bản cũ không nói tháng: không đổi, không thêm câu', cheThangBanCu(cauCua('VH01', lgCu)).luanGiai === cauCua('VH01', lgCu).luanGiai);
+    kiem('tóm lại cũ: che tháng', !thang.test(cheThangBanCu({ tomLai: vanCu, lg: lgCu }).tomLai!));
+
+    // Qua route: khách hết lượt, chủ đề vận hạn chỉ có bản cũ → trả bản cũ đã che
+    const cdVh = 'van-han';
+    const idVh = CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === cdVh).map((q) => q.id);
+    const khoaVh = khoaDemV3({ ...laSo, nhom: cdVh })!;
+    const { mt, bo, k } = moiTruong({ khach: true, conLuot: false });
+    bo.set(k(khoaVh), idVh.map((id) => baiCu(id, lgCu)));
+    const kq = await xuLyLuanGiaiV3({ ...laSo, nhom: cdVh }, mt);
+    const cau = ('json' in kq ? (kq.json.cau ?? []) : []) as CauTraRaV3[];
+    kiem('route trả bản cũ: không còn chữ tháng', cau.length > 0 && cau.every((c) => !thang.test(c.luanGiai)), 'json' in kq ? kq.json : kq);
+    kiem('route: đệm giữ nguyên bản gốc', (bo.get(k(khoaVh)) as CauTraRaV3[])[0].luanGiai === vanCu);
   }
 
   console.log(sai ? `\n${sai} ca SAI` : '\nTất cả đúng.');

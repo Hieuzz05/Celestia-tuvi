@@ -73,6 +73,38 @@ const LG_TRUOC_DAU = '2026.10.1|2026.10.2|2026.10.1';
 const dungLogic = (c: { lg?: string }) => (c.lg ?? LG_TRUOC_DAU) === LOGIC_V3;
 
 /**
+ * Che phần THÁNG của bản cũ đang hiện tạm (X2, 22/10/2026). Tăng phienBan làm mọi bài V3 viết lại khi mở;
+ * viết hỏng (chạm trần token) hay khách hết lượt thì người đọc thấy bản cũ, mà bản cũ an nguyệt hạn theo
+ * cách trước. Bản cũ khác phienBan: bỏ câu văn nói một tháng cụ thể / nguyệt hạn, thêm một câu không hứa
+ * hẹn; phần khác giữ nguyên. Chỉ đổi thứ trả ra, KHÔNG ghi vào đệm.
+ */
+const THANG_CU_THE =
+  /nguyệt hạn|(?:^|[^\p{L}])(?:các|những|từng) tháng|tháng\s+(?:\d{1,2}|giêng|chạp|một|hai|ba|tư|bốn|năm|sáu|bảy|tám|chín|mười)(?=[^\p{L}]|$)/iu;
+export const CAU_AN_THANG = 'Phần nhịp từng tháng tạm ẩn ở bản này.';
+const khacPhienBan = (c: { lg?: string }) => (c.lg ?? LG_TRUOC_DAU).split('|')[0] !== PHUONG_PHAP.phienBan;
+function boCauThang(van: string): { van: string; bo: boolean } {
+  const doan = van.split(/(?<=[.!?…])\s+|\n+/);
+  const giu = doan.filter((d) => !THANG_CU_THE.test(d));
+  return giu.length === doan.length ? { van, bo: false } : { van: giu.join(' ').trim(), bo: true };
+}
+type CoVan = { lg?: string; luanGiai?: string; viSao?: string; yChinh?: string[]; goiY?: string; tomLai?: string; bucTranh?: string };
+export function cheThangBanCu<T extends CoVan>(c: T): T {
+  if (!khacPhienBan(c)) return c;
+  const ra: CoVan = { ...c };
+  let bo = false;
+  for (const k of ['luanGiai', 'viSao', 'goiY', 'tomLai', 'bucTranh'] as const) {
+    if (!c[k]) continue;
+    const r = boCauThang(c[k]);
+    if (r.bo) (bo = true), (ra[k] = r.van);
+  }
+  if (c.yChinh?.some((y) => THANG_CU_THE.test(y))) (bo = true), (ra.yChinh = c.yChinh.filter((y) => !THANG_CU_THE.test(y)));
+  if (!bo) return c;
+  for (const k of ['luanGiai', 'tomLai', 'bucTranh'] as const) if (c[k] !== undefined) ra[k] = `${ra[k] ? `${ra[k]} ` : ''}${CAU_AN_THANG}`;
+  if (ra.goiY === '') ra.goiY = undefined;
+  return ra as T;
+}
+
+/**
  * Lọc bài thế hệ đệm trước được dùng làm đường lùi. Chỉ nhận bài cũ khi CÙNG câu hỏi: khung đổi nghĩa id
  * (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác. Câu có dữ kiện nguyệt hạn mà bài mang dấu logic
  * cũ thì bỏ: X2 (22/10/2026) đổi cách an cung tháng, bài cũ nói sai cung — để trống còn hơn sai (T-05).
@@ -380,7 +412,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       const tongQuan = ((tq?.noiDung as CauTraRaV3[] | undefined) ?? []).filter((c) => !c.chuaViet && c.luanGiai);
       const bt = await viBucTranh({ tomLai: tomLai.map(({ chuDe, tomLai: t }) => ({ chuDe, tomLai: t })), tongQuan });
       // Viết lại vì lệch dấu logic mà hỏng: hiện bản cũ, không để trống chỗ người đọc từng có bài
-      if (!bt && da?.noiDung?.bucTranh && !vietLai) return tra({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
+      if (!bt && da?.noiDung?.bucTranh && !vietLai) return tra({ bucTranh: cheThangBanCu(da.noiDung).bucTranh, soChuDe: tomLai.length, tuDem: true });
       if (!bt) return tra({ loi: 'Celes chưa ghép được bức tranh lớn.' }, 502);
       const [provider, model] = bt.model.split('/');
       await dem.luu(khoaBuc, { bucTranh: bt.bucTranh, kho: khoBuc ?? undefined, lg: LOGIC_V3 }, { provider, model, phienBan: PHIEN_BAN_V3 });
@@ -401,7 +433,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       // Chỉ ghép từ câu ĐÚNG dấu logic: tóm lại viết từ câu cũ thì lại mang logic cũ
       const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet && dungLogic(c))).filter((c): c is CauTraRaV3 => Boolean(c));
       // Có câu chưa viết lại được theo logic mới: giữ tóm lại cũ còn hơn bỏ trống
-      const giuTomCu = () => (daTom?.noiDung?.tomLai && !vietLai ? tra({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true }) : null);
+      const giuTomCu = () => (daTom?.noiDung?.tomLai && !vietLai ? tra({ nhom, tomLai: cheThangBanCu(daTom.noiDung).tomLai, tuDem: true }) : null);
       if (du.length < ids.length) return giuTomCu() ?? tra({ nhom, tomLai: null, chuaDu: true });
       const tom = await viTomLai({ chuDe: nhom, cau: du });
       if (!tom) return giuTomCu() ?? tra({ loi: 'Celes chưa viết được phần tóm lại.' }, 502);
@@ -451,7 +483,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
       const luot = await mt.xinLuotLaSoMoi(khoa.chartHash);
       // Lá số khách đã đọc, chỉ thiếu vì logic đổi: trả bài cũ, không bắt đăng nhập vì lỗi của mình
       if (!luot.duocPhep && thieu.every((id) => banCu.has(id))) {
-        return tra({ nhom, cau: anNoiBo(phamVi.map((id) => daCo.get(id) ?? banCu.get(id)!)), tuDem: true });
+        return tra({ nhom, cau: anNoiBo(phamVi.map((id) => daCo.get(id) ?? cheThangBanCu(banCu.get(id)!))), tuDem: true });
       }
       if (!luot.duocPhep) {
         return tra(
@@ -526,7 +558,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     let cauTra = cau.filter((c) => phamVi.includes(c.id));
     // Câu viết lại hỏng: hiện bản cũ và báo cho quản trị biết câu nào chưa viết lại được
     const vietLaiHong = cauTra.filter((c) => c.chuaViet && banCu.has(c.id)).map((c) => c.id);
-    if (vietLaiHong.length) cauTra = cauTra.map((c) => (c.chuaViet ? banCu.get(c.id) ?? c : c));
+    if (vietLaiHong.length) cauTra = cauTra.map((c) => (c.chuaViet && banCu.has(c.id) ? cheThangBanCu(banCu.get(c.id)!) : c));
     /*
      * Câu nào sinh lại hỏng thì tạm lấy bài của thế hệ đệm trước để hiện — người
      * đọc từng có bài ở đây, không được thấy chỗ trống chỉ vì mình vừa làm mới.
@@ -534,7 +566,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
      */
     if (THE_HE_DEM > 1 && cauTra.some((c) => c.chuaViet)) {
       const truoc = await baiTheHeTruoc();
-      if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet ? truoc.get(c.id) ?? c : c));
+      if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet && truoc.has(c.id) ? cheThangBanCu(truoc.get(c.id)!) : c));
     }
     // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
     if (cau.filter((c) => phamVi.includes(c.id)).every((c) => c.chuaViet)) {
