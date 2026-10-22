@@ -15,6 +15,7 @@ import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 import { heThongV3 } from './mau-giong';
 import { docCauHinhV3 } from './cau-hinh';
+import { docDanY, kiemDanY, khoiDienDat, saoChoDienDat, SYSTEM_LAP_Y, type YLuan } from './duong-b';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -40,6 +41,8 @@ export interface ThuNghiemV3 {
   system?: string;
   themVao?: (laSo: LaSo, q: CauHoiV3) => string;
   heSoDoDai?: number;
+  /** Đường B (duong-b.ts, CELES-38): lập ý có mức chắc rồi mới diễn đạt — chỉ cho bộ so mù A/B */
+  duongB?: boolean;
 }
 
 export interface KetQuaCauV3 {
@@ -76,6 +79,8 @@ export interface KetQuaCauV3 {
     boChuaDuyet: string[];
     boBiLat: string[];
   };
+  /** Chỉ có khi chạy đường B: ý giữ / bỏ ở bước lập ý; `lui` khi phải lùi về đường A */
+  duongB?: { lui?: string; yGiu: YLuan[]; yBo: { y: string; lyDo: string }[] };
 }
 
 function docBai(text: string): BaiV3 | null {
@@ -380,7 +385,7 @@ export async function luanMotCau(vao: {
   const t0 = Date.now();
   const { q } = vao;
   const { duKien, tv, nguon, msTruyHoi, cungChinhCau } = vao.chuanBi ?? (await chuanBiCau(vao));
-  const phep = saoDuocPhep(duKien);
+  let phep = saoDuocPhep(duKien);
   const nen = cungNen(q);
   const cauHinh = await docCauHinhV3();
   const doDai = cauHinh.doDai[q.loai];
@@ -505,19 +510,44 @@ ${phamViChuyenSau(q)}`
   let soLanGoi = 0;
   let model = '';
   const token = { vao: 0, ra: 0, dem: 0 };
-  const goi = async (u: string) => {
+  const goiTho = async (u: string, sys = system, cacheKey = `v3:${q.id}`) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system, user: u, maxTokens: 6000, cacheKey: `v3:${q.id}` }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system: sys, user: u, maxTokens: 6000, cacheKey }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     token.vao += kq.tokensIn ?? 0;
     token.ra += kq.tokensOut ?? 0;
     token.dem += kq.tokensDem ?? 0;
-    return docBai(kq.text);
+    return kq.text;
   };
+  const goi = async (u: string) => docBai(await goiTho(u));
 
-  let bai = await goi(user);
-  if (!bai) bai = await goi(user); // JSON gãy: thử lại nguyên lượt một lần
+  /*
+   * ĐƯỜNG B (chỉ bộ so mù): lập ý trước, máy lọc, rồi model chỉ diễn đạt ý đã giữ. Không ý nào sống
+   * sót hoặc bước lập ý hỏng thì lùi về đường A để cặp so vẫn có bài.
+   */
+  let userViet = user;
+  let duongB: KetQuaCauV3['duongB'];
+  if (vao.thuNghiem?.duongB) {
+    let ds: YLuan[] | null = null;
+    try {
+      ds = docDanY(await goiTho(user, SYSTEM_LAP_Y, `v3b1:${q.id}`));
+    } catch {
+      ds = null;
+    }
+    const maChinh = new Set(duKien.filter((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)') || d.vaiTro === 'cách cục').map((d) => d.id));
+    const loc = ds ? kiemDanY(ds, { maDuKien, maNguon, saoDuocPhep: phep, maHoTro: hoTro, maChinh }) : null;
+    if (loc?.giu.length) {
+      userViet = `${user}\n\n${khoiDienDat(loc.giu)}`;
+      phep = saoChoDienDat(loc.giu, duKien);
+      duongB = { yGiu: loc.giu, yBo: loc.bo };
+    } else {
+      duongB = { lui: ds ? 'b-khong-y' : 'b-lap-y-hong', yGiu: [], yBo: loc?.bo ?? [] };
+    }
+  }
+
+  let bai = await goi(userViet);
+  if (!bai) bai = await goi(userViet); // JSON gãy: thử lại nguyên lượt một lần
   if (!bai) {
     return {
       id: q.id, loai: q.loai, cauHoi: q.cauHoi, luanGiai: '', viSao: '', goiY: '', doRo: 'Gợi ý', danY: [], duKien, nguon,
@@ -525,6 +555,8 @@ ${phamViChuyenSau(q)}`
       loiBanDau: [], soLanGoi, token, model, ms: Date.now() - t0, msTruyHoi, dat: false,
     };
   }
+  // Đường B: dàn ý là các ý đã qua lọc, không phải bản model chép lại
+  if (duongB && !duongB.lui) bai.danY = duongB.yGiu.map((y) => ({ y: y.y, canCu: y.canCu }));
   bai = donTatDinh(bai);
   const loiBanDau = kiem(bai);
 
@@ -545,7 +577,7 @@ ${phamViChuyenSau(q)}`
     try {
       const trongHan = Math.max(12_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
       const kq = await goiVoiFallback(
-        { system, user: `${user}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
+        { system, user: `${userViet}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
         undefined,
         trongHan
       );
@@ -568,7 +600,7 @@ ${phamViChuyenSau(q)}`
   }
   if (loi.some((l) => l.chan) && (vao.hanChot ?? Infinity) - Date.now() > 20_000) {
     const sua = await goi(
-      `${user}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
+      `${userViet}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
         .filter((l) => l.chan)
         .map((l) => `- ${l.moTa}`)
         .join('\n')}`
@@ -614,6 +646,7 @@ ${phamViChuyenSau(q)}`
           },
         }
       : {}),
+    ...(duongB ? { duongB } : {}),
     dat: !loi.some((l) => l.chan),
   };
 }
