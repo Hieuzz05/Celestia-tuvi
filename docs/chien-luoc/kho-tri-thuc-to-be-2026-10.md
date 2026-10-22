@@ -95,3 +95,22 @@ Quyết định Q1–Q8:
 | Q6 | Tăng phiên bản cho X2 | (A) Tăng ngay, commit riêng một dòng |
 | Q7 | Đếm bài đệm bị ảnh hưởng | Viết script chỉ đọc, chủ dự án chạy |
 | Q8 | App | Dựng lại sau khi lên production (ngoài phiên tích hợp) |
+
+## Duyệt 22/10/2026: X3 cổng thu hồi (Q-X3)
+
+Chủ dự án trả lời "X3: 1a · 2 có · 3a · 4a · 5a · 6a", theo đúng đề xuất trong bản soát
+`D:\Celestia\SOAT-X3-cong-thu-hoi-2026-10-22.md`.
+
+| Câu | Quyết định | Vì sao |
+|---|---|---|
+| Q-X3-1 | (a) Thu hồi đoạn sách đi qua `loai_tru` sẵn có; X3 chỉ thêm cổng cho bài đã lưu | Một công tắc phủ mọi bề mặt. Bảng riêng chỉ cho V3 thì chữ "thu hồi" mang ba nghĩa |
+| Q-X3-2 | Có: thêm một bảng vào database dùng chung, chỉ thêm, chủ dự án tự chạy SQL trước code, sau cờ tắt | Cần chỗ lưu lệnh thu hồi mục thư viện có hoàn tác và có phạm vi Preview |
+| Q-X3-3 | (a) Đo truy vấn thêm trên Preview trước, có ngân sách độ trễ; bảng rỗng thì 0 truy vấn thêm | Đường đệm trúng là đường đông nhất, chưa đo thì không bật |
+| Q-X3-4 | (a) Viết lại đúng câu dính mục bị thu hồi khi có người mở bài, tính như một lượt sinh, trong hạn mức; chờ thì hiện câu không hứa hẹn. Đếm số lá bị dính trước khi bật | Che vĩnh viễn làm trống Tóm lại và Bức tranh lớn của nhiều người |
+| Q-X3-5 | (a) Thu hồi một mục lật thì mục bị gỡ vẫn bị gỡ | Không đưa lại vào bài một điều chưa ai duyệt |
+| Q-X3-6 | (a) Phạm vi đợt 1: bài V3 đã lưu + Sổ kết luận (kèm `ketLuanBaiTongQuan`); kho nghiệm lý của Focused ngoài phạm vi | Chat đã được 1a phủ phần đoạn sách; tránh vùng `focused/` đang xung đột với nhánh 3b |
+
+Lưu ý: `loai_tru` ăn ngay trên production vì database dùng chung. Thu hồi THỬ trên Preview (TC-11/12)
+chỉ dùng bảng X3 với một mục thư viện, ghi phạm vi preview; không bật `loai_tru` để thử.
+X3 chưa gộp vào `viec/tich-hop-dot-1`: chờ phương án bản 2 của Codex qua `phan-bien`. Preview đợt đầu
+chưa có X3, TC-11/12 test ở lần đẩy sau.
