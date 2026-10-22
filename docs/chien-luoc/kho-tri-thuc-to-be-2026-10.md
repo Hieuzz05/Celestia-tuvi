@@ -71,3 +71,27 @@ Bốn lưu ý kỹ thuật của chủ dự án (đã đưa vào đặc tả t�
 3. Đếm cả `noi_dung_ai` lẫn `muc_thu_vien`; bộ 100 mục chỉ lấy mục có vết duyệt / bác thật, thiếu thì
    báo số thật; báo cáo so mù tách 3 cột: Đúng dữ kiện engine · Đúng nghĩa · Tự nhiên.
 4. Bản A của so mù là A0 (sau K1, K2) hoặc A0 tỉa luật trùng, trong trần thử nghiệm.
+
+## Duyệt 22/10/2026: tích hợp đợt 1 và ngoại lệ ngân sách
+
+Căn cứ: `D:\Celestia\DIEU-PHOI-dot-1-kho-tri-thuc-2026-10-22.md` (trạng thái thật, 4 chỗ lệch) và
+`D:\Celestia\PROMPT-LAM-TIEP-dot-1-2026-10-22.md` (chủ dự án điền quyết định).
+
+- Lối duyệt 7a và "chỉ Claude ghi `PRODUCT-BACKLOG.xlsx`" giữ nguyên như mục trên, áp cho cả bước tích hợp.
+- **Ngoại lệ ngân sách cho thử nghiệm** (khép lệch 4): được chạy test có phí, nhưng chỉ cho việc thật
+  cần (vd so mù, cổng 10.22). Mỗi lượt phải có trần tiền cứng (`AI_TRAN_USD`) và phải chạy `--dem` ước
+  trước. **Production vẫn theo luật "Ngân sách = 0"** trong AGENTS.md: đường người dùng không đọc trần
+  này và không được lùi sang dịch vụ trả phí.
+
+Quyết định Q1–Q8:
+
+| # | Câu | Quyết |
+|---|---|---|
+| Q1 | Nghiệm thu vòng 1–2 + K3 tháng | Có, nhưng gộp vào nhánh tích hợp `viec/tich-hop-dot-1`, chưa vào main. Chủ dự án test trên Preview rồi mới gộp main |
+| Q2 | K1 chặn mục nặng chưa duyệt (2.430 mục, 0 mục đã duyệt) | (a) Giữ chặn, quyết lại theo kết quả cổng 10.22 thật |
+| Q3 | Lượt có phí cho cổng 10.22 | Cho, trần cứng 0,5 USD, chạy `--dem` ước trước |
+| Q4 | Nhánh 3b của máy 2 (CELES-12) | Gộp sau đợt 1 |
+| Q5 | Nguyệt hạn Cách 1 (Hàm số 325, Hà Thúc Hồng 981/1681) làm chuẩn | Duyệt. Cách cũ là Cách 2 có trong sách (Ảo Bí 1905), không phải "mã sai" |
+| Q6 | Tăng phiên bản cho X2 | (A) Tăng ngay, commit riêng một dòng |
+| Q7 | Đếm bài đệm bị ảnh hưởng | Viết script chỉ đọc, chủ dự án chạy |
+| Q8 | App | Dựng lại sau khi lên production (ngoài phiên tích hợp) |
