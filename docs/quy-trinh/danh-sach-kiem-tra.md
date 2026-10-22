@@ -4,7 +4,7 @@ Tách khỏi `AGENTS.md` (07/10/2026) để không nạp vào mọi lượt. Ba 
 Trong lúc làm chỉ cần `node scripts/kiem-nhanh.mjs --chay`; danh sách này là thứ CI chạy, tay chỉ cần khi đổi cấu hình dựng hoặc tái hiện CI đỏ. Mốc lint là `MOC` trong `scripts/dem-loi-lint.mjs` — không nâng.
 
 ```
-npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
+npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng (T-03: vân tay gồm tiểu hạn, nguyệt hạn, lưu tinh) — offline
 npx tsx scripts/test-nguyet-han.ts    # X2: đáp án đếm tay độc lập theo hai nguồn; tháng âm, chi giờ, Tý muộn — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt
@@ -26,7 +26,7 @@ npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STA
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
 npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
-npx tsx scripts/test-ngan-sach-thu.ts # X1: trần token/ngày, cấm trả phí, ghi lỗi và restart vẫn chặn — HTTP/DB giả
+npx tsx scripts/test-ngan-sach-thu.ts # X1: trần token/ngày, cấm trả phí, ghi lỗi và restart vẫn chặn; T-04 ngoại lệ có phí hẹp (đủ biến + ghim + trần) — HTTP/DB giả
 npx tsx scripts/test-moi-truong-dem.ts  # đệm AI tách theo môi trường: production giữ khoá cũ, Preview/local có tiền tố, cấu hình chỉ production ghi — offline
 npx tsx scripts/test-kiem-id-cel.ts     # hàm so ID CEL giữa nhánh / main / nhánh khác — offline
 npx tsx scripts/kiem-id-cel.ts          # máy canh trùng ID CEL (cần git fetch); CI chạy riêng ở kiem-id-cel.yml trên MỌI lần đẩy
@@ -34,7 +34,8 @@ npx tsx scripts/test-priv-01.ts        # PRIV-01: vết Production không giữ 
 npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng sớm nhất, cờ không chặn chẩn đoán, nhãn judge/người — offline
 npx tsx scripts/test-nghiem-ly.ts      # nghiệm lý của chủ dự án (QĐ-13) + khối T###: T phải kèm F, vòng T↔T giải tất định, cờ tắt giữ nguyên — offline
 npx tsx scripts/test-thu-vien-prompt.ts  # K1 khối thư viện V3: mục nặng chưa duyệt bị chặn (cờ CELES_THU_VIEN_MANH_CHUA_DUYET=1 mở lại), mục bị lật đã duyệt bị bỏ, căn cứ câu V3 không ra trình duyệt — offline
-npx tsx scripts/test-dau-logic-v3.ts    # K2 dấu logic `lg` câu V3: lệch dấu = thiếu, viết lại khi mở; bản cũ hiện tạm; khách hết lượt không bị 429 — offline
+npx tsx scripts/test-dau-logic-v3.ts    # K2 dấu logic `lg` câu V3: lệch dấu = thiếu, viết lại khi mở; bản cũ hiện tạm; khách hết lượt không bị 429; T-05 đường lùi không trả nguyệt hạn logic cũ — offline
+npx tsx scripts/test-khong-nut-tao-moi.ts # T-02 giao diện không còn "Tạo bản mới"; vietLai người thường 403, taoMoi cũ bị bỏ qua — offline
 npx tsx scripts/test-duong-b-v3.ts      # CELES-38 đường B (so mù): bỏ ý mã lạ / sao ngoài lá số, chỉ hạ mức chắc, sản phẩm không bật — offline
 npx tsx scripts/test-thang-chac-thap.ts # K3 Focused hỏi một tháng: mô tả hướng "rõ" nói theo độ tin, validator chặn THANG_CHAC_CAO (trừ phủ định) — offline
 npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
