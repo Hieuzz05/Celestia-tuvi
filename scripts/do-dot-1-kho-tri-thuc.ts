@@ -64,8 +64,7 @@ async function main() {
   const { docThuVien } = await import('../lib/rag/thu-vien/kho');
   const { dungKhoiThuVien } = await import('../lib/rag/thu-vien/cho-prompt');
   const { saoCuaMuc } = await import('../lib/rag/thu-vien/kieu');
-  type MucThuVien = import('../lib/rag/thu-vien/kieu').MucThuVien;
-  const { THU_VIEN_THEO_CHU_DE, CAU_THU_VIEN, LOGIC_V3 } = await import('../lib/rag/v3/xu-ly');
+  const { THU_VIEN_THEO_CHU_DE, CAU_THU_VIEN } = await import('../lib/rag/v3/xu-ly');
   const { CAU_HOI_V3 } = await import('../lib/rag/v3');
   const { PHIEN_BAN_CHU, DAU_VAO_PHIEN_BAN_CHU } = await import('../lib/rag/phien-ban-chu');
   const { dungDuKien } = await import('../lib/rag/v3/du-kien');
@@ -77,8 +76,36 @@ async function main() {
   console.log(`Số lá số kiểm định: ${danhSachLa.length} lá.`);
   console.log(`Số chủ đề bật thư viện: ${Object.keys(THU_VIEN_THEO_CHU_DE).length} chủ đề, ${CAU_THU_VIEN.size} câu hỏi.\n`);
 
+  interface KetQuaChuDe {
+    dot: string;
+    cau: string[];
+    demKho: Record<string, number>;
+    do24LaSo: {
+      tongLuotCau: number;
+      doPhuTruocK1: string;
+      doPhuSauK1: string;
+      trungBinhMucVaoPromptTruoc: number;
+      trungBinhMucVaoPromptSau: number;
+      manhVaoPromptTruoc: number;
+      manhVaoPromptSau: number;
+      manhBiChanSauK1: number;
+      trungBinhManhBiChanMoiCau: number;
+      nguocChieuTruoc: number;
+      nguocChieuSau: number;
+      coCanCaHaiTruoc: number;
+      coCanCaHaiSau: number;
+      loiSaoLa: number;
+      loiSaiCung: number;
+    };
+    danhGiaCong1022: {
+      dat: boolean;
+      trangThai: string;
+      khuyenNghi: string;
+    };
+  }
+
   // Bảng thông số đo 8 chủ đề
-  const ketQua8ChuDe: Record<string, any> = {};
+  const ketQua8ChuDe: Record<string, KetQuaChuDe> = {};
   let tongMucKho = 0;
   let tongManhKho = 0;
   let tongVuaKho = 0;
@@ -120,7 +147,6 @@ async function main() {
     let tongManhVaoPromptSauK1 = 0;
 
     let tongManhBiChanSauK1 = 0;
-    let tongBiLatBiChanSauK1 = 0;
 
     let tongNguocChieuTruocK1 = 0;
     let tongNguocChieuSauK1 = 0;
@@ -159,7 +185,6 @@ async function main() {
         const manhSau = kqSau.daChon.filter((m) => m.khop.muc.nhan.muc === 'manh').length;
         tongManhVaoPromptSauK1 += manhSau;
         tongManhBiChanSauK1 += kqSau.boChuaDuyet.length;
-        tongBiLatBiChanSauK1 += kqSau.boBiLat.length;
         tongNguocChieuSauK1 += kqSau.nguocChieu.length;
         if (/cân cả hai/i.test(kqSau.khoi)) coCanCaHaiSauK1++;
 
@@ -237,13 +262,13 @@ async function main() {
     truocK1: {
       moTa: 'Tất cả mục mạnh, vừa, nhẹ đều vào prompt nếu khớp (chỉ trừ mục bị bác).',
       soMucManhTrongKho: tongManhKho,
-      soMucManhVaoPrompt24La: Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.manhVaoPromptTruoc, 0),
-      trungBinhMoiCau: Number((Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.manhVaoPromptTruoc, 0) / (24 * 17)).toFixed(2)),
+      soMucManhVaoPrompt24La: Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.manhVaoPromptTruoc, 0),
+      trungBinhMoiCau: Number((Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.manhVaoPromptTruoc, 0) / (24 * 17)).toFixed(2)),
     },
     sauK1: {
       moTa: 'Chặn hoàn toàn mục mạnh chưa duyệt khỏi prompt (bước 1 cho-prompt.ts).',
-      soMucManhVaoPrompt24La: Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.manhVaoPromptSau, 0),
-      soMucManhBiChan24La: Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.manhBiChanSauK1, 0),
+      soMucManhVaoPrompt24La: Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.manhVaoPromptSau, 0),
+      soMucManhBiChan24La: Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.manhBiChanSauK1, 0),
       tiLeGiamMucNangRuiRo: '100%',
     },
     ketLuan: 'ĐÃ XỬ LÝ TRIỆT ĐỂ: 100% mục mạnh chưa duyệt bị chặn khỏi prompt người dùng thật.',
@@ -269,12 +294,12 @@ async function main() {
   const diemDau10 = {
     truocK1: {
       moTa: 'cho-prompt.ts dặn "hai mục ngược chiều thì cân cả hai"; prompt-v3.ts luật 6 ép cân cả hai mặt.',
-      soCaXuatHien24La: Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.coCanCaHaiTruoc, 0),
+      soCaXuatHien24La: Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.coCanCaHaiTruoc, 0),
       heQua: 'Model viết nước đôi, ba phải, không nói rõ mặt nào trội.',
     },
     sauK1K2: {
       moTa: 'K1 xóa dòng "cân cả hai" trong cho-prompt.ts; K2 sửa luật 4 trong quy-tac-luan-giai.ts và prompt-v3.ts.',
-      soCaXuatHien24La: Object.values(ketQua8ChuDe).reduce((s: number, c: any) => s + c.do24LaSo.coCanCaHaiSau, 0),
+      soCaXuatHien24La: Object.values(ketQua8ChuDe).reduce((s: number, c: KetQuaChuDe) => s + c.do24LaSo.coCanCaHaiSau, 0),
       heQua: 'Không còn ép model cân cả hai; điểm thuận và lưu ý nêu theo căn cứ thật.',
     },
     ketLuan: 'ĐÃ XỬ LÝ: Xóa bỏ 100% lời dặn ép model ba phải.',
