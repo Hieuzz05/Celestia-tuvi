@@ -73,7 +73,7 @@ export const LUAT_CHUNG_LUAN_GIAI = `LUẬT CHUNG CHO MỌI BÀI LUẬN GIẢI C
 1. Luận từ lá số, không từ trí nhớ: mọi nhận định đi ra từ dữ kiện lá số và nguồn tham chiếu được cấp. Thiếu căn cứ thì thu hẹp kết luận, đừng bịa cho đủ.
 2. Nguồn là sách cổ: diễn giải sang đời sống hiện đại, không chép văn cổ; bỏ phán quyết cực đoan (nghèo hèn, yểu, tù tội, bỏ tổ…), chỉ giữ xu hướng ở mức ôn hòa.
 3. Trả lời đúng câu được hỏi, câu đầu trả lời thẳng; cụ thể tới mức dữ kiện cho phép.
-4. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.
+4. Điểm thuận và điểm cần lưu ý, nếu được nêu, đều phải có căn cứ.
 5. Mốc thời gian chỉ lấy từ dữ kiện, và chỉ nêu khi câu hỏi hỏi về thời điểm.
 6. Lời khuyên gắn với chính tình huống đang bàn, đi ra từ phần luận ngay trước nó. Tránh lời khuyên dán được vào bất cứ đâu ("đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội", "cố gắng cân bằng hơn") — thay bằng một việc cụ thể người đọc làm được, không bỏ trống.
 7. Không lặp ý: người đọc đọc nhiều phần trên cùng một lá số; điều đã nói ở phần khác thì không kể lại.

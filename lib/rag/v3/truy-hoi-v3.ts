@@ -137,6 +137,8 @@ export interface DoanV3 {
   duongDeMuc: string | null;
   noiDung: string;
   documentId: string;
+  /** Phiên bản tài liệu của đoạn — vào căn cứ của bài để thu hồi khi bản đó bị rút */
+  versionId: string;
   chunkId: string;
   diem: number;
   /** Đoạn này khớp đúng sao + đúng cung của truy vấn nào */
@@ -356,6 +358,7 @@ export async function truyHoiChoCau(vao: {
           duongDeMuc: d.duongDeMuc,
           noiDung: catQuanh(d.noiDung, khopSao.length ? khopSao : t.sao),
           documentId: d.documentId,
+          versionId: d.versionId,
           chunkId: d.chunkId,
           diem,
           khopCung: khopCung || deMucCung ? t.cung : '',

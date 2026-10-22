@@ -66,8 +66,8 @@ import { demAmTiet, usdUocTinh, type ThoiGianVet, type VetPreview } from './vet'
 import { chonNghiemLy, vetNghiemLy } from './nghiem-ly-luot';
 import { batNghiemLyFocused, docNghiemLyDaDuyet } from '../thu-vien/nghiem-ly';
 
-/** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). 10.16 = CEL-191 (hiểu câu theo trường, validator ba tầng). */
-export const PHIEN_BAN_FOCUSED = 'focused-2026.10.16';
+/** Ghi vào `phienBan` của vết, KHÔNG vào khoá đệm nào (mục 8). 10.16 = CEL-191 (hiểu câu theo trường, validator ba tầng); 10.22 = K3 (tháng nói theo độ tin, THANG_CHAC_CAO). */
+export const PHIEN_BAN_FOCUSED = 'focused-2026.10.22';
 
 export const focusedBat = () => process.env.CELES_FOCUSED_CHAT === '1';
 
@@ -565,6 +565,7 @@ export async function traLoiFocused(
       nghieng: x,
       khuon: phanLoai.khuon,
       cauTraCuu: keHoach.yDinh === 'tra-cuu' ? cauHoi : undefined,
+      hoiThang: !!thoiGian.thang,
     });
     for (const ten of t) tapTen.add(ten);
   }

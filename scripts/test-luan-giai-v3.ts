@@ -118,9 +118,9 @@ async function main() {
   const t0 = Date.now();
   if (chayTq) {
     const idDau = THE_DAU.map((x) => x.id);
-    const dau = await goi({ nhom: 'tong-quan', chi: idDau, taoMoi: false });
+    const dau = await goi({ nhom: 'tong-quan', chi: idDau });
     if (!dau.traVe.gioiHanKhach) {
-      await goi({ nhom: 'tong-quan', chi: CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !idDau.includes(q.id)).map((q) => q.id), taoMoi: false });
+      await goi({ nhom: 'tong-quan', chi: CAU_HOI_V3.filter((q) => q.loai === 'tong-quan' && !idDau.includes(q.id)).map((q) => q.id) });
     }
   }
   if (chayCs) {
@@ -128,13 +128,13 @@ async function main() {
       const ids = CAU_HOI_V3.filter((q) => q.loai === 'chuyen-sau' && q.chuDe === cd).map((q) => q.id);
       if (!ids.length) throw new Error(`Không có chủ đề ${cd}`);
       const giua = ids.length >= 4 ? Math.ceil(ids.length / 2) : ids.length;
-      const a = await goi({ nhom: cd, chi: ids.slice(0, giua), taoMoi: false });
+      const a = await goi({ nhom: cd, chi: ids.slice(0, giua) });
       if (a.status !== 200) continue;
       if (ids.length > giua) {
-        const b = await goi({ nhom: cd, chi: ids.slice(giua), taoMoi: false });
+        const b = await goi({ nhom: cd, chi: ids.slice(giua) });
         if (b.status !== 200) continue;
       }
-      await goi({ nhom: cd, tomLai: true, taoMoi: false });
+      await goi({ nhom: cd, tomLai: true });
     }
     await goi({ nhom: 'tinh-cach', bucTranh: true });
   }

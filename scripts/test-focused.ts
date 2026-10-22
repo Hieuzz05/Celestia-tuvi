@@ -15,9 +15,13 @@ import { createHash } from 'node:crypto';
 import { lapLaSo, type LaSo } from '../lib/tuvi/ansao';
 import { PHUONG_PHAP } from '../lib/tuvi/phuong-phap';
 import { chonBoiCanh, saoChinhTheoCung } from '../lib/rag/boi-canh-la-so';
-import { tinhNghiengVe, khoiNghiengVe } from '../lib/rag/nghieng-ve';
+import { tinhNghiengVe, khoiNghiengVe, PHIEN_BAN_NGHIENG } from '../lib/rag/nghieng-ve';
 import { lapKeHoach, PHIEN_BAN_PLANNER } from '../lib/rag/planner';
-import { PHIEN_BAN_CHU } from '../lib/rag/phien-ban-chu';
+import { DAU_VAO_PHIEN_BAN_CHU, PHIEN_BAN_CHU, XA_DEM_CO_CHU_DICH } from '../lib/rag/phien-ban-chu';
+import { PHIEN_BAN_CACH_CUC } from '../lib/tuvi/cach-cuc';
+import { PHIEN_BAN_DO_NOI_BAT } from '../lib/tuvi/do-noi-bat';
+import { PHIEN_BAN_TRUY_HOI } from '../lib/rag/truy-hoi';
+import { PHIEN_BAN_UU_TIEN } from '../lib/rag/uu-tien-nguon';
 import { CHUAN_NGON_NGU_CELES } from '../lib/rag/chuan-ngon-ngu';
 import { VAN_PHONG_CELES_CHAT } from '../lib/rag/van-phong';
 import { CHU_TRUU_TUONG } from '../lib/rag/chu-truu-tuong';
@@ -96,17 +100,30 @@ const conChuViet = (s: string, tenGiu: string[] = []) =>
 const dungLai = createHash('sha1')
   .update(
     [
-      CHUAN_NGON_NGU_CELES,
-      CHU_TRUU_TUONG.map(([a, b]) => `${a}>${b}`).join(','),
       PHIEN_BAN_NGON_NGU,
       PHIEN_BAN_VALIDATOR,
       PHIEN_BAN_PLANNER,
       PHUONG_PHAP.phienBan,
+      PHIEN_BAN_CACH_CUC,
+      PHIEN_BAN_NGHIENG,
+      PHIEN_BAN_TRUY_HOI,
+      PHIEN_BAN_UU_TIEN,
+      PHIEN_BAN_DO_NOI_BAT,
+      XA_DEM_CO_CHU_DICH,
     ].join('|')
   )
   .digest('hex')
   .slice(0, 8);
 kiem(dungLai === PHIEN_BAN_CHU, `băm dựng lại ${dungLai} ≠ PHIEN_BAN_CHU ${PHIEN_BAN_CHU} — đầu vào băm đã trôi`);
+/*
+ * 10.19 C (K2, 22/10/2026): sửa giọng văn không kéo bài cũ. Giọng nằm ở chuẩn ngôn ngữ, danh sách chữ trừu
+ * tượng, văn phong chat — không chuỗi nào trong số đó được là (hay chứa trong) một đầu vào băm.
+ */
+const giong = [CHUAN_NGON_NGU_CELES, CHU_TRUU_TUONG.map(([a, b]) => `${a}>${b}`).join(','), VAN_PHONG_CELES_CHAT];
+kiem(
+  DAU_VAO_PHIEN_BAN_CHU.every((d) => typeof d === 'number' || d.length < 40) && giong.every((g) => !DAU_VAO_PHIEN_BAN_CHU.includes(g)),
+  'giọng văn lọt vào băm khoá đệm — sửa một chữ giọng sẽ xả đệm 6 bề mặt (trái 10.19 C)'
+);
 
 /* ---------------------------------------------- 2. cờ tắt: không đổi từng byte */
 

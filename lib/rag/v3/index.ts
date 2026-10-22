@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
@@ -64,8 +65,17 @@ export interface KetQuaCauV3 {
   ms: number;
   msTruyHoi: number;
   dat: boolean;
-  /** Thư viện: mục đã đưa vào prompt (T###) và mọi mục khớp — để đo lát cắt (mục 11.2) */
-  thuVien?: { daChon: { ma: string; id: string; cung: string; sao: string[] }[]; khopHet: { id: string; sao: string[] }[]; nguocChieu: [string, string][] };
+  /**
+   * Thư viện: mục đã đưa vào prompt (T###) và mọi mục khớp — để đo lát cắt (mục 11.2). `dot` + `dau`
+   * là căn cứ của bài: id mục là số thứ tự, trích lại một đợt có thể cấp id cũ cho câu khác.
+   */
+  thuVien?: {
+    daChon: { ma: string; id: string; dot: string; dau: string; cung: string; sao: string[] }[];
+    khopHet: { id: string; sao: string[] }[];
+    nguocChieu: [string, string][];
+    boChuaDuyet: string[];
+    boBiLat: string[];
+  };
 }
 
 function docBai(text: string): BaiV3 | null {
@@ -253,6 +263,10 @@ export interface ChuanBiCau {
   /** Cung chính để đánh dấu nguồn khớp: cung chính của chủ đề (chuyên sâu) hoặc cung đầu danh sách câu */
   cungChinhCau?: string;
 }
+
+/** Dấu nội dung của một mục thư viện (câu nghĩa + điều kiện) — nhận ra mục khi id bị cấp lại */
+export const dauMuc = (m: MucThuVien) => createHash('sha1').update(`${m.y}
+${JSON.stringify(m.dieuKien)}`).digest('hex').slice(0, 8);
 
 /** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
 export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
@@ -592,9 +606,11 @@ ${phamViChuyenSau(q)}`
     ...(tv
       ? {
           thuVien: {
-            daChon: tv.daChon.map((t) => ({ ma: t.ma, id: t.khop.muc.id, cung: t.khop.cung, sao: saoCuaMuc(t.khop.muc) })),
+            daChon: tv.daChon.map((t) => ({ ma: t.ma, id: t.khop.muc.id, dot: t.khop.muc.dotTrich, dau: dauMuc(t.khop.muc), cung: t.khop.cung, sao: saoCuaMuc(t.khop.muc) })),
             khopHet: tv.khopHet.map((k) => ({ id: k.muc.id, sao: saoCuaMuc(k.muc) })),
             nguocChieu: tv.nguocChieu,
+            boChuaDuyet: tv.boChuaDuyet,
+            boBiLat: tv.boBiLat,
           },
         }
       : {}),

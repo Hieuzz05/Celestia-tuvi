@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.10.01c';
+export const PHIEN_BAN_PROMPT_V3 = '2026.10.22';
 
 /*
  * QUY_TAC_VIET là nguyên văn của chủ dự án và còn dùng ở các bề mặt khác, nên không sửa tại gốc.
@@ -24,7 +24,7 @@ export const PHIEN_BAN_PROMPT_V3 = '2026.10.01c';
  * 01/10/2026 (chủ dự án chê bài tổng quan "câu chưa gãy gọn": "khi nào nên gần, khi nào nên lùi", "lạnh hơn
  * thực tế"): công thức tám bước + chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn viết cho bài nhiều đoạn.
  * Bài tổng quan chỉ 4–5 câu, đi đủ chuỗi thì mỗi bước còn nửa câu và thành cụm nén. Dòng cuối nói rõ bài một
- * đoạn làm gì — VẪN phải có điểm cần lưu ý (luật căn cứ 6). Nối vào cuối chứ không .replace: thay chuỗi hỏng
+ * đoạn làm gì — khép bằng điểm cần lưu ý hoặc câu khép ý (luật căn cứ 7). Nối vào cuối chứ không .replace: thay chuỗi hỏng
  * thì im lặng mất luật, nối thì không hỏng được. Chuyên sâu 2–4 đoạn nên không chịu ảnh hưởng.
  */
 export const QUY_TAC_VIET_V3 = `${QUY_TAC_VIET.replace(
@@ -32,9 +32,9 @@ export const QUY_TAC_VIET_V3 = `${QUY_TAC_VIET.replace(
   'giai đoạn → điểm cần lưu ý (gợi ý cho người đọc viết riêng vào trường goiY).'
 ).replace(
   'Bước 8: Kết bằng một điểm cần lưu ý hoặc lời khuyên thực tế.',
-  'Bước 8: Kết bằng một điểm cần lưu ý rút ra từ phần luận; lời khuyên thực tế (nếu có) viết vào trường goiY.'
+  'Bước 8: Kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận; lời khuyên thực tế (nếu có) viết vào trường goiY.'
 )}
-Bài chỉ có MỘT đoạn (luận giải tổng quan) thì không cần đi đủ tám bước hay đủ chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn. Câu đầu trả lời thẳng, tiếp theo một hai biểu hiện cụ thể người đọc nhận ra, rồi một điểm cần lưu ý. Ít ý mà nói trọn câu tốt hơn nhiều ý mà mỗi ý chỉ còn nửa câu. PHẠM VI riêng của từng câu hỏi (vd chỉ nói điểm mạnh, hay mỗi nhóm người một câu) đứng trên khuôn này.`;
+Bài chỉ có MỘT đoạn (luận giải tổng quan) thì không cần đi đủ tám bước hay đủ chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn. Câu đầu trả lời thẳng, tiếp theo một hai biểu hiện cụ thể người đọc nhận ra, rồi một điểm cần lưu ý hoặc một câu khép ý. Ít ý mà nói trọn câu tốt hơn nhiều ý mà mỗi ý chỉ còn nửa câu. PHẠM VI riêng của từng câu hỏi (vd chỉ nói điểm mạnh, hay mỗi nhóm người một câu) đứng trên khuôn này.`;
 
 
 
@@ -45,8 +45,8 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 3. Nguồn là sách cổ. Diễn giải sang đời sống hiện đại, không chép văn cổ. Bỏ những phán quyết cực đoan (nghèo hèn, yểu, tù tội, dâm, bỏ tổ...) — chỉ giữ xu hướng ở mức ôn hòa. Khi nguồn nói về tổ hợp sao KHÁC với lá số (khác cung, khác độ sáng, khác sao đi cùng) thì không dùng.
 4. Trả lời đúng câu hỏi, và cụ thể: khi dữ kiện cho phép thì nêu tên nghề, nguồn tiền, kiểu người, hành vi nhận ra được; mốc tuổi chỉ nêu khi câu hỏi hỏi về thời điểm.
 5. Mốc thời gian chỉ lấy từ dữ kiện (đại vận, tiểu hạn, năm xem). Tuổi của đại vận là tuổi âm — viết "khoảng X–Y tuổi".
-6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.
-7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
+6. Điểm thuận và điểm cần lưu ý, nếu được nêu, đều phải có căn cứ.
+7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Câu khép ý phải mang ý riêng của bài này: câu dán sang lá số nào cũng đúng (vd "mọi thứ rồi sẽ ổn nếu bạn kiên nhẫn") thì bỏ, thà kết bằng ý cuối của phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa", "Sao nhẹ" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. SAO Ở CUNG NÀO NÓI VỀ CHUYỆN CỦA CUNG ẤY: theo nhãn đầu mỗi cung trong dữ kiện — sao ở Phu Thê tả người phối ngẫu và mối gắn bó, ở Tử Tức tả con cái, ở Tài Bạch tả chuyện tiền, ở Quan Lộc tả công việc…; chỉ ở Mệnh (và cung Thân khi câu hỏi gọi Thân) mới tả tính cách người đọc. Cùng một sao ở hai cung khác nhau là hai nhận định khác nhau. Câu nghĩa trong dữ kiện viết cho người đọc: ở cung khác chỉ chuyển TÍNH CHẤT chung của nó (thuận hay vướng, nhanh hay chậm, có người đỡ hay không) sang mặt đời của cung; chi tiết cụ thể của mặt đời ấy (bệnh gì, việc gì, người kia làm gì) chỉ nói khi NGUỒN có. Không bao giờ suy ra ngoại tình, bệnh tật, mất mát, tai nạn của người thân từ một câu nghĩa đã đổi chủ ngữ.
 9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
 10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Gợi ý ở trường "goiY" phải chỉ đúng tình huống của câu này — tránh những câu dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".

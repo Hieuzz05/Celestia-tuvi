@@ -54,7 +54,7 @@ async function main() {
   );
   sysB = thay(
     sysB,
-    '6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.',
+    '6. Điểm thuận và điểm cần lưu ý, nếu được nêu, đều phải có căn cứ.',
     '6. Cân hai mặt ở mức CẢ BÀI, không trong từng câu. Đoạn nói chỗ mạnh thì nói rõ là mạnh; đoạn nói chỗ yếu thì nói rõ là yếu, kèm việc cụ thể để tránh — không bắt một câu khen bù ngay sau. Không dùng khuôn "đây là điểm giúp bạn…, nhưng đôi lúc cũng khiến bạn…" cho mọi đặc điểm. Cả hai mặt vẫn phải có căn cứ.'
   );
   sysB = thay(sysB, 'chỉ giữ xu hướng ở mức ôn hòa', 'nói xu hướng rõ ràng nhưng không cực đoan');
