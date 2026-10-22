@@ -73,6 +73,21 @@ const LG_TRUOC_DAU = '2026.10.1|2026.10.2|2026.10.1';
 const dungLogic = (c: { lg?: string }) => (c.lg ?? LG_TRUOC_DAU) === LOGIC_V3;
 
 /**
+ * Lọc bài thế hệ đệm trước được dùng làm đường lùi. Chỉ nhận bài cũ khi CÙNG câu hỏi: khung đổi nghĩa id
+ * (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác. Câu có dữ kiện nguyệt hạn mà bài mang dấu logic
+ * cũ thì bỏ: X2 (22/10/2026) đổi cách an cung tháng, bài cũ nói sai cung — để trống còn hơn sai (T-05).
+ */
+export function locBaiTheHeTruoc(ds: CauTraRaV3[]): Map<string, CauTraRaV3> {
+  const cauHoiCua = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
+  const coNguyet = new Set(CAU_HOI_V3.filter((q) => q.van.includes('nguyet')).map((q) => q.id));
+  return new Map(
+    ds
+      .filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id) && (dungLogic(c) || !coNguyet.has(c.id)))
+      .map((c) => [c.id, c])
+  );
+}
+
+/**
  * Câu được dùng THƯ VIỆN TRI THỨC (KIEN-TRUC-LUAN-GIAI.md mục 11). Chỉ thêm câu vào
  * đây khi lát cắt của nó đã đạt đủ ngưỡng 11.2 — đo bằng scripts/do-thu-vien.ts và
  * scripts/so-sanh-v3.ts --du. Rỗng = thư viện chưa chạy cho người dùng.
@@ -320,9 +335,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     try {
       const khoaKy = THE_HE_DEM === 2 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM - 1}`;
       const cu = await docCoLui<CauTraRaV3[]>({ ...khoa, khoaKy });
-      // Chỉ nhận bài cũ khi CÙNG câu hỏi: khung đổi nghĩa id (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác
-      const cauHoiCua = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
-      return new Map((cu?.noiDung ?? []).filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id)).map((c) => [c.id, c]));
+      return locBaiTheHeTruoc(cu?.noiDung ?? []);
     } catch {
       return new Map();
     }

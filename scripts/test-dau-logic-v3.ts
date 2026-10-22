@@ -7,7 +7,7 @@
  * viết lại thì giữ bản cũ, và dấu không ra trình duyệt. Không chạm DB.
  */
 import { CAU_HOI_V3, PHIEN_BAN_V3 } from '../lib/rag/v3';
-import { anNoiBo, khoaDemV3, LOGIC_V3, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
+import { anNoiBo, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
 
 let sai = 0;
 const kiem = (ten: string, dung: boolean, chiTiet?: unknown) => {
@@ -106,6 +106,18 @@ async function main() {
   // 5. anNoiBo gỡ dấu
   const ra = anNoiBo([cauCua(idTq[0], LOGIC_V3)])[0] as Record<string, unknown>;
   kiem('anNoiBo gỡ lg', !('lg' in ra));
+
+  // 6. T-05: đường lùi thế hệ trước không trả bài logic cũ cho câu có nguyệt hạn (X2, 22/10/2026)
+  {
+    const idNguyet = CAU_HOI_V3.filter((q) => q.van.includes('nguyet')).map((q) => q.id);
+    const idKhac = CAU_HOI_V3.find((q) => !q.van.includes('nguyet'))!.id;
+    kiem('có câu mang dữ kiện nguyệt hạn để kiểm', idNguyet.length > 0);
+    const loc = locBaiTheHeTruoc([...idNguyet.map((id) => cauCua(id, 'logic-cu')), cauCua(idKhac, 'logic-cu')]);
+    kiem('câu nguyệt hạn + logic cũ: không trả qua đường lùi', idNguyet.every((id) => !loc.has(id)), [...loc.keys()]);
+    kiem('câu nguyệt hạn + bài chưa có dấu (trước K2): không trả', !locBaiTheHeTruoc([cauCua(idNguyet[0])]).has(idNguyet[0]));
+    kiem('câu nguyệt hạn + logic đúng: vẫn trả', locBaiTheHeTruoc([cauCua(idNguyet[0], LOGIC_V3)]).has(idNguyet[0]));
+    kiem('câu không có nguyệt hạn + logic cũ: vẫn trả (đường lùi giữ nguyên)', loc.has(idKhac));
+  }
 
   console.log(sai ? `\n${sai} ca SAI` : '\nTất cả đúng.');
   process.exit(sai ? 1 : 0);
