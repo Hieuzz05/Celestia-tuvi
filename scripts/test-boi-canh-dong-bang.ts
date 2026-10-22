@@ -8,6 +8,8 @@
  *    `focused` tắt/bật phải ra y hệt ảnh chụp `du-lieu/boi-canh-dong-bang.json`. Các commit sau
  *    thêm tham số tuỳ chọn vào `chonBoiCanh`; ảnh chụp này là thứ chứng minh đường cũ không đổi.
  *    Ảnh chụp sinh MỘT lần trên mã gốc rồi đóng băng — test không tự tính lại nó.
+ *    Ngoại lệ X2 (22/10/2026, chủ dự án duyệt sau QA): cập nhật chọn lọc 60 ca,
+ *    chỉ noiDung/cung của dữ kiện nguyệt hạn; 132 ca khác giữ nguyên. Không dùng --sinh.
  * 2. Cờ Focused tắt: `traLoiCoCanCu` trả kết quả KHÔNG có khoá `meta` / `vetFocused`.
  *    Offline: không Supabase, model giả bằng cách chặn `fetch` — không gọi mạng thật.
  */
