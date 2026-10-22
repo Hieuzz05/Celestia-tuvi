@@ -11,10 +11,12 @@
 export function batDauLuotThu(tenScript: string, nganSachMacDinh = 1_000_000): void {
   const i = process.argv.indexOf('--ngan-sach');
   const nganSach = i > 0 ? Number(process.argv[i + 1]) : nganSachMacDinh;
+  if (!Number.isSafeInteger(nganSach) || nganSach <= 0) throw new Error('--ngan-sach phải là số nguyên dương.');
   process.env.AI_NHAN ??= 'test';
   // Model chỉ định (giám khảo) không gọi được thì báo lỗi, không tự lùi sang model đắt hơn
   process.env.AI_KHONG_LUI ??= '1';
   process.env.AI_NGAN_SACH_TOKEN ??= String(nganSach);
+  // X1 còn cần ba trần ngày và AI_THU_TEP_DOI_SOAT; provider kiểm trước HTTP.
   console.log(`[${tenScript}] ngân sách lượt này: ${Number(process.env.AI_NGAN_SACH_TOKEN).toLocaleString('vi-VN')} token (đổi bằng --ngan-sach) · chi phí ghi nhãn @${process.env.AI_NHAN}`);
   // 'exit' phải đồng bộ, và KHÔNG import lib/ai ở đầu tệp (kéo theo cấu hình Supabase đọc env trước khi
   // script nạp .env.local) — lớp gọi AI ghi sẵn số token vào biến toàn cục

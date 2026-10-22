@@ -3,6 +3,8 @@ import { goiModel } from './providers';
 import { AiRetryableError, type ChatRequest, type ChatResult } from './types';
 import { daCanHanMuc, ghiNhanSuDung, HAN_MUC_NGAY, soLuotHomNay } from './usage';
 import { ghiSuCo } from './su-co';
+import { laLuotThu, modelThuDuocPhep, tokenThuDaDung, VuotNganSachError } from './ngan-sach-thu';
+export { VuotNganSachError } from './ngan-sach-thu';
 
 export interface KetQuaFallback extends ChatResult {
   /** Các model đã thử và thất bại trước khi có kết quả */
@@ -45,9 +47,6 @@ const NGAN_SACH_MAC_DINH_MS = 50_000;
 const nganSachThu = () => Number(process.env.AI_NGAN_SACH_TOKEN) || 0;
 const nhanLog = () => (process.env.AI_NHAN ?? '').trim();
 let daTieuThu = 0;
-export class VuotNganSachError extends Error {
-  name = 'VuotNganSachError';
-}
 function kiemNganSachThu() {
   if (nganSachThu() && daTieuThu >= nganSachThu()) {
     throw new VuotNganSachError(`Vượt ngân sách lượt thử: đã dùng ${daTieuThu} / ${nganSachThu()} token (AI_NGAN_SACH_TOKEN)`);
@@ -55,7 +54,7 @@ function kiemNganSachThu() {
 }
 /** Token đã dùng trong tiến trình này — script in ra cuối lượt */
 export function tokenDaDung(): number {
-  return daTieuThu;
+  return laLuotThu() ? tokenThuDaDung() : daTieuThu;
 }
 
 /*
@@ -151,6 +150,14 @@ export async function goiVoiFallback(
     }
   }
 
+  const thu = laLuotThu();
+  if (thu) {
+    // Áp cả khi không có ưu tiên: không thử một provider trả phí rồi mới lùi.
+    danhSach = danhSach.filter((m) => modelThuDuocPhep(m.provider, m.model));
+    if (danhSach.length === 0) throw new VuotNganSachError('Không có model miễn phí trong danh sách X1; lượt thử đã dừng.');
+    if (process.env.AI_KHONG_LUI === '1') danhSach = danhSach.slice(0, 1);
+  }
+
   // Biết trước model nào đã cạn lượt trong ngày thì bỏ qua luôn, thay vì tiêu
   // một lần gọi chỉ để nhận về 429.
   const daDung = await soLuotHomNay();
@@ -189,16 +196,18 @@ export async function goiVoiFallback(
       kiemNganSachThu();
       const kq = await goiModel(m.provider, m.model, m.apiKey, req);
       chotTien(giu, req, kq);
-      daTieuThu += (kq.tokensIn ?? 0) + (kq.tokensOut ?? 0);
-      // Cho scripts/thu-chung.ts đọc lúc thoát mà không phải import module này
-      (globalThis as { __celestiaTokenDaDung?: number }).__celestiaTokenDaDung = daTieuThu;
+      if (!thu) {
+        daTieuThu += (kq.tokensIn ?? 0) + (kq.tokensOut ?? 0);
+        // Trial được đếm tại provider, gồm cả lời gọi trực tiếp và lượt lỗi.
+        (globalThis as { __celestiaTokenDaDung?: number }).__celestiaTokenDaDung = daTieuThu;
+      }
       // Lượt chạy thử / đo (script đặt AI_NHAN=test) ghi riêng dòng "<model>@test" — tách chi phí
       // test khỏi chi phí người dùng thật trong ai_usage_logs (26/09/2026: test ~70% lượng dùng một ngày)
-      await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, kq.tokensIn ?? 0, kq.tokensOut ?? 0, false, { dem: kq.tokensDem, nghi: kq.tokensNghi });
+      if (!thu) await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, kq.tokensIn ?? 0, kq.tokensOut ?? 0, false, { dem: kq.tokensDem, nghi: kq.tokensNghi });
       return { ...kq, daThuHong };
     } catch (e) {
       if (e instanceof AiRetryableError) {
-        await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, 0, 0, true);
+        if (!thu) await ghiNhanSuDung(m.provider, nhanLog() ? `${m.model}@${nhanLog()}` : m.model, 0, 0, true);
         // Ghi KÈM LÝ DO để phân biệt hết credit với gọi hơi nhanh (lib/ai/su-co.ts).
         // Không chờ: chuỗi đang lùi sang model kế, đừng bắt người dùng chờ thêm.
         void ghiSuCo({ nguon: 'chat', provider: m.provider, model: m.model, loai: e.loai, thongDiep: e.message });

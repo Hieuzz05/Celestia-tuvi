@@ -221,3 +221,12 @@ Mẫu một mục:
   một nguyên tắc về prompt, grep mọi prompt đang chạy để tìm câu trái nguyên tắc đó.
 - Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
 - Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
+
+## 22/10/2026 · Timeout chưa phải lượt không tiêu tài nguyên · ai-rag
+- Thẻ: timeout, usage, doi soat, ngan sach, restart
+- Chuyện gì: QC X1 bắt nhánh lỗi provider ghi token dự kiến rồi xóa dấu cho cả mất mạng/timeout; bộ kiểm ban đầu chỉ có 429 nên chưa bắt được.
+- Gốc: gộp phản hồi từ chối rõ với kết quả chưa biết vào cùng nhánh xử lý, coi ước lượng như usage đã quyết toán.
+- Giá: một vòng sửa và bổ sung ca kiểm trước commit; chưa gọi model thật hoặc ảnh hưởng người dùng.
+- Luật: timeout/mất mạng/server chưa biết kết quả phải giữ dấu đối soát, dừng fallback và chặn cả sau restart; chỉ từ chối rõ mới được tiếp tục theo hợp đồng.
+- Nâng: docs/bay/ai-rag.md; ca AbortError/HTTP 500 và restart trong scripts/test-ngan-sach-thu.ts đã PASS, đăng ký CI cùng X1. Ghi trên nhánh X1 vì phiên này không được push main.
+- Lần: 1
