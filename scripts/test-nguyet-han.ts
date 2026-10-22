@@ -4,8 +4,10 @@
  * Không sinh lại đáp án bằng hàm đang kiểm. Không đọc env/DB hoặc gọi model.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cungNguyetHan, cungTieuHan, lapLaSo, type LaSo } from '../lib/tuvi/ansao';
-import { hourToChi } from '../lib/tuvi/lunar';
+import { hourToChi, lunarToSolar, solarToLunar } from '../lib/tuvi/lunar';
 
 const CA = [
   { ten: 'A', tieu: 10, thangSinh: 1, gio: 0, tuoi: 1, gioiTinh: 'nam', thangXem: 1, gieng: 10, ketQua: 10 },
@@ -52,5 +54,47 @@ kiem('Tý muộn qua tháng/năm âm: dùng tháng đã hiệu chỉnh, không �
   assert.deepEqual(muon.thongTin.amLich, som.thongTin.amLich);
   assert.equal(cungNguyetHan(muon, 1, 1), cungTieuHan(muon, 1), 'Giêng + Tý không dịch mốc');
   for (let m = 1; m <= 12; m++) assert.equal(cungNguyetHan(muon, 1, m), cungNguyetHan(som, 1, m));
+});
+kiem('A2: quan hệ xoay Mệnh với tiểu hạn trên 60 lá chuẩn, 5 tuổi mỗi lá', () => {
+  const mau = JSON.parse(readFileSync(join(__dirname, 'mau-ansao.json'), 'utf8')) as { mau: Record<string, string> };
+  const tenLa = Object.keys(mau.mau);
+  assert.equal(tenLa.length, 60, 'phải kiểm cả bộ chuẩn, không chỉ sáu lá đầu');
+  const mod = (n: number) => ((n % 12) + 12) % 12;
+  let coNhuan = false, co23h = false, soCa = 0;
+  for (const ten of tenLa) {
+    const m = /^(\d+)\/(\d+)\/(\d+) (\d+)h (nam|nu)$/.exec(ten);
+    assert.ok(m, 'không đọc được mẫu: ' + ten);
+    const gio = Number(m[4]);
+    const ls = lapLaSo({ ngay: Number(m[1]), thang: Number(m[2]), nam: Number(m[3]), gio,
+      gioiTinh: m[5] as 'nam' | 'nu' });
+    coNhuan ||= ls.thongTin.amLich.nhuan;
+    co23h ||= gio === 23;
+    for (const tuoi of [1, 2, 12, 13, 36]) {
+      // HTH:1681 — xoay Mệnh tới tiểu hạn, giữ vị trí tương đối tháng Dần.
+      // Vế phải lấy cung Mệnh đã an, không tính lại bằng công thức nguyệt hạn.
+      assert.equal(mod(cungNguyetHan(ls, tuoi, 1) - cungTieuHan(ls, tuoi)),
+        mod(2 - ls.menhIndex), ten + ', tuổi ' + tuoi);
+      soCa++;
+    }
+  }
+  assert.equal(soCa, 300);
+  assert.ok(coNhuan, 'thiếu lá sinh tháng nhuận âm');
+  assert.ok(co23h, 'thiếu lá sinh23h');
+});
+kiem('A3: tháng6/2025 nhuận cùng cung tháng6 chính, không chia nửa tháng', () => {
+  const ls = lapLaSo({ ngay: 3, thang: 3, nam: 1985, gio: 10, gioiTinh: 'nu' });
+  const tuoi = 2025 - ls.thongTin.amLich.nam + 1;
+  for (const ngay of [1, 20]) {
+    const thuong = lunarToSolar(ngay, 6, 2025, false);
+    const nhuan = lunarToSolar(ngay, 6, 2025, true);
+    assert.ok(thuong && nhuan);
+    assert.notDeepEqual(thuong, nhuan, 'hai kỳ phải là hai ngày dương khác nhau');
+    const a = solarToLunar(thuong.day, thuong.month, thuong.year);
+    const b = solarToLunar(nhuan.day, nhuan.month, nhuan.year);
+    assert.deepEqual([a.day, a.month, a.year, a.isLeapMonth], [ngay, 6, 2025, false]);
+    assert.deepEqual([b.day, b.month, b.year, b.isLeapMonth], [ngay, 6, 2025, true]);
+    assert.equal(cungNguyetHan(ls, tuoi, b.month), cungNguyetHan(ls, tuoi, a.month));
+  }
+  // Đây là quy ước engine nhận số tháng, không mở guard chat tháng nhuận.
 });
 console.log('TẤT CẢ ĐẠT: ' + soKiem + ' nhóm nguyệt hạn, offline.');

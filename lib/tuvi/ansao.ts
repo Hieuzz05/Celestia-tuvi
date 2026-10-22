@@ -444,6 +444,8 @@ export function tamPhuongTuChinh(cungIndex: number): {
  * Từ tiểu hạn kể là tháng Giêng, nghịch đến tháng sinh âm; tại đó kể là giờ
  * Tý, thuận tới chi giờ sinh để khởi tháng Giêng, rồi thuận tới tháng cần xem.
  * Nguồn: Tử Vi hàm số tr.26; Số Tử Vi dưới mắt khoa học tr.74–75.
+ * Tháng xem nhuận dùng cùng cung tháng chính (đã chọn). Lối chia nửa tháng
+ * nhuận sang hai cung còn tranh chấp: Tử vi tổng hợp, dòng1329–1330.
  */
 export function cungNguyetHan(laSo: LaSo, tuoiAm: number, thangAm: number): number {
   const thangSinh = laSo.thongTin.amLich.thang;
