@@ -10,6 +10,8 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **`scripts/test-ansao-chuan.ts` đóng băng 60 lá số ở `scripts/mau-ansao.json`.** Engine đổi kết
   quả mà `phienBan` không đổi là CI đỏ — đó chính là luật ở mục đầu, giờ có máy canh. Cố ý đổi
   quy tắc: tăng `phienBan`, chạy lại với `--cap-nhat`, và đọc diff của tệp mẫu trước khi commit.
+  Vân tay gồm cả tiểu hạn, nguyệt hạn, lưu tinh (T-03, 22/10/2026). Thêm lớp tính mới ngoài `lapLaSo`
+  mà vào lời luận thì thêm nó vào `vanTay` luôn — hai lần đổi vận hạn đã lọt qua lỗ này.
 - **Engine không tự chặn ngày không có thật**: 31/4 lặng lẽ thành 1/5 (số Julian tràn sang tháng
   sau), `Date.parse('1990-04-31')` của V8 cũng vậy. Mọi chỗ nhận ngày sinh từ bên ngoài phải qua
   `laNgayDuongCoThat` (`lib/tuvi/kiem-ngay.ts`) trước khi gọi `lapLaSo`.
