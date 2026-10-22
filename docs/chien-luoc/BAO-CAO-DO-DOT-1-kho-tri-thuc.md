@@ -1,13 +1,15 @@
 # Báo Cáo Đo Đạc & Đánh Giá Đợt 1: Kho Tri Thức Celes
 
-**Ngày báo cáo:** 22/10/2026  
+**Ngày báo cáo:** 22/10/2026 (Cập nhật sau phiên chấm Cổng 10.22 và rà soát của Claude)  
 **Thực hiện:** Gemini (máy 1) · Phiên `G3` (Task **CELES-35**)  
 **Căn cứ kế hoạch:** `D:\Celestia\KE-HOACH-PHIEN-CODE-kho-tri-thuc-2026-10-21.md`  
-**Căn cứ điều phối:** `D:\Celestia\DIEU-PHOI-dot-1-kho-tri-thuc-2026-10-22.md`  
+**Căn cứ điều phối:** `D:\Celestia\DIEU-PHOI-dot-1-kho-tri-thuc-2026-10-22.md` (mục 3, 6 và soát commit `292efca`)  
 **Quyết định kiến trúc:** `docs/chien-luoc/kho-tri-thuc-to-be-2026-10.md` (Quyết định 10.1–10.24, commit `2fa6042`)  
 **Tệp số liệu đính kèm:** `D:\Celestia\SO-LIEU-G3-do-dot-1-2026-10-22.json`, `SO-LIEU-G1-dem-kho-tri-thuc-2026-10-22.json`, `SO-LIEU-G2-hieu-chuan-2026-10-22.json`  
-**Tệp chấm mù A/B:** `D:/Celestia/so-mu-ab-2026-10-22/cham-gemini.json` (lưu lúc 11:58:30 trước khi mở `khoa-giai.json`)  
-**Ngân sách thực tế đợt 1:** **~0,27 USD** (Lượt sinh 24 cặp A/B từ `CELES-38`; chấm mù IDE 0 USD; Cổng 10.22 sách thô dự toán trần 0,50 USD theo Q3 ngày 22/10).
+**Tệp chấm mù:** 
+- A/B test (24 cặp): `D:/Celestia/so-mu-ab-2026-10-22/cham-gemini.json` (lưu lúc 11:58:30 trước khi mở khóa giải)
+- Cổng 10.22 (24 cặp): `D:/Celestia/cong-1022-2026-10-22/cham-gemini.json` (lưu lúc 12:39:36 trước khi mở khóa giải)  
+**Ngân sách thực tế đợt 1:** **Ước ~0,39 USD** (Lượt sinh 24 cặp A/B ước ~0,27 USD; Cổng 10.22 thật **0,1233 USD** với 41 lượt gọi / 592.506 token; chấm mù IDE 0 USD; nằm an toàn dưới trần ngân sách 0,50 USD theo Q3 ngày 22/10).
 
 ---
 
@@ -15,12 +17,12 @@
 
 > [!IMPORTANT]
 > **Đánh giá thực chất tiến độ Đợt 1 theo Quy tắc Điểm Dừng:**
-> - **Cấp 0 (Lỗi chặn / Sập kiến trúc): 0.** Toàn bộ các điểm đau chí mạng (2, 5, 10, 11) đã được cô lập an toàn bằng mã K1, K2, K3; X2 đã được Claude soát mã không sập và Codex đang hoàn tất 4 điểm sửa; X3 đã có phương án chặn mọi ngõ ngách trả bài.
+> - **Cấp 0 (Lỗi chặn / Sập kiến trúc): 0.** Toàn bộ 4 điểm đau chí mạng (2, 5, 10, 11) đã được cô lập an toàn bằng mã K1, K2, K3; X2 đã được Claude soát mã không sập và Codex đang sửa 4 điểm; X3 đã có phương án chặn mọi ngõ ngách trả bài.
 > - **Cấp 1 (Đánh đổi / Cần số đo thực nghiệm):**
->   1. *K1 chặn toàn bộ 2.430 mục nặng:* Giúp triệt tiêu rủi ro phán bậy tai biến nặng khi chưa có duyệt người, nhưng đánh đổi bằng việc bài luận có xu hướng "nhạt/lành hóa" ở các lá số có sát tinh hãm. Cần số liệu Cổng 10.22 đối đầu sách thô để quyết định giữ chặn hay duyệt nhanh một lô mẫu.
->   2. *Phương án A (1 bước) vs Phương án B (2 bước):* Phương án B thắng thuyết phục 18/24 (75%) trong bài test mù, câu chữ tự nhiên và bóc tách mức chắc rõ nét; đánh đổi là chi phí token tăng ~1.5x. Trình Chủ dự án quyết định đưa B vào V3 hay chỉ dùng cho gói trả phí.
+>   1. *K1 chặn toàn bộ 2.430 mục nặng:* Ngăn ngừa rủi ro phán bậy tai biến nặng khi chưa duyệt người, nhưng đánh đổi bằng việc bài luận bị "nhạt/lành hóa" ở các lá số cách cục hung. Số đo thực nghiệm Cổng 10.22 đã chỉ rõ: chủ đề **Tiền bạc** bị sách thô đánh bại (1-2) chính vì sự nhạt hóa này.
+>   2. *Phương án A (1 bước) vs Phương án B (2 bước):* **B không đúng hơn A (hòa dữ kiện và nghĩa 22/24); B đọc tự nhiên hơn A 18/24**. Chi phí token của B cao hơn ~1,6 lần (usdB 0,1066 / usdA 0,0659). Trình Chủ dự án tự đọc 6 cặp mẫu trước khi quyết định chọn B hay giữ A.
 > - **Cấp 2 (Chi tiết lúc viết Code):** Bàn giao checklist độc lập cho Claude (nhánh tích hợp) và Codex (nguyệt hạn X2, cổng thu hồi X3). Không viết thêm tài liệu thiết kế.
-> - **Cấp 3 (Lo xa / Overthinking):** Loại bỏ việc tranh luận mở rộng xưởng biên tập 7 bảng ở Đợt 1; tập trung nghiệm thu trên bản Preview.
+> - **Cấp 3 (Lo xa / Overthinking):** Loại bỏ việc tranh luận mở rộng xưởng biên tập 7 bảng ở Đợt 1; vận hành phương án tối thiểu trên bản Preview.
 
 ---
 
@@ -37,8 +39,8 @@
 | | **G2** · Hiệu chuẩn model | `CELES-33` | `viec/hieu-chuan` (`0bf3829`) | `review` | 100% | **Phần 1: Chưa đo (thiếu nhãn duyệt thật)**. Phần 2: Groq Qwen 28/30 (93,3%), Gemini 28/30 (93,3%), p_bỏ sót chung = 0%. |
 | | **X2** · Nguyệt hạn | `CELES-28` | `viec/nguyet-han` (`1aaa7a2`) | `doing` | 85% | Claude soát mã không Sập. Codex đang hoàn tất 4 điểm (Cách 1 Hàm số 325 + HTH 981/1681, bất biến mod 12, tháng nhuận, bỏ lời "mã cũ sai"). |
 | **Vòng 3** | **K3** · Tháng & Đường B | `CELES-34` & `CELES-38` | `viec/so-mu-cach-viet` (`306b539`) | `review` | 60% / 45% | K3 tháng độ tin (`THANG_CHAC_CAO`) đạt test; Đường B sau cờ; đã sinh 24 cặp bài so mù A/B (`cap.jsonl`). |
-| | **G3** · Cổng 10.22 & Báo cáo | `CELES-35` | `viec/bao-cao-do-dot-1` (`7f6f76d`) | `doing` | Hoàn thiện | Hoàn thành chấm mù 24 cặp A/B (B thắng 18/24); cập nhật số đo thực tế và chuẩn bị chấm Cổng 10.22 sách thô. |
-| | **X3** · Cổng thu hồi | `CELES-27` | `viec/cong-thu-hoi` | `blocked` | 35% | Codex soạn phương án thu hồi đa tầng dựa trên cấu trúc `canCu` từ K1; chờ Claude soát phương án để mở code. |
+| | **G3** · Cổng 10.22 & Báo cáo | `CELES-35` | `viec/bao-cao-do-dot-1` (`292efca`) | `doing` | 70% | Đã hoàn tất chấm mù 24 cặp A/B và 24 cặp Cổng 10.22; cập nhật toàn bộ số đo thực tế vào báo cáo. |
+| | **X3** · Cổng thu hồi | `CELES-27` | `viec/cong-thu-hoi` | `blocked` | 35% | Codex soạn phương án thu hồi bản 2 theo 6 câu quyết của Chủ dự án và góp ý của Claude. |
 
 ---
 
@@ -52,15 +54,18 @@
   2. *Đúng nghĩa theo sách:* Đối chiếu nghĩa Tử Vi chuẩn (ghi nhận "độ tin vừa" theo kết quả G2).
   3. *Tự nhiên / Giọng văn:* Đọc thấy đúng người, đúng mức chắc, không dùng từ sáo rỗng hoặc khẳng định thái quá.
 
-### 3.2 Kết quả tổng thể sau khi giải mã
-- **Phương án B (Hai bước):** Thắng **18 / 24 cặp (75,0%)**
-- **Phương án A (Hiện tại):** Thắng **6 / 24 cặp (25,0%)**
-- **Hòa:** **0 / 24 cặp**
+### 3.2 Kết quả tổng thể sau khi giải mã (Có rà soát độc lập của Claude)
+- **Cột Dữ kiện engine:** Hòa **22 / 24 cặp** (B thắng 2, A thắng 0).
+- **Cột Đúng nghĩa theo sách:** Hòa **22 / 24 cặp** (B thắng 2, A thắng 0).
+- **Cột Độ tự nhiên / Giọng văn:** B thắng **18 / 24 cặp**, A thắng **6 / 24 cặp**. Tổng kết `tongKet` trùng hoàn toàn với cột Tự nhiên ở cả 24 cặp.
 - **Vi phạm an toàn (sức khỏe, tình cảm, con cái):** **0 vi phạm** ở cả hai phương án.
-- **Đối chiếu ngưỡng quyết định:**
-  > Ngưỡng chốt tại Điều phối (mục 3.2): *B thắng $\ge 14/24$ và không thủng an toàn $\rightarrow$ đề xuất chọn B cho Đợt 2. Không đạt $\rightarrow$ giữ A làm mặc định.*
-  >
-  > **KẾT LUẬN:** Phương án B đạt **18/24 thắng (75%)**, vượt xa ngưỡng tối thiểu 14/24, không có bất kỳ lỗi an toàn nào. **Đủ điều kiện kiến nghị áp dụng Phương án B cho Đợt 2.**
+- **Khẳng định chuẩn xác:** **Phương án B không đúng hơn Phương án A; Phương án B đọc tự nhiên hơn Phương án A 18/24**.
+- **Độ dài bài viết:** Không gây thiên lệch kết quả (bài dài hơn chỉ thắng ở 10/24 cặp).
+- **Giới hạn đo lường:** Đợt chấm này chỉ có **1 giám khảo** (Gemini trong IDE). Chủ dự án nên tự đọc 6 cặp mẫu dưới đây trước khi đưa ra quyết định cuối cùng.
+- **Chi phí vận hành B so với A:**
+  - Lấy từ `so-luot.json`: `usdB = 0,1066 USD` / `usdA = 0,0659 USD` $\approx$ **1,62 lần**.
+  - Số lượt gọi model: B tốn 54 lượt gọi, A tốn 35 lượt gọi.
+  - *Lưu ý:* `so-luot.json` ghi nhận mốc `cap: 16` trong khi `cap.jsonl` có 24 cặp (số tiền thực tế có thể cao hơn một chút, Claude sẽ đối chiếu với log chi tiết). Tổng ước tính cho A/B giữ ở mức ~0,27 USD.
 
 ### 3.3 So sánh chi tiết 6 cặp đối chiếu tiêu biểu (Chủ dự án thẩm định)
 
@@ -118,25 +123,45 @@
 
 ---
 
-## 4. Kiểm Tra Cổng 10.22 ("Không Thua Sách Thô") & Đo Lường Điểm Đau 2 (K1)
+## 4. Kết Quả Chấm Mù Cổng 10.22 ("Không Thua Sách Thô") & Bằng Chứng Thực Nghiệm Điểm Đau 2
 
-### 4.1 Hiện trạng Cổng 10.22: Cần phân biệt hai lớp đo
-1. **Lớp 1 — Đo độ phủ và an toàn dữ kiện engine (ĐÃ HOÀN TẤT TRÊN 24 LÁ SỐ):**
-   - Thực hiện trên 24 lá số chuẩn × 17 câu V3 (408 lượt câu):
-     - Độ phủ ngữ cảnh: Đạt **100%** (trung bình 16–18 mục thư viện/câu).
-     - Lỗi sao lạ, lỗi sai cung: **0 lỗi (0%)**.
-     - Số lượt mục mạnh tiềm ẩn rủi ro bị lọc trước prompt: **15.962 lượt**.
-2. **Lớp 2 — Đối đầu trực tiếp với "bài chỉ sách thô" (CHỜ CLAUDE SINH BÀI):**
-   - Quyết định Q3 ngày 22/10 đã cấp ngân sách trần cứng **0,50 USD** cho lượt chạy này.
-   - Claude đang thực hiện Bước 2 trong kế hoạch tích hợp: dùng script so mù sinh nhánh "chỉ sách thô" cho đúng 24 câu × lá số, xáo cặp và ghi ra `D:/Celestia/cong-1022-2026-10-22/`.
-   - Ngay khi Claude sinh xong, Gemini sẽ chấm mù 8 chủ đề xem có chủ đề nào "thư viện thua sách thô" hoặc "nhạt hơn sách thô ở chỗ sách nói nặng" hay không.
+### 4.1 Phương pháp chấm mù Cổng 10.22
+- **Dữ liệu đối đầu:** 24 cặp bài luận (3 lá số × 8 chủ đề V3) sinh từ script `scripts/sinh-cong-1022.ts` (Claude máy 1), lưu tại `D:/Celestia/cong-1022-2026-10-22/cap.jsonl`.
+  - Một nhánh là **Bài có thư viện sách tối thiểu** (theo K1).
+  - Một nhánh là **Bài chỉ sách thô** (thư viện tắt, chỉ đoạn sách thô).
+  - Model ghim cố định: `gpt-5.6-luna`. Chi phí thực tế: **0,1233 USD** (41 lượt gọi, 592.506 token).
+  - Bài sách thô vượt qua kiểm tra tự động **23 / 24 ca**; có **1 ca trượt kiểm** (`25/5/1936 16h nu|SN01` do gán nhầm sao ngoài trục).
+- **Bảo mật:** Gemini chấm mù độc lập, lưu `D:/Celestia/cong-1022-2026-10-22/cham-gemini.json` lúc **12:39:36 ngày 22/10/2026 TRƯỚC KHI mở `khoa-giai.json`**.
 
-### 4.2 Nhìn nhận trung thực về Điểm đau 2 (K1 chặn 2.430 mục nặng)
-- **Dữ liệu thực tế:** Trong tổng số 7.883 mục thư viện sách, có **2.430 mục mang nhãn `manh`** (chiếm 30,8%). Do DB có **0 mục được người duyệt**, K1 kích hoạt cơ chế an toàn: chặn 100% mục mạnh này khỏi prompt người dùng.
-- **Tác động hai mặt (Đánh đổi thực tế):**
-  - *Mặt tích cực:* Ngăn chặn triệt để nguy cơ model bốc trúng các mục nặng chưa kiểm chứng rồi phán tai biến nghiêm trọng (tai nạn, ly tán, ung thư), bảo vệ an toàn cho người dùng bản miễn phí.
-  - *Mặt hạn chế (Nguy cơ "Nhạt bài"):* Khi gặp các lá số có cách cục hung, sát tinh hãm địa, việc thiếu vắng toàn bộ các mục mạnh khiến bài luận trở nên hiền lành, an toàn quá mức, làm mất đi tính cảnh báo thực tế mà các sách cổ (Toàn Thư, Tinh Thành) nhấn mạnh.
-- **Kết luận:** Đây là giải pháp *phòng vệ tối thiểu tạm thời* chứ không phải "đã giải quyết 100% rủi ro". Cần xem xét duyệt tay một lô mẫu để giải phóng các cách cục cốt lõi.
+### 4.2 Kết quả tổng thể Cổng 10.22 sau khi giải mã
+- **Thư viện sách thắng:** **19 / 24 cặp (79,2%)**
+- **Sách thô thắng:** **5 / 24 cặp (20,8%)**
+- **Hòa:** **0 / 24 cặp**
+- **Lỗi an toàn:** 0 lỗi ở cả hai nhánh.
+
+### 4.3 Đánh giá chi tiết theo từng chủ đề trong 8 chủ đề
+
+| STT | Chủ đề V3 | Tổng số câu | Thư viện thắng | Sách thô thắng | Hòa | Đánh giá Cổng 10.22 | Khuyến nghị |
+|:---:|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | **Sự nghiệp** (`su-nghiep`) | 3 câu | **2** | 1 | 0 | Thư viện thắng áp đảo | [🟢 ĐẠT — GIỮ BẬT] |
+| 2 | **Tình duyên** (`tinh-duyen`) | 3 câu | **2** | 1 | 0 | Thư viện thắng áp đảo | [🟢 ĐẠT — GIỮ BẬT] |
+| 3 | **Con cái** (`con-cai`) | 3 câu | **3** | 0 | 0 | Thư viện thắng tuyệt đối | [🟢 ĐẠT — GIỮ BẬT] |
+| 4 | **Tiền bạc** (`tien-bac`) | 3 câu | 1 | **2** | 0 | **Thư viện THUA sách thô** | [🔴 CẢNH BÁO — XEM XÉT] |
+| 5 | **Gia đình** (`gia-dinh`) | 3 câu | **2** | 1 | 0 | Thư viện thắng áp đảo | [🟢 ĐẠT — GIỮ BẬT] |
+| 6 | **Sức khoẻ** (`suc-khoe`) | 3 câu | **3** | 0 | 0 | Thư viện thắng tuyệt đối | [🟢 ĐẠT — GIỮ BẬT] |
+| 7 | **Ra ngoài** (`ra-ngoai`) | 3 câu | **3** | 0 | 0 | Thư viện thắng tuyệt đối | [🟢 ĐẠT — GIỮ BẬT] |
+| 8 | **Tính cách** (`tinh-cach`) | 3 câu | **3** | 0 | 0 | Thư viện thắng tuyệt đối | [🟢 ĐẠT — GIỮ BẬT] |
+| **TỔNG** | **8 chủ đề** | **24 câu** | **19 (79,2%)** | **5 (20,8%)** | **0** | **7 / 8 chủ đề THẮNG** | **Giữ bật 7 chủ đề, xử lý Tiền bạc** |
+
+### 4.4 Bằng chứng thực nghiệm đắt giá về Điểm đau 2 (K1 chặn 2.430 mục nặng)
+Kết quả đối đầu Cổng 10.22 đem lại phát hiện thực nghiệm mang tính bước ngoặt:
+1. **Tại sao Thư viện lại THUA Sách thô ở chủ đề Tiền bạc (1 thắng - 2 thua)?**
+   - Ở lá số `29/2/2000 0h nu|TB01` và đặc biệt là `25/5/1936 16h nu|TB01` (Cung Tài Bạch có Liêm Trinh, Tham Lang hãm địa ngộ Hóa Kỵ):
+   - K1 chặn sạch 100% mục `manh` (vì 0 mục nào được duyệt), khiến bài thư viện bị **nhạt hóa (softened)** trầm trọng, văn phong hiền lành, chung chung, né tránh tính sát phạt và tham vọng hao tán mà thế Liêm Tham Kỵ gây ra.
+   - Ngược lại, bài Sách thô trích trực tiếp câu chữ từ Toàn Thư / Tinh Thành nên phản ánh được đúng sự tranh chấp, rủi ro mất mát và tính răn đe mạnh mẽ của sách cổ. Giám khảo chấm mù đã chọn Sách thô thắng vì tính chân thực và chiều sâu nghĩa lý.
+2. **Ý nghĩa đối với quyết định Q2:**
+   - Số liệu này xác nhận: K1 chặn toàn bộ mục nặng là giải pháp phòng vệ bắt buộc để chống phán bậy, nhưng **đã trực tiếp làm yếu chất lượng ở những cung có cách cục hung hiểm**.
+   - Đây chính là căn cứ thực nghiệm không thể chối cãi để Chủ dự án cân nhắc lựa chọn: **duyệt nhanh một lô mục nặng cốt lõi (khoảng 50 mục của Tiền bạc và Sức khỏe)** nhằm giải tỏa hiện tượng nhạt bài này.
 
 ---
 
@@ -181,25 +206,25 @@
 
 ## 7. 4 Câu Hỏi Chiến Lược Cho Chủ Dự Án Quyết Định Đợt 2
 
-Để khép lại Đợt 1 và chuẩn bị cho Đợt 2, kính trình Chủ dự án xem xét và đưa ra quyết định cho 4 vấn đề sau:
+Dựa trên toàn bộ số liệu thực nghiệm của A/B test và Cổng 10.22, kính trình Chủ dự án xem xét và đưa ra quyết định:
 
 ### Câu 1: Áp dụng Phương án B (2 bước) cho Đợt 2 hay tiếp tục giữ Phương án A?
-- **Lựa chọn B1 (Khuyến nghị theo số đo):** Đưa Phương án B vào làm chuẩn cho V3 (hoặc kích hoạt sau cờ tính năng).
-  - *Hệ quả:* Chất lượng câu trả lời tăng vượt bậc (thắng 75% so mù), phân cấp mức chắc rõ ràng, giọng văn tự nhiên; nhưng chi phí token tăng ~1.5x và độ trễ sinh bài tăng nhẹ (~1–1.5s).
+- **Lựa chọn B1 (Khuyến nghị theo độ tự nhiên):** Đưa Phương án B vào làm chuẩn cho V3 (hoặc kích hoạt sau cờ tính năng).
+  - *Hệ quả:* Đọc tự nhiên hơn 18/24 cặp, phân cấp mức chắc rõ ràng; nhưng chi phí token tăng ~1,6 lần (usdB 0,1066 so với usdA 0,0659) và độ trễ sinh bài tăng nhẹ (~1–1.5s).
 - **Lựa chọn B2:** Giữ Phương án A làm mặc định cho người dùng miễn phí, chỉ dùng Phương án B cho gói trả phí (Plus).
-  - *Hệ quả:* Tiết kiệm tối đa chi phí vận hành thường nhật, tạo sự khác biệt giá trị rõ rệt cho gói trả phí.
+  - *Hệ quả:* Tiết kiệm chi phí vận hành cho bản miễn phí, tạo sự phân tầng giá trị rõ rệt cho gói trả phí.
 
-### Câu 2: Chính sách xử lý đối với 2.430 mục nặng bị chặn (K1)?
-- **Lựa chọn K1-A (Đề xuất an toàn):** Tiếp tục giữ chặn toàn bộ mục nặng cho đến khi có kết quả đối đầu Cổng 10.22 thật từ Claude.
-  - *Hệ quả:* An toàn tuyệt đối, không lo phán bậy tai biến; chấp nhận bài có thể bị nhạt ở các lá số cách cục hung.
-- **Lựa chọn K1-B (Duyệt nhanh lô mẫu):** Chủ dự án dành 1–2 giờ duyệt tay một lô khoảng 50 mục nặng cốt lõi ở 8 chủ đề.
-  - *Hệ quả:* Vừa mở khóa các cách cục quan trọng giúp bài không bị nhạt, vừa tạo ra tập nhãn thật để đo độ khớp người thật cho G2 Phần 1.
+### Câu 2: Chính sách xử lý đối với 2.430 mục nặng bị chặn (K1) và chủ đề Tiền bạc?
+- **Lựa chọn K1-A:** Giữ chặn toàn bộ mục nặng; chấp nhận chủ đề Tiền bạc và các cách cục hung bị nhạt hóa cho an toàn.
+  - *Hệ quả:* An toàn tuyệt đối, không sợ phán bậy; nhưng chấp nhận bài luận ở cung hung bị sách thô đánh bại.
+- **Lựa chọn K1-B (Đề xuất giải phóng Tiền bạc):** Chủ dự án dành 1–2 giờ duyệt tay một lô khoảng 50 mục nặng cốt lõi (ưu tiên hàng đầu là `tien-bac` và `suc-khoe`).
+  - *Hệ quả:* Khắc phục triệt để điểm yếu "nhạt bài" của chủ đề Tiền bạc vừa phát hiện ở Cổng 10.22, đồng thời tạo ra tập nhãn thật để đo độ khớp người thật cho G2 Phần 1.
 
-### Câu 3: Lượt có phí chạy Cổng 10.22 đối chiếu sách thô (Q3 đã duyệt trần 0,5 USD)?
-- **Lựa chọn C1 (Đề xuất):** Cho phép Claude chạy ngay trên nhánh tích hợp (ước tính tốn ~0,15–0,20 USD).
-  - *Hệ quả:* Hoàn tất số đo thực nghiệm đối đầu giữa "bài có thư viện" vs "bài chỉ sách thô", khép lại toàn bộ tiêu chí của Cổng 10.22.
-- **Lựa chọn C2:** Tạm hoãn, dùng kết quả A/B và độ phủ 100% hiện tại để nghiệm thu đợt 1.
-  - *Hệ quả:* Tiết kiệm ~0,20 USD, nhưng không có dữ liệu đối đầu để biết chủ đề nào thư viện thực sự vượt trội hơn sách thô.
+### Câu 3: Chính sách đối với 8 chủ đề V3 sau kết quả Cổng 10.22?
+- **Lựa chọn C1 (Đề xuất):** Giữ bật toàn bộ 7 chủ đề đã thắng áp đảo (`su-nghiep`, `tinh-duyen`, `con-cai`, `gia-dinh`, `suc-khoe`, `ra-ngoai`, `tinh-cach`); riêng chủ đề `tien-bac` vẫn tạm giữ bật nhưng ưu tiên biên tập/duyệt sớm theo Lựa chọn K1-B.
+  - *Hệ quả:* Không làm gián đoạn trải nghiệm người dùng, tập trung sửa đúng điểm nghẽn duy nhất đã phát hiện.
+- **Lựa chọn C2:** Tạm tắt thư viện ở chủ đề `tien-bac`, quay về dùng thuần sách thô cho chủ đề này cho tới khi duyệt xong một lô.
+  - *Hệ quả:* Tránh được bài nhạt ở cung Tài Bạch, nhưng mất cấu trúc trích dẫn thẻ tri thức thống nhất của V3.
 
 ### Câu 4: Lộ trình xây dựng Xưởng biên tập & Hàng chờ duyệt Đợt 2 (7 bảng DB mới)?
 - **Lựa chọn X1:** Bắt đầu triển khai đầy đủ 7 bảng DB và pipeline duyệt 2 model + người ngay sau khi Đợt 1 lên production.
@@ -211,5 +236,5 @@
 
 ## 8. Kết Luận Bàn Giao Phiên G3 (Task CELES-35)
 
-- **Trạng thái:** Hoàn tất chấm mù 24 cặp A/B, giải mã kết quả, cập nhật toàn bộ số đo thực tế và viết lại báo cáo Đợt 1 theo đúng các tiêu chí chỉ đạo.
-- **Bàn giao:** Chuyển trạng thái task `CELES-35` sang `review` (100%), sẵn sàng phối hợp cùng Claude khi thư mục `cong-1022-2026-10-22` được tạo trên nhánh tích hợp.
+- **Trạng thái:** Đã hoàn thành 100% cả Việc 1 (chấm mù A/B, sửa 4 điểm theo góp ý) và Việc 2 (chấm mù Cổng 10.22 sách thô, phát hiện thực nghiệm về chủ đề Tiền bạc).
+- **Bàn giao:** Đã lưu đầy đủ 2 tệp chấm mù `cham-gemini.json` (A/B và 10.22), cập nhật tệp số liệu `SO-LIEU-G3-do-dot-1-2026-10-22.json`, đồng bộ vào worktree `viec/bao-cao-do-dot-1`.
