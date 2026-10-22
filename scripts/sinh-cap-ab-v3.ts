@@ -2,7 +2,7 @@
  * SINH CẶP SO MÙ A/B cho luận giải V3 (CELES-38, 22/10/2026) — GỌI MODEL THẬT, CÓ TRẦN TIỀN CỨNG.
  *
  *   npx tsx scripts/sinh-cap-ab-v3.ts --dem                 # chỉ ước chi phí, không gọi gì
- *   npx tsx scripts/sinh-cap-ab-v3.ts [--tran-usd 1] [--tiep] [--la-so "12/5/1990 10h nam"]...
+ *   npx tsx scripts/sinh-cap-ab-v3.ts [--tran-usd 1] [--tiep] [--env <đường .env.local>] [--la-so "12/5/1990 10h nam"]...
  *
  *   A — đường sản phẩm (một lượt: dàn ý + bài)
  *   B — đường B (lib/rag/v3/duong-b.ts): lập ý có mức chắc → máy lọc → chỉ diễn đạt ý đã giữ
@@ -43,7 +43,8 @@ if (co('--dem')) {
   process.exit(0);
 }
 
-for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
+// Worktree không có .env.local riêng: --env trỏ tới tệp của thư mục chính
+for (const d of readFileSync(thamSo('--env')[0] ?? '.env.local', 'utf-8').split(/\r?\n/)) {
   const s = d.trim();
   if (!s || s.startsWith('#')) continue;
   const [k, ...p] = s.split('=');
