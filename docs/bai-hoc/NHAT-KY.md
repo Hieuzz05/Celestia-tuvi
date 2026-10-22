@@ -221,3 +221,16 @@ Mẫu một mục:
   một nguyên tắc về prompt, grep mọi prompt đang chạy để tìm câu trái nguyên tắc đó.
 - Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
 - Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
+
+## 22/10/2026 · Đổi quy tắc vận hạn mà mẫu đóng băng không bắt · engine
+- Thẻ: phienBan, van tay, mau dong bang, van han, nguyet han
+- Chuyện gì: X2 (nguyệt hạn Cách 1) đổi cung tháng của mọi lá số, nhưng `test-ansao-chuan` vẫn xanh
+  khi chưa tăng `PHUONG_PHAP.phienBan`. Lần trước (CELES-37) cũng vậy với một quy tắc vận hạn.
+- Gốc: vân tay lớp 3 chỉ chụp cung + sao GỐC. Tiểu hạn, nguyệt hạn, lưu tinh tính ngoài `lapLaSo`
+  nên nằm ngoài mẫu; máy canh "đổi kết quả mà không tăng phiên bản" có lỗ đúng ở lớp hay đổi nhất.
+- Giá: hai lần chỉ dựa vào người nhớ tăng phiên bản; quên là đệm phát bài nói cung tháng sai
+  (dấu logic `lg` lấy từ `phienBan`). Phải mở CELES-37 và T-03 để vá.
+- Luật: lớp tính nào nằm ngoài `lapLaSo` mà vào lời luận thì phải vào vân tay của `test-ansao-chuan`.
+- Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
+  lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
+- Lần: 2 (lần 1: CELES-37, chưa ghi sổ)
