@@ -101,6 +101,8 @@ jobs:
         run: npx tsx scripts/test-hieu-cau.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
         run: npx tsx scripts/test-fallback-giu-nguyen.ts
+      - name: X1 — trần token thử, cấm paid fallback, đối soát qua restart (offline)
+        run: npx tsx scripts/test-ngan-sach-thu.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
 

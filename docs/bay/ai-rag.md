@@ -167,3 +167,6 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   đúng dữ kiện thua (8–4, 11–5) là trượt, không tinh chỉnh tiếp để ép qua.
 - **"Viết đời thường hơn" kéo model bịa nét đời sống.** Lời dặn giọng phải ghi rõ ranh giới: CÁI GÌ
   (dữ kiện, hướng) do mã chốt, model chỉ được đổi CÁCH NÓI.
+
+- **Timeout/mất mạng không chứng minh model chưa tiêu tài nguyên.** X1 giữ dấu đối soát và dừng
+  chuỗi khi chưa biết usage thực; kiểm cả restart ở scripts/test-ngan-sach-thu.ts (22/10/2026).

@@ -1,5 +1,6 @@
 import { layApiKey } from './config';
 import { AiRetryableError } from './types';
+import { chanDuongTraPhiKhiThu } from './ngan-sach-thu';
 
 /**
  * Sinh vector ngữ nghĩa. Số chiều 768 phải khớp cột `vector(768)` trong
@@ -133,6 +134,7 @@ async function goiLoOpenAi(lo: string[], apiKey: string, lanThu = 0): Promise<nu
 type MucDich = 'luu-tru' | 'truy-van';
 
 async function goiEmbedding(text: string, mucDich: MucDich): Promise<number[]> {
+  chanDuongTraPhiKhiThu();
   const apiKey = layKhoaEmbedding();
 
   if (NHA_CUNG_CAP_EMBEDDING === 'openai') {
@@ -317,6 +319,7 @@ export interface KetQuaLoEmbed {
  * hai bị chặn thì 45 đoạn kia phải được giữ lại.
  */
 export async function embedLoTaiLieu(doans: string[]): Promise<KetQuaLoEmbed> {
+  chanDuongTraPhiKhiThu();
   const apiKey = layKhoaEmbedding();
 
   const vectors: number[][] = [];
