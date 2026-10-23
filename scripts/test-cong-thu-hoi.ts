@@ -495,6 +495,10 @@ async function kiemScript() {
   const kho = docLenh('thu-hoi --preview-url https://x --dau aaaaaaaa'.split(' ')) as Lenh;
   kiem('script: mặc định chạy khô', !('loi' in kho) && kho.apDung === false);
   kiem('script: all + --ghi-production hợp lệ (vẫn khô nếu thiếu --ap-dung)', !loi('thu-hoi --pham-vi all --ghi-production --dau aaaaaaaa'));
+  kiem('script: liet-ke all chỉ đọc, không cần --ghi-production', !loi('liet-ke --pham-vi all'));
+  kiem('script: liet-ke vẫn bắt chọn phạm vi', !!loi('liet-ke'));
+  const lk = docLenh('liet-ke --preview-url https://x --so-hang 999 --chart ab12'.split(' ')) as Lenh;
+  kiem('script: --so-hang kẹp tối đa 50, giữ --chart', !('loi' in lk) && lk.soHang === 50 && lk.chart === 'ab12');
   const l = docLenh('xem --preview-url https://x.vercel.app'.split(' ')) as Lenh;
   let tuChoi = false;
   try {

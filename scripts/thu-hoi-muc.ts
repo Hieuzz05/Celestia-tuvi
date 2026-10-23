@@ -3,6 +3,9 @@
  *
  * Chạy:
  *   npx tsx scripts/thu-hoi-muc.ts xem      (--preview-url <url> | --pham-vi all)
+ *   npx tsx scripts/thu-hoi-muc.ts liet-ke  (--preview-url <url> | --pham-vi all) [--so-hang 5] [--chart <đầu chart_hash>]
+ *        CHỈ ĐỌC: các bài V3 mới nhất trong phạm vi, mỗi câu kèm mục thư viện đã dùng (dấu + ý) — để chọn
+ *        đúng dấu mà thu hồi thử (dấu nằm ẩn trong đệm, giao diện không hiện).
  *   npx tsx scripts/thu-hoi-muc.ts thu-hoi  (--preview-url <url> | --pham-vi all --ghi-production)
  *        (--dau <8hex>[,<8hex>…] | --id <id> --chu-de <cd> | --theo-chunk <chunkId>)
  *        --ly-do "…" [--nguoi "…"] [--ap-dung]
@@ -24,7 +27,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { CO_GHI_PRODUCTION } from '../lib/moi-truong-dem';
 
-export type Viec = 'xem' | 'thu-hoi' | 'hoan-tac';
+export type Viec = 'xem' | 'liet-ke' | 'thu-hoi' | 'hoan-tac';
 
 export interface Lenh {
   viec: Viec;
@@ -39,6 +42,8 @@ export interface Lenh {
   suKien?: string;
   lyDo: string;
   nguoi: string;
+  soHang: number;
+  chart?: string;
 }
 
 const lay = (argv: readonly string[], co: string) => {
@@ -49,7 +54,9 @@ const lay = (argv: readonly string[], co: string) => {
 /** Đọc + kiểm lệnh, KHÔNG chạm mạng / DB. Trả `{ loi }` khi phải từ chối. */
 export function docLenh(argv: readonly string[]): Lenh | { loi: string } {
   const viec = argv.find((a) => !a.startsWith('--')) as Viec | undefined;
-  if (viec !== 'xem' && viec !== 'thu-hoi' && viec !== 'hoan-tac') return { loi: 'Thiếu việc: xem | thu-hoi | hoan-tac' };
+  if (viec !== 'xem' && viec !== 'liet-ke' && viec !== 'thu-hoi' && viec !== 'hoan-tac') {
+    return { loi: 'Thiếu việc: xem | liet-ke | thu-hoi | hoan-tac' };
+  }
   const pv = lay(argv, '--pham-vi');
   const l: Lenh = {
     viec,
@@ -64,12 +71,15 @@ export function docLenh(argv: readonly string[]): Lenh | { loi: string } {
     suKien: lay(argv, '--su-kien'),
     lyDo: lay(argv, '--ly-do') ?? '',
     nguoi: lay(argv, '--nguoi') ?? process.env.USERNAME ?? process.env.USER ?? 'script',
+    soHang: Math.min(50, Math.max(1, Number(lay(argv, '--so-hang') ?? 5) || 5)),
+    chart: lay(argv, '--chart'),
   };
   if (pv !== undefined && pv !== 'all') return { loi: '--pham-vi chỉ nhận "all". Thử trên bản xem thử thì dùng --preview-url.' };
   if (l.previewUrl && l.phamViAll) return { loi: 'Chọn MỘT phạm vi: --preview-url hoặc --pham-vi all.' };
   if (!l.previewUrl && !l.phamViAll) return { loi: 'Thiếu phạm vi: --preview-url <url bản xem thử> hoặc --pham-vi all.' };
   if (l.previewUrl && l.ghiProduction) return { loi: `--preview-url không đi cùng ${CO_GHI_PRODUCTION}.` };
-  if (l.phamViAll && l.viec !== 'xem' && !l.ghiProduction) {
+  // xem / liet-ke chỉ đọc: production không cần cờ ghi
+  if (l.phamViAll && l.viec !== 'xem' && l.viec !== 'liet-ke' && !l.ghiProduction) {
     return { loi: `--pham-vi all là production: thêm ${CO_GHI_PRODUCTION} (và --ap-dung để ghi thật).` };
   }
   if (l.viec === 'thu-hoi') {
@@ -112,7 +122,53 @@ function napEnv() {
   }
 }
 
-type CauDem = { id: string; chuaViet?: boolean; canCu?: { thuVien?: { dau: string }[] }; thayThuHoi?: string[] };
+type CauDem = { id: string; cauHoi?: string; chuaViet?: boolean; canCu?: { thuVien?: { ma?: string; id?: string; dau: string }[] }; thayThuHoi?: string[] };
+
+/** Gói thư viện HIỆN HÀNH của mọi chủ đề (chỉ đọc) — để giải dấu ↔ ý */
+async function napGoi() {
+  const { docThuVien } = await import('../lib/rag/thu-vien/kho');
+  const { THU_VIEN_THEO_CHU_DE } = await import('../lib/rag/v3/xu-ly');
+  const goi = new Map<string, Awaited<ReturnType<typeof docThuVien>>>();
+  for (const [cd, t] of Object.entries(THU_VIEN_THEO_CHU_DE)) goi.set(cd, await docThuVien(cd, t.dot));
+  return goi;
+}
+
+/** CHỈ ĐỌC: bài V3 mới nhất của phạm vi, mỗi câu kèm mục thư viện đã vào prompt (dấu + ý) */
+async function lietKe(db: SupabaseClient, phamVi: string, l: Lenh) {
+  const { dauMuc } = await import('../lib/rag/thu-vien/dau');
+  const tatCa = [...(await napGoi()).values()].flat();
+  const yCua = new Map(tatCa.map((m) => [dauMuc(m), m.y] as const));
+  let q = db.from('noi_dung_ai').select('chart_hash, khoa_ky, noi_dung, tao_luc').eq('be_mat', 'luan-giai-v3').like('khoa_ky', '%|nhom:%');
+  q = phamVi === 'all' ? q.not('khoa_ky', 'like', 'preview:%').not('khoa_ky', 'like', 'local:%') : q.like('khoa_ky', `${phamVi}:%`);
+  if (l.chart) q = q.like('chart_hash', `${l.chart}%`);
+  const { data, error } = await q.order('tao_luc', { ascending: false }).limit(l.soHang * 4);
+  if (error) throw new Error(error.message);
+  const hang = (data ?? []).filter((r) => Array.isArray(r.noi_dung) && !/\|tom-lai|\|buc-tranh/.test(r.khoa_ky)).slice(0, l.soHang);
+  if (!hang.length) {
+    console.log('Chưa có bài V3 nào trong phạm vi này. Mở bản xem thử, đọc một chủ đề chuyên sâu rồi chạy lại.');
+    return;
+  }
+  let coDau = 0;
+  for (const r of hang) {
+    const nhom = /\|nhom:([^|]+)/.exec(r.khoa_ky)?.[1] ?? '?';
+    console.log(`\nLá số ${String(r.chart_hash).slice(0, 10)}…  chủ đề ${nhom}  (lưu ${r.tao_luc})`);
+    for (const c of r.noi_dung as CauDem[]) {
+      const tv = c.canCu?.thuVien ?? [];
+      console.log(`  [${c.id}] ${(c.cauHoi ?? '').slice(0, 70)}`);
+      if (c.chuaViet) { console.log('      (chưa viết)'); continue; }
+      if (!c.canCu) { console.log('      (không có căn cứ — viết trước K1, cổng không thấy)'); continue; }
+      if (!tv.length) { console.log('      (không dùng mục thư viện nào)'); continue; }
+      for (const m of tv) {
+        coDau++;
+        const y = yCua.get(m.dau);
+        console.log(`      ${m.dau}  ${m.ma ?? ''} ${m.id ?? ''}  ${y ? `"${y.slice(0, 90)}"` : '(mục không còn trong gói hiện hành)'}`);
+      }
+    }
+  }
+  console.log(coDau
+    ? `\nChọn MỘT dấu ở trên rồi chạy (chạy khô trước, bỏ --ap-dung):\n  npx tsx scripts/thu-hoi-muc.ts thu-hoi ${l.previewUrl ? `--preview-url ${l.previewUrl}` : '--pham-vi all --ghi-production'} --dau <dấu> --ly-do "thử TC-11" --ap-dung`
+    : '\nKhông câu nào có dấu thư viện — đọc thêm một chủ đề (tình duyên / sự nghiệp …) trên bản xem thử rồi chạy lại.');
+}
 
 /**
  * Đếm hàng đệm V3 của PHẠM VI ĐÍCH sẽ bị viết lại khi mở. Có phân trang — PostgREST cắt 1000 hàng lặng lẽ.
@@ -171,8 +227,11 @@ async function main() {
     if (error) throw new Error(error.message);
     if (!data?.length) console.log('Không có lệnh thu hồi nào còn hiệu lực.');
     for (const r of data ?? []) console.log(`  ${r.su_kien_id}  ${r.dau}  ${r.thu_hoi_luc}  ${r.nguoi}  — ${r.ly_do}`);
+    if (phamVi !== 'all') console.log('(Máy chủ bản xem thử còn áp cả lệnh phạm vi "all"; xem bằng --pham-vi all.)');
     return;
   }
+
+  if (lenh.viec === 'liet-ke') return lietKe(db, phamVi, lenh);
 
   if (lenh.viec === 'hoan-tac') {
     const { data, error } = await db
@@ -200,11 +259,9 @@ async function main() {
   }
 
   // thu-hoi — giải ra dấu từ gói thư viện HIỆN HÀNH (chỉ đọc)
-  const { docThuVien } = await import('../lib/rag/thu-vien/kho');
   const { dauMuc } = await import('../lib/rag/thu-vien/dau');
-  const { THU_VIEN_THEO_CHU_DE, CAU_THU_VIEN } = await import('../lib/rag/v3/xu-ly');
-  const goi = new Map<string, Awaited<ReturnType<typeof docThuVien>>>();
-  for (const [cd, t] of Object.entries(THU_VIEN_THEO_CHU_DE)) goi.set(cd, await docThuVien(cd, t.dot));
+  const { CAU_THU_VIEN } = await import('../lib/rag/v3/xu-ly');
+  const goi = await napGoi();
   const tatCa = [...goi.values()].flat();
 
   let dau = lenh.dau;
