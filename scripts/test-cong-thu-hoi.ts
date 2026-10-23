@@ -12,10 +12,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { lapLaSo, type Cung } from '../lib/tuvi/ansao';
 import { dungKhoiThuVien } from '../lib/rag/thu-vien/cho-prompt';
 import { dauMuc } from '../lib/rag/thu-vien/dau';
+import { TAP_RONG } from '../lib/rag/thu-hoi/cong';
 import type { MucThuVien } from '../lib/rag/thu-vien/kieu';
 import type { DuKienV3 } from '../lib/rag/v3/du-kien';
 import { CAU_HOI_V3, dauMuc as dauMucV3, PHIEN_BAN_V3, type KetQuaCauV3, type luanNhieuCau } from '../lib/rag/v3';
-import { anNoiBo, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, THE_HE_DEM, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
+import { anNoiBo, CAU_AN_THANG, cheThangBanCu, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, THE_HE_DEM, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
 import { SO_CHU_DE_TOI_THIEU } from '../lib/rag/v3/buc-tranh';
 import { soKetLuanV3 } from '../lib/rag/v3/so-ket-luan';
 import { _datLaiThuHoiChoTest, docTapThuHoi } from '../lib/rag/thu-hoi/kho';
@@ -202,6 +203,48 @@ async function kiemXuLy() {
     await xuLyLuanGiaiV3({ ...laSo, nhom: CD, chi: [C1] }, ctx.mt);
     const luu = ctx.bo.get(ctx.k(khoaCd)) as CauTraRaV3[];
     kiem('lượt song song: câu dính không được gộp', !luu.some((c) => c.luanGiai === 'song song dính'), luu);
+  }
+  // 3g. Hai lớp che cùng lúc (gộp abcad96): câu vừa khác phienBan vừa dính thu hồi → câu chờ, không mang chữ bản
+  // cũ; câu chỉ khác phienBan → che phần tháng. Cả đường viết hỏng lẫn đường khách hết lượt.
+  const LG_CU = `cu-hon|${LOGIC_V3.split('|').slice(1).join('|')}`;
+  const VAN_CU = (id: string) => `Bài cũ ${id}. Tháng 3 thuận lợi cho việc lớn.`;
+  const banCuHai = (ids: string[], dinh: string) => ids.map((id) => cau(id, { lg: LG_CU, luanGiai: VAN_CU(id), ...(id === dinh ? { dau: [D1] } : {}) }));
+  {
+    const { mt, bo, k } = moiTruong({ hong: true });
+    bo.set(k(khoaCd), banCuHai(idCd, C1));
+    const kq = await xuLyLuanGiaiV3({ ...laSo, nhom: CD }, mt);
+    const ra = (json(kq).cau ?? []) as Record<string, unknown>[];
+    const c1 = ra.find((c) => c.id === C1)!;
+    const c2 = ra.find((c) => c.id === C2)!;
+    kiem('2 lớp (viết hỏng): câu cũ + dính → câu chờ, chỉ trường được phép', c1.tamAn === true && Object.keys(c1).sort().join() === CHO_PHEP_CHO, c1);
+    kiem('2 lớp (viết hỏng): câu chờ không mang chữ bản cũ / câu ẩn tháng', !JSON.stringify(c1).includes('Bài cũ') && !JSON.stringify(c1).includes(CAU_AN_THANG), c1);
+    kiem('2 lớp (viết hỏng): câu chỉ cũ → che tháng', String(c2.luanGiai).includes(CAU_AN_THANG) && !String(c2.luanGiai).includes('Tháng 3'), c2);
+  }
+  {
+    const tq = CAU_HOI_V3.filter((q) => q.loai === 'tong-quan').map((q) => q.id);
+    const khoaTq = khoaDemV3({ ...laSo, nhom: 'tong-quan' })!;
+    const { mt, bo, k, goi } = moiTruong();
+    mt.laKhach = async () => true;
+    mt.xinLuotLaSoMoi = async () => ({ duocPhep: false, tran: 3 });
+    bo.set(k(khoaTq), banCuHai(tq, tq[0]));
+    const kq = await xuLyLuanGiaiV3({ ...laSo, nhom: 'tong-quan' }, mt);
+    const ra = (json(kq).cau ?? []) as Record<string, unknown>[];
+    const c0 = ra.find((c) => c.id === tq[0])!;
+    const c1 = ra.find((c) => c.id === tq[1])!;
+    kiem('2 lớp (khách hết lượt): 0 lượt model', goi.length === 0 && st(kq) === 200, goi.length);
+    kiem('2 lớp (khách hết lượt): câu cũ + dính → câu chờ sạch', c0?.tamAn === true && !JSON.stringify(c0).includes('Bài cũ'), c0);
+    kiem('2 lớp (khách hết lượt): câu chỉ cũ → che tháng', String(c1?.luanGiai).includes(CAU_AN_THANG) && !String(c1?.luanGiai).includes('Tháng 3'), c1);
+  }
+  // 3h. Cờ tắt (tập rỗng): giống hệt b47e865 — mọi câu cũ chỉ qua cheThangBanCu, không câu chờ
+  {
+    const { mt, bo, k } = moiTruong({ hong: true, tap: TAP_RONG });
+    const goc = banCuHai(idCd, C1);
+    bo.set(k(khoaCd), goc);
+    const kq = await xuLyLuanGiaiV3({ ...laSo, nhom: CD }, mt);
+    const ra = (json(kq).cau ?? []) as CauTraRaV3[];
+    const mong = anNoiBo(goc.map((c) => cheThangBanCu(c)));
+    kiem('cờ tắt + bản cũ viết hỏng: y hệt che tháng của b47e865', JSON.stringify(ra) === JSON.stringify(mong), { ra, mong });
+    kiem('cờ tắt: không câu chờ', ra.every((c) => !c.tamAn));
   }
   // 3f. locBaiTheHeTruoc + anNoiBo
   kiem('đường lùi thế hệ trước loại câu dính', !locBaiTheHeTruoc([cau(C1, { dau: [D1] })], TAP).has(C1));
