@@ -1,0 +1,278 @@
+{
+  "thoiGianCham": "2026-10-22T11:58:30+07:00",
+  "nguoiCham": "Gemini (máy 1)",
+  "phuongPhap": "Chấm mù 24 cặp trong IDE, đánh giá độc lập 3 cột riêng: Đúng dữ kiện engine, Đúng nghĩa theo sách (độ tin vừa), Tự nhiên. Khóa giải chưa mở tại thời điểm lưu tệp này.",
+  "tongSoCap": 24,
+  "ketQuaTongThe": {
+    "bai1Thang": 13,
+    "bai2Thang": 11,
+    "hoa": 0,
+    "loiAnToan": 0
+  },
+  "chiTiet24Cap": [
+    {
+      "stt": 1,
+      "ma": "12/5/1990 10h nam|SN01",
+      "cauHoi": "Tôi hợp làm nghề gì?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "bai1", "lyDo": "Bài 1 bám sát dữ kiện tam phương tứ chính Quan Lộc (Tử Vi, Thiên Tướng, Quốc Ấn, Phá Quân, Địa Kiếp). Bài 2 kéo Thiên Mã, Văn Xương, Tấu Thư ngoài cung chính mà không nêu rõ vai trò." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Cả hai đều hiểu đúng tính chất quản lý của Tử Vi Thiên Tướng và cải tổ của Phá Quân." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 bố cục 3 đoạn sắc gọn, mạch lạc, tự nhiên." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 2,
+      "ma": "12/5/1990 10h nam|TD01",
+      "cauHoi": "Người bạn đời của tôi là người thế nào?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "bai1", "lyDo": "Bài 1 giải thích chuẩn tác động của Tuần + Linh Tinh làm chậm sự bộc lộ của Phá Quân. Bài 2 nói tình cảm đến nhanh là trái tính Tuần." },
+      "dungNghia": { "chon": "bai1", "doTin": "vua", "lyDo": "Bài 1 thể hiện đúng tính biến động ngầm của Phá Quân ngộ Tuần." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Giọng văn trầm tĩnh, phân tích được mâu thuẫn nội tâm của người phối ngẫu." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 3,
+      "ma": "12/5/1990 10h nam|CC02",
+      "cauHoi": "Con của tôi (nếu có) là đứa trẻ thế nào, có hợp với tôi không?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai bài đều nhận diện đúng cung Tử Tức vô chính diệu mượn Cơ Cự và có Kình Dương hãm." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Cả hai đều giải đúng nét thông minh, sắc sảo nhưng bướng bỉnh." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 diễn đạt sinh động, ấm áp, lời khuyên nuôi dạy con mang tính gợi mở." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 4,
+      "ma": "12/5/1990 10h nam|TB01",
+      "cauHoi": "Tôi có giàu không?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều nắm vững Liêm Trinh vượng + Lộc Tồn + Thiên Mã đắc địa và thế Kình Đà kẹp Lộc Tồn." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Cả hai giải đúng bản chất tích sản từng bước, không giàu nhanh kiểu may rủi." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 cấu tứ mạch lạc, định nghĩa cách làm giàu qua 3 bước rất thuyết phục." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 5,
+      "ma": "12/5/1990 10h nam|GD01",
+      "cauHoi": "Gia đình là chỗ dựa hay gánh nặng của tôi?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều đọc chuẩn cách cục Nhật Nguyệt Sửu Mùi đắc Hóa Khoa Hóa Lộc tại Phụ Mẫu." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa sách về sự nâng đỡ của cha mẹ và gia đình nề nếp." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 ấm áp, phân định tinh tế giữa sự định hướng của cha và sự chăm sóc của mẹ." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 6,
+      "ma": "12/5/1990 10h nam|SK01",
+      "cauHoi": "Sức khỏe của tôi cần lưu ý gì?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Căn cứ đúng vào Đà La tại Tật Ách gặp Triệt và Nhật Nguyệt chiếu." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Không phán bệnh hiểm nghèo, chỉ ra vùng tiêu hóa và thị lực/giấc ngủ." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 dùng từ ngữ chuẩn mực y tế dự phòng, an toàn tuyệt đối." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 7,
+      "ma": "12/5/1990 10h nam|RN02",
+      "cauHoi": "Ra ngoài tôi có hơn ở quê không, định cư hay trở về?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều bám đúng Thất Sát miếu, Hỏa Tinh đắc, Địa Không tại Ngọ có Triệt." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa đi xa có cơ hội lớn nhưng cạnh tranh và biến động nhiều." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 lập luận sắc sảo về thế cân bằng giữa cơ hội và quản trị rủi ro." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 8,
+      "ma": "12/5/1990 10h nam|TC02",
+      "cauHoi": "Điểm mạnh nào tôi nên dựa vào, và điều gì hay khiến tôi tự làm khó mình?",
+      "laSo": "12/5/1990 10h nam",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều nắm rõ tổ hợp Vũ Phủ Quyền Hình Khốc Hư tại Mệnh." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa tính cách cương nghị, tự chủ nhưng dễ tạo áp lực lên người khác." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 miêu tả tâm lý rất sâu sắc, chỉ ra được khoảng trống cảm xúc đến muộn." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 9,
+      "ma": "29/2/2000 0h nu|SN01",
+      "cauHoi": "Tôi hợp làm nghề gì?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều xác định đúng Tử Vi miếu tại Ngọ và bộ Khôi Việt." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa quản lý, hành chính, tài chính và kiểm soát." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 định vị phong thái lãnh đạo của nữ mệnh đĩnh đạc, tự nhiên." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 10,
+      "ma": "29/2/2000 0h nu|TD01",
+      "cauHoi": "Người bạn đời của tôi là người thế nào?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cả hai đều dựa trên Tham Lang hãm tại Tý gặp Bạch Hổ." },
+      "dungNghia": { "chon": "bai1", "doTin": "vua", "lyDo": "Bài 1 giữ được tính chừng mực, không quy chụp tiêu cực về Tham Lang đào hoa." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Giọng văn tôn trọng, thấu cảm, không phán xét đối phương." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 11,
+      "ma": "29/2/2000 0h nu|CC02",
+      "cauHoi": "Con của tôi (nếu có) là đứa trẻ thế nào, có hợp với tôi không?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thái Âm miếu tại Hợi gặp Hóa Khoa, Hồng Loan và Địa Không Địa Kiếp." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa con thông minh, nhạy cảm, có năng khiếu văn hóa nghệ thuật." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 gợi mở lời khuyên nuôi dạy con thấu cảm và nhân văn." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 12,
+      "ma": "29/2/2000 0h nu|TB01",
+      "cauHoi": "Tôi có giàu không?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Liêm Trinh miếu + Thiên Phủ vượng tại Tuất có Hữu Bật Bát Tọa." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa kho tiền bền vững, giàu có nhờ tích lũy lâu dài." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 diễn giải rành mạch mối liên hệ giữa năng lực tạo tiền và khả năng giữ của." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 13,
+      "ma": "29/2/2000 0h nu|GD01",
+      "cauHoi": "Gia đình là chỗ dựa hay gánh nặng của tôi?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thái Dương vượng + Thiên Lương vượng tại Mão có Hóa Lộc." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa cách cục Nhật xuất lôi môn ở Phụ Mẫu mang lại phúc ấm lớn." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 diễn đạt cô đọng, giàu cảm xúc gia đình." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 14,
+      "ma": "29/2/2000 0h nu|SK01",
+      "cauHoi": "Sức khỏe của tôi cần lưu ý gì?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Tật Ách vô chính diệu ngộ Tuần có Kình Hình hãm." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Tuần giải trừ phần lớn sát khí, chỉ lưu ý trầy xước và thể lực." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 thận trọng, không gieo rắc nỗi sợ, rất chuẩn mực." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 15,
+      "ma": "29/2/2000 0h nu|RN02",
+      "cauHoi": "Ra ngoài tôi có hơn ở quê không, định cư hay trở về?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thiên Di có Phá Quân hãm ngộ Tuần, có Lộc Tồn Bác Sĩ." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa đi xa có thử thách nhưng giữ được thành quả nhờ Lộc Tồn." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 khuyên thực tế về nhịp điệu và thời điểm chuẩn bị." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 16,
+      "ma": "29/2/2000 0h nu|TC02",
+      "cauHoi": "Điểm mạnh nào tôi nên dựa vào, và điều gì hay khiến tôi tự làm khó mình?",
+      "laSo": "29/2/2000 0h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Vũ Khúc vượng, Thiên Tướng miếu, Hóa Quyền, Hỏa Tinh tại Dần." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa người phụ nữ bản lĩnh, quyết đoán nhưng tự tạo áp lực." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 có câu đúc kết xuất sắc về việc xem chậm lại là yếu đuối." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 17,
+      "ma": "25/5/1936 16h nu|SN01",
+      "cauHoi": "Tôi hợp làm nghề gì?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Tử Vi đắc + Phá Quân vượng tại Sửu có Quốc Ấn Tướng Quân." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa Tử Phá chủ cải tiến, đổi mới, khởi xướng việc khó." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 có nhịp điệu câu văn mạch lạc, phân vai rõ ràng." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 18,
+      "ma": "25/5/1936 16h nu|TD01",
+      "cauHoi": "Người bạn đời của tôi là người thế nào?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thiên Tướng đắc tại Mùi có Tả Hữu và Địa Kiếp." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa người phối ngẫu chu đáo nhưng cuộc sống trải qua thăng trầm." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 viết thấu suốt sự đời, nhẹ nhàng và nhân hậu." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 19,
+      "ma": "25/5/1936 16h nu|CC02",
+      "cauHoi": "Con của tôi (nếu có) là đứa trẻ thế nào, có hợp với tôi không?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Cự Môn vượng tại Ngọ gặp Kình Dương hãm." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa con thông minh, sắc sảo, tự lập và có cá tính phản biện." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 cân bằng xuất sắc giữa nét cá tính của con và tình mẫu tử." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 20,
+      "ma": "25/5/1936 16h nu|TB01",
+      "cauHoi": "Tôi có giàu không?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Liêm Tham Hóa Kỵ tại Tỵ gặp Triệt và Lộc Tồn." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa thăng trầm tiền vận, giữ vững thành quả hậu vận." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 viết giàu tính chiêm nghiệm, rất phù hợp với tuổi tác người xem." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 21,
+      "ma": "25/5/1936 16h nu|GD01",
+      "cauHoi": "Gia đình là chỗ dựa hay gánh nặng của tôi?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thái Dương hãm tại Phụ Mẫu, Đồng Lương vượng Hóa Lộc tại Huynh Đệ." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa tự lập từ sớm, anh em đùm bọc." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 có sự chân thành, mộc mạc." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    },
+    {
+      "stt": 22,
+      "ma": "25/5/1936 16h nu|SK01",
+      "cauHoi": "Sức khỏe của tôi cần lưu ý gì?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Tật Ách Thái Âm hãm gặp Triệt, Thiên La, Đà La." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng lời khuyên dưỡng sinh, giấc ngủ và tinh thần thanh thản." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 ân cần, nhã nhặn, tôn trọng đối tượng người cao tuổi." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 23,
+      "ma": "25/5/1936 16h nu|RN02",
+      "cauHoi": "Ra ngoài tôi có hơn ở quê không, định cư hay trở về?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Thiên Di có Thiên Phủ bình hòa và Địa Không." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa đi xa tự lập, trải qua trắc trở nhưng giữ được tiếng tốt." },
+      "tuNhien": { "chon": "bai2", "lyDo": "Bài 2 lập luận điềm tĩnh, nâng đỡ tinh thần người đọc." },
+      "loiAnToan": false,
+      "tongKet": "bai2"
+    },
+    {
+      "stt": 24,
+      "ma": "25/5/1936 16h nu|TC02",
+      "cauHoi": "Điểm mạnh nào tôi nên dựa vào, và điều gì hay khiến tôi tự làm khó mình?",
+      "laSo": "25/5/1936 16h nu",
+      "dungDuKien": { "chon": "hoa", "lyDo": "Mệnh Dậu có Vũ Khúc đắc, Thất Sát hãm, Tuần, Thiên Việt." },
+      "dungNghia": { "chon": "hoa", "doTin": "vua", "lyDo": "Đúng nghĩa bản lĩnh kiên cường, dám chịu đựng nhưng dễ cô đơn." },
+      "tuNhien": { "chon": "bai1", "lyDo": "Bài 1 thấu cảm sâu sắc nỗi lòng người nữ mệnh Vũ Sát ngộ Tuần." },
+      "loiAnToan": false,
+      "tongKet": "bai1"
+    }
+  ]
+}
