@@ -83,6 +83,8 @@ jobs:
         run: npx tsx scripts/test-thu-vien-prompt.ts
       - name: K2 dấu logic V3 — câu lệch dấu viết lại khi mở, khách hết lượt vẫn được bài cũ, dấu không ra trình duyệt
         run: npx tsx scripts/test-dau-logic-v3.ts
+      - name: X3 cổng thu hồi — câu dính mục đã thu hồi viết lại khi mở, câu chờ không lộ bài, đọc lỗi thì mở cổng, script mặc định chạy khô
+        run: npx tsx scripts/test-cong-thu-hoi.ts
       - name: T-02 không còn nút Tạo bản mới — người thường không xả đệm
         run: npx tsx scripts/test-khong-nut-tao-moi.ts
       - name: K3 tháng nói theo độ tin — hỏi một tháng thì không nói chắc, mức nặng giữ nguyên

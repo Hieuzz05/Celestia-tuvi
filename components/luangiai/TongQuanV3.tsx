@@ -99,7 +99,7 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
     });
     Promise.all([pDau, pSau]).then(([a, b]) => {
       if (huy) return;
-      const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet);
+      const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet && !c.tamAn);
       if (hongHet(a) && hongHet(b)) hong.current?.(gioiHan);
     });
     return () => {
@@ -172,7 +172,9 @@ function TheDau({
         </div>
       ) : cau.chuaViet ? (
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.
+          {cau.tamAn
+            ? 'Celes chưa có lời cho phần này. Bạn xem các phần còn lại.'
+            : 'Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.'}
         </p>
       ) : (
         <>

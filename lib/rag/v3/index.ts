@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { docObjectJson } from '../doc-json';
@@ -11,6 +10,7 @@ import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 import { NHAN_TIN_CAY } from '../uu-tien-nguon';
 import { docMetaTaiLieu } from '../tai-lieu-meta';
 import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
+import { dauMuc } from '../thu-vien/dau';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 import { heThongV3 } from './mau-giong';
@@ -78,6 +78,8 @@ export interface KetQuaCauV3 {
     nguocChieu: [string, string][];
     boChuaDuyet: string[];
     boBiLat: string[];
+    /** Id mục khớp nhưng bị cổng thu hồi (X3) giữ lại ngoài prompt */
+    boThuHoi?: string[];
   };
   /** Chỉ có khi chạy đường B: ý giữ / bỏ ở bước lập ý; `lui` khi phải lùi về đường A */
   duongB?: { lui?: string; yGiu: YLuan[]; yBo: { y: string; lyDo: string }[] };
@@ -269,17 +271,20 @@ export interface ChuanBiCau {
   cungChinhCau?: string;
 }
 
-/** Dấu nội dung của một mục thư viện (câu nghĩa + điều kiện) — nhận ra mục khi id bị cấp lại */
-export const dauMuc = (m: MucThuVien) => createHash('sha1').update(`${m.y}
-${JSON.stringify(m.dieuKien)}`).digest('hex').slice(0, 8);
+/** Dấu nội dung của một mục thư viện — chuyển sang thu-vien/dau.ts (X3), giữ lối gọi cũ */
+export { dauMuc };
 
 /** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
-export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
+export async function chuanBiCau(vao: {
+  laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[];
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — matcher giữ chúng ngoài prompt */
+  thuHoi?: ReadonlySet<string>;
+}): Promise<ChuanBiCau> {
   const { q } = vao;
   const duKien = dungDuKien(vao.laSo, q, vao.namXem);
   const cungChuDe = q.loai === 'chuyen-sau' ? (q.cungChinh ?? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh) : undefined;
   const tv = vao.thuVien?.length
-    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
+    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu(), thuHoi: vao.thuHoi })
     : null;
   const tRag = Date.now();
   const nguon = await truyHoiChoCau({
@@ -377,6 +382,8 @@ export async function luanMotCau(vao: {
   daNoi?: MucDaNoi[];
   /** Thư viện tri thức (KIEN-TRUC-LUAN-GIAI.md mục 8) — chỉ truyền cho câu thuộc lát cắt đã bật */
   thuVien?: MucThuVien[];
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — chỉ dùng khi chưa có `chuanBi` */
+  thuHoi?: ReadonlySet<string>;
   /** Dữ kiện + nguồn đã chuẩn bị sẵn (luanNhieuCau chia nguồn giữa các câu trước khi viết) */
   chuanBi?: ChuanBiCau;
   /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
@@ -643,6 +650,7 @@ ${phamViChuyenSau(q)}`
             nguocChieu: tv.nguocChieu,
             boChuaDuyet: tv.boChuaDuyet,
             boBiLat: tv.boBiLat,
+            ...(tv.boThuHoi.length ? { boThuHoi: tv.boThuHoi } : {}),
           },
         }
       : {}),
@@ -663,6 +671,8 @@ export async function luanNhieuCau(vao: {
   khiXong?: (k: KetQuaCauV3) => void;
   /** Thư viện tri thức + các câu được dùng nó (lát cắt đã bật) */
   thuVien?: { muc: MucThuVien[]; cau: Set<string> };
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — vắng hoặc rỗng thì y hệt trước */
+  thuHoi?: ReadonlySet<string>;
   /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
   boiCanh?: string;
 }): Promise<KetQuaCauV3[]> {
@@ -672,7 +682,7 @@ export async function luanNhieuCau(vao: {
   const thuVienCua = (q: CauHoiV3) => (vao.thuVien?.cau.has(q.id) ? vao.thuVien.muc : undefined);
   // Chuẩn bị cả nhóm trước (không gọi model viết) để chia nguồn tất định; hỏng ở câu nào thì câu đó tự truy hồi lại
   const chuanBi: (ChuanBiCau | undefined)[] = await Promise.all(
-    ds.map((q) => chuanBiCau({ laSo: vao.laSo, q, namXem: vao.namXem, nho, thuVien: thuVienCua(q) }).catch(() => undefined))
+    ds.map((q) => chuanBiCau({ laSo: vao.laSo, q, namXem: vao.namXem, nho, thuVien: thuVienCua(q), thuHoi: vao.thuHoi }).catch(() => undefined))
   );
   const du = ds.map((q, j) => ({ q, cb: chuanBi[j] })).filter((x): x is { q: CauHoiV3; cb: ChuanBiCau } => Boolean(x.cb));
   if (du.length > 1) chiaNguon(du);
@@ -683,7 +693,7 @@ export async function luanNhieuCau(vao: {
       try {
         ra[j] = await luanMotCau({
           laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi,
-          thuVien: thuVienCua(ds[j]), chuanBi: chuanBi[j], boiCanh: vao.boiCanh,
+          thuVien: thuVienCua(ds[j]), thuHoi: vao.thuHoi, chuanBi: chuanBi[j], boiCanh: vao.boiCanh,
         });
       } catch (e) {
         ra[j] = {

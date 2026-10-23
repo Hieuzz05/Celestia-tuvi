@@ -170,3 +170,15 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 
 - **Timeout/mất mạng không chứng minh model chưa tiêu tài nguyên.** X1 giữ dấu đối soát và dừng
   chuỗi khi chưa biết usage thực; kiểm cả restart ở scripts/test-ngan-sach-thu.ts (22/10/2026).
+
+**Cổng thu hồi tri thức (X3, CELES-27, 22/10/2026).** Phương án: `D:\Celestia\PHUONG-AN-X3-ban2-2026-10-22.md`.
+
+- **Đoạn SÁCH thu hồi bằng `knowledge_chunks.trang_thai='loai_tru'` — ăn NGAY trên production** (database
+  dùng chung). Không bao giờ bật `loai_tru` để thử. Thử trên Preview chỉ qua bảng `thu_hoi_muc_thu_vien`
+  với phạm vi `preview:…` (`scripts/thu-hoi-muc.ts --preview-url`, script lấy phạm vi từ server).
+- **Hai loại dấu, không trộn.** Câu xét bằng dấu HIỆN TẠI (`canCu.thuVien`); `thayThuHoi` chỉ để nhận ra
+  tóm lại / bức tranh CŨ ghép từ bản trước. Xét câu bằng dấu lịch sử là câu vừa viết lại sạch bị viết lại
+  ở mọi lần mở (S-A).
+- **Câu chờ dựng từ danh sách trường cho phép**, không chép câu gốc rồi gỡ: câu gốc còn `ghep`, `kho`.
+- **Lỗi đọc bảng thì mở cổng (hiện bài)**, log `mo-cong-do-loi`. Câu viết trước K1 không có `canCu` →
+  cổng không thấy; script in số hàng đó ("điểm mù").

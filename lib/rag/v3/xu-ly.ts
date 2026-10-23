@@ -23,6 +23,7 @@ import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
 import { PHIEN_BAN_CACH_CUC } from '@/lib/tuvi/cach-cuc';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 import { khoaBoiCanh, khoiBoiCanh, lamSachBoiCanh } from '@/lib/rag/v3/boi-canh-doc';
+import { dauTVCuaNguon, dauTVTuCau, dinhThuHoi, TAP_RONG, thayThuHoiMoi, tongHopDinh } from '@/lib/rag/thu-hoi/cong';
 
 /**
  * Thế hệ đệm. TĂNG BẰNG TAY chỉ khi muốn MỌI lá số sinh lại (bài cũ thành sai,
@@ -109,12 +110,12 @@ export function cheThangBanCu<T extends CoVan>(c: T): T {
  * (Sự nghiệp 25/09) thì bài cũ dưới id ấy là của câu khác. Câu có dữ kiện nguyệt hạn mà bài mang dấu logic
  * cũ thì bỏ: X2 (22/10/2026) đổi cách an cung tháng, bài cũ nói sai cung — để trống còn hơn sai (T-05).
  */
-export function locBaiTheHeTruoc(ds: CauTraRaV3[]): Map<string, CauTraRaV3> {
+export function locBaiTheHeTruoc(ds: CauTraRaV3[], thuHoi: ReadonlySet<string> = TAP_RONG): Map<string, CauTraRaV3> {
   const cauHoiCua = new Map(CAU_HOI_V3.map((q) => [q.id, q.cauHoi]));
   const coNguyet = new Set(CAU_HOI_V3.filter((q) => q.van.includes('nguyet')).map((q) => q.id));
   return new Map(
     ds
-      .filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id) && (dungLogic(c) || !coNguyet.has(c.id)))
+      .filter((c) => !c.chuaViet && c.cauHoi === cauHoiCua.get(c.id) && (dungLogic(c) || !coNguyet.has(c.id)) && !dinhThuHoi(c, thuHoi))
       .map((c) => [c.id, c])
   );
 }
@@ -208,6 +209,10 @@ export interface CauTraRaV3 {
    * để biết bài nào phải viết lại khi một mục thư viện hay một bản tài liệu bị rút. Chỉ ở trong đệm.
    */
   canCu?: CanCuCauV3;
+  /** Dấu đã thu hồi (X3) của các bản trước câu này — để nhận ra tóm lại / bức tranh cũ ghép từ bản trước. Chỉ ở trong đệm */
+  thayThuHoi?: string[];
+  /** Câu chờ của cổng thu hồi (X3): câu đã có bài nhưng tạm không hiện, chưa viết lại được */
+  tamAn?: boolean;
 }
 
 export interface CanCuCauV3 {
@@ -249,6 +254,12 @@ export interface MoiTruongV3 {
   ghiVet?: (hanhDong: string, chiTiet: Record<string, unknown>) => Promise<void>;
   /** Chỉ QUAN SÁT từng câu vừa viết xong (bộ thử ghi lại dữ kiện, nguồn, lỗi) — không đổi kết quả */
   quanSat?: (k: KetQuaCauV3) => void;
+  /** Dấu các mục thư viện đã bị thu hồi (X3, lib/rag/thu-hoi/kho.ts). Vắng = không có cổng */
+  docThuHoi?: () => Promise<ReadonlySet<string>>;
+  /** CHỈ cho bộ thử: thay hàm viết câu (không gọi model). Sản phẩm không truyền */
+  luanNhieuCau?: typeof luanNhieuCau;
+  viTomLai?: typeof viTomLai;
+  viBucTranh?: typeof viBucTranh;
 }
 
 export type KetQuaXuLyV3 = { traThang: Response } | { status: number; json: Record<string, unknown> };
@@ -258,7 +269,17 @@ const tra = (json: Record<string, unknown>, status = 200): KetQuaXuLyV3 => ({ st
  * pb / model / canCu chỉ ở trong đệm (trang chấm bài đọc) — không gửi ra trình duyệt: mặt trước không lộ
  * tên model, không lộ nguồn gốc RAG. MỌI đường trả `cau` phải đi qua đây, kể cả bài lấy từ đệm.
  */
-export const anNoiBo = (ds: CauTraRaV3[]) => ds.map(({ pb: _pb, model: _model, canCu: _canCu, lg: _lg, ...c }) => c);
+export const anNoiBo = (ds: CauTraRaV3[]) =>
+  ds.map(({ pb: _pb, model: _model, canCu: _canCu, lg: _lg, thayThuHoi: _thay, ...c }) => c);
+
+/**
+ * Câu chờ của cổng thu hồi (X3, quyết định 4a): câu dựa vào một mục đã thu hồi mà chưa viết lại được.
+ * Dựng từ đầu theo danh sách trường được phép, KHÔNG chép câu gốc rồi xoá bớt — câu gốc còn `ghep`, `kho`
+ * mà `anNoiBo` không gỡ, chép sang là lộ đúng nội dung vừa thu hồi.
+ */
+export const cauCho = (c: Pick<CauTraRaV3, 'id' | 'cauHoi' | 'doRo'>): CauTraRaV3 => ({
+  id: c.id, cauHoi: c.cauHoi, luanGiai: '', viSao: '', doRo: c.doRo, chuaViet: true, tamAn: true,
+});
 
 const khoaGocV3 = (namXem: number, nhom: string, boiCanh: ReturnType<typeof lamSachBoiCanh>) =>
   `nam:${namXem}|nhom:${nhom}${khoaBoiCanh(boiCanh, nhom)}`;
@@ -367,11 +388,20 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     try {
       const khoaKy = THE_HE_DEM === 2 ? khoaGoc : `${khoaGoc}|th:${THE_HE_DEM - 1}`;
       const cu = await docCoLui<CauTraRaV3[]>({ ...khoa, khoaKy });
-      return locBaiTheHeTruoc(cu?.noiDung ?? []);
+      return locBaiTheHeTruoc(cu?.noiDung ?? [], tap);
     } catch {
       return new Map();
     }
   };
+
+  /*
+   * CỔNG THU HỒI (X3): đọc MỘT lần mỗi lượt. Cờ tắt / chưa có bảng / lỗi đọc → tập rỗng = mọi thứ y hệt
+   * trước (luật "lỗi đọc thì mở cổng", kho.ts). Đệm luôn giữ bản gốc; cổng chỉ che lúc trả và viết lại.
+   */
+  const tap: ReadonlySet<string> = (await mt.docThuHoi?.().catch(() => TAP_RONG)) ?? TAP_RONG;
+  const viet = mt.luanNhieuCau ?? luanNhieuCau;
+  const viTom = mt.viTomLai ?? viTomLai;
+  const viBuc = mt.viBucTranh ?? viBucTranh;
 
   try {
     /*
@@ -387,35 +417,47 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     if (body.bucTranh) {
       const tienToNhom = `nam:${namXem}|nhom:`;
       const cuoiTom = `|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}`;
-      const ds = await dem.docNhieu<{ tomLai?: string } | CauTraRaV3[]>(khoa, tienToNhom, `|th:${THE_HE_DEM}`);
+      const ds = await dem.docNhieu<{ tomLai?: string; dauTV?: string[] } | CauTraRaV3[]>(khoa, tienToNhom, `|th:${THE_HE_DEM}`);
+      // Câu của một nhóm (phần khoá sau "nhom:") — cổng thu hồi soát tóm lại / bức tranh viết trước X3 qua câu nguồn
+      const cauNhom = (tho: string): CauTraRaV3[] => {
+        const r = ds.find((x) => x.khoaKy === `${tienToNhom}${tho}|th:${THE_HE_DEM}`);
+        return Array.isArray(r?.noiDung) ? r.noiDung : [];
+      };
       // Một chủ đề có thể có vài bản tóm lại theo bối cảnh người đọc (`|bc:…`): lấy bản khớp bối cảnh đang chọn
-      const theoChuDe = new Map<string, { chuDe: string; khoa: string; tomLai: string }>();
+      const theoChuDe = new Map<string, { chuDe: string; khoa: string; tomLai: string; dauTV: string[] }>();
       for (const r of ds) {
         if (!r.khoaKy.endsWith(cuoiTom) || Array.isArray(r.noiDung) || !r.noiDung?.tomLai) continue;
         const tho = r.khoaKy.slice(tienToNhom.length, r.khoaKy.length - cuoiTom.length);
         const chuDe = tho.split('|bc:')[0];
         const cu = theoChuDe.get(chuDe);
         if (cu && cu.khoa === `${chuDe}${khoaBoiCanh(boiCanh, chuDe)}`) continue;
-        theoChuDe.set(chuDe, { chuDe, khoa: tho, tomLai: (r.noiDung as { tomLai: string }).tomLai });
+        const ban = r.noiDung as { tomLai: string; dauTV?: string[] };
+        // Tóm lại dựa vào mục đã thu hồi (X3): chủ đề đó tạm vắng khỏi bức tranh tới khi tóm lại được viết lại
+        if (tongHopDinh(ban, () => cauNhom(tho), tap)) continue;
+        theoChuDe.set(chuDe, { chuDe, khoa: tho, tomLai: ban.tomLai, dauTV: dauTVCuaNguon(ban, () => cauNhom(tho)) });
       }
       const tomLai = [...theoChuDe.values()].sort((a, b) => a.chuDe.localeCompare(b.chuDe));
       if (tomLai.length < SO_CHU_DE_TOI_THIEU) {
         return tra({ bucTranh: null, soChuDe: tomLai.length, canToiThieu: SO_CHU_DE_TOI_THIEU });
       }
       const khoaBuc = { ...khoa, khoaKy: `nam:${namXem}|buc-tranh|th:${THE_HE_DEM}|k:${PHIEN_BAN_V3.khung}|${tomLai.map((t) => t.khoa).join('+')}` };
-      const da = await dem.doc<{ bucTranh: string; kho?: string; lg?: string }>(khoaBuc);
+      const tqCau = cauNhom('tong-quan');
+      const daDoc = await dem.doc<{ bucTranh: string; kho?: string; lg?: string; dauTV?: string[] }>(khoaBuc);
+      // Bức tranh đã đệm dựa vào mục đã thu hồi (X3): không trả, cũng không giữ làm bản cũ khi viết hỏng
+      const da = daDoc?.noiDung && tongHopDinh(daDoc.noiDung, () => [...tomLai.flatMap((t) => cauNhom(t.khoa)), ...tqCau], tap) ? null : daDoc;
       const khoBuc = await mt.phienBanKho();
       if (!vietLai && da?.noiDung?.bucTranh && dungLogic(da.noiDung)) {
         return tra({ bucTranh: da.noiDung.bucTranh, soChuDe: tomLai.length, tuDem: true });
       }
-      const tq = ds.find((r) => r.khoaKy === `${tienToNhom}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
-      const tongQuan = ((tq?.noiDung as CauTraRaV3[] | undefined) ?? []).filter((c) => !c.chuaViet && c.luanGiai);
-      const bt = await viBucTranh({ tomLai: tomLai.map(({ chuDe, tomLai: t }) => ({ chuDe, tomLai: t })), tongQuan });
+      const tongQuan = tqCau.filter((c) => !c.chuaViet && c.luanGiai && !dinhThuHoi(c, tap));
+      const bt = await viBuc({ tomLai: tomLai.map(({ chuDe, tomLai: t }) => ({ chuDe, tomLai: t })), tongQuan });
       // Viết lại vì lệch dấu logic mà hỏng: hiện bản cũ, không để trống chỗ người đọc từng có bài
       if (!bt && da?.noiDung?.bucTranh && !vietLai) return tra({ bucTranh: cheThangBanCu(da.noiDung).bucTranh, soChuDe: tomLai.length, tuDem: true });
       if (!bt) return tra({ loi: 'Celes chưa ghép được bức tranh lớn.' }, 502);
       const [provider, model] = bt.model.split('/');
-      await dem.luu(khoaBuc, { bucTranh: bt.bucTranh, kho: khoBuc ?? undefined, lg: LOGIC_V3 }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      // dauTV: dấu mọi mục thư viện mà đầu vào dựa vào — lệnh thu hồi về sau nhận ra bức tranh này
+      const dauTV = [...new Set([...tomLai.flatMap((t) => t.dauTV), ...dauTVTuCau(tongQuan)])].sort();
+      await dem.luu(khoaBuc, { bucTranh: bt.bucTranh, kho: khoBuc ?? undefined, lg: LOGIC_V3, dauTV }, { provider, model, phienBan: PHIEN_BAN_V3 });
       if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoaBuc.khoaKy });
       return tra({ bucTranh: bt.bucTranh, soChuDe: tomLai.length, tuDem: false });
     }
@@ -423,22 +465,28 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     if (body.tomLai && nhom !== 'tong-quan') {
       // Kèm phiên bản khung: khung đổi câu hỏi thì tóm lại cũ (viết từ câu cũ) không được dùng lại
       const khoaTom = { ...khoa, khoaKy: `${khoaGoc}|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}` };
-      const daTom = await docCoLui<{ tomLai: string; kho?: string; lg?: string }>(khoaTom);
+      const daTomDoc = await docCoLui<{ tomLai: string; kho?: string; lg?: string; dauTV?: string[] }>(khoaTom);
+      let nhomBai: BanGhiNoiDung<CauTraRaV3[]> | null | undefined;
+      // Tóm lại viết trước X3 không có dauTV: phải đọc câu nguồn TRƯỚC lần trả đệm để soát (luật L3)
+      if (tap.size && daTomDoc?.noiDung && !Array.isArray(daTomDoc.noiDung.dauTV)) nhomBai = await docCoLui<CauTraRaV3[]>(khoa);
+      // Tóm lại dựa vào mục đã thu hồi: không trả, không giữ làm bản cũ — ghép lại từ các câu sạch
+      const daTom = daTomDoc?.noiDung && tongHopDinh(daTomDoc.noiDung, () => nhomBai?.noiDung ?? [], tap) ? null : daTomDoc;
       // Tóm lại của chủ đề có câu dùng thư viện mang dấu thư viện — viết lại khi các câu được viết lại
       const khoTom = khoMongDoi(await mt.phienBanKho(), ids.find((id) => CAU_THU_VIEN.has(id)));
       if (!vietLai && daTom?.noiDung?.tomLai && dungLogic(daTom.noiDung)) {
         return tra({ nhom, tomLai: daTom.noiDung.tomLai, tuDem: true });
       }
-      const nhomBai = await docCoLui<CauTraRaV3[]>(khoa);
-      // Chỉ ghép từ câu ĐÚNG dấu logic: tóm lại viết từ câu cũ thì lại mang logic cũ
-      const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet && dungLogic(c))).filter((c): c is CauTraRaV3 => Boolean(c));
+      if (nhomBai === undefined) nhomBai = await docCoLui<CauTraRaV3[]>(khoa);
+      // Chỉ ghép từ câu ĐÚNG dấu logic: tóm lại viết từ câu cũ thì lại mang logic cũ. Câu dính thu hồi cũng chưa
+      // dùng được — nó được viết lại khi người đọc mở chủ đề
+      const du = ids.map((id) => nhomBai?.noiDung.find((c) => c.id === id && !c.chuaViet && dungLogic(c) && !dinhThuHoi(c, tap))).filter((c): c is CauTraRaV3 => Boolean(c));
       // Có câu chưa viết lại được theo logic mới: giữ tóm lại cũ còn hơn bỏ trống
       const giuTomCu = () => (daTom?.noiDung?.tomLai && !vietLai ? tra({ nhom, tomLai: cheThangBanCu(daTom.noiDung).tomLai, tuDem: true }) : null);
       if (du.length < ids.length) return giuTomCu() ?? tra({ nhom, tomLai: null, chuaDu: true });
-      const tom = await viTomLai({ chuDe: nhom, cau: du });
+      const tom = await viTom({ chuDe: nhom, cau: du });
       if (!tom) return giuTomCu() ?? tra({ loi: 'Celes chưa viết được phần tóm lại.' }, 502);
       const [provider, model] = tom.model.split('/');
-      await dem.luu(khoaTom, { tomLai: tom.tomLai, kho: khoTom ?? undefined, lg: LOGIC_V3 }, { provider, model, phienBan: PHIEN_BAN_V3 });
+      await dem.luu(khoaTom, { tomLai: tom.tomLai, kho: khoTom ?? undefined, lg: LOGIC_V3, dauTV: dauTVTuCau(du) }, { provider, model, phienBan: PHIEN_BAN_V3 });
       if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoaTom.khoaKy });
       return tra({ nhom, tomLai: tom.tomLai, tuDem: false });
     }
@@ -463,9 +511,15 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
      * tự viết lại.
      */
     const banCu = new Map<string, CauTraRaV3>();
+    /*
+     * Câu dựa vào mục thư viện đã thu hồi (X3, 4a): coi như thiếu, viết lại khi mở. KHÁC `banCu`: viết lại
+     * hỏng thì trả câu chờ, không trả bản cũ; đệm vẫn giữ bản gốc để hoàn tác thu hồi còn có bài.
+     */
+    const biThuHoi = new Map<string, CauTraRaV3>();
     for (const id of phamVi) {
       const c = daCo.get(id);
-      if (c && (vietLai || !dungLogic(c))) { banCu.set(id, c); daCo.delete(id); }
+      if (c && dinhThuHoi(c, tap)) { biThuHoi.set(id, c); daCo.delete(id); }
+      else if (c && (vietLai || !dungLogic(c))) { banCu.set(id, c); daCo.delete(id); }
     }
     const thieu = phamVi.filter((id) => !daCo.has(id));
 
@@ -482,8 +536,9 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     if (nhom === 'tong-quan' && (await mt.laKhach())) {
       const luot = await mt.xinLuotLaSoMoi(khoa.chartHash);
       // Lá số khách đã đọc, chỉ thiếu vì logic đổi: trả bài cũ, không bắt đăng nhập vì lỗi của mình
-      if (!luot.duocPhep && thieu.every((id) => banCu.has(id))) {
-        return tra({ nhom, cau: anNoiBo(phamVi.map((id) => daCo.get(id) ?? cheThangBanCu(banCu.get(id)!))), tuDem: true });
+      // Hai lớp che: câu dính thu hồi → câu chờ (dựng mới, không mang chữ bản cũ); bản cũ khác phienBan → che phần tháng
+      if (!luot.duocPhep && thieu.every((id) => banCu.has(id) || biThuHoi.has(id))) {
+        return tra({ nhom, cau: anNoiBo(phamVi.map((id) => daCo.get(id) ?? (biThuHoi.has(id) ? cauCho(biThuHoi.get(id)!) : cheThangBanCu(banCu.get(id)!)))), tuDem: true });
       }
       if (!luot.duocPhep) {
         return tra(
@@ -512,12 +567,14 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     };
     const anhEm = (await dem.docNhieu<CauTraRaV3[]>(khoa, tienTo, hauTo || undefined))
       .map((r) => ({ nhom: nhomCua(r.khoaKy), cau: Array.isArray(r.noiDung) ? r.noiDung : [] }))
-      .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom);
-    const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()] }]).filter((d) => !thieu.includes(d.id));
+      .filter((r): r is { nhom: string; cau: CauTraRaV3[] } => Boolean(r.nhom) && r.nhom !== nhom)
+      // Ý của câu dính thu hồi không vào sổ ý: đi vào prompt câu mới mà căn cứ không ghi lại thì không truy được
+      .map((r) => ({ ...r, cau: r.cau.filter((c) => !dinhThuHoi(c, tap)) }));
+    const daNoi = dungSoY([...anhEm, { nhom, cau: [...daCo.values()].filter((c) => !dinhThuHoi(c, tap)) }]).filter((d) => !thieu.includes(d.id));
 
     const tvNhom = THU_VIEN_THEO_CHU_DE[nhom];
     const thuVien = tvNhom && thieu.some((id) => tvNhom.cau.includes(id)) ? { muc: await mt.docThuVien(nhom, tvNhom.dot), cau: new Set(tvNhom.cau) } : undefined;
-    const kq = await luanNhieuCau({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi, thuVien, khiXong: mt.quanSat, boiCanh: khoiBoiCanh(boiCanh, nhom) });
+    const kq = await viet({ laSo, ids: thieu, namXem, songSong: thieu.length, hanChot, daNoi, thuVien, thuHoi: tap, khiXong: mt.quanSat, boiCanh: khoiBoiCanh(boiCanh, nhom) });
     /*
      * Đọc lại bản MỚI NHẤT trước khi ghi: lượt song song kia có thể đã cất phần
      * của nó trong lúc lượt này đang viết. Ghi đè bằng bản đọc lúc đầu là xoá
@@ -526,9 +583,9 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     const moiNhat = await dem.doc<CauTraRaV3[]>(khoa);
     // Lượt kia vừa viết lại một câu lệch dấu (ngoài phạm vi lượt này): lấy bản mới của nó, đừng ghi đè bằng bản cũ
     for (const c of moiNhat?.noiDung ?? []) {
-      if (c.chuaViet || !dungLogic(c) || banCu.has(c.id)) continue;
+      if (c.chuaViet || !dungLogic(c) || banCu.has(c.id) || biThuHoi.has(c.id) || dinhThuHoi(c, tap)) continue;
       const da = daCo.get(c.id);
-      if (!da || !dungLogic(da)) daCo.set(c.id, c);
+      if (!da || !dungLogic(da) || dinhThuHoi(da, tap)) daCo.set(c.id, c);
     }
     for (const k of kq) {
       if (!k.luanGiai) continue;
@@ -542,6 +599,7 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
         pb: PHIEN_BAN_V3.prompt,
         model: k.model || undefined,
         canCu: canCuCua(k),
+        thayThuHoi: thayThuHoiMoi(biThuHoi.get(k.id) ?? banCu.get(k.id), tap),
       });
     }
     const cau: CauTraRaV3[] = ids.map(
@@ -559,24 +617,28 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     // Câu viết lại hỏng: hiện bản cũ và báo cho quản trị biết câu nào chưa viết lại được
     const vietLaiHong = cauTra.filter((c) => c.chuaViet && banCu.has(c.id)).map((c) => c.id);
     if (vietLaiHong.length) cauTra = cauTra.map((c) => (c.chuaViet && banCu.has(c.id) ? cheThangBanCu(banCu.get(c.id)!) : c));
+    // Câu dính thu hồi viết lại hỏng: câu chờ, không bản cũ, không lùi về thế hệ trước
+    cauTra = cauTra.map((c) => (c.chuaViet && biThuHoi.has(c.id) ? cauCho(biThuHoi.get(c.id)!) : c));
     /*
      * Câu nào sinh lại hỏng thì tạm lấy bài của thế hệ đệm trước để hiện — người
      * đọc từng có bài ở đây, không được thấy chỗ trống chỉ vì mình vừa làm mới.
      * Bài cũ CHỈ đi vào câu trả lời, không ghi vào khoá mới: lần sau còn thử lại.
      */
-    if (THE_HE_DEM > 1 && cauTra.some((c) => c.chuaViet)) {
+    if (THE_HE_DEM > 1 && cauTra.some((c) => c.chuaViet && !c.tamAn)) {
       const truoc = await baiTheHeTruoc();
-      if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet && truoc.has(c.id) ? cheThangBanCu(truoc.get(c.id)!) : c));
+      if (truoc.size) cauTra = cauTra.map((c) => (c.chuaViet && !c.tamAn && truoc.has(c.id) ? cheThangBanCu(truoc.get(c.id)!) : c));
     }
     // Không câu nào trong phần được hỏi viết được thì không đệm — lần sau thử lại được ngay
     if (cau.filter((c) => phamVi.includes(c.id)).every((c) => c.chuaViet)) {
-      if (cauTra.some((c) => !c.chuaViet)) return tra({ nhom, cau: anNoiBo(cauTra), tuDem: true, ...(vietLai ? { vietLaiHong } : {}) });
+      // Có câu chờ (X3) thì vẫn 200: nhận 502 thì trang báo lỗi cả chủ đề và bỏ lượt sau
+      if (cauTra.some((c) => !c.chuaViet || c.tamAn)) return tra({ nhom, cau: anNoiBo(cauTra), tuDem: true, ...(vietLai ? { vietLaiHong } : {}) });
       return tra({ loi: 'Celes chưa viết được phần này. Bạn thử lại giúp.' }, 502);
     }
     const mot = kq.find((k) => k.model);
     const [provider, model] = (mot?.model ?? '/').split('/');
     // Câu viết lại hỏng không được mất bài ở đệm: ghi lại bản cũ cho câu đó
-    await dem.luu(khoa, cau.map((c) => (c.chuaViet ? banCu.get(c.id) ?? c : c)), { provider, model, phienBan: PHIEN_BAN_V3 });
+    // Câu dính thu hồi viết lại hỏng: ghi lại bản gốc — hoàn tác thu hồi thì bài còn nguyên
+    await dem.luu(khoa, cau.map((c) => (c.chuaViet ? banCu.get(c.id) ?? biThuHoi.get(c.id) ?? c : c)), { provider, model, phienBan: PHIEN_BAN_V3 });
     if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoa.khoaKy, cau: thieu, hong: vietLaiHong });
     return tra({ nhom, cau: anNoiBo(cauTra), tuDem: false, ...(vietLai ? { vietLaiHong } : {}) });
   } catch (e) {

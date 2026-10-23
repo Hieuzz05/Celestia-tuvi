@@ -4,6 +4,7 @@ import { LOAI_NGUON_AN, type MetaTaiLieu } from '../tai-lieu-meta';
 import type { DuKienV3 } from '../v3/du-kien';
 import { khopThuVien, type MucKhop } from './khop';
 import { saoCuaMuc, type MucThuVien } from './kieu';
+import { dauMuc } from './dau';
 
 /**
  * Chọn mục thư viện đã khớp và dựng khối T### cho prompt v3 (KIEN-TRUC-LUAN-GIAI.md mục 8).
@@ -49,6 +50,8 @@ export interface KetQuaThuVienCau {
   boChuaDuyet: string[];
   /** Id mục khớp nhưng không đưa vào vì đã bị một mục đã duyệt lật */
   boBiLat: string[];
+  /** Id mục khớp nhưng không đưa vào vì đã bị thu hồi (X3) */
+  boThuHoi: string[];
 }
 
 /**
@@ -69,6 +72,8 @@ export function dungKhoiThuVien(vao: {
   thuVien: MucThuVien[];
   cungChinh?: string;
   meta: Map<string, MetaTaiLieu>;
+  /** Dấu (`dauMuc`) các mục đã bị thu hồi (X3, lib/rag/thu-hoi) — vắng hoặc rỗng thì y hệt trước */
+  thuHoi?: ReadonlySet<string>;
 }): KetQuaThuVienCau {
   const cungDoc = [
     ...new Set([
@@ -92,10 +97,19 @@ export function dungKhoiThuVien(vao: {
   // Lật chỉ trong cùng cung gốc: mục ở cung A không bác được mục ở cung B
   const biLat = new Set(lat.flatMap((l) => (l.muc.dich ?? []).map((d) => `${l.cung}|${d}`)));
   const boBiLatK = new Set(conLai.filter((k) => !laLat.has(k) && biLat.has(khoaKhop(k))));
-  const ungVien = conLai.filter((k) => !boBiLatK.has(k));
+  /*
+   * Thu hồi (X3, quyết định 5a): mục bị thu hồi VẪN được tính ở `biLat` phía trên — thu hồi một mục lật
+   * không đưa mục nó đã gỡ trở lại khi chưa ai duyệt — nhưng chính nó không vào prompt, kể cả khi nó là
+   * mục lật (bị gỡ khỏi `lat` dùng để xếp, nên cũng không chiếm trần).
+   */
+  const thuHoi = vao.thuHoi;
+  const boThuHoiK = new Set(thuHoi?.size ? conLai.filter((k) => thuHoi.has(dauMuc(k.muc))) : []);
+  const latXep = boThuHoiK.size ? lat.filter((k) => !boThuHoiK.has(k)) : lat;
+  const ungVien = conLai.filter((k) => !boBiLatK.has(k) && !boThuHoiK.has(k));
   const boChuaDuyet = [...new Set([...boChuaDuyetK].map((k) => k.muc.id))];
   const boBiLat = [...new Set([...boBiLatK].map((k) => k.muc.id))];
-  if (!ungVien.length) return { khoi: '', daChon: [], khopHet, nguocChieu: [], boChuaDuyet, boBiLat };
+  const boThuHoi = [...new Set([...boThuHoiK].map((k) => k.muc.id))];
+  if (!ungVien.length) return { khoi: '', daChon: [], khopHet, nguocChieu: [], boChuaDuyet, boBiLat, boThuHoi };
 
   const tinCay = (m: MucThuVien) => {
     const ds = m.canCu.map((c) => vao.meta.get(c.documentId)).filter((x): x is MetaTaiLieu => Boolean(x));
@@ -130,7 +144,7 @@ export function dungKhoiThuVien(vao: {
     (MUC[k.muc.nhan.muc] ?? 0) * 2 +
     new Set(k.muc.canCu.map((c) => c.documentId)).size;
   const theoDiem = (a: MucKhop, b: MucKhop) => diem(b) - diem(a);
-  const xep = [...lat.sort(theoDiem), ...ungVien.filter((k) => !laLat.has(k)).sort(theoDiem)];
+  const xep = [...latXep.sort(theoDiem), ...ungVien.filter((k) => !laLat.has(k)).sort(theoDiem)];
 
   // Gom: mỗi tổ hợp kéo theo ngay sau nó các mục đơn cấu thành nó (cùng cung)
   const thuTu: MucKhop[] = [];
@@ -203,5 +217,5 @@ export function dungKhoiThuVien(vao: {
 - Ý nào ghép nghĩa hai sao trở lên mà KHÔNG mục nào ở đây nói về chính tổ hợp ấy: ghi "ghep": true và "sao": [tên các sao] vào ý đó.
 ${dong.join('\n')}`;
 
-  return { khoi, daChon, khopHet, nguocChieu, boChuaDuyet, boBiLat };
+  return { khoi, daChon, khopHet, nguocChieu, boChuaDuyet, boBiLat, boThuHoi };
 }
