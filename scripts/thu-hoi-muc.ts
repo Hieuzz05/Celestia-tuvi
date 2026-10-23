@@ -8,6 +8,8 @@
  *        --ly-do "…" [--nguoi "…"] [--ap-dung]
  *   npx tsx scripts/thu-hoi-muc.ts hoan-tac (--preview-url <url> | --pham-vi all --ghi-production)
  *        --su-kien <uuid> [--nguoi "…"] [--ap-dung]
+ *   Thêm `--env <tệp>` khi .env.local không nằm ở thư mục đang đứng (worktree). Preview bật Deployment
+ *   Protection thì cần VERCEL_AUTOMATION_BYPASS_SECRET (biến môi trường hoặc trong tệp env) để đọc /api/phien-ban.
  *
  * LUẬT AN TOÀN (chủ dự án 22/10/2026):
  *   - MẶC ĐỊNH CHẠY KHÔ: không `--ap-dung` thì chỉ in, không ghi gì.
@@ -96,14 +98,21 @@ export async function giaiPhamVi(l: Lenh, layJson: (url: string) => Promise<unkn
 }
 
 async function macDinhLayJson(url: string): Promise<unknown> {
-  const r = await fetch(url, { headers: { accept: 'application/json' } });
+  // Preview bật Deployment Protection: không có khoá bypass thì Vercel trả 401 trước khi tới Celestia
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  const r = await fetch(url, { headers: { accept: 'application/json', ...(bypass ? { 'x-vercel-protection-bypass': bypass } : {}) } });
+  if (r.status === 401 || r.status === 403) {
+    throw new Error(`${url} trả ${r.status}: Preview đang bật Deployment Protection. Đặt VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Settings → Deployment Protection → Protection Bypass for Automation) rồi chạy lại.`);
+  }
   if (!r.ok) throw new Error(`${url} trả ${r.status}`);
   return r.json();
 }
 
+/** `--env <tệp>` để chạy từ worktree không có .env.local; mặc định .env.local ở thư mục đang đứng */
 function napEnv() {
-  if (!existsSync('.env.local')) return;
-  for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
+  const tep = lay(process.argv, '--env') ?? '.env.local';
+  if (!existsSync(tep)) return;
+  for (const d of readFileSync(tep, 'utf-8').split(/\r?\n/)) {
     const s = d.trim();
     if (!s || s.startsWith('#')) continue;
     const [k, ...p] = s.split('=');
