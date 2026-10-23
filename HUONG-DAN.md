@@ -712,6 +712,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | `SUPABASE_SERVICE_ROLE_KEY` | Cho kho tri thức | Đọc/ghi kho tri thức phía server |
 | `ADMIN_EMAILS` | Nên có khi public | Giới hạn quyền vào `/admin` |
 | `CELES_FOCUSED_CHAT` | Không | `1` = chat đi đường Focused (CEL-186 vé B). Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ đặt cho Preview của nhánh khi chủ dự án cho phép |
+| `CELES_CONG_THU_HOI` | Không | `1` = máy chủ đọc bảng `thu_hoi_muc_thu_vien` để viết lại câu V3 dính mục thư viện đã thu hồi (X3, CELES-27). Chạy `supabase/va-thu-hoi-muc.sql` trước. Thiếu / khác `1` = tắt, 0 truy vấn. Bật Preview trước, đo độ trễ đường đệm trúng rồi mới bật Production |
 | `AI_GHIM_MODEL`, `AI_TRAN_USD`, `AI_GIA_VAO_USD`, `AI_GIA_RA_USD` | Không — chỉ script eval | Ghim một model cho MỌI lời gọi (không lùi) và trần tiền cứng; vượt trần thì dừng trước khi gọi. KHÔNG đặt trên Vercel |
 
 ---

@@ -72,6 +72,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Nhịp và kiểu của MỘT lượt chat | `lib/rag/hop-dong-tra-loi.ts` — hàm thuần, chỉ đổi độ dài và lối nói, KHÔNG chạm kết luận |
 | Chat Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`) | `lib/rag/focused/` — điểm vào `tra-loi-focused.ts`, nối ở đầu `traLoiCoCanCu`. Cờ tắt = đường STANDARD nguyên vẹn. Phương án + quyết định: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` |
+| Cổng thu hồi mục thư viện (X3, CELES-27, sau cờ `CELES_CONG_THU_HOI=1`) | `lib/rag/thu-hoi/` — `cong.ts` (luật lọc câu / tóm lại / bức tranh, hàm thuần), `kho.ts` (đọc bảng `thu_hoi_muc_thu_vien`, lỗi đọc thì mở cổng). Dấu mục: `lib/rag/thu-vien/dau.ts`. Lệnh vận hành: `scripts/thu-hoi-muc.ts` (mặc định chạy khô). Luật + cách thử: `docs/bay/ai-rag.md` mục X3 |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
 | An sao | `lib/tuvi/ansao.ts` + `lib/tuvi/constants.ts` |
@@ -259,7 +260,7 @@ Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
 **CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, quyền riêng tư vết, harness P0, nghiệm lý, khối thư viện K1, dấu logic V3, độ tin hỏi tháng, phản hồi, độ phủ tầng viết, hàm so ID CEL, build; máy canh trùng ID CEL chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+planner, bộ vàng, chuẩn ngôn ngữ, cách cục, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, quyền riêng tư vết, harness P0, nghiệm lý, khối thư viện K1, dấu logic V3, cổng thu hồi X3, độ tin hỏi tháng, phản hồi, độ phủ tầng viết, hàm so ID CEL, build; máy canh trùng ID CEL chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
