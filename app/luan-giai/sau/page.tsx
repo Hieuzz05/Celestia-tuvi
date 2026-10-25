@@ -395,7 +395,7 @@ function TrangSau() {
           <header className="flex flex-col items-start gap-[12px]">
             <div className="flex w-full flex-wrap items-center justify-between gap-[12px]">
               <span
-                className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold uppercase tracking-[0.08em]"
+                className="inline-flex items-center gap-[8px] rounded-full px-[12px] py-[4px] text-[13px] font-semibold"
                 style={{
                   background: 'color-mix(in srgb, var(--accent) 14%, transparent)',
                   color: 'var(--accent-chu)',
@@ -537,11 +537,11 @@ function TrangSau() {
               )}
               {tiep ? (
                 <button type="button" className="btn-primary" onClick={() => moChuDe(tiep.id)}>
-                  Đọc tiếp: {tiep.ten} →
+                  Đọc tiếp: {tiep.ten}
                 </button>
               ) : (
                 <button type="button" className="btn-primary" onClick={() => moChuDe(BUC_TRANH)}>
-                  Xem bức tranh lớn →
+                  Xem bức tranh lớn
                 </button>
               )}
             </div>

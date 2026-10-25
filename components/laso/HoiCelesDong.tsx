@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { IconMuiTenPhai } from '@/components/ui/icons';
 
 /**
  * Lối sang Hỏi Celes ở cuối phần tổng quan — MỘT dòng, không phải một thẻ.
@@ -29,7 +30,7 @@ export function HoiCelesDong({ tieuDe, mo, href }: { tieuDe: string; mo: string;
         <span className="caption">{mo}</span>
       </span>
       <span aria-hidden className="transition-transform group-hover:translate-x-[4px]" style={{ color: 'var(--fg-muted)' }}>
-        →
+        <IconMuiTenPhai size={18} />
       </span>
     </Link>
   );

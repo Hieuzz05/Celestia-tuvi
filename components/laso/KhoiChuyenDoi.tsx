@@ -8,6 +8,7 @@ import {
   IconDongHo,
   IconKhien,
   IconLaSo,
+  IconMuiTenPhai,
   IconSao,
   IconTroChuyen,
 } from '@/components/ui';
@@ -55,8 +56,9 @@ export function KhoiChuyenDoi({
 
   if (an) {
     return (
-      <button onClick={() => setAn(false)} className="link-text self-start">
-        {t.quickRead.moiLaPhanDau} →
+      <button onClick={() => setAn(false)} className="link-text inline-flex items-center gap-[var(--space-1)] self-start">
+        {t.quickRead.moiLaPhanDau}
+        <IconMuiTenPhai size={16} />
       </button>
     );
   }

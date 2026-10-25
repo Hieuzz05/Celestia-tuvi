@@ -123,7 +123,7 @@ export function SoDoBonChang({
               key={`${a}|${b}`}
               d={d}
               fill="none"
-              stroke={sang ? '#DF37A7' : 'var(--line)'}
+              stroke={sang ? 'var(--accent)' : 'var(--line)'}
               strokeWidth={sang ? 1.6 : 1}
               strokeDasharray="3 3"
               opacity={sang ? 1 : 0.55}
@@ -148,8 +148,8 @@ export function SoDoBonChang({
                 width={O_RONG}
                 height={O_CAO}
                 rx={7}
-                fill={laDoc ? '#DF37A7' : laGuong ? 'rgba(223,55,167,0.14)' : 'var(--bg)'}
-                stroke={laDoc ? '#DF37A7' : 'var(--line)'}
+                fill={laDoc ? 'var(--accent)' : laGuong ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--bg)'}
+                stroke={laDoc ? 'var(--accent)' : 'var(--line)'}
                 strokeWidth={1}
               />
               <text
@@ -158,7 +158,7 @@ export function SoDoBonChang({
                 textAnchor="middle"
                 style={{
                   fontSize: 8.5,
-                  fill: laDoc ? '#FFFDF9' : 'var(--fg)',
+                  fill: laDoc ? 'var(--color-canvas)' : 'var(--fg)',
                   fontWeight: laDoc ? 600 : 400,
                 }}
               >

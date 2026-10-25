@@ -439,7 +439,7 @@ function Lop({
           {/* Tầng hai: tổng quan ở trên đọc trong 10-20 giây, chi tiết nằm sau
               một cú bấm — spec v4 tách hẳn hai độ sâu này. */}
           <Link href={duongChiTiet} className="link-text self-start">
-            {t.chiTietHan.xemChiTiet} →
+            {t.chiTietHan.xemChiTiet}
           </Link>
         </div>
       )}

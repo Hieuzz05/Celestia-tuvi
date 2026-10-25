@@ -50,40 +50,39 @@ export function KhoiGuong({
     : tenChangGuong && `↑ nối về: ${tenChangGuong}`;
 
   return (
+    // `.dark-band` tự khoá bộ token của nền tím ở cả hai theme. Nền khối là `--surface-card`
+    // của dải, kèm viền `--line`: ở theme Đêm nền trang cũng là aubergine, thiếu viền là khối chìm.
     <aside
-      className="flex flex-col gap-[12px] rounded-[18px] px-[20px] py-[18px]"
-      style={{ background: '#2D0334', color: '#FFFDF9' }}
+      className="dark-band flex flex-col gap-[12px] rounded-[var(--radius-cards)] p-[24px]"
+      style={{ background: 'var(--surface-card)', border: '1px solid var(--line)' }}
     >
-      <p
-        className="text-[11px] uppercase tracking-[0.12em]"
-        style={{ fontFamily: 'var(--font-mono, monospace)', color: '#DF37A7' }}
-      >
+      <p className="text-[13px] font-semibold" style={{ color: 'var(--fg-soft)' }}>
         Soi qua {muc.cungGuong}
       </p>
 
-      <h3 className="text-[18px] font-semibold" style={{ color: '#FFFDF9' }}>
+      <h3 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>
         {nhan}
       </h3>
 
       {/*
-        Trong khối đảo màu, tên sao dùng fuchsia nhạt hơn nền tối chứ không dùng
+        Trong khối đảo màu, tên sao dùng `--accent-chu` của dải (fuchsia nhạt) chứ không dùng
         `--accent`: cùng một màu đọc rất khác trên nền tím đậm và trên nền kem.
       */}
       <ChuSao
         van={noiDung}
         ten={tenCoThat}
-        mauTen="#F58FD0"
+        mauTen="var(--accent-chu)"
         className="text-[16px]"
-        style={{ color: '#F0E6F0', lineHeight: 1.65 }}
+        style={{ color: 'var(--fg-body)', lineHeight: 1.65 }}
       />
 
       {luongNguoc && (
         <ChuSao
           van={luongNguoc}
           ten={tenCoThat}
-          mauTen="#F58FD0"
+          mauTen="var(--accent-chu)"
           className="text-[15px]"
-          style={{ color: '#C9B6C9', lineHeight: 1.6 }}
+          style={{ color: 'var(--fg-soft)', lineHeight: 1.6 }}
         />
       )}
 
@@ -92,12 +91,12 @@ export function KhoiGuong({
           <button
             onClick={onNhay}
             className="self-start text-[13px] underline underline-offset-4"
-            style={{ color: '#DF37A7' }}
+            style={{ color: 'var(--accent-chu)' }}
           >
             {chan}
           </button>
         ) : (
-          <p className="text-[13px]" style={{ color: '#C9B6C9' }}>
+          <p className="text-[13px]" style={{ color: 'var(--fg-soft)' }}>
             {chan}
           </p>
         ))}
