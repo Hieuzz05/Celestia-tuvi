@@ -35,6 +35,7 @@ Nó là nguồn đáng tin hơn bảng dưới, vì bảng dưới do người g
 | `va-priv-01.sql` | PRIV-01: nới NOT NULL `retrieval_runs.cau_hoi/truy_van` + chú thích cột — trace Production không giữ văn người dùng. Mã không phụ thuộc tệp này (ghi chuỗi canh `[an]` khi cột còn NOT NULL) | **chưa** (MIGRATION_NOT_APPLIED) |
 | `va-priv-01-don.sql` | Làm trắng văn trace CŨ. **DỪNG**: dữ liệu cũ không phân biệt Production / Preview / eval — chờ chủ dự án chọn (A) hay (B) trong tệp | **không chạy** |
 | `va-qd13-thu-vien.sql` | QĐ-13: `muc_thu_vien` + `muc_thu_vien_phien_ban` (nội dung bất biến, duyệt theo phiên bản, RLS chỉ service role). Chưa chạy thì trang "Nghiệm lý của tôi" báo chưa chạy, chat Focused coi như 0 nghiệm lý; luận v3 không đổi (vẫn đọc `noi_dung_ai`) | **chưa** (MIGRATION_NOT_APPLIED) |
+| `va-thuc-the-formation.sql` | Thêm `FORMATION` (cách cục) vào ràng buộc loại của `knowledge_entities`. Thiếu thì mọi lần nạp tài liệu hỏng ở bước đồng bộ từ điển thực thể | rồi (26/10/2026) |
 
 `chat_messages` nằm trong `schema.sql` từ đầu dự án nhưng mãi tới 19/09/2026 mới
 có mã dùng tới (trí nhớ hội thoại, CEL-088). **Không cần chạy thêm SQL nào** —

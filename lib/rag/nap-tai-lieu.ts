@@ -73,7 +73,7 @@ function boRacChuyenDoi(s: string): string {
     .join('\n');
 }
 
-function lamSachMarkdown(s: string): string {
+export function lamSachMarkdown(s: string): string {
   return boRacChuyenDoi(s)
     .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
     .replace(/<!--[\s\S]*?-->/g, '')

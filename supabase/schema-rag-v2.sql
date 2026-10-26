@@ -144,7 +144,7 @@ create index if not exists knowledge_chunks_trgm_idx
 -- theo thực thể và để Retrieval Lab tra cứu mà không phải nạp code.
 create table if not exists public.knowledge_entities (
   id text primary key,
-  loai text not null check (loai in ('STAR', 'PALACE', 'TRANSFORMATION', 'PERIOD', 'MARKER')),
+  loai text not null check (loai in ('STAR', 'PALACE', 'TRANSFORMATION', 'PERIOD', 'MARKER', 'FORMATION')),
   ten text not null,
   bi_danh text[] not null default '{}',
   cap_nhat_luc timestamptz not null default now()

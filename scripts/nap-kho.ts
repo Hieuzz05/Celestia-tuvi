@@ -19,6 +19,7 @@
  * Script ghi vào database thật và tiêu quota thật.
  */
 
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 
@@ -31,6 +32,9 @@ for (const d of readFileSync('.env.local', 'utf-8').split(/\r?\n/)) {
 }
 
 const THU_MUC_MAC_DINH = 'D:/Tài liệu tử vi/markdown';
+
+/** Phiên bản chưa từng tới tay người duyệt: chạy tiếp hoặc xoá đều an toàn */
+const DO_DANG = ['dang_xu_ly', 'that_bai'];
 
 /**
  * Một dòng của `manifest.json` trong thư mục sách.
@@ -81,7 +85,7 @@ async function main() {
   const lai = process.argv.includes('--lai');
   const duong = doiSo[0] ?? THU_MUC_MAC_DINH;
 
-  const { napTaiLieu, embedTiep } = await import('../lib/rag/nap-tai-lieu');
+  const { napTaiLieu, embedTiep, lamSachMarkdown } = await import('../lib/rag/nap-tai-lieu');
   const { TEN_MODEL_EMBEDDING, NHA_CUNG_CAP_EMBEDDING } = await import('../lib/ai/embedding');
   const { taoSupabaseAdmin } = await import('../lib/supabase/admin');
 
@@ -133,27 +137,59 @@ async function main() {
     process.stdout.write(`  ${tieuDe} (${kb} KB) ... `);
 
     try {
-      const nap = await napTaiLieu({
+      const phienBan = new Date().toISOString().slice(0, 10);
+      const documentId = theoTieuDe.get(tieuDe.toLowerCase());
+
+      // Lần nạp trước đứt ở pha vector hoặc pha chốt (vd. ràng buộc database sai)
+      // để lại một phiên bản 'dang_xu_ly' / 'that_bai'. Cùng nội dung thì chạy
+      // tiếp đúng phiên bản đó — vector đã trả tiền thì giữ. Khác nội dung mà
+      // trùng số phiên bản thì bản dở đó chặn đường: chưa từng xuất bản, xoá đi.
+      const checksum = createHash('sha256').update(lamSachMarkdown(noiDung)).digest('hex');
+      const { data: cungNoiDung } = await supabase
+        .from('knowledge_document_versions')
+        .select('id, phien_ban, trang_thai, so_chunk')
+        .eq('checksum', checksum)
+        .maybeSingle();
+      let nap: { versionId: string; soDoan: number } | null = null;
+      if (cungNoiDung && !DO_DANG.includes(cungNoiDung.trang_thai)) {
+        console.log(`\r  BỎ QUA  ${tieuDe} — nội dung y hệt bản ${cungNoiDung.phien_ban} (${cungNoiDung.trang_thai})`);
+        boQua += 1;
+        continue;
+      }
+      if (cungNoiDung) {
+        nap = { versionId: cungNoiDung.id, soDoan: cungNoiDung.so_chunk };
+        process.stdout.write(`chạy tiếp bản dở ${cungNoiDung.phien_ban} `);
+      } else if (documentId && !cungNoiDung) {
+        const { error } = await supabase
+          .from('knowledge_document_versions')
+          .delete()
+          .eq('document_id', documentId)
+          .eq('phien_ban', phienBan)
+          .in('trang_thai', DO_DANG);
+        if (error) throw new Error(`Xoá bản dở lỗi: ${error.message}`);
+      }
+
+      nap ??= await napTaiLieu({
         tieuDe,
         noiDung,
         hePhai: chonGiaTri(hang, 'he_phai', HE_PHAI, 'chung'),
         loaiNguon: chonGiaTri(hang, 'loai_nguon', LOAI_NGUON, 'sach'),
         mucTinCay: chonGiaTri(hang, 'muc_tin_cay', MUC_TIN_CAY, 'tham-khao'),
-        phienBan: new Date().toISOString().slice(0, 10),
+        phienBan,
         tacGia: hang?.author,
         tenTep: basename(t),
-        documentId: theoTieuDe.get(tieuDe.toLowerCase()),
+        documentId,
       });
       process.stdout.write(`${nap.soDoan} đoạn, đang sinh vector `);
 
       const batDau = Date.now();
       for (;;) {
-        const td = await embedTiep(nap.versionId);
-        process.stdout.write(`\r  ${tieuDe} (${kb} KB) ... ${nap.soDoan} đoạn, vector ${td.daXong}/${td.tong}   `);
+        const td = await embedTiep(nap!.versionId);
+        process.stdout.write(`\r  ${tieuDe} (${kb} KB) ... ${nap!.soDoan} đoạn, vector ${td.daXong}/${td.tong}   `);
 
         if (td.xong) {
           const giay = ((Date.now() - batDau) / 1000).toFixed(0);
-          console.log(`\r  XONG    ${tieuDe} — ${nap.soDoan} đoạn, ${giay}s                    `);
+          console.log(`\r  XONG    ${tieuDe} — ${nap!.soDoan} đoạn, ${giay}s                    `);
           if (td.canhBao?.length) for (const c of td.canhBao) console.log(`            cảnh báo: ${c}`);
           xong += 1;
           break;
