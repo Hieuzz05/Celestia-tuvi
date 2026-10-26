@@ -4,6 +4,8 @@
  *   npx tsx scripts/nap-kho.ts                       nạp cả thư mục mặc định
  *   npx tsx scripts/nap-kho.ts "D:/duong/dan/sach.md"  nạp đúng một tệp
  *   npx tsx scripts/nap-kho.ts --lai                 nạp lại cả tài liệu đã có
+ *   npx tsx scripts/nap-kho.ts ... --xuat-ban        xuất bản luôn, bỏ bước duyệt ở /admin/knowledge
+ *                                                    (cả bản 'cần duyệt' y hệt nội dung tệp)
  *
  * MỖI TỆP LÀ MỘT TÀI LIỆU. Không chia nhỏ, không cắt tay.
  *
@@ -83,6 +85,7 @@ function docManifest(thuMuc: string): Map<string, HangManifest> {
 async function main() {
   const doiSo = process.argv.slice(2).filter((x) => !x.startsWith('--'));
   const lai = process.argv.includes('--lai');
+  const xuatBan = process.argv.includes('--xuat-ban');
   const duong = doiSo[0] ?? THU_MUC_MAC_DINH;
 
   const { napTaiLieu, embedTiep, lamSachMarkdown } = await import('../lib/rag/nap-tai-lieu');
@@ -94,6 +97,13 @@ async function main() {
     console.log('DỪNG: chưa có SUPABASE_SERVICE_ROLE_KEY');
     process.exit(1);
   }
+
+  // Cùng RPC với nút Xuất bản ở /admin/knowledge: hạ bản cũ, nâng bản mới trong một giao dịch
+  const xuatBanBan = async (versionId: string) => {
+    const { error } = await supabase.rpc('xuat_ban_phien_ban', { p_version_id: versionId, p_actor: null });
+    if (error) throw new Error(`Xuất bản lỗi: ${error.message}`);
+    console.log('            đã xuất bản');
+  };
 
   const laThuMuc = statSync(duong).isDirectory();
   const thuMuc = laThuMuc ? duong : '';
@@ -153,6 +163,7 @@ async function main() {
       let nap: { versionId: string; soDoan: number } | null = null;
       if (cungNoiDung && !DO_DANG.includes(cungNoiDung.trang_thai)) {
         console.log(`\r  BỎ QUA  ${tieuDe} — nội dung y hệt bản ${cungNoiDung.phien_ban} (${cungNoiDung.trang_thai})`);
+        if (xuatBan && cungNoiDung.trang_thai === 'can_duyet') await xuatBanBan(cungNoiDung.id);
         boQua += 1;
         continue;
       }
@@ -191,6 +202,7 @@ async function main() {
           const giay = ((Date.now() - batDau) / 1000).toFixed(0);
           console.log(`\r  XONG    ${tieuDe} — ${nap!.soDoan} đoạn, ${giay}s                    `);
           if (td.canhBao?.length) for (const c of td.canhBao) console.log(`            cảnh báo: ${c}`);
+          if (xuatBan) await xuatBanBan(nap!.versionId);
           xong += 1;
           break;
         }
@@ -208,7 +220,8 @@ async function main() {
   }
 
   console.log(`\nXong ${xong} · bỏ qua ${boQua} · hỏng ${hong}`);
-  console.log('Tài liệu nạp xong nằm ở trạng thái "cần duyệt". Vào /admin/knowledge để xuất bản.\n');
+  if (!xuatBan) console.log('Tài liệu nạp xong nằm ở trạng thái "cần duyệt". Vào /admin/knowledge để xuất bản.');
+  console.log('');
   process.exit(hong === 0 ? 0 : 1);
 }
 

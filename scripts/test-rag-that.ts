@@ -42,6 +42,7 @@ async function main() {
   console.log(`Cung liên quan: ${kq.goi.cungLienQuan.join(', ')}`);
   console.log(`Dữ kiện      : ${kq.goi.duKien.length} (${kq.goi.duKien.map((d) => d.id).join(' ')})`);
   console.log(`Nguồn        : ${kq.goi.bangChung.length}${kq.khoTrong ? ' (kho trống)' : ''}`);
+  for (const e of kq.goi.bangChung) console.log(`   ${e.id} ${e.tieuDe}${e.duongDeMuc ? ` › ${e.duongDeMuc}` : ''}`);
   console.log(`Độ trễ       : truy hồi ${kq.doTreMs.truyHoi}ms · model ${kq.doTreMs.model}ms`);
   console.log(`Đọc được JSON: ${kq.coCauTruc ? 'CÓ' : 'KHÔNG'}`);
 
