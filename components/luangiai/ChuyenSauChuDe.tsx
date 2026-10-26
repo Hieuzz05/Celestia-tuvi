@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { IconMuiTenPhai } from '@/components/ui/icons';
 import { useMemo } from 'react';
 import type { LaSo } from '@/lib/tuvi/ansao';
 import { diemTungCung, TEN_MUC } from '@/lib/rag/v3/du-kien';
@@ -103,7 +104,7 @@ export function ChuyenSauChuDe({
                     </span>
                   </span>
                   <span aria-hidden className="shrink-0 transition-transform group-hover:translate-x-[4px]" style={{ color: 'var(--fg-muted)' }}>
-                    →
+                    <IconMuiTenPhai size={18} />
                   </span>
                 </Link>
               </li>

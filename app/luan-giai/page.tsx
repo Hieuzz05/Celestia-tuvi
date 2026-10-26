@@ -145,7 +145,7 @@ function TrangLuanGiai() {
     <Shell className="flex flex-col gap-[24px] py-[20px]">
       <QuayLai theoTrangTruoc macDinh={{ href: '/home', nhan: 'Về trang Hôm nay' }} className="-mb-[16px]" />
       <div>
-        <p className="eyebrow">KHÁM PHÁ SÂU HƠN</p>
+        <p className="eyebrow">Khám phá sâu hơn</p>
         <h1 className="heading mt-[10px]">Bạn đang muốn hiểu điều gì?</h1>
       </div>
 
@@ -182,7 +182,7 @@ function TrangLuanGiai() {
                   });
                 }}
               >
-                <option value="">— Nhập thủ công —</option>
+                <option value="">Nhập thủ công</option>
                 {hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
                     {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}

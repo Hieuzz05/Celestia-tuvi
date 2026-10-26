@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n/context';
+import { IconHuuIch, IconKhongDung } from '@/components/ui/icons';
 import { LY_DO_PHAN_HOI, type LyDoPhanHoi } from '@/lib/rag/phan-hoi';
 
 /**
- * 👍👎 dưới một lượt Celes (CEL-195). 👎 mở danh sách lý do ĐÓNG — không có ô chữ tự do, để người
+ * Nút hữu ích / không đúng dưới một lượt Celes (CEL-195). Nút không đúng mở danh sách lý do ĐÓNG — không có ô chữ tự do, để người
  * dùng không gõ lại ngày sinh hay chuyện riêng vào một nơi chỉ cần một nhãn.
  */
 export function PhanHoiLuot({ requestId }: { requestId: string }) {
@@ -29,7 +30,7 @@ export function PhanHoiLuot({ requestId }: { requestId: string }) {
     }
   }
 
-  const nut = 'min-h-[44px] min-w-[44px] rounded-[10px] px-[10px] text-[13px]';
+  const nut = 'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[10px] px-[10px] text-[13px]';
   const mo = { color: 'var(--fg-muted)' };
 
   if (trangThai === 'da-gui') return <p className="text-[13px]" style={mo}>{t.camOn}</p>;
@@ -52,10 +53,10 @@ export function PhanHoiLuot({ requestId }: { requestId: string }) {
   return (
     <div className="flex items-center gap-[4px]" style={mo}>
       <button className={nut} disabled={dangGui} onClick={() => gui('huu_ich')} aria-label={t.huuIch} title={t.huuIch}>
-        👍
+        <IconHuuIch size={20} />
       </button>
       <button className={nut} disabled={dangGui} onClick={() => setTrangThai('hoi-ly-do')} aria-label={t.khongDung} title={t.khongDung}>
-        👎
+        <IconKhongDung size={20} />
       </button>
     </div>
   );

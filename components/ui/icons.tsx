@@ -118,3 +118,18 @@ export const IconMuiTenPhai = (p: IconProps) => (
     <path d="M4.5 12h15M13.5 6l6 6-6 6" />
   </Khung>
 );
+
+/** Phản hồi một lượt Celes (PhanHoiLuot) — thay cho emoji 👍👎. */
+export const IconHuuIch = (p: IconProps) => (
+  <Khung {...p}>
+    <path d="M7 10v11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3Z" />
+    <path d="M7 10l4-7a2.5 2.5 0 0 1 2.5 2.5V9h5.6a2 2 0 0 1 2 2.3l-1.3 8A2 2 0 0 1 17.8 21H7" />
+  </Khung>
+);
+
+export const IconKhongDung = (p: IconProps) => (
+  <Khung {...p}>
+    <path d="M17 14V3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-3Z" />
+    <path d="M17 14l-4 7a2.5 2.5 0 0 1-2.5-2.5V15H4.9a2 2 0 0 1-2-2.3l1.3-8A2 2 0 0 1 6.2 3H17" />
+  </Khung>
+);

@@ -37,7 +37,10 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   `scripts/cat-font.py` (giữ đủ tính năng `calt cv11 ss02 ss03 tnum` mà `body` dùng). Cần thêm độ
   đậm ngoài 400–700 hay ký tự ngoài latin + tiếng Việt thì sửa script rồi cắt lại.
 - **Font trang trí không tải trước.** Permanent Marker (chỉ hero trang chủ) và JetBrains Mono (nhãn
-  eyebrow) để `preload: false` — tải trước ở mọi trang là tranh băng thông với chữ chính (LCP).
+  kỹ thuật: quản trị, bảng luận giải) để `preload: false` — tải trước ở mọi trang là tranh băng thông với chữ chính (LCP).
+- **Eyebrow là câu thường, không phải nhãn HOA** (CEL-207, 25/10/2026). 13px/600 font thân bài, không
+  uppercase, không letter-spacing, không mono: chữ HOA giãn rộng là dấu quen của giao diện AI làm.
+  Không viết chuỗi eyebrow HOA sẵn trong i18n. Máy canh: `node scripts/kiem-dau-ai.mjs` (CI).
 - **Khối chờ phải giữ chỗ gần bằng nội dung thật.** Khối chờ thấp (vài chục px) làm chân trang nằm
   trong màn hình rồi bị đẩy xuống khi nội dung về — đo /la-so 27/09/2026: CLS 0,34, "Kém".
 

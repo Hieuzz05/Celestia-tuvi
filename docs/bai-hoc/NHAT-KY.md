@@ -230,3 +230,15 @@ Mẫu một mục:
 - Luật: timeout/mất mạng/server chưa biết kết quả phải giữ dấu đối soát, dừng fallback và chặn cả sau restart; chỉ từ chối rõ mới được tiếp tục theo hợp đồng.
 - Nâng: docs/bay/ai-rag.md; ca AbortError/HTTP 500 và restart trong scripts/test-ngan-sach-thu.ts đã PASS, đăng ký CI cùng X1. Ghi trên nhánh X1 vì phiên này không được push main.
 - Lần: 1
+## 22/10/2026 · Đổi quy tắc vận hạn mà mẫu đóng băng không bắt · engine
+- Thẻ: phienBan, van tay, mau dong bang, van han, nguyet han
+- Chuyện gì: X2 (nguyệt hạn Cách 1) đổi cung tháng của mọi lá số, nhưng `test-ansao-chuan` vẫn xanh
+  khi chưa tăng `PHUONG_PHAP.phienBan`. Lần trước (CELES-37) cũng vậy với một quy tắc vận hạn.
+- Gốc: vân tay lớp 3 chỉ chụp cung + sao GỐC. Tiểu hạn, nguyệt hạn, lưu tinh tính ngoài `lapLaSo`
+  nên nằm ngoài mẫu; máy canh "đổi kết quả mà không tăng phiên bản" có lỗ đúng ở lớp hay đổi nhất.
+- Giá: hai lần chỉ dựa vào người nhớ tăng phiên bản; quên là đệm phát bài nói cung tháng sai
+  (dấu logic `lg` lấy từ `phienBan`). Phải mở CELES-37 và T-03 để vá.
+- Luật: lớp tính nào nằm ngoài `lapLaSo` mà vào lời luận thì phải vào vân tay của `test-ansao-chuan`.
+- Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
+  lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
+- Lần: 2 (lần 1: CELES-37, chưa ghi sổ)

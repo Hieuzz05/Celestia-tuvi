@@ -73,8 +73,7 @@ export default function TaiKhoanPage() {
       <div className="flex items-center gap-[16px]">
         <CelesMascot cho="dau-trang" minhHoa="using-laptop" cao={64} caoNho={56} ngay />
         <div className="min-w-0">
-          <p className="eyebrow">Tài khoản</p>
-          <h1 className="heading mt-[10px]">Tài khoản của bạn</h1>
+          <h1 className="heading">Tài khoản của bạn</h1>
         </div>
       </div>
 

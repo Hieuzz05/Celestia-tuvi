@@ -118,6 +118,7 @@ const viec = [
   ...(canTypegen ? [['next typegen', 'npx', ['next', 'typegen']]] : []),
   ...(kq.tsc ? [['tsc', 'npx', ['tsc', '--noEmit']]] : []),
   ...(kq.lint ? [['lint', 'node', ['scripts/dem-loi-lint.mjs']]] : []),
+  ...(doi.some((t) => /^(app|components)\/|^lib\/i18n\/en\.ts$/.test(t)) ? [['dấu AI', 'node', ['scripts/kiem-dau-ai.mjs']]] : []),
   ...kq.bai.map((b) => [b.replace(/^scripts\//, ''), 'npx', ['tsx', b]]),
 ]
 

@@ -90,7 +90,7 @@ export function MucDeepSection({
           {muc.doNoiBat >= NGUONG_NOI && (
             <span
               className="rounded-full px-[10px] py-[2px] text-[11px] font-semibold"
-              style={{ background: 'var(--color-cream, #FFF1BD)', color: '#240029' }}
+              style={{ background: 'var(--color-warm-wash)', color: 'var(--color-aubergine)' }}
             >
               Đáng chú ý nhất
             </span>
@@ -100,11 +100,8 @@ export function MucDeepSection({
         <h2 className="heading-sm">{muc.tieuDe}</h2>
 
         {/* Dòng "Đọc từ" — nơi DUY NHẤT tên cung được hiện ở mặt trước */}
-        <p
-          className="text-[11px]"
-          style={{ fontFamily: 'var(--font-mono, monospace)', color: 'var(--fg-muted)' }}
-        >
-          Đọc từ: {muc.cungGoc} · cùng {muc.cungTamHop.join(', ')} · soi qua {muc.cungGuong}
+        <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
+          Đọc từ {muc.cungGoc}, cùng {muc.cungTamHop.join(', ')}. Soi qua {muc.cungGuong}.
         </p>
       </div>
 

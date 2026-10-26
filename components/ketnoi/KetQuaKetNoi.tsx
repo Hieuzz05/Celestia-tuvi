@@ -50,7 +50,7 @@ export function KetQuaKetNoi({
     <section className="flex flex-col gap-[24px]">
       <div>
         <p className="eyebrow">
-          {tenA} &amp; {tenB} · {cauHinh.nhan.toUpperCase()}
+          {cauHinh.nhan}: {tenA} và {tenB}
         </p>
         <h2 className="heading-sm mt-[10px]">{duLieu.dangChuY.tieuDe}</h2>
         <p className="body-text mt-[12px]" style={{ color: 'var(--fg-body)' }}>
@@ -81,7 +81,7 @@ export function KetQuaKetNoi({
           className="flex flex-col gap-[8px] rounded-[var(--radius-cards)] p-[18px]"
           style={{ background: 'var(--surface-panel)' }}
         >
-          <p className="eyebrow">CÂU HỎI CỦA BẠN</p>
+          <p className="eyebrow">Câu hỏi của bạn</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
             {duLieu.cauHoiCuaBan.cauHoi}
           </p>
@@ -99,7 +99,7 @@ export function KetQuaKetNoi({
         </summary>
         <div className="mt-[12px] flex flex-col gap-[12px]">
           <div className="flex flex-col gap-[4px]">
-            <span className="eyebrow">CELES DỰA VÀO ĐÂU</span>
+            <span className="eyebrow">Celes dựa vào đâu</span>
             {duLieu.canCu.duKien.map((d) => (
               <span key={d.id} className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
                 {d.noiDung}
@@ -109,7 +109,7 @@ export function KetQuaKetNoi({
 
           {duLieu.canCu.cachNoi && (
             <div className="flex flex-col gap-[4px]">
-              <span className="eyebrow">KHI ĐẶT CẠNH NHAU</span>
+              <span className="eyebrow">Khi đặt cạnh nhau</span>
               <span className="text-[12px] leading-[1.55]" style={{ color: 'var(--fg-muted)' }}>
                 {duLieu.canCu.cachNoi}
               </span>
@@ -117,7 +117,7 @@ export function KetQuaKetNoi({
           )}
 
           <div className="flex flex-col gap-[4px]">
-            <span className="eyebrow">PHƯƠNG PHÁP</span>
+            <span className="eyebrow">Phương pháp</span>
             <span className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>
               {duLieu.canCu.phuongPhap}
             </span>
@@ -132,7 +132,7 @@ export function KetQuaKetNoi({
       </details>
 
       <Link href={`/hoi-dap?q=${encodeURIComponent(cauHoiTiep)}`} className="link-text link-action">
-        Hỏi Celes thêm về hai người →
+        Hỏi Celes thêm về hai người
       </Link>
 
       <details className="rounded-[var(--radius-cards)] p-[14px]" style={{ boxShadow: 'var(--shadow-card)' }}>
