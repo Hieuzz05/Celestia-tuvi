@@ -29,9 +29,9 @@ Viết kết luận nháp, gọi `phan-bien`, sửa theo. Kết luận chạm ch
 `chuyen-gia-tu-vi` cùng lượt. Phương án nào bị đánh "Sập" thì bỏ hoặc nói rõ
 điều kiện để nó đứng được. Đừng giấu đi.
 
-Kiểm thêm theo ba quyết định không được tự đổi trong AGENTS.md: ngân sách bằng 0, Nam phái làm
-chuẩn, Celes là người trò chuyện. Phương án nào phạm một trong ba thì phải nói thẳng là cần chủ dự
-án đổi luật.
+Kiểm thêm theo hai quyết định không được tự đổi trong AGENTS.md: ngân sách bằng 0, Celes là người
+trò chuyện. Phương án nào phạm một trong hai thì phải nói thẳng là cần chủ dự án đổi luật. ("Nam phái
+làm chuẩn" đã bỏ, không dùng để chặn phương án.)
 
 ## 3. 🛑 Trình bày
 Trình bày ngắn: kết luận, các lựa chọn kèm đề xuất, mục "Sập / Lung lay / Đứng được", và câu hỏi

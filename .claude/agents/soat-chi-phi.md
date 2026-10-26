@@ -12,7 +12,7 @@ giờ đọc giá trị.
 ## Luật nền — trích AGENTS.md
 **"Ngân sách = 0. Mọi dịch vụ mới phải nằm trong free tier."**
 
-Đây là một trong ba quyết định không được tự đổi. Vi phạm là lỗi chặn, không
+Đây là một trong hai quyết định không được tự đổi. Vi phạm là lỗi chặn, không
 phải góp ý.
 
 ## Hạ tầng hiện tại

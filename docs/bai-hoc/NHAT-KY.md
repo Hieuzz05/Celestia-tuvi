@@ -234,3 +234,16 @@ Mẫu một mục:
 - Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
   lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
 - Lần: 2 (lần 1: CELES-37, chưa ghi sổ)
+
+## 26/10/2026 · Viện luật "Nam phái làm chuẩn" đã bỏ để chặn phương án tứ hoá · cach-lam
+- Thẻ: luat cu, AGENTS.md, tu hoa, phai, quyet dinh
+- Chuyện gì: khi phân tích vì sao chat không dùng sách Tứ Hoá Phái, AI đề xuất phải mở phiên
+  [CHIẾN LƯỢC] vì thêm lưu tứ hoá "đụng luật Nam phái làm chuẩn". Chủ dự án đã bỏ luật đó từ lâu
+  nhưng nó vẫn nằm ở AGENTS.md (quyết định số 1) và ba tệp subagent.
+- Gốc: quyết định đổi bằng lời, không ai gỡ chữ khỏi các tệp nạp mọi phiên; AI tin tệp.
+- Giá: một vòng trình sai (đẩy việc sang phiên chiến lược không cần), chủ dự án phải sửa lưng.
+- Luật: chủ dự án bỏ một luật thì grep mọi tệp nạp vào phiên (AGENTS.md, .claude/agents, .claude/skills,
+  docs/bay, docs/bai-hoc) và gỡ trong cùng lượt.
+- Nâng: AGENTS.md (gỡ luật + ghi chú "không có phái chuẩn"), celes-domain, chuyen-gia-tu-vi, phan-bien,
+  chien-luoc, danh-gia-tac-dong, soat-chi-phi.
+- Lần: 1

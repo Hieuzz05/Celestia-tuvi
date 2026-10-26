@@ -38,12 +38,16 @@ Chủ dự án theo dõi việc đã / đang / sẽ làm của mọi dự án tr
    (mục tiêu, bối cảnh, làm gì, xong khi…), viết cho chủ dự án đọc. Mã dự án: `celes`. Repo ở chỗ khác
    `D:/SAPP BA/tuvi-ai` thì chạy `node D:/VibeDashboard/task.mjs project --id celes --repo "<đường dẫn>"` một lần.
 
-## Ba quyết định không được tự đổi
+## Hai quyết định không được tự đổi
 
-1. **Nam phái làm chuẩn** cho an sao; Bắc phái chỉ dùng đối chiếu khi luận vận hạn.
-2. **Ngân sách = 0.** Mọi dịch vụ mới phải nằm trong free tier.
-3. **Celestia là thương hiệu, Celes là người dùng trò chuyện cùng.** Người dùng "hỏi Celes",
+1. **Ngân sách = 0.** Mọi dịch vụ mới phải nằm trong free tier.
+2. **Celestia là thương hiệu, Celes là người dùng trò chuyện cùng.** Người dùng "hỏi Celes",
    không "hỏi AI", không "hỏi Celestia".
+
+> **Không có phái chuẩn.** Luật cũ "Nam phái làm chuẩn, Bắc phái chỉ đối chiếu" đã BỎ (chủ dự án,
+> xác nhận lại 26/10/2026). Luận được dùng kỹ thuật của mọi phái (Tứ Hoá phái, phi hoá, lưu tứ hoá…).
+> Cách an sao đang chạy trong `lib/tuvi/` vẫn giữ; đổi nó là việc `[CODE]` lớn vì app dùng chung engine.
+> Đừng viện luật cũ để chặn một phương án.
 
 ## Ngôn ngữ ở mặt trước
 

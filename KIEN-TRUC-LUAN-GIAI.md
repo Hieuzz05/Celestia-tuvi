@@ -259,8 +259,8 @@ suất. **Bản đồ độ phủ** lấy thẳng từ sổ này.
 
 ## 9. Vận hạn [ĐÍCH — sau lát cắt đầu]
 
-Bổ sung engine: tứ hoá đại vận, phi hoá Bắc phái (cần chủ dự án chọn nhánh). An sao vẫn
-Nam phái; Bắc phái chỉ dùng cho vận hạn (AGENTS.md quyết định số 1). Luận năm = chồng lớp
+Bổ sung engine: tứ hoá đại vận, phi hoá Bắc phái (cần chủ dự án chọn nhánh). Không còn
+phái chuẩn (luật "Nam phái làm chuẩn" đã bỏ, 26/10/2026). Luận năm = chồng lớp
 gốc / đại vận / lưu niên, khớp các mục có điều kiện `lop`.
 
 ---
