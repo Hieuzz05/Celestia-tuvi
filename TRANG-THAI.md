@@ -24,6 +24,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Bộ E2E Playwright (CEL-076) — làm lần lượt, từng nhánh, chưa gộp | `viec/e2e` | e2e/ mới, package.json | 11/10 |
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
+| Claude (máy 1) | Vận hạn kết luận bằng lớp hạn (lưu tứ hoá, tứ hoá đại vận vào engine; luật tổ hợp; chat sau cờ; v3 + đệm). Đang ở bước researcher/phương án. **Chạm vùng Chung `lib/tuvi/` (web + app cùng đổi) và AGENTS.md (quyết định số 1)** | `viec/van-han-lop-han` (worktree tuvi-ai-van-han, trên nền viec/sua-do-sang-cach-cuc) | lib/tuvi/, lib/rag/nghieng-ve.ts, lib/rag/focused/, lib/rag/boi-canh-la-so.ts, lib/rag/v3/, AGENTS.md | 16/10 |
 
 
 ## Đang vướng — đừng đụng vào
@@ -38,6 +39,7 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN** `viec/sua-do-sang-cach-cuc`: bảng độ sáng theo Tử Vi hàm số (Tử Vi, Thiên Cơ, Thiên Phủ, Thiên Lương, Hỏa, Linh) + Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn. phienBan 2026.10.1, PHIEN_BAN_CACH_CUC 2026.10.2, THE_HE_DEM 9 (đệm luận viết lại dần). **Vùng Chung `lib/tuvi/`: web + app cùng đổi.** | `2983612` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** (Focused trên Production vẫn TẮT, cờ `CELES_FOCUSED_CHAT` không bật): CEL-186 vé B — chat Focused + Answer Contract v2 (eval I5 23/30 flow, CI xanh), sửa log `retrieval_runs.y_dinh` (chủ đề sang `bo_loc.chuDe`). Việc nối tiếp: CEL-191 (spec `D:\Celestia\CEL-191-spec.md`, rẽ nhánh từ main mới), CEL-192 (DISCOVERY, chờ chủ dự án chọn hướng) | `8af2173` + merge `551ee54` | 05/10/2026 |
 | **ĐÃ LÊN PRODUCTION**: CEL-189 tách đệm `noi_dung_ai` theo môi trường (production / Preview / local), `/api/phien-ban` có `phamViDem`. Kiểm Production: commit `1bdfe6b`, nhanh=main, moiTruong=production, phamViDem=production. KHÔNG chạy `--ghi-production`, KHÔNG xoá đệm Production | `8bc5554`, `667848a` + merge `1bdfe6b` | 03/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/test-man-hinh`: bộ đo giao diện `test-man-hinh.mjs` P1–P5 (khách thật, ảnh toàn trang CDP, vùng chạm hộp DOM / `::after`, CLS cửa sổ phiên) + `docs/thiet-ke/celes-ui-quality-checklist.md`. Chạy tay, không vào CI. Kết quả 157 OK / 17 SAI = nợ UI có sẵn (`.pill-tag` 32px, `.btn-sm` 37–39px, link logo 24px). Việc tiếp: (1, ưu tiên) sửa xanh giả của mệnh bàn ở 390/820 (rộng 0 trong tab chưa mở vẫn báo OK); (2) vé CSS vùng chạm < 44px. Hai việc tiếp là việc riêng, chưa ai nhận | `02d26a8` + `568d444` + gộp `03d56f7` | 03/10/2026 |

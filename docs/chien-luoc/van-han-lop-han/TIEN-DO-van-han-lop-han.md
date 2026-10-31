@@ -1,6 +1,6 @@
-# Tiến độ — vận hạn dùng lớp hạn (cập nhật 17/10/2026)
+# Tiến độ — vận hạn dùng lớp hạn (cập nhật 18/10/2026)
 
-Worktree: `D:\SAPP BA\tuvi-ai-van-han`, nhánh `viec/van-han-lop-han`. Đã push tới commit 0. Commit 1, 2a, 2b, 3a **chưa push**.
+Worktree: `D:\SAPP BA\tuvi-ai-van-han`, nhánh `viec/van-han-lop-han`. Đã push tới `8090f1b` (gồm commit 1–3a và lần gộp main).
 Căn cứ: `D:\Celestia\QUYET-DINH-van-han-dung-sao-luu.md` (mục Lượt 4) và `D:\Celestia\PHUONG-AN-van-han-lop-han.md`.
 
 ## Đã xong
@@ -27,6 +27,11 @@ Phân bố đo offline (60 lá × 2024–2030 × 4 chủ đề):
 - Hệ số tam phương 0.5 và ngưỡng "rõ" chưa có sách đỡ. Nhãn "rõ" tính theo tỉ lệ, nên một dữ kiện chiếu đứng một mình vẫn ra "cản rõ".
 - Đề xuất: trước khi anh duyệt, đo tách theo chủ đề (sức khỏe, tình cảm) và thêm ngưỡng tổng trọng số tối thiểu cho nhãn "rõ".
 
+## Đã xong 18/10
+- main nhận `viec/sua-do-sang-cach-cuc` (merge `bde0dc0`, TRANG-THAI `c7fedc5`). THE_HE_DEM 9 lên production: đệm luận viết lại dần.
+- Nhánh vận hạn gộp main (`8090f1b`), đã push.
+- C1 bản 4 đã duyệt. Giải pháp 3 việc: `D:\Celestia\GIAI-PHAP-3-viec-cach-cuc-phuc-tinh-hoa-giai.md` — việc A bản 4 (hợp/không hợp theo bộ trên tam phương, đã đo), chờ anh duyệt.
+
 ## Làm tiếp từ đây (bản 17/10 tối, sau GIAI-PHAP bản 3)
 - Các điểm cần anh chốt: `D:\Celestia\GIAI-PHAP-chot-van-han-lop-han.md` bản 3 (C1–C4; C5 đã chốt).
 - Chia việc máy 1 / máy 2 + prompt máy 2: `D:\Celestia\CHIA-VIEC-van-han-may1-may2.md`.
@@ -34,7 +39,6 @@ Phân bố đo offline (60 lá × 2024–2030 × 4 chủ đề):
 - Máy 2: 3b + Commit 4 phần mã.
 
 ## Nhắc
-- Gộp `viec/sua-do-sang-cach-cuc` vào main.
 - `eval-chat-quyet-dinh.ts` chạy model thật, tốn tiền, không tự chạy. Chạy sau 3a' + 3b, trước khi bật cờ.
 - Máy canh DUNG_SACH đang chờ duyệt.
 - Xoá `scripts/tam-*` trong worktree khi xong đợt.

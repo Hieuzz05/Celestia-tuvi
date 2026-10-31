@@ -53,6 +53,14 @@ jobs:
         run: npx tsx scripts/test-tu-hoa-han.ts
       - name: Luật tổ hợp lớp hạn (cấu trúc bảng, hàm khớp, luật không bao giờ khớp)
         run: npx tsx scripts/test-luat-to-hop.ts
+      - name: Hồ sơ cung (địa lợi, chặn đầu / theo gót, giáp, nhị hợp, vô chính diệu, lớp hạn)
+        run: npx tsx scripts/test-ho-so-cung.ts
+      - name: Luật quan hệ sao + Tuần Triệt (mức theo số nhóm tác giả, ngoại lệ, ưu tiên, độ sáng hiệu dụng)
+        run: npx tsx scripts/test-luat-quan-he.ts
+      - name: Xét cung theo thứ tự sách (Phúc Mệnh Thân, Tuần Triệt trước, ngoại lệ, bốn danh sách)
+        run: npx tsx scripts/test-xet-cung.ts
+      - name: Luận giải v3 không lộ pb / model ra trình duyệt (cả đường đọc đệm)
+        run: npx tsx scripts/test-an-noi-bo-v3.ts
       - name: Chat cân theo lớp hạn (cờ tắt = y nguyên, cờ bật = chiều từ lớp hạn)
         run: npx tsx scripts/test-lop-han-chat.ts
       - name: Bài luận 12 cung

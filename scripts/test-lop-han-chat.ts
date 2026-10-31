@@ -87,7 +87,7 @@ console.log('== A. Cờ tắt = đường cũ đúng từng byte ==');
 console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
 {
   let nenLot = 0;
-  let thieuMat = 0;
+  let saiThuTu = 0;
   let trungLuat = 0;
   let soLuat = 0;
   let saiHoa = 0;
@@ -100,10 +100,8 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
         if (!n || !n.lopHan) continue;
         // Không mục nào của hai danh sách là sao gốc / lớp nền
         if (n.dauMoc.some((d) => d.lop === 'nen' || tenGoc.has(d.ten))) nenLot++;
-        // Hai mặt: có cả hai phía trong toàn bộ thì danh sách chọn cũng phải có cả hai
-        const coDo = n.canNang.do > 0;
-        const coCan = n.canNang.can > 0;
-        if ((coDo && !n.dauMoc.some((d) => d.huong === 'do')) || (coCan && !n.dauMoc.some((d) => d.huong === 'can'))) thieuMat++;
+        // Không ép hai mặt (C3/Q2): danh sách chọn là các mốc nặng nhất, xếp giảm dần
+        if (n.dauMoc.some((d, i) => i > 0 && d.trong > n.dauMoc[i - 1].trong)) saiThuTu++;
         // Lưu hoá phải đúng sao như bảng sự thật lớp hạn
         for (const d of n.dauMoc) {
           const m = d.ten.match(/^Lưu (Hóa \S+) \((.+)\)$/);
@@ -121,7 +119,7 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
     }
   }
   kiem(nenLot === 0, `${nenLot} ca có sao gốc lọt vào hai danh sách lớp hạn`);
-  kiem(thieuMat === 0, `${thieuMat} ca có dữ kiện hai phía mà danh sách chọn chỉ còn một phía`);
+  kiem(saiThuTu === 0, `${saiThuTu} ca danh sách chọn không xếp theo trọng lượng giảm dần`);
   kiem(saiHoa === 0, `${saiHoa} mục lưu hoá không khớp bảng sự thật (sai sao)`);
   kiem(soLuat > 0, 'quét không gặp ca nào có luật tổ hợp lên danh sách — bài kiểm trùng vô nghĩa');
   kiem(trungLuat === 0, `${trungLuat} sao lưu vừa trong luật tổ hợp vừa đứng lẻ (cộng hai lần)`);
@@ -154,7 +152,8 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
     'lá đối chiếu sự nghiệp 2026: Lưu Hóa Kỵ chiếu tam phương không có mặt ở phía cản'
   );
   const khoi = khoiNghiengVe(n);
-  kiem(/NỀN SẴN TRÊN LÁ SỐ GỐC/.test(khoi) && /NÓI CẢ HAI MẶT/.test(khoi), 'khối prompt lớp hạn thiếu mục nền hoặc luật hai mặt');
+  kiem(/NỀN SẴN TRÊN LÁ SỐ GỐC/.test(khoi) && /CÓ CĂN CỨ THÌ NÊU/.test(khoi), 'khối prompt lớp hạn thiếu mục nền hoặc luật có căn cứ thì nêu');
+  kiem(!/NÓI CẢ HAI MẶT/.test(khoi), 'khối prompt lớp hạn còn luật ép hai mặt (đã đảo theo C3/Q2)');
   kiem(!/Dữ kiện đang mở đường/.test(khoi), 'khối prompt lớp hạn còn tiêu đề của đường cũ');
 
   // Đại vận "giai đoạn": không có sao lưu / lưu hoá của một năm
@@ -191,6 +190,20 @@ console.log('== C. Phân bố hướng: đường cũ vs lớp hạn (60 lá × 
     }
     return { d, haiMat, tong };
   };
+  /*
+   * Không ép hai mặt (C3/Q2): phía có trọng lượng nhưng không lọt top 6 thì KHÔNG
+   * được chèn vào. Bản cũ chèn nên số ca này luôn bằng 0.
+   */
+  let khongChen = 0;
+  for (const laSo of LA) for (const namXem of NAM) for (const chuDe of CHU_DE) {
+    const n = tinhNghiengVe({ laSo, chuDe, lopHan: NAM_THANG, namXem, thangXem: 10, lopHanMoi: true });
+    if (!n || n.dauMoc.length < 6) continue;
+    for (const phia of ['do', 'can'] as const) {
+      if (n.canNang[phia] > 0 && !n.dauMoc.some((x) => x.huong === phia)) khongChen++;
+    }
+  }
+  console.log(`   ca một phía nặng hẳn, phía kia không bị chèn: ${khongChen}`);
+  kiem(khongChen > 0, 'top mốc vẫn bị chèn mốc phía thiếu — luật ép hai mặt chưa bỏ');
   for (const [ten, r] of [['cũ', dem(false)], ['lớp hạn', dem(true)]] as const) {
     const pc = (x: number) => `${((x / r.tong) * 100).toFixed(1)}%`;
     console.log(

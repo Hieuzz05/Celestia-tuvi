@@ -20,6 +20,9 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
 - **Mỗi câu mô tả hiện trạng trong giải pháp phải có dẫn chứng chạy ngay lượt đó** (tệp:dòng, kết quả
   grep kho). Không suy từ tên tệp, trí nhớ phiên hay lời subagent chưa tự kiểm; chưa kiểm thì ghi "chưa
   kiểm". Ngày 16/10 sáu khẳng định sai về Celes phải rút qua ba lượt.
+  **Dẫn sách thì đọc nguyên văn từng dòng trước khi trình**, và dòng đó phải nói ĐÚNG tổ hợp (không
+  phải một bộ sao rộng hơn có chứa nó). Lặp 17/10 (luật Hổ trình nhầm "2 nguồn"); máy canh: trích
+  nguyên văn trong `scripts/test-luat-to-hop.ts`.
 
 ## Phối hợp hai máy
 
@@ -32,6 +35,10 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   `docs/bai-hoc/` hoặc `docs/bay/`, không ghi riêng vào memory.
 
 ## Giao tiếp với chủ dự án
+
+- **Ẩn dụ và nhãn nội bộ không bao giờ thành lời Celes.** "Xe/đường", "nền", "lực cản", "vững/yếu" là
+  chữ để thiết kế. Câu mẫu và chữ hướng dẫn model phải là lời thường: tên sao, tên cung, chuyện đời cụ thể.
+  Lặp 18/10 (chủ dự án đã nhắc nhiều lần); máy canh: validator lời chat lớp hạn (CEL-200 3b, việc e).
 
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.

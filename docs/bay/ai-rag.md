@@ -171,3 +171,8 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Validator quan hệ phải giữ đủ thuộc tính qua nhiều vế** (CEL-200, 17/10): không lấy sao đầu rồi bỏ sao sau, không mất lớp/năm/cung sau dấu phẩy hoặc liên từ; chữ model sinh gồm cả chip. Ca máy canh: `scripts/test-lop-han-3b.ts` (CI), có cặp ghép sai, nguồn không có, F/W và chuyển chế độ.
 
 - **Snapshot base-root phải đọc cả khung và dữ kiện từ cùng cây**, alias không quay về mã hiện tại. Ngoại lệ sửa lỗi ungated cần patch riêng và SHA/tree nguồn. Máy canh CEL-200: `test-lop-han-v3.ts` (khung + B4), `test-lop-han-env.ts` (env thật qua entry point, offline).
+- **Không ép hai mặt cho đủ.** Chèn mốc phía thiếu vào top, hay dặn "luôn nêu một thuận một cản", là
+  bắt model dựng ý ngược chiều khi năm nghiêng hẳn một phía (đảo quyết định 16/10, theo C3/Q2; C-E
+  19/10). Có căn cứ thì nêu, không có thì thôi. Máy canh: `test-lop-han-chat.ts`.
+- **Sửa `quy-tac-luan-giai.ts` / `chuan-ngon-ngu.ts` là đổi `PHIEN_BAN_CHU`** — hash khoá đệm của MỌI
+  bề mặt, toàn bộ bài đệm sinh lại, tốn tiền model. Một câu cũng vậy: hỏi chủ dự án trước (C-E 19/10).
