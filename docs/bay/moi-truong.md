@@ -38,3 +38,21 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Python trên Windows in tiếng Việt ra console thì sập `UnicodeEncodeError` (cp1252).** Đặt
   `PYTHONIOENCODING=utf-8` trước lệnh, hoặc gọi `sys.stdout.reconfigure(encoding='utf-8')` trong script
   (`backlog.py` của skill cap-nhat-backlog đã làm vậy).
+
+## Cấu hình chủ dự án ĐÃ xác nhận — không hỏi lại
+
+AI không đọc được các cấu hình dưới đây (cần token quản trị Supabase / quyền bảng điều khiển Vercel, máy
+không có), nên trước đây cứ mỗi lần trình test lại hỏi chủ dự án. Đã xác nhận thì ghi vào đây; trước khi
+hỏi một cấu hình bảng điều khiển, đọc mục này. Chỉ hỏi lại khi có dấu hiệu nó hỏng (vd đăng nhập Preview
+bị đẩy về production).
+
+| Cấu hình | Ở đâu | Xác nhận |
+|---|---|---|
+| Redirect URL Preview `https://*-duyhieu24082000-6871s-projects.vercel.app/**` | Supabase → Authentication → URL Configuration | Có — chủ dự án 31/10/2026 |
+| Bảng `thu_hoi_muc_thu_vien` (`supabase/va-thu-hoi-muc.sql`) | Supabase SQL | Đã chạy — chủ dự án 31/10/2026 |
+| `CELES_CONG_THU_HOI` chỉ cho Preview | Vercel → Environment Variables | Có từ 25/10/2026 (AI thấy qua `vercel env ls`, chỉ tên) |
+
+- **Log runtime Vercel Hobby chỉ giữ ~1 giờ** (`vercel logs --since` quá 1 giờ trả lỗi retention). Đo gì
+  qua log (vd `[thu-hoi] doc`) phải đọc ngay sau khi gây ra request.
+- **`npx vercel link` tự kéo biến môi trường về `.env.local` trong thư mục đang đứng.** Chạy link ở thư
+  mục tạm thì xoá `.env.local` đó ngay, đừng để bí mật nằm ngoài repo (31/10/2026).
