@@ -283,7 +283,7 @@ function Nhan({ children }: { children: React.ReactNode }) {
 function DanhSachLyDo({ tieuDe, mau, ds }: { tieuDe: string; mau: string; ds: GopDiem[] }) {
   return (
     <div className="flex flex-col gap-[8px]">
-      <p className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: mau }}>
+      <p className="text-[13px] font-semibold" style={{ color: mau }}>
         {tieuDe}
       </p>
       <ul className="flex flex-col gap-[8px]">
@@ -369,10 +369,13 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
           <span className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full" style={{ background: 'color-mix(in srgb, var(--line) 60%, transparent)' }} />
           <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-full" style={{ background: 'var(--line-strong)' }} />
           <span
-            className="absolute top-1/2 h-[8px] -translate-y-1/2 transition-[width] duration-700 ease-out motion-reduce:transition-none"
+            className="absolute top-1/2 h-[8px] -translate-y-1/2 transition-transform duration-700 ease-out motion-reduce:transition-none"
             style={{
               [phai ? 'left' : 'right']: '50%',
-              width: daThay ? `${rong}%` : '0%',
+              // Co giãn bằng transform, không animate width (đỡ tính lại bố cục mỗi khung hình).
+              width: `${rong}%`,
+              transform: daThay ? 'scaleX(1)' : 'scaleX(0)',
+              transformOrigin: phai ? 'left' : 'right',
               background: nhom.mau,
               borderRadius: phai ? '0 999px 999px 0' : '999px 0 0 999px',
               transitionDelay: `${i * 40}ms`,
@@ -420,7 +423,7 @@ function DongCung({ d, i, c }: { d: ChiTietDiemCung; i: number; c: ChungDong }) 
                 className="link-text link-action self-start"
                 onClick={() => ghiSuKien('deep_read_cta', { viTri: 'ban-do-manh-yeu', chuDe: chuDe.id })}
               >
-                Đọc phân tích chi tiết về {chuDe.ten.toLowerCase()} →
+                Đọc phân tích chi tiết về {chuDe.ten.toLowerCase()}
               </Link>
             )}
           </div>
@@ -547,7 +550,7 @@ export function BanDoManhYeu({
             className="flex min-h-[72px] flex-col items-start gap-[4px] rounded-[12px] border p-[12px] text-left transition-colors hover:bg-[color-mix(in_srgb,var(--fg)_4%,transparent)]"
             style={{ borderColor: `color-mix(in srgb, ${mau} 45%, transparent)`, background: `color-mix(in srgb, ${mau} 8%, transparent)` }}
           >
-            <span className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: mau }}>
+            <span className="text-[12px] font-semibold" style={{ color: mau }}>
               {nhan}
             </span>
             <span className="text-[17px] font-semibold leading-[22px]" style={{ color: 'var(--fg)' }}>
@@ -574,7 +577,7 @@ export function BanDoManhYeu({
           className="flex flex-col items-start gap-[8px] rounded-[12px] p-[16px]"
           style={{ background: 'color-mix(in srgb, var(--accent) 7%, transparent)' }}
         >
-          <span className="text-[13px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--accent-chu)' }}>
+          <span className="text-[13px] font-semibold" style={{ color: 'var(--accent-chu)' }}>
             Celes nhận xét
           </span>
           <p className={`body-text ${moTomTat ? '' : 'line-clamp-3'}`} style={{ color: 'var(--fg)' }}>

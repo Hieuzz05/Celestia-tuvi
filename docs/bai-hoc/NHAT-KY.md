@@ -133,7 +133,15 @@ Mẫu một mục:
 - Lần: 1
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo". Lần 2 → máy canh trích nguyên văn trong
   `scripts/test-luat-to-hop.ts` (nhánh `viec/van-han-lop-han`, 10beac8).
-- Lần: 2
+- Lần: 3
+- Lặp 17/10 (lần 3, hai chuyện): (a) giải pháp việc A ghi "câu Triệt tiền vận, Tuần hậu vận không có
+  trong 15 cuốn"; chủ dự án phản đối, chuyen-gia-tu-vi tìm ra Ảo bí 4819 nói nguyên văn — grep của AI
+  chỉ dùng vài biến thể chữ ("hậu vận", "sau 30") nên sót câu Hán Việt "hậu khán Tuần". (b) nói đường
+  luận dùng "6 đoạn sách" trong khi v3 dùng 8 (hạ 4 khi thư viện khớp đủ) — số 6 chỉ của chat. Gốc
+  chung: khẳng định PHỦ ĐỊNH ("không có", "chỉ có") cần quét hết mà AI dừng ở lần grep đầu. Giá: chủ
+  dự án phải sửa lưng; bản 7 đẩy lên nhánh với câu sai, phải sửa lại (56636f0). Máy canh đề xuất:
+  agent chuyen-gia-tu-vi bắt buộc soát mọi câu "sách không có / chỉ một sách" trước khi trình (thêm
+  vào luật đầu ra của agent và mục Kiểm và báo); với mã, câu số liệu (số đoạn, mốc) phải kèm tệp:dòng.
 - Lặp 17/10: trình chủ dự án luật Bạch Hổ + Lưu Hổ "đủ 2 nhóm nguồn" và được duyệt; celes-domain đọc
   lại thì Hàm số 2567/2587 nói BỘ Tang Hổ + Lưu Tang Hổ, không phải Hổ đơn — chỉ còn một nhóm. Kình
   cũng bị gắn "cung hỏi" mà sách chỉ nói Mệnh và hạn. Gốc: số dòng lấy từ bảng tần suất (đếm chữ),
@@ -160,3 +168,90 @@ Mẫu một mục:
   chat lớp hạn (sau cờ, tăng `PHIEN_BAN_VALIDATOR`) quét `CUM_TIENG_LONG_CAM` + `AN_DU_CAM` + cụm ẩn dụ
   xe/đường; giao máy 2 trong 3b (việc e).
 - Lần: 2
+
+## 17/10/2026 · Ví dụ của chủ dự án bị áp nguyên làm luật · quy-trinh
+- Thẻ: vi du chu du an, hoa giai, hoi chu du an quyet, quy tac tu vi
+- Chuyện gì: giải pháp việc A (vận hạn) định lấy danh sách hoá giải chủ dự án nêu làm ví dụ (Hóa Khoa,
+  Giải Thần, Tử Vi, Tuần Triệt) làm luật; lại hỏi chủ dự án "có cho sao toạ thủ nặng hơn sao chiếu
+  không". Kiểm sách: danh sách đó là câu Khảo luận 2109 chỉ nói về La Võng; danh sách đủ ở Khảo luận
+  1671–1672; toạ thủ nặng hơn chiếu là quy tắc sẵn (Hàm số 737).
+- Gốc: coi lời chủ dự án là đặc tả chuyên môn, và đẩy câu hỏi chuyên môn lên người thay vì tra sách.
+  Không có bước soát chuyên môn riêng trước khi trình (phan-bien soi kiến trúc, không soi tử vi).
+- Giá: chủ dự án phải sửa lưng hai lần trong một lượt; bản 5 phải làm lại.
+- Luật: ví dụ của chủ dự án phải qua sách; điều có quy tắc tử vi thì không hỏi người quyết.
+- Nâng: `docs/bai-hoc/cach-lam.md` (Giao tiếp); máy canh = agent `chuyen-gia-tu-vi` (nhánh
+  `viec/agent-chuyen-gia-tu-vi`, gọi bắt buộc khi giải pháp chạm chuyên môn).
+- Lần: 1
+
+## 17/10/2026 · Trình mâu thuẫn sách mà không có giải pháp · quy-trinh
+- Thẻ: sach nguoc nhau, mau thuan, de xuat, chuyen-gia-tu-vi
+- Chuyện gì: giải pháp việc A bản 6 đưa bốn chỗ "sách nói ngược nhau" để chủ dự án tự chọn bên, không
+  kèm đề xuất. Đọc lại ngữ cảnh thì ít nhất ba chỗ không ngược thật: Chìa khóa 756 "tứ sát" là Không
+  Kiếp Kình Đà (mục Thiên Không), không phải Hỏa Linh; Khảo luận 2453 nói SAO Thiên Đồng còn Bổ Túc
+  491 nói CÁCH Cơ Nguyệt Đồng Lương; Triệt ở Mệnh "chặn hung" và "thiếu niên vất vả" là hai mặt.
+- Gốc: agent chuyên gia được dặn "nêu cả hai, KHÔNG tự chọn", và tôi chép nguyên kết quả đó lên mà
+  không đọc ngữ cảnh từng câu. Câu trích một dòng tách khỏi đoạn nên trông như ngược nhau.
+- Giá: chủ dự án phải sửa lưng; phải soát lại cả bốn chỗ.
+- Luật: chỗ sách ngược nhau phải trình kèm đề xuất hoà giải (điều kiện hoà, hoặc nghiêng bên nào và vì
+  sao); chủ dự án duyệt đề xuất chứ không tự chọn từ con số không.
+- Nâng: `docs/bai-hoc/cach-lam.md` (sửa luật "ví dụ chủ dự án"); agent `chuyen-gia-tu-vi` đổi định dạng
+  đầu ra thành "Sách nói ngược nhau: đề xuất để chủ dự án duyệt" (commit `7df47b1`, đã gộp main).
+- Lần: 2
+- Lặp 19/10: trình hai điểm chuyên môn CEL-200 (Đà La đắc địa ở đâu; Nhật Nguyệt Sửu Mùi gặp Kỵ) mà
+  không đề xuất, chưa qua `chuyen-gia-tu-vi`. Chuyên gia soát xong thì cả hai chỗ AI đặt tạm đều sai:
+  Đà suýt sửa engine theo phía thiểu số (Thiên Lương + Ảo bí, trong khi ~6 nhóm nói tứ mộ đắc); Nhật
+  Nguyệt bị hạ mức 'giam' trong khi 4 nhóm sách nói Kỵ làm sáng, và TH 4091 bị đọc nhầm là câu bác.
+  Gốc mới: luật đã có trên main nhưng phiên không thấy (xem mục 18/10 "Mục xin quyết thiếu bối cảnh").
+
+## 18/10/2026 · Mục xin quyết thiếu bối cảnh, chủ dự án không hiểu · quy-trinh
+- Thẻ: xin quyet, boi canh, chua hieu, cau hoi chu du an, tom tat qua gon
+- Chuyện gì: trình phương án mã 3a' (CEL-200) kèm 5 mục cần quyết. Ba mục chủ dự án trả lời "chưa
+  hiểu": "luật chỉ có một nguồn", "bỏ ép hai mặt (A/B)", "C-D theo cách rẻ". Mỗi mục chỉ nêu tên kỹ
+  thuật và lựa chọn, không nói đó là chức năng gì, người dùng gặp nó ở đâu, hiện đang chạy ra sao.
+- Gốc: AI viết câu hỏi từ ngữ cảnh của chính nó (tên tệp, mã bước C-D, nhãn của reviewer) sau một
+  phiên dài, và coi như chủ dự án cũng đang giữ ngữ cảnh đó.
+- Giá: mất một vòng hỏi lại; chủ dự án phải yêu cầu đổi cách trình.
+- Luật: mỗi mục xin quyết phải có đủ: (1) chức năng gì, người dùng gặp ở đâu (chat, bài luận, bản đồ…);
+  (2) hiện đang chạy thế nào; (3) đổi gì, kèm một ví dụ cụ thể; (4) mỗi lựa chọn dẫn tới đâu; (5) AI
+  đề xuất gì, vì sao. Không dùng mã bước (C-D), tên reviewer hay tên tệp làm chủ ngữ.
+- Nâng: `docs/bai-hoc/cach-lam.md` mục "Giao tiếp với chủ dự án". Lần 2 → đề xuất máy canh (dưới), chờ
+  chủ dự án duyệt.
+- Lần: 2
+- Lặp 19/10: xin duyệt "tăng PHIEN_BAN_NGHIENG_LOP_HAN" mà không nói đó là gì, ảnh hưởng gì; chủ dự án
+  hỏi "tăng cái gì?". Gốc lần này KHÔNG phải thiếu luật: `CLAUDE.md` nạp `docs/bai-hoc/cach-lam.md` từ
+  thư mục chính, mà thư mục chính đang ở nhánh `viec/toi-uu-token` rẽ trước 17/10, còn việc làm trong
+  worktree `viec/van-han-lop-han` cũng cũ → ba luật 17–18/10 (xin quyết tự đứng, sách ngược kèm hoà
+  giải, chạm chuyên môn qua chuyen-gia-tu-vi) không hề có trong ngữ cảnh. Bài học lên main không tới
+  được phiên đang chạy trên nhánh cũ. Giá: một vòng hỏi lại, chủ dự án phải nhắc luật.
+  Máy canh đề xuất: hook SessionStart so `docs/bai-hoc/cach-lam.md` đang có với
+  `git show origin/main:docs/bai-hoc/cach-lam.md`; khác thì in bản main vào ngữ cảnh (kèm dòng "bài học
+  mới hơn nhánh này"). Chặn ở đầu mọi phiên, cả hai máy, không phụ thuộc nhánh đang checkout.
+
+## 18/10/2026 · Lại đề xuất luật ép model sau khi đã chốt không ép · ai-rag
+- Thẻ: ep model, hai mat, luat cung prompt, noi dep, can cu
+- Chuyện gì: chủ dự án đã chốt C3 "không ép trả lời hai mặt" và đã nói nhiều lần rằng luật ép cứng làm
+  model luận kém đi. Vậy mà trong mã vẫn còn "NÓI CẢ HAI MẶT, LUÔN LUÔN" (do AI thêm ngày 16/10,
+  `nghieng-ve.ts:892`) cùng đoạn đổi mốc cho đủ hai phía (:636). Khi trình phương án, AI còn đưa ra
+  phương án (A) giữ "cân hai mặt" để chủ dự án chọn.
+- Gốc: AI coi luật ép là lưới an toàn ("cho không phán một chiều"), mà không thấy rằng khi không có căn
+  cứ thì ép nói đủ hai phía chính là bắt model bịa. Quyết định ở tầng nguyên tắc (C3) không được AI
+  kéo xuống rà từng câu prompt đang chạy.
+- Giá: chủ dự án phải nhắc lại nguyên tắc; mất một vòng quyết.
+- Luật: không thêm vào prompt luật đòi model PHẢI nói một nội dung (hai mặt, điểm đẹp, lời khuyên…)
+  bất kể có căn cứ hay không. Chỉ được viết "có căn cứ thì nêu, không có thì thôi". Khi chủ dự án chốt
+  một nguyên tắc về prompt, grep mọi prompt đang chạy để tìm câu trái nguyên tắc đó.
+- Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
+- Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
+
+## 22/10/2026 · Đổi quy tắc vận hạn mà mẫu đóng băng không bắt · engine
+- Thẻ: phienBan, van tay, mau dong bang, van han, nguyet han
+- Chuyện gì: X2 (nguyệt hạn Cách 1) đổi cung tháng của mọi lá số, nhưng `test-ansao-chuan` vẫn xanh
+  khi chưa tăng `PHUONG_PHAP.phienBan`. Lần trước (CELES-37) cũng vậy với một quy tắc vận hạn.
+- Gốc: vân tay lớp 3 chỉ chụp cung + sao GỐC. Tiểu hạn, nguyệt hạn, lưu tinh tính ngoài `lapLaSo`
+  nên nằm ngoài mẫu; máy canh "đổi kết quả mà không tăng phiên bản" có lỗ đúng ở lớp hay đổi nhất.
+- Giá: hai lần chỉ dựa vào người nhớ tăng phiên bản; quên là đệm phát bài nói cung tháng sai
+  (dấu logic `lg` lấy từ `phienBan`). Phải mở CELES-37 và T-03 để vá.
+- Luật: lớp tính nào nằm ngoài `lapLaSo` mà vào lời luận thì phải vào vân tay của `test-ansao-chuan`.
+- Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
+  lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
+- Lần: 2 (lần 1: CELES-37, chưa ghi sổ)

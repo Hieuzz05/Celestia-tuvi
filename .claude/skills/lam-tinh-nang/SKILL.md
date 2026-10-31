@@ -29,6 +29,9 @@ Phương án gồm: tệp sẽ sửa, từng bước, test sẽ chạy, rủi ro
 `THE_HE_DEM` hoặc `PHIEN_BAN_*`, lệch web–app vì app đọc thẳng `lib/tuvi`), và dòng backlog sẽ
 cập nhật.
 
+**Chạm chuyên môn tử vi** (cách chấm, luật tổ hợp, cách cục, hoá giải, vận hạn, prompt luận), mọi
+cỡ: gọi `chuyen-gia-tu-vi` trên phương án, cùng lượt với `phan-bien` nếu có, sửa theo trước khi trình.
+
 **Cỡ Lớn:** gọi `phan-bien` trên phương án, sửa theo, rồi gọi `danh-gia-tac-dong`. Thêm
 `soat-chi-phi` nếu chạm dịch vụ ngoài, model, cron hay thư viện mới.
 

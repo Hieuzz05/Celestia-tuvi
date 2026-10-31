@@ -4,6 +4,7 @@ Tách khỏi `AGENTS.md` (07/10/2026) để không nạp vào mọi lượt. Ba 
 Trong lúc làm chỉ cần `node scripts/kiem-nhanh.mjs --chay`; danh sách này là thứ CI chạy, tay chỉ cần khi đổi cấu hình dựng hoặc tái hiện CI đỏ. Mốc lint là `MOC` trong `scripts/dem-loi-lint.mjs` — không nâng.
 
 ```
+node scripts/kiem-dau-ai.mjs          # dấu AI ở giao diện (Hallmark sloplint, tầng floor) so với nền scripts/hallmark/nen.json; sửa xong dấu cũ thì --cap-nhat — offline
 npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt

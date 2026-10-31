@@ -20,6 +20,24 @@ Web tử vi cá nhân hoá. Deploy: https://celestia-tuvi.vercel.app · Repo: Hi
 Hướng dẫn vận hành đầy đủ (deploy, biến môi trường, Supabase, bật Google SSO, design system,
 cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước khi sửa gì lớn.
 
+## Vibe Board — bảng task chung mọi máy (BẮT BUỘC)
+
+Chủ dự án theo dõi việc đã / đang / sẽ làm của mọi dự án trên **Vibe Board** (repo private
+`github.com/Hieuzz05/vibe-board`), đồng bộ giữa các máy qua git. AI trên máy nào cũng phải ghi vào đó.
+
+1. **Đầu phiên, kiểm máy đã cài chưa:** có tệp `D:/VibeDashboard/task.mjs` (máy không có ổ D thì
+   `~/VibeDashboard/task.mjs`) là đã cài. Chưa có thì cài TRƯỚC khi làm việc:
+   ```bash
+   git clone https://github.com/Hieuzz05/vibe-board.git D:/VibeDashboard
+   node D:/VibeDashboard/setup.mjs --by "<Claude|Codex> (máy N)"   # không biết N thì hỏi chủ dự án một câu
+   ```
+   `setup.mjs` chép luật đầy đủ vào chỉ dẫn toàn cục của Claude Code và Codex, có hiệu lực từ phiên sau.
+   Phiên đang chạy thì đọc luật ở `D:/VibeDashboard/RULE.md` và làm theo luôn.
+2. **Đã cài:** `git -C D:/VibeDashboard pull -q`; `RULE.md` vừa đổi thì chạy lại `setup.mjs`.
+3. **Ghi theo `RULE.md`:** nhận việc, mỗi mốc, chờ duyệt, chờ nghiệm thu, dừng giữa chừng. Mô tả đủ các mục
+   (mục tiêu, bối cảnh, làm gì, xong khi…), viết cho chủ dự án đọc. Mã dự án: `celes`. Repo ở chỗ khác
+   `D:/SAPP BA/tuvi-ai` thì chạy `node D:/VibeDashboard/task.mjs project --id celes --repo "<đường dẫn>"` một lần.
+
 ## Ba quyết định không được tự đổi
 
 1. **Nam phái làm chuẩn** cho an sao. Khi luận vận hạn, kết hợp sao lưu với tứ hoá theo hạn; cả hai cùng là căn cứ của lớp hạn.
@@ -71,7 +89,7 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 
 ## Luồng làm việc — LUẬT, không phải gợi ý
 
-Dự án này có 9 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
+Dự án này có 10 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
 mọi AI làm trên repo, cả hai máy.
 
 ### Mở phiên: chủ dự án đánh dấu loại việc
@@ -108,8 +126,8 @@ phải gọi. Memory của Claude là cục bộ một máy — bài học dùng
 ### Luồng A — `[CHIẾN LƯỢC]`
 
 ```
-quet-doi-thu (nếu cần dữ liệu ngoài) → tổng hợp → phan-bien → trình bày → chủ
-dự án quyết → GHI QUYẾT ĐỊNH RA TỆP → đóng phiên
+quet-doi-thu (nếu cần dữ liệu ngoài) → tổng hợp → phan-bien (+ chuyen-gia-tu-vi
+nếu chạm chuyên môn tử vi) → trình bày → chủ dự án quyết → GHI QUYẾT ĐỊNH RA TỆP → đóng phiên
 ```
 
 **Luật cứng: không trình bày một kết luận chiến lược nào mà chưa qua
@@ -125,7 +143,8 @@ sau nghiên cứu lại từ đầu.
 
 ```
 git status → tạo nhánh viec/<tên> → researcher → trình phương án
-  → phan-bien ← TRƯỚC khi viết dòng code nào
+  → phan-bien (+ chuyen-gia-tu-vi nếu chạm chuyên môn tử vi, chạy song song)
+      ← TRƯỚC khi viết dòng code nào
   → danh-gia-tac-dong ← cờ "CẦN CHỦ DỰ ÁN DUYỆT" bật thì DỪNG, trình trước
   → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
   → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
@@ -142,6 +161,12 @@ Chạy lại nó trên diff thật trước commit nếu code đã lệch khỏi
 
 **Phản biện phương án tốn hai phút; vứt code đã viết tốn cả buổi.** Đây là lý do
 `phan-bien` đứng trước bước viết code, không phải sau.
+
+**Giải pháp chạm chuyên môn tử vi** (cách chấm, luật tổ hợp, cách cục, hoá giải, vận hạn,
+prompt luận) thì gọi thêm `chuyen-gia-tu-vi` CÙNG LƯỢT với `phan-bien`, mọi cỡ việc, trước khi
+trình chủ dự án (chủ dự án quyết 17/10/2026). `phan-bien` đánh sập, `chuyen-gia-tu-vi` soát
+chuyên môn rồi đề xuất hướng đúng hơn; sửa theo cả hai rồi mới trình. Ví dụ chủ dự án nêu cũng
+phải qua chuyên gia kiểm lại bằng sách, không áp nguyên làm luật.
 
 ### Luồng C — `[SỬA LỖI]`
 
@@ -198,6 +223,7 @@ mục tạm **và in đường dẫn ra màn hình** — không in thì chủ d�
 | `researcher` | Trước mọi thay đổi mã | AI tự |
 | `phan-bien` | Có kết luận / phương án / thiết kế cần đánh sập | AI tự theo luồng A, B |
 | `quet-doi-thu` | Cần biết đối thủ đang làm gì | AI tự |
+| `chuyen-gia-tu-vi` | Giải pháp chạm chuyên môn tử vi, trước khi trình: soát lỗi chuyên môn + đề xuất hướng đúng hơn | AI tự, cùng lượt `phan-bien` |
 | `danh-gia-tac-dong` | Sau `phan-bien`, trước khi viết code: tác động lên phần đã có, cờ cần duyệt | AI tự theo luồng B |
 | `celes-domain` | Sau khi chạm `lib/tuvi`, `lib/rag`, prompt, nội dung luận | AI tự |
 | `qa` | Sau mọi thay đổi mã | AI tự |

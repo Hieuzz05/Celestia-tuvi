@@ -36,6 +36,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint không vượt mốc
         run: node scripts/dem-loi-lint.mjs
+      - name: Không thêm dấu AI ở giao diện (Hallmark, tầng floor)
+        run: node scripts/kiem-dau-ai.mjs
 
       - name: Engine an sao
         run: npx tsx scripts/test-ansao-chuan.ts

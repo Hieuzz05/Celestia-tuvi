@@ -47,14 +47,14 @@ export const vi = {
   },
 
   landing: {
-    eyebrow: 'HIỂU MÌNH · RÕ ĐƯỜNG · VỮNG BƯỚC',
+    eyebrow: 'Hiểu mình. Rõ đường. Vững bước.',
     tieuDe: 'Có những ngã rẽ bạn không nên đi một mình',
     moTa: 'Khi công việc, tình cảm hay một quyết định khiến bạn mất phương hướng, Celes ở đây để lắng nghe, giúp bạn nhìn rõ điều đang xảy ra và tìm ra hướng đi phù hợp với chính mình.',
     ctaPhu: 'Xem Celes có thể giúp gì',
     microcopy: 'Chỉ cần vài phút để bắt đầu · Không cần tạo tài khoản ngay.',
     thuNgaySinhKhac: 'Lá số mẫu — bấm để đổi:',
 
-    theEyebrow: 'NHỮNG CÂU BẠN CÓ THỂ MANG TỚI',
+    theEyebrow: 'Những câu bạn có thể mang tới',
     theTieuDe: 'Bạn không cần tự mình xoay xở với mọi câu hỏi',
     the: [
       {
@@ -77,7 +77,7 @@ export const vi = {
       },
     ],
 
-    caiGiEyebrow: 'CELES LÀM GÌ CÙNG BẠN',
+    caiGiEyebrow: 'Celes làm gì cùng bạn',
     caiGiTieuDe: 'Không phải một lời phán. Một góc nhìn đủ rõ.',
     caiGi: [
       {
@@ -94,7 +94,7 @@ export const vi = {
       },
     ],
 
-    tinEyebrow: 'VÌ SAO TIN ĐƯỢC',
+    tinEyebrow: 'Vì sao tin được',
     tinTieuDe: 'Mỗi điều Celes nói đều mở ra xem được căn cứ',
     tinMo: 'Bạn đọc bản dễ hiểu trước. Khi muốn biết điều đó dựa trên đâu, mọi lớp bên dưới vẫn còn nguyên.',
     tin: [
@@ -113,8 +113,8 @@ export const vi = {
     ],
     xemCachTinh: 'Xem Celes dựa vào đâu',
 
-    cuoiEyebrow: 'SẴN SÀNG CHƯA?',
-    cauChuyenEyebrow: 'CÂU CHUYỆN CELESTIA',
+    cuoiEyebrow: 'Sẵn sàng chưa?',
+    cauChuyenEyebrow: 'Câu chuyện Celestia',
     cauChuyenTieuDe: 'Vì sao Celes tồn tại',
     cauChuyenDoan1:
       'Phần lớn những lúc bế tắc, chúng ta không thiếu thông tin. Chúng ta đã nghĩ rất nhiều rồi mà vẫn không biết nên tiếp tục, dừng lại hay bắt đầu lại.',
@@ -122,7 +122,7 @@ export const vi = {
       'Celestia ra đời cho đúng khoảnh khắc đó. Không phải để thêm một lời khuyên nữa vào đống lời khuyên bạn đã nghe, mà để giúp bạn nhìn vấn đề từ một góc khác — bình tĩnh hơn, rõ hơn, và gần với chính bạn hơn.',
     cauChuyenDoan3:
       'Celestia là nơi bạn đến. Celes là người bạn trò chuyện cùng — một người bạn để lắng nghe, một người thầy để soi sáng, và một người đồng hành ở những ngã rẽ.',
-    khongLamEyebrow: 'ĐIỀU CELES KHÔNG LÀM',
+    khongLamEyebrow: 'Điều Celes không làm',
     khongLam: [
       {
         ten: 'Không phán số phận',
@@ -222,7 +222,7 @@ export const vi = {
     sauNoiBatTieuDe: 'Luận giải chuyên sâu theo 9 chủ đề',
     sauNoiBatMo: 'Tính cách, công việc, tiền bạc, tình cảm, gia đình, sức khoẻ… Mỗi chủ đề là vài câu hỏi cụ thể, mỗi câu được luận từ nhiều cung trên lá số của bạn.',
     sauNoiBatCta: 'Đọc luận giải chuyên sâu',
-    sauNoiBatKhamPha: 'Khám phá từng chủ đề →',
+    sauNoiBatKhamPha: 'Khám phá từng chủ đề',
     sauNoiBatHanMuc: 'Mỗi ngày một bài miễn phí.',
     theoChuDeTieuDe: 'Đi thẳng vào điều bạn đang băn khoăn',
     theoChuDeMo: 'Công việc, tiền bạc, tình cảm, gia đình, sức khoẻ — hoặc hỏi Celes một câu của riêng bạn.',
@@ -272,7 +272,7 @@ export const vi = {
     quenMatKhau: 'Quên mật khẩu?',
     chuaCoTaiKhoan: 'Mới dùng Celestia? Tạo tài khoản miễn phí.',
     daCoTaiKhoan: 'Đã có tài khoản? Đăng nhập',
-    panelEyebrow: 'BẠN SẼ GIỮ LẠI ĐƯỢC',
+    panelEyebrow: 'Bạn sẽ giữ lại được',
     panelTieuDe: 'Những điều bạn đã khám phá cùng Celes, ở một nơi.',
     panelY: [
       'Bản đồ của bạn và người thân, không phải nhập lại mỗi lần.',
@@ -311,7 +311,7 @@ export const vi = {
   },
 
   hanhTrinh: {
-    eyebrow: 'HÀNH TRÌNH CỦA BẠN',
+    eyebrow: 'Hành trình của bạn',
     dangMo: 'Đang mở ra',
     dangCang: 'Đang căng',
     canCho: 'Cần chờ',
@@ -356,7 +356,7 @@ export const vi = {
   },
 
   cong: {
-    eyebrow: 'ĐÂY MỚI CHỈ LÀ PHẦN ĐẦU',
+    eyebrow: 'Đây mới chỉ là phần đầu',
     cta: 'Tạo tài khoản miễn phí',
     chu: 'Miễn phí, không cần thẻ. Bản đồ bạn vừa lập sẽ được giữ lại.',
     chuToanTrang: 'Miễn phí, không cần thẻ. Đăng ký bằng Google hoặc email, mất chưa tới một phút.',
@@ -418,7 +418,7 @@ export const vi = {
   },
 
   luanSau: {
-    eyebrow: 'BỨC TRANH ĐẦY ĐỦ',
+    eyebrow: 'Bức tranh đầy đủ',
     tieuDe: 'Còn đây là những gì Celes đọc kỹ hơn',
     moTa: 'Mỗi phần mở đầu bằng điều đáng chú ý nhất, rồi mới tới chi tiết. Chỗ nào bạn thấy chưa thuyết phục, mở phần căn cứ ngay dưới để xem Celes dựa vào đâu.',
     hoiVePhanNay: 'Hỏi Celes về phần này',
@@ -428,7 +428,7 @@ export const vi = {
     docTu: 'Đọc từ:',
     cung: 'cùng',
     soiQua: 'soi qua',
-    doanKhau: 'BA PHẦN NÀY NÓI CÙNG ĐIỀU GÌ',
+    doanKhau: 'Ba phần này nói cùng điều gì',
     giuLai: 'Điều Celes muốn bạn giữ lại',
     theoNoiBat: 'Đọc theo điều đang khiến bạn nghĩ nhiều ⇅',
     theoChang: 'Quay lại bốn chặng ⇅',
@@ -496,7 +496,7 @@ export const vi = {
   },
 
   danhSach: {
-    eyebrow: 'DANH SÁCH LÁ SỐ',
+    eyebrow: 'Danh sách lá số',
     tieuDe: 'Những lá số bạn đang giữ',
     laSoCuaToi: 'Lá số của tôi',
     datLamCuaToi: 'Đặt làm lá số của tôi',
@@ -530,10 +530,10 @@ export const vi = {
   },
 
   hoiCeles: {
-    eyebrow: 'HỎI CELES',
+    eyebrow: 'Hỏi Celes',
     tieuDe: 'Bạn đang băn khoăn điều gì?',
     dangNoiVe: 'Đang nói về',
-    nguoiVuaNhap: '— Lá số vừa nhập —',
+    nguoiVuaNhap: 'Lá số vừa nhập',
     hoiVeNguoiKhac: 'Hỏi về một lá số khác',
     hoiVeNguoiNay: 'Hỏi về lá số này',
     canBietAi: 'Mình đang nói về lá số nào nhỉ?',
@@ -622,7 +622,7 @@ export const vi = {
   },
 
   cachHoatDong: {
-    eyebrow: 'CÁCH CELES ĐỒNG HÀNH CÙNG BẠN',
+    eyebrow: 'Cách Celes đồng hành cùng bạn',
     tieuDe: 'Bắt đầu từ điều bạn đang băn khoăn',
     intro:
       'Bạn không cần biết Tử Vi, cũng không cần chuẩn bị một câu hỏi thật “đúng”. Chỉ cần bắt đầu từ điều đang khiến bạn nghĩ nhiều. Phần còn lại, Celes sẽ cùng bạn gỡ từng lớp.',
@@ -643,7 +643,7 @@ export const vi = {
           'Celes không quyết thay bạn. Mỗi nhận định đều có phần “Vì sao?” để bạn xem căn cứ, cân nhắc và chọn bước tiếp theo theo cách của mình.',
       },
     ],
-    tinEyebrow: 'VÌ SAO TIN ĐƯỢC',
+    tinEyebrow: 'Vì sao tin được',
     tinTieuDe: 'Ba điều Celes không làm',
     tin: [
       {
@@ -659,7 +659,7 @@ export const vi = {
         mo: 'Celes nói về xu hướng và điều nên lưu ý, không khẳng định tương lai chắc chắn sẽ xảy ra.',
       },
     ],
-    phuongPhapEyebrow: 'PHƯƠNG PHÁP TÍNH',
+    phuongPhapEyebrow: 'Phương pháp tính',
     phuongPhapTieuDe: 'Phần dành cho ai muốn kiểm chứng',
     phuongPhapMo:
       'Phần dưới đây là lớp kỹ thuật. Không cần đọc để dùng Celestia, nhưng nó luôn ở đây cho ai muốn đối chiếu.',
@@ -677,7 +677,7 @@ export const vi = {
         mo: 'Mỗi nhận định đều có nút mở ra xem nó dựa trên cung nào, sao nào, độ sáng ra sao, và bộ quy tắc phiên bản nào đã tính ra nó.',
       },
     ],
-    hoiEyebrow: 'CÂU HỎI THƯỜNG GẶP',
+    hoiEyebrow: 'Câu hỏi thường gặp',
     hoiTieuDe: 'Những điều nên biết trước',
     hoi: [
       {
@@ -697,7 +697,7 @@ export const vi = {
         dap: 'Không. Celestia mô tả xu hướng của một giai đoạn, không khẳng định sự việc sẽ xảy ra. Bạn nên đọc nó như một góc nhìn thêm trước khi tự quyết định, không phải như một lời phán.',
       },
     ],
-    cuoiEyebrow: 'THỬ XEM SAO',
+    cuoiEyebrow: 'Thử xem sao',
     cuoiTieuDe: 'Đọc thì lâu, xem thì nhanh hơn',
     cuoiMo: 'Lập một lá số và tự mở phần căn cứ — nhanh hơn là đọc hết trang này.',
     cuoiNut: 'Lập lá số miễn phí',

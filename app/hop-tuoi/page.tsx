@@ -175,7 +175,7 @@ export default function KetNoiPage() {
           className={dangChay || ketQua ? 'invisible' : ''}
         />
         <div className="min-w-0">
-          <p className="eyebrow">MỐI QUAN HỆ</p>
+          <p className="eyebrow">Mối quan hệ</p>
           <h1 className="heading mt-[10px]">Hai người có hợp nhau không?</h1>
           <p className="body-text mt-[16px] max-w-[620px]" style={{ color: 'var(--fg-muted)' }}>
             Cùng Celes xem hai lá số để hiểu hai người hợp nhau ở điểm nào, dễ bất đồng vì đâu và chuyện tình cảm, hợp tác hay gia đình có thể diễn biến ra sao.
@@ -203,7 +203,7 @@ export default function KetNoiPage() {
                   if (h) chonHoSo(h, dat);
                 }}
               >
-                <option value="">— Chọn một người đã lưu —</option>
+                <option value="">Chọn một người đã lưu</option>
                 {hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
                     {h.hoTen || 'Không tên'} — {h.ngay}/{h.thang}/{h.nam}

@@ -49,14 +49,14 @@ export const en: TuDien = {
   },
 
   landing: {
-    eyebrow: 'KNOW YOURSELF · SEE THE PATH · MOVE FORWARD',
+    eyebrow: 'Know yourself. See the path. Move forward.',
     tieuDe: 'Some crossroads you shouldn’t walk alone',
     moTa: 'When work, a relationship or a decision leaves you without bearings, Celes is here to listen, help you see what is actually going on, and find a direction that fits who you are.',
     ctaPhu: 'See what Celes can help with',
     microcopy: 'A few minutes to start · No account needed yet.',
-    thuNgaySinhKhac: 'Sample charts — tap to switch:',
+    thuNgaySinhKhac: 'Sample charts. Tap to switch:',
 
-    theEyebrow: 'QUESTIONS YOU CAN BRING HERE',
+    theEyebrow: 'Questions you can bring here',
     theTieuDe: 'You don’t have to work through every question alone',
     the: [
       {
@@ -79,7 +79,7 @@ export const en: TuDien = {
       },
     ],
 
-    caiGiEyebrow: 'WHAT CELES DOES WITH YOU',
+    caiGiEyebrow: 'What Celes does with you',
     caiGiTieuDe: 'Not a verdict. A view clear enough to act on.',
     caiGi: [
       {
@@ -92,11 +92,11 @@ export const en: TuDien = {
       },
       {
         ten: 'Ends with one small step',
-        mo: 'Never decides for you — just offers one thing you could do, or ask yourself next.',
+        mo: 'Never decides for you. It just offers one thing you could do, or ask yourself next.',
       },
     ],
 
-    tinEyebrow: 'WHY YOU CAN TRUST IT',
+    tinEyebrow: 'Why you can trust it',
     tinTieuDe: 'Everything Celes says opens up to show its grounds',
     tinMo: 'You get the plain-language read first. When you want to know what it rests on, every layer underneath is still there.',
     tin: [
@@ -115,16 +115,16 @@ export const en: TuDien = {
     ],
     xemCachTinh: 'See what Celes works from',
 
-    cuoiEyebrow: 'READY?',
-    cauChuyenEyebrow: 'THE CELESTIA STORY',
+    cuoiEyebrow: 'Ready?',
+    cauChuyenEyebrow: 'The Celestia story',
     cauChuyenTieuDe: 'Why Celes exists',
     cauChuyenDoan1:
       'Most of the time when we are stuck, it is not information we are short of. We have already thought it over and still cannot tell whether to carry on, stop, or start again.',
     cauChuyenDoan2:
-      'Celestia exists for exactly that moment. Not to add one more piece of advice to the pile you have already heard, but to help you see the thing from another angle — calmer, clearer, closer to yourself.',
+      'Celestia exists for exactly that moment. Not to add one more piece of advice to the pile you have already heard, but to help you see the thing from another angle: calmer, clearer, closer to yourself.',
     cauChuyenDoan3:
-      'Celestia is the place you come to. Celes is who you talk with — a friend who listens, a teacher who sheds light, and someone alongside you at the crossroads.',
-    khongLamEyebrow: 'WHAT CELES WILL NOT DO',
+      'Celestia is the place you come to. Celes is who you talk with: a friend who listens, a teacher who sheds light, and someone alongside you at the crossroads.',
+    khongLamEyebrow: 'What Celes will not do',
     khongLam: [
       {
         ten: 'No verdicts on fate',
@@ -146,7 +146,7 @@ export const en: TuDien = {
   onboarding: {
     buoc: 'Step',
     yDinhTieuDe: 'What brings you here today?',
-    yDinhMo: 'No need to get this exactly right — Celes just wants to know what is on your mind.',
+    yDinhMo: 'No need to get this exactly right. Celes just wants to know what is on your mind.',
     yDinh: {
       banThan: 'Myself',
       congViec: 'Work',
@@ -222,20 +222,20 @@ export const en: TuDien = {
     sauNoiBatTieuDe: 'Deep interpretation across 9 topics',
     sauNoiBatMo: 'Personality, work, money, love, family, health… Each topic is a set of concrete questions, each read from several palaces of your chart.',
     sauNoiBatCta: 'Read the deep interpretation',
-    sauNoiBatKhamPha: 'Explore topic by topic →',
+    sauNoiBatKhamPha: 'Explore topic by topic',
     sauNoiBatHanMuc: 'One free reading a day.',
     khamPhaSau: 'Explore deeper',
     theoChuDeTieuDe: 'Go straight at what’s on your mind',
-    theoChuDeMo: 'Work, money, relationships, family, health — or just ask Celes something of your own.',
+    theoChuDeMo: 'Work, money, relationships, family, health, or just ask Celes something of your own.',
 
     banDoTieuDe: 'The full map',
     banDoPhu: 'Traditional chart',
-    banDoMo: 'All twelve houses and their stars — for when you want to check the detail.',
+    banDoMo: 'All twelve houses and their stars, for when you want to check the detail.',
     banDoMoNut: 'Show the full map',
     banDoDongNut: 'Collapse',
     thangXem: 'Month in view',
-    loiLuu: 'Could not keep that — please try again shortly.',
-    loiDocDai: 'The longer read is briefly unavailable. Your map is untouched — try again in a moment.',
+    loiLuu: 'Could not keep that. Please try again shortly.',
+    loiDocDai: 'The longer read is briefly unavailable. Your map is untouched. Try again in a moment.',
     moBucTranhTieuDe: 'Want to see your whole picture?',
     moBucTranhMo:
       'Sign in and Celes will remember this chart, opening the deeper parts: character, work, money, relationships, family, social circle and the stretches you are moving through.',
@@ -273,7 +273,7 @@ export const en: TuDien = {
     quenMatKhau: 'Forgot your password?',
     chuaCoTaiKhoan: 'New to Celestia? Create a free account.',
     daCoTaiKhoan: 'Already have an account? Sign in',
-    panelEyebrow: 'WHAT YOU KEEP',
+    panelEyebrow: 'What you keep',
     panelTieuDe: 'Everything you explored with Celes, in one place.',
     panelY: [
       'Your map and your family’s, without re-entering anything.',
@@ -282,7 +282,7 @@ export const en: TuDien = {
     ],
     canEmailTruoc: 'Enter your email above first.',
     daGuiEmail: 'Password reset email sent. Open your inbox and follow the link.',
-    loiGuiEmail: 'Could not send the reset email — please try again shortly.',
+    loiGuiEmail: 'Could not send the reset email. Please try again shortly.',
     daTaoTaiKhoan:
       'Account created. If a confirmation email arrives, follow the link in it before signing in.',
     chuaBat: 'Sign-in is not set up',
@@ -298,7 +298,7 @@ export const en: TuDien = {
     doTuoi: 'ages {tu}–{den}',
     diTiep: 'Carry on from here',
     composerNhan: 'What is on your mind today?',
-    composerGoiY: 'Write a few lines — Celes starts from wherever you are stuck.',
+    composerGoiY: 'Write a few lines. Celes starts from wherever you are stuck.',
     composerGui: 'Tell Celes',
     chuDeTieuDe: 'Or start from something familiar',
     chuDeCongViec: 'Work',
@@ -315,7 +315,7 @@ export const en: TuDien = {
     dangMo: 'Opening up',
     dangCang: 'Under strain',
     canCho: 'Not yet',
-    eyebrow: 'YOUR JOURNEY',
+    eyebrow: 'Your journey',
     tieuDe: 'The stretches that are shaping you',
     moTa: 'A life in the chart does not run evenly: some long stretches change direction, some years bring one thing to the surface, some months only ask you to hold the rhythm. These are those three layers, stacked.',
     xemCua: 'Viewing the journey of',
@@ -341,7 +341,7 @@ export const en: TuDien = {
 
   banDo: {
     cheDoDeHieu: 'Plain',
-    cheDoDeHieuMo: 'Only the major stars and the stretch currently running — enough to see the overall shape.',
+    cheDoDeHieuMo: 'Only the major stars and the stretch currently running, enough to see the overall shape.',
     cheDoCoDien: 'Traditional',
     cheDoCoDienMo: 'The chart as it is normally cast: every star, its strength, the Four Transformations, Tuần and Triệt.',
     cheDoChuyenSau: 'In depth',
@@ -357,7 +357,7 @@ export const en: TuDien = {
   },
 
   cong: {
-    eyebrow: 'THIS IS ONLY THE BEGINNING',
+    eyebrow: 'This is only the beginning',
     cta: 'Create a free account',
     chu: 'Free, no card needed. The map you just created will be kept.',
     chuToanTrang: 'Free, no card needed. Sign up with Google or email in under a minute.',
@@ -366,7 +366,7 @@ export const en: TuDien = {
     loiIch: {
       save_chart: {
         tieuDe: 'Keep this map',
-        moTa: 'Create a free account so Celes remembers your map — open it next time and it is already there, on any device.',
+        moTa: 'Create a free account so Celes remembers your map. Open it next time and it is already there, on any device.',
         diem: [],
       },
       full_chart: {
@@ -376,7 +376,7 @@ export const en: TuDien = {
       },
       ask_celes: {
         tieuDe: 'Ask Celes about your own chart',
-        moTa: 'Ask in plain words — "should I change jobs this year?", "why do relationships wear me out?" — and Celes answers from your chart, with its reasons.',
+        moTa: 'Ask in plain words ("should I change jobs this year?", "why do relationships wear me out?") and Celes answers from your chart, with its reasons.',
         diem: [
           'Answers go straight to what you asked, not a generic reading',
           'Celes remembers your chart and what you told it for next time',
@@ -387,14 +387,14 @@ export const en: TuDien = {
         tieuDe: 'Go deeper into what is on your mind',
         moTa: 'Each topic is its own reading, drawn from your map. A free account opens them and saves them.',
         diem: [
-          'Work, money, love, family, health — pick what is on your mind',
+          'Work, money, love, family, health: pick what is on your mind',
           'Deep readings across 9 topics, each read from several palaces',
           'Readings are saved and open instantly next time',
         ],
       },
       connection: {
         tieuDe: 'See where two people fit and where they clash',
-        moTa: 'Put two charts side by side for the relationship you want to understand — partner, spouse, co-founder, friend or family.',
+        moTa: 'Put two charts side by side for the relationship you want to understand: partner, spouse, co-founder, friend or family.',
         diem: [
           'Where the two of you understand each other, and where you rub',
           'How to talk and decide big things in a way that works for both',
@@ -419,7 +419,7 @@ export const en: TuDien = {
   },
 
   luanSau: {
-    eyebrow: 'THE FULL PICTURE',
+    eyebrow: 'The full picture',
     tieuDe: 'And here is what Celes reads more closely',
     moTa: 'Each part opens with what matters most, and only then the detail. Wherever it does not convince you, open the evidence underneath to see what Celes is drawing on.',
     hoiVePhanNay: 'Ask Celes about this part',
@@ -428,7 +428,7 @@ export const en: TuDien = {
     docTu: 'Read from:',
     cung: 'with',
     soiQua: 'mirrored by',
-    doanKhau: 'WHAT THESE THREE SAY TOGETHER',
+    doanKhau: 'What these three say together',
     giuLai: 'What Celes wants you to keep',
     moChang: 'View 3 parts',
     dongChang: 'Collapse',
@@ -455,7 +455,7 @@ export const en: TuDien = {
 
   boiCanh: {
     tieuDe: 'Before Celes writes',
-    moTa: 'Tell Celes where you are right now so the reading speaks to your situation. Your chart does not change with your answers — only how Celes talks to you.',
+    moTa: 'Tell Celes where you are right now so the reading speaks to your situation. Your chart does not change with your answers, only how Celes talks to you.',
     docTiep: 'Continue',
     boQua: 'Skip',
     dangViet: 'Celes is writing for your situation: {tt}',
@@ -493,7 +493,7 @@ export const en: TuDien = {
   },
 
   danhSach: {
-    eyebrow: 'MY CHARTS',
+    eyebrow: 'My charts',
     tieuDe: 'The charts you are keeping',
     laSoCuaToi: 'My chart',
     datLamCuaToi: 'Make this my chart',
@@ -506,7 +506,7 @@ export const en: TuDien = {
     khongXoaMacDinh:
       'This one is currently "My chart". Pick another chart as the default before deleting it.',
     trong: 'No charts kept yet. Add your first one and we’ll read it together.',
-    luuTheoTaiKhoan: 'Saved to your account — it shows up on any device.',
+    luuTheoTaiKhoan: 'Saved to your account. It shows up on any device.',
     luuTheoTrinhDuyet:
       'Saved on this browser only. Sign in to keep them and use them on every device.',
     chuyenLenTaiKhoan: 'Move the charts saved on this browser into your account',
@@ -517,20 +517,20 @@ export const en: TuDien = {
     gio: '{gio}:00',
     nam: 'Male',
     nu: 'Female',
-    loiLuu: 'Could not save — try again in a moment.',
-    loiDat: 'Could not set it — try again in a moment.',
-    loiXoa: 'Could not delete — try again in a moment.',
-    loiChuyen: 'Could not move them — try again in a moment.',
+    loiLuu: 'Could not save. Try again in a moment.',
+    loiDat: 'Could not set it. Try again in a moment.',
+    loiXoa: 'Could not delete. Try again in a moment.',
+    loiChuyen: 'Could not move them. Try again in a moment.',
     khongTinhDuoc: 'This chart cannot be calculated',
     xemLaSoKhac: 'Open a different chart',
     taoLaSoKhac: 'Create another chart',
   },
 
   hoiCeles: {
-    eyebrow: 'ASK CELES',
+    eyebrow: 'Ask Celes',
     tieuDe: 'What is on your mind?',
     dangNoiVe: 'Talking about',
-    nguoiVuaNhap: '— The chart you just entered —',
+    nguoiVuaNhap: 'The chart you just entered',
     hoiVeNguoiKhac: 'Ask about a different chart',
     hoiVeNguoiNay: 'Ask about this chart',
     canBietAi: 'Which chart are we talking about?',
@@ -539,7 +539,7 @@ export const en: TuDien = {
     oNhap: 'Tell Celes…',
     gui: 'Send',
     dangTraLoi: 'Celes is reading your map…',
-    loi: 'Celes could not answer just now. Your question is kept — try again in a moment.',
+    loi: 'Celes could not answer just now. Your question is kept. Try again in a moment.',
     xoaHoiThoai: 'Clear conversation',
     phanHoi: {
       huuIch: 'Helpful',
@@ -559,10 +559,10 @@ export const en: TuDien = {
     canCuCachNoi: 'How Celes connected them',
     canCuLuongNguoc: 'What pulls the other way',
     canCuMucChac: 'How firm this is',
-    chacManh: 'fairly clear — several independent sources agree',
-    chacVua: 'a tendency — two sources agree',
+    chacManh: 'fairly clear: several independent sources agree',
+    chacVua: 'a tendency: two sources agree',
     chacYeu: 'only a possibility worth noting',
-    chacTraiChieu: 'still mixed — two forces coexist',
+    chacTraiChieu: 'still mixed: two forces coexist',
     chacChuaDu: 'not enough grounding in the sources',
     canCuDong: 'Hide the reasoning',
     canCuLaSo: 'From your chart',
@@ -573,7 +573,7 @@ export const en: TuDien = {
     canCuKhongNguon:
       'No document in the library matched this question, so the technical claims were kept deliberately narrow.',
     mienTru:
-      'Celes offers a perspective for you to weigh, not a verdict — and it is no substitute for medical, financial or legal advice.',
+      'Celes offers a perspective for you to weigh, not a verdict, and it is no substitute for medical, financial or legal advice.',
     goiYTieuDe: 'Not sure where to start?',
     goiY: [
       'Which of my strengths am I leaving unused?',
@@ -596,7 +596,7 @@ export const en: TuDien = {
     ],
     tuXemTieuDe: 'Would you rather read the map yourself?',
     tuXemMo:
-      'Open all twelve houses, the stars and their strength — for when you want to check the detail rather than ask.',
+      'Open all twelve houses, the stars and their strength, for when you want to check the detail rather than ask.',
     tuXemNut: 'Explore the map',
   },
 
@@ -614,12 +614,12 @@ export const en: TuDien = {
     chuaCoLaSo: 'No chart to read yet',
     chuaCoLaSoMo: 'Pick or create a chart first, then come back to this part.',
     dangTai: "I'm putting this stretch's period layers together…",
-    loiTai: "I couldn't open this part yet. Your chart is safe — try again in a few minutes.",
+    loiTai: "I couldn't open this part yet. Your chart is safe. Try again in a few minutes.",
     thuLai: 'Try again',
   },
 
   cachHoatDong: {
-    eyebrow: 'HOW CELES WALKS WITH YOU',
+    eyebrow: 'How Celes walks with you',
     tieuDe: 'Start from whatever is on your mind',
     intro:
       'You do not need to know anything about Tử Vi, and you do not need a perfectly worded question. Just start from the thing you keep thinking about. Celes will work through the layers with you.',
@@ -627,7 +627,7 @@ export const en: TuDien = {
       {
         tieuDe: 'Tell Celes what is on your mind',
         noiDung:
-          'Pick a topic, or just say the thing you are torn about. Work, a relationship, a decision — or simply wanting to understand yourself better.',
+          'Pick a topic, or just say the thing you are torn about. Work, a relationship, a decision, or simply wanting to understand yourself better.',
       },
       {
         tieuDe: 'Celes looks at your own picture',
@@ -640,7 +640,7 @@ export const en: TuDien = {
           'Celes does not decide for you. Every reading has a “Why?” so you can see the evidence, weigh it, and choose your next step your own way.',
       },
     ],
-    tinEyebrow: 'WHY YOU CAN TRUST IT',
+    tinEyebrow: 'Why you can trust it',
     tinTieuDe: 'Three things Celes will not do',
     tin: [
       {
@@ -656,7 +656,7 @@ export const en: TuDien = {
         mo: 'Celes talks about tendencies and things worth watching, never about a future that is certain to happen.',
       },
     ],
-    phuongPhapEyebrow: 'HOW IT IS CALCULATED',
+    phuongPhapEyebrow: 'How it is calculated',
     phuongPhapTieuDe: 'For those who want to check',
     phuongPhapMo:
       'What follows is the technical layer. You do not need it to use Celestia, but it is always here for anyone who wants to check the work.',
@@ -674,7 +674,7 @@ export const en: TuDien = {
         mo: 'Every reading opens up to show which house, which star, how strongly it sits, and which version of the rule set produced it.',
       },
     ],
-    hoiEyebrow: 'FREQUENTLY ASKED',
+    hoiEyebrow: 'Frequently asked',
     hoiTieuDe: 'Worth knowing first',
     hoi: [
       {
@@ -694,9 +694,9 @@ export const en: TuDien = {
         dap: 'No. Celestia describes where a stretch of time leans, not what will happen. Read it as one more perspective before you decide, not as a verdict.',
       },
     ],
-    cuoiEyebrow: 'SEE FOR YOURSELF',
+    cuoiEyebrow: 'See for yourself',
     cuoiTieuDe: 'Reading about it takes longer than trying it',
-    cuoiMo: 'Create a chart and open the evidence yourself — faster than finishing this page.',
+    cuoiMo: 'Create a chart and open the evidence yourself. It is faster than finishing this page.',
     cuoiNut: 'Create a free chart',
   },
 
@@ -791,7 +791,7 @@ export const en: TuDien = {
     taoMaMoi: 'Create a new code',
 
     camOn: 'Thank you for walking with Celes.',
-    camOnMo: 'Supporter access is active until {luc} — {so} questions left for Celes.',
+    camOnMo: 'Supporter access is active until {luc}, with {so} questions left for Celes.',
     xemChiTietQuyen: 'See details',
     daHieu: 'Got it',
     supporterDangHoatDong: 'Supporter access is active',
@@ -837,6 +837,6 @@ export const en: TuDien = {
 
   chan: {
     mienTru:
-      'Celes offers a perspective for you to weigh, not a verdict about your future — and it is no substitute for medical, financial or legal advice.',
+      'Celes offers a perspective for you to weigh, not a verdict about your future, and it is no substitute for medical, financial or legal advice.',
   },
 };

@@ -23,6 +23,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   **Dẫn sách thì đọc nguyên văn từng dòng trước khi trình**, và dòng đó phải nói ĐÚNG tổ hợp (không
   phải một bộ sao rộng hơn có chứa nó). Lặp 17/10 (luật Hổ trình nhầm "2 nguồn"); máy canh: trích
   nguyên văn trong `scripts/test-luat-to-hop.ts`.
+  **Câu phủ định ("sách không có", "chỉ một sách") phải qua `chuyen-gia-tu-vi` trước khi trình**, và
+  grep cả biến thể Hán Việt. Lặp 17/10: "Tuần hậu vận không có trong 15 cuốn" sai, Ảo bí 4819 có.
 
 ## Phối hợp hai máy
 
@@ -40,6 +42,15 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   chữ để thiết kế. Câu mẫu và chữ hướng dẫn model phải là lời thường: tên sao, tên cung, chuyện đời cụ thể.
   Lặp 18/10 (chủ dự án đã nhắc nhiều lần); máy canh: validator lời chat lớp hạn (CEL-200 3b, việc e).
 
+- **Mỗi mục xin chủ dự án quyết phải tự đứng được**: chức năng gì, người dùng gặp ở đâu, hiện chạy
+  thế nào, đổi gì (kèm ví dụ), mỗi lựa chọn dẫn tới đâu, AI đề xuất gì. Không lấy mã bước, tên
+  reviewer hay tên tệp làm chủ ngữ. Ngày 18/10, 3/5 mục xin quyết bị trả lại "chưa hiểu".
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.
 - **Thiếu dấu loại việc (`[CODE]`…) thì hỏi một câu ngắn**, đừng tự đoán rồi đi sai luồng.
+- **Ví dụ chủ dự án nêu (danh sách sao, bộ cách) là ví dụ, không phải luật**: kiểm bằng sách xem đủ,
+  đúng, điều kiện gì rồi mới dùng. **Điều tử vi đã có quy tắc thì không hỏi chủ dự án quyết** (vd sao
+  toạ thủ nặng hơn sao chiếu, Hàm số 737); sách nói ngược nhau thì **trình kèm đề xuất hoà giải**
+  (đọc ngữ cảnh trước: hay là hai sách nói về hai thứ khác; không hoà được thì nói nghiêng bên nào,
+  vì sao), không đưa mâu thuẫn trơ trọi bắt chủ dự án tự chọn. Giải pháp chạm chuyên môn
+  qua `chuyen-gia-tu-vi` trước khi trình (17/10/2026).

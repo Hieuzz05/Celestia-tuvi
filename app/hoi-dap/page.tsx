@@ -383,7 +383,7 @@ function TrangHoiDap() {
                 <option value="">{t.hoiCeles.nguoiVuaNhap}</option>
                 {boiCanh.hoSos.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.hoTen || '—'} — {h.ngay}/{h.thang}/{h.nam}
+                    {h.hoTen ? `${h.hoTen}, ` : ''}{h.ngay}/{h.thang}/{h.nam}
                     {h.id === boiCanh.idMacDinh ? ` · ${t.danhSach.laSoCuaToi}` : ''}
                   </option>
                 ))}
