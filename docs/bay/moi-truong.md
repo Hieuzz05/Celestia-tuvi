@@ -56,3 +56,8 @@ bị đẩy về production).
   qua log (vd `[thu-hoi] doc`) phải đọc ngay sau khi gây ra request.
 - **`npx vercel link` tự kéo biến môi trường về `.env.local` trong thư mục đang đứng.** Chạy link ở thư
   mục tạm thì xoá `.env.local` đó ngay, đừng để bí mật nằm ngoài repo (31/10/2026).
+- **AI tự test giao diện Preview bằng Chrome đã cài trên máy, không cần MCP trình duyệt.** Cài
+  `playwright-core` ở thư mục TẠM (không thêm vào repo), `chromium.launch({ channel: 'chrome' })`, gửi
+  header `x-vercel-protection-bypass` qua `extraHTTPHeaders` (khoá ở biến `VERCEL_AUTOMATION_BYPASS_SECRET`
+  trong `.env.local`, không chép ra tệp khác), đặt `locale: 'vi-VN'` kẻo trang ra tiếng Anh. Đăng nhập Google
+  không tự động được: ca cần đăng nhập vẫn để chủ dự án (31/10/2026).
