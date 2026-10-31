@@ -102,6 +102,12 @@ export const NHOM_NGUON: Readonly<Record<string, string>> = {
   'Tử Vi Bổ Túc - Nguyễn Mạnh Bảo.md': 'nguyen-manh-bao',
   'Tử Vi khảo luận.md': 'tu-vi-khao-luan',
   'Tự Điển Tử Vi - Đắc Lộc.md': 'dac-loc',
+  // Bốn sách tứ hoá nạp 26/10/2026 (chủ dự án nhận làm nguồn 31/10). Hai tập Tứ Hóa Phái
+  // cùng một tác giả nên là MỘT nhóm: không được tự đứng làm "hai nguồn" cho một luật.
+  'Trung Châu Tử Vi Đẩu Số - Tứ Hóa Phái - Tập 1.md': 'tu-hoa-phai',
+  'Trung Châu Tử Vi Đẩu Số - Tứ Hóa Phái - Tập 2.md': 'tu-hoa-phai',
+  'Tử Vi Đẩu Số Tinh Thành - Tập 2.md': 'tinh-thanh',
+  'Giáo Trình Phi Tinh Lương Phái.md': 'luong-phai',
 };
 
 const PHU_TINH = 'Tử Vi ứng dụng - Phụ Tinh.md';

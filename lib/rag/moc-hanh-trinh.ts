@@ -206,7 +206,8 @@ export async function sinhMocHanhTrinh(vao: {
 
   });
 
-  const kqTruyHoi = await truyHoi(keHoach, { soCuoi: 6 });
+  // Hành trình luôn là vận hạn: được dùng sách tứ hoá
+  const kqTruyHoi = await truyHoi(keHoach, { soCuoi: 6, nguonTuHoa: true });
 
   const goi = dungGoiBangChung(cauHoi, keHoach, duKien, kqTruyHoi.daChon);
 

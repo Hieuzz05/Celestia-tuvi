@@ -168,8 +168,9 @@ const DEM_CHUNG = new Map<string, { luc: number; ds: DoanUngVien[] }>();
 const HAN_DEM_MS = 30 * 60 * 1000;
 const TRAN_DEM = 600;
 
-async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi): Promise<DoanUngVien[]> {
-  const khoa = `${q}|${tuKhoa}`;
+async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi, nguonTuHoa: boolean): Promise<DoanUngVien[]> {
+  // Quyền dùng sách tứ hoá nằm trong khoá: cùng truy vấn, khác quyền là khác kết quả
+  const khoa = `${q}|${tuKhoa}|${nguonTuHoa ? 'th' : '-'}`;
   const co = nho.get(khoa);
   if (co) return co;
   const chung = DEM_CHUNG.get(khoa);
@@ -191,7 +192,7 @@ async function motTruyVan(q: string, tuKhoa: string, nho: BoNhoTruyHoi): Promise
    */
   const p = truyHoi(
     { truyVan: q, truyVanTuKhoa: tuKhoa, thucThe: nhanDangThucThe(tuKhoa) },
-    { soCuoi: 8, soUngVienVector: 15, soUngVienTuKhoa: 15 }
+    { soCuoi: 8, soUngVienVector: 15, soUngVienTuKhoa: 15, nguonTuHoa }
   )
     .then((k) => {
       if (k.daChon.length) {
@@ -243,6 +244,8 @@ export function bocHoaVan(duKien: readonly DuKienV3[], lopHanMoi = false): { hoa
 
 export async function truyHoiChoCau(vao: {
   lopHanMoi?: boolean;
+  /** Được lấy đoạn sách tứ hoá: câu có mốc thời gian hoặc câu nhắc tứ hoá (lib/rag/nguon-tu-hoa.ts) */
+  nguonTuHoa?: boolean;
   chuDe: string;
   /** Câu tổng quan mượn từ khoá của chủ đề nó thật sự hỏi (TQ05 → sự nghiệp) */
   chuDeTuKhoa?: string;
@@ -333,7 +336,7 @@ export async function truyHoiChoCau(vao: {
   }
 
   const [ketQua, meta] = await Promise.all([
-    Promise.all(truyVan.map((t) => motTruyVan(t.q, t.k, vao.nho))),
+    Promise.all(truyVan.map((t) => motTruyVan(t.q, t.k, vao.nho, vao.nguonTuHoa === true))),
     docMetaTaiLieu(),
   ]);
 

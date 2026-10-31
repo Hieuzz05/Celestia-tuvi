@@ -41,7 +41,7 @@ export async function ghiLanTruyHoi() { throw new Error('Bài kiểm cấm ghi D
     const vao = {laSo,namXem:2026,thangXem:1};
     let total = 0;
     for (const epModel of [false,true]) {
-      const modes = [undefined,'0','1','0'];
+      const modes = ['0',undefined,'1','0'];
       const captures: typeof io.vet[] = [];
       for (const mode of modes) {
         if (mode === undefined) delete process.env.CELES_LOP_HAN; else process.env.CELES_LOP_HAN = mode;
@@ -51,7 +51,7 @@ export async function ghiLanTruyHoi() { throw new Error('Bài kiểm cấm ghi D
         assert.equal(io.vet.length, epModel ? 2 : 3);
         captures.push(structuredClone(io.vet));total += io.vet.length;
       }
-      assert.deepEqual(captures[0],captures[1],'Thiếu env = cờ 0');
+      assert.deepEqual(captures[1],captures[2],'Thiếu env = cờ 1 (bật mặc định từ 31/10/2026)');
       assert.deepEqual(captures[0],captures[3],'Tắt lại phải khôi phục từng byte');
       for (let n=0;n<captures[0].length;n++) {
         const cu=captures[0][n], bat=captures[2][n];
@@ -62,7 +62,7 @@ export async function ghiLanTruyHoi() { throw new Error('Bài kiểm cấm ghi D
         assert.deepEqual(bat,{...cu,system:chuNguonLopHan(cu.system,true),user:chuNguonLopHan(cu.user,true)});
       }
     }
-    console.log(`PASS CEL-200 env: ${total} model giả; bài dài, hai nửa bảng và epModel; thiếu/0/1/0 cùng mô-đun, không mạng/DB.`);
+    console.log(`PASS CEL-200 env: ${total} model giả; bài dài, hai nửa bảng và epModel; 0/thiếu/1/0 cùng mô-đun (thiếu = bật), không mạng/DB.`);
   } finally { delete process.env.CELES_LOP_HAN; rmSync(dir,{recursive:true,force:true}); }
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

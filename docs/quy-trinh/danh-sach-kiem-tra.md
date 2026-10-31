@@ -31,7 +31,8 @@ npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI
 npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
 npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
 npx tsx scripts/test-lop-han-v3.ts   # CEL-200 Commit 4 mã: 248 snapshot off baseline25ad334+B4 độc lập, giữ sao/cách cục/ID, hạn→nền, hoá đại vận và regex theo vai trò — offline
-npx tsx scripts/test-lop-han-env.ts  # CEL-200 env thật thiếu/0/1/0 qua bài dài, bảng hai nửa và epModel; model giả, cấm mạng/DB — offline
+npx tsx scripts/test-lop-han-env.ts  # CEL-200 env thật 0/thiếu/1/0 (thiếu = bật từ 31/10/2026) qua bài dài, bảng hai nửa và epModel; model giả, cấm mạng/DB — offline
+npx tsx scripts/test-nguon-tu-hoa.ts  # sách tứ hoá chỉ vào câu vận hạn / câu nhắc tứ hoá (31/10/2026): nhận sách theo tiêu đề, nhận câu nhắc tứ hoá, quyền theo kế hoạch planner thật, hai tập Tứ Hóa Phái một nhóm nguồn — offline
 npx tsx scripts/test-lop-han-3b.ts   # CEL-200 máy 2: snapshot base độc lập, quan hệ hoá/cửa sổ, chữ cấm, vòng viết lại và meta đổi chế độ — offline
 npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline

@@ -20,6 +20,8 @@ import { bayGioAm } from '../lib/tuvi/bay-gio';
 import { tenModelThay } from './oracle-ten-prompt';
 
 for (const k of Object.keys(process.env)) if (/SUPABASE|_API_KEY$|^CELES_/.test(k)) delete process.env[k];
+// Fixture base25 là đường TẮT; từ 31/10/2026 thiếu cờ = bật nên phải ghi rõ 0. Phần bật truyền lopHanMoi: true.
+process.env.CELES_LOP_HAN = '0';
 globalThis.fetch = async () => { throw new Error('Test CEL-200 cấm mạng'); };
 const hash = (s: unknown) => createHash('sha256').update(JSON.stringify(s)).digest('hex');
 const homNay = new Date('2026-10-17T05:00:00Z');

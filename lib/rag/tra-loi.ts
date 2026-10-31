@@ -30,6 +30,7 @@ import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, ty
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
 import { boDanDat, tinhHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
 import { truyHoi, PHIEN_BAN_TRUY_HOI, type CauHinhTruyHoi } from './truy-hoi';
+import { choNguonTuHoaTheoKeHoach } from './nguon-tu-hoa';
 import { focusedBat, traLoiFocused } from './focused/tra-loi-focused';
 
 /**
@@ -433,7 +434,11 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     ...(coLopHan ? { lopHanMoi: true } : {}),
   });
 
-  const kqTruyHoi = await truyHoi(keHoach, vao.cauHinhTruyHoi);
+  // Sách tứ hoá chỉ vào câu vận hạn hoặc câu nhắc tứ hoá (chủ dự án quyết 31/10/2026)
+  const kqTruyHoi = await truyHoi(keHoach, {
+    nguonTuHoa: choNguonTuHoaTheoKeHoach(keHoach, vao.cauHoi),
+    ...vao.cauHinhTruyHoi,
+  });
 
   const runId =
     vao.ghiNhatKy === false

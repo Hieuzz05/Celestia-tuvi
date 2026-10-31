@@ -31,6 +31,7 @@ import { ghiLanTruyHoi } from '../nhat-ky';
 import { lapKeHoach, lapKeHoachVoiChuDe, type KeHoachTruyVan, type LopHan } from '../planner';
 import { canGoiModel, gopTheoTruong, phanLoaiFocused, type KetQuaGop } from './hieu-cau-truong';
 import { layDoanTheoId, truyHoi } from '../truy-hoi';
+import { choNguonTuHoaTheoKeHoach } from '../nguon-tu-hoa';
 import type { DauVaoTraLoi, KetQuaTraLoi } from '../tra-loi';
 import { chipHaiVe, cauNhuanChuaTach, chipCuoiNam, hoiLaiVanRieng, type CauMa } from './cau-ma';
 import { chayFocused, type VetFocused } from './chay';
@@ -480,7 +481,10 @@ export async function traLoiFocused(
     ...(cuaSo?.length ? { cuaSo } : {}),
   });
 
-  const kqTruyHoi = await (pt.truyHoi ?? truyHoi)(keHoach, vao.cauHinhTruyHoi);
+  const kqTruyHoi = await (pt.truyHoi ?? truyHoi)(keHoach, {
+    nguonTuHoa: choNguonTuHoaTheoKeHoach(keHoach, cauHoi),
+    ...vao.cauHinhTruyHoi,
+  });
   const runId =
     vao.ghiNhatKy === false
       ? null

@@ -10,6 +10,7 @@ import { khoiDoDai, systemLopHanV3, PHIEN_BAN_PROMPT_V3 } from './prompt-v3';
 import { PHIEN_BAN_TRUY_HOI_V3, truyHoiChoCau, type BoNhoTruyHoi, type DoanV3 } from './truy-hoi-v3';
 import { khoiDaNoi, kiemLapCum, kiemLapPhanKhac, type MucDaNoi } from './so-y';
 import { NHAN_TIN_CAY } from '../uu-tien-nguon';
+import { nhacTuHoa } from '../nguon-tu-hoa';
 import { docMetaTaiLieu } from '../tai-lieu-meta';
 import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
@@ -282,6 +283,9 @@ export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number;
     cauHoi: q.cauHoi,
     duKien,
     ...(coLopHan ? { lopHanMoi: true } : {}),
+    // Sách tứ hoá chỉ vào câu hỏi THẲNG thời điểm hoặc câu nhắc tứ hoá (chủ dự án quyết 31/10/2026).
+    // 'phu' (mốc chỉ là phụ, trọng tâm vẫn là lá gốc) không tính.
+    nguonTuHoa: q.thoiDiem === 'co' || nhacTuHoa(q.cauHoi),
     nho: vao.nho,
     // Thư viện đã khớp đủ thì bớt đoạn sách thô — giữ độ dài prompt (mục 8.7)
     soDoan: tv && tv.daChon.length >= 6 ? 4 : undefined,

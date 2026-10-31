@@ -3,6 +3,7 @@ import { ghiSuCo } from '@/lib/ai/su-co';
 import { AiRetryableError } from '@/lib/ai/types';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { tachTuKhoa } from './cum-tu-khoa';
+import { laSachTuHoa } from './nguon-tu-hoa';
 import type { ThucThe } from './thuc-the';
 import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
 
@@ -20,7 +21,8 @@ import { chonDaDang, xepTheoUuTien } from './uu-tien-nguon';
  * với chuyện đó.
  */
 
-export const PHIEN_BAN_TRUY_HOI = '2026.09.4';
+// 2026.10.1: sách tứ hoá chỉ vào câu vận hạn / câu nhắc tứ hoá (cauHinh.nguonTuHoa)
+export const PHIEN_BAN_TRUY_HOI = '2026.10.1';
 
 /**
  * Phần kế hoạch mà truy hồi thật sự cần.
@@ -54,6 +56,11 @@ export interface CauHinhTruyHoi {
   /** Chỉ lấy đoạn có gắn ít nhất một trong các thực thể này (null = không lọc) */
   locThucThe: boolean;
   hePhai?: string;
+  /**
+   * Được lấy đoạn từ sách tứ hoá không (lib/rag/nguon-tu-hoa.ts). Mặc định KHÔNG: chỉ câu
+   * vận hạn hoặc câu nhắc thẳng tứ hoá mới bật, để luận lá gốc không bị sách phi hoá lấn.
+   */
+  nguonTuHoa: boolean;
 }
 
 export const CAU_HINH_MAC_DINH: CauHinhTruyHoi = {
@@ -63,7 +70,11 @@ export const CAU_HINH_MAC_DINH: CauHinhTruyHoi = {
   hangSoRRF: 60,
   nguongVector: 0,
   locThucThe: false,
+  nguonTuHoa: false,
 };
+
+/** Bỏ sách tứ hoá thì lấy dư ứng viên bù vào: chúng chiếm khoảng một phần ba số đoạn trong kho */
+const DU_KHI_BO_TU_HOA = 10;
 
 export interface DoanUngVien {
   chunkId: string;
@@ -205,15 +216,16 @@ export async function truyHoi(
 
   // Hai nhánh chạy song song: chúng độc lập, và nhánh từ khoá rẻ hơn nhiều nên
   // chờ tuần tự chỉ làm tăng độ trễ mà không được gì.
+  const du = cauHinh.nguonTuHoa ? 0 : DU_KHI_BO_TU_HOA;
   const [kqVector, kqTuKhoa] = await Promise.all([
     supabase.rpc('tim_kien_thuc_vector', {
       vector_truy_van: vector,
-      so_luong: cauHinh.soUngVienVector,
+      so_luong: cauHinh.soUngVienVector + du,
       nguong_toi_thieu: cauHinh.nguongVector,
       loc_he_phai: cauHinh.hePhai ?? null,
       loc_thuc_the: locThucThe,
     }),
-    timTheoTuKhoa(supabase, keHoach, cauHinh, locThucThe),
+    timTheoTuKhoa(supabase, keHoach, { ...cauHinh, soUngVienTuKhoa: cauHinh.soUngVienTuKhoa + du }, locThucThe),
   ]);
 
   if (kqVector.error) {
@@ -225,8 +237,9 @@ export async function truyHoi(
     console.warn('[RAG] Nhánh từ khoá lỗi:', kqTuKhoa.error.message);
   }
 
-  const dsVector: DongSql[] = kqVector.data ?? [];
-  const dsTuKhoa: DongSql[] = kqTuKhoa.error ? [] : (kqTuKhoa.data ?? []);
+  const duocDung = (d: DongSql) => cauHinh.nguonTuHoa || !laSachTuHoa(d.tieu_de);
+  const dsVector: DongSql[] = (kqVector.data ?? []).filter(duocDung).slice(0, cauHinh.soUngVienVector);
+  const dsTuKhoa: DongSql[] = (kqTuKhoa.error ? [] : (kqTuKhoa.data ?? [])).filter(duocDung).slice(0, cauHinh.soUngVienTuKhoa);
 
   if (dsVector.length === 0 && dsTuKhoa.length === 0) {
     return { ...rong(), khoTrong: false, doTreMs: Date.now() - batDau };

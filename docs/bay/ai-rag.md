@@ -176,3 +176,9 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   19/10). Có căn cứ thì nêu, không có thì thôi. Máy canh: `test-lop-han-chat.ts`.
 - **Sửa `quy-tac-luan-giai.ts` / `chuan-ngon-ngu.ts` là đổi `PHIEN_BAN_CHU`** — hash khoá đệm của MỌI
   bề mặt, toàn bộ bài đệm sinh lại, tốn tiền model. Một câu cũng vậy: hỏi chủ dự án trước (C-E 19/10).
+- **Sách tứ hoá chỉ vào câu vận hạn** (chủ dự án 31/10/2026): `truyHoi` mặc định bỏ đoạn của 4 sách
+  tứ hoá; caller bật `nguonTuHoa` qua `lib/rag/nguon-tu-hoa.ts`. Thêm caller `truyHoi` mới thì tự hỏi
+  bề mặt đó có phải vận hạn không. Đừng đoán "câu có hỏi thời gian" từ `keHoach.lopHan`: planner thêm
+  lưu niên cho cả câu không mốc ("tính tôi thế nào"). Máy canh: `scripts/test-nguon-tu-hoa.ts`.
+- **Lớp vận hạn BẬT mặc định từ 31/10/2026**; `CELES_LOP_HAN=0` là công tắc tắt. Bài kiểm đường cũ
+  xoá mọi `CELES_*` rồi phải tự đặt `CELES_LOP_HAN='0'`, không thì nó đang kiểm đường bật.

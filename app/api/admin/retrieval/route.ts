@@ -67,7 +67,9 @@ export async function POST(req: Request) {
 
   const keHoach = lapKeHoach({ cauHoi, saoTheoCung });
 
+  // Phòng thử truy hồi xem được cả kho; muốn thử đúng lượt luận lá gốc thì gửi nguonTuHoa: false
   const cauHinh: Partial<CauHinhTruyHoi> = {
+    nguonTuHoa: true,
     ...body.cauHinh,
     hePhai: body.hePhai && body.hePhai !== 'tat-ca' ? body.hePhai : undefined,
   };

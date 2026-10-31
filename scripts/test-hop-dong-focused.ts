@@ -17,6 +17,10 @@ for (const k of Object.keys(process.env)) {
 process.env.GROQ_API_KEY = 'khoa-gia-test';
 process.env.CELES_META_KHOA = 'khoa-meta-test';
 
+// Lớp vận hạn bật mặc định từ 31/10/2026; bài này kiểm đường TẮT (CELES_LOP_HAN=0, công tắc khẩn cấp).
+// Đường bật: test-lop-han-chat.ts, test-lop-han-3b.ts, test-lop-han-v3.ts.
+process.env.CELES_LOP_HAN = '0';
+
 import type { KetQuaFocused } from '../lib/rag/focused/tra-loi-focused';
 
 /** Khoá lượt: "<số flow>#<thứ tự lượt, từ 1>". Lý do ghi ngay cạnh — commit nào gỡ. */
