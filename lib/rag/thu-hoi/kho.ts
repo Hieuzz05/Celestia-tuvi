@@ -8,6 +8,7 @@
  * Luật đã quyết (phương án bản 2, §4): lỗi đọc thì MỞ cổng (hiện bài), không ẩn. Cổng hỏng không được làm
  * sập V3; ẩn nhầm là ẩn hàng loạt. Câu dính được viết lại khi đọc lại được (đệm mang `canCu`).
  */
+import { after } from 'next/server';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 import { phamViDem } from '@/lib/moi-truong-dem';
 import { TAP_RONG } from './cong';
@@ -22,12 +23,19 @@ type TrangThai = 'tat-co' | 'tot' | 'chua-co-bang' | 'mo-cong-do-loi';
 let nho: { tap: ReadonlySet<string>; den: number; trangThai: TrangThai } | null = null;
 let tapTotGanNhat: { tap: ReadonlySet<string>; luc: number } | null = null;
 let lanBaoTat = 0;
+let dangDocNen: Promise<unknown> | null = null;
 
 /** Chỉ cho bài kiểm offline */
 export function _datLaiThuHoiChoTest(): void {
   nho = null;
   tapTotGanNhat = null;
   lanBaoTat = 0;
+  dangDocNen = null;
+}
+
+/** Chỉ cho bài kiểm offline: chờ lượt đọc nền đang chạy (nếu có) */
+export async function _choDocNenChoTest(): Promise<void> {
+  await dangDocNen;
 }
 
 const laChuaCoBang = (e: { code?: string; message?: string } | null | undefined) =>
@@ -50,14 +58,33 @@ async function docMotLan(): Promise<ReadonlySet<string>> {
 
 /**
  * Tập dấu mục đã thu hồi đang có hiệu lực. Cờ `CELES_CONG_THU_HOI` khác '1' → tập rỗng, 0 truy vấn.
- * Nhớ trong RAM 60 giây: đường đệm trúng không chờ DB ở mỗi lượt.
+ * Nhớ trong RAM 60 giây. Hết 60 giây mà tập tốt gần nhất chưa quá 30 phút thì trả NGAY tập đó và đọc lại
+ * DB ở nền: đo trên Preview 31/10/2026, mỗi lần đọc mất 850–1400 ms (mở lại kết nối sau lúc rảnh), làm
+ * lượt trúng đệm từ 1,6 s thành 3 s. Đổi lại: mục vừa thu hồi có thể lọt thêm một lượt (chủ dự án duyệt 31/10).
  */
 export async function docTapThuHoi(): Promise<ReadonlySet<string>> {
   if (process.env.CELES_CONG_THU_HOI !== '1') return TAP_RONG;
   const bayGio = Date.now();
   if (nho && nho.den > bayGio) return nho.tap;
+  if (nho?.trangThai === 'tot' && tapTotGanNhat && bayGio - tapTotGanNhat.luc <= HAN_TAP_CU) {
+    if (!dangDocNen) {
+      dangDocNen = docVaNho().finally(() => {
+        dangDocNen = null;
+      });
+      try {
+        after(dangDocNen); // Vercel giữ hàm sống tới khi đọc xong, kể cả sau khi đã trả bài
+      } catch {
+        // ngoài phạm vi request (bài kiểm offline): promise vẫn chạy bình thường
+      }
+    }
+    return nho.tap;
+  }
+  return docVaNho();
+}
 
-  const batDau = Date.now();
+async function docVaNho(): Promise<ReadonlySet<string>> {
+  const bayGio = Date.now();
+  const batDau = bayGio;
   let tap: ReadonlySet<string> = TAP_RONG;
   let trangThai: TrangThai = 'tot';
   let han = HAN_TOT;

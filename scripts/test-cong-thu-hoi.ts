@@ -19,7 +19,7 @@ import { CAU_HOI_V3, dauMuc as dauMucV3, PHIEN_BAN_V3, type KetQuaCauV3, type lu
 import { anNoiBo, CAU_AN_THANG, cheThangBanCu, khoaDemV3, locBaiTheHeTruoc, LOGIC_V3, THE_HE_DEM, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
 import { SO_CHU_DE_TOI_THIEU } from '../lib/rag/v3/buc-tranh';
 import { soKetLuanV3 } from '../lib/rag/v3/so-ket-luan';
-import { _datLaiThuHoiChoTest, docTapThuHoi } from '../lib/rag/thu-hoi/kho';
+import { _choDocNenChoTest, _datLaiThuHoiChoTest, docTapThuHoi } from '../lib/rag/thu-hoi/kho';
 import { _thayAdminChoTest } from '../lib/supabase/admin';
 import { phamViDem } from '../lib/moi-truong-dem';
 import { docLenh, giaiPhamVi, type Lenh } from './thu-hoi-muc';
@@ -411,15 +411,31 @@ async function kiemKho() {
     await docTapThuHoi();
     kiem('kho: RAM 60 giây → không truy vấn lại', n === 1);
     gio += 61_000;
+    let nNen = 0;
+    const { client: chamNen } = clientGia(() => {
+      nNen++;
+      return { data: [{ dau: D1 }, { dau: 'dau-moi' }], error: null };
+    });
+    _thayAdminChoTest(chamNen);
+    const tCu = await docTapThuHoi();
+    kiem('kho: hết 60 giây → trả NGAY tập cũ, không chờ DB', tCu.has(D1) && !tCu.has('dau-moi'));
     await docTapThuHoi();
-    kiem('kho: hết 60 giây → đọc lại', n === 2);
+    await _choDocNenChoTest();
+    kiem('kho: hết 60 giây → đọc lại ở nền đúng 1 lần dù 2 lượt gọi', nNen === 1, nNen);
+    kiem('kho: lượt sau đọc nền → thấy tập mới', (await docTapThuHoi()).has('dau-moi'));
+    gio += 31 * 60_000;
+    nNen = 0;
+    const tQuaCu = await docTapThuHoi();
+    kiem('kho: tập tốt quá 30 phút → chờ đọc lại, không dùng tập cũ', nNen === 1 && tQuaCu.has('dau-moi'), nNen);
+    _thayAdminChoTest(client);
 
     // Lỗi tạm: thử lại 1 lần, giữ tập tốt cũ
     gio += 61_000;
     che = 'loi';
     const tLoi = await docTapThuHoi();
-    kiem('kho: lỗi tạm → thử lại đúng 1 lần', n === 4, n);
-    kiem('kho: lỗi tạm → giữ tập tốt gần nhất', tLoi.has(D1));
+    await _choDocNenChoTest();
+    kiem('kho: lỗi tạm → thử lại đúng 1 lần', n === 3, n);
+    kiem('kho: lỗi tạm → giữ tập tốt gần nhất', tLoi.has(D1) && (await docTapThuHoi()).has(D1));
     _datLaiThuHoiChoTest();
     const tLoi2 = await docTapThuHoi();
     kiem('kho: lỗi tạm, chưa có tập tốt → tập rỗng (mở cổng), không ném', tLoi2.size === 0);
