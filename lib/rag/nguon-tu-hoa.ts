@@ -1,4 +1,6 @@
+import type { KeHoachTruyVan } from './planner';
 import { boDau } from './thuc-the';
+import { coTinHieuThoiGian, hoiLucNay } from './van-han-qua-luot';
 
 /**
  * Sách tứ hoá chỉ làm nguồn cho câu vận hạn (chủ dự án quyết 31/10/2026).
@@ -39,20 +41,12 @@ export function choNguonTuHoa(vao: { vanHan: boolean; cauHoi?: string }): boolea
 /**
  * Kế hoạch truy vấn của chat có phải câu vận hạn không. KHÔNG dựa vào `lopHan`: planner tự
  * thêm lưu niên cho cả câu không mốc thời gian ("tính tôi thế nào"), xem `doanLopHan`.
- * Chỉ tin tín hiệu người hỏi nói ra: mốc thời gian, tên đại vận / lưu niên / nguyệt hạn,
- * hay câu "khi nào".
+ * Tính là vận hạn khi người hỏi nói mốc / lớp hạn / "khi nào", hoặc hỏi về lúc này dù không
+ * nói mốc ("có nên…", có/không về một chuyện đời) — xem van-han-qua-luot.ts.
  */
-const THUC_THE_HAN = new Set(['PERIOD.LUU_NIEN', 'PERIOD.DAI_VAN', 'PERIOD.NGUYET_HAN']);
-
 export function choNguonTuHoaTheoKeHoach(
-  keHoach: { yDinh: string; phamViThoiGian: string; thucThe: readonly { id: string }[]; namMucTieu?: number; thangMucTieu?: number },
+  keHoach: Pick<KeHoachTruyVan, 'yDinh' | 'phamViThoiGian' | 'thucThe' | 'namMucTieu' | 'thangMucTieu'>,
   cauHoi: string
 ): boolean {
-  const vanHan =
-    keHoach.phamViThoiGian !== 'khong-ro' ||
-    keHoach.yDinh === 'thoi-diem' ||
-    keHoach.namMucTieu !== undefined ||
-    keHoach.thangMucTieu !== undefined ||
-    keHoach.thucThe.some((t) => THUC_THE_HAN.has(t.id));
-  return choNguonTuHoa({ vanHan, cauHoi });
+  return choNguonTuHoa({ vanHan: coTinHieuThoiGian(keHoach) || hoiLucNay(keHoach, cauHoi), cauHoi });
 }

@@ -341,6 +341,29 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
  * "yếu tố cản" không có tên nào để giữ lại. Nên phải đưa kèm danh sách dữ kiện
  * có tên để nó lấy ra dùng, chứ không được để nó tự nghĩ.
  */
+/**
+ * Bỏ riêng những câu còn phạm, giữ phần còn lại (lớp hạn, đo 31/10: xoá trắng cả lượt vì
+ * một chữ "nhịp" làm 23/24 lượt chat thành rỗng). Tiêu đề phạm thì bỏ cả dòng tiêu đề.
+ *
+ * Trả `null` khi câu phải bỏ là câu RÀO (điều kiện, cảnh báo, Hóa Kỵ): bỏ nó là để lại
+ * vế lạc quan trơ trọi, sai hơn không trả lời — lớp gọi chặn cả lượt (celes-domain 31/10).
+ */
+const CAU_RAO = /(?<![\p{L}\p{M}])(?:tuy|nhưng|trừ khi|nếu|chưa|khó|không nên|đừng|cẩn thận|dè chừng|rủi ro|kỵ)(?![\p{L}\p{M}])/iu;
+
+export function boCauPham(van: string, pham: (cau: string) => boolean): string | null {
+  const manh = tachManh(van);
+  const bo = new Set(manh.flatMap((m, i) => (m.loai === 'NOI_DUNG' && pham(m.text) ? [i] : [])));
+  if (!bo.size) return van;
+  if ([...bo].some((i) => CAU_RAO.test(manh[i].text))) return null;
+  const ra = manh.map((m, i) => (bo.has(i) ? { ...m, text: '' } : m));
+  return rapManh(ra)
+    .replace(/^[ \t]*(?:#{1,6}|[-*+]|\d{1,3}[.)]|>)[ \t]*$/gmu, '')
+    .replace(/(\S)[ \t]{2,}/gu, '$1 ')
+    .replace(/[ \t]+$/gmu, '')
+    .replace(/\n{3,}/gu, '\n\n')
+    .trim();
+}
+
 export async function suaCauTiengLong(
   van: string,
   tenDuKien: string[],
@@ -349,7 +372,8 @@ export async function suaCauTiengLong(
   const manh = tachManh(van);
   const pham = manh
     .map((m, i) => ({ c: m.text, i, loai: m.loai }))
-    .filter(({ c, i, loai }) => loai === 'NOI_DUNG' && !laTieuDe(manh, i) && (TIENG_LONG_MOT_CAU.test(c) || phamThem?.(c)));
+    // Tiêu đề ý cũng phải sửa khi phạm luật lớp hạn: bước kiểm cuối đọc cả tiêu đề
+    .filter(({ c, i, loai }) => loai === 'NOI_DUNG' && ((!laTieuDe(manh, i) && TIENG_LONG_MOT_CAU.test(c)) || !!phamThem?.(c)));
   if (!pham.length) return van;
 
   DEM_SUA.tiengLong.soLuotGoi += 1;
@@ -373,7 +397,11 @@ Sai:  "Năm 2026 chưa rõ khả năng mua nhà, vì các yếu tố cản vẫn
 Đúng: "Năm 2026 chưa phải lúc: Hóa Kỵ đóng ở phần nền tảng vật chất, nghĩa là việc ở đây hay vướng và hay phải làm lại."
 
 TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
-{ "cau": [ { "id": "C1", "moi": "..." } ] }${phamThem ? "\nĐây cũng là lượt sửa quan hệ tứ hoá: chỉ dùng đúng hoá, sao nhận hoá, cung, lớp và năm từ dữ kiện đã cho; không ghép chéo. Bỏ ẩn dụ, chữ nội bộ và lời kể về kho/tài liệu. Giữ nguyên kết luận, mức chắc chắn và các tên dữ kiện hợp lệ." : ""}`;
+{ "cau": [ { "id": "C1", "moi": "..." } ] }${phamThem ? `
+Đây cũng là lượt sửa quan hệ tứ hoá: chỉ dùng đúng hoá, sao nhận hoá, cung, lớp và năm từ dữ kiện đã cho; không ghép chéo. Bỏ ẩn dụ, chữ nội bộ và lời kể về kho/tài liệu. Giữ nguyên kết luận, mức chắc chắn và các tên dữ kiện hợp lệ.
+- KHÔNG dùng các chữ: "nền" (trừ "nền tảng"), "nhịp", "phần nổi", "lớp bên dưới", "gốc sâu", "tín hiệu", "lực cản", "lớp hạn". Viết việc cụ thể thay vào: "dựng nền lâu dài" → "tích góp dần qua nhiều năm"; "giữ nhịp" → "làm đều tay".
+- Mỗi "Hóa Lộc/Quyền/Khoa/Kỵ" phải có tên sao nhận hoá đứng NGAY SAU nó, lấy đúng cặp trong dữ kiện: "Hóa Kỵ vào Văn Xương", không viết "Hóa Kỵ ở phần công việc". Không biết sao nào thì bỏ hẳn chữ Hóa đó.
+- Câu ngắn không có dấu chấm (tiêu đề) thì trả về tiêu đề ngắn, không thêm dấu chấm.` : ""}`;
 
   const danhSach = pham.map((p, i) => `C${i + 1}. ${p.c}`).join('\n');
 

@@ -38,6 +38,7 @@ import { chayFocused, type VetFocused } from './chay';
 import { chanChuaHopTuoi, chanTruocSinh } from './gioi-han';
 import type { DoiTuongCauHoi } from './doi-tuong';
 import { lapKeHoachFocused, type KetQuaKeThua } from './ke-thua';
+import { keThuaVanHan } from '../van-han-qua-luot';
 import {
   bamTraLoi,
   cauLaSoNguoiDuocHoi,
@@ -252,8 +253,14 @@ export async function traLoiFocused(
     thangXem: vao.thangXem,
   };
 
+  // Câu nối không mốc nhận trục thời gian của câu gốc — xem van-han-qua-luot.ts.
+  const keThuaHan = (k: KetQuaKeThua): KetQuaKeThua => ({
+    ...k,
+    keHoach: keThuaVanHan(k.keHoach, cauHoi, lichSu, (cau) => lapKeHoach({ cauHoi: cau, saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem })),
+  });
+
   // Lượt một: chỉ luật, đủ để phân khuôn và bắt F2 trước mọi việc tốn kém.
-  const so = apHoiLai(lapKeHoachFocused(dauVaoKeHoach));
+  const so = keThuaHan(apHoiLai(lapKeHoachFocused(dauVaoKeHoach)));
   const phanLoaiSo = phanKhuon({ cauHoi, keHoach: so.keHoach, doiTuong: so.doiTuong });
   const thoiGianSo = boiCanhThoiGian({ cauHoi, keHoach: so.keHoach, namXem: vao.namXem, bayGio });
 
@@ -421,7 +428,7 @@ export async function traLoiFocused(
 
     // Lượt hai: tên cách cục của cung trọng tâm, như đường STANDARD.
     const tenCachCuc = tenCachCucCho(vao.laSo, so.keHoach.cungLienQuan[0]);
-    const hai = apHoiLai(lapKeHoachFocused({ ...dauVaoKeHoach, tenCachCuc }), tenCachCuc);
+    const hai = keThuaHan(apHoiLai(lapKeHoachFocused({ ...dauVaoKeHoach, tenCachCuc }), tenCachCuc));
     keHoachGoc = hai.keHoach;
     // CEL-191: luật trước; model chỉ điền chỗ trống, gộp theo TỪNG TRƯỜNG (hieu-cau-truong.ts).
     // Câu có người được hỏi hay câu kế thừa đã chắc chủ đề — để model đoán lại là mở lại cờ #2.

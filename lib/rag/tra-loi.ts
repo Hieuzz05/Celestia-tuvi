@@ -1,5 +1,5 @@
 import { lopHanBat } from './co-lop-han';
-import { bangHoaChoLoi, loiChuLopHan, loiHoaLopHan, PHIEN_BAN_VALIDATOR_LOP_HAN } from './kiem-lop-han';
+import { bangHoaChoLoi, ghiLopHoa, loiChuLopHan, loiHoaLopHan, PHIEN_BAN_VALIDATOR_LOP_HAN } from './kiem-lop-han';
 import { goiVoiFallback } from '@/lib/ai/fallback';
 import type { TinNhan } from '@/lib/ai/prompt';
 import type { LaSo } from '@/lib/tuvi/ansao';
@@ -20,12 +20,13 @@ import { haGiong, loiDiTiep, type LoiDiTiep } from './hinh-dang-tra-loi';
 import { khoiNghiengVe, tinhNghiengVe, PHIEN_BAN_NGHIENG, PHIEN_BAN_NGHIENG_LOP_HAN } from './nghieng-ve';
 import { doAnToan, datMienTruTamLy, type MucAnToan } from './an-toan';
 import { chonDauAn, PHIEN_BAN_DAU_AN, type DauAnLuot } from './dau-an';
-import { doiTenCung, suaCauTiengLong, tachManh } from './sua-chua';
+import { boCauPham, doiTenCung, suaCauTiengLong, tachManh } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
+import { keThuaVanHan } from './van-han-qua-luot';
 import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, type YDinh } from './planner';
 import { dungPromptCoCanCu } from './prompt-co-can-cu';
 import { boDanDat, tinhHopDong, type HopDongTraLoi } from './hop-dong-tra-loi';
@@ -409,10 +410,18 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
     namXem: vao.namXem,
     thangXem: vao.thangXem,
   };
-  const keHoach =
+  /*
+   * "Vậy còn tình cảm?" sau câu về năm 2027: nhận trục thời gian của câu gốc — xem
+   * van-han-qua-luot.ts. Câu tự có mốc thì giữ mốc của nó.
+   */
+  const keHoach = keThuaVanHan(
     vao.dungModelPhanLoai === false
       ? lapKeHoach(dauVaoPlanner)
-      : await lapKeHoachDayDu(dauVaoPlanner);
+      : await lapKeHoachDayDu(dauVaoPlanner),
+    vao.cauHoi,
+    vao.lichSu ?? [],
+    (cau) => lapKeHoach({ cauHoi: cau, saoTheoCung, namXem: vao.namXem, thangXem: vao.thangXem })
+  );
 
   /*
    * MỘT năm cho cả lượt. Người hỏi gọi tên năm ("năm 2028", "năm sau") thì năm
@@ -540,8 +549,10 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * này là hỏng, hoàn lại lượt cho người dùng — xem app/api/hoi-dap/route.ts.
    */
   if (!coCauTruc) {
+    const bangTho = coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') ? bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc]) : null;
+    const vanTho = laChuoiJson(kq.text) ? '' : bangTho ? boCauPham(ghiLopHoa(kq.text, bangTho), (c) => !!(loiChuLopHan(c) || loiHoaLopHan(c, bangTho))) ?? '' : kq.text;
     return {
-      van: laChuoiJson(kq.text) || (coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') && (loiChuLopHan(kq.text) || loiHoaLopHan(kq.text, bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc])))) ? '' : kq.text,
+      van: bangTho && vanTho && (loiChuLopHan(vanTho) || loiHoaLopHan(vanTho, bangTho)) ? '' : vanTho,
       loiDi: [],
       coCauTruc: null,
       goi,
@@ -611,9 +622,10 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
    * nào để giữ lại, nên người sửa phải được đưa tên, không được tự nghĩ ra.
    */
   const bangHoaSua = coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh') ? bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc]) : null;
+  const tenSua = [...(nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []), ...(bangHoaSua ? goi.duKien.filter((d) => ['tu-hoa-goc', 'luu-tu-hoa', 'tu-hoa-dai-van'].includes(d.loai)).map((d) => d.noiDung) : [])];
   const vanDaSua = await suaCauTiengLong(
     vanTho,
-    [...(nghieng ? [...nghieng.dauMoc.map((d) => d.ten), ...nghieng.cachCuc] : []), ...(bangHoaSua ? goi.duKien.filter((d) => ['tu-hoa-goc', 'luu-tu-hoa', 'tu-hoa-dai-van'].includes(d.loai)).map((d) => d.noiDung) : [])],
+    tenSua,
     bangHoaSua ? (c) => !!(loiChuLopHan(c) || loiHoaLopHan(c, bangHoaSua)) : undefined
   );
 
@@ -643,7 +655,17 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   let cauTrucCuoi: TraLoiCoCauTruc | null = daLoc;
   if (coLopHan && keHoach.lopHan.some((l) => l !== 'ban-menh')) {
     const bang = bangHoaChoLoi(vao.laSo, goi.duKien, [namHieuLuc]);
-    const sai = loiChuLopHan(van) ?? loiHoaLopHan(van, bang);
+    // Hóa chỉ khớp MỘT lớp trong bảng mà model không ghi lớp thì tự ghi ("lưu" / "đại vận" / "gốc"):
+    // đo 31/10 lần 4, 27/64 lần nhắc Hóa không ghi lớp, gốc / lưu / đại vận đứng cạnh nhau dễ đọc lẫn
+    van = ghiLopHoa(van, bang);
+    // Sửa xong vẫn phạm thì bỏ riêng câu đó; chỉ trả rỗng khi không còn gì (đo 31/10: 23/24 lượt rỗng)
+    const pham = (c: string) => !!(loiChuLopHan(c) || loiHoaLopHan(c, bang));
+    const conPham = (s: string) => tachManh(s).some((m) => m.loai === 'NOI_DUNG' && pham(m.text));
+    if (conPham(van)) van = ghiLopHoa(doiTenCung(await suaCauTiengLong(van, tenSua, pham)), bang);
+    const vanBo = boCauPham(van, pham);
+    van = vanBo ?? van;
+    const sai = vanBo === null ? 'câu rào còn phạm luật, không bỏ lẻ được'
+      : tachManh(van).some((m) => m.loai === 'NOI_DUNG') ? loiChuLopHan(van) ?? loiHoaLopHan(van, bang) : 'không còn câu nào sau khi bỏ câu phạm';
     // Không trả cấu trúc cũ có câu vi phạm sau khi sửa văn. Không bịa kết luận dự phòng.
     const cu = tachManh(vanTho).filter((m) => m.loai === 'NOI_DUNG');
     const moi = tachManh(vanDaSua).filter((m) => m.loai === 'NOI_DUNG');
@@ -652,9 +674,37 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
       ? doi.reduce((v, [a, b]) => v.split(a).join(b), x)
       : Array.isArray(x) ? x.map(dongBo)
       : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, dongBo(v)])) : x;
-    cauTrucCuoi = dongBo(daLoc) as TraLoiCoCauTruc;
+    /*
+     * Lượt sửa thứ hai cho bản cấu trúc: dongBo chỉ chép câu đã sửa khi số câu không đổi, và
+     * cachNoi / canNhac / buocTiepTheo không nằm trong văn nên lượt đầu không chạm tới. Đo 31/10
+     * lần 3: 4/11 lượt rỗng vì câu phạm còn sót ở đó. Gộp mọi chuỗi còn phạm vào MỘT lượt gọi.
+     */
+    const ghiLop = (x: unknown): unknown => typeof x === 'string' ? ghiLopHoa(x, bang)
+      : Array.isArray(x) ? x.map(ghiLop) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, ghiLop(v)])) : x;
+    const dongBoDa = ghiLop(dongBo(daLoc));
+    const gom = (x: unknown): string[] => typeof x === 'string' ? (conPham(x) ? [x] : [])
+      : Array.isArray(x) ? x.flatMap(gom) : x && typeof x === 'object' ? Object.values(x).flatMap(gom) : [];
+    const canSua = [...new Set(gom(dongBoDa))];
+    const daSuaThem = new Map<string, string>();
+    if (canSua.length) {
+      const phang = canSua.map((s) => s.replace(/\s*\n\s*/gu, ' ').trim());
+      const ra = (await suaCauTiengLong(phang.join('\n\n'), tenSua, pham)).split(/\n{2,}/u);
+      if (ra.length === canSua.length) canSua.forEach((s, i) => daSuaThem.set(s, ghiLopHoa(ra[i].trim(), bang)));
+    }
+    // Câu rào không bỏ lẻ được: trường chính (kết luận, tóm tắt, ý chính) giữ nguyên để bước kiểm
+    // dưới chặn cả lượt; trường phụ ở phần "vì sao" thì bỏ hẳn cả trường, không để nửa câu lạc quan
+    const CHINH = new Set(['ketLuan', 'tomTat', 'tieuDe', 'noiDung']);
+    const boChuoi = (x: unknown, khoa = ''): unknown => typeof x === 'string'
+      ? boCauPham(daSuaThem.get(x) ?? x, pham) ?? (CHINH.has(khoa) ? daSuaThem.get(x) ?? x : '')
+      : Array.isArray(x) ? x.map((v) => boChuoi(v, khoa)).filter((v) => v !== '')
+      : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, boChuoi(v, k)])) : x;
+    const daBo = boChuoi(dongBoDa) as TraLoiCoCauTruc;
+    cauTrucCuoi = { ...daBo, yChinh: daBo.yChinh.filter((y) => y.noiDung) };
     const vanCauTruc = dungVan(cauTrucCuoi, { yDinh: keHoach.yDinh, laCauNoi });
-    if (sai || loiChuLopHan(JSON.stringify(cauTrucCuoi)) || loiChuLopHan(vanCauTruc) || loiHoaLopHan(vanCauTruc, bang)) {
+    const lyDo = sai ?? loiChuLopHan(JSON.stringify(cauTrucCuoi)) ?? loiChuLopHan(vanCauTruc) ?? loiHoaLopHan(vanCauTruc, bang);
+    if (lyDo) {
+      const cauBat = [van, vanCauTruc, JSON.stringify(cauTrucCuoi)].flatMap((s) => tachManh(s).filter((m) => pham(m.text)).map((m) => m.text.slice(0, 160)));
+      console.warn('[lop-han] chặn lượt chat:', lyDo, [...new Set(cauBat)].slice(0, 3));
       van = '';
       cauTrucCuoi = null;
     }

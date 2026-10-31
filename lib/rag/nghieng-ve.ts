@@ -904,7 +904,11 @@ CẤM — ĐÂY LÀ TIẾNG LÓNG NỘI BỘ CỦA HỆ THỐNG, KHÔNG PHẢI T
 "đẩy tới", "đang đỡ", "yếu tố đỡ", "yếu tố cản", "lực đỡ", "lực cản", "tín hiệu",
 "chồng lớp", "lớp nền", "lớp hạn", "nền sẵn", "quyết chiều", "lật chiều", "dẫn chứng",
 "nghiêng về phía thuận", "tương quan", "hai lực ngang
-nhau", và mọi câu đếm dữ kiện. Nói "điều thuận lợi", "điều cản trở" bằng lời
-thường. Cũng KHÔNG nói "không có tài liệu", "không có nguồn", "kho chưa có" —
+nhau", và mọi câu đếm dữ kiện. Không dùng chữ "nền", "nhịp", "phần nổi", "lớp
+bên dưới", "gốc sâu" theo nghĩa bóng — kể cả khi dữ kiện cách cục viết "dựng nền":
+nói thẳng việc cụ thể ("tích góp dần", "làm chắc từng bước"). Mỗi lần nêu một Hóa
+thì nêu luôn tên sao nhận hoá ngay sau nó, đúng như dữ kiện ("Hóa Kỵ vào Văn Xương"); dữ kiện không ghi sao nào nhận thì đừng
+nêu Hóa đó. Ghi rõ Hóa thuộc năm sinh, năm đang xem hay đại vận, đúng như dữ kiện: "Hóa Quyền
+gốc vào Vũ Khúc", "lưu Hóa Kỵ năm 2026 vào Liêm Trinh", "Hóa Kỵ đại vận vào Thiên Cơ". Nói "điều thuận lợi", "điều cản trở" bằng lời thường. Cũng KHÔNG nói "không có tài liệu", "không có nguồn", "kho chưa có" —
 người đọc không hỏi về kho; chưa chắc thì nói mức chắc chắn bằng lời thường.`;
 }

@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { lapKeHoach } from '../lib/rag/planner';
-import { bangHoaChoLoi, loiChuLopHan, loiHoaLopHan, chuNguonLopHan } from '../lib/rag/kiem-lop-han';
+import { bangHoaChoLoi, ghiLopHoa, loiChuLopHan, loiHoaLopHan, chuNguonLopHan } from '../lib/rag/kiem-lop-han';
 import { chonBoiCanh, saoChinhTheoCung } from '../lib/rag/boi-canh-la-so';
 import { tinhNghiengVe } from '../lib/rag/nghieng-ve';
 import { khoiNghiengFocused, dungPromptFocused, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
@@ -18,6 +18,7 @@ import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { cuaSoAmCuaThangDuong } from '../lib/rag/focused/thang-am';
 import { bayGioAm } from '../lib/tuvi/bay-gio';
 import { tenModelThay } from './oracle-ten-prompt';
+import { boCauPham } from '../lib/rag/sua-chua';
 
 for (const k of Object.keys(process.env)) if (/SUPABASE|_API_KEY$|^CELES_/.test(k)) delete process.env[k];
 // Fixture base25 là đường TẮT; từ 31/10/2026 thiếu cờ = bật nên phải ghi rõ 0. Phần bật truyền lopHanMoi: true.
@@ -98,6 +99,42 @@ async function main() {
   for (const cum of ['lớp nền', 'nền sẵn', 'lớp hạn', 'tín hiệu', 'chồng lớp', 'lực cản', 'chiếc xe', 'con đường', 'đường xấu', 'xe yếu', 'nền', 'nhịp', 'yếu tố đỡ']) assert.ok(loiChuLopHan(`Có ${cum} ở đây.`), cum);
   assert.equal(loiChuLopHan('Tai nạn xe cộ là chuyện ngoài phạm vi câu hỏi.'), null);
   assert.equal(loiChuLopHan('Thu nhập ổn định.'), null);
+  // doiTenCung tự viết "phần chỗ ở và nền tảng": từ thường, không phải ẩn dụ "nền"
+  assert.equal(loiChuLopHan('Phần chỗ ở và nền tảng năm nay khá yên.'), null);
+  assert.ok(loiChuLopHan('Hợp dựng nền lâu dài.'));
+  // Bỏ riêng câu phạm, giữ câu sạch; tiêu đề phạm thì mất cả dòng tiêu đề
+  const phamChu = (c: string) => !!loiChuLopHan(c);
+  assert.equal(boCauPham('Năm nay việc đều. Hợp giữ nhịp cũ. Lương tăng chậm.', phamChu), 'Năm nay việc đều. Lương tăng chậm.');
+  assert.equal(boCauPham('### Chỉ đổi khi nền mới chắc\nViệc mới cần hỏi kỹ.', phamChu), 'Việc mới cần hỏi kỹ.');
+  assert.equal(boCauPham('Hợp giữ nhịp cũ.', phamChu), '');
+  // Câu rào phạm luật: không bỏ lẻ (để lại vế lạc quan trơ trọi), lớp gọi chặn cả lượt
+  assert.equal(boCauPham('Năm nay có cơ hội. Nhưng chưa vững nền nên chưa vội.', phamChu), null);
+  // Tên lớp chen giữa hoá và sao vẫn nhận đúng sao, đúng lớp (đo 31/10: bắt nhầm câu đúng dữ kiện)
+  {
+    // Đúng lá số bộ đo thật (LA_SO_DO[1]): đại vận Hóa Quyền > Thái Âm, Hóa Kỵ > Thiên Cơ; lưu Hóa Kỵ > Liêm Trinh
+    const ls85 = lapLaSo({ ngay: 3, thang: 11, nam: 1985, gio: 21, gioiTinh: 'nu' });
+    const dk = chonBoiCanh({ laSo: ls85, keHoach: lapKeHoach({ cauHoi: 'Năm 2026 công việc thế nào?', saoTheoCung: saoChinhTheoCung(ls85), namXem: 2026, thangXem: 8 }), namXem: 2026, thangXem: 8, lopHanMoi: true }).duKien;
+    const b85 = bangHoaChoLoi(ls85, dk, [2026]);
+    assert.equal(loiHoaLopHan('Hóa Quyền đại vận vào Thái Âm cho thấy bạn có thêm tiếng nói.', b85), null);
+    assert.equal(loiHoaLopHan('Cự Môn ở công việc cùng Hóa Kỵ đại vận vào Thiên Cơ.', b85), null);
+    assert.ok(loiHoaLopHan('Hóa Quyền đại vận vào Thiên Cơ cho thấy bạn có thêm tiếng nói.', b85));
+    assert.ok(loiHoaLopHan('Lưu Hóa Kỵ năm 2026 vào Thái Âm.', b85));
+    // Hóa chỉ khớp một lớp thì tự ghi lớp; khớp nhiều lớp hoặc đã ghi lớp thì để nguyên
+    const ghi = (c: string, mong: string) => { const r = ghiLopHoa(c, b85); assert.equal(r, mong); assert.equal(ghiLopHoa(r, b85), r); assert.equal(loiHoaLopHan(r, b85), null); };
+    ghi('Bạn có Hóa Quyền vào Thái Âm.', 'Bạn có Hóa Quyền đại vận vào Thái Âm.');
+    ghi('Hóa Kỵ vào Liêm Trinh khiến bạn nghi ngờ.', 'Lưu Hóa Kỵ vào Liêm Trinh khiến bạn nghi ngờ.');
+    ghi('Năm nay có Hóa Kỵ vào Liêm Trinh.', 'Năm nay có lưu Hóa Kỵ vào Liêm Trinh.');
+    ghi('Hóa Quyền vào Thiên Lương giúp bạn.', 'Hóa Quyền gốc vào Thiên Lương giúp bạn.');
+    ghi('Hóa Kỵ đại vận vào Thiên Cơ.', 'Hóa Kỵ đại vận vào Thiên Cơ.');
+    ghi('Lưu Hóa Kỵ vào Liêm Trinh.', 'Lưu Hóa Kỵ vào Liêm Trinh.');
+    // Thiên Cơ nhận Lộc gốc lẫn Quyền lưu: "Hóa Lộc" chỉ khớp lớp gốc
+    ghi('Hóa Lộc vào Thiên Cơ.', 'Hóa Lộc gốc vào Thiên Cơ.');
+    // Đo lần 6: "đại vận" nói về sao khác, hay sao đi kèm không nhận hoá, không phải trộn lớp
+    assert.equal(loiHoaLopHan('Đại vận 35–44 tuổi có Tham Lang, còn lưu Hóa Kỵ năm 2026 vào Liêm Trinh khiến bạn bực.', b85), null);
+    assert.equal(loiHoaLopHan('Lưu Hóa Kỵ vào Liêm Trinh cùng Kình Dương làm việc khó.', b85), null);
+    assert.ok(loiHoaLopHan('Lưu Hóa Kỵ đại vận vào Liêm Trinh.', b85));
+    assert.ok(loiHoaLopHan('Lưu Hóa Kỵ vào Liêm Trinh, Thiên Cơ.', b85));
+  }
   const nguon = 'LƯU Ý: không có nguồn tham chiếu nào. Chỉ nói dữ kiện.';
   assert.equal(chuNguonLopHan(nguon), nguon);
   assert.ok(!chuNguonLopHan(nguon, true).includes('không có nguồn'));

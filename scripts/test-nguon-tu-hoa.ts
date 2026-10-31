@@ -5,6 +5,8 @@
  */
 import { choNguonTuHoaTheoKeHoach, laSachTuHoa, nhacTuHoa } from '../lib/rag/nguon-tu-hoa';
 import { lapKeHoach } from '../lib/rag/planner';
+import { keThuaVanHan, laCauNoiRo } from '../lib/rag/van-han-qua-luot';
+import type { TinNhan } from '../lib/ai/prompt';
 import { saoChinhTheoCung } from '../lib/rag/boi-canh-la-so';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { NHOM_NGUON } from '../lib/tuvi/luat-to-hop';
@@ -47,6 +49,41 @@ for (const c of ['Tính cách của tôi thế nào?', 'Tôi hợp với nghề 
 for (const c of ['Năm 2026 công việc của tôi thế nào?', 'Năm nay tài chính ra sao?', 'Đại vận này tình cảm thế nào?', 'Tháng 3 âm năm nay sức khoẻ có gì cần lưu ý?', 'Khi nào tôi lập gia đình?', 'Sắp tới công việc có gì đổi không?'])
   kiem(quyen(c), `vận hạn, dùng sách tứ hoá: ${c}`);
 kiem(quyen('Hóa Kỵ ở Mệnh nghĩa là gì?'), 'lá gốc nhưng nhắc tứ hoá: được dùng');
+
+// Câu hỏi về LÚC NÀY dù không nói mốc: "có nên…", có/không về một chuyện đời
+for (const c of ['Có nên đổi việc không?', 'Tôi có nên mua nhà không?', 'Tôi có nhảy việc không?', 'Tôi có lấy được vợ không?'])
+  kiem(quyen(c), `hỏi lúc này, dùng sách tứ hoá: ${c}`);
+// Có/không về một sao, cung, cách cục: câu lá gốc
+for (const c of ['Tử Vi ở Mệnh có tốt không?', 'Mệnh có Tuần có sao không?', 'Cung Tài Bạch của tôi có tốt không?'])
+  kiem(!quyen(c), `có/không về lá số, KHÔNG dùng sách tứ hoá: ${c}`);
+
+// Vận hạn qua lượt: câu nối không mốc nhận trục thời gian của câu gốc
+kiem(laCauNoiRo('Vậy còn tình cảm?') && laCauNoiRo('Còn sức khoẻ?') && laCauNoiRo('Tình cảm thì sao?') && laCauNoiRo('thế còn tiền bạc'), 'nhận câu nối rõ ràng');
+kiem(!laCauNoiRo('Tính tôi thế nào?') && !laCauNoiRo('Con tôi học thế nào?') && !laCauNoiRo('Con cái của tôi ra sao?'), 'câu ngắn / câu về con cái không phải câu nối');
+const kh = (cauHoi: string) => lapKeHoach({ cauHoi, saoTheoCung, namXem: 2026, thangXem: 8 });
+const ls = (...cau: string[]): TinNhan[] => cau.flatMap((c) => [{ vaiTro: 'nguoi-dung' as const, noiDung: c }, { vaiTro: 'tro-ly' as const, noiDung: '…' }]);
+const luot = (cauHoi: string, lichSu: TinNhan[]) => keThuaVanHan(kh(cauHoi), cauHoi, lichSu, kh);
+{
+  const k = luot('Vậy còn tình cảm?', ls('Năm 2027 công việc của tôi thế nào?'));
+  kiem(k.namMucTieu === 2027 && k.chuDe === 'tinh-cam' && choNguonTuHoaTheoKeHoach(k, 'Vậy còn tình cảm?'), '"Vậy còn tình cảm?" sau câu năm 2027: giữ năm 2027, chủ đề tình cảm, dùng sách tứ hoá');
+  const k3 = luot('Còn sức khoẻ?', ls('Năm 2027 công việc của tôi thế nào?', 'Vậy còn tình cảm?'));
+  kiem(k3.namMucTieu === 2027, 'chuỗi ba lượt vẫn giữ năm 2027');
+  const kt = luot('Tính tôi thế nào?', ls('Năm 2027 công việc của tôi thế nào?'));
+  kiem(kt.namMucTieu === undefined && !choNguonTuHoaTheoKeHoach(kt, 'Tính tôi thế nào?'), 'câu mới về tính cách KHÔNG nhận năm 2027');
+  const kr = luot('Vậy còn năm 2028?', ls('Năm 2027 công việc của tôi thế nào?'));
+  kiem(kr.namMucTieu === 2028, 'câu nối có mốc riêng thì giữ mốc riêng');
+  const kg = luot('Vậy còn tình cảm?', ls('Tính cách của tôi thế nào?'));
+  kiem(kg.namMucTieu === undefined && !choNguonTuHoaTheoKeHoach(kg, 'Vậy còn tình cảm?'), 'câu nối sau câu lá gốc: không thành vận hạn');
+  const kb = luot('Vậy còn tính cách tôi thì sao?', ls('Năm 2027 công việc của tôi thế nào?'));
+  kiem(kb.namMucTieu === undefined, 'câu nối hỏi bản tính KHÔNG nhận năm 2027');
+  const cu = process.env.CELES_LOP_HAN;
+  process.env.CELES_LOP_HAN = '0';
+  kiem(luot('Vậy còn tình cảm?', ls('Năm 2027 công việc của tôi thế nào?')).namMucTieu === undefined, 'cờ tắt: không kế thừa, đúng đường cũ');
+  if (cu === undefined) delete process.env.CELES_LOP_HAN; else process.env.CELES_LOP_HAN = cu;
+}
+// Có/không về bản tính, độ hợp: câu lá gốc dù không có thực thể
+for (const c of ['Tôi có hợp làm kinh doanh không?', 'Tôi có duyên với nghề giáo không?'])
+  kiem(!quyen(c), `có/không về bản tính, KHÔNG dùng sách tứ hoá: ${c}`);
 
 // Luật tổ hợp: hai tập Tứ Hóa Phái là MỘT nhóm nguồn, không tự đứng làm "hai nguồn"
 const nhom = (t: string) => NHOM_NGUON[`${t}.md`];
