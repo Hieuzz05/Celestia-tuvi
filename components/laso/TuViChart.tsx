@@ -370,7 +370,10 @@ export function TuViChart({
           className="relative grid grid-cols-4"
           style={{
             width: hep ? CHART_WIDTH_HEP : CHART_WIDTH,
-            gridTemplateRows: 'repeat(4, auto)',
+            // `1fr` chứ không phải `auto`: khi lưới không có chiều cao cố định, 1fr
+            // nghĩa là mọi hàng cao bằng hàng cao nhất. Với `auto` mỗi hàng chỉ cao
+            // vừa nội dung của nó, nên hai hàng giữa (cạnh ô trung tâm) lệch nhau.
+            gridTemplateRows: 'repeat(4, 1fr)',
             background: 'var(--bg)',
             // Dùng CSS `zoom` chứ không phải transform: zoom có tác động tới
             // layout nên chiều cao tự co theo, khỏi phải đo và đặt tay.
