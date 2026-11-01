@@ -15,7 +15,7 @@ import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 import { heThongV3 } from './mau-giong';
 import { docCauHinhV3 } from './cau-hinh';
-import { docDanY, kiemDanY, khoiDienDat, saoChoDienDat, SYSTEM_LAP_Y, type YLuan } from './duong-b';
+import { docDanY, DUOI_A_CONG, DUOI_LAP_Y, kiemDanY, khoiDienDat, MAX_TOKENS_LAP_Y, saoChoDienDat, type YLuan } from './duong-b';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -43,6 +43,8 @@ export interface ThuNghiemV3 {
   heSoDoDai?: number;
   /** Đường B (duong-b.ts, CELES-38): lập ý có mức chắc rồi mới diễn đạt — chỉ cho bộ so mù A/B */
   duongB?: boolean;
+  /** A+ (CELES-34): một lượt như A, thêm mức chắc từng ý + cách nói theo mức — chỉ cho bộ so ba nhánh */
+  aCong?: boolean;
 }
 
 export interface KetQuaCauV3 {
@@ -63,7 +65,7 @@ export interface KetQuaCauV3 {
   loiBanDau: LoiV3[];
   soLanGoi: number;
   /** Token của mọi lượt gọi cho câu này (vào / ra / phần vào được nhà cung cấp đệm) — để đo chi phí */
-  token: { vao: number; ra: number; dem: number };
+  token: { vao: number; ra: number; dem: number; nghi?: number };
   model: string;
   ms: number;
   msTruyHoi: number;
@@ -83,6 +85,8 @@ export interface KetQuaCauV3 {
   };
   /** Chỉ có khi chạy đường B: ý giữ / bỏ ở bước lập ý; `lui` khi phải lùi về đường A */
   duongB?: { lui?: string; yGiu: YLuan[]; yBo: { y: string; lyDo: string }[] };
+  /** Chỉ có khi chạy A+: mức chắc model khai cho từng ý của bản đầu */
+  aCong?: { mucChac: string[] };
 }
 
 function docBai(text: string): BaiV3 | null {
@@ -516,15 +520,18 @@ ${phamViChuyenSau(q)}`
   const system = vao.thuNghiem?.system ?? (await heThongV3());
   let soLanGoi = 0;
   let model = '';
-  const token = { vao: 0, ra: 0, dem: 0 };
-  const goiTho = async (u: string, sys = system, cacheKey = `v3:${q.id}`) => {
+  const token = { vao: 0, ra: 0, dem: 0, nghi: 0 };
+  let thoDau = '';
+  const goiTho = async (u: string, maxTokens = 6000) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system: sys, user: u, maxTokens: 6000, cacheKey }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system, user: u, maxTokens, cacheKey: `v3:${q.id}` }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     token.vao += kq.tokensIn ?? 0;
     token.ra += kq.tokensOut ?? 0;
     token.dem += kq.tokensDem ?? 0;
+    token.nghi += kq.tokensNghi ?? 0;
+    thoDau ||= kq.text;
     return kq.text;
   };
   const goi = async (u: string) => docBai(await goiTho(u));
@@ -533,12 +540,13 @@ ${phamViChuyenSau(q)}`
    * ĐƯỜNG B (chỉ bộ so mù): lập ý trước, máy lọc, rồi model chỉ diễn đạt ý đã giữ. Không ý nào sống
    * sót hoặc bước lập ý hỏng thì lùi về đường A để cặp so vẫn có bài.
    */
-  let userViet = user;
+  let userViet = vao.thuNghiem?.aCong ? `${user}\n\n${DUOI_A_CONG}` : user;
   let duongB: KetQuaCauV3['duongB'];
   if (vao.thuNghiem?.duongB) {
     let ds: YLuan[] | null = null;
     try {
-      ds = docDanY(await goiTho(user, SYSTEM_LAP_Y, `v3b1:${q.id}`));
+      ds = docDanY(await goiTho(`${user}\n\n${DUOI_LAP_Y}`, MAX_TOKENS_LAP_Y));
+      thoDau = '';
     } catch {
       ds = null;
     }
@@ -554,6 +562,9 @@ ${phamViChuyenSau(q)}`
   }
 
   let bai = await goi(userViet);
+  const aCong = vao.thuNghiem?.aCong
+    ? { mucChac: ((docObjectJson(thoDau) as { danY?: { mucChac?: unknown }[] } | null)?.danY ?? []).map((y) => String(y?.mucChac ?? '')) }
+    : undefined;
   if (!bai) bai = await goi(userViet); // JSON gãy: thử lại nguyên lượt một lần
   if (!bai) {
     return {
@@ -655,6 +666,7 @@ ${phamViChuyenSau(q)}`
         }
       : {}),
     ...(duongB ? { duongB } : {}),
+    ...(aCong ? { aCong } : {}),
     dat: !loi.some((l) => l.chan),
   };
 }

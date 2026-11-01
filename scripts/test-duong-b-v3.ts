@@ -7,7 +7,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { docDanY, khoiDienDat, kiemDanY, saoChoDienDat, SYSTEM_LAP_Y, type YLuan } from '../lib/rag/v3/duong-b';
+import { docDanY, DUOI_A_CONG, DUOI_LAP_Y, khoiDienDat, kiemDanY, saoChoDienDat, type YLuan } from '../lib/rag/v3/duong-b';
 import type { DuKienV3 } from '../lib/rag/v3/du-kien';
 
 let sai = 0;
@@ -29,10 +29,13 @@ const vao = {
 const y = (o: Partial<YLuan>): YLuan => ({ y: 'một ý', canCu: [], mucChac: 'manh', sao: [], ...o });
 
 // Đọc đầu ra bước lập ý
-const doc = docDanY('```json\n{"danY":[{"y":"Hợp làm quản lý","canCu":["F001"],"mucChac":"la","sao":["Tử Vi"]},{"y":""},{"canCu":["F001"]}]}\n```');
-kiem('docDanY đọc JSON có rào code, bỏ ý rỗng', doc?.length === 1, doc);
-kiem('docDanY: mức chắc lạ thành yeu', doc?.[0].mucChac === 'yeu', doc);
+const doc = docDanY('```json\n{"danY":[{"y":"Hợp làm quản lý","canCu":["F001"],"mucChac":"vua","sao":["Tử Vi"]},{"y":"","mucChac":"yeu"}]}\n```');
+kiem('docDanY đọc JSON có rào code, bỏ ý rỗng', doc?.length === 1 && doc[0].mucChac === 'vua', doc);
 kiem('docDanY: không phải JSON thì null', docDanY('xin chào') === null);
+// Đọc chặt (phan-bien 31/10): model theo định dạng của system V3 thay vì đuôi lập ý → hỏng, lùi về A
+kiem('docDanY: một ý thiếu mucChac thì null', docDanY('{"danY":[{"y":"a","canCu":["F001"],"mucChac":"manh"},{"y":"b","canCu":["F001"]}]}') === null);
+kiem('docDanY: mức chắc lạ thì null', docDanY('{"danY":[{"y":"a","canCu":["F001"],"mucChac":"la"}]}') === null);
+kiem('docDanY: trả cả bài (có luanGiai) thì null', docDanY('{"danY":[{"y":"a","canCu":["F001"],"mucChac":"manh"}],"luanGiai":"x"}') === null);
 
 // Lọc ý
 const { giu, bo } = kiemDanY(
@@ -83,7 +86,8 @@ const dkTamPhuong: DuKienV3[] = [
 ];
 const phep2 = saoChoDienDat([y({ canCu: ['F001'] })], dkTamPhuong);
 kiem('sao xung chiếu của cung được dẫn vẫn được nêu (luật 17)', phep2.has('Phá Quân') && !phep2.has('Vũ Khúc'), [...phep2]);
-kiem('bước lập ý mang luật an toàn', SYSTEM_LAP_Y.includes('D. An toàn'));
+kiem('đuôi lập ý dặn mucChac bắt buộc và cấm luanGiai', DUOI_LAP_Y.includes('BẮT BUỘC') && DUOI_LAP_Y.includes('KHÔNG có "luanGiai"'));
+kiem('đuôi A+ dặn mức chắc và cách nói theo mức', DUOI_A_CONG.includes('mucChac') && DUOI_A_CONG.includes('có khả năng'));
 
 const khoi = khoiDienDat(giu);
 kiem('khối diễn đạt liệt kê đủ ý đã giữ, kèm mã', giu.every((g) => khoi.includes(g.y) && khoi.includes(g.canCu[0])));
@@ -99,21 +103,21 @@ const quet = (d: string): string[] =>
   });
 const batCo = ['app', 'lib', 'components']
   .flatMap(quet)
-  .filter((p) => /duongB\s*:\s*true/.test(readFileSync(p, 'utf8')));
-kiem('không mã sản phẩm nào bật duongB', batCo.length === 0, batCo);
+  .filter((p) => /(duongB|aCong)\s*:\s*true/.test(readFileSync(p, 'utf8')));
+kiem('không mã sản phẩm nào bật duongB / aCong', batCo.length === 0, batCo);
 
 /*
  * Cờ tắt = y như cũ (tích hợp đợt 1, 22/10): chạy luanMotCau với model và DB giả, ghi lại mọi lời gọi
  * model. Không truyền cờ và truyền { duongB: false } phải gửi ĐÚNG cùng chuỗi lời gọi, không có bước
  * lập ý hay khối dàn ý; bật cờ thì lời gọi đầu là bước lập ý.
  */
-type LoiGoi = { system: string; user: string };
-async function chayVoiModelGia(thuNghiem: { duongB?: boolean }): Promise<LoiGoi[]> {
+type LoiGoi = { system: string; user: string; khoa?: string };
+async function chayVoiModelGia(thuNghiem: { duongB?: boolean; aCong?: boolean }): Promise<LoiGoi[]> {
   const ds: LoiGoi[] = [];
   globalThis.fetch = (async (_url: string, init?: { body?: string }) => {
-    const b = JSON.parse(init?.body ?? '{}') as { messages?: { role: string; content: string }[] };
+    const b = JSON.parse(init?.body ?? '{}') as { messages?: { role: string; content: string }[]; prompt_cache_key?: string };
     const tim = (r: string) => b.messages?.find((m) => m.role === r)?.content ?? '';
-    ds.push({ system: tim('system'), user: tim('user') });
+    ds.push({ system: tim('system'), user: tim('user'), khoa: b.prompt_cache_key });
     return Response.json({
       choices: [{ message: { content: '{"luanGiai":"Một đoạn.","viSao":[],"goiY":[],"danY":[]}' } }],
       usage: { prompt_tokens: 1, completion_tokens: 1 },
@@ -151,10 +155,17 @@ async function kiemCoTat() {
   const khong = await chayVoiModelGia({});
   const tat = await chayVoiModelGia({ duongB: false });
   const bat = await chayVoiModelGia({ duongB: true });
+  const aCong = await chayVoiModelGia({ aCong: true });
   kiem('cờ tắt: có gọi model', khong.length > 0, khong.length);
   kiem('cờ tắt: chuỗi lời gọi y như không truyền cờ', JSON.stringify(khong) === JSON.stringify(tat), [khong.length, tat.length]);
-  kiem('cờ tắt: không bước lập ý, không khối dàn ý', tat.every((g) => g.system !== SYSTEM_LAP_Y && !g.user.includes('DÀN Ý ĐÃ DUYỆT')));
-  kiem('cờ bật: lời gọi đầu là bước lập ý', bat[0]?.system === SYSTEM_LAP_Y, bat[0]?.system.slice(0, 60));
+  kiem('cờ tắt: không bước lập ý, không khối dàn ý, không đuôi A+', tat.every((g) => !g.user.includes(DUOI_LAP_Y) && !g.user.includes('DÀN Ý ĐÃ DUYỆT') && !g.user.includes(DUOI_A_CONG)));
+  kiem('cờ bật: lời gọi đầu là bước lập ý', !!bat[0]?.user.endsWith(DUOI_LAP_Y), bat[0]?.user.slice(-60));
+  // Dùng chung phần đầu đã đệm: lập ý gửi đúng system + user của lượt viết, cùng khoá đệm
+  const userA = khong[0]?.user ?? '';
+  kiem('lập ý: cùng system với lượt viết', bat[0]?.system === khong[0]?.system);
+  kiem('lập ý: user bắt đầu bằng đúng user của lượt viết', !!userA && !!bat[0]?.user.startsWith(userA));
+  kiem('lập ý: cùng khoá đệm với lượt viết', bat[0]?.khoa === khong[0]?.khoa, [bat[0]?.khoa, khong[0]?.khoa]);
+  kiem('A+: một lượt viết = user của A + đuôi A+', aCong[0]?.user === `${userA}\n\n${DUOI_A_CONG}`);
   _thayAdminChoTest(null);
 }
 

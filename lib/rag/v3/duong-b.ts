@@ -1,7 +1,6 @@
 import { nhanDangThucThe } from '../thuc-the';
 import { docObjectJson } from '../doc-json';
 import type { DuKienV3 } from './du-kien';
-import { LUAT_AN_TOAN_V3, LUAT_CAN_CU } from './prompt-v3';
 
 /*
  * ĐƯỜNG B (CELES-38, 22/10/2026) — CHỈ cho bộ so mù A/B, sản phẩm không đi đường này.
@@ -26,24 +25,32 @@ export interface YLuan {
 
 const THU_TU: MucChac[] = ['yeu', 'vua', 'manh'];
 
-export const SYSTEM_LAP_Y = [
-  'Bạn là Celes, người luận giải Tử Vi của Celestia. Ở bước này bạn CHỈ lập ý, chưa viết bài. Viết tiếng Việt.',
-  LUAT_CAN_CU,
-  // Bước diễn đạt chỉ được nói lại ý đã lập — ý vượt luật an toàn phải bị chặn ngay từ đây
-  `LUẬT AN TOÀN CHO TỪNG Ý:
-${LUAT_AN_TOAN_V3}`,
-  `ĐẦU RA — chỉ một object JSON hợp lệ, không rào code, không lời dẫn:
+/*
+ * Lượt lập ý gửi ĐÚNG system + user của lượt viết (cùng khoá đệm v3:<id>) rồi nối đuôi này, nên lượt viết trúng
+ * đệm cả phần user dài (CELES-34, 31/10/2026: B cũ tốn ×1,6 A vì lập ý đi system riêng). Luật căn cứ và an toàn
+ * đã nằm trong system V3 (prompt-v3.ts), đuôi chỉ đổi định dạng đầu ra.
+ */
+export const DUOI_LAP_Y = `LƯỢT NÀY CHỈ LẬP Ý, CHƯA VIẾT BÀI — bỏ qua định dạng đầu ra ở phần luật, trả đúng dạng dưới đây.
+Chỉ một object JSON hợp lệ, không rào code, không lời dẫn, KHÔNG có "luanGiai" / "viSao" / "goiY":
 {
   "danY": [ { "y": "một nhận định ngắn, trả lời đúng câu hỏi", "canCu": ["F002", "E001"], "mucChac": "manh", "sao": ["Tử Vi"] } ]
 }
-- 3–7 ý. Mỗi ý ghi đủ mã căn cứ (F### dữ kiện, E### nguồn, T### thư viện); ý không có mã thì đừng viết.
-- "mucChac": "manh" khi nhiều căn cứ cùng chiều và có nguồn nói đúng tổ hợp; "vua" khi có căn cứ nhưng chưa đủ dày; "yeu" khi chỉ một căn cứ mờ.
-- "sao": tên các sao mà ý dựa vào, chỉ lấy từ DỮ KIỆN LÁ SỐ.`,
-].join('\n\n');
+- 3–5 ý, mỗi "y" tối đa 30 từ. Mỗi ý ghi đủ mã căn cứ (F### dữ kiện, E### nguồn, T### thư viện); ý không có mã thì đừng viết.
+- "mucChac" BẮT BUỘC ở mọi ý: "manh" khi nhiều căn cứ cùng chiều và có nguồn nói đúng tổ hợp; "vua" khi có căn cứ nhưng chưa đủ dày; "yeu" khi chỉ một căn cứ mờ.
+- "sao": tên các sao mà ý dựa vào, chỉ lấy từ DỮ KIỆN LÁ SỐ.
+- Luật an toàn ở phần luật áp cho từng ý.`;
 
+/** maxTokens của lượt lập ý — đầu ra ~300–600 token, phần dư cho suy luận của model */
+export const MAX_TOKENS_LAP_Y = 2500;
+
+/**
+ * Đọc chặt: lượt lập ý dùng system V3 (vốn dặn danY không mucChac), nên model theo system thay vì theo đuôi
+ * vẫn ra danY đọc được — thiếu mucChac ở BẤT KỲ ý nào hoặc có "luanGiai" là hỏng, lùi về A (phan-bien 31/10).
+ */
 export function docDanY(text: string): YLuan[] | null {
-  const o = docObjectJson(text) as { danY?: unknown } | null;
-  if (!o || !Array.isArray(o.danY)) return null;
+  const o = docObjectJson(text) as { danY?: unknown; luanGiai?: unknown } | null;
+  if (!o || !Array.isArray(o.danY) || o.luanGiai !== undefined) return null;
+  if (!(o.danY as unknown[]).every((y) => !!y && typeof y === 'object' && THU_TU.includes((y as Record<string, unknown>).mucChac as MucChac))) return null;
   return (o.danY as unknown[])
     .filter((y): y is Record<string, unknown> => !!y && typeof y === 'object' && typeof (y as Record<string, unknown>).y === 'string')
     .map((y) => ({
@@ -110,7 +117,7 @@ export function saoChoDienDat(giu: YLuan[], duKien: DuKienV3[]): Set<string> {
   return new Set([...giu.flatMap((y) => y.sao), ...dan.flatMap((d) => d.sao), ...tamPhuong.flatMap((d) => d.sao)]);
 }
 
-const LOI_MUC: Record<MucChac, string> = {
+export const LOI_MUC: Record<MucChac, string> = {
   manh: 'nói rõ, dứt khoát — nhưng vẫn là lời xu hướng, không hứa hẹn, không khẳng định chuyện sức khỏe / hôn nhân / con cái',
   vua: 'nói ở mức "khá rõ", "nghiêng về"',
   yeu: 'nói ở mức "có khả năng", "có dấu hiệu nhẹ" — không phóng thành kết luận',
@@ -123,3 +130,11 @@ ${giu.map((y, i) => `${i + 1}. [${y.canCu.join(', ')}] [${LOI_MUC[y.mucChac]}] $
 - Luật an toàn trong phần luật vẫn đứng trên dàn ý: ý nào chạm giới hạn ấy thì nói ở mức xu hướng.
 - Trường "danY" chép lại đúng các ý trên (y + canCu). Phần "vì sao" chỉ nêu sao của các ý trên.`;
 }
+
+/*
+ * A+ (CELES-34, 31/10/2026): MỘT lượt như A, thêm mức chắc cho từng ý và cách nói theo mức. Giả thuyết của
+ * phan-bien: B thắng nhờ mức chắc + dàn ý trước, không nhờ tách hai lượt — A+ đo đúng điều đó.
+ */
+export const DUOI_A_CONG = `MỨC CHẮC CỦA TỪNG Ý — lượt này thêm vào định dạng đầu ra:
+- Mỗi ý trong "danY" thêm trường "mucChac": "manh" khi nhiều căn cứ cùng chiều và có nguồn nói đúng tổ hợp; "vua" khi có căn cứ nhưng chưa đủ dày; "yeu" khi chỉ một căn cứ mờ.
+- Viết "luanGiai" theo đúng mức của từng ý: ý "manh" thì ${LOI_MUC.manh}; ý "vua" thì ${LOI_MUC.vua}; ý "yeu" thì ${LOI_MUC.yeu}.`;
