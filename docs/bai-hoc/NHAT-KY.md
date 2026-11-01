@@ -112,7 +112,16 @@ Mẫu một mục:
   (tệp:dòng hoặc kết quả grep kho); chưa kiểm thì ghi rõ "chưa kiểm", không trình như sự thật.
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo". Lần 2 → máy canh trích nguyên văn trong
   `scripts/test-luat-to-hop.ts` (nhánh `viec/van-han-lop-han`, 10beac8).
-- Lần: 3
+- Lần: 4
+- Lặp 31/10 (lần 4): soát câu bị bộ kiểm lớp hạn chặn (CELES-46), AI dựng lại lá 24/8/2000 bằng script
+  gõ tay giờ 9 thay vì giờ Tuất (20) đang dùng trong `LA_SO_DO` của `scripts/do-lop-han-that.ts`, rồi báo
+  chủ dự án "Liêm Trinh ở Tật Ách" để kết luận câu "Hóa Kỵ vào Liêm Trinh" sai. Thật ra Liêm Trinh ở
+  Mệnh (Tuất); câu bị chặn vì trộn lưu Kỵ 2026 với Kỵ gốc. Gốc: thông số lá số gõ lại theo trí nhớ thay vì
+  lấy từ nguồn của bộ đo, và không đối chiếu với lá số chủ dự án nhìn thấy. Giá: chủ dự án phải bắt lỗi,
+  một lượt trả lời sai, sửa lại backlog. Luật: dựng lại lá số để soát thì import đúng thông số từ nguồn
+  bộ đo (`LA_SO_DO`), không gõ tay; nêu vị trí sao thì in kèm ngày giờ đã dùng. Máy canh đề xuất (chờ
+  chủ dự án duyệt): cờ `--in-la-so <ten>` trong `do-lop-han-that.ts` in vị trí sao từ chính `LA_SO_DO`,
+  để AI soát bằng lệnh đó thay cho script tự viết.
 - Lặp 17/10 (lần 3, hai chuyện): (a) giải pháp việc A ghi "câu Triệt tiền vận, Tuần hậu vận không có
   trong 15 cuốn"; chủ dự án phản đối, chuyen-gia-tu-vi tìm ra Ảo bí 4819 nói nguyên văn — grep của AI
   chỉ dùng vài biến thể chữ ("hậu vận", "sau 30") nên sót câu Hán Việt "hậu khán Tuần". (b) nói đường
