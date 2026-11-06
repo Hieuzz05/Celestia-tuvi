@@ -47,6 +47,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   reviewer hay tên tệp làm chủ ngữ. Ngày 18/10, 3/5 mục xin quyết bị trả lại "chưa hiểu".
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.
+  **Các câu xin quyết (Q1, Q2…) thì chép NGUYÊN ra khung chat**, mỗi câu kèm lựa chọn và đề xuất;
+  tệp chỉ để giữ bản đầy đủ có dẫn chứng. Ngày 06/11 (CELES-62) chỉ trỏ tới tệp, chủ dự án phải nhắc.
 - **Thiếu dấu loại việc (`[CODE]`…) thì hỏi một câu ngắn**, đừng tự đoán rồi đi sai luồng.
 - **Ví dụ chủ dự án nêu (danh sách sao, bộ cách) là ví dụ, không phải luật**: kiểm bằng sách xem đủ,
   đúng, điều kiện gì rồi mới dùng. **Điều tử vi đã có quy tắc thì không hỏi chủ dự án quyết** (vd sao

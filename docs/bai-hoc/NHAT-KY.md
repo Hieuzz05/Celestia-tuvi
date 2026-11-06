@@ -251,3 +251,14 @@ Mẫu một mục:
 - Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
   lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
 - Lần: 2 (lần 1: CELES-37, chưa ghi sổ)
+
+## 06/11/2026 · Câu xin quyết chỉ nằm trong tệp, không ra chat · quy-trinh
+- Thẻ: xin quyet, khung chat, cau hoi chu du an, tep D:\Celestia, trinh bay
+- Chuyện gì: CELES-62 viết Q1–Q5 trong `D:\Celestia\GIAI-PHAP-AI-MAT-BOI-CANH-2026-11-06.md`, câu trả lời
+  trong chat chỉ trỏ tới tệp. Chủ dự án dặn: "lần sau gửi các Q ra đây luôn để tôi check".
+- Gốc: luật cũ chỉ nói tệp phải ở chỗ dễ tìm và in đường dẫn, nên AI coi in đường dẫn là đủ. Chủ dự án
+  lại muốn quyết ngay trong chat, không phải mở tệp.
+- Giá: chủ dự án phải nhắc, thêm một lượt để chép lại Q1–Q5 ra chat.
+- Luật: câu xin quyết chép nguyên ra chat (lựa chọn + đề xuất); tệp chỉ là bản đầy đủ có dẫn chứng.
+- Nâng: `docs/bai-hoc/cach-lam.md`, mục Giao tiếp, gộp vào luật "Tệp trình chủ dự án đọc".
+- Lần: 1
