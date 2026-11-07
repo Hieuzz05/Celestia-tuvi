@@ -1,6 +1,8 @@
 # Vì sao AI "quên" khi làm Celes, và cách sửa
 
-Ngày 06/11/2026. Bản 3: bản 2 đã qua phản biện; bản 3 sửa Q2, Q3, Q4 theo ý anh/chị và kiểm lại TRANG-THAI. Chỉ là nghiên cứu, chưa sửa mã. Task trên Board: CELES-62.
+Ngày 06/11/2026. Bản 4 (07/11): anh/chị đã quyết đủ Q1–Q5. Chỉ là nghiên cứu, chưa sửa mã. Task trên Board: CELES-62.
+
+> **Đọc mục 9 trước.** Mục 1–8 là bản đã trình để anh/chị quyết. Chỗ nào ở mục 1–8 còn ghi "chờ anh/chị quyết" hay "câu hỏi mở" thì đã có đáp án ở mục 9, và mục 9 thắng.
 
 ## 1. Kết luận ngắn
 
@@ -16,7 +18,7 @@ Thêm công cụ ghi nhớ không chữa được chuyện này. Cách chữa l�
 Giải pháp rút gọn, tính theo công sức:
 
 1. Mỗi lần mở phiên, gộp bản luật mới nhất (`origin/main`) vào nhánh đang làm. Phiên nào cũng đọc cùng một bộ luật.
-2. Dọn việc dở trước: 42 worktree, 22 nhánh chưa gộp, 26 việc mở trên Board. Sau đó không đặt trần cứng số việc; gom các quyết định đang treo thành một hàng để anh/chị quyết theo lô (bản 3, xem Q3).
+2. Dọn việc dở trước: 42 worktree, 22 nhánh chưa gộp, 49 việc chưa đóng trên Board. Sau đó không đặt trần cứng số việc; gom các quyết định đang treo thành một hàng để anh/chị quyết theo lô (bản 3, xem Q3).
 3. Mỗi quyết định có một chỗ ở, có trạng thái "còn hiệu lực / đã bị thay", và có một bước "rà xuống mã".
 4. Một việc một phiên. Thử hai lần không xong thì dừng và tóm gốc, không thử tiếp.
 5. Mục nào xin anh/chị quyết thì phải đọc hiểu được mà không cần ngữ cảnh của AI.
@@ -25,14 +27,14 @@ Giải pháp rút gọn, tính theo công sức:
 
 | # | Cơ chế | Chứng cứ (đã kiểm) | Thêm ngữ cảnh có chữa được không? |
 |---|---|---|---|
-| 1 | **Nhiều việc dở cùng lúc** (gốc của 2, 3, 5) | 42 thư mục trong `.git/worktrees`, 22 nhánh cục bộ chưa gộp, 26 việc mở trên Board (9 việc không đổi từ 19/10) | Không |
+| 1 | **Nhiều việc dở cùng lúc** (gốc của 2, 3, 5) | 42 thư mục trong `.git/worktrees`, 22 nhánh cục bộ chưa gộp, 49 việc chưa đóng trên Board (22 chưa làm, 16 bị chặn, 7 chờ nghiệm thu, 4 đang làm; đếm 07/11) | Không |
 | 2 | **Luật nằm trên nhánh chưa gộp**, nên mỗi thư mục đọc một bản luật khác | `origin/main:AGENTS.md` dòng 43 vẫn ghi "Nam phái làm chuẩn" vì lệnh bỏ nằm ở nhánh `viec/bo-luat-nam-phai` chưa gộp; ngược lại nhánh này lại thiếu mục "Cấu hình đã xác nhận" có trên main, đúng câu anh/chị bực vì bị hỏi lại (31/10). `NHAT-KY.md:199-204` đã ghi cơ chế này ngày 19/10 | Không. Phải gộp |
 | 3 | **Quyết định không đi tới cuối đường** | Đề xuất hook SessionStart từ 19/10 (`NHAT-KY.md:205`) đến nay chưa làm. Quyết định "không ép hai mặt" (C3) đã chốt nhưng mã vẫn ép (`nghieng-ve.ts:892`), và AI còn đưa lại phương án cũ (`NHAT-KY.md:211-217`). "C1 bản 4" nằm rải ở 9 tệp trong `D:\Celestia`, Board và memory riêng của Claude, không chỗ nào ghi bản nào còn hiệu lực | Một phần. Phải có bước rà xuống mã |
 | 4 | **Luật có sẵn trước mặt mà AI không làm theo** | Luật "câu phủ định phải quét hết" nằm trong `cach-lam.md` (nạp mọi phiên) mà vẫn lặp lần 3 (`NHAT-KY.md:116`). Ẩn dụ "xe/đường" lặp dù đã có luật. 8/12 mục sổ bài học có ghi lặp từ lần 2 trở lên | Không. Chữ không đủ thì phải có máy canh (test) |
 | 5 | **Phiên quá dài, việc trôi phạm vi** | Bốn phiên Claude dài nhất có 2.195–3.345 lượt AI, kéo dài nhiều ngày. CELES-34 có 45 mục lịch sử, ô "Xong khi" để trống, đã trôi từ "đường B" sang "tìm gốc câu khó hiểu" | Một phần |
 | 6 | **AI trình bày bằng ngữ cảnh riêng của nó**, nên anh/chị "chưa hiểu", trông như AI quên | "chưa hiểu" xuất hiện 14 lần trong mẫu tin đã lọc; 3/5 mục xin quyết bị trả lại ngày 18/10 (`NHAT-KY.md:185-198`) | Không. Phải sửa cách trình bày |
 
-Thêm một điều: không phải việc nào "mãi không xong" cũng do quên. Thử mù 6 cách viết cho thấy câu khó hiểu của Celes phần lớn đến từ năng lực model rẻ (`D:\Celestia\NGUYEN-NHAN-GOC-dien-dat-Celes-2026-11-06.md`). Việc kiểu này cần bộ đo, không cần thêm trí nhớ.
+Thêm một điều: không phải việc nào "mãi không xong" cũng do quên. Phép thử mù 6 cách viết (`D:\Celestia\NGUYEN-NHAN-GOC-dien-dat-Celes-2026-11-06.md`) cho thấy câu khó hiểu của Celes không hết khi đổi sang model mạnh, thêm AI biên tập hay sửa luật. Một phần do chữ bị gieo từ luật và đề câu hỏi (đã chứng minh); phần còn lại chưa rõ nguyên nhân. (Bản 3 ghi "phần lớn do năng lực model rẻ" là sai, nói ngược tệp nguồn.) Việc kiểu này cần bộ đo, không cần thêm trí nhớ.
 
 **Chưa kiểm:** chưa gắn được từng câu than của anh/chị với đúng cơ chế nào. Trong phép đo sau sẽ làm việc đó (mục 5).
 
@@ -61,8 +63,8 @@ Thêm một điều: không phải việc nào "mãi không xong" cũng do quên
 
 - Phân loại 42 worktree và 22 nhánh thành ba nhóm: gộp, bỏ, giữ. AI lập bảng, anh/chị duyệt. Không xoá nhánh, chỉ gắn nhãn rồi gỡ worktree. Việc này nằm trong CELES-23, nâng ưu tiên lên.
 - Gộp ngay nhánh `viec/bo-luat-nam-phai` để main hết ghi "Nam phái làm chuẩn".
-- Rà 26 việc mở trên Board: việc nào còn làm thì điền "Xong khi" kiểm được, việc nào hết cần thì đặt `dropped`.
-- Sau khi dọn xong: KHÔNG đặt trần cứng (bản 3, xem Q3). Thay bằng lệnh in hàng chờ quyết định để anh/chị quyết theo lô; chuyện AI có được tự đẩy nhánh `viec/*` hay không chờ anh/chị quyết. Việc xong kỹ thuật mà chưa muốn bật thì gộp sau cờ, như Focused đang làm.
+- Rà 49 việc chưa đóng trên Board, kể cả 22 việc chưa bắt đầu: việc nào còn làm thì điền "Xong khi" kiểm được, việc nào hết cần thì đặt `dropped`.
+- Sau khi dọn xong: KHÔNG đặt trần cứng (bản 3, xem Q3). Thay bằng lệnh in hàng chờ quyết định để anh/chị quyết theo lô; AI được tự đẩy nhánh `viec/*` (anh/chị xác nhận 07/11). Việc xong kỹ thuật mà chưa muốn bật thì gộp sau cờ, như Focused đang làm.
 
 ### Bước 2. Mỗi phiên đọc cùng một bộ luật
 
@@ -82,7 +84,7 @@ Thêm một điều: không phải việc nào "mãi không xong" cũng do quên
 - Không phân vai (anh/chị quyết 06/11). Công cụ nào cũng làm được mọi việc. Chỉ giữ một luật chống va chạm: tại một thời điểm, một nhánh chỉ có một công cụ viết; công cụ khác muốn làm cùng việc thì mở worktree riêng (luật này đã có trong `cach-lam.md`).
 - Sửa 10 chỗ trỏ sai `.Codex/skills/...` trong 5 skill ở `.agents/skills`. Thêm một bài CI đỏ khi bản sao skill lệch bản `.claude`. Không viết bộ sinh tự động vì định dạng `.toml` của Codex khác hẳn, thêm việc phải bảo trì.
 - Commit `.agents/` và `.codex/` vào git để hai công cụ kia không đọc bản cũ trên máy.
-- Sửa `AGENTS.md` và `AI-PHOI-HOP.md`: hiện ghi "hai AI hai máy", không nhắc Gemini. Cách sửa phụ thuộc câu hỏi còn mở: anh/chị còn dùng máy thứ hai không (xem Q4).
+- Sửa `AGENTS.md` và `AI-PHOI-HOP.md`: hiện ghi "hai AI hai máy", không nhắc Gemini. Anh/chị dùng nhiều máy (Q4, 07/11), nên viết lại thành "nhiều công cụ × nhiều máy".
 - Đặt tên người ghi cho từng công cụ khi ghi Board. Hiện `config.local.json` mặc định là "Claude (máy 1)" cho cả máy, nên Codex và Gemini quên `--by` là bị ghi nhầm tên.
 
 ### Bước 5. Trình bày cho anh/chị hiểu được
@@ -103,7 +105,7 @@ Bản 1 lấy "số lần nén mỗi phiên" làm chỉ số chính. Chỉ số 
 | Chỉ số | Cách đo | Nền |
 |---|---|---|
 | Số lần anh/chị phải nhắc lại điều đã nói, **gắn với cơ chế 1–6** | Script quét log cả ba công cụ, anh/chị xác nhận 5 phút mỗi tuần | Đếm lại 30 ngày qua để có nền (đã thấy ít nhất 7 câu từ 17/10 tới 05/11) |
-| Số việc đang mở và tuổi nhánh | Board, git | 26 việc mở, 22 nhánh |
+| Số việc đang mở và tuổi nhánh | Board, git | 49 việc chưa đóng, 22 nhánh |
 | Quyết định có dòng "đã rà mã" | Sổ quyết định | 0 |
 | Việc qua 2 vòng thử không đạt mà vẫn chạy tiếp | Board | CELES-34 là một ca |
 
@@ -194,7 +196,7 @@ Kiểm kỹ lại thì trần "tối đa 2 việc đang làm" đánh sai chỗ:
 **Q4. Phân vai ba công cụ — ĐÃ QUYẾT: không phân vai (06/11).**
 Còn giữ một luật chống va chạm, không phải phân vai: một nhánh chỉ một công cụ viết tại một thời điểm. Còn một câu hỏi mở, cần để sửa `AI-PHOI-HOP.md`: anh/chị **còn dùng máy thứ hai không**? Tài liệu và Board ghi "máy 2", nhưng anh/chị nói cả ba công cụ chạy trên một máy.
 
-**Q5. Thứ tự làm — HOÃN, chờ chốt Q1–Q3.**
+**Q5. Thứ tự làm — ĐÃ DUYỆT 07/11 (xem 9.4).**
 Bản nháp để anh/chị xem trước: Bước 0 ngay → Bước 1 dọn → Bước 2–5 → đo 4 tuần. Mỗi bước là một phiên `[CODE]` hoặc `[SỬA LỖI]` riêng. Bước 1: AI chỉ lập bảng phân loại, anh/chị duyệt từng nhánh trước khi gỡ.
 
 ## 9. Anh/chị đã quyết (07/11/2026) và thiết kế đi kèm
@@ -205,6 +207,8 @@ Bản nháp để anh/chị xem trước: Bước 0 ngay → Bước 1 dọn →
 | Q2 | Giữ `TRANG-THAI.md`, đánh giá lại sau đợt đo |
 | Q3 | Không giới hạn số việc. Mục tiêu thật: **AI hiểu và nắm được bối cảnh các task cũ đã trao đổi**. Đồng ý phần đề xuất (lệnh in hàng chờ quyết; AI được tự đẩy nhánh `viec/*`) |
 | Q4 | Không phân vai. Anh/chị **có dùng nhiều máy** |
+| Q3 (xác nhận 07/11) | AI được tự đẩy nhánh `viec/*` ngay sau commit. Gộp vào `main` và nghiệm thu vẫn là anh/chị |
+| Q5 (07/11) | Duyệt thứ tự ở 9.4. Thay đổi Board áp cho cả Your Best Version |
 
 ### 9.1 Quyết định trên Board: làm sao "luôn được cập nhật" (đã qua phản biện 07/11)
 
@@ -242,7 +246,7 @@ Thay đổi này nằm trong CLI dùng chung, nên **áp cho cả dự án Your 
 - `AI-PHOI-HOP.md` giữ logic nhiều máy, sửa thành "nhiều công cụ × nhiều máy".
 - Tên người ghi Board theo dạng `<công cụ> (máy N)` cho từng công cụ trên từng máy.
 
-### 9.4 Q5 (đề xuất thứ tự, chờ duyệt)
+### 9.4 Q5: thứ tự làm (đã duyệt 07/11)
 0. Ngay: thói quen (một việc một phiên, thử hai lần không xong thì dừng).
 1. **Board** (repo `vibe-board`, không chạm mã Celes): làm cả 7 mục ở 9.1, dọn ô `decision` của 7 task đã xong, rồi anh/chị chạy lại `setup.mjs` trên mỗi máy. Đi trước vì mọi bước sau ghi vào đây.
 2. **Dọn:**
