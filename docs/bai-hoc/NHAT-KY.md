@@ -261,4 +261,15 @@ Mẫu một mục:
 - Giá: chủ dự án phải nhắc, thêm một lượt để chép lại Q1–Q5 ra chat.
 - Luật: câu xin quyết chép nguyên ra chat (lựa chọn + đề xuất); tệp chỉ là bản đầy đủ có dẫn chứng.
 - Nâng: `docs/bai-hoc/cach-lam.md`, mục Giao tiếp, gộp vào luật "Tệp trình chủ dự án đọc".
+## 26/10/2026 · Viện luật "Nam phái làm chuẩn" đã bỏ để chặn phương án tứ hoá · cach-lam
+- Thẻ: luat cu, AGENTS.md, tu hoa, phai, quyet dinh
+- Chuyện gì: khi phân tích vì sao chat không dùng sách Tứ Hoá Phái, AI đề xuất phải mở phiên
+  [CHIẾN LƯỢC] vì thêm lưu tứ hoá "đụng luật Nam phái làm chuẩn". Chủ dự án đã bỏ luật đó từ lâu
+  nhưng nó vẫn nằm ở AGENTS.md (quyết định số 1) và ba tệp subagent.
+- Gốc: quyết định đổi bằng lời, không ai gỡ chữ khỏi các tệp nạp mọi phiên; AI tin tệp.
+- Giá: một vòng trình sai (đẩy việc sang phiên chiến lược không cần), chủ dự án phải sửa lưng.
+- Luật: chủ dự án bỏ một luật thì grep mọi tệp nạp vào phiên (AGENTS.md, .claude/agents, .claude/skills,
+  docs/bay, docs/bai-hoc) và gỡ trong cùng lượt.
+- Nâng: AGENTS.md (gỡ luật + ghi chú "không có phái chuẩn"), celes-domain, chuyen-gia-tu-vi, phan-bien,
+  chien-luoc, danh-gia-tac-dong, soat-chi-phi.
 - Lần: 1

@@ -12,7 +12,7 @@ Khác với `phan-bien` (tìm cách đánh sập ý tưởng), bạn trả lời
 mô tả, cái gì đang chạy sẽ đổi theo, đổi bao nhiêu, và ai phải biết trước**.
 
 ## Đọc trước
-- `AGENTS.md` (ba quyết định không được tự đổi, luật mặt trước, bản đồ mã).
+- `AGENTS.md` (hai quyết định không được tự đổi, luật mặt trước, bản đồ mã).
 - `docs/bay/<vùng>.md` của mọi vùng thay đổi chạm tới.
 - `AI-PHOI-HOP.md` — vùng của máy kia; `git status` để thấy tệp đang sửa dở.
 
@@ -44,7 +44,7 @@ mô tả, cái gì đang chạy sẽ đổi theo, đổi bao nhiêu, và ai ph�
 
 ## Khi nào bật cờ CẦN CHỦ DỰ ÁN DUYỆT
 Bật nếu có BẤT KỲ điều nào:
-- Đụng một trong ba quyết định không được tự đổi, hoặc luật mặt trước.
+- Đụng một trong hai quyết định không được tự đổi, hoặc luật mặt trước.
 - Nới / bỏ một luật luận cốt lõi (nguồn, không bịa, không phán quyết đời người, làm mềm).
 - Đổi kết quả an sao hay nghĩa sao đang hiện cho người dùng.
 - Vô hiệu bộ đệm hàng loạt, hoặc tăng token / thời gian mỗi lượt > 20%.
