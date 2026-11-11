@@ -114,7 +114,7 @@ export function CanCu({ canCu }: { canCu?: CanCuTraLoi }) {
               <div
                 key={n.ma}
                 className="flex flex-col gap-[4px] rounded-[8px] p-[8px]"
-                style={{ background: 'var(--surface-sunken, rgba(127,127,127,0.07))' }}
+                style={{ background: 'var(--surface-panel)' }}
               >
                 <Dong>
                   <strong>

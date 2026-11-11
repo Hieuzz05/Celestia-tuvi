@@ -170,13 +170,6 @@ export function PalaceDrawer({
             <span>Xung chiếu: {tenCung(xungChieu)}</span>
           </div>
         </Muc>
-
-        <button className="btn-primary mt-auto w-full" disabled title="Sẽ có ở giai đoạn luận giải AI">
-          Luận giải cung này
-        </button>
-        <p className="text-[11px]" style={{ color: 'var(--fg-muted)' }}>
-          Luận giải AI sẽ được bổ sung ở giai đoạn tiếp theo.
-        </p>
       </aside>
     </div>
   );

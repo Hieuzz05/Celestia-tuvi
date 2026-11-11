@@ -89,6 +89,7 @@ export function lyDoHopLe(v: unknown): v is LyDoUngHo {
  * họ, mà thanh địa chỉ vẫn là celestia trước đó.
  */
 export function duongDanNoiBo(v: unknown): string | null {
-  if (typeof v !== 'string' || !v.startsWith('/') || v.startsWith('//')) return null;
+  // Trình duyệt coi "/\evil.com" như "//evil.com" nên chặn mọi dấu gạch ngược (rà soát 11/11, A4).
+  if (typeof v !== 'string' || !v.startsWith('/') || v.startsWith('//') || v.includes('\\')) return null;
   return v.slice(0, 300);
 }

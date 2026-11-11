@@ -18,9 +18,11 @@ export const HAN_LUU_GIOI_HAN_KHACH_NGAY = 2;
 const NGAY_MS = 24 * 60 * 60 * 1000;
 
 export interface LenhXoa {
-  bang: 'ai_requests' | 'retrieval_runs' | 'noi_dung_ai';
-  /** Chỉ dòng có tao_luc TRƯỚC mốc này */
+  bang: 'ai_requests' | 'retrieval_runs' | 'noi_dung_ai' | 'su_kien' | 'su_co_ai';
+  /** Chỉ dòng có cột thời gian TRƯỚC mốc này */
   truoc: string;
+  /** Cột thời gian; mặc định tao_luc. su_kien và su_co_ai dùng cột `luc`. */
+  cotThoiGian?: 'tao_luc' | 'luc';
   /** Lọc bằng thêm theo cột → giá trị */
   loc?: Record<string, string>;
 }
@@ -32,6 +34,9 @@ export function lenhDonNhatKy(bayGio: Date): LenhXoa[] {
     { bang: 'ai_requests', truoc: moc(HAN_LUU_NHAT_KY_NGAY) },
     { bang: 'retrieval_runs', truoc: moc(HAN_LUU_NHAT_KY_NGAY) },
     { bang: 'noi_dung_ai', truoc: moc(HAN_LUU_GIOI_HAN_KHACH_NGAY), loc: { be_mat: 'gioi-han-khach' } },
+    // Phễu sự kiện và sự cố AI: chỉ cần xu hướng gần đây, gói miễn phí có trần dung lượng (rà soát 11/11, A7)
+    { bang: 'su_kien', truoc: moc(HAN_LUU_NHAT_KY_NGAY), cotThoiGian: 'luc' },
+    { bang: 'su_co_ai', truoc: moc(HAN_LUU_NHAT_KY_NGAY), cotThoiGian: 'luc' },
   ];
 }
 
@@ -41,7 +46,7 @@ export async function donNhatKy(
 ): Promise<{ bang: string; soDong: number | null; loi?: string }[]> {
   const ketQua: { bang: string; soDong: number | null; loi?: string }[] = [];
   for (const l of lenhDonNhatKy(bayGio)) {
-    let q = supabase.from(l.bang).delete({ count: 'exact' }).lt('tao_luc', l.truoc);
+    let q = supabase.from(l.bang).delete({ count: 'exact' }).lt(l.cotThoiGian ?? 'tao_luc', l.truoc);
     for (const [cot, gt] of Object.entries(l.loc ?? {})) q = q.eq(cot, gt);
     const { count, error } = await q;
     ketQua.push({ bang: l.bang, soDong: count ?? null, ...(error ? { loi: error.message } : {}) });

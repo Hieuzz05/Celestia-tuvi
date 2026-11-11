@@ -225,7 +225,7 @@ export function MucDeepSection({
       {moCanCu && (
         <div
           className="flex flex-col gap-[12px] rounded-[14px] px-[16px] py-[14px]"
-          style={{ background: 'var(--bg-soft, rgba(0,0,0,0.03))' }}
+          style={{ background: 'var(--surface-panel)' }}
         >
           <p className="eyebrow">Celes dựa vào đâu</p>
           <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>

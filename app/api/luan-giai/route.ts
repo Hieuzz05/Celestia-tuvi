@@ -134,7 +134,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       noiDung: kq.van,
-      model: `${kq.provider}/${kq.model}`,
       hanMuc: {
         nguon: datCho.nguon,
         daDung: datCho.daDung,
@@ -167,12 +166,14 @@ export async function POST(req: Request) {
   } catch (e) {
     // Hỏng ở phía mình thì trả lại lượt — người dùng chỉ có một bài mỗi ngày
     await hoanBaiSau(datCho.nguon, requestId);
-    if (e instanceof KhongCoModelError) {
-      return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
-    }
+    // Chi tiết (tên model, quota) chỉ ghi nhật ký máy chủ; người dùng nhận một câu chung (Q4)
+    console.error('[luan-giai]', e);
     return NextResponse.json(
-      { loi: e instanceof Error ? e.message : 'Lỗi không xác định khi gọi AI' },
-      { status: 502 }
+      {
+        loi: 'Celes chưa viết được bài này. Lá số của bạn vẫn còn nguyên và lượt hôm nay chưa bị trừ, bạn thử lại sau ít phút.',
+        ...(e instanceof KhongCoModelError ? { chuaCauHinh: true } : {}),
+      },
+      { status: e instanceof KhongCoModelError ? 503 : 502 }
     );
   }
 }

@@ -245,7 +245,7 @@ export default function TrangRetrievalLab() {
             </div>
 
             {kq.khoTrong ? (
-              <p className="body-sm" style={{ color: 'var(--chart-trung)' }}>
+              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
                 Chưa có nguồn nào được xuất bản, hoặc chưa cấu hình kho. Truy hồi không trả về gì —
                 Celes sẽ chỉ nói được những gì lá số cho thấy.
               </p>

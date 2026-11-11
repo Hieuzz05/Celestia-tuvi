@@ -24,6 +24,9 @@ import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
 export const maxDuration = 60;
 
+const LOI_CHUNG_HOI_DAP =
+  'Celes chưa trả lời được câu này. Lượt hỏi của bạn đã được trả lại, bạn hỏi lại sau ít phút.';
+
 interface Body {
   ngay?: number;
   thang?: number;
@@ -306,7 +309,8 @@ export async function POST(req: Request) {
       traLoi: kq.van,
       // CEL-195: khoá cho nút 👍👎 — UUID ngẫu nhiên, máy chủ kiểm chủ lượt khi nhận phản hồi
       requestId,
-      model: `${kq.provider}/${kq.model}`,
+      // Tên model chỉ cho quản trị; sổ dùng AI ở máy chủ đã ghi đủ (rà soát 11/11, Q4)
+      model: laQuanTri ? `${kq.provider}/${kq.model}` : undefined,
       /*
        * Chip gợi ý cho lượt sau — gửi cho MỌI bậc quyền, khác với canCu.
        *
@@ -364,12 +368,14 @@ export async function POST(req: Request) {
     // Hỏng ở phía nhà cung cấp là lỗi của hệ thống, không phải của người dùng —
     // trả lại lượt vừa trừ.
     await hoanCauHoi(cho.nguon, requestId);
-    if (e instanceof KhongCoModelError) {
-      return NextResponse.json({ loi: e.message, chuaCauHinh: true }, { status: 503 });
-    }
+    // Chi tiết (tên model, quota) chỉ ghi nhật ký máy chủ; người dùng nhận một câu chung (Q4)
+    console.error('[hoi-dap]', e);
     return NextResponse.json(
-      { loi: e instanceof Error ? e.message : 'Lỗi khi gọi AI' },
-      { status: 502 }
+      {
+        loi: LOI_CHUNG_HOI_DAP,
+        ...(e instanceof KhongCoModelError ? { chuaCauHinh: true } : {}),
+      },
+      { status: e instanceof KhongCoModelError ? 503 : 502 }
     );
   }
 }

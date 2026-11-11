@@ -63,7 +63,7 @@ const MUC_TIN_CAY = [
 const TRANG_THAI: Record<string, { nhan: string; truyHoi: boolean; mau: string }> = {
   nhap: { nhan: 'Nháp', truyHoi: false, mau: 'var(--fg-muted)' },
   dang_xu_ly: { nhan: 'Đang xử lý', truyHoi: false, mau: 'var(--fg-muted)' },
-  can_duyet: { nhan: 'Cần duyệt', truyHoi: false, mau: 'var(--chart-trung)' },
+  can_duyet: { nhan: 'Cần duyệt', truyHoi: false, mau: 'var(--fg-muted)' },
   da_xuat_ban: { nhan: 'Đã xuất bản', truyHoi: true, mau: 'var(--chart-cat)' },
   that_bai: { nhan: 'Thất bại', truyHoi: false, mau: 'var(--chart-hung)' },
   luu_tru: { nhan: 'Lưu trữ', truyHoi: false, mau: 'var(--fg-muted)' },
@@ -485,7 +485,7 @@ export default function TrangKhoTriThuc() {
                     <div key={`cb-${v.id}`} className="flex flex-col gap-[4px]">
                       <Eyebrow>Cảnh báo v{v.phien_ban}</Eyebrow>
                       {v.canh_bao.map((c, i) => (
-                        <p key={i} className="caption" style={{ color: 'var(--chart-trung)' }}>
+                        <p key={i} className="caption" style={{ color: 'var(--fg-muted)' }}>
                           {c}
                         </p>
                       ))}

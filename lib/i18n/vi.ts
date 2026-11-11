@@ -415,6 +415,7 @@ export const vi = {
   luanChuDe: {
     dangDoc: 'Mình đang đọc chủ đề {chuDe}… mất khoảng 15–45 giây.',
     chonChuDe: 'Chọn một chủ đề ở trên, mình đọc cùng bạn.',
+    luuY: 'Celes viết dựa trên lá số của bạn, mang tính tham khảo — không thay thế tư vấn chuyên môn về y tế, tài chính hay pháp lý.',
   },
 
   luanSau: {

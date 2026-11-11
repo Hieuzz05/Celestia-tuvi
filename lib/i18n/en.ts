@@ -416,6 +416,7 @@ export const en: TuDien = {
   luanChuDe: {
     dangDoc: "I'm reading {chuDe}… this takes about 15–45 seconds.",
     chonChuDe: "Pick a topic above and I'll read it with you.",
+    luuY: 'Celes writes from your chart, for reflection only. It is not a substitute for professional medical, financial or legal advice.',
   },
 
   luanSau: {
