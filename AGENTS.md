@@ -302,5 +302,5 @@ ngang màn hình, không cuộn ngang — xem luật 3 trong `apps/celes-app/REA
 `D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf` và
 `D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (bản sau thay thế bản trước).
 
-Đang chờ người dùng quyết: (1) gói và giá cho bản trả phí, (2) làm PWA hay dựng app
-React Native riêng.
+Đang chờ người dùng quyết: gói và giá cho bản trả phí. (Bản di động đã chốt: app riêng
+`apps/celes-app`, không làm PWA — chủ dự án xác nhận lại 11/11/2026, CELES-9.)
