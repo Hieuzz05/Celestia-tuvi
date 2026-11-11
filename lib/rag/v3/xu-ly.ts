@@ -642,9 +642,14 @@ export async function xuLyLuanGiaiV3(body: BodyV3, mt: MoiTruongV3): Promise<Ket
     if (vietLai) await mt.ghiVet?.('viet-lai-luan-giai', { chartHash: khoa.chartHash, khoaKy: khoa.khoaKy, cau: thieu, hong: vietLaiHong });
     return tra({ nhom, cau: anNoiBo(cauTra), tuDem: false, ...(vietLai ? { vietLaiHong } : {}) });
   } catch (e) {
+    // Màn Luận giải sâu và Bức tranh lớn in thẳng `loi` ra cho người đọc. Thông báo gốc
+    // của tầng gọi model chứa tên nhà cung cấp, tên model và chữ "quota" — luật mặt trước
+    // cấm lộ. Chi tiết chỉ ghi ở log máy chủ (tầng fallback đã ghi sự cố từng model).
+    console.error('[luan-giai-v3] lỗi khi viết:', e instanceof Error ? e.message : e);
+    const loi = 'Celes chưa viết được phần này. Lá số của bạn vẫn còn nguyên, bạn thử lại sau ít phút.';
     if (e instanceof KhongCoModelError) {
-      return tra({ loi: e.message, chuaCauHinh: true }, 503);
+      return tra({ loi, chuaCauHinh: true }, 503);
     }
-    return tra({ loi: e instanceof Error ? e.message : 'Lỗi không xác định' }, 502);
+    return tra({ loi }, 502);
   }
 }

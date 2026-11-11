@@ -570,7 +570,7 @@ export const vi = {
     canCuDong: 'Thu gọn căn cứ',
     canCuLaSo: 'Lá số của bạn',
     canCuNguon: 'Đoạn tri thức đã dùng',
-    canCuPhuongPhap: 'Bộ quy tắc an sao đã dùng',
+    canCuPhuongPhap: 'Bộ quy tắc lập lá số đã dùng',
     canCuPhuongPhapMo: 'Đây là phiên bản luật tính lá số, không phải tên tài liệu trong kho.',
     canCuChuDe: 'Chủ đề đọc được',
     canCuKhongNguon:

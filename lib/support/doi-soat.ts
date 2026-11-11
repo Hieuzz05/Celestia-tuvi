@@ -65,7 +65,9 @@ export async function doiSoatDon(don: Don): Promise<KetQuaDoiSoat> {
       provider_paid_at: nay,
       updated_at: nay,
     })
-    .eq('id', don.id);
+    .eq('id', don.id)
+    // Webhook có thể đã cấp quyền giữa lúc đọc đơn và lúc ghi: không kéo đơn lùi về 'paid'
+    .neq('status', 'entitlement_granted');
 
   const { error } = await db.rpc('cap_quyen_ung_ho', {
     p_payment_id: don.id,
