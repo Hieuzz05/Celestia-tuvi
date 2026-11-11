@@ -24,7 +24,10 @@ npx tsx scripts/test-linh-vat-an-toan.ts # linh vật nghiêm theo lượt MỚI
 npx tsx scripts/test-cho-dat-celes.ts   # linh vật: ảnh ↔ public/celes, không ảnh khoá, chỉ tệp trong danh sách mục 12 — offline
 npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiêng về, mốc, cờ Focused tắt giữ nguyên — offline
 npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
+npx tsx scripts/test-hieu-cau-truong.ts # CEL-191 hiểu câu theo trường trên đường Focused: bảng timeIntent, cổng gọi model, luật thắng khi đã chắc — offline
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
+npx tsx scripts/test-boi-canh-dong-bang.ts # CEL-186 A0: `chonBoiCanh` phải ra y ảnh chụp đã đóng băng; KHÔNG chạy `--sinh` — offline
+npx tsx scripts/test-hop-dong-focused.ts # CEL-186 v2: 30 flow người / ý / thời gian trên vết có cấu trúc, model là hàm giả — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
 npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
 npx tsx scripts/test-ngan-sach-thu.ts # X1: trần token/ngày, cấm trả phí, ghi lỗi và restart vẫn chặn; T-04 ngoại lệ có phí hẹp (đủ biến + ghim + trần) — HTTP/DB giả

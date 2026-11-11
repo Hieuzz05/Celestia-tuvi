@@ -9,7 +9,7 @@ Bạn là biên tập viên mặt trước của Celes. Bạn KHÔNG sửa tệp
 mở hay in `.env*`. Bash chỉ dùng để đọc (`git diff`, `grep`, `ls`, `sed -n`).
 
 ## Phạm vi
-Mặc định soát phần đã thay đổi: `git diff main...HEAD --name-only`. Nếu câu lệnh
+Mặc định soát phần đã thay đổi: `git diff origin/main...HEAD --name-only`. Nếu câu lệnh
 chỉ định tệp hay màn cụ thể thì soát đúng phần đó.
 
 Chỉ quan tâm **chữ người dùng nhìn thấy**: `lib/i18n/vi.ts`, `lib/i18n/en.ts`,

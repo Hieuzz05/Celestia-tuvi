@@ -11,7 +11,7 @@ Không cần nhớ hết. Tài liệu nằm sẵn trong repo, cần thì mở l�
 
 | Thứ | Là gì | Ở đâu |
 |---|---|---|
-| **Trợ lý phụ** (subagent) | Mỗi trợ lý làm một việc: đọc mã, phản biện, kiểm… Làm xong nó chỉ báo lại kết luận, không kéo theo mọi thứ đã đọc, nên cuộc trò chuyện chính đỡ nặng | `.claude/agents/` (9 trợ lý) |
+| **Trợ lý phụ** (subagent) | Mỗi trợ lý làm một việc: đọc mã, phản biện, kiểm… Làm xong nó chỉ báo lại kết luận, không kéo theo mọi thứ đã đọc, nên cuộc trò chuyện chính đỡ nặng | `.claude/agents/` (10 trợ lý) |
 | **Skill** (lệnh `/…`) | Một quy trình nhiều bước đã viết sẵn. Gõ lệnh là Claude làm đúng từng bước, ở cả hai máy | `.claude/skills/` (6 skill) |
 | **Sổ bài học** | Nơi ghi lại mỗi lần AI làm sai hoặc tìm ra cách tốt hơn, để lần sau không lặp lại | `docs/bai-hoc/` |
 
@@ -26,7 +26,7 @@ chính làm, sau khi bạn đã duyệt phương án.
    Mở sai thư mục thì Claude không thấy trợ lý lẫn skill.
 2. **Mở một phiên chat MỚI** sau khi kéo cấu hình mới về (`git pull`). Phiên đã mở từ trước không
    tự thấy skill mới.
-3. **Kiểm tra**: gõ `/agents` để thấy 9 trợ lý. Gõ `/` để thấy danh sách skill, trong đó có
+3. **Kiểm tra**: gõ `/agents` để thấy 10 trợ lý. Gõ `/` để thấy danh sách skill, trong đó có
    `/lam-tinh-nang`, `/sua-loi`…
 
 ---

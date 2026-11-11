@@ -14,7 +14,8 @@
  * Quy ước thoát: 0 = cho qua, 2 = chặn (stderr là lời giải thích gửi cho AI).
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 /** Vùng mã mà thay đổi trong đó được coi là chạm sản phẩm. */
 const VUNG_SAN_PHAM = [
@@ -45,12 +46,44 @@ function doc(stdin) {
   }
 }
 
-function git(...args) {
+function git(cwd, ...args) {
   try {
-    return execFileSync('git', args, { encoding: 'utf8' })
+    return execFileSync('git', args, { encoding: 'utf8', cwd })
   } catch {
     return ''
   }
+}
+
+const THAM_SO = String.raw`(?:"([^"]*)"|'([^']*)'|(\S+))`
+/** `git commit`, kể cả `git -C <thư mục> commit` và `git -c a=b commit`. */
+const RE_COMMIT = new RegExp(String.raw`(?:^|[;&|(]\s*)git((?:\s+-[Cc]\s+${THAM_SO.replace(/\((?!\?)/g, '(?:')})*)\s+commit\b`)
+
+/** Đường dẫn kiểu Git Bash (`/d/SAPP BA/x`) → kiểu Windows (`d:/SAPP BA/x`). */
+function chuanDuongDan(p) {
+  return p.replace(/^\/([a-zA-Z])\//, '$1:/')
+}
+
+/**
+ * Thư mục mà lệnh `git commit` THẬT SỰ chạy. Phiên làm trong worktree thường gõ
+ * `cd "<worktree>" && git commit` hoặc `git -C "<worktree>" commit`, trong khi hook
+ * chạy ở thư mục của phiên. Trước 10/11/2026 hook xem tệp đã stage ở thư mục phiên,
+ * nên commit trong worktree chạm `lib/` mà thiếu backlog vẫn lọt.
+ * Trả về null khi lệnh không phải git commit.
+ */
+export function thuMucCommit(lenh, cwdGoc) {
+  const m = RE_COMMIT.exec(lenh)
+  if (!m) return null
+  let thuMuc = cwdGoc
+  const reCd = new RegExp(String.raw`(?:^|[;&|(]\s*)cd\s+${THAM_SO}`, 'g')
+  for (const c of lenh.slice(0, m.index + 1).matchAll(reCd)) {
+    thuMuc = resolve(thuMuc, chuanDuongDan(c[1] ?? c[2] ?? c[3]))
+  }
+  const reC = new RegExp(String.raw`-C\s+${THAM_SO}`, 'g')
+  for (const c of m[1].matchAll(reC)) {
+    thuMuc = resolve(thuMuc, chuanDuongDan(c[1] ?? c[2] ?? c[3]))
+  }
+  // Không đoán được thư mục (biến shell, đường dẫn lạ) thì quay về thư mục phiên.
+  return existsSync(thuMuc) ? thuMuc : cwdGoc
 }
 
 function main() {
@@ -66,10 +99,11 @@ function main() {
 
   const lenh = input?.tool_input?.command ?? ''
   // Chỉ quan tâm git commit. `git commit --amend` cũng tính.
-  if (!/(^|[;&|]\s*)git\s+commit\b/.test(lenh)) process.exit(0)
+  const thuMuc = thuMucCommit(lenh, input?.cwd || process.cwd())
+  if (!thuMuc) process.exit(0)
 
   // Bỏ qua khi commit này chính là commit sửa backlog bằng tay.
-  const staged = git('diff', '--cached', '--name-only')
+  const staged = git(thuMuc, 'diff', '--cached', '--name-only')
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean)

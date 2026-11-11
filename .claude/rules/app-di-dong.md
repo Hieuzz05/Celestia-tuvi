@@ -23,4 +23,4 @@ qua `metro.config.js` và bí danh `@tuvi/*`. Sửa engine là cả web lẫn ap
 
 Web ở gốc kho và app là hai dự án npm tách biệt. `tsconfig.json` và
 `eslint.config.mjs` của web đều đã loại trừ `apps/` — nếu thấy `npm run lint` ở
-gốc nhảy quá 9 lỗi, kiểm tra xem loại trừ đó còn không.
+gốc vượt mốc `MOC` trong `scripts/dem-loi-lint.mjs`, kiểm tra xem loại trừ đó còn không.

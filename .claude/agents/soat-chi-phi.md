@@ -16,11 +16,12 @@ giờ đọc giá trị.
 phải góp ý.
 
 ## Hạ tầng hiện tại
-Vercel (hosting + cron) · Supabase (DB + auth) · OpenAI (model + embedding) ·
-PayOS (thanh toán).
+Vercel (hosting + cron) · Supabase (DB + auth) · nhiều nhà cung cấp model AI có
+cơ chế chuyển tiếp (danh sách thật: `lib/ai/providers.ts` và `lib/ai/config.ts`;
+embedding: `lib/ai/embedding.ts`) · PayOS (thanh toán).
 
-Hai cron đang chạy trong `vercel.json`: `/api/cron/doi-soat` (3h sáng),
-`/api/cron/suc-khoe-ai` (1h sáng).
+Cron: đọc `vercel.json` để biết đang có bao nhiêu và giờ chạy, đừng tin con số
+ghi trong tệp này (lúc 10/11/2026 có ba: `doi-soat`, `suc-khoe-ai`, `don-nhat-ky`).
 
 Mã có sẵn hai van chi phí — kiểm xem thay đổi có đi vòng qua chúng không:
 `AI_NGAN_SACH_TOKEN`, `EMBED_MOI_LUOT`, `EMBEDDING_BATCH_SIZE`,

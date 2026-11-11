@@ -116,7 +116,7 @@ Cặp nguy hiểm: app đọc thẳng engine qua `@tuvi/*`, sửa engine là c�
 
 ---
 
-## 5. Tám subagent — chủ dự án cần nhớ gì
+## 5. Mười subagent — chủ dự án cần nhớ gì
 
 Hầu hết AI **tự gọi**. Chỉ cần nhớ một cái:
 
@@ -135,8 +135,9 @@ Câu cuối là cách **ghì trọng tâm** — nêu mối lo thì nó dồn cô
 Nó in 3–6 câu hỏi tự sinh **trước** khi phản biện. Nhìn mấy câu đó là biết nó có
 soi đúng chỗ không; lệch thì nói "thêm góc pháp lý" rồi cho chạy lại.
 
-Bảy agent còn lại (`researcher`, `qa`, `celes-domain`, `bien-tap-vi`,
-`quet-doi-thu`, `soat-tai-lieu`, `soat-chi-phi`) AI tự gọi theo luồng.
+Chín agent còn lại (`researcher`, `qa`, `celes-domain`, `chuyen-gia-tu-vi`,
+`danh-gia-tac-dong`, `bien-tap-vi`, `quet-doi-thu`, `soat-tai-lieu`, `soat-chi-phi`)
+AI tự gọi theo luồng.
 
 ---
 

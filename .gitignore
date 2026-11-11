@@ -51,3 +51,10 @@ scripts/tam-*
 
 # Ảnh của scripts/test-man-hinh.mjs — để xem lại, không phải nội dung
 /.anh-man-hinh/
+
+# Worktree con (git worktree add wt-...) và thư mục tạm ở gốc kho: không phải nội dung,
+# để lọt vào `git status` là dễ `git add` nhầm cả một bản sao kho.
+/wt-*/
+/tmp-*/
+# Bộ nhớ đệm của Supabase CLI
+/supabase/.temp/

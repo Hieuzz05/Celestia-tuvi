@@ -36,11 +36,13 @@ người nói là đúng, kể cả chủ dự án.
 
 ## Nguồn
 
-- Kho sách: `D:/Tài liệu tử vi/markdown/*.md` (15 cuốn). Grep trước rồi đọc đoạn quanh
-  dòng trúng. KHÔNG đọc nguyên một cuốn.
+- Kho sách: `D:/Tài liệu tử vi/markdown/*.md` (đếm bằng Glob, đừng tin con số nhớ sẵn).
+  Grep trước rồi đọc đoạn quanh dòng trúng. KHÔNG đọc nguyên một cuốn.
 - Engine (nguồn sự thật về cách an sao và độ sáng):
   - `lib/tuvi/ansao.ts`, `lib/tuvi/constants.ts`, `lib/tuvi/dosang.ts`
-  - `lib/tuvi/cach-cuc.ts`, `lib/tuvi/luat-to-hop.ts`, `lib/tuvi/luan-han.ts`
+  - `lib/tuvi/cach-cuc.ts`, `lib/tuvi/luan-han.ts`
+  - `lib/tuvi/luat-to-hop.ts` chỉ có trên các nhánh vận hạn chưa gộp; không thấy tệp thì
+    ghi "chưa có trên nhánh này", đừng coi là đã chạy.
 - Cách chấm đang chạy: `lib/rag/nghieng-ve.ts`.
 - Giải pháp nằm trong tệp hoặc nội dung được đưa cho bạn. Đọc hết trước khi soát.
 
