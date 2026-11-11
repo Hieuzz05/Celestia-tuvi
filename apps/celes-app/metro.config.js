@@ -9,7 +9,9 @@
 // vào watchFolders thì nó mới theo dõi và bundle được các tệp nằm ngoài.
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
-const escapeRegExp = require('escape-string-regexp');
+// Viết sẵn thay vì require('escape-string-regexp'): app không khai báo thư viện đó,
+// nó chỉ chạy được nhờ nằm sẵn ở node_modules gốc (rà soát 11/11, A11). Giống bản 4.0.0.
+const escapeRegExp = (s) => s.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 
 const thuMucApp = __dirname;
 const gocKhoMa = path.resolve(thuMucApp, '../..');

@@ -45,6 +45,10 @@ npx tsx scripts/test-duong-b-v3.ts      # CELES-38 đường B (so mù): bỏ ý
 npx tsx scripts/test-thang-chac-thap.ts # K3 Focused hỏi một tháng: mô tả hướng "rõ" nói theo độ tin, validator chặn THANG_CHAC_CAO (trừ phủ định) — offline
 npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
 npx tsx scripts/test-do-phu-viet.ts    # độ phủ tầng viết (đo, chưa đổi Writer) — offline
+npx tsx scripts/test-sua-cuc-bo.ts     # sửa cục bộ bài V3: chọn câu dính lỗi, ghép câu đã sửa về đúng chỗ — offline
+npx tsx scripts/test-thu-vien.ts       # thư viện tri thức: bộ khớp + bộ kiểm mục trên lá số engine — offline
+npx tsx scripts/test-mau.ts            # tương phản màu theo WCAG trên token app/globals.css — offline
+npx tsx scripts/test-mau-vang.ts       # chọn mẫu vàng theo bề mặt / loại / số lượng — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
 npx tsx scripts/eval-focused.ts        # model thật: 30+ ca Focused + Barnum 6×6; BẮT BUỘC AI_GHIM_MODEL + AI_TRAN_USD (≤ $2) + giá — xem đầu tệp

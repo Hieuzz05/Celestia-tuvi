@@ -115,6 +115,14 @@ jobs:
         run: npx tsx scripts/test-ngan-sach-thu.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
+      - name: Sửa cục bộ bài V3 — chọn câu lỗi, ghép câu sửa đúng chỗ (offline)
+        run: npx tsx scripts/test-sua-cuc-bo.ts
+      - name: Thư viện tri thức — bộ khớp và bộ kiểm mục trên lá số engine (offline)
+        run: npx tsx scripts/test-thu-vien.ts
+      - name: Tương phản màu theo WCAG
+        run: npx tsx scripts/test-mau.ts
+      - name: Chọn mẫu vàng theo bề mặt / loại (offline)
+        run: npx tsx scripts/test-mau-vang.ts
 
       - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
         run: npx tsx scripts/test-kiem-id-cel.ts

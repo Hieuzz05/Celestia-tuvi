@@ -48,12 +48,6 @@ export const CAU_HINH_UNG_HO = {
   profileLimitFree: so('FREE_PROFILE_LIMIT', 1),
   profileLimitSupporter: so('SUPPORTER_PROFILE_LIMIT', 5),
 
-  enableSupportGateAsk: bat('ENABLE_SUPPORT_GATE_ASK', true),
-  enableSupportGateDeepMap: bat('ENABLE_SUPPORT_GATE_DEEP_MAP', true),
-  enableSupportGateJourney: bat('ENABLE_SUPPORT_GATE_JOURNEY', true),
-  enableSupportGateConnection: bat('ENABLE_SUPPORT_GATE_CONNECTION', true),
-  enableSupportGateReports: bat('ENABLE_SUPPORT_GATE_REPORTS', true),
-
   /** Phiên thanh toán sống bao lâu trước khi phải tạo mã mới */
   paymentTtlMinutes: so('SUPPORT_PAYMENT_TTL_MINUTES', 15),
 } as const;
