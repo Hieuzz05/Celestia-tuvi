@@ -370,7 +370,7 @@ từng ý bằng luật.
 mở trang: chậm, tốn tiền, và mất đúng tính chất "trong ngày không thay đổi".
 
 **Thứ luật giữ, model không được đụng vào.** Nhịp hành động (Tiến / Giữ / Rà soát / Thu hẹp) đếm
-được từ tương quan cát/hung nên do engine quyết, chỉ đưa xuống cho model như một ràng buộc — để
+được từ tương quan chiều sao (`chieuSao`) nên do engine quyết, chỉ đưa xuống cho model như một ràng buộc — để
 model tự chọn là mở đường cho hai lần đọc ra hai kết luận trái nhau trên cùng một lá số. Phần "Muốn
 biết vì sao không?" cũng vậy: nó phải truy ngược được về cung và sao.
 

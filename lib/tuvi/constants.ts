@@ -309,7 +309,12 @@ export type LoaiSao = 'chinh-tinh' | 'phu-tinh' | 'vong-sao' | 'tu-hoa' | 'khong
 export interface Sao {
   ten: string;
   loai: LoaiSao;
-  /** Sao tốt (cát), xấu (hung) hay trung tính — dùng cho hiển thị và luận giải */
+  /**
+   * Nhóm sao theo phân loại sách (lục cát / lục sát / trung tính). CHỈ để mệnh bàn
+   * xếp sao vào hai cột. KHÔNG dùng để luận tốt xấu: chiều của sao tuỳ độ sáng và
+   * bộ sao đi cùng, đọc qua lib/tuvi/chieu-sao.ts (CELES-72). Máy canh:
+   * scripts/test-chieu-sao.ts.
+   */
   tinhChat?: 'cat' | 'hung' | 'trung';
   /** Độ sáng tại cung đang an: M/V/D/L/B/H */
   doSang?: 'M' | 'V' | 'D' | 'L' | 'B' | 'H' | null;

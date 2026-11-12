@@ -51,13 +51,13 @@ function SaoText({
   /** Bố cục hẹp: chữ nhỏ hơn để hai cột phụ tinh vừa ô 110px — xem ghi chú ở phần phụ tinh */
   hep?: boolean;
 }) {
-  const mau = mo
-    ? 'var(--fg-subtle)'
-    : sao.tinhChat === 'hung'
-      ? 'var(--chart-hung)'
-      : trongYeu
-        ? 'var(--fg-body)'
-        : 'var(--fg-muted)';
+  /*
+   * Tên sao màu trung tính; chỉ CHỮ ĐỘ SÁNG bên cạnh mang màu (CELES-72,
+   * chủ dự án 11/11/2026). Bản cũ tô đỏ mọi sao xếp cột hai, tức coi Kình, Đà,
+   * Hỏa, Linh... luôn xấu — trong khi đắc địa và đi đúng bộ thì chúng làm được việc.
+   * Cột vẫn chia theo nhóm sách (lục cát / lục sát), nhưng màu không phán.
+   */
+  const mau = mo ? 'var(--fg-subtle)' : trongYeu ? 'var(--fg-body)' : 'var(--fg-muted)';
   return (
     <span
       /*
@@ -364,7 +364,8 @@ export function PalaceCell({
               data-sao="phu"
               className={`italic ${hep ? 'text-[8px]' : 'text-[12px]'}`}
               style={{
-                color: s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--chart-tot)',
+                // Một màu cho mọi lưu tinh: màu nói "đây là lớp năm", không phán tốt xấu
+                color: 'var(--chart-tot)',
                 lineHeight: hep ? 1.5 : 1.45,
               }}
             >

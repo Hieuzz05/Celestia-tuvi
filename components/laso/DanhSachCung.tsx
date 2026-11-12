@@ -50,9 +50,13 @@ export function DanhSachCung({
         const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
         const hoa = c.sao.filter((s) => s.loai === 'tu-hoa');
         const phu = c.sao.filter((s) => s.loai === 'phu-tinh');
-        const cat = phu.filter((s) => s.tinhChat === 'cat');
-        const hung = phu.filter((s) => s.tinhChat === 'hung');
-        const khac = phu.filter((s) => s.tinhChat !== 'cat' && s.tinhChat !== 'hung');
+        /*
+         * Một dòng phụ tinh, không chia "Sao tốt" / "Sao xấu" (CELES-72, chủ dự án
+         * 11/11/2026): không sao nào mặc định tốt hay xấu. Vẫn xếp theo nhóm sách
+         * (lục cát trước, lục sát sau) để mắt quen chỗ tìm.
+         */
+        const thuTuNhom = (t?: string) => (t === 'cat' ? 0 : t === 'hung' ? 1 : 2);
+        const phuXep = [...phu].sort((a, b) => thuTuNhom(a.tinhChat) - thuTuNhom(b.tinhChat));
         const luu = luuTinhTheoCung.get(c.chiIndex) ?? [];
         const nhan = [
           c.laCungThan && c.tenCung !== 'Mệnh' ? 'Thân' : null,
@@ -112,21 +116,16 @@ export function DanhSachCung({
                 )}
               </p>
 
-              {cat.length > 0 && (
+              {phuXep.length > 0 && (
                 <p className="body-sm">
-                  <span style={{ color: 'var(--ok-fg)' }}>Sao tốt: </span>
-                  {cat.map((s) => s.ten + (s.doSang ? ` (${s.doSang})` : '')).join(', ')}
-                </p>
-              )}
-              {hung.length > 0 && (
-                <p className="body-sm">
-                  <span style={{ color: 'var(--chart-hung)' }}>Sao xấu: </span>
-                  {hung.map((s) => s.ten + (s.doSang ? ` (${s.doSang})` : '')).join(', ')}
-                </p>
-              )}
-              {khac.length > 0 && (
-                <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                  {khac.map((s) => s.ten).join(', ')}
+                  <span style={{ color: 'var(--fg-muted)' }}>Phụ tinh: </span>
+                  {phuXep.map((s, i) => (
+                    <span key={s.ten}>
+                      {i > 0 && ', '}
+                      {s.ten}
+                      {s.doSang && <span style={{ color: MAU_DO_SANG[s.doSang] }}> ({s.doSang})</span>}
+                    </span>
+                  ))}
                 </p>
               )}
               {luu.length > 0 && (

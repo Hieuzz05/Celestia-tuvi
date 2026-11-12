@@ -1029,6 +1029,9 @@ for (const ca of CA_DOI_TUONG) {
 
   // (5) Hồi quy thật từ A/B 04/10/2026: lá số 22/5/2026 16h nữ. Phá Toái (Tài Bạch) và Thiên Y
   // (Tật Ách) chỉ có ở d.sao nhưng lọt guard qua đầu mốc in tên. Câu lấy nguyên văn bản A/B.
+  // Từ CELES-72 (12/11/2026) engine không còn coi Phá Toái / Thiên Y là đầu mốc trên lá số này
+  // (sao không mặc định tốt xấu, chiều theo bộ), nên đường rò được CÀI LẠI bằng tay như mục (4):
+  // thêm đúng sao đó vào đầu mốc. Engine đổi lần nữa thì ca vẫn canh đúng cửa sau d.sao.
   {
     const laSo = lapLaSo({ ngay: 22, thang: 5, nam: 2026, gio: 16, gioiTinh: 'nu' });
     const ca: [string, string, string][] = [
@@ -1040,7 +1043,12 @@ for (const ca of CA_DOI_TUONG) {
       const kh = themLopChoThang(lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach);
       const pl = phanKhuon({ cauHoi, keHoach: kh, doiTuong: null });
       const { duKien: dk } = chonBoiCanh({ laSo, keHoach: kh, namXem: 2026, thangXem: 8, focused: true });
-      const n = tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true });
+      const n0 = tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true });
+      kiem(!!n0, `(5) không có khối nghiêng cho "${cauHoi}"`);
+      if (!n0) continue;
+      const n: NghiengVe = n0.dauMoc.some((d) => d.ten === ten)
+        ? n0
+        : { ...n0, dauMoc: [...n0.dauMoc, { ten, lop: 'nam', huong: 'can', trong: 1, y: 'dễ vướng ở khâu cuối' }] };
       const k = khoaTen(ten);
       // Tiền đề của lỗi: tên ở d.sao, không ở chữ, và là đầu mốc của khối nghiêng.
       kiem(dk.some((d) => (d.sao ?? []).some((s) => khoaTen(s) === k)) && !dk.some((d) => d.noiDung.includes(ten)) && !!n?.dauMoc.some((d) => d.ten === ten),

@@ -273,13 +273,11 @@ async function do_() {
   const tieuChiCoChu = muc.flatMap((m) => m.tieuChi).filter((t) => !t.thieuCanCu);
   const soImLang = muc.flatMap((m) => m.tieuChi).filter((t) => t.thieuCanCu).length;
 
-  // Spec mục 10.17: tiêu chí sâu phải có lực ngược
+  // Spec mục 10.17 cũ bắt ≥70% tiêu chí có lực ngược. Bỏ ngưỡng (CELES-72,
+  // 11/11/2026): không có thì để rỗng, đừng dựng. Giờ chỉ đo để theo dõi.
   const tiLucNguoc =
     tieuChiCoChu.filter((t) => t.luongNguoc).length / Math.max(tieuChiCoChu.length, 1);
-  kiem(
-    `≥70% tiêu chí có lực ngược (đo ${(tiLucNguoc * 100).toFixed(0)}%)`,
-    tiLucNguoc >= 0.7
-  );
+  console.log(`  (đo) tiêu chí có điều làm ý yếu đi: ${(tiLucNguoc * 100).toFixed(0)}%`);
 
   const gate = soatBanDocSau(bai);
   kiem(

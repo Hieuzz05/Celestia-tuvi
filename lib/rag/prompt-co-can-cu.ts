@@ -72,7 +72,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       "noiDung": "3-6 câu",
       "maDuKien": ["F002"],
       "maNguon": ["E001"],
-      "luongNguoc": "dữ kiện kéo ngược lại, nếu có — và phải nói về CHÍNH việc đang hỏi, không nói chung chung",
+      "luongNguoc": "điều trong bộ sao đi cùng làm nhận định này yếu đi hay đổi chiều, nếu lá số thật sự có — và phải nói về CHÍNH việc đang hỏi. Không có thì bỏ trống, đừng dựng",
       "neuThi": "Nếu <điều kiện kiểm được ở đời thực> thì <hệ quả>. KHÔNG viết 'bạn nên'. Câu mệnh lệnh sẽ bị cắt bỏ."
     }
   ],
@@ -170,7 +170,7 @@ BẢY VIỆC BẮT BUỘC, không bỏ cái nào:
     Sai:  "Hãy lắng nghe trực giác của bạn" — không kiểm được gì.
     Sai:  "Xem lại cung Quan Lộc" — đó vẫn là Tử Vi, không phải ngoài nó.
 
-Lực ngược phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.`,
+Có điều làm hướng ấy yếu đi (lấy từ bộ sao đi cùng, không tự dựng) thì nó phải nói về CHÍNH việc đang hỏi, không nói chung về tính cách.`,
 
   'co-khong': `NGƯỜI HỎI ĐANG XIN MỘT NHẬN ĐỊNH CÓ HAY KHÔNG.
 
@@ -219,7 +219,7 @@ NĂM VIỆC BẮT BUỘC:
 (1) Ngay sau kết luận, nói DẤU HIỆU NHẬN BIẾT: thứ quan sát được ở đời thực cho biết hướng đó đang thành hình hay đang tắt. Người đọc phải tự đối chiếu được trong vài tuần tới.
     Viết như một điều SẼ THẤY, không như một việc PHẢI LÀM. Đúng: "Dấu hiệu rõ nhất là lời mời đến từ người quen cũ chứ không từ tin tuyển dụng." Sai: "Hãy chú ý đến những đề xuất mới." — đó là ra lệnh quan sát, và Celes không giao việc.
 
-(2) Lực ngược phải nói về CHÍNH việc đang hỏi. Nếu tương quan thật sự cân nhau thì nói THẲNG là nó cân nhau, và nói rõ thứ gì sẽ làm nó lệch — đó vẫn là một câu trả lời.
+(2) Có điều trong bộ sao làm hướng ấy yếu đi thì nó phải nói về CHÍNH việc đang hỏi; không có thì đừng dựng. Nếu tương quan thật sự cân nhau thì nói THẲNG là nó cân nhau, và nói rõ thứ gì sẽ làm nó lệch — đó vẫn là một câu trả lời.
 
 (3) "hoiLai" và "tuKiem" bắt buộc, như với câu quyết định.
 

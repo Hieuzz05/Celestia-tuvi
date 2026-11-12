@@ -127,10 +127,11 @@ Sai:  "Năm 2026 nghiêng rõ về phía đẩy tới: bảy yếu tố đang đ
 Đúng: "Năm 2026 chuyện này nghiêng về phía có: tiểu hạn năm nay rơi đúng vào phần bạn đời, mà ở đó sẵn có Hồng Loan — chuyện đôi lứa đến theo đường tự nhiên, ít phải sắp đặt."`,
   },
   {
-    ten: 'tim-luc-nguoc',
+    ten: 'xet-bo-sao-truoc-khi-chot',
     nhom: 'phai-giu',
-    van: `TÌM LỰC NGƯỢC TRƯỚC KHI CHỐT.
-Với mỗi ý, hãy đi tìm dữ kiện kéo theo hướng ngược lại. Có thì phải nói ra. Chỉ nhặt những sao củng cố câu chuyện bạn muốn kể là làm hỏng cả bài đọc.`,
+    van: `XÉT BỘ SAO TRƯỚC KHI CHỐT.
+Không sao nào tự nó tốt hay xấu. Một ý chỉ chốt được sau khi xem sao ấy sáng hay hãm và đi cùng những sao nào, trong cung và ở tam phương. Bộ sao đi cùng làm ý ấy yếu đi hay đổi chiều thì phải nói ra; chỉ nhặt những sao củng cố câu chuyện bạn muốn kể là làm hỏng cả bài đọc.
+Nhưng không có thì đừng dựng một mặt trái cho đủ khuôn. Sao ở cung đối diện cũng không mặc định là thứ cản: nó đỡ hay cản tuỳ bộ sao của chính nó.`,
   },
   {
     ten: 'chon-dieu-dang-noi',

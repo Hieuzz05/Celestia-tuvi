@@ -40,3 +40,16 @@ L2 (**kho riêng tư**), L3–L5, H1–H6, H8, C1, C6, T1–T3.
 | CELES-9 | Q9 — app riêng, sửa tài liệu rồi đóng |
 | CELES-66 | C6 — Tuần/Triệt |
 | (sau nghiệm thu) | T1 — dọn nhánh và bản sao làm việc |
+
+## Quyết định phương án sao tốt / xấu (CELES-72, 73, gộp 66) — 11/11/2026
+
+Phương án: `D:\Celestia\PHUONG-AN-SAO-TOT-XAU-2026-11-11.md` (đã qua chuyen-gia-tu-vi, phan-bien, danh-gia-tac-dong).
+Chủ dự án trả lời:
+
+- **A. Làm MỘT đợt** (không tách): gỡ luật sai + bảng quan hệ cặp sao (chỉ huy / chế / lấn / khắc) + Tuần Triệt
+  đảo nghĩa theo độ sáng (gộp CELES-66) + vô chính diệu, làm cùng lúc.
+- **B. Có**: bỏ hướng dẫn "luôn tìm lực ngược" ở phần AI viết; chấp nhận bài đã lưu viết lại khi mở (một lần xả).
+- **C. Có**: mệnh bàn web + app bỏ tô đỏ, bỏ chữ "cần để ý"; màu theo độ sáng.
+- **D. App chưa đến tay người dùng thật** → không lo lệch web/app.
+- **E. Giữ chữ "Đắc" của Thiên Mã trên mệnh bàn**; phần luận bỏ qua nhãn đó, xét Thiên Mã theo sao đi cùng.
+  Không tăng phiên bản an sao.

@@ -273,3 +273,15 @@ Mẫu một mục:
 - Nâng: AGENTS.md (gỡ luật + ghi chú "không có phái chuẩn"), celes-domain, chuyen-gia-tu-vi, phan-bien,
   chien-luoc, danh-gia-tac-dong, soat-chi-phi.
 - Lần: 1
+## 12/11/2026 · Gắn nghĩa cố định cho sao, và đề xuất "Kỵ gặp Tuần Triệt nhẹ đi" sai sách · bay/engine
+- Thẻ: chieu-sao, tinhChat, Hoa Ky, Tuan Triet, anh chup, model gia
+- Chuyện gì: (1) code đếm tốt/xấu theo nhãn cát/hung cố định nên Kình Dương đắc địa bị luận xấu, cung
+  xung chiếu mặc định là lực cản; chủ dự án sửa lưng 11/11. (2) Khi chuyển sang `chieuSao`, AI đề xuất
+  áp luật chung "sao xấu gặp Tuần Triệt bớt xấu" cho Hóa Kỵ; `chuyen-gia-tu-vi` bác bằng TVƯD, Ảo bí,
+  NLTT. (3) Đổi nghĩa engine làm ảnh chụp `boi-canh-dong-bang.json` và model giả trong test lệch theo.
+- Gốc: nghĩa tốt/xấu nằm ở nhãn tĩnh thay vì xét bộ; luật chung bị áp như luật tuyệt đối.
+- Giá: một vòng rà toàn bộ (CELES-72), hai lượt sửa engine, cập nhật chọn lọc 716 + 196 trường ảnh chụp.
+- Luật: luận tốt/xấu chỉ qua `lib/tuvi/chieu-sao.ts`; luật chung về Tuần Triệt không áp cho Kỵ; đổi nghĩa
+  engine thì cập nhật ảnh chụp CHỌN LỌC (chỉ `noiDung`, kiểm mọi trường khác y nguyên), không `--sinh`.
+- Nâng: `docs/bay/engine.md`. Máy canh: `scripts/test-chieu-sao.ts` (grep cấm `tinhChat` ngoài danh sách).
+- Lần: 1

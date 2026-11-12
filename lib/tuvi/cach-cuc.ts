@@ -1,4 +1,5 @@
 import { tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
+import { chieuSao, chieuTuanTriet, xetVoChinhDieu, type Chieu } from './chieu-sao';
 
 /**
  * Nhận diện CÁCH CỤC — engine tất định, không gọi model.
@@ -30,7 +31,7 @@ import { tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
  * engine thì bộ test chạy được offline mà không cần dựng một kế hoạch truy vấn.
  */
 
-export const PHIEN_BAN_CACH_CUC = '2026.10.2';
+export const PHIEN_BAN_CACH_CUC = '2026.11.1';
 
 export interface CachCuc {
   /** Mã ổn định, dùng cho trace và bộ vàng: 'TU_PHU_VU_TUONG_LIEM' */
@@ -50,6 +51,7 @@ export interface CachCuc {
 // ---------------------------------------------------------------- tiện ích
 
 interface PhamVi {
+  laSo: LaSo;
   /** Cung gốc đang xét */
   goc: Cung;
   /** Cung gốc + hai cung tam hợp + cung xung chiếu */
@@ -66,7 +68,7 @@ function dungPhamVi(laSo: LaSo, goc: Cung): PhamVi {
   const sao = new Map<string, Cung>();
   for (const c of bon) for (const s of c.sao) if (!sao.has(s.ten)) sao.set(s.ten, c);
 
-  return { goc, bon, sao };
+  return { laSo, goc, bon, sao };
 }
 
 /** Đủ CẢ danh sách hay không — không có mức "gần đủ" */
@@ -197,85 +199,130 @@ function nhatNguyet(pv: PhamVi): CachCuc[] {
  *
  * Phụ tinh lẻ hầu như không đổi được cách đọc một cung; chúng chỉ có trọng
  * lượng khi đi đủ bộ. Đó cũng là lý do bảng này không liệt kê từng sao một.
+ *
+ * `net` là nghĩa CHUNG của bộ, không nghiêng tốt hay xấu. Mặt nào nổi lên do
+ * chiều của từng sao tại chỗ nó đóng (`chieuSao`: độ sáng + sao đi cùng),
+ * không do tên bộ (CELES-72, chủ dự án 11/11/2026: "không được xét mặc định
+ * một sao là tốt hay xấu"). Có sao 'can' thì thêm `khiCan`; mọi sao đều
+ * 'thuan' thì thêm `khiThuan`; còn lại chỉ nói nét chung.
  */
-const BO_PHU_TINH: { ma: string; ten: string; sao: string[]; net: string }[] = [
+const BO_PHU_TINH: { ma: string; ten: string; sao: string[]; net: string; khiThuan?: string; khiCan?: string }[] = [
   {
     ma: 'HINH_TUONG_AN',
     ten: 'Hình Tướng Ấn',
     sao: ['Thiên Hình', 'Thiên Tướng', 'Quốc Ấn'],
-    net: 'bộ của kỷ luật và thẩm quyền — hợp việc có quy tắc rõ, vướng ở việc phải tuỳ cơ',
+    net: 'bộ của kỷ luật và thẩm quyền',
+    khiThuan: 'các sao đều đứng chỗ dùng được, nên hợp việc có quy tắc rõ và được giao quyền',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên quyền dễ đi kèm va chạm và phải giữ đúng quy tắc mới dùng được',
   },
   {
     ma: 'KHOI_VIET',
     ten: 'Khôi Việt',
     sao: ['Thiên Khôi', 'Thiên Việt'],
-    net: 'bộ của người đỡ đầu — cơ hội hay đến qua một người đứng cao hơn, không đến từ việc tự xoay',
+    net: 'bộ của người đỡ đầu: cơ hội hay đến qua một người đứng cao hơn, không đến từ việc tự xoay',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên sự nâng đỡ ấy tới chậm hoặc kèm điều kiện',
   },
   {
     ma: 'XUONG_KHUC',
     ten: 'Xương Khúc',
     sao: ['Văn Xương', 'Văn Khúc'],
-    net: 'bộ của chữ nghĩa và diễn đạt — mạnh ở việc phải trình bày, dễ sa vào cầu toàn câu chữ',
+    net: 'bộ của chữ nghĩa và diễn đạt: mạnh ở việc phải trình bày',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên dễ sa vào cầu toàn câu chữ hoặc lấn cấn chuyện giấy tờ',
   },
   {
     ma: 'TA_HUU',
     ten: 'Tả Hữu',
     sao: ['Tả Phù', 'Hữu Bật'],
-    net: 'bộ của người phụ tá — việc chạy được nhờ có người bên cạnh, làm một mình thì đuối',
+    net: 'bộ của người phụ tá: việc chạy được nhờ có người bên cạnh',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên người giúp có đó mà không phải lúc nào cũng đúng lúc',
   },
   {
     ma: 'SONG_LOC',
     ten: 'Song Lộc',
     sao: ['Lộc Tồn', 'Hóa Lộc'],
-    net: 'hai nguồn lộc cùng tụ — nguồn lực đến từ hai đường khác nhau, nhưng dễ giữ không kịp',
+    net: 'hai nguồn lộc cùng tụ: nguồn lực đến từ hai đường khác nhau',
+    khiCan: 'có Không Kiếp hoặc Hóa Kỵ chạm vào chỗ lộc đóng, nên lộc đến rồi khó giữ',
   },
   {
     ma: 'KHOC_HU',
     ten: 'Khốc Hư',
     sao: ['Thiên Khốc', 'Thiên Hư'],
-    net: 'bộ của nỗi trống — hay thấy thiếu ngay cả lúc đủ, và điều đó thành động lực lẫn thành gánh',
+    net: 'bộ của nỗi trống: hay thấy thiếu ngay cả lúc đủ',
+    khiThuan: 'hai sao đứng chỗ đắc, nên nỗi trống ấy thành động lực nhiều hơn thành gánh',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên nỗi trống ấy dễ thành gánh nặng trong lòng',
   },
   {
     ma: 'KHONG_KIEP',
     ten: 'Không Kiếp',
     sao: ['Địa Không', 'Địa Kiếp'],
-    net: 'bộ của mất và làm lại — thứ dựng lên dễ tan, nhưng chịu được thì lần sau dựng nhanh hơn',
+    net: 'bộ của nghĩ khác và làm lại từ đầu',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên thứ dựng lên dễ tan, chịu được thì lần sau dựng nhanh hơn',
   },
   {
     ma: 'KINH_DA',
     ten: 'Kình Đà',
     sao: ['Kình Dương', 'Đà La'],
-    net: 'hai sát tinh cùng hội — việc hay bị cản và bị kéo dài, nhưng sức chịu va cũng dày hơn người',
+    net: 'hai sát tinh cùng hội: dám va chạm và chịu được va chạm',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên việc hay bị cản và bị kéo dài',
   },
   {
     ma: 'HOA_LINH',
     ten: 'Hoả Linh',
     sao: ['Hỏa Tinh', 'Linh Tinh'],
-    net: 'bộ của nóng và gấp — phản ứng nhanh hơn người, cũng hay phải sửa lại cái vừa làm',
+    net: 'bộ của nóng và gấp: phản ứng nhanh hơn người',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên cũng hay phải sửa lại cái vừa làm',
   },
   {
     ma: 'DAO_HONG',
     ten: 'Đào Hồng',
     sao: ['Đào Hoa', 'Hồng Loan'],
-    net: 'bộ của duyên và sức hút — dễ được để ý, cũng dễ vướng vào chuyện không định vướng',
+    net: 'bộ của duyên và sức hút: dễ được để ý',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên cũng dễ vướng vào chuyện không định vướng',
   },
   {
     ma: 'LONG_PHUONG',
     ten: 'Long Phượng',
     sao: ['Long Trì', 'Phượng Các'],
-    net: 'bộ của tài khéo và thẩm mỹ — việc có hình có nét thì làm tốt, việc thô ráp thì chán',
+    net: 'bộ của tài khéo và thẩm mỹ: việc có hình có nét thì làm tốt',
+    khiCan: 'có sao trong bộ đang ở thế khó, nên tài khéo ấy khó được dùng đúng chỗ',
   },
 ];
+
+/** Chiều gộp của một bộ: có sao 'can' là 'can', mọi sao 'thuan' là 'thuan' */
+function chieuBo(pv: PhamVi, ten: string[]): Chieu {
+  const ds = ten.map((t) => {
+    const c = pv.sao.get(t)!;
+    const s = c.sao.find((x) => x.ten === t)!;
+    return chieuSao(pv.laSo, c, s).chieu;
+  });
+  if (ds.includes('can')) return 'can';
+  if (ds.every((x) => x === 'thuan')) return 'thuan';
+  return 'hai-mat';
+}
+
+/** Song Lộc: chỉ nói mặt khó giữ khi Không Kiếp hay Hóa Kỵ chạm vào chỗ lộc đóng */
+function songLocBiPha(pv: PhamVi): boolean {
+  return ['Lộc Tồn', 'Hóa Lộc'].some((t) => {
+    const c = pv.sao.get(t)!;
+    const doi = pv.laSo.cungs[tamPhuongTuChinh(c.chiIndex).xungChieu];
+    const ts = new Set(c.sao.map((x) => x.ten));
+    // Kỵ tự thành tốt (gặp Nhật Nguyệt ở Sửu Mùi, Thanh Long…) không phá lộc (CELES-72)
+    const kyPha = (cc: typeof c) => cc.sao.some((x) => x.ten === 'Hóa Kỵ' && chieuSao(pv.laSo, cc, x).chieu !== 'thuan');
+    return ts.has('Địa Không') || ts.has('Địa Kiếp') || kyPha(c) || kyPha(doi);
+  });
+}
 
 function boPhuTinh(pv: PhamVi): CachCuc[] {
   const ra: CachCuc[] = [];
   for (const b of BO_PHU_TINH) {
     if (!duCa(pv, b.sao)) continue;
+    const chieu = b.ma === 'SONG_LOC' ? (songLocBiPha(pv) ? 'can' : 'hai-mat') : chieuBo(pv, b.sao);
+    const them = chieu === 'can' ? b.khiCan : chieu === 'thuan' ? b.khiThuan : undefined;
     ra.push({
       ma: b.ma,
       ten: b.ten,
       cung: pv.goc.tenCung,
-      dieuKien: `${b.sao.join(' và ')} cùng hội về ${nhan(pv)}: ${viTri(pv, b.sao)}. Đây là ${b.net}.`,
+      dieuKien: `${b.sao.join(' và ')} cùng hội về ${nhan(pv)}: ${viTri(pv, b.sao)}. Đây là ${b.net}.${them ? ` Ở lá số này, ${them}.` : ''}`,
       sao: b.sao,
       loai: 'phu',
     });
@@ -295,11 +342,25 @@ function boPhuTinh(pv: PhamVi): CachCuc[] {
  * chính diệu; tam phương gần như luôn có chính tinh ở đâu đó.
  */
 function voChinhDieu(pv: PhamVi): CachCuc[] {
-  const coChinh = pv.goc.sao.some((s) => s.loai === 'chinh-tinh');
-  if (coChinh) return [];
+  const xet = xetVoChinhDieu(pv.laSo, pv.goc);
+  if (!xet) return [];
 
   const doiDien = pv.bon.find((c) => c.chiIndex === (pv.goc.chiIndex + 6) % 12);
-  const muon = doiDien?.sao.filter((s) => s.loai === 'chinh-tinh').map((s) => s.ten) ?? [];
+  const muon = xet.muon.map((s) => s.ten);
+  /*
+   * Vô chính diệu không mặc định tốt hay xấu (HS:763-764, HS:4255, VTL:2189):
+   * đủ ba sao Không hội về, hoặc Thái Dương Thái Âm cùng sáng chiếu, thì cung
+   * trống thành thế tốt; Không / Kiếp hãm đứng trơ thì bôn ba; còn lại đọc theo
+   * chính tinh mượn.
+   */
+  const nhanXet =
+    xet.chieu === 'thuan'
+      ? xet.nhatNguyetSangChieu
+        ? ' Thái Dương và Thái Âm cùng sáng chiếu về, nên cung trống mà vẫn được soi rõ: dễ mở lòng, dễ học từ người khác.'
+        : ' Ba trong bốn thứ Địa Không, Thiên Không, Tuần, Triệt cùng hội về, sách xếp vào thế tốt của cung trống: đầu óc thoáng, ít bị ràng buộc bởi lối cũ.'
+      : xet.chieu === 'can'
+        ? ' Địa Không hoặc Địa Kiếp đứng hãm ngay trong cung, nên dễ bôn ba, thứ dựng lên khó giữ lâu.'
+        : '';
 
   return [{
     ma: 'VO_CHINH_DIEU',
@@ -309,7 +370,7 @@ function voChinhDieu(pv: PhamVi): CachCuc[] {
       muon.length
         ? `, nên nét của nó mượn từ cung xung chiếu ${doiDien!.tenCung} (${doiDien!.chi}) — nơi có ${muon.join(', ')}`
         : ''
-    }. Kiểu này thường cho sự linh hoạt, đổi lại là khó tự thấy rõ mình, và dễ thấy mình khác đi tuỳ môi trường đang ở.`,
+    }. Kiểu này thường cho sự linh hoạt, và dễ thấy mình khác đi tuỳ môi trường đang ở.${nhanXet}`,
     sao: muon,
     loai: 'chinh',
   }];
@@ -376,9 +437,11 @@ function maDauDoiKiem(pv: PhamVi): CachCuc[] {
 /**
  * Cách cục chỉ có nghĩa khi đang nói về một quãng thời gian.
  *
- * Tang Môn / Thái Tuế / Điếu Khách và Tuế Phá đều thuộc vòng Thái Tuế — chúng
- * mô tả không khí của một NĂM, không mô tả con người. Đưa chúng vào bài luận
- * tính cách là nói sai chuyện, nên lớp gọi phải lọc theo lớp hạn.
+ * Tang Môn / Thái Tuế / Điếu Khách và Tuế Phá đều thuộc vòng Thái Tuế. Ở lá
+ * số gốc, vòng này nói THẾ ĐỨNG của từng cung (bốn thế, xem `netThaiTueGoc`
+ * trong quick-read-noi-dung.ts); Tang Tuế Điếu chỉ hội đủ ở cung đứng thế Tuế
+ * Phá, tức nhóm Tang Môn – Tuế Phá – Điếu Khách. Ý "nhiều chuyện phải đối đáp"
+ * chỉ đúng khi một quãng hạn đi qua đó, nên lớp gọi vẫn lọc theo lớp hạn.
  */
 function theoHan(pv: PhamVi): CachCuc[] {
   const ra: CachCuc[] = [];
@@ -388,7 +451,7 @@ function theoHan(pv: PhamVi): CachCuc[] {
       ma: 'TANG_TUE_DIEU',
       ten: 'Tang Tuế Điếu',
       cung: pv.goc.tenCung,
-      dieuKien: `Tang Môn, Thái Tuế và Điếu Khách cùng hội về ${nhan(pv)}: ${viTri(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])}. Bộ này báo một quãng nhiều chuyện phải đối đáp và nhiều việc ngoài ý muốn chen vào, không báo một sự việc cụ thể nào.`,
+      dieuKien: `Tang Môn, Thái Tuế và Điếu Khách cùng hội về ${nhan(pv)}: ${viTri(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])}. Xét cả đời, đây là thế của người hay làm nhiều hơn phần được ghi nhận; khi một quãng hạn đi qua đây thì quãng ấy nhiều chuyện phải lên tiếng, đối đáp, không báo một sự việc cụ thể nào.`,
       sao: ['Tang Môn', 'Thái Tuế', 'Điếu Khách'],
       loai: 'han',
     });
@@ -411,11 +474,18 @@ function theoHan(pv: PhamVi): CachCuc[] {
     const ten = [pv.goc.coTuan ? 'Tuần' : null, pv.goc.coTriet ? 'Triệt' : null]
       .filter(Boolean)
       .join(' và ');
+    const tt = chieuTuanTriet(pv.goc);
+    const yTT =
+      tt?.ly === 'giai' || tt?.ly === 'tat-ach'
+        ? 'Ở đây nó giải bớt phần khó của các sao đang ở thế khó, nên chuyện của cung này nhẹ hơn mức các sao ấy báo.'
+        : tt?.ly === 'be'
+          ? 'Ở đây nó bẻ bớt phần tốt của các sao đang thuận, nên nét của cung này khó hiện ra đúng lúc cần, thường phải qua một quãng mới lộ.'
+          : 'Ở đây nó vừa làm dịu phần khó vừa bẻ bớt phần tốt, nên cung này đi chậm mà ít va.';
     ra.push({
       ma: 'TUAN_TRIET_AN_NGU',
       ten: `${ten} án ngữ`,
       cung: pv.goc.tenCung,
-      dieuKien: `${ten} đóng ngay tại ${nhan(pv)}. Nét của cung này khó hiện ra đúng lúc cần — thường phải qua một quãng, hoặc phải có việc đẩy tới, nó mới lộ.`,
+      dieuKien: `${ten} đóng ngay tại ${nhan(pv)}. ${yTT}`,
       sao: [pv.goc.coTuan ? 'Tuần' : '', pv.goc.coTriet ? 'Triệt' : ''].filter(Boolean),
       loai: 'han',
     });

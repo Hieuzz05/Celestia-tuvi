@@ -68,6 +68,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Dòng thời gian Hành trình | `lib/tuvi/hanh-trinh.ts` |
 | Luận hạn chi tiết (tầng hai của Hành trình) | `lib/tuvi/luan-han.ts` |
 | Bảng luận giải 8 lĩnh vực | `lib/tuvi/luan-giai-sau.ts` |
+| Chiều tốt/xấu của sao trong bộ (không sao nào mặc định tốt xấu) | `lib/tuvi/chieu-sao.ts` — máy canh `scripts/test-chieu-sao.ts` |
 | Bộ quy tắc tính + phiên bản | `lib/tuvi/phuong-phap.ts` |
 | Lá số đang xem / lá số của tôi / bản nháp | `lib/store/boi-canh.tsx` |
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |

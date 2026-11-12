@@ -56,7 +56,7 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.3';
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.11.1';
 
 export interface TieuChiRa {
   nhan: string;
@@ -73,7 +73,7 @@ export interface TieuChiRa {
    */
   thieuCanCu?: boolean;
   laGuong: boolean;
-  /** Bắt buộc khác null với tiêu chí đi tới L3 trở lên — spec mục 10.17 */
+  /** Chỉ điền khi bộ sao thật sự làm ý yếu đi; không có thì null (CELES-72, 11/11/2026) */
   luongNguoc: string | null;
   maDuKien: string[];
   soTu: number;
@@ -379,14 +379,15 @@ nằm ở khối BA PHẦN CỦA CHẶNG NÀY trong phần dữ kiện bên dư�
 VIẾT THEO THANG L1→L5. Đây là thứ phân biệt bản đọc sâu với bản tóm tắt:
   L1 KẾT LUẬN     điều đáng nói nhất là gì
   L2 BIỂU HIỆN    nó hiện ra thế nào trong một ngày thường
-  L3 LỰC NGƯỢC    khi nào điều đó KHÔNG đúng, cái gì kéo ngược
+  L3 TỚI ĐÂU      điều đó đúng tới mức nào: bộ sao có chỗ làm nó yếu đi thì nói ra,
+                  không có thì nói nó đứng vững nhờ sao nào đi cùng
   L4 CƠ CHẾ       vì sao cấu trúc này sinh ra điều đó
   L5 THỜI ĐIỂM    quãng nào kích hoạt, và làm gì với nó
 Mỗi tiêu chí phải đi tới ÍT NHẤT L3. Dừng ở L2 là viết dài chứ không phải viết sâu.
 
-LUỚNG NGƯỢC LÀ BẮT BUỘC, không phải tuỳ chọn.
-Tiêu chí nào đi tới L3 trở lên đều phải có trường "luongNguoc" khác rỗng. Một
-phần chỉ khen là một phần không dùng được, dù đọc dễ chịu.
+TRƯỜNG "luongNguoc" CHỈ ĐIỀN KHI BỘ SAO THẬT SỰ CÓ CHỖ LÀM Ý NÀY YẾU ĐI
+(sao hãm, cặp khắc, Tuần Triệt bẻ sao sáng…). Không có thì để rỗng, đừng dựng
+mặt trái cho đủ khuôn. Không sao nào mặc định tốt hay xấu: xét bộ đi cùng rồi mới nói.
 
 NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải lời khuyên về giọng.
 
@@ -486,7 +487,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
         {
           "nhan": "chép đúng nhãn tiêu chí ở khối BA PHẦN CỦA CHẶNG NÀY, không tự đổi",
           "noiDung": "văn chảy, đi tới ít nhất L3, đúng ngân sách từ đã ghi. BẮT BUỘC có HAI câu riêng: (a) một CÂU CẢNH — hai trong ba thứ người / việc nhìn thấy được / lúc đời thường, dài bao nhiêu cũng được; (b) một CÂU NGẮN dưới mười từ đặt sau một câu dài. Đừng gộp hai câu này làm một: một cảnh đủ chi tiết thì khó dưới mười từ. Nêu tên sao ở ĐÚNG một câu, các câu còn lại viết hành vi trần",
-          "luongNguoc": "điều kéo ngược lại — bắt buộc, chỉ để rỗng nếu thật sự không có. KHÔNG mở đầu bằng tên sao",
+          "luongNguoc": "điều trong bộ sao đi cùng (sao hãm, cặp sao khắc nhau, Tuần Triệt...) làm ý trên yếu đi hay đổi chiều, nếu lá số thật sự có. Không có thì để rỗng, đừng dựng một mặt trái cho đủ khuôn. KHÔNG mở đầu bằng tên sao",
           "maDuKien": ["F002"]
         }
       ]

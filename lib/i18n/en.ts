@@ -558,7 +558,7 @@ export const en: TuDien = {
     },
     canCuMo: 'Want to know why?',
     canCuCachNoi: 'How Celes connected them',
-    canCuLuongNguoc: 'What pulls the other way',
+    canCuLuongNguoc: 'What weakens this',
     canCuMucChac: 'How firm this is',
     chacManh: 'fairly clear: several independent sources agree',
     chacVua: 'a tendency: two sources agree',

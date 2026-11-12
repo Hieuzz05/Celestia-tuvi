@@ -113,10 +113,8 @@ export function PalaceDrawer({
               <span
                 key={s.ten}
                 className="text-[13px]"
-                style={{
-                  color:
-                    s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--fg-body)',
-                }}
+                // Màu trung tính: sao tốt hay vướng tuỳ độ sáng và sao đi cùng (CELES-72)
+                style={{ color: 'var(--fg-body)' }}
               >
                 {s.ten}
                 {s.doSang && (
@@ -157,8 +155,8 @@ export function PalaceDrawer({
                 : `tại ${tenCung(cungNguyetHanIndex)}`}
             </span>
             {(cung.coTuan || cung.coTriet) && (
-              <span style={{ color: 'var(--chart-hung)' }}>
-                Bị án: {[cung.coTuan && 'Tuần', cung.coTriet && 'Triệt'].filter(Boolean).join(' + ')}
+              <span style={{ color: 'var(--fg-muted)' }}>
+                Có {[cung.coTuan && 'Tuần', cung.coTriet && 'Triệt'].filter(Boolean).join(' và ')}
               </span>
             )}
           </div>

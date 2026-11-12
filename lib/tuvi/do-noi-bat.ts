@@ -1,5 +1,6 @@
 import { cungDaiVan, tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
 import { CHINH_TINH } from './constants';
+import { capKhacTrongCung, chieuSao } from './chieu-sao';
 import { PHU_TINH_TRONG_YEU } from './phu-tinh-trong-yeu';
 import { CUNG_CUA_MUC, GUONG, TAM_HOP, type MucId } from './chang-cung';
 
@@ -19,7 +20,7 @@ import { CUNG_CUA_MUC, GUONG, TAM_HOP, type MucId } from './chang-cung';
  * không có tín hiệu nổi bật — đó cũng là một thông tin.
  */
 
-export const PHIEN_BAN_DO_NOI_BAT = '2026.09.1';
+export const PHIEN_BAN_DO_NOI_BAT = '2026.11.1';
 
 /** Độ sáng đủ để một chính tinh thể hiện được nét của nó */
 const SANG_RO = new Set(['M', 'V', 'D']);
@@ -90,10 +91,12 @@ export function doNoiBat(laSo: LaSo, muc: MucId, namXem: number): DiemNoiBat {
     thanhPhan.push({ ten: 'Tứ Hoá rơi vào cung', diem: TRONG_SO.tuHoa });
   }
 
-  // 3. Từ hai phụ tinh trọng yếu cùng hướng trở lên
+  // 3. Từ hai phụ tinh trọng yếu cùng chiều trở lên — chiều xét theo sao đi cùng,
+  // không theo nhãn cát / hung cố định (CELES-72)
   const phu = cung.sao.filter((s) => PHU_TINH_TRONG_YEU.has(s.ten));
-  const phuCat = phu.filter((s) => s.tinhChat === 'cat').length;
-  const phuHung = phu.filter((s) => s.tinhChat === 'hung').length;
+  const chieuPhu = phu.map((s) => chieuSao(laSo, cung, s).chieu);
+  const phuCat = chieuPhu.filter((c) => c === 'thuan').length;
+  const phuHung = chieuPhu.filter((c) => c === 'can').length;
   if (phuCat >= 2 || phuHung >= 2) {
     thanhPhan.push({ ten: 'Nhiều phụ tinh cùng hướng', diem: TRONG_SO.phuTinhCungHuong });
   }
@@ -116,17 +119,16 @@ export function doNoiBat(laSo: LaSo, muc: MucId, namXem: number): DiemNoiBat {
   }
 
   /*
-   * 5. Xung đột thuận–nghịch rõ.
+   * 5. Cặp sao khắc nhau thật trong cung.
    *
-   * Cung vừa có lực đỡ vừa có lực cản đáng kể là cung ĐÁNG ĐỌC NHẤT — đó là
-   * chỗ người ta thấy mình mâu thuẫn và không tự giải thích được. Một cung toàn
-   * cát đọc xong thấy dễ chịu rồi quên; một cung có hai lực kéo ngược thì dính.
+   * Không phải "có sao cát và có sao hung" — cách đếm ấy coi mọi cung có một
+   * phụ tinh gốc xấu là mâu thuẫn. Chỉ tính những cặp sách nói là khắc nhau
+   * (Lộc gặp Kỵ, Phủ gặp Không, Nhật Nguyệt gặp Kình Đà…), xem `capKhacTrongCung`.
+   * Cung có cặp khắc là chỗ người ta thấy mình mâu thuẫn, nên đáng đọc nhất.
    */
-  const coCat = cung.sao.some((s) => s.tinhChat === 'cat');
-  const coHung = cung.sao.some((s) => s.tinhChat === 'hung') || cung.coTuan || cung.coTriet;
-  const xungDot = coCat && coHung;
+  const xungDot = capKhacTrongCung(laSo, cung).length > 0;
   if (xungDot) {
-    thanhPhan.push({ ten: 'Có hai lực kéo ngược nhau', diem: TRONG_SO.xungDotRo });
+    thanhPhan.push({ ten: 'Có cặp sao khắc nhau trong cung', diem: TRONG_SO.xungDotRo });
   }
 
   return {

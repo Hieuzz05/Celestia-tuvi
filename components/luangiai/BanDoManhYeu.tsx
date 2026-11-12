@@ -96,7 +96,24 @@ function yNghia(g: GopDiem): { loi: string; sao?: string } {
       sao: g.sao ? `mượn ${g.sao}` : undefined,
     };
   if (g.loai === 'tuan')
-    return { loi: 'Cả điều tốt lẫn điều xấu ở đây đều được giảm nhẹ', sao: g.sao };
+    return {
+      loi:
+        g.ly === 'giai'
+          ? 'Phần khó của sao hãm ở đây được giải bớt'
+          : g.ly === 'be'
+            ? 'Phần tốt của sao sáng ở đây bị bẻ bớt'
+            : 'Cả điều tốt lẫn điều xấu ở đây đều được giảm nhẹ',
+      sao: g.sao,
+    };
+  /*
+   * Sao đứng khác phía nhóm gốc của nó (CELES-72): Kình đắc đi đúng bộ nằm ở cột giúp,
+   * Hóa Lộc gặp Không Kiếp nằm ở cột trở. Nghĩa ngắn trong bảng là nghĩa thường gặp,
+   * hiện nó ở phía ngược lại là tự mâu thuẫn — nói theo bộ sao thay vào.
+   */
+  if (g.diem > 0 && g.nhom === 'hung')
+    return { loi: 'Ở đây sao này làm được việc vì đi đúng bộ sao', sao: g.sao };
+  if (g.diem < 0 && g.nhom === 'cat')
+    return { loi: 'Ở đây sao này bị các sao đi cùng làm giảm sức', sao: g.sao };
   const nghia = NGHIA_NGAN[g.sao ?? ''] ?? g.ten;
   const dac = g.loai === 'hung' && g.doSang === 'D';
   return {

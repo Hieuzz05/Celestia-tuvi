@@ -25,7 +25,8 @@ import { CAU_HINH_Y_DINH, type YDinhKetNoi } from './y-dinh';
 
 // 2026.09.2: dùng bộ quy tắc luận giải chung (chủ dự án yêu cầu 24/09/2026)
 // 2026.09.3: thêm lớp sửa tiếng lóng nội bộ (suaCauTiengLong) như bài dài và chat
-export const PHIEN_BAN_KET_NOI = '2026.09.3';
+// 2026.11.1: luongNguoc chỉ khi bộ sao thật sự có, không ép (CELES-72)
+export const PHIEN_BAN_KET_NOI = '2026.11.1';
 
 export interface MucKetQua {
   id: string;
@@ -107,7 +108,7 @@ CÁCH VIẾT RIÊNG CHO PHẦN SO HAI NGƯỜI (theo sau bộ quy tắc chung �
 - Lời khuyên cho HAI người, đi ra từ chỗ lệch vừa nói (ví dụ cách hai bên bàn một việc lớn), không phải lời khuyên chung cho mọi cặp. Vẫn không phán nên cưới, nên chia tay, nên hay không nên hợp tác.
 - Tránh "Nhìn chung…", "Điều này cho thấy rằng…", và đừng để nhiều câu liền nhau cùng mở một khuôn.
 - Tránh từ kịch tính và tính từ chung chung kiểu "sâu sắc", "mạnh mẽ" nếu không có hành vi cụ thể đi kèm.
-- Với mỗi mục, nếu có dữ kiện kéo ngược lại nhận định thì phải nói ra ở "luongNguoc".
+- Với mỗi mục, nếu bộ sao đi cùng (sao hãm, cặp sao khắc nhau, Tuần Triệt...) làm nhận định yếu đi hay đổi chiều thì nói ra ở "luongNguoc". Không có thì để trống, đừng dựng một mặt trái cho đủ khuôn.
 
 ${luatUuTienNguon()}
 

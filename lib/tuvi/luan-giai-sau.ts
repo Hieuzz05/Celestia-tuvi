@@ -1,7 +1,8 @@
 import { cungDaiVan, tamPhuongTuChinh, type Cung, type LaSo } from './ansao';
 import { PHU_TINH_TRONG_YEU } from './phu-tinh-trong-yeu';
 import { CHINH_TINH } from './constants';
-import { KHUON, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
+import { KHUON, netSaoTheoChieu, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
+import { chieuCungDoi, chieuSao, chieuTuanTriet } from './chieu-sao';
 import {
   CHANG,
   CHANG_CUA_MUC,
@@ -149,20 +150,12 @@ function tenCung(cung: Cung, k: KhuonChu) {
 /** Độ sáng được coi là "hiện ra rõ" — miếu, vượng, đắc địa, lợi */
 const SANG_RO = new Set(['M', 'V', 'D', 'L']);
 
-/**
- * Sao mang lực cản. Nét của nhóm này thuộc về đoạn lực ngược, không phải đoạn
- * điểm mạnh — trộn chung là lý do bản cũ đọc như một danh sách không có hướng.
+/*
+ * Bản cũ có SAO_TRO_LUC: tám sát tinh LUÔN vào đoạn "lực ngược". Bỏ 11/11/2026
+ * (CELES-72): chủ dự án "không được xét mặc định một sao là tốt hay xấu". Kình
+ * Dương miếu ở tứ mộ, Hỏa Linh đắc có Tham Lang… là lực, không phải cản. Chiều
+ * giờ do `chieuSao` quyết theo độ sáng và bộ sao đi cùng.
  */
-const SAO_TRO_LUC = new Set([
-  'Kình Dương',
-  'Đà La',
-  'Hỏa Tinh',
-  'Linh Tinh',
-  'Địa Không',
-  'Địa Kiếp',
-  'Thiên Hình',
-  'Thiên Riêu',
-]);
 
 /**
  * Căn cứ của một khối: chỉ liệt kê thứ THỰC SỰ tham gia vào kết luận.
@@ -273,9 +266,12 @@ function khoiTheoCung(
    * đặt ở cuối — phụ tinh, nhịp, giai đoạn — tức là phần khiến hai lá số khác
    * nhau đọc ra khác nhau.
    *
-   * Giờ gom theo nghĩa: cấu trúc này tạo ra gì → cái gì kéo ngược lại → nó cần
-   * điều kiện nào và đang ở nhịp nào. Đó là khung luận của tài liệu: nói hệ quả
-   * trước, luôn có lực ngược, và không kê sao.
+   * Giờ gom theo nghĩa: cấu trúc này tạo ra gì → các sao liên kết (cung đối
+   * chiếu sang, Tuần Triệt, phụ tinh) đỡ hay làm khó nó → nó cần điều kiện nào và
+   * đang ở nhịp nào. Nói hệ quả trước, không kê sao.
+   *
+   * Bỏ luật cũ "luôn có lực ngược" (CELES-72, 11/11/2026): cung đối chiếu sang
+   * KHÔNG mặc định là lực cản; chiều của nó theo các sao ở đó.
    */
 
   // Đoạn 1 — cấu trúc này tạo ra gì trong đời sống
@@ -303,40 +299,72 @@ function khoiTheoCung(
       ? dien(k.luanSau.doanTuHoaRo, { sao: ten, net: netTh })
       : dien(k.luanSau.doanTuHoa, { sao: ten });
   };
-  for (const x of tuHoa.filter((y) => y.ten !== 'Hóa Kỵ')) doanCauTruc.push(cauTuHoa(x.ten));
+  // Hóa Kỵ không mặc định là cản: Kỵ đắc ở tứ mộ, Kỵ gặp Nhật Nguyệt ở Sửu Mùi… là
+  // điều kiện tốt (CELES-72). Chỉ Kỵ ra chiều 'can' mới vào đoạn các sao làm khó.
+  const kyCan = tuHoa.filter((y) => y.ten === 'Hóa Kỵ' && chieuSao(laSo, cung, y).chieu === 'can');
+  for (const x of tuHoa.filter((y) => !kyCan.includes(y))) doanCauTruc.push(cauTuHoa(x.ten));
 
-  // Đoạn 2 — cái gì kéo ngược lại. Đối cung luôn tham gia vào cách đọc một cung;
-  // bỏ nó đi là mất hẳn phần khiến bài đọc không thành lời khen một chiều.
-  const doiCung = laSo.cungs[tamPhuongTuChinh(cung.chiIndex).xungChieu];
-  const chinhDoi = chinhTinhCua(doiCung);
-  const doanLucNguoc: string[] = [
-    chinhDoi.length
-      ? dien(khuon(k.luanSau.doanDoiCung), {
-          cung: tenCung(doiCung, k),
-          sao: chinhDoi.map((x) => x.ten).join(', '),
-        })
-      : dien(k.luanSau.doanDoiCungTrong, { cung: tenCung(doiCung, k) }),
+  // Đoạn 2 — các sao liên kết đỡ hay làm khó phần này
+  const cd = chieuCungDoi(laSo, cung);
+  const doiCung = cd.doi;
+  const bienTheDoi =
+    cd.chieu === 'thuan' ? k.luanSau.doanDoiCung.thuan
+      : cd.chieu === 'can' ? k.luanSau.doanDoiCung.can
+        : cd.chieu === 'yeu' ? k.luanSau.doanDoiCung.yeu
+          : k.luanSau.doanDoiCung.haiMat;
+  const doanLienKet: string[] = [
+    cd.kyXung
+      ? dien(cd.chieu === 'can' ? k.luanSau.doanDoiCung.ky : k.luanSau.doanDoiCung.kyNhe, { cung: tenCung(doiCung, k) })
+      : cd.chinh.length
+        ? dien(khuon(bienTheDoi), {
+            cung: tenCung(doiCung, k),
+            sao: cd.chinh.map((x) => x.ten).join(', '),
+          })
+        : dien(k.luanSau.doanDoiCungTrong, { cung: tenCung(doiCung, k) }),
   ];
 
-  if (cung.coTuan || cung.coTriet) {
+  // Tuần Triệt đảo nghĩa theo độ sáng: giải sao hãm, bẻ sao sáng (HS:4252, KL:1163)
+  const tt = chieuTuanTriet(cung);
+  if (tt) {
     const tenVong = [cung.coTuan ? 'Tuần' : null, cung.coTriet ? 'Triệt' : null]
       .filter(Boolean)
       .join(' + ');
-    doanLucNguoc.push(dien(k.luanSau.doanTuanTriet, { ten: tenVong }));
+    const mau =
+      tt.ly === 'giai' || tt.ly === 'tat-ach'
+        ? k.luanSau.doanTuanTrietGiai
+        : tt.ly === 'be'
+          ? k.luanSau.doanTuanTrietBe
+          : k.luanSau.doanTuanTriet;
+    doanLienKet.push(dien(mau, { ten: tenVong }));
   }
 
-  const tenPhu = cung.sao.filter((x) => PHU_TINH_TRONG_YEU.has(x.ten)).map((x) => x.ten);
-  const netTheoTen = (ds: string[]) =>
-    ds.map((t) => k.netPhuTinh[t]).filter(Boolean).slice(0, 2) as string[];
-  const phuCan = netTheoTen(tenPhu.filter((t) => SAO_TRO_LUC.has(t)));
-  const phuDo = netTheoTen(tenPhu.filter((t) => !SAO_TRO_LUC.has(t)));
+  // Phụ tinh chia theo CHIỀU tại cung này, không theo tên
+  const phu = cung.sao.filter((x) => PHU_TINH_TRONG_YEU.has(x.ten));
+  // Tối đa hai nét, và chỉ một nét có gạch ngang: hai nét có "—" ghép vào một câu
+  // thành câu hai gạch, khó đọc (luật chuẩn ngôn ngữ).
+  const netCua = (ds: typeof phu) => {
+    const ra: string[] = [];
+    for (const x of ds) {
+      const net = netSaoTheoChieu(k, x.ten, chieuSao(laSo, cung, x).chieu);
+      if (!net || ra.length >= 2) continue;
+      if (net.includes('—') && ra.some((r) => r.includes('—'))) continue;
+      ra.push(net);
+    }
+    return ra;
+  };
+  // 'hai-mat' (dùng được mà có giá) đi chung đoạn hai với 'can' / 'yeu': nét của nó
+  // là cái giá, đứng cạnh nét "được giúp" ở đoạn ba thì tự mâu thuẫn. Khuôn câu
+  // doanPhuTinh trung tính, không gọi nó là cản.
+  const nhomHai = new Set(['can', 'yeu', 'hai-mat']);
+  const phuCan = netCua(phu.filter((x) => nhomHai.has(chieuSao(laSo, cung, x).chieu)));
+  const phuDo = netCua(phu.filter((x) => !nhomHai.has(chieuSao(laSo, cung, x).chieu)));
 
   if (phuCan.length) {
-    doanLucNguoc.push(
+    doanLienKet.push(
       capHoaDau(dien(khuon(k.luanSau.doanPhuTinh), { net: noiLietKe(phuCan, k, ngonNgu) }))
     );
   }
-  for (const x of tuHoa.filter((y) => y.ten === 'Hóa Kỵ')) doanLucNguoc.push(cauTuHoa(x.ten));
+  for (const x of kyCan) doanLienKet.push(cauTuHoa(x.ten));
 
   // Đoạn 3 — nó cần điều kiện gì, và đang ở nhịp nào
   const doanDieuKien: string[] = [];
@@ -377,7 +405,7 @@ function khoiTheoCung(
     );
   }
 
-  const doan = [doanCauTruc, doanLucNguoc, doanDieuKien]
+  const doan = [doanCauTruc, doanLienKet, doanDieuKien]
     .map((v) => v.filter(Boolean).join(' ').trim())
     .filter((v) => v.length > 0);
 

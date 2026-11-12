@@ -15,3 +15,10 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
 - **Engine không tự chặn ngày không có thật**: 31/4 lặng lẽ thành 1/5 (số Julian tràn sang tháng
   sau), `Date.parse('1990-04-31')` của V8 cũng vậy. Mọi chỗ nhận ngày sinh từ bên ngoài phải qua
   `laNgayDuongCoThat` (`lib/tuvi/kiem-ngay.ts`) trước khi gọi `lapLaSo`.
+- **Không sao nào mặc định tốt hay xấu** (chủ dự án 11/11/2026). Luận tốt/xấu chỉ đọc qua `chieuSao` /
+  `chieuCungDoi` / `chieuTuanTriet` trong `lib/tuvi/chieu-sao.ts`; `Sao.tinhChat` chỉ để mệnh bàn xếp
+  hai cột. Máy canh `scripts/test-chieu-sao.ts` cấm dùng `tinhChat` ngoài danh sách cho phép.
+  Luật chung "sao xấu gặp Tuần Triệt bớt xấu" KHÔNG áp cho Hóa Kỵ (chuyên gia 12/11, TVƯD, Ảo bí).
+- **Đổi nghĩa engine làm lệch ảnh chụp `scripts/du-lieu/boi-canh-dong-bang.json` và model giả trong
+  test.** Cập nhật chọn lọc: tính lại, chỉ thay `noiDung`, chặn nếu mã / loại / cung / sao đổi; ghi số
+  trường vào đầu `test-boi-canh-dong-bang.ts`. Không dùng `--sinh`.

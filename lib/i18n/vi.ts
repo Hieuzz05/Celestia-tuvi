@@ -561,7 +561,7 @@ export const vi = {
     },
     canCuMo: 'Muốn biết vì sao không?',
     canCuCachNoi: 'Cách Celes nối dữ kiện',
-    canCuLuongNguoc: 'Điểm kéo ngược lại',
+    canCuLuongNguoc: 'Điều làm ý này yếu đi',
     canCuMucChac: 'Mức chắc chắn',
     chacManh: 'khá rõ — nhiều nguồn độc lập cùng hướng',
     chacVua: 'có xu hướng — hai nguồn cùng hướng',

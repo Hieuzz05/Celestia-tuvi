@@ -41,7 +41,7 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   thế độ liên quan — một nguồn "cốt lõi" lạc đề vẫn là lạc đề.
 - **Nhiều đoạn cùng một tài liệu chỉ là MỘT tiếng nói.** `mucChacChan` đếm số tài liệu khác nhau,
   không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
-- **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
+- **Mỗi ý có lực ngược khi bộ sao thật sự làm ý yếu đi** (sao hãm, cặp khắc, Tuần Triệt…; không có thì để trống `luongNguoc`, 11/11/2026). Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
   nào cũng mạch lạc một cách đáng ngờ.
 - **Nút thắt khi nạp tài liệu là HẠN MỨC, không phải tốc độ.** Free tier của
   `gemini-embedding-001` có HAI trần, và mỗi phần tử trong lô `batchEmbedContents` tính là một

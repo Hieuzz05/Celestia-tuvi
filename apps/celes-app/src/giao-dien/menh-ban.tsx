@@ -296,11 +296,16 @@ function LuoiMenhBan({
   const dinhHang = [0, caoHang[0], caoHang[0] + caoHang[1], caoHang[0] + caoHang[1] + caoHang[2]];
   const caoLuoi = dinhHang[3] + caoHang[3];
 
+  /*
+   * Màu theo ĐỘ SÁNG tại cung, không theo nhóm cát / hung (CELES-72, chủ dự án
+   * 11/11/2026). Bản cũ tô đỏ mọi sao cột hai, tức coi Kình, Đà, Hỏa, Linh...
+   * luôn xấu. Cột vẫn chia theo nhóm sách, nhưng màu không phán.
+   */
   const mauSao = (s: Sao) =>
-    s.tinhChat === 'hung'
-      ? mau.sao.hung
-      : s.loai === 'vong-sao'
-        ? mau.sao.vong
+    s.loai === 'vong-sao'
+      ? mau.sao.vong
+      : s.doSang
+        ? mauDoSang(mau, s.doSang)
         : PHU_TINH_TRONG_YEU.has(s.ten)
           ? mau.sao.chinh
           : mau.sao.cat;
@@ -491,7 +496,7 @@ function LuoiMenhBan({
             {d.luu.length > 0 && (
               <View style={{ marginTop: 2, flexDirection: 'row', flexWrap: 'wrap', columnGap: 4 }}>
                 {d.luu.map((s) => (
-                  <Nho key={s.ten} co={SAO} mau={s.tinhChat === 'hung' ? mau.sao.hung : mau.sao.mieu} nghieng>
+                  <Nho key={s.ten} co={SAO} mau={mau.sao.mieu} nghieng>
                     {s.ten.replace('Lưu ', 'L.')}
                   </Nho>
                 ))}
@@ -883,7 +888,7 @@ export function MenhBanDayDu({
         <View style={{ gap: KHOANG.x2 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: KHOANG.x4, rowGap: KHOANG.x1 }}>
             <ChuGiai mauCham={mau.sao.mieu} nhan={t.banDo.chuThichCat} />
-            <ChuGiai mauCham={mau.sao.hung} nhan={t.banDo.chuThichHung} />
+            <ChuGiai mauCham={mau.sao.ham} nhan={t.banDo.chuThichHung} />
             <ChuGiai mauCham={mau.vang.nen} vien={mau.vang.chu} nhan={t.banDo.chuThichHan} />
             <ChuGiai mauCham={bm.tpNen} vien={bm.tpVien} nhan={t.laSoTab.tamPhuong} />
           </View>
@@ -1069,12 +1074,20 @@ function CungChiTiet({
         ...d.luu.filter((s) => s.tinhChat !== 'hung').map((s) => ({ ten: s.ten, mau: mau.sao.mieu, dam: false })),
       ]
     : [];
-  const canDeY = d
+  // Cột hai: cùng màu trung tính như cột một — nhóm sách, không phải nhãn "xấu" (CELES-72)
+  const cotHai = d
     ? [
-        ...d.cot2.map((s) => ({ ten: s.ten, phu: s.doSang, mau: mau.sao.hung, dam: PHU_TINH_TRONG_YEU.has(s.ten) })),
-        ...d.luu.filter((s) => s.tinhChat === 'hung').map((s) => ({ ten: s.ten, mau: mau.sao.hung, dam: false })),
+        ...d.cot2.map((s) => ({
+          ten: s.ten,
+          phu: s.doSang,
+          mau: s.loai === 'vong-sao' ? mau.sao.vong : mau.sao.chinh,
+          dam: PHU_TINH_TRONG_YEU.has(s.ten),
+        })),
+        ...d.luu.filter((s) => s.tinhChat === 'hung').map((s) => ({ ten: s.ten, mau: mau.sao.mieu, dam: false })),
       ]
     : [];
+  const nenCot = toi ? 'rgba(255,255,255,0.04)' : 'rgba(36,0,41,0.03)';
+  const vienCot = toi ? 'rgba(255,255,255,0.14)' : 'rgba(36,0,41,0.12)';
 
   return (
     <Modal visible={!!d} transparent animationType="slide" onRequestClose={onDong} statusBarTranslucent>
@@ -1171,22 +1184,10 @@ function CungChiTiet({
                 </Chu>
               )}
 
-              {/* Hai cột sao đỡ / cần để ý */}
+              {/* Hai cột theo nhóm sao của sách — cùng một nền trung tính, không xanh / đỏ */}
               <View style={{ flexDirection: 'row', gap: KHOANG.x2 }}>
-                <CotSao
-                  tieuDe={t.laSoTab.saoDo}
-                  ds={saoDo}
-                  nen={toi ? 'rgba(74,222,128,0.08)' : 'rgba(22,163,74,0.06)'}
-                  vien={toi ? 'rgba(74,222,128,0.22)' : 'rgba(22,163,74,0.22)'}
-                  mauTieuDe={mau.tot2.chu}
-                />
-                <CotSao
-                  tieuDe={t.laSoTab.canDeY}
-                  ds={canDeY}
-                  nen={toi ? 'rgba(255,120,140,0.08)' : 'rgba(194,51,74,0.05)'}
-                  vien={toi ? 'rgba(255,120,140,0.24)' : 'rgba(194,51,74,0.22)'}
-                  mauTieuDe={mau.hoa.ky.chu}
-                />
+                <CotSao tieuDe={t.laSoTab.saoDo} ds={saoDo} nen={nenCot} vien={vienCot} mauTieuDe={mau.chuMo} />
+                <CotSao tieuDe={t.laSoTab.canDeY} ds={cotHai} nen={nenCot} vien={vienCot} mauTieuDe={mau.chuMo} />
               </View>
 
               {/* Tam phương chiếu về cung này */}

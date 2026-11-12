@@ -292,7 +292,11 @@ function ChiTiet({
   const yNghia = (g: GopDiem): { loi: string; sao?: string } => {
     if (g.loai === 'chinh') return { loi: t.laSoTab.theSaoChinh[g.doSang ?? 'B'] ?? t.laSoTab.theSaoChinh.B, sao: g.sao };
     if (g.loai === 'vcd') return { loi: t.laSoTab.vcd, sao: g.sao ? dien(t.laSoTab.muon, { sao: g.sao }) : undefined };
-    if (g.loai === 'tuan') return { loi: t.laSoTab.tuan, sao: g.sao };
+    if (g.loai === 'tuan')
+      return { loi: g.ly === 'giai' ? t.laSoTab.tuanGiai : g.ly === 'be' ? t.laSoTab.tuanBe : t.laSoTab.tuan, sao: g.sao };
+    // Sao đứng khác phía nhóm gốc của nó — nói theo bộ sao, không dùng nghĩa thường gặp (CELES-72)
+    if (g.diem > 0 && g.nhom === 'hung') return { loi: t.laSoTab.dungBo, sao: g.sao };
+    if (g.diem < 0 && g.nhom === 'cat') return { loi: t.laSoTab.biGiamSuc, sao: g.sao };
     const nghia = t.laSoTab.nghiaNgan[g.sao ?? ''] ?? g.ten;
     const dac = g.loai === 'hung' && g.doSang === 'D';
     return { loi: nghia.charAt(0).toUpperCase() + nghia.slice(1) + (dac ? t.laSoTab.botNang : ''), sao: g.sao };

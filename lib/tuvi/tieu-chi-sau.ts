@@ -62,7 +62,7 @@ export const TIEU_CHI_SAU: Record<MucId, readonly TieuChiSau[]> = {
     },
     {
       nhan: 'Khi nào con người này phát huy tốt nhất',
-      moTa: '+ lực ngược nếu thiếu điều kiện',
+      moTa: 'thiếu điều kiện nào thì nói rõ, nếu lá số thật sự cho thấy',
     },
   ],
   'phuc-duc': [
