@@ -56,7 +56,8 @@ import { truyHoi } from './truy-hoi';
  * dài ra, mà dài hơn không phải là sâu hơn.
  */
 
-export const PHIEN_BAN_BAN_DOC_SAU = '2026.11.1';
+// CELES-72 (12/11/2026): prompt bỏ "luôn tìm điểm vướng" nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_BAN_DOC_SAU = '2026.10.3';
 
 export interface TieuChiRa {
   nhan: string;
@@ -393,7 +394,7 @@ NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l
 
 1. MỖI TIÊU CHÍ CHỈ ĐƯỢC NÊU TÊN SAO Ở ĐÚNG MỘT CÂU.
    Câu ấy nêu tên rồi dịch ngay sang hành vi. Mọi câu còn lại trong cùng tiêu
-   chí — kể cả câu lực ngược — viết hành vi trần, không nhắc tên nào nữa.
+   chí — kể cả câu nói điểm vướng — viết hành vi trần, không nhắc tên nào nữa.
    Câu không nêu tên thì nói THẲNG HÀNH VI, không nói về lá số nữa. Cấm thay
    cái tên bằng một chữ chung chung: "các yếu tố", "những yếu tố", "cấu trúc
    này", "tổ hợp này", "điều này" — người đọc không tra được chúng, nên câu ấy
@@ -428,8 +429,8 @@ NĂM LUẬT VỀ CÁCH VIẾT. Đây là luật ĐẾM ĐƯỢC, không phải l
    viết nổi. Mỗi thứ một câu, cộng lại khoảng hai chục từ trong ngân sách bảy
    lăm — thừa chỗ.
 
-4. CÂU LỰC NGƯỢC KHÔNG ĐƯỢC MỞ ĐẦU BẰNG TÊN SAO.
-   Bài cũ có 76 câu lực ngược và phần lớn mở bằng một cái tên, nên chúng xếp
+4. CÂU NÓI ĐIỂM VƯỚNG KHÔNG ĐƯỢC MỞ ĐẦU BẰNG TÊN SAO.
+   Bài cũ có 76 câu nói điểm vướng và phần lớn mở bằng một cái tên, nên chúng xếp
    thành một cột đều đặn thay vì là một cú vặn ý. Mở bằng điều kiện hoặc bằng
    chính cái đang kéo ngược: "Khi lịch dày lên thì...", "Nếu người bên cạnh...".
 

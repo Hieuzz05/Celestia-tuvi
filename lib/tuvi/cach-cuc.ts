@@ -31,7 +31,8 @@ import { chieuSao, chieuTuanTriet, xetVoChinhDieu, type Chieu } from './chieu-sa
  * engine thì bộ test chạy được offline mà không cần dựng một kế hoạch truy vấn.
  */
 
-export const PHIEN_BAN_CACH_CUC = '2026.11.1';
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_CACH_CUC = '2026.10.2';
 
 export interface CachCuc {
   /** Mã ổn định, dùng cho trace và bộ vàng: 'TU_PHU_VU_TUONG_LIEM' */

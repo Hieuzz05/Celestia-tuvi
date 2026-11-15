@@ -25,8 +25,8 @@ import { CAU_HINH_Y_DINH, type YDinhKetNoi } from './y-dinh';
 
 // 2026.09.2: dùng bộ quy tắc luận giải chung (chủ dự án yêu cầu 24/09/2026)
 // 2026.09.3: thêm lớp sửa tiếng lóng nội bộ (suaCauTiengLong) như bài dài và chat
-// 2026.11.1: luongNguoc chỉ khi bộ sao thật sự có, không ép (CELES-72)
-export const PHIEN_BAN_KET_NOI = '2026.11.1';
+// CELES-72 (12/11/2026): luongNguoc chỉ khi bộ sao thật sự có, không ép. Chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_KET_NOI = '2026.09.3';
 
 export interface MucKetQua {
   id: string;

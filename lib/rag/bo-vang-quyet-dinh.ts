@@ -13,14 +13,14 @@
  * vài lần sửa prompt mà không ai biết.
  *
  * `tuDoiTuong` là danh sách chữ chỉ CHÍNH VIỆC đang hỏi. Dùng để đo tiêu chí 4:
- * lực ngược có nói về việc đang hỏi hay chỉ nói chung về tính cách. Không có nó
- * thì "tuy nhiên bạn là người nhạy cảm" cũng tính là có lực ngược, mà câu đó
+ * điểm vướng có nói về việc đang hỏi hay chỉ nói chung về tính cách. Không có nó
+ * thì "tuy nhiên bạn là người nhạy cảm" cũng tính là có điểm vướng, mà câu đó
  * đúng với mọi câu hỏi nên nó không đo được gì.
  */
 
 export interface CauVangQuyetDinh {
   cauHoi: string;
-  /** Chữ chỉ chính việc đang hỏi — lực ngược phải chạm ít nhất một chữ trong này */
+  /** Chữ chỉ chính việc đang hỏi — điểm vướng phải chạm ít nhất một chữ trong này */
   tuDoiTuong: string[];
   the: string[];
 }

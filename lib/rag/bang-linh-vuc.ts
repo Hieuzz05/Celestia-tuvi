@@ -70,7 +70,8 @@ import { chonMauVang, khoiMauVang } from './mau-vang';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
-export const PHIEN_BAN_BANG_LINH_VUC = '2026.11.1';
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.7';
 
 /**
  * A5 — NHÁT CẮT ĐẦU TIÊN, và vì sao đúng hai khối này.

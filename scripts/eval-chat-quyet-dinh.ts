@@ -74,7 +74,7 @@ const NGUONG = {
   thoiGian: 0.7,
   /** Lời khuyên viết dạng điều kiện, trên tổng lời khuyên */
   neuThi: 0.8,
-  /** Lực ngược nói về chính việc đang hỏi */
+  /** Điểm vướng (luongNguoc) nói về chính việc đang hỏi — chỉ đo trên bài CÓ điểm vướng */
   luongNguocTrungDich: 0.7,
   /** Có câu hỏi ngược và nó hỏi dữ kiện đời thực */
   hoiLai: 0.8,
@@ -262,7 +262,8 @@ async function main() {
     const soNeuThi = cc?.yChinh.filter((y) => y.neuThi).length ?? 0;
     const soKhuyenKhac = (cc?.buocTiepTheo?.length ?? 0) + (cc?.canNhac?.length ?? 0);
 
-    // 4. Lực ngược có nói về chính việc đang hỏi không
+    // 4. Điểm vướng có nói về chính việc đang hỏi không. Không có điểm vướng thì không đo
+    //    (null): từ 11/11/2026 trường này chỉ điền khi bộ sao thật sự làm ý yếu đi.
     const luong = (cc?.yChinh ?? []).map((y) => y.luongNguoc).filter(Boolean).join(' ');
     const luongNguocTrungDich = luong
       ? c.tuDoiTuong.some((t) => boDau(luong).includes(boDau(t)))
@@ -408,11 +409,12 @@ async function main() {
   dong('1. Có cách cục có tên, đã dịch nghĩa', soCachCuc / n, NGUONG.cachCuc);
   dong('2. Có mốc thời gian bằng số', soMoc / n, NGUONG.thoiGian);
   dong('3. Lời khuyên dạng điều kiện', tongKhuyen ? tongNeuThi / tongKhuyen : 0, NGUONG.neuThi);
-  dong(
-    '4. Lực ngược nói về chính việc đang hỏi',
-    coLuong.length ? luongDat / coLuong.length : 0,
-    NGUONG.luongNguocTrungDich
-  );
+  if (coLuong.length) {
+    dong('4. Điểm vướng nói về chính việc đang hỏi', luongDat / coLuong.length, NGUONG.luongNguocTrungDich);
+  } else {
+    // Không bài nào có điểm vướng: không có gì để đo, không tính là hỏng.
+    console.log(`  BỎ QUA ${'4. Điểm vướng nói về chính việc đang hỏi'.padEnd(42)}   (không bài nào có điểm vướng)`);
+  }
   dong('5. Có câu hỏi ngược, hỏi đời thực', soHoiLai / n, NGUONG.hoiLai);
   dong('6. Trùng lặp 5-gram giữa ba lá số', trungTB, NGUONG.trungLapToiDa, true);
   dong('7. Không tiếng lóng nội bộ engine', soSachTiengLong / n, NGUONG.khongTiengLong);
@@ -428,7 +430,7 @@ async function main() {
     `  Phụ: ${diem.filter((d) => d.cungLo.length).length}/${n} bài lọt tên cung ra mặt trước (cảnh báo, không chặn)`
   );
   console.log(`  Phụ: ${tongNeuThi} lời khuyên điều kiện / ${tongKhuyen} tổng lời khuyên`);
-  console.log(`  Phụ: lực ngược đo được trên ${coLuong.length}/${n} bài, ${pc(luongDat, coLuong.length)} trúng đích`);
+  console.log(`  Phụ: điểm vướng đo được trên ${coLuong.length}/${n} bài, ${pc(luongDat, coLuong.length)} trúng đích`);
   console.log(`  Phụ: validator chặn ${soLoiChan} ý trên ${n} bài`);
 
   console.log('\n  Trùng lặp từng câu:');
@@ -441,7 +443,7 @@ async function main() {
       console.log(
         `cách cục ${d.coCachCucDaDich ? 'có' : 'KHÔNG'} · mốc số ${d.coMocSo ? 'có' : 'KHÔNG'} · ` +
           `neuThi ${d.soNeuThi}/${d.soNeuThi + d.soKhuyenKhac} · ` +
-          `lực ngược ${d.luongNguocTrungDich === null ? 'không có' : d.luongNguocTrungDich ? 'trúng' : 'lạc'} · ` +
+          `điểm vướng ${d.luongNguocTrungDich === null ? 'không có' : d.luongNguocTrungDich ? 'trúng' : 'lạc'} · ` +
           `hỏi ngược ${d.hoiLaiDat ? 'đạt' : 'KHÔNG'}`
       );
       console.log(d.van);

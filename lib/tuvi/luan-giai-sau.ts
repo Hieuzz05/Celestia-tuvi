@@ -374,7 +374,7 @@ function khoiTheoCung(
     );
   }
   if (phuDo.length) {
-    // Lệch một nhịp so với đoạn lực ngược, để hai đoạn không mở bằng cùng một khuôn
+    // Lệch một nhịp so với đoạn nói điểm vướng, để hai đoạn không mở bằng cùng một khuôn
     doanDieuKien.push(
       capHoaDau(
         dien(chonBienThe(k.luanSau.doanPhuTinh, hat + 1), {
@@ -471,7 +471,7 @@ function khoiTheoCung(
  * như thế là một bài không ai đọc hết.
  *
  * Cắt từ ĐUÔI đoạn cuối, không cắt đều. Đoạn đầu mang kết luận, đoạn hai mang
- * lực ngược — hai thứ framework bắt buộc phải có. Đoạn ba là lớp bổ sung: mất
+ * điểm vướng — hai thứ framework bắt buộc phải có. Đoạn ba là lớp bổ sung: mất
  * một câu ở đó thì bài ngắn đi chứ không mất ý nào. Cắt đều thì mất cả lực
  * ngược, tức là mất đúng thứ làm bài đọc không thành lời khen một chiều.
  */

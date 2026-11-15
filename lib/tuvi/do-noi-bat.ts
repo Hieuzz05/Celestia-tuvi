@@ -20,7 +20,8 @@ import { CUNG_CUA_MUC, GUONG, TAM_HOP, type MucId } from './chang-cung';
  * không có tín hiệu nổi bật — đó cũng là một thông tin.
  */
 
-export const PHIEN_BAN_DO_NOI_BAT = '2026.11.1';
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_DO_NOI_BAT = '2026.09.1';
 
 /** Độ sáng đủ để một chính tinh thể hiện được nét của nó */
 const SANG_RO = new Set(['M', 'V', 'D']);

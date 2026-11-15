@@ -364,7 +364,7 @@ export interface KhuonChu {
    */
   netThaiTueGoc: Record<string, string>;
   /** Nét thay khi bộ sao đảo chiều của sao (CELES-72); đọc qua `netSaoTheoChieu` */
-  netTheoChieu: { thuan: Record<string, string>; can: Record<string, string> };
+  netTheoChieu: { thuan: Record<string, string>; can: Record<string, string>; trung: Record<string, string> };
   /** Vòng Tràng Sinh: nhịp sinh khí của một cung */
   netTrangSinh: Record<string, string>;
   chuDeCung: Record<string, string>;
@@ -812,6 +812,23 @@ const NET_THUAN_VI: Record<string, string> = {
   'Địa Không': 'nghĩ khác người, dám bỏ lối cũ để tìm lối mới',
   'Địa Kiếp': 'dám làm lớn và chịu được biến động, cái mới hay đến từ chỗ người khác ngại',
   'Hóa Kỵ': 'phần này được để tâm kỹ, chỗ người khác bỏ qua thì bạn giữ lại và làm cho tới',
+  'Cô Thần': 'quen tự lo liệu, giữ của và giữ việc chắc tay, ít phải nhờ ai',
+  'Quả Tú': 'kín đáo và biết giữ, thứ đã có ở phần này ít khi để hao',
+  'Thiên Không': 'ít bị vướng chuyện ốm đau, có gì cũng qua nhanh',
+  'Kiếp Sát': 'gan dạ, dám nhận việc khó và việc nguy mà người khác né',
+  'Phá Toái': 'dám phá lối cũ để làm lại, sức bật ở phần này mạnh hơn người thường',
+};
+/*
+ * Nét khi sao đứng HAI MẶT hoặc chưa đủ bộ để nói tốt xấu (chuyên gia 12/11/2026): sáu phụ
+ * tinh không có độ sáng mà nét gốc chỉ viết mặt xấu. Nêu tính chất, không phán.
+ */
+const NET_TRUNG_VI: Record<string, string> = {
+  'Cô Thần': 'thích tự xoay xở một mình, có lúc là chỗ mạnh, có lúc thành xa người',
+  'Quả Tú': 'giữ khoảng cách như một thói quen, kín đáo nhưng người khác cần thời gian mới gần được',
+  'Thiên Không': 'lên nhanh mà xuống cũng nhanh, xoay xở giỏi nhưng khó giữ lâu thứ đã nắm',
+  'Kiếp Sát': 'nóng và dám liều, có lúc là gan dạ, có lúc thành hấp tấp',
+  'Phá Toái': 'hay muốn phá ra làm lại, việc đổi mới ở phần này có được có mất',
+  'Lưu Hà': 'ăn nói sắc, giỏi lý lẽ, nhưng nên cẩn thận chuyện sông nước và đi xa',
 };
 const NET_CAN_VI: Record<string, string> = {
   'Lộc Tồn': 'phần mình giữ ở đây dễ hao, giữ chặt quá lại thành bó tay',
@@ -829,6 +846,19 @@ const NET_THUAN_EN: Record<string, string> = {
   'Địa Không': 'think differently and are willing to drop the old way for a new one',
   'Địa Kiếp': 'dare to go big and can handle upheaval; new things often come from where others hesitate',
   'Hóa Kỵ': 'this area gets close attention: what others skip, you keep and follow through',
+  'Cô Thần': 'look after things yourself and keep a firm hold on money and work, rarely needing to ask',
+  'Quả Tú': 'are discreet and careful, so what you have here rarely wears away',
+  'Thiên Không': 'rarely get caught up in illness, and what comes passes quickly',
+  'Kiếp Sát': 'are brave and take on the hard, risky work others avoid',
+  'Phá Toái': 'are willing to tear down the old way and rebuild, with more bounce than most',
+};
+const NET_TRUNG_EN: Record<string, string> = {
+  'Cô Thần': 'like handling things alone, which is sometimes a strength and sometimes keeps people away',
+  'Quả Tú': 'keep some distance out of habit; discreet, but people need time to get close',
+  'Thiên Không': 'rise fast and fall fast: good at getting around problems, less good at keeping what you gained',
+  'Kiếp Sát': 'are hot-blooded and willing to gamble, sometimes brave, sometimes rash',
+  'Phá Toái': 'often want to break things open and start over; change here brings both gains and losses',
+  'Lưu Hà': 'speak sharply and argue well, but should take care around water and long trips',
 };
 const NET_CAN_EN: Record<string, string> = {
   'Lộc Tồn': 'what you hold here wears away easily, and holding too tight ties your hands',
@@ -843,6 +873,7 @@ const NET_CAN_EN: Record<string, string> = {
 export function netSaoTheoChieu(k: KhuonChu, ten: string, chieu: string): string | undefined {
   if (chieu === 'thuan' && k.netTheoChieu.thuan[ten]) return k.netTheoChieu.thuan[ten];
   if ((chieu === 'can' || chieu === 'yeu') && k.netTheoChieu.can[ten]) return k.netTheoChieu.can[ten];
+  if ((chieu === 'hai-mat' || chieu === 'trung') && k.netTheoChieu.trung[ten]) return k.netTheoChieu.trung[ten];
   return netSaoGoc(k, ten);
 }
 
@@ -882,7 +913,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     netSao: NET_VI,
     netPhuTinh: PHU_TINH_VI,
     netThaiTueGoc: THAI_TUE_GOC_VI,
-    netTheoChieu: { thuan: NET_THUAN_VI, can: NET_CAN_VI },
+    netTheoChieu: { thuan: NET_THUAN_VI, can: NET_CAN_VI, trung: NET_TRUNG_VI },
     netTrangSinh: TRANG_SINH_VI,
     chuDeCung: CHU_DE_VI,
     doSang: DO_SANG_VI,
@@ -1241,7 +1272,7 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
     netSao: NET_EN,
     netPhuTinh: PHU_TINH_EN,
     netThaiTueGoc: THAI_TUE_GOC_EN,
-    netTheoChieu: { thuan: NET_THUAN_EN, can: NET_CAN_EN },
+    netTheoChieu: { thuan: NET_THUAN_EN, can: NET_CAN_EN, trung: NET_TRUNG_EN },
     netTrangSinh: TRANG_SINH_EN,
     chuDeCung: CHU_DE_EN,
     doSang: DO_SANG_EN,

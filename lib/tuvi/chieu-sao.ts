@@ -73,7 +73,16 @@ export type LyDo =
   | 'ky-triet'
   | 'ky-triet-kiep'
   | 'triet-tien-van'
-  | 'hinh-tuan-triet';
+  | 'hinh-tuan-triet'
+  /** Không có câu sách nào khớp bộ đang có: không nói tốt xấu, chỉ nêu tính chất sao */
+  | 'chua-du-bo'
+  /** Sao chỉ dùng xem hạn (Thương, Sứ, La, Võng): trên lá số gốc không định chiều */
+  | 'sao-xem-han'
+  | 'la-vong-da-la'
+  | 'theo-cung'
+  | 'theo-bo'
+  | 'gap-sat'
+  | 'tuoi';
 
 export interface KetQuaChieu {
   chieu: Chieu;
@@ -91,9 +100,9 @@ const SUU_MUI = new Set([1, 7]);
 const HOI = 11;
 
 /**
- * Phụ tinh không có bảng độ sáng thì GIỮ tính chất gốc (chuyên gia, 11/11).
- * Đây là phân loại sách, không phải kết luận: một sao gốc xấu vẫn có thể được
- * giải bởi Tuần Triệt hoặc bị chế, xem `chieuPhuTinh`.
+ * Nhóm sách xếp là "phúc tinh / trợ tinh". KHÔNG phải kết luận: mỗi sao vẫn xét bộ đi cùng
+ * trong `chieuPhuTinh` (Tả Hữu gặp sát thì trợ hoạ, Việt gặp Hỏa Linh Kình Hình, Hồng Hỷ gặp
+ * Kỵ Kiếp). Chuyên gia 12/11/2026.
  */
 const GOC_TOT = new Set([
   'Lộc Tồn', 'Thiên Khôi', 'Thiên Việt', 'Tả Phù', 'Hữu Bật', 'Thiên Y', 'Văn Xương', 'Văn Khúc',
@@ -101,10 +110,17 @@ const GOC_TOT = new Set([
   'Nguyệt Đức', 'Tam Thai', 'Bát Tọa', 'Ân Quang', 'Thiên Quý', 'Quốc Ấn', 'Thiên Trù', 'Thiên Quan',
   'Thiên Phúc', 'LN Văn Tinh', 'Giải Thần', 'Thiên Thọ', 'Địa Giải', 'Thiên Giải',
 ]);
-const GOC_XAU = new Set([
-  'Thiên Hình', 'Thiên Riêu', 'Kiếp Sát', 'Thiên Khốc', 'Thiên Hư', 'Thiên Không', 'Cô Thần',
-  'Quả Tú', 'Lưu Hà', 'Phá Toái', 'Thiên Thương', 'Thiên Sứ', 'Thiên La', 'Địa Võng',
-]);
+/**
+ * Sao sách xếp xấu và CÓ bảng độ sáng (dosang.ts): đắc thì hai mặt, hãm thì cản.
+ * Mười sao còn lại (Kiếp Sát, Thiên Không, Cô Quả, Lưu Hà, Phá Toái, Thương Sứ, La Võng)
+ * không có bảng dùng được, nên xét theo cung và bộ đi cùng ở `chieuPhuTinhKhongDoSang`;
+ * không câu sách nào khớp thì 'trung', không mặc định 'can' (chuyên gia 12/11/2026).
+ */
+const GOC_XAU = new Set(['Thiên Hình', 'Thiên Riêu', 'Thiên Khốc', 'Thiên Hư']);
+const SAO_XEM_HAN = new Set(['Thiên Thương', 'Thiên Sứ']);
+const LA_VONG = new Set(['Thiên La', 'Địa Võng']);
+/** Dần Thân Tỵ Hợi */
+const TU_SINH = new Set([2, 5, 8, 11]);
 
 /**
  * Sao lưu theo năm: đợt này giữ tính chất gốc (chuyên gia, mục 12).
@@ -443,15 +459,29 @@ function chieuPhuTinh(laSo: LaSo, cung: Cung, s: Sao): KetQuaChieu {
     return { chieu: 'yeu', ly: ['ham'] };
   }
 
-  // Lộc Tồn
+  // Lộc Tồn. Kiếp Sát, Lưu Hà là "hai đại khắc tinh của Lộc tồn" (KL:2635-2637).
   if (s.ten === 'Lộc Tồn') {
     if (khongKiep) return { chieu: 'can', ly: ['loc-gap-khong-kiep'] };
+    if (ts.has('Kiếp Sát') || ts.has('Lưu Hà')) return { chieu: 'can', ly: ['theo-bo'] };
     if (tuanTriet) return { chieu: 'hai-mat', ly: ['loc-tuan-triet'] };
     if (ts.has('Hóa Kỵ')) return { chieu: 'hai-mat', ly: ['loc-ky'] };
     return { chieu: 'thuan', ly: ['goc-tot'] };
   }
 
   if (GOC_TOT.has(s.ten)) {
+    // Tả Hữu đi với sát tinh hãm / Kỵ xấu thì "trợ hoạ" (TVTH:3468, 3484)
+    if ((s.ten === 'Tả Phù' || s.ten === 'Hữu Bật') && (coSatHamTrongVung(laSo, cung) || coKyXauTrongVung(laSo, cung))) {
+      return { chieu: 'hai-mat', ly: ['goc-tot', 'gap-sat'] };
+    }
+    // Khôi Việt gặp Hỏa Linh, Kình, Hình đồng cung (TVTH:3485, 3508)
+    if ((s.ten === 'Thiên Khôi' || s.ten === 'Thiên Việt') &&
+        ['Hỏa Tinh', 'Linh Tinh', 'Kình Dương', 'Thiên Hình'].some((t) => ts.has(t))) {
+      return { chieu: 'hai-mat', ly: ['goc-tot', 'gap-sat'] };
+    }
+    // Hồng Hỷ gặp Kỵ, Địa Kiếp: tình duyên trắc trở (TĐ:842, TĐ:851, KL:2616)
+    if ((s.ten === 'Hồng Loan' || s.ten === 'Thiên Hỷ') && (ts.has('Hóa Kỵ') || ts.has('Địa Kiếp'))) {
+      return { chieu: 'hai-mat', ly: ['goc-tot', 'gap-sat'] };
+    }
     if (tuanTriet) return { chieu: 'hai-mat', ly: ['goc-tot', 'tuan-triet-be'] };
     return { chieu: 'thuan', ly: ['goc-tot'] };
   }
@@ -471,7 +501,122 @@ function chieuPhuTinh(laSo: LaSo, cung: Cung, s: Sao): KetQuaChieu {
     return { chieu: 'can', ly: ['goc-xau'] };
   }
 
-  return { chieu: 'trung', ly: ['goc-trung'] };
+  return chieuPhuTinhKhongDoSang(laSo, cung, s) ?? { chieu: 'trung', ly: ['goc-trung'] };
+}
+
+/**
+ * Mười phụ tinh không có bảng độ sáng dùng được. Luật theo bảng chuyên gia 12/11/2026
+ * (trích sách ở từng dòng). Thứ tự: cung đóng → bộ chính tinh → sao làm nặng → sao chế giải
+ * → tuổi. Không khớp câu nào thì 'trung' + 'chua-du-bo': lời luận chỉ nêu tính chất sao.
+ * Trả undefined nếu không phải một trong mười sao.
+ */
+function chieuPhuTinhKhongDoSang(laSo: LaSo, cung: Cung, s: Sao): KetQuaChieu | undefined {
+  const ts = tenTrong(cung);
+  const tuanTriet = cung.coTuan || cung.coTriet;
+  const tc = cung.tenCung;
+  const TRUNG: KetQuaChieu = { chieu: 'trung', ly: ['chua-du-bo'] };
+
+  // Thương Sứ: "chỉ dùng để xem hạn" (HS:4057, TĐ:1510, TVTH:3497). Lớp hạn xét riêng.
+  if (SAO_XEM_HAN.has(s.ten)) return { chieu: 'trung', ly: ['sao-xem-han'] };
+
+  // La Võng: chỉ tác động khi Mệnh / Thân đóng ở đó VÀ có Đà La (NLTT:372, 377; KL:2669)
+  if (LA_VONG.has(s.ten)) {
+    if (!((cung.laCungMenh || cung.laCungThan) && ts.has('Đà La'))) return { chieu: 'trung', ly: ['sao-xem-han'] };
+    // Tuần Triệt, Tử Vi, Hóa Khoa, Thiên Giải, Giải Thần chế bớt (HS:2809, HS:3944)
+    if (tuanTriet || ['Tử Vi', 'Hóa Khoa', 'Thiên Giải', 'Giải Thần'].some((t) => ts.has(t))) {
+      return { chieu: 'hai-mat', ly: ['la-vong-da-la', 'tuan-triet-giai'] };
+    }
+    return { chieu: 'can', ly: ['la-vong-da-la'] };
+  }
+
+  if (s.ten === 'Kiếp Sát') {
+    let kq: KetQuaChieu = TRUNG;
+    // Khắc Lộc Tồn (KL:2636); đi với Kình Đà, Kỵ thì tác hoạ mạnh (HS:3170, AB:1138)
+    if (ts.has('Lộc Tồn') || ts.has('Hóa Lộc')) kq = { chieu: 'can', ly: ['theo-bo'] };
+    else if (ts.has('Kình Dương') || ts.has('Đà La') || ts.has('Hóa Kỵ')) kq = { chieu: 'can', ly: ['gap-sat'] };
+    else if (ts.has('Thất Sát') || ts.has('Phá Quân')) {
+      // Quan Lộc + Thất Sát: "can đảm, oai hùng" (TĐ:886); ở chỗ khác hai mặt (HS:3170)
+      kq = tc === 'Quan Lộc' ? { chieu: 'thuan', ly: ['theo-bo', 'theo-cung'] } : { chieu: 'hai-mat', ly: ['theo-bo'] };
+    } else if (ts.has('Thiên Tướng') || ts.has('Thiên Y')) kq = { chieu: 'hai-mat', ly: ['theo-bo'] };
+    if (kq.chieu !== 'trung') {
+      if (tuanTriet || ts.has('Thiên Giải')) kq = { chieu: NHE(kq.chieu), ly: [...kq.ly, 'tuan-triet-giai'] };
+      // Tuổi Ất, Tân rất kỵ Kiếp Sát (CK:1216)
+      if (laSo.canNamIndex === 1 || laSo.canNamIndex === 7) kq = { chieu: NANG(kq.chieu), ly: [...kq.ly, 'tuoi'] };
+    }
+    return kq;
+  }
+
+  if (s.ten === 'Thiên Không') {
+    // Đắc ở Dần Thân Tỵ Hợi (KL:2028, HS:3925) nhưng đắc nghĩa là "hoạnh phát hoạnh phá": hai mặt
+    const dac = TU_SINH.has(cung.chiIndex);
+    if (tc === 'Tật Ách') {
+      // Ít bệnh (HS:3916, TĐ:1430); gặp Tuần Triệt thì "bệnh khó khỏi" (TĐ:1435)
+      return tuanTriet ? { chieu: 'hai-mat', ly: ['theo-cung', 'tuan-triet-be'] } : { chieu: 'thuan', ly: ['theo-cung'] };
+    }
+    if (ts.has('Phục Binh') && ts.has('Kiếp Sát')) return { chieu: 'can', ly: ['theo-bo'] };
+    if (ts.has('Hồng Loan') || ts.has('Đào Hoa')) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+    if (ts.has('Lộc Tồn') || ts.has('Hóa Lộc')) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+    if (tc === 'Tài Bạch' || tc === 'Điền Trạch' || tc === 'Quan Lộc') {
+      return dac ? { chieu: 'hai-mat', ly: ['theo-cung', 'sat-dac'] } : { chieu: 'can', ly: ['theo-cung'] };
+    }
+    // Tứ mộ một mình: "vị trí nguy khốn" (NL74:288)
+    if (TU_MO.has(cung.chiIndex)) return { chieu: 'can', ly: ['ham'] };
+    if (dac) return { chieu: 'hai-mat', ly: ['sat-dac'] };
+    return TRUNG;
+  }
+
+  if (s.ten === 'Lưu Hà') {
+    // Hà Cự Kỵ, Hà Kiếp Kình, Không Kiếp (HS:3412, TVTH:3487); khắc Lộc Tồn (KL:2637)
+    if ((ts.has('Cự Môn') && ts.has('Hóa Kỵ')) || (ts.has('Kình Dương') && ts.has('Địa Kiếp')) ||
+        (ts.has('Địa Không') && ts.has('Địa Kiếp')) || ts.has('Lộc Tồn')) {
+      return { chieu: 'can', ly: ['gap-sat'] };
+    }
+    // Thanh Long: "Hà Long đắc thời" (TĐ:978, HS:3409); Hợi là cung Thủy hợp vị (HS:3404)
+    if (ts.has('Thanh Long') || cung.chiIndex === HOI) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+    // Một mình sách nêu cả hai mặt: hùng biện và tai nạn sông nước (HS:3402)
+    return { chieu: 'hai-mat', ly: ['theo-bo'] };
+  }
+
+  if (s.ten === 'Phá Toái') {
+    if (ts.has('Kình Dương') && (ts.has('Hỏa Tinh') || ts.has('Linh Tinh') || ts.has('Hóa Kỵ'))) {
+      return { chieu: 'can', ly: ['gap-sat'] };
+    }
+    if (tc === 'Tật Ách') return { chieu: 'thuan', ly: ['theo-cung'] }; // ít bệnh (HS:3489)
+    // Tăng lực Sát Phá Tham (KL:2649); "Toái quân lưỡng Phá" (TĐ:1030)
+    if (ts.has('Phá Quân') && (tc === 'Mệnh' || tc === 'Quan Lộc')) return { chieu: 'thuan', ly: ['theo-bo', 'theo-cung'] };
+    if (coTrongVung(laSo, cung, new Set(['Phá Quân', 'Thất Sát']))) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+    // Tham Lang không dụng được Phá Toái (TVƯD-PT:3299); hao sao hiền Tử Phủ Cơ Lương (KL:2649, NL74:337)
+    if (['Tham Lang', 'Tử Vi', 'Thiên Phủ', 'Thiên Cơ', 'Thiên Lương', 'Thiên Đồng'].some((t) => ts.has(t))) {
+      return { chieu: 'can', ly: ['theo-bo'] };
+    }
+    if (ts.has('Hóa Khoa') || ts.has('Hóa Quyền')) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+    return { chieu: 'yeu', ly: ['chua-du-bo'] }; // phiền toái nhỏ
+  }
+
+  if (s.ten === 'Cô Thần' || s.ten === 'Quả Tú') {
+    // Ở Phúc có Triệt + Dưỡng: "đời nào cũng thất tự" (TĐ:619, TĐ:1080) — ngoại lệ Tuần Triệt
+    if (tc === 'Phúc Đức' && cung.coTriet && cung.trangSinh === 'Dưỡng') return { chieu: 'can', ly: ['theo-cung'] };
+    // "Cô thần quả tú yếu thủ ư điền tài" (BT:340); hợp Vũ Khúc về tài lộc (BT:417, HS:2407)
+    if (tc === 'Tài Bạch' || tc === 'Điền Trạch' || ts.has('Vũ Khúc')) return { chieu: 'thuan', ly: ['theo-cung'] };
+    if (s.ten === 'Quả Tú') {
+      if (tc === 'Phu Thê' && ts.has('Phượng Các')) return { chieu: 'thuan', ly: ['theo-bo'] }; // TĐ:1081
+      if (ts.has('Hữu Bật')) return { chieu: 'thuan', ly: ['theo-bo'] }; // thọ (BT:352)
+      if (tc === 'Quan Lộc') return { chieu: 'can', ly: ['theo-cung'] }; // TĐ:1081
+      if (tc === 'Phu Thê' && ts.has('Phá Quân') && (ts.has('Địa Không') || ts.has('Thiên Không'))) {
+        return { chieu: 'can', ly: ['theo-bo'] };
+      }
+    }
+    // Tuổi tứ mộ: Cô Thần "không khắc nghiệt cô đơn" (NL74:348-351)
+    if (s.ten === 'Cô Thần' && TU_MO.has(laSo.chiNamIndex)) return { chieu: 'hai-mat', ly: ['tuoi'] };
+    if (['Mệnh', 'Phu Thê', 'Tử Tức', 'Huynh Đệ', 'Thiên Di'].includes(tc)) {
+      // "Cô ngộ quý tinh" thì được giúp đỡ (TĐ:618, TĐ:620)
+      if (ts.has('Thiên Khôi') || ts.has('Thiên Việt')) return { chieu: 'hai-mat', ly: ['theo-bo'] };
+      return { chieu: 'can', ly: ['theo-cung'] }; // cô độc, chỉ chuyện người
+    }
+    return TRUNG;
+  }
+
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------

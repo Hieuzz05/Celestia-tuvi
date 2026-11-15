@@ -51,6 +51,7 @@ type DatCung = {
   triet?: boolean;
   tenCung?: string;
   trangSinh?: string;
+  menh?: boolean;
 };
 
 function taoSao(ten: string, doSang?: DoSang): Sao {
@@ -59,7 +60,7 @@ function taoSao(ten: string, doSang?: DoSang): Sao {
 }
 
 /** canNamIndex 0 = Giáp: Hóa Kỵ đi với Thái Dương, Hóa Lộc với Liêm Trinh */
-function laSoGia(dat: Record<number, DatCung>, canNamIndex = 0): LaSo {
+function laSoGia(dat: Record<number, DatCung>, canNamIndex = 0, chiNamIndex = 0): LaSo {
   const cungs: Cung[] = Array.from({ length: 12 }, (_, i) => {
     const d = dat[i] ?? {};
     return {
@@ -67,7 +68,7 @@ function laSoGia(dat: Record<number, DatCung>, canNamIndex = 0): LaSo {
       chi: CHI[i],
       can: '',
       tenCung: d.tenCung ?? `Cung ${i}`,
-      laCungMenh: false,
+      laCungMenh: !!d.menh,
       laCungThan: false,
       sao: (d.sao ?? []).map(([t, s]) => taoSao(t, s)),
       trangSinh: d.trangSinh ?? 'Trường Sinh',
@@ -75,7 +76,7 @@ function laSoGia(dat: Record<number, DatCung>, canNamIndex = 0): LaSo {
       coTriet: !!d.triet,
     };
   });
-  return { cungs, canNamIndex } as unknown as LaSo;
+  return { cungs, canNamIndex, chiNamIndex } as unknown as LaSo;
 }
 
 function chieuCua(laSo: LaSo, chi: number, ten: string): Chieu | undefined {
@@ -239,6 +240,45 @@ console.log('\n3. Tuần Triệt và vô chính diệu');
   kiem('Vô chính diệu gặp Tam Không → thuận', r?.chieu === 'thuan' && r.soKhong >= 3, r);
 }
 
+console.log('\n3b. Phụ tinh không có độ sáng: xét theo cung và bộ, không mặc định cản (chuyên gia 12/11)');
+{
+  const TUAT = 10, DAU = 9, HOI = 11, TY_ = 5;
+  // La Võng chỉ tác động khi Mệnh/Thân ở đó và có Đà La (NLTT:372, KL:2669)
+  const coDa = laSoGia({ [TUAT]: { sao: [['Địa Võng'], ['Đà La', 'H']], menh: true } }, 8);
+  kiem('Mệnh ở Tuất có Đà La: Địa Võng → cản', chieuCua(coDa, TUAT, 'Địa Võng') === 'can');
+  const khongDa = laSoGia({ [TUAT]: { sao: [['Địa Võng']], menh: true } });
+  kiem('Mệnh ở Tuất không Đà La: Địa Võng → trung', chieuCua(khongDa, TUAT, 'Địa Võng') === 'trung');
+  const khongMenh = laSoGia({ [THIN]: { sao: [['Thiên La'], ['Đà La', 'H']] } });
+  kiem('Thìn có Đà mà không phải Mệnh/Thân: Thiên La → trung', chieuCua(khongMenh, THIN, 'Thiên La') === 'trung');
+  // Thương Sứ chỉ xem hạn (HS:4057)
+  const ts = laSoGia({ [NGO]: { sao: [['Thiên Thương'], ['Kình Dương', 'H']], tenCung: 'Nô Bộc' } });
+  kiem('Thiên Thương trên lá số gốc → trung', chieuCua(ts, NGO, 'Thiên Thương') === 'trung');
+  // Phá Toái (KL:2649, TĐ:1030, NL74:337)
+  const phaQuan = laSoGia({ [DAU]: { sao: [['Phá Quân', 'H'], ['Phá Toái']], tenCung: 'Mệnh' } });
+  kiem('Phá Quân cư Mệnh có Phá Toái → thuận', chieuCua(phaQuan, DAU, 'Phá Toái') === 'thuan');
+  const luong = laSoGia({ [DAU]: { sao: [['Thiên Lương', 'H'], ['Phá Toái']], tenCung: 'Mệnh' } });
+  kiem('Phá Toái đi với Thiên Lương → cản', chieuCua(luong, DAU, 'Phá Toái') === 'can');
+  // Cô Thần (BT:340, TĐ:618, NL74:348)
+  kiem('Cô Thần ở Tài Bạch → thuận', chieuCua(laSoGia({ [DAN]: { sao: [['Cô Thần']], tenCung: 'Tài Bạch' } }), DAN, 'Cô Thần') === 'thuan');
+  kiem('Cô Thần ở Phu Thê không quý tinh → cản', chieuCua(laSoGia({ [DAN]: { sao: [['Cô Thần']], tenCung: 'Phu Thê' } }), DAN, 'Cô Thần') === 'can');
+  kiem('Tuổi Sửu, Cô Thần ở Dần (Phu Thê) → hai mặt', chieuCua(laSoGia({ [DAN]: { sao: [['Cô Thần']], tenCung: 'Phu Thê' } }, 0, SUU), DAN, 'Cô Thần') === 'hai-mat');
+  kiem('Cô Thần ở Phụ Mẫu, không câu sách nào khớp → trung', chieuCua(laSoGia({ [DAN]: { sao: [['Cô Thần']], tenCung: 'Phụ Mẫu' } }), DAN, 'Cô Thần') === 'trung');
+  // Thiên Không (HS:3916, HS:3926, NL74:288)
+  kiem('Thiên Không ở Tật Ách → thuận', chieuCua(laSoGia({ [THIN]: { sao: [['Thiên Không']], tenCung: 'Tật Ách' } }), THIN, 'Thiên Không') === 'thuan');
+  kiem('Thiên Không ở Tài Bạch tại Thìn → cản', chieuCua(laSoGia({ [THIN]: { sao: [['Thiên Không']], tenCung: 'Tài Bạch' } }), THIN, 'Thiên Không') === 'can');
+  kiem('Thiên Không ở Hợi (đắc) → hai mặt, không thuận', chieuCua(laSoGia({ [HOI]: { sao: [['Thiên Không']], tenCung: 'Phụ Mẫu' } }), HOI, 'Thiên Không') === 'hai-mat');
+  // Lưu Hà (TĐ:978, HS:3412)
+  kiem('Lưu Hà + Thanh Long ở Quan → hai mặt', chieuCua(laSoGia({ [TY_]: { sao: [['Lưu Hà'], ['Thanh Long']], tenCung: 'Quan Lộc' } }), TY_, 'Lưu Hà') === 'hai-mat');
+  kiem('Lưu Hà + Cự Môn Hóa Kỵ → cản', chieuCua(laSoGia({ [TY_]: { sao: [['Lưu Hà'], ['Cự Môn', 'H'], ['Hóa Kỵ']] } }), TY_, 'Lưu Hà') === 'can');
+  // Kiếp Sát / Lưu Hà khắc Lộc Tồn (KL:2635-2637)
+  kiem('Lộc Tồn đồng cung Kiếp Sát → cản', chieuCua(laSoGia({ [TY_]: { sao: [['Lộc Tồn'], ['Kiếp Sát']] } }), TY_, 'Lộc Tồn') === 'can');
+  kiem('Kiếp Sát ở Quan Lộc với Thất Sát → thuận', chieuCua(laSoGia({ [TY_]: { sao: [['Thất Sát', 'M'], ['Kiếp Sát']], tenCung: 'Quan Lộc' } }), TY_, 'Kiếp Sát') === 'thuan');
+  kiem('Kiếp Sát một mình → trung', chieuCua(laSoGia({ [TY_]: { sao: [['Kiếp Sát']] } }), TY_, 'Kiếp Sát') === 'trung');
+  // GOC_TOT không mặc định thuận
+  kiem('Tả Phù đồng cung Kình Dương hãm → hai mặt', chieuCua(laSoGia({ [TY_]: { sao: [['Tả Phù'], ['Kình Dương', 'H']] } }), TY_, 'Tả Phù') === 'hai-mat');
+  kiem('Hồng Loan gặp Hóa Kỵ → hai mặt', chieuCua(laSoGia({ [TY_]: { sao: [['Hồng Loan'], ['Hóa Kỵ']] } }), TY_, 'Hồng Loan') === 'hai-mat');
+}
+
 console.log('\n4. Sao lưu: ngoại lệ có chủ đích, giữ bảng riêng');
 kiem('Lưu Kình Dương → cản', chieuSaoLuu('Lưu Kình Dương') === 'can');
 kiem('Lưu Lộc Tồn → thuận', chieuSaoLuu('Lưu Lộc Tồn') === 'thuan');
@@ -254,6 +294,7 @@ console.log('\n5. Mẫu rộng lá số thật');
   const doiTheoChieu = new Map<Chieu, number>();
   let soLaSo = 0;
   let loi: unknown = null;
+  const xemHanSai: string[] = [];
   try {
     for (let nam = 1960; nam <= 2005; nam += 3) {
       for (const thang of [1, 4, 7, 10]) {
@@ -264,6 +305,11 @@ console.log('\n5. Mẫu rộng lá số thật');
             for (const cung of laSo.cungs) {
               for (const s of cung.sao) {
                 const c = chieuSao(laSo, cung, s).chieu;
+                if ((s.ten === 'Thiên Thương' || s.ten === 'Thiên Sứ') && c !== 'trung') xemHanSai.push(`${s.ten}@${cung.chi}`);
+                if ((s.ten === 'Thiên La' || s.ten === 'Địa Võng') && c === 'can' &&
+                    !((cung.laCungMenh || cung.laCungThan) && cung.sao.some((x) => x.ten === 'Đà La'))) {
+                  xemHanSai.push(`${s.ten}@${cung.chi}`);
+                }
                 if (!chieuTheoSao.has(s.ten)) chieuTheoSao.set(s.ten, new Set());
                 chieuTheoSao.get(s.ten)!.add(c);
               }
@@ -290,6 +336,12 @@ console.log('\n5. Mẫu rộng lá số thật');
     motChieu.length === 0,
     motChieu.map((t) => [t, [...(chieuTheoSao.get(t) ?? [])]])
   );
+  kiem('Thương Sứ La Võng không bị đóng dấu cản trên lá số gốc (trừ La Võng có Mệnh/Thân + Đà La)', xemHanSai.length === 0, xemHanSai.slice(0, 5));
+  const muoiSao = ['Kiếp Sát', 'Thiên Không', 'Cô Thần', 'Quả Tú', 'Lưu Hà', 'Phá Toái'].filter(
+    (t) => (chieuTheoSao.get(t)?.size ?? 0) < 2
+  );
+  kiem('Phụ tinh không có độ sáng không ra một chiều trên mọi lá số', muoiSao.length === 0,
+    muoiSao.map((t) => [t, [...(chieuTheoSao.get(t) ?? [])]]));
   const tong = [...doiTheoChieu.values()].reduce((a, b) => a + b, 0);
   const tiCan = (doiTheoChieu.get('can') ?? 0) / Math.max(tong, 1);
   kiem(

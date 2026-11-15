@@ -396,7 +396,7 @@ Bài luận giải dài, Hỏi Celes và Kết nối giờ đi chung một đư�
 thành chữ. Đường đi đó **làm bài đúng hơn**, nhưng **độ sâu và giọng văn vẫn do model quyết định**.
 Cùng một dữ kiện, một prompt, đo ngày 18/09/2026:
 
-| Model | Số từ | Câu có tên sao | Ý có lực ngược | Đọc ra sao |
+| Model | Số từ | Câu có tên sao | Ý có điểm vướng | Đọc ra sao |
 |---|---|---|---|---|
 | `openai / gpt-5.4-mini` | 1420 | **2%** | 3 | Nói cấu trúc ấy tạo ra gì trong đời, hầu như không kê sao. Hết 20 giây. **Đang dùng.** |
 | `gemini-3.6-flash` | — | — | — | Văn tiếng Việt tốt — nhưng free tier chỉ cho **20 bài mỗi ngày** (`GenerateRequestsPerDay… = 20`), cạn là 429 |

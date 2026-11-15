@@ -254,10 +254,10 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
      * ai tự chấm mình thấp cả.
      */
     const doan: string[] = [haGiong(y.noiDung.trim(), y.mucChacChan)];
-    // Lực ngược đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
+    // Điểm vướng đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
     // đó đáng tin, tách ra thì người đọc mất mối nối.
     if (y.luongNguoc) doan.push(y.luongNguoc.trim());
-    // Cùng lý do với lực ngược: lời khuyên dạng điều kiện thuộc về CHÍNH ý này,
+    // Cùng lý do với điểm vướng: lời khuyên dạng điều kiện thuộc về CHÍNH ý này,
     // gom nó xuống cuối bài là tách nó khỏi cái cớ sinh ra nó.
     if (y.neuThi) doan.push(y.neuThi.trim());
 

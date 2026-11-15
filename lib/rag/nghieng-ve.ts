@@ -72,7 +72,8 @@ import type { ChuDe, LopHan } from './planner';
  * "Tháng 5 bạn sẽ gặp người ấy" là lời hứa, không ai kiểm được.
  */
 
-export const PHIEN_BAN_NGHIENG = '2026.11.1';
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
+export const PHIEN_BAN_NGHIENG = '2026.09.2';
 
 export type HuongNghieng = 'thuan-ro' | 'thuan-nhe' | 'can-bang' | 'can-nhe' | 'can-ro';
 

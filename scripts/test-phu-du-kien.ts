@@ -32,7 +32,7 @@ const nghia = (ten: string) => KHUON.vi.netPhuTinh[ten] ?? KHUON.vi.netSao[ten]?
 /** "Tên (độ sáng…): nghĩa" hoặc "Tên: nghĩa" — có câu nghĩa ngay sau tên trong cùng F### */
 // Nét theo chiều (CELES-72): sao đổi chiều mang nét của bảng thuan / can thay nét gốc
 const cacNghia = (ten: string) =>
-  [nghia(ten), KHUON.vi.netTheoChieu.thuan[ten], KHUON.vi.netTheoChieu.can[ten]].filter(Boolean) as string[];
+  [nghia(ten), KHUON.vi.netTheoChieu.thuan[ten], KHUON.vi.netTheoChieu.can[ten], KHUON.vi.netTheoChieu.trung[ten]].filter(Boolean) as string[];
 const coNghia = (noiDung: string, ten: string) =>
   cacNghia(ten).some((n) => noiDung.includes(n.slice(0, 24))) && new RegExp(`${ten}( \\([^)]*\\))?: `).test(noiDung);
 

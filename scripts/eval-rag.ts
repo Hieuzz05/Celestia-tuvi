@@ -94,9 +94,11 @@ function demTuCo(van: string): string[] {
  * model. Đặt theo mong muốn thì lần nào cũng đỏ, mà đỏ thường xuyên thì cũng
  * như không có ngưỡng.
  *
- * Ba con số ở tầng 4 để ở mức tuyệt đối vì chúng là luật, không phải chất lượng:
- * chép nguyên văn nguồn, sót từ chuyên môn, thiếu lực ngược — cái nào cũng là
- * vi phạm khung luận, không phải "hơi kém".
+ * Hai con số ở tầng 4 để ở mức tuyệt đối vì chúng là luật, không phải chất lượng:
+ * chép nguyên văn nguồn, sót từ chuyên môn — cái nào cũng là vi phạm khung luận,
+ * không phải "hơi kém". Điểm vướng (trường `luongNguoc`) chỉ in ra để xem, KHÔNG
+ * chặn: từ 11/11/2026 nó chỉ có khi bộ sao thật sự làm ý yếu đi, bài không có là đúng
+ * (chủ dự án quyết 11/11 và 12/11/2026, CELES-72 / CELES-77).
  */
 const NGUONG = {
   truyHoiTrungCuoi: 0.8,
@@ -112,7 +114,6 @@ const NGUONG = {
   doiChungAmChoiDung: 1.0,
   chepDaiToiDa: 11,
   soBaiSotTuCo: 0,
-  tyLeCoLucNguoc: 0.9,
   tyLeQuaCongNgonNgu: 0.9,
 };
 
@@ -358,7 +359,7 @@ async function main() {
     let tongChep = 0;
     let soChepDai = 0;
     let soCoTuCo = 0;
-    let soCoLucNguoc = 0;
+    let soCoDiemVuong = 0;
     let soQuaCongNgonNgu = 0;
     const tuCoGap = new Set<string>();
 
@@ -380,11 +381,11 @@ async function main() {
 
       const y = kq.coCauTruc?.yChinh ?? [];
       const coNguoc = y.some((x) => Boolean(x.luongNguoc));
-      if (coNguoc) soCoLucNguoc += 1;
+      if (coNguoc) soCoDiemVuong += 1;
       if (kq.ngonNgu?.dat) soQuaCongNgonNgu += 1;
 
       console.log(
-        `  chép dài nhất ${String(chep).padStart(2)} từ · lực ngược ${coNguoc ? 'CÓ ' : 'kh '} · cổng ngôn ngữ ${kq.ngonNgu?.dat ? 'đạt  ' : 'TRƯỢT'} · từ cổ ${tuCo.length ? tuCo.join(',') : '-'}`
+        `  chép dài nhất ${String(chep).padStart(2)} từ · điểm vướng ${coNguoc ? 'có ' : 'kh '} · cổng ngôn ngữ ${kq.ngonNgu?.dat ? 'đạt  ' : 'TRƯỢT'} · từ cổ ${tuCo.length ? tuCo.join(',') : '-'}`
       );
       if (CHI_TIET) console.log(`      ${kq.van.replace(/\s+/g, ' ').slice(0, 150)}`);
     }
@@ -403,14 +404,8 @@ async function main() {
           `${soCoTuCo}/${coDap.length}${tuCoGap.size ? ` (${[...tuCoGap].join(', ')})` : ''}`
         ),
       ],
-      [
-        'Bài có nêu lực ngược',
-        nguong(
-          'Luật counterweight',
-          soCoLucNguoc / coDap.length >= NGUONG.tyLeCoLucNguoc,
-          `${soCoLucNguoc}/${coDap.length}`
-        ),
-      ],
+      // Chỉ để xem, không chặn: bài không có điểm vướng là đúng khi bộ sao không làm ý nào yếu đi.
+      ['Bài có nêu điểm vướng (chỉ xem)', `${soCoDiemVuong}/${coDap.length}`],
       [
         'Bài qua cổng ngôn ngữ',
         nguong(
