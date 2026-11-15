@@ -27,6 +27,36 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/mo-phien.mjs"
+            ],
+            "timeout": 15,
+            "statusMessage": "Kiểm nhánh so với main và task đang làm"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/mo-phien.mjs"
+            ],
+            "timeout": 15,
+            "statusMessage": "Kiểm nhánh so với main và task đang làm"
+          }
+        ]
+      }
     ]
   }
 }

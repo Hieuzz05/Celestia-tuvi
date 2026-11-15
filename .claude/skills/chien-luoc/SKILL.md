@@ -9,7 +9,7 @@ Luật gốc nằm ở mục "Luồng A" của AGENTS.md. **Luật cứng: khôn
 `phan-bien`.**
 
 ## 0. Mở phiên
-Làm bước 2 và 6 của `.claude/skills/lam-tinh-nang/mo-phien.md`. Trước khi nghiên cứu, đọc các
+Làm bước 0, 2 và 6 của `.claude/skills/lam-tinh-nang/mo-phien.md`. Trước khi nghiên cứu, đọc các
 quyết định đã có để khỏi làm lại:
 ```bash
 ls docs/chien-luoc/ docs/doi-thu/ ; grep -ril "<từ khoá>" docs/chien-luoc docs/doi-thu | head
