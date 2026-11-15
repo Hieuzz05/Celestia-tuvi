@@ -16,6 +16,14 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
+| Claude (máy 1) | Chữa "AI quên bối cảnh" (CELES-23/4/64/65): dọn worktree, hook mở phiên, đồng bộ luật Claude/Codex/Gemini, khuôn câu xin quyết | `viec/ai-boi-canh-trien-khai` | TRANG-THAI.md, AI-PHOI-HOP.md, AGENTS.md, .claude/, .agents/, .codex/, scripts/ | 15/11 |
+
+## Tạm dừng — chờ chủ dự án quyết gộp hay bỏ
+
+Các việc dưới đây dừng từ 11/10 (việc gộp: CELES-14 trên Vibe Board; vận hạn lớp hạn: CELES-3, CELES-12). Nhánh còn đó nhưng chưa gộp main. Danh sách đầy đủ kèm số commit: `D:\Celestia\PHAN-LOAI-WORKTREE-NHANH-2026-11-15.md` (CELES-23).
+
+| Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
+|---|---|---|---|---|
 | Claude (máy 1) | Bộ đo chất lượng luận offline (CEL-197) — làm lần lượt, từng nhánh, chưa gộp | `viec/do-chat-luong-luan` | scripts/ mới, .github/workflows/kiem-tra.yml | 11/10 |
 | Claude (máy 1) | Dịch EN các trang sâu (CEL-058/081) — làm lần lượt, từng nhánh, chưa gộp | `viec/en-trang-sau` | lib/i18n/*, app/luan-giai, hoi-dap, hop-tuoi, ho-so, tai-khoan, gioi-thieu | 11/10 |
 | Claude (máy 1) | Xuất PDF bằng bản in (CEL-074) — làm lần lượt, từng nhánh, chưa gộp | `viec/xuat-pdf` | app/globals.css (@media print), nút in ở la-so / luan-giai | 11/10 |
