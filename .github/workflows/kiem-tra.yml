@@ -38,6 +38,8 @@ jobs:
         run: node scripts/dem-loi-lint.mjs
       - name: Không thêm dấu AI ở giao diện (Hallmark, tầng floor)
         run: node scripts/kiem-dau-ai.mjs
+      - name: Bản luật cho Codex khớp bản .claude (skill, agent)
+        run: node scripts/kiem-ban-sao-luat.mjs
 
       - name: Engine an sao
         run: npx tsx scripts/test-ansao-chuan.ts

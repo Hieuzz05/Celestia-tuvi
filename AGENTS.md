@@ -12,10 +12,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Web tử vi cá nhân hoá. Deploy: https://celestia-tuvi.vercel.app · Repo: Hieuzz05/Celestia-tuvi
 
-> **Dự án này do HAI AI trên HAI máy cùng phát triển.** Đọc **`AI-PHOI-HOP.md`**
-> trước tiên: nhánh nào được đẩy, vùng nào của ai, xử lý xung đột ra sao, và luật
-> viết SQL khi hai máy dùng chung một database. Bỏ qua tệp đó là sớm muộn ghi đè
-> mất việc của máy kia.
+> **Dự án này do nhiều công cụ AI (Claude, Codex, Gemini) trên nhiều máy cùng phát triển.**
+> Đọc **`AI-PHOI-HOP.md`** trước tiên: nhánh nào được đẩy, vùng nào của ai, xử lý xung đột ra
+> sao, và luật viết SQL khi nhiều máy dùng chung một database. Bỏ qua tệp đó là sớm muộn ghi đè
+> mất việc của máy kia. Quyết định đã có thì tra trên Vibe Board (`T find`), quyết mới thì ghi
+> bằng `T answer` / `T decide`; quyết định mới nhất thắng.
 
 Hướng dẫn vận hành đầy đủ (deploy, biến môi trường, Supabase, bật Google SSO, design system,
 cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước khi sửa gì lớn.
@@ -157,7 +158,7 @@ git status → tạo nhánh viec/<tên> → researcher → trình phương án
   → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
   → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
   → soat-tai-lieu → cập nhật PRODUCT-BACKLOG.xlsx → commit
-  → chủ dự án nghiệm thu → push khi được bảo
+  → AI đẩy nhánh viec/* ngay sau commit → chủ dự án nghiệm thu và gộp main
 ```
 
 Thêm `soat-chi-phi` khi thay đổi chạm dịch vụ ngoài, model AI, cron, hay thư
@@ -180,7 +181,7 @@ phải qua chuyên gia kiểm lại bằng sách, không áp nguyên làm luật
 
 ```
 researcher (tìm nguyên nhân gốc) → sửa → qa (+ celes-domain nếu chạm luận giải)
-  → commit → nghiệm thu → push
+  → commit → đẩy nhánh viec/* → nghiệm thu → chủ dự án gộp main
 ```
 
 Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
@@ -190,7 +191,7 @@ Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
 1. **Viết code.** Subagent viết xong thì phiên chính không nắm được nó viết gì,
    lần sửa sau mâu thuẫn với chính mình.
 2. **Ra quyết định sản phẩm.** Subagent chuẩn bị dữ liệu, chủ dự án quyết.
-3. **Nghiệm thu và push.** Luôn là người.
+3. **Nghiệm thu và gộp main.** Luôn là người. (Đẩy nhánh `viec/*` thì AI tự làm, duyệt 07/11/2026.)
 
 ### Nhiều phiên song song
 

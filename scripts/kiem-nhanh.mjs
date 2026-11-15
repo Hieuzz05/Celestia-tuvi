@@ -119,6 +119,7 @@ const viec = [
   ...(kq.tsc ? [['tsc', 'npx', ['tsc', '--noEmit']]] : []),
   ...(kq.lint ? [['lint', 'node', ['scripts/dem-loi-lint.mjs']]] : []),
   ...(doi.some((t) => /^(app|components)\/|^lib\/i18n\/en\.ts$/.test(t)) ? [['dấu AI', 'node', ['scripts/kiem-dau-ai.mjs']]] : []),
+  ...(doi.some((t) => /^\.claude\/(skills|agents)\/|^\.agents\/|^\.codex\/|^scripts\/kiem-ban-sao-luat\.mjs$/.test(t)) ? [['bản luật Codex', 'node', ['scripts/kiem-ban-sao-luat.mjs']]] : []),
   ...kq.bai.map((b) => [b.replace(/^scripts\//, ''), 'npx', ['tsx', b]]),
 ]
 

@@ -37,10 +37,24 @@ làm chuẩn" đã bỏ, không dùng để chặn phương án.)
 Trình bày ngắn: kết luận, các lựa chọn kèm đề xuất, mục "Sập / Lung lay / Đứng được", và câu hỏi
 cần chủ dự án trả lời. Bản dài thì ghi ra `D:\Celestia\` và in đường dẫn.
 
+**Khuôn mỗi câu xin chủ dự án quyết** (cả trong chat, tệp trình và ô "Cần quyết" trên Vibe Board).
+Mỗi câu tự đứng được, đọc một lần là quyết được:
+```
+- Chức năng gì, người dùng gặp ở đâu:
+- Hiện đang chạy thế nào:
+- Đổi gì (kèm ví dụ trước / sau):
+- Các lựa chọn, mỗi cái dẫn tới đâu (tốn gì, mất gì):
+- AI đề xuất gì, vì sao:
+```
+Không lấy mã bước, tên tệp hay tên reviewer làm chủ ngữ (18/10: 3/5 câu bị trả lại "chưa hiểu").
+Ghi câu hỏi bằng `T block <mã> --decision "..."`; chủ dự án trả lời thì `T answer <mã> "<ngày> quyết gì"` ngay.
+
+
 ## 4. Ghi quyết định
 Chủ dự án quyết xong thì ghi vào `docs/chien-luoc/<chủ đề>-<yyyy-mm>.md`, kèm: quyết định, lý do,
 các phương án đã loại và vì sao, số liệu có nguồn. Commit trên nhánh `viec/chien-luoc-<chủ đề>`.
-Quyết định không ghi ra tệp coi như chưa quyết.
+Quyết định không ghi ra tệp coi như chưa quyết. Ghi thêm lên Vibe Board: `T answer <mã> "..."` nếu
+thuộc một task, `T decide --title ... --result ...` nếu là luật chung (thay quyết định cũ thì `--replaces`).
 
 Quyết định làm đổi luật làm việc hay luật sản phẩm thì sửa luôn AGENTS.md hoặc AI-PHOI-HOP.md, rồi
 grep `.claude/skills/` để không còn chỗ nói ngược (bài học 03/10/2026).
