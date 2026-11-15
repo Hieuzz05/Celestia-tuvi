@@ -103,7 +103,7 @@ const HAM_THEO_TEP: { ten: string; tep: string; tham: Record<string, unknown> }[
   },
   {
     ten: 'tim_kien_thuc_tu_khoa_cum',
-    tep: 'supabase/va-rag-chat-luong.sql',
+    tep: 'supabase/va-rag-tu-khoa-hai-tang.sql',
     tham: { cau_tu_le: 'tu', cum_tu: ['Tử Vi'], so_luong: 1, loc_he_phai: null, loc_thuc_the: null },
   },
   {

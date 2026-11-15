@@ -24,6 +24,10 @@ alter table public.knowledge_chunks
 create index if not exists knowledge_chunks_tsv_idx
   on public.knowledge_chunks using gin (tsv);
 
+-- ĐÃ BỊ THAY (15/11/2026, CELES-78): hàm dưới đây đã bị va-rag-chat-luong.sql ghi đè,
+-- rồi được thay bằng va-rag-tu-khoa-hai-tang.sql. Cột tsv và chỉ mục ở trên VẪN DÙNG.
+-- Đừng chạy lại khối hàm này.
+
 create or replace function public.tim_kien_thuc_tu_khoa_cum(
   cau_tu_le text,
   cum_tu text[],

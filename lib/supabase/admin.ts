@@ -25,6 +25,10 @@ async function fetchCoThuLai(
   try {
     return await fetch(input, init);
   } catch (e) {
+    // Bị huỷ có chủ đích (trần thời gian nhánh từ khoá, CELES-78) thì không thử
+    // lại: tín hiệu đã huỷ làm mọi lần thử sau hỏng ngay, rồi cộng 1+2+4+8 = 15
+    // giây chờ — trần 1,5 giây thành 16,5 giây (đo 15/11/2026).
+    if (init?.signal?.aborted) throw e;
     if (lanThu >= 4) throw e;
     // Giãn dần 1s, 2s, 4s, 8s — nghẽn mạng thường qua trong vài giây
     await new Promise((r) => setTimeout(r, 2 ** lanThu * 1000));
