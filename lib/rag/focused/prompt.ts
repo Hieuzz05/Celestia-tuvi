@@ -10,6 +10,8 @@
  * không tự đếm tháng còn lại. Guard luật 6 chặn mốc nào lệch khỏi khối này.
  */
 
+import { MO_TA_HUONG_K, nghiaK, SYSTEM_K } from './demo-k';
+import { khoiDong } from '../demo-dong';
 import type { TinNhan } from '@/lib/ai/prompt';
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
 import type { ThoiDiemAm } from '@/lib/tuvi/bay-gio';
@@ -17,6 +19,8 @@ import { dungKhoiChoPrompt, type GoiBangChung } from '../bang-chung';
 import { khoiNghiemLy, type NghiemLyTrongGoi } from './nghiem-ly-luot';
 import { dungChuanNgonNgu } from '../chuan-ngon-ngu';
 import type { DauMoc, LopDauMoc, NghiengVe } from '../nghieng-ve';
+import { suaKhoiFocusedE } from '../nghieng-ve';
+import { DONG_XAU_F, KHUON_F, MO_TA_HUONG_F, MO_TA_HUONG_H, SYSTEM_F } from './demo-f';
 import type { MucAnToan } from '../an-toan';
 import { chonBoiCanhHoiThoai } from '../tiep-noi';
 import { VAN_PHONG_CELES_CHAT } from '../van-phong';
@@ -113,7 +117,7 @@ const KHOI_KHUON: Record<PhanLoai['khuon'], string> = {
   A: `KHUÔN LƯỢT NÀY: hỏi có / không.
 "answer" nói thẳng nghiêng về "có" hay "chưa", đúng mức hướng đã chốt, bằng lời thường.`,
   B: `KHUÔN LƯỢT NÀY: mô tả một quãng thời gian.
-"answer" nói giọng xu hướng: quãng này phần đời đang hỏi đang mở ra, đang chững, hay đang vướng.`,
+${process.env.DEMO_E === '1' ? '"answer" nói xu hướng của quãng này bằng việc cụ thể người đọc sẽ gặp, không dùng cặp từ mở ra / chững / vướng.' : '"answer" nói giọng xu hướng: quãng này phần đời đang hỏi đang mở ra, đang chững, hay đang vướng.'}`,
   C: `KHUÔN LƯỢT NÀY: người hỏi đang cân một quyết định.
 "answer" đọc BỐI CẢNH của quyết định (quãng này đỡ hay cản việc ấy), KHÔNG nói họ nên làm gì. Không câu nào được là lời khuyên hay lựa chọn hộ.`,
   D: `KHUÔN LƯỢT NÀY: câu có chữ hỏi thời điểm ("khi nào", "bao giờ"…).
@@ -132,7 +136,17 @@ Nghĩa sao trong danh sách là nét chung; ở đây dịch nó thành chuyện
 "answer" là câu trả lời chính, có căn cứ. KHÔNG dùng chữ "nghiêng về". "claims" không cần "direction".`,
 };
 
+/** DEMO_F: khuôn chỉ nói người hỏi muốn gì, không dặn cách diễn đạt. A/C/E/F1/G giữ nguyên (hợp đồng, không phải giọng). */
+function khoiKhuonF(pl: PhanLoai, muc: MucAnToan): string {
+  const dong = [KHUON_F[pl.khuon] ?? KHOI_KHUON[pl.khuon]].filter(Boolean);
+  if (pl.loaiSuKien === 'xau') dong.push(DONG_XAU_F);
+  if (pl.sau) dong.push('Người hỏi muốn nghe kỹ.');
+  if (muc === 'SENSITIVE') dong.push('Người hỏi đang ở chỗ dễ tổn thương. Viết chậm, ấm, không đùa.');
+  return dong.join('\n');
+}
+
 function khoiKhuon(pl: PhanLoai, muc: MucAnToan): string {
+  if (process.env.DEMO_F === '1') return khoiKhuonF(pl, muc);
   const dong = [KHOI_KHUON[pl.khuon]].filter(Boolean);
   if (pl.loaiSuKien === 'xau') {
     dong.push(
@@ -159,6 +173,9 @@ const MO_TA_HUONG: Record<NghiengVe['huong'], string> = {
 };
 
 const NHAN_CHIEU: Record<NhomHuong, string> = { thuan: 'thuan', ngang: 'ngang', vuong: 'vuong' };
+// Vòng K3: "direction": "ngang" bị chép ra bài ("tiền bạc ở thế ngang"). Dưới K, mã chiều là ký hiệu.
+const NHAN_CHIEU_K: Record<NhomHuong, string> = { thuan: '+', ngang: '0', vuong: '-' };
+const nhanChieu = () => (process.env.DEMO_K === '1' ? NHAN_CHIEU_K : NHAN_CHIEU);
 
 /** Lớp nào có F### trong gói — `dauMoc` của lớp vắng mặt không được đưa ra (mục 4.4). */
 export function lopCoTrongGoi(goi: Pick<GoiBangChung, 'duKien'>): Set<LopDauMoc> {
@@ -241,16 +258,18 @@ export function khoiNghiengFocused(n: NghiengVe | null, goi: Pick<GoiBangChung, 
   const coTen = new Set(hien.dauMoc);
   // Giữ thứ tự gốc (theo trọng số) — đầu mốc không tên đứng đúng chỗ của nó.
   const dauMoc = n.dauMoc.filter((d) => coTen.has(d) || hien.anTen.includes(d));
+  const tachNen = process.env.DEMO_K === '1' && (n.cap === 'nam' || n.cap === 'thang');
   const dong = (d: DauMoc) =>
     coTen.has(d)
-      ? `- ${d.ten} (${TEN_LOP[d.lop](n)}) — ${d.y}`
+      ? `- ${d.ten} (${TEN_LOP[d.lop](n)}) — ${process.env.DEMO_K === '1' && !(tachNen && d.lop === 'nen') ? nghiaK(n, d.ten, d.y) : d.y}`
       : `- Một sao phụ riêng, KHÔNG gọi tên và không gán nét này cho sao khác (${TEN_LOP[d.lop](n)}) — ${d.y}`;
-  const ben = (h: 'do' | 'can') => {
-    const ds = dauMoc.filter((d) => d.huong === h);
+  const ben = (h: 'do' | 'can' | 'nen') => {
+    const ds = dauMoc.filter((d) => (h === 'nen' ? d.lop === 'nen' : d.huong === h && !(tachNen && d.lop === 'nen')));
     return ds.length ? ds.map(dong).join('\n') : '- (không có)';
   };
   const cachCuc = n.cachCuc.length ? `\nCách cục đọc được ở phần này: ${n.cachCuc.join(', ')}.` : '';
-  return `DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG, KHÔNG ĐẢO:
+  if (process.env.DEMO_F === '1') return khoiNghiengF(n, ben, cachCuc);
+  const raKhoi = `DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG, KHÔNG ĐẢO:
 Phần đời đang hỏi: ${n.phanDoi}.
 
 Mở đường:
@@ -260,7 +279,50 @@ Cản lại:
 ${ben('can')}${cachCuc}
 
 HƯỚNG ĐÃ CHỐT: ${MO_TA_HUONG[n.huong]}
-"direction" của claims[0] lượt này phải là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}". Câu trả lời chỉ được gọi tên các dữ kiện CÓ TÊN trong hai danh sách trên.`;
+"direction" của claims[0] lượt này phải là "${nhanChieu()[nhomCuaHuong(n.huong)]}". Câu trả lời chỉ được gọi tên các dữ kiện CÓ TÊN trong hai danh sách trên.`;
+  return process.env.DEMO_E === '1' ? suaKhoiFocusedE(raKhoi, n) : raKhoi;
+}
+
+/**
+ * DEMO_F: cùng dữ kiện, cùng logic hướng (kể cả "lớp năm không chạm"), nhưng nhãn bằng lời thường
+ * và KHÔNG có lời dặn văn phong / danh sách cấm. Nghĩa từng sao là ghi chú để hiểu, không phải câu để chép.
+ */
+function khoiNghiengF(n: NghiengVe, ben: (h: 'do' | 'can' | 'nen') => string, cachCuc: string): string {
+  const lopHan = n.dauMoc.filter((d) => d.lop === 'nam' || d.lop === 'thang');
+  const khongCham = (n.cap === 'nam' || n.cap === 'thang') && lopHan.length === 0;
+  const nhe: Partial<Record<NghiengVe['huong'], NghiengVe['huong']>> = { 'thuan-ro': 'thuan-nhe', 'can-ro': 'can-nhe' };
+  const huong = khongCham ? (nhe[n.huong] ?? n.huong) : n.huong;
+  const ghiChuKhongCham = khongCham && process.env.DEMO_DONG !== '1'
+    ? `\nNăm ${n.namXem} không có tiểu hạn, lưu Tứ Hóa hay lưu tinh nào vào Cung ${n.cung} hoặc tam phương của nó: năm này hạn không đi vào chuyện được hỏi.`
+    : '';
+  return `DỮ KIỆN CỦA PHẦN ĐANG HỎI (đã đọc xong):
+Cung đang hỏi: Cung ${n.cung} — ${n.phanDoi}.${ghiChuKhongCham}
+
+Điều đang thuận (${process.env.DEMO_K === '1' ? `phần sau dấu gạch là ghi chú để hiểu sao trong ${n.phanDoi}, không phải câu để chép` : 'phần sau dấu gạch là ghi chú để hiểu sao, không phải câu để chép'}):
+${ben('do')}
+
+Điều đang gây khó:
+${ben('can')}${cachCuc}${process.env.DEMO_K === '1' && (n.cap === 'nam' || n.cap === 'thang') ? `
+
+Sẵn có trên lá số gốc ở phần đời này (năm nào cũng vậy, không phải chuyện riêng của ${n.cap === 'thang' ? 'tháng' : 'năm'} này). Không viết đoạn tả các sao này; chỉ nhắc một sao trong câu nào nó là lý do cho một điều của năm. Hai danh sách trên trống thì năm đi tiếp nếp cũ, và đây là lý do của nếp ấy:
+${ben('nen')}` : ''}
+
+${process.env.DEMO_K === '1' ? `Thứ tự kể: ${process.env.DEMO_K_A === '1' && (n.cap === 'nam' || n.cap === 'thang') ? thuTuKeNam(n) : MO_TA_HUONG_K[huong]}` : `Kết luận đã chốt: ${process.env.DEMO_H === '1' ? MO_TA_HUONG_H[huong] : MO_TA_HUONG_F[huong]}`}
+"direction" của claims[0] là "${nhanChieu()[nhomCuaHuong(huong)]}". Chỉ gọi tên những sao có tên trong hai danh sách trên hoặc trong khối dữ kiện.${process.env.DEMO_DONG === '1' ? khoiDong(n.dong ?? null, n.phanDoi) : ''}`;
+}
+
+/**
+ * v20 (DEMO_K_A): hỏi năm/tháng thì thứ tự kể theo lớp của năm, không theo hướng tổng. Hướng tổng tính cả sao
+ * gốc, nên "mở bằng chuyện tốt, rồi chuyện vướng" bắt model lấy sao gốc lấp vào mặt thuận của năm (v19: 7/8).
+ */
+function thuTuKeNam(n: NghiengVe): string {
+  const nam = n.dauMoc.filter((d) => d.lop !== 'nen');
+  const co = (h: 'do' | 'can') => nam.some((d) => d.huong === h);
+  const ky = n.cap === 'thang' ? 'tháng' : 'năm';
+  if (co('do') && co('can')) return `câu đầu nói điều ${ky} này mang tới; rồi kể phần thuận và phần khó của ${ky}, phần nào có nhiều dữ kiện hơn thì dài hơn.`;
+  if (co('do')) return `câu đầu nói điều thuận ${ky} này mang tới. ${ky[0].toUpperCase() + ky.slice(1)} này không có điều khó riêng; không lấy sao gốc dựng thành phần khó cho cân.`;
+  if (co('can')) return `câu đầu nói điều khó ${ky} này mang tới. ${ky[0].toUpperCase() + ky.slice(1)} này không có điều thuận riêng; không lấy sao gốc dựng thành phần thuận cho cân. Sức sẵn có của người hỏi chỉ nhắc một câu, như cái giúp họ đi qua điều khó.`;
+  return `${ky} này không mang điều gì riêng vào phần đời này: câu đầu nói nó đi tiếp nếp cũ, rồi một hai câu vì sao, dựa vào sao gốc.`;
 }
 
 /* ----------------------------------------------------- mốc tính sẵn */
@@ -334,7 +396,7 @@ function khoiThoiGian(m: MocTinhSan): string[] {
       `Claim nói về một phần tháng thì "timeRefs" là đúng mã phần đó (${h.theoCuaSo
         .map((x) => `["${x.cuaSo}"]`)
         .join(' hoặc ')}) và "direction" là chiều của phần đó (${h.theoCuaSo
-        .map((x) => `${x.cuaSo}: "${NHAN_CHIEU[x.nhom]}"`)
+        .map((x) => `${x.cuaSo}: "${nhanChieu()[x.nhom]}"`)
         .join(', ')}). Mỗi phần cần ít nhất một claim dẫn căn cứ của phần đó.`
     );
   } else if (t.cuaSo.length > 1) {
@@ -362,7 +424,8 @@ function khoiThoiGian(m: MocTinhSan): string[] {
  */
 export function khoiMoc(m: MocTinhSan, khuon?: PhanLoai['khuon']): string {
   const { namHieuLuc, thang } = m.thoiGian;
-  const dong = [`Năm đang đọc: năm âm ${namHieuLuc} (${canChiCuaNam(namHieuLuc)}).`];
+  // DEMO_K: "năm âm" ở đây bị model chép thẳng ra câu đầu; người đọc chỉ cần "năm 2026".
+  const dong = [`Năm đang đọc: ${process.env.DEMO_K === '1' ? '' : 'năm âm '}${namHieuLuc} (${canChiCuaNam(namHieuLuc)}).`];
   if (thang) dong.push(...khoiThoiGian(m));
   else dong.push('Câu hỏi không chỉ một tháng cụ thể — không tự nêu tháng nào.');
   if (namHieuLuc === m.bayGio.nam && khuon !== 'D') {
@@ -443,6 +506,75 @@ export function khoiVietLai(v: NonNullable<DauVaoPromptFocused['vietLai']>): str
   return `Viết lại TOÀN BỘ câu trả lời. Lỗi:\n${loi}${cu}`;
 }
 
+/**
+ * DEMO_C (thử, không gộp): mẫu vàng ở SYSTEM (cố định nên được đệm). Viết trên LÁ SỐ GIẢ.
+ * Sửa từ golden B1 / A11: B1 gốc coi Hóa Quyền GỐC là "thứ chỉ có ở 2026" — sai lớp hạn.
+ */
+const MAU_DEMO_C = `CÁCH ĐỌC VẬN HẠN (năm, tháng):
+Sao gốc của một cung là NỀN — năm nào cũng nằm đó, nên không bao giờ là lý do riêng của năm hay tháng đang hỏi. Điều riêng của năm đến từ tiểu hạn, lưu Tứ Hóa và lưu tinh của năm; của tháng đến thêm từ nguyệt hạn. Nói nền một câu, rồi dồn phần chính vào lớp hạn. Nếu lớp hạn và nền ngược chiều nhau, lớp hạn quyết chuyện của năm.
+
+MẪU (lá số KHÁC, không phải lá số của người đang hỏi). Mẫu chỉ dạy cách xếp lớp và giọng. KHÔNG chép tên sao, tên cung, cảnh đời hay câu chữ nào của mẫu; tên sao chỉ được lấy từ dữ kiện của lượt này.
+
+Mẫu 1 — dữ kiện mẫu: cung Quan Lộc gốc có Vũ Khúc, Thiên Tướng, Hóa Quyền. Năm 2026 tiểu hạn tại cung Tý có Hỏa Tinh, Linh Tinh. Lưu Tứ Hóa 2026: Lưu Hóa Quyền vào Thiên Cơ (cung Mệnh); Lưu Hóa Kỵ vào Liêm Trinh (cung Nô Bộc). Lưu Bạch Hổ rơi vào cung Quan Lộc.
+Hỏi: "năm nay công việc của tôi thế nào"
+Trả lời: "Năm 2026 công việc của bạn chuyển động và có áp lực, nhưng là áp lực đi kèm quyền quyết, không phải bị vắt sức.
+Phần nền thì năm nào cũng vậy: cung Quan Lộc, tức phần công việc, có Vũ Khúc và Thiên Tướng cùng Hóa Quyền, nên bạn vững với việc có con số và quen đứng ra điều phối.
+Cái riêng của năm nay nằm ở lớp hạn. Tiểu hạn đi qua cung có Hỏa Tinh, Linh Tinh, nên cả năm dễ nóng ruột, muốn đổi thật nhanh. Lưu Hóa Quyền năm nay rơi vào Thiên Cơ ở Mệnh: bạn sẽ bị đẩy ra quyết nhiều hơn, kể cả việc trước giờ chỉ góp ý. Lưu Bạch Hổ vào đúng cung Quan Lộc làm việc đến gấp, hạn ngắn, kết quả bị hỏi sớm.
+Ghép lại, đây là năm được thử vai chứ không phải năm bị vắt. Chỗ dễ sai nhất là quyết lúc đang nóng ruột."
+
+Mẫu 2 — dữ kiện mẫu: tháng 10 âm lịch nguyệt hạn tại cung Tuất (Thiên Đồng). Lưu Hóa Lộc năm ấy vào Thiên Đồng. Tiểu hạn năm tại cung khác, có Kình Dương.
+Hỏi: "tháng này tôi thế nào"
+Trả lời: "Tháng này dễ thở hơn hẳn mấy tháng trước. Nguyệt hạn rơi vào cung có Thiên Đồng, mà năm nay Thiên Đồng lại được Lưu Hóa Lộc, nên tháng này mọi việc trôi êm hơn và có chút lộc nhỏ tự tìm đến. Cái căng của cả năm (tiểu hạn có Kình Dương) vẫn còn đó, chỉ là tháng này nó lùi về phía sau."`;
+
+/**
+ * DEMO_E (thử, không gộp). Mẫu viết trên lá số GIẢ KHÁC HẲN (không trùng sao với lá số đang thử),
+ * giọng theo bản viết lại chủ dự án duyệt 07/10/2026. Thay MAU_DEMO_C — mẫu ấy dạy "phần công việc",
+ * "nền" và lại trùng bộ Vũ Khúc–Thiên Tướng–Hóa Quyền với lá số thật.
+ */
+const MAU_DEMO_E = `CÁCH ĐỌC VẬN HẠN (năm, tháng):
+Sao gốc của một cung năm nào cũng nằm đó; nó cho biết chuyện ấy của người hỏi vốn có tính chất gì, KHÔNG phải lý do riêng của năm hay tháng đang hỏi. Điều riêng của năm đến từ tiểu hạn, lưu Tứ Hóa và lưu tinh; của tháng đến thêm từ nguyệt hạn. Nói sao gốc một hai câu, rồi dồn phần chính vào lớp hạn. Lớp hạn và sao gốc ngược chiều thì lớp hạn quyết chuyện của năm. Lớp hạn không chạm cung đang hỏi thì nói thẳng là năm đó hạn không đi vào chuyện này.
+
+CÁCH GỌI: gọi đúng tên cung, viết hoa — "Cung Quan Lộc", "Cung Mệnh". Nói thẳng điều sẽ xảy ra, không dùng ẩn dụ hay cặp từ đối xứng.
+Viết sai → viết đúng:
+- "chưa ngã hẳn về êm hay vướng" → "có cơ hội nhưng đi cùng áp lực"
+- "hoàn cảnh đang ngang nhau" → "tháng này chưa có dấu hiệu đủ mạnh để nghiêng hẳn về đổi việc"
+- "vướng hơn là thông thoáng" → "có phần khó xoay hơn bình thường"
+- "khép lại mọi đường xoay xở" → "chưa đến mức bế tắc"
+- "ở phần công việc", "ở cách bạn phản ứng" → "ở Cung Quan Lộc", "ở Cung Mệnh"
+- "đường này không đến ngay theo ý bạn" → "sự cất nhắc này có thể đến chậm"
+- "dễ va ở quyết định vội" → "dễ quyết định vội rồi phải xử lý hậu quả"
+- "làm khả năng nói cho rõ hiện ra hơn" → "thuận cho việc nói chuyện rõ ràng, hiểu nhau hơn"
+- "Celes chưa có đủ căn cứ để kết luận…" → "Với những dữ kiện này, Celes chưa nghiêng về…"
+- "kết quả phụ thuộc vào việc bạn giữ mọi trao đổi thật rõ" → "càng nói rõ từ đầu và bớt phản ứng vội, bạn càng đỡ rắc rối"
+Kết bài bằng một lời khuyên thực tế gắn với điều vừa luận, không thêm khái niệm trừu tượng.
+
+MẪU (lá số KHÁC, không phải lá số của người đang hỏi). Chỉ học cách xếp lớp và giọng; KHÔNG chép tên sao, tên cung, cảnh đời hay câu chữ của mẫu.
+
+Mẫu — dữ kiện: Cung Quan Lộc có Thái Dương, Thiên Lương. Năm X tiểu hạn tại Cung Thiên Di có Thiên Cơ. Lưu Hóa Kỵ năm X vào Thái Dương (Cung Quan Lộc). Lưu Thiên Mã vào Cung Thiên Di.
+Hỏi: "năm nay công việc của tôi thế nào"
+Trả lời: "Năm X công việc của bạn có việc để làm, nhưng dễ mệt vì phải giải thích nhiều. Cung Quan Lộc có Thái Dương và Thiên Lương cho thấy bạn hợp với việc được người khác tin, phải đứng ra lo cho cả nhóm.
+
+Riêng năm nay, Lưu Hóa Kỵ vào đúng Thái Dương ở Cung Quan Lộc: công sức bỏ ra dễ bị hiểu sai, hoặc phải làm lại vì người trên đổi ý. Tiểu hạn ở Cung Thiên Di có Thiên Cơ, cộng thêm Lưu Thiên Mã, khiến công việc năm nay hay phải đi lại, đổi chỗ hoặc đổi cách làm.
+
+Vì vậy đây không phải năm công việc đi xuống, mà là năm phải nói rõ hơn mức bạn quen. Việc gì quan trọng thì ghi lại bằng văn bản, đừng chỉ nói miệng."
+
+Mẫu tháng — dữ kiện: tháng 10 âm nguyệt hạn tại Cung Tử Tức có Thiên Đồng; Lưu Hóa Lộc năm ấy vào Thiên Đồng; tiểu hạn năm có Kình Dương.
+Hỏi: "tháng này tôi thế nào"
+Trả lời: "Tháng này dễ thở hơn mấy tháng trước. Nguyệt hạn vào Cung Tử Tức có Thiên Đồng, mà năm nay Thiên Đồng lại được Lưu Hóa Lộc, nên việc trôi hơn và có chút lộc nhỏ. Áp lực của cả năm từ Kình Dương ở tiểu hạn vẫn còn, chỉ là tháng này nó lùi lại phía sau. Việc gì đang chờ người khác gật đầu, tháng này là lúc nên hỏi lại."`;
+
+/** DEMO_E: luật chung đang CẤM tên cung và dạy câu "chưa có đủ căn cứ" — đổi theo review 07/10. */
+function suaSystemE(s: string): string {
+  const dau = s.indexOf('- TÊN CUNG, ở mọi dạng.');
+  const moc = 'Huynh Đệ -> anh chị em, người ngang vai';
+  const cuoi = s.indexOf(moc);
+  if (dau >= 0 && cuoi > dau) {
+    s = s.slice(0, dau) + '- Nhãn nội bộ thay cho tên cung: "phần công việc", "phần cách bạn phản ứng", "phần khiến bạn thấy yên". Gọi đúng tên cung viết hoa ("Cung Quan Lộc") và nói luôn nghĩa đời thường nếu cần.' + s.slice(cuoi + moc.length);
+  }
+  return s
+    .replace('- "X tọa thủ tại cung Y" → bỏ hẳn tên cung, nói thẳng phần đời đó', '- "X tọa thủ tại cung Y" → "Cung Y có X", rồi nói nghĩa đời thường')
+    .replace('- Không đủ: "Celes chưa có đủ căn cứ để đi xa hơn ở điểm này."', '- Không đủ: thu hẹp kết luận bằng lời thường, ví dụ "Với những dữ kiện này, Celes chưa nghiêng về…". Không viết "chưa có đủ căn cứ".');
+}
+
 export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; user: string } {
   const bc = chonBoiCanhHoiThoai(v.cauHoiGoc, v.lichSu, v.laTiepTuChip);
   const phan: string[] = [dungKhoiChoPrompt({ ...v.goi, cauHoi: v.cauHoiGoc })];
@@ -497,7 +629,18 @@ export function dungPromptFocused(v: DauVaoPromptFocused): { system: string; use
   phan.push(dan.filter(Boolean).join('\n'));
 
   return {
-    system: v.ngonNgu === 'en' ? `${GHIM_EN}\n\n${SYSTEM_FOCUSED}` : SYSTEM_FOCUSED,
+    system: v.ngonNgu === 'en' ? `${GHIM_EN}\n\n${SYSTEM_FOCUSED}` : process.env.DEMO_K === '1' ? (process.env.DEMO_DONG === '1' ? suaSystemDong(SYSTEM_K) : SYSTEM_K) : process.env.DEMO_F === '1' ? SYSTEM_F : process.env.DEMO_E === '1' ? `${suaSystemE(SYSTEM_FOCUSED)}\n\n${MAU_DEMO_E}` : process.env.DEMO_C === '1' ? `${SYSTEM_FOCUSED}\n\n${MAU_DEMO_C}` : SYSTEM_FOCUSED,
     user: `${phan.join('\n\n')}\n\nCÂU HỎI HIỆN TẠI\n${v.cauHoiGoc}`,
   };
+}
+
+/** DEMO_DONG: bỏ luật "không chạm → không biến chuyển" khỏi system K, thêm khóa nháp "docGiaiDoan" trước answer. */
+function suaSystemDong(s: string): string {
+  return s
+    .replace(' Lớp hạn không chạm chuyện được hỏi thì nói thẳng năm đó không có biến chuyển lớn do hạn mang lại.',
+      ' Cùng một sao năm, ở tuổi khác, chặng đại vận khác, hoàn cảnh khác thì hiện ra thành chuyện khác: đọc theo giai đoạn đời của người hỏi, không đọc máy móc.')
+    .replace(', không đi vào Cung Phu Thê, nên năm này không có biến chuyển lớn về tình cảm do hạn mang lại.', ', không đi vào Cung Phu Thê.')
+    // "cách nhau bằng dòng trống" làm model xuống dòng THẬT trong chuỗi, có lượt đóng chuỗi sau đoạn 1 → JSON hỏng, bài rỗng.
+    .replace('vài đoạn ngắn cách nhau bằng dòng trống;', 'vài đoạn ngắn; cả bài là MỘT chuỗi JSON, giữa hai đoạn viết \\n\\n (dạng thoát), không xuống dòng thật, không đóng ngoặc kép giữa bài;')
+    .replace('{\n  "answer":', '{\n  "docGiaiDoan": "Viết TRƯỚC answer, người đọc không thấy. Một hai câu: ở tuổi này, chặng đại vận này, với hoàn cảnh người hỏi đã kể (nếu có), chuyện năm nay ở phần đời đang hỏi nhiều khả năng mang hình dạng gì. Bài answer viết theo đúng cân nhắc này.",\n  "answer":');
 }

@@ -567,6 +567,16 @@ function doanYDinh(cum: Set<string>, cauKhongDau: string): YDinh {
   return 'mo-ta';
 }
 
+/**
+ * DEMO_E (thử, không gộp): câu hỏi tính cách, không nêu mốc thời gian, chỉ đọc bản mệnh.
+ * Không có luật này thì nhánh "không mốc → mặc định năm đang xem" kéo tiểu hạn vào câu tính cách.
+ */
+function boLopNamChoCauTinhCach(lop: LopHan[], cauHoi: string, phamVi: PhamViThoiGian): LopHan[] {
+  if (process.env.DEMO_E !== '1' || phamVi !== 'khong-ro') return lop;
+  if (!/tính cách|tính tình|con người (của )?tôi|tôi là người|bản tính|bản thân tôi/i.test(cauHoi)) return lop;
+  return ['ban-menh'];
+}
+
 function doanLopHan(
   cum: Set<string>,
   thucThe: ThucThe[],
@@ -830,7 +840,7 @@ function dungKeHoach(
     chacChan,
     ...(phanLoaiBangModel ? { phanLoaiBangModel: true } : {}),
     cungLienQuan,
-    lopHan: doanLopHan(cum, thucThe, yDinh, thoiGian.phamViThoiGian),
+    lopHan: boLopNamChoCauTinhCach(doanLopHan(cum, thucThe, yDinh, thoiGian.phamViThoiGian), cauHoi, thoiGian.phamViThoiGian),
     thucThe,
     truyVan: vietLaiTruyVan(cauHoi, cungLienQuan, thucThe, saoTheoCung, tenCachCuc),
     truyVanTuKhoa: dungTruyVanTuKhoa(cauHoi, thucThe, cungLienQuan, tenCachCuc),

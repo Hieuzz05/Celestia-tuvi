@@ -8,6 +8,7 @@ import {
   type LaSo,
 } from '@/lib/tuvi/ansao';
 import { canChiCuaNam } from '@/lib/tuvi/bay-gio';
+import { TU_HOA } from '@/lib/tuvi/constants';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { PHU_TINH_TRONG_YEU } from '@/lib/tuvi/phu-tinh-trong-yeu';
 import { PHUONG_PHAP } from '@/lib/tuvi/phuong-phap';
@@ -282,7 +283,47 @@ export function chonBoiCanh({ laSo, keHoach, namXem, thangXem, focused, cuaSo }:
    * chứa chúng — câu nêu "Lưu Thiên Mã" không trỏ được về F### nào. Chỉ 9 lưu
    * tinh engine có; không có lưu Tứ Hóa.
    */
-  if (focused && cungChinh && keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
+  // DEMO_C (thử, không gộp): lưu Tứ Hoá theo can năm xem + lưu tinh ở cung đang hỏi,
+  // cung tiểu hạn và cung xung chiếu; rồi đưa lớp hạn lên ngay sau Mệnh (CEL-199/200).
+  if (process.env.DEMO_C === '1' && focused && keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
+    const can = (((namXem + 6) % 10) + 10) % 10;
+    const hoa = ['Lộc', 'Quyền', 'Khoa', 'Kỵ'].map((h, k) => {
+      const sao = TU_HOA[can][k];
+      return { h, sao, cung: laSo.cungs.find((x) => x.sao.some((s) => s.ten === sao))?.tenCung };
+    });
+    them({
+      loai: 'luu-tinh',
+      noiDung:
+        `Lưu Tứ Hóa năm ${namXem} (theo can năm ${canChiCuaNam(namXem)}, chỉ có tác dụng trong năm này): ` +
+        hoa.map((x) => `Lưu Hóa ${x.h} vào ${x.sao}${x.cung ? ` (cung ${x.cung})` : ''}`).join('; ') + '.',
+      sao: hoa.map((x) => x.sao),
+    });
+    const cungTH = laSo.cungs[cungTieuHan(laSo, tuoiAm)];
+    const xung = cungChinh ? laSo.cungs.find((c) => c.chiIndex === tamPhuongTuChinh(cungChinh.chiIndex).xungChieu) : undefined;
+    const dsCung = [cungChinh, cungTH, xung].filter(
+      (c, i, a): c is Cung => !!c && a.findIndex((x) => x?.chiIndex === c.chiIndex) === i
+    );
+    const tatCa = luuTinhTheoNam(namXem);
+    for (const c of dsCung) {
+      const luu = tatCa.filter((s) => s.chiIndex === c.chiIndex);
+      if (!luu.length) continue;
+      const vai = c === cungTH ? ' (cung tiểu hạn năm nay)' : c === cungChinh ? ' (cung đang hỏi)' : ' (cung xung chiếu cung đang hỏi)';
+      them({
+        loai: 'luu-tinh',
+        noiDung: `Năm ${namXem} lưu tinh rơi vào cung ${c.tenCung}${vai}: ${luu.map((s) => s.ten).join(', ')}.`,
+        cung: c.tenCung,
+        sao: luu.map((s) => s.ten),
+      });
+    }
+    // Lớp hạn lên đầu (sau cuc, menh), đánh lại mã, giữ maTheoCuaSo khớp.
+    const laHan = (d: DuKienLaSo) => ['dai-van', 'luu-nien', 'nguyet-han', 'luu-tinh'].includes(d.loai);
+    const dau = duKien.filter((d) => d.loai === 'cuc' || d.loai === 'menh');
+    const xep = [...dau, ...duKien.filter((d) => !dau.includes(d) && laHan(d)), ...duKien.filter((d) => !dau.includes(d) && !laHan(d))];
+    const doi = new Map<string, string>();
+    xep.forEach((d, i) => doi.set(d.id, `F${String(i + 1).padStart(3, '0')}`));
+    duKien.splice(0, duKien.length, ...xep.map((d) => ({ ...d, id: doi.get(d.id)! })));
+    if (maTheoCuaSo) for (const k of Object.keys(maTheoCuaSo)) maTheoCuaSo[k] = maTheoCuaSo[k].map((m) => doi.get(m) ?? m);
+  } else if (focused && cungChinh && keHoach.lopHan.some((l) => l === 'luu-nien' || l === 'nguyet-han')) {
     const luu = luuTinhTheoNam(namXem).filter((s) => s.chiIndex === cungChinh.chiIndex);
     if (luu.length) {
       them({

@@ -49,6 +49,9 @@ export function soChieu(chieu: NhomHuong | undefined, huong: HuongNghieng): 'thi
 
 /** Đọc trường chiều thô của model; giá trị lạ coi như thiếu. */
 export function docChieu(x: unknown): NhomHuong | undefined {
+  if (x === '+') return 'thuan';
+  if (x === '0') return 'ngang';
+  if (x === '-') return 'vuong';
   return x === 'thuan' || x === 'ngang' || x === 'vuong' ? x : undefined;
 }
 

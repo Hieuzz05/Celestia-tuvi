@@ -106,7 +106,7 @@ const BO_CHINH_TINH: { ma: string; ten: string; sao: string[]; net: string }[] =
     ma: 'TU_PHU_VU_TUONG_LIEM',
     ten: 'Tử Phủ Vũ Tướng Liêm',
     sao: ['Tử Vi', 'Thiên Phủ', 'Vũ Khúc', 'Thiên Tướng', 'Liêm Trinh'],
-    net: 'bộ sao của trật tự và tích luỹ — hợp với việc dựng nền lâu dài hơn là bứt phá nhanh',
+    net: process.env.DEMO_E === '1' ? 'bộ sao của trật tự và tích luỹ — hợp với việc làm chắc từng bước, giữ việc lâu dài hơn là bứt phá nhanh' : 'bộ sao của trật tự và tích luỹ — hợp với việc dựng nền lâu dài hơn là bứt phá nhanh',
   },
   {
     ma: 'SAT_PHA_THAM',
@@ -413,7 +413,7 @@ function theoHan(pv: PhamVi): CachCuc[] {
       ma: 'TUAN_TRIET_AN_NGU',
       ten: `${ten} án ngữ`,
       cung: pv.goc.tenCung,
-      dieuKien: `${ten} đóng ngay tại ${nhan(pv)}. Nét của cung này khó hiện ra đúng lúc cần — thường phải qua một quãng, hoặc phải có việc đẩy tới, nó mới lộ.`,
+      dieuKien: `${ten} án ngữ ${nhan(pv)} (${ten} nằm giữa hai cung liền nhau, chặn cả hai; ${nhan(pv)} là một trong hai cung đó). Nét của cung này khó hiện ra đúng lúc cần — thường phải qua một quãng, hoặc phải có việc đẩy tới, nó mới lộ.`,
       sao: [pv.goc.coTuan ? 'Tuần' : '', pv.goc.coTriet ? 'Triệt' : ''].filter(Boolean),
       loai: 'han',
     });

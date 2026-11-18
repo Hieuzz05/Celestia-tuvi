@@ -1,3 +1,4 @@
+import { docObjectJson } from '../doc-json';
 /**
  * CHẠY MỘT LƯỢT MODEL — đường Focused (CEL-186 Answer Contract v2, spec 5.3).
  *
@@ -18,6 +19,8 @@ import { docBanNhap, type BanNhap, type LoiCung, type MaLoiCung } from './hop-do
 import { chonChip, kiemBaTang, type NguCanhKiem } from './kiem';
 import { dungPromptFocused, type DauVaoPromptFocused } from './prompt';
 import type { LanGoiVet } from './vet';
+import { bienTapG } from './demo-g';
+import { coDoanSaoGoc, LOI_DOAN_SAO_GOC } from './demo-k';
 
 /** Cùng ngân sách token với đường STANDARD — token suy nghĩ trừ vào đây (tra-loi.ts) */
 const MAX_TOKENS = 6000;
@@ -38,6 +41,8 @@ export interface VetFocused {
   lan: LanGoiVet[];
   /** Đầu vào prompt của lượt (tham chiếu, không chép) — chỉ cho bộ đo dựng lại chữ model thấy (oracle tên) */
   dauVaoPrompt?: DauVaoPromptFocused;
+  /** DEMO_G: kết quả lượt biên tập */
+  bienTap?: { dung: boolean; lyDo: string; nhap: string; ms: number };
 }
 
 export interface KetQuaChayFocused {
@@ -67,12 +72,21 @@ export async function chayFocused(v: {
   let model = '';
   let ban: BanNhap | null = null;
   let truoc: { answer: string; loi: LoiCung[] } | undefined;
+  let duPhong: BanNhap | null = null;
 
   for (let lan = 0; lan < 2; lan++) {
     const conLai = hanChot - Date.now();
     if (lan > 0 && conLai < TOI_THIEU_THU_LAI_MS) break;
 
     const { system, user } = dungPromptFocused({ ...v.prompt, vietLai: truoc });
+    if (process.env.DEMO_DUMP) require('fs').appendFileSync(process.env.DEMO_DUMP, `
+
+######## LAN ${lan}
+######## SYSTEM
+${system}
+######## USER
+${user}
+`);
     vet.lanGoi += 1;
     const t0 = Date.now();
     const kq = await goi({ system, user, maxTokens: MAX_TOKENS }, undefined, Math.max(conLai, 1));
@@ -80,8 +94,23 @@ export async function chayFocused(v: {
     model = kq.model;
 
     const doc = docBanNhap(kq.text);
-    const banDoc = doc ? { ...doc, answer: boMarkdown(doc.answer) } : null;
+    if (process.env.DEMO_DONG === '1' && !doc) ((vet as unknown as Record<string, unknown>).tho ??= [] as string[], ((vet as unknown as Record<string, string[]>).tho).push(kq.text));
+    if (process.env.DEMO_DONG === '1') (vet as unknown as Record<string, unknown>).docGiaiDoan = (docObjectJson(kq.text) as Record<string, unknown> | null)?.docGiaiDoan;
+    // v18: dặn "viết \n\n (dạng thoát)" thì có lượt model thoát hai lần — chữ "\n" thô lộ ra bài (C2/1).
+    const banDoc = doc ? { ...doc, answer: boMarkdown(doc.answer.replace(/\\n/g, '\n')) } : null;
     const { chan: loi, do: diemC } = kiemBaTang(banDoc, v.ctx);
+    // DEMO_DONG v10: model để cân nhắc theo tuổi chỉ trong "docGiaiDoan", bài thành chung cho mọi tuổi
+    // (C1 v10 lần 4). Cho viết lại một lần; lần hai hỏng thì vẫn dùng bản này — không bao giờ ra rỗng vì nó.
+    if (process.env.DEMO_DONG === '1' && lan === 0 && !loi.length && banDoc && !/tuổi|chặng|đại vận/u.test(banDoc.answer)) {
+      duPhong = banDoc;
+      loi.push({ ma: 'THIEU_DOC_TUOI', tang: 'C', chiTiet: 'Bài chưa có đoạn nào cho thấy chuyện năm nay mang hình dạng gì ở tuổi, chặng đời của người hỏi; phần cân nhắc trong "docGiaiDoan" phải lộ ra trong bài. Giữ nguyên kết luận và câu đầu, thêm ý đó.' } as unknown as LoiCung);
+    }
+    // v17: biên tập bắt được đoạn tả sao gốc nhưng hai lần không gỡ được thì rơi về nháp — nháp có sẵn đoạn
+    // ấy (5/8). Bắt từ nháp, cùng cách THIEU_DOC_TUOI: viết lại một lần, hỏng thì vẫn dùng bản này.
+    if (process.env.DEMO_K === '1' && lan === 0 && !loi.length && banDoc && coDoanSaoGoc(v.ctx.nghieng, banDoc.answer)) {
+      duPhong ??= banDoc;
+      loi.push({ ma: 'DOAN_SAO_GOC', tang: 'C', chiTiet: `Bài ${LOI_DOAN_SAO_GOC}. Giữ nguyên kết luận và câu đầu.` } as unknown as LoiCung);
+    }
     vet.lan.push({ stt: lan === 0 ? 1 : 2, ms: Date.now() - t0, tokVao: kq.tokensIn, tokRa: kq.tokensOut, loi: loi.map((l) => ({ ma: l.ma })) });
     vet.loi = loi;
     vet.diemC = diemC;
@@ -91,6 +120,14 @@ export async function chayFocused(v: {
     }
     if (lan === 0) vet.thuLai = loi.map((l) => l.ma).join(',');
     truoc = { answer: banDoc?.answer ?? '', loi };
+  }
+
+  if (!ban && duPhong) ban = duPhong;
+
+  if (ban && process.env.DEMO_G === '1') {
+    const bt = await bienTapG({ ban, ctx: v.ctx, cauHoi: v.prompt.cauHoiGoc, goi });
+    vet.bienTap = bt.vet;
+    ban = bt.ban;
   }
 
   const doTreMs = Date.now() - batDau;

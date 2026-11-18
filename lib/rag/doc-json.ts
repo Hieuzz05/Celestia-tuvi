@@ -17,6 +17,26 @@
  * đã viết trọn vẹn.
  */
 
+/**
+ * Model hay xuống dòng THẬT trong chuỗi "answer" (ngắt đoạn) thay vì viết \n — JSON.parse từ chối,
+ * cả bài bị vứt (đo 08/10/2026: 3/15 lượt rỗng). Đổi ký tự điều khiển NẰM TRONG chuỗi thành dạng
+ * thoát: không thêm, không bớt chữ nào model viết.
+ */
+function thoatTrongChuoi(x: string): string {
+  let ra = '';
+  let trong = false;
+  for (let i = 0; i < x.length; i++) {
+    const c = x[i];
+    if (trong && c === '\\') { ra += c + (x[i + 1] ?? ''); i++; continue; }
+    if (c === '"') trong = !trong;
+    if (trong && c === '\n') ra += '\\n';
+    else if (trong && c === '\r') continue;
+    else if (trong && c === '\t') ra += '\\t';
+    else ra += c;
+  }
+  return ra;
+}
+
 function thuDoc(x: string): unknown {
   try {
     return JSON.parse(x);
@@ -39,6 +59,10 @@ export function docObjectJson(text: string): Record<string, unknown> | null {
   const mot = thuDoc(than);
   if (mot && typeof mot === 'object' && !Array.isArray(mot)) {
     return mot as Record<string, unknown>;
+  }
+  const thoat = thuDoc(thoatTrongChuoi(than));
+  if (thoat && typeof thoat === 'object' && !Array.isArray(thoat)) {
+    return thoat as Record<string, unknown>;
   }
 
   // Model đóng ngoặc sớm rồi viết tiếp bằng một object mới: bọc thành mảng thì

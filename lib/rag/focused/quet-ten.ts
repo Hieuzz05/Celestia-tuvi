@@ -220,7 +220,7 @@ export function tapTenTuGoi(
   const tap = new Set<string>();
   const phucDuc = goiCoPhucDuc(duKien);
   const nap = (chuoi: string) => {
-    for (const t of quetTen(chuoi, phucDuc)) if (t.loai !== 'cung' && t.loai !== 'luu-hoa') tap.add(khoaTen(t.ten));
+    for (const t of quetTen(chuoi, phucDuc)) if (t.loai !== 'cung' && (t.loai !== 'luu-hoa' || process.env.DEMO_C === '1')) tap.add(khoaTen(t.ten));
   };
   for (const d of duKien) {
     nap(d.noiDung);
@@ -252,7 +252,8 @@ export function tenNgoaiTap(cau: string, tap: ReadonlySet<string>, phucDucLaSao 
   const sai: string[] = [];
   for (const t of quetTen(cau, phucDucLaSao)) {
     if (t.loai === 'cung') continue; // tên cung là luật "mặt trước sạch", không phải luật tên
-    if (t.loai === 'luu-hoa') sai.push(t.ten);
+    if (t.loai === 'luu-hoa' && !(process.env.DEMO_C === '1' && tap.has(khoaTen(t.ten)))) sai.push(t.ten);
+    else if (t.loai === 'luu-hoa') continue;
     else if (t.loai === 'ghep' ? !ghepDuocPhep(t.ten, tap) : !tap.has(khoaTen(t.ten))) sai.push(t.ten);
   }
   return sai;

@@ -1,3 +1,4 @@
+import { tinhDong } from './demo-dong';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
 import { luanHan, type CapLuanHan } from '@/lib/tuvi/luan-han';
 import {
@@ -9,6 +10,7 @@ import {
   type Cung,
   type LaSo,
 } from '@/lib/tuvi/ansao';
+import { TU_HOA as TU_HOA_DEMO } from '@/lib/tuvi/constants';
 import { CHINH_TINH, type Sao } from '@/lib/tuvi/constants';
 import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import type { ChuDe, LopHan } from './planner';
@@ -114,6 +116,8 @@ export interface NghiengVe {
   cachCuc: string[];
   /** Tổng trọng số hai bên — chỉ để log và test, KHÔNG đi vào prompt */
   canNang: { do: number; can: number };
+  /** DEMO_DONG: thước yên ↔ động của năm */
+  dong?: import('./demo-dong').MucDong | null;
 }
 
 /**
@@ -409,6 +413,28 @@ export function tinhNghiengVe(vao: {
       }
     }
 
+    // DEMO_D (thử, không gộp): câu hỏi theo năm/tháng thì lớp hạn quyết, nền chỉ làm nền.
+    // Nền ×0,4; thêm lưu Tứ Hóa khi sao được hóa nằm ở cung đang hỏi hoặc tam phương tứ chính của nó.
+    if (process.env.DEMO_D === '1' && (cap === 'nam' || cap === 'thang')) {
+      for (const d of dauMoc) if (d.lop === 'nen') d.trong *= 0.4;
+      const canNam = (((vao.namXem + 6) % 10) + 10) % 10;
+      const NET_HOA: Record<string, string> = {
+        Lộc: 'năm nay mở thêm lộc, việc dễ trôi',
+        Quyền: 'năm nay bị đẩy ra nắm việc, phải quyết nhiều hơn',
+        Khoa: 'năm nay dễ được ghi nhận, có tiếng',
+        Kỵ: 'năm nay vướng, dễ tắc, dễ hiểu lầm',
+      };
+      const tp = tamPhuongTuChinh(cung.chiIndex);
+      ['Lộc', 'Quyền', 'Khoa', 'Kỵ'].forEach((h, k) => {
+        const sao = TU_HOA_DEMO[canNam][k];
+        const o = vao.laSo.cungs.find((c) => c.sao.some((x) => x.ten === sao));
+        if (!o) return;
+        const gan = o.chiIndex === cung.chiIndex ? 1 : tp.tamHop.includes(o.chiIndex) || tp.xungChieu === o.chiIndex ? 0.6 : 0;
+        if (!gan) return;
+        dauMoc.push({ ten: `Lưu Hóa ${h}`, lop: 'nam', huong: h === 'Kỵ' ? 'can' : 'do', trong: TRONG_LOP.nam * 1.5 * gan, y: `vào ${sao} (cung ${o.tenCung}): ${NET_HOA[h]}` });
+      });
+    }
+
     if (dauMoc.length === 0) return null;
 
     const do_ = dauMoc.filter((d) => d.huong === 'do').reduce((t, d) => t + d.trong, 0);
@@ -438,6 +464,7 @@ export function tinhNghiengVe(vao: {
       cap,
       cung: tenCung,
       phanDoi: k.chuDeCung[tenCung] ?? tenCung,
+      dong: process.env.DEMO_DONG === '1' && (cap === 'nam' || cap === 'thang') ? tinhDong(vao.laSo, tenCung, vao.namXem) : undefined,
       cham: { daiVan: chamDaiVan, nam: chamNam, thang: chamThang },
       namXem: vao.namXem,
       khoangTuoi: cungDai?.daiVan
@@ -446,10 +473,21 @@ export function tinhNghiengVe(vao: {
       // Sáu là đủ chất liệu. Nhiều hơn thì model quay ra liệt kê thay vì luận,
       // và bài thành một bảng tra cứu có dấu chấm câu.
       dauMoc: chon,
-      cachCuc: nhanDangCachCuc(vao.laSo, tenCung)
-        .filter((c) => c.loai !== 'han')
-        .map((c) => c.ten)
-        .slice(0, 4),
+      cachCuc: process.env.DEMO_E === '1'
+        ? nhanDangCachCuc(vao.laSo, tenCung)
+            .filter((c) => c.loai !== 'han' && c.cung === tenCung)
+            .map((c) => {
+              const cho = c.sao.map((t) => {
+                const o = vao.laSo.cungs.find((x) => x.sao.some((y) => y.ten === t));
+                return o ? `${t} ở Cung ${o.tenCung}${o.tenCung === tenCung ? '' : ', chiếu về'}` : t;
+              });
+              return `${c.ten} (${cho.join('; ')})`;
+            })
+            .slice(0, 4)
+        : nhanDangCachCuc(vao.laSo, tenCung)
+            .filter((c) => c.loai !== 'han')
+            .map((c) => c.ten)
+            .slice(0, 4),
       canNang: { do: do_, can },
     };
   } catch {
@@ -538,7 +576,7 @@ export function khoiNghiengVe(n: NghiengVe | null): string {
     return ds.length ? ds.map(dong).join('\n') : '- (không có dữ kiện nào)';
   };
 
-  return `
+  const raKhoi = `
 
 DỮ KIỆN CỦA PHẦN ĐANG HỎI — ĐÃ ĐỌC XONG TỪ LÁ SỐ, KHÔNG ĐƯỢC ĐẢO:
 Phần đời đang hỏi: ${n.phanDoi}.
@@ -600,4 +638,77 @@ thuận", "tương quan", "hai lực ngang nhau", và mọi câu đếm dữ ki�
 yếu tố… so với hai yếu tố…". Người đọc không tra được chúng, không đối chiếu
 được với đời mình, và không có lý do nào để tin. Thay vào đó luôn luôn là TÊN
 của dữ kiện cộng nghĩa đời sống của nó.`;
+  return process.env.DEMO_E === '1' ? suaKhoiE(raKhoi, n) : raKhoi;
 }
+
+/**
+ * DEMO_E (thử, không gộp) — sửa theo review văn phong của chủ dự án 07/10/2026:
+ *   - gọi đúng tên cung ("Cung Quan Lộc"), bỏ cách nói "phần công việc";
+ *   - bỏ lệnh "nói thẳng rằng nó ngang nhau" (nguồn của "chưa ngã hẳn về êm hay vướng");
+ *   - lớp năm/tháng không chạm cung đang hỏi thì không được kết luận năm mạnh.
+ */
+function suaKhoiE(s: string, n: NghiengVe): string {
+  const thayMot = (a: string, b: string) => (s.includes(a) ? (s = s.replace(a, b)) : s);
+  thayMot(`Phần đời đang hỏi: ${n.phanDoi}.`, `Cung đang hỏi: Cung ${n.cung} (${n.phanDoi}).`);
+
+  const dau = s.indexOf('   NGOẠI LỆ NÀY KHÔNG GỒM TÊN CUNG.');
+  const cuoi = s.indexOf('   Hai ví dụ dưới dùng');
+  if (dau >= 0 && cuoi > dau) {
+    s =
+      s.slice(0, dau) +
+      '   Nêu sao ở đâu thì gọi đúng tên cung, viết hoa: "Cung Quan Lộc", "Cung Mệnh", "Cung Tài Bạch".\n' +
+      '   KHÔNG viết "phần công việc", "phần cách bạn phản ứng", "phần tiền bạc" — đó là nhãn nội bộ, không phải tiếng Việt.\n\n' +
+      s.slice(cuoi);
+  }
+
+  const lopHan = n.dauMoc.filter((d) => d.lop === 'nam' || d.lop === 'thang');
+  if ((n.cap === 'nam' || n.cap === 'thang') && lopHan.length === 0) {
+    const nhe: Partial<Record<HuongNghieng, HuongNghieng>> = { 'thuan-ro': 'thuan-nhe', 'can-ro': 'can-nhe' };
+    const moi = nhe[n.huong];
+    if (moi) {
+      thayMot(`[${n.huong.toUpperCase()}]`, `[${moi.toUpperCase()}]`);
+      thayMot(MO_TA_HUONG[n.huong], MO_TA_HUONG[moi]);
+    }
+    thayMot(
+      '\nDữ kiện đang mở đường:',
+      `\nLỚP NĂM KHÔNG CHẠM CUNG NÀY: năm ${n.namXem} không có tiểu hạn, lưu Tứ Hóa hay lưu tinh nào vào Cung ${n.cung} hoặc tam phương của nó. ` +
+        'Câu đầu phải nói rõ hạn năm này không đi thẳng vào chuyện được hỏi; KHÔNG viết "khởi sắc rõ", "rất thuận", "khó rõ". ' +
+        'Sao gốc chỉ cho biết chuyện này của người hỏi vốn có tính chất gì, không cho biết năm nay ra sao.\n\nDữ kiện đang mở đường:'
+    );
+  }
+  thayMot(MO_TA_HUONG['can-bang'], MO_TA_HUONG_E_CAN_BANG);
+  thayMot(
+    '"tương quan", "hai lực ngang nhau",',
+    '"tương quan", "hai lực ngang nhau", "ngang nhau", "chưa ngã hẳn", "êm hay vướng", "mở hơn là khép", "vướng hơn là thông thoáng", "nền", "tạo nền", "dựng nền", "thế ngang", "ở thế", "chưa nghiêng hẳn", "nghiêng hẳn", "cửa", "đường này",'
+  );
+  return s;
+}
+
+/** DEMO_E: cùng các luật của suaKhoiE, viết cho khối của đường Focused. */
+export function suaKhoiFocusedE(s: string, n: NghiengVe): string {
+  const thayMot = (a: string, b: string) => (s.includes(a) ? (s = s.replace(a, b)) : s);
+  thayMot(`Phần đời đang hỏi: ${n.phanDoi}.`, `Cung đang hỏi: Cung ${n.cung} (${n.phanDoi}).`);
+  const lopHan = n.dauMoc.filter((d) => d.lop === 'nam' || d.lop === 'thang');
+  let huong = n.huong;
+  if ((n.cap === 'nam' || n.cap === 'thang') && lopHan.length === 0) {
+    const nhe: Partial<Record<HuongNghieng, HuongNghieng>> = { 'thuan-ro': 'thuan-nhe', 'can-ro': 'can-nhe' };
+    huong = nhe[n.huong] ?? n.huong;
+    thayMot(
+      '\nMở đường:',
+      `\nLỚP NĂM KHÔNG CHẠM CUNG NÀY: năm ${n.namXem} không có tiểu hạn, lưu Tứ Hóa hay lưu tinh nào vào Cung ${n.cung} hoặc tam phương của nó. ` +
+        'Câu đầu phải nói thẳng: năm này hạn không đi vào chuyện được hỏi, nên không có biến chuyển lớn do năm mang lại. KHÔNG viết "khởi sắc rõ", "rất thuận", "khó rõ", "chưa nghiêng hẳn". ' +
+        'Sao gốc chỉ cho biết chuyện này của người hỏi vốn có tính chất gì, không cho biết năm nay ra sao.\n\nMở đường:'
+    );
+  }
+  thayMot(`HƯỚNG ĐÃ CHỐT: ${MO_TA_HUONG[n.huong]}`, `HƯỚNG ĐÃ CHỐT: ${huong === 'can-bang' ? MO_TA_HUONG_E_CAN_BANG : MO_TA_HUONG[huong]}`);
+  return (
+    s +
+    '\n\nCÁCH GỌI: nêu sao ở đâu thì gọi đúng tên cung, viết hoa ("Cung Quan Lộc"). Sao ở cung khác chiếu về thì nói "chiếu về", không nói "ở". ' +
+    'KHÔNG dùng các chữ: "ngang nhau", "thế ngang", "ở thế", "chưa ngã hẳn", "chưa nghiêng hẳn", "nghiêng hẳn", "êm hay vướng", "mở hơn là khép", ' +
+    '"nền", "tạo nền", "dựng nền", "cửa", "đường này", "phần công việc", "phần tiền bạc", "chặng mới", "sáng lên".'
+  );
+}
+
+const MO_TA_HUONG_E_CAN_BANG =
+  'Có cả cái thuận lẫn cái khó. Câu đầu nói CỤ THỂ có gì và khó gì, bằng việc người đọc sẽ gặp ' +
+  '(ví dụ: "công việc vẫn có cơ hội, nhưng dễ phát sinh va chạm"). KHÔNG viết "ngang nhau", "cân bằng", "chưa ngã hẳn".';
