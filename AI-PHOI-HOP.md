@@ -192,8 +192,20 @@ Luật viết SQL mới:
 5. Trước khi chạy tệp SQL trên database thật, báo vào `TRANG-THAI.md` mục "Đang
    vướng"; chạy xong thì xoá dòng đó.
 
-Bạn **không tự chạy được SQL** — không có công cụ nào cho phép. Viết tệp `.sql`,
-ghi sổ, rồi hướng dẫn chủ dự án dán vào Supabase SQL Editor.
+**AI được tự chạy SQL** qua công cụ Supabase (chủ dự án quyết 15/11/2026, thay luật cũ
+"AI không tự chạy SQL, hướng dẫn chủ dự án dán vào SQL Editor"). Điều kiện, không bỏ điều nào:
+
+- Vẫn theo đủ luật 1–5 ở trên và luật "không SQL phá huỷ" ở mục 2. Tệp `.sql` nằm trong kho
+  TRƯỚC, chạy đúng nội dung tệp đó — không gõ SQL ghi dữ liệu thẳng vào công cụ rồi mới chép ra tệp.
+- Thay thân một hàm có sẵn (`create or replace function`) chỉ khi giữ nguyên chữ ký và cột
+  trả về, và phải kèm tệp `<tên>-HOAN-TAC.sql` chứa thân cũ lấy bằng `pg_get_functiondef` NGAY
+  trước khi chạy. Kiểm bản mới trên cùng đầu vào trước (bản nháp trong `pg_temp` so với hàm cũ),
+  rồi đo lại sau khi chạy. Mẫu: `supabase/va-rag-tu-khoa-hai-tang.sql` (CELES-78).
+- Chạy xong ghi `supabase/DA-CHAY.md`: "rồi (ngày, AI chạy qua công cụ Supabase, mã việc)".
+- Câu đọc (`select`, dò cấu trúc, `pg_stat_statements`) chạy tự do; KHÔNG in hay ghi khoá,
+  mật khẩu, dữ liệu cá nhân người dùng ra câu trả lời, log hay Git.
+- Không có công cụ Supabase trong phiên (máy kia, Codex) thì làm như cũ: viết tệp, ghi sổ,
+  hướng dẫn chủ dự án dán vào Supabase SQL Editor.
 
 ---
 
