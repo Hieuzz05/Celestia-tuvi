@@ -22,6 +22,7 @@ import { doiTenCung, suaCauTiengLong } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
+import { boMaMay } from './bo-ma-may';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { lapKeHoach, lapKeHoachDayDu, PHIEN_BAN_PLANNER, type KeHoachTruyVan, type YDinh } from './planner';
@@ -542,14 +543,16 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   const ketQuaKiem = kiemDuyet(daCham, goi);
   const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
   const daGom = gomLoiKhuyen(daLocY, keHoach.yDinh);
-  const daLoc = {
+  // Bóc mã máy (E###/F###/W1–3) khỏi mọi chữ người dùng thấy — CELES-81. Sau kiểm
+  // duyệt (mã đã đối chiếu xong), trước dungVan; xem bo-ma-may.ts.
+  const daLoc = boMaMay({
     ...daGom,
     goiYTiep: chipSangNam(daGom.goiYTiep ?? [], {
       keHoach,
       namHieuLuc,
       mucAnToan,
     }),
-  };
+  });
 
   const loiDi = loiDiTiep({
     chuDe: keHoach.chuDe,

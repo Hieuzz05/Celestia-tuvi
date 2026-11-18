@@ -27,6 +27,7 @@ npx tsx scripts/test-du-kien.ts        # dữ kiện phần đang hỏi: nghiên
 npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
 npx tsx scripts/test-hieu-cau-truong.ts # CEL-191 hiểu câu theo trường trên đường Focused: bảng timeIntent, cổng gọi model, luật thắng khi đã chắc — offline
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
+npx tsx scripts/test-bo-ma-may.ts       # bóc mã E###/F###/W1–3 khỏi lời chat thường: hai câu thật 15/11, ngoặc, câu sạch giữ nguyên — offline
 npx tsx scripts/test-boi-canh-dong-bang.ts # CEL-186 A0: `chonBoiCanh` phải ra y ảnh chụp đã đóng băng; KHÔNG chạy `--sinh` — offline
 npx tsx scripts/test-hop-dong-focused.ts # CEL-186 v2: 30 flow người / ý / thời gian trên vết có cấu trúc, model là hàm giả — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
