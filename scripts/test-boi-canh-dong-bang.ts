@@ -21,6 +21,11 @@
  *    vô chính diệu xét cung chiếu, Tuần/Triệt tuỳ độ sáng), rồi thêm 196 trường theo luật chuyên
  *    gia 12/11 (Tuần Triệt không làm Kỵ nhẹ đi, Nhật Nguyệt Sửu Mùi xét sát tinh trước, Kỵ xung
  *    theo độ sáng sao gốc, Thiên Hình gặp Tuần Triệt). Mã, loại, cung, sao giữ nguyên.
+ *    Gộp main vào viec/van-han-3b (18/11/2026, CELES-46): ảnh chụp main (CELES-72) chưa có trường
+ *    `lop` và còn hai tổ hợp vòng Thái Tuế gốc mà CEL-085 gỡ (chuyên gia soát lại 18/11: hai bộ
+ *    báo trên mọi lá, không sách nào gọi là cách). Đã chứng minh trên đủ 192 ca: so với ảnh chụp
+ *    main, chỉ chênh trường `lop`, hai tổ hợp bị gỡ, mã F### đánh số lại, và 36 ca có một cách
+ *    cục kế tiếp nhận suất trống trong trần 8; ngoài duKien khớp 192/192. Sinh lại từ nhánh.
  * 2. Cờ Focused tắt: `traLoiCoCanCu` trả kết quả KHÔNG có khoá `meta` / `vetFocused`.
  *    Offline: không Supabase, model giả bằng cách chặn `fetch` — không gọi mạng thật.
  */

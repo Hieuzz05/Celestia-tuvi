@@ -8,7 +8,7 @@
  * Chạy: npx tsx scripts/test-an-noi-bo-v3.ts
  */
 import { CAU_HOI_V3 } from '../lib/rag/v3';
-import { xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
+import { LOGIC_V3, xuLyLuanGiaiV3, type CauTraRaV3, type MoiTruongV3 } from '../lib/rag/v3/xu-ly';
 
 let hong = 0;
 let dat = 0;
@@ -30,6 +30,7 @@ const daDem: CauTraRaV3[] = tongQuan.map((q) => ({
   chuaViet: false,
   pb: 'pb-noi-bo',
   model: 'ten-model-noi-bo',
+  lg: LOGIC_V3,
 }));
 
 let goiModel = false;

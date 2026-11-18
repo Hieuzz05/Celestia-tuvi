@@ -606,14 +606,15 @@ function tinhTheoLopHan(vao: Parameters<typeof tinhNghiengVe>[0]): NghiengVe | n
     if (cap !== 'giai-doan') {
       const netLuu = ngonNgu === 'vi' ? NET_LUU_VI : NET_LUU_EN;
       for (const s of lh.luuTinh) {
-        if (s.tinhChat === 'trung' || daDung.has(s.ten)) continue;
+        const chieuL = chieuSaoLuu(s.ten);
+        if (chieuL === 'trung' || daDung.has(s.ten)) continue;
         const hs = heSo(s.chiIndex);
         const y = netLuu[s.ten];
         if (!hs || !y) continue;
         dauMoc.push({
           ten: s.ten,
           lop: 'nam',
-          huong: s.tinhChat === 'hung' ? 'can' : 'do',
+          huong: chieuL === 'can' ? 'can' : 'do',
           trong: TRONG_HAN.luu * hs,
           y: hs === 1 ? y : `${y} (${noiO(s.chiIndex)})`,
         });

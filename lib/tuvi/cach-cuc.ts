@@ -438,38 +438,25 @@ function maDauDoiKiem(pv: PhamVi): CachCuc[] {
 /**
  * Cách cục chỉ có nghĩa khi đang nói về một quãng thời gian.
  *
- * Tang Môn / Thái Tuế / Điếu Khách và Tuế Phá đều thuộc vòng Thái Tuế. Ở lá
- * số gốc, vòng này nói THẾ ĐỨNG của từng cung (bốn thế, xem `netThaiTueGoc`
- * trong quick-read-noi-dung.ts); Tang Tuế Điếu chỉ hội đủ ở cung đứng thế Tuế
- * Phá, tức nhóm Tang Môn – Tuế Phá – Điếu Khách. Ý "nhiều chuyện phải đối đáp"
- * chỉ đúng khi một quãng hạn đi qua đó, nên lớp gọi vẫn lọc theo lớp hạn.
+ * KHÔNG phát Tang Tuế Điếu hay Thiên Mã gặp Tuế Phá ở đây (CEL-085 gỡ 05/10/2026;
+ * gộp main 18/11 giữ việc gỡ, chuyên gia soát sách). Hai lý do:
+ * 1. Vòng Thái Tuế trong `pv` là vòng của năm SINH, không nói gì về năm đang xem.
+ *    Lá Canh Thìn 2000 có Thái Tuế gốc ở Thìn, lưu Thái Tuế 2026 ở Ngọ, vậy mà bài
+ *    2026 từng có cả một mục dựng trên vòng năm 2000, đổi sang 2027 vẫn y nguyên.
+ * 2. Tang Môn, Tuế Phá, Điếu Khách luôn đứng chung tam hợp, Thiên Mã luôn nằm
+ *    trong tam hợp đó ("ba vị trí Tuế Phá, Tang Môn, Điếu Khách luôn luôn có Thiên
+ *    Mã", Nghiệm lý 1974:246; toàn thư:1894). Hai "cách" này báo trên MỌI lá số và
+ *    không sách nào gọi là cách. Nghĩa cả đời của vòng gốc là THẾ ĐỨNG của cung
+ *    (`netThaiTueGoc` trong quick-read-noi-dung.ts).
+ * Muốn đọc vòng Thái Tuế theo năm thì dựng ở lớp dữ kiện hạn từ vòng lưu (cung hạn
+ * trùng cung xung Lưu Thái Tuế), không dựng ở đây. Hai tên vẫn nằm trong
+ * `TEN_CHI_DE_CHAN` để validator bắt khi model tự viết ra. Canh: `scripts/test-lop-du-kien.ts`.
+ *
+ * Tuần/Triệt án ngữ thì vẫn giữ: an theo năm sinh, đóng cố định trên lá gốc, câu
+ * điều kiện nói về nhịp lộ ra của một cung, không khẳng định gì về năm đang xem.
  */
 function theoHan(pv: PhamVi): CachCuc[] {
   const ra: CachCuc[] = [];
-
-  if (duCa(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])) {
-    ra.push({
-      ma: 'TANG_TUE_DIEU',
-      ten: 'Tang Tuế Điếu',
-      cung: pv.goc.tenCung,
-      dieuKien: `Tang Môn, Thái Tuế và Điếu Khách cùng hội về ${nhan(pv)}: ${viTri(pv, ['Tang Môn', 'Thái Tuế', 'Điếu Khách'])}. Xét cả đời, đây là thế của người hay làm nhiều hơn phần được ghi nhận; khi một quãng hạn đi qua đây thì quãng ấy nhiều chuyện phải lên tiếng, đối đáp, không báo một sự việc cụ thể nào.`,
-      sao: ['Tang Môn', 'Thái Tuế', 'Điếu Khách'],
-      loai: 'han',
-    });
-  }
-
-  const cM = pv.sao.get('Thiên Mã');
-  const cTP = pv.sao.get('Tuế Phá');
-  if (cM && cTP) {
-    ra.push({
-      ma: 'MA_GAP_TUE_PHA',
-      ten: 'Thiên Mã gặp Tuế Phá',
-      cung: pv.goc.tenCung,
-      dieuKien: `Thiên Mã tại ${cM.tenCung} và Tuế Phá tại ${cTP.tenCung} cùng nằm trong tam phương tứ chính của ${nhan(pv)}. Quãng có xu hướng dịch chuyển, nhưng thứ đang chạy dễ bị cắt ngang giữa đường.`,
-      sao: ['Thiên Mã', 'Tuế Phá'],
-      loai: 'han',
-    });
-  }
 
   if (pv.goc.coTuan || pv.goc.coTriet) {
     const ten = [pv.goc.coTuan ? 'Tuần' : null, pv.goc.coTriet ? 'Triệt' : null]

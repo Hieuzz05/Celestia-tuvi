@@ -482,8 +482,8 @@ function moTaCung(
   const nhan = nhanChuNgu(c, docLaThan);
   /*
    * Tuần Triệt đảo nghĩa theo độ sáng (CELES-66/72): giải sao hãm, bẻ sao sáng
-   * (HS:4252, KL:1163, AB:4817). Mốc ghi "giai đoạn đầu đời / về sau" (AB:4819),
-   * không ghi một con số tuổi cố định.
+   * (HS:4252, KL:1163, AB:4817). Mốc: HS:4226, 4248 (Triệt mạnh tới tuổi tự lập, Tuần
+   * suốt đời); AB:4819 (Tuần rõ hơn nửa đời sau); không ghi con số tuổi (HS:4226).
    */
   const ttc = chieuTuanTriet(c);
   const tacDungTT = !ttc
@@ -496,8 +496,8 @@ function moTaCung(
           ? 'bẻ bớt phần tốt của các sao đang thuận ở đây'
           : 'làm dịu cả tốt lẫn xấu';
   const tuanTriet = [
-    c.coTriet ? `Triệt: ${tacDungTT}${coMoc ? ' — rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập' : ''}` : '',
-    c.coTuan ? `Tuần: ${tacDungTT}${coMoc ? ' — nhẹ hơn Triệt nhưng dai, theo suốt đời' : ''}` : '',
+    c.coTriet ? `Triệt: ${tacDungTT}${coMoc ? ' — rõ nhất ở quãng đầu đời, nhạt dần từ khi đã tự lập' : ''}` : '',
+    c.coTuan ? `Tuần: ${tacDungTT}${coMoc ? ' — nhẹ tay hơn Triệt nhưng theo suốt đời, càng về sau càng thấy rõ' : ''}` : '',
   ].filter(Boolean);
   /*
    * Lượt 3 TQ12 (01/10/2026): Thiên Di có Triệt + Địa Không hãm, model vẫn chỉ kể

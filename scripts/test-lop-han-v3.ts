@@ -71,8 +71,8 @@ async function main() {
   for (const [ten,l] of ca) for (const bat of [false,true]) {
     const q=CAU_HOI_V3.find(q=>q.id==='TQ10')!;
     const text=dungDuKien(l,q,2026,1,bat).filter(d=>d.cung==='Mệnh').map(d=>d.noiDung).join('\n');
-    if (ten==='Tuần') { assert.ok(text.includes('nhẹ hơn Triệt nhưng dai, theo suốt đời')); assert.ok(!/Tuần:[^;\n]*hậu vận/u.test(text)); }
-    else { assert.ok(text.includes('rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập')); assert.ok(!/Triệt:[^;\n]*30/u.test(text)); }
+    if (ten==='Tuần') { assert.ok(text.includes('nhẹ tay hơn Triệt nhưng theo suốt đời, càng về sau càng thấy rõ')); assert.ok(!/Tuần:[^;\n]*hậu vận/u.test(text)); }
+    else { assert.ok(text.includes('rõ nhất ở quãng đầu đời, nhạt dần từ khi đã tự lập')); assert.ok(!/Triệt:[^;\n]*30/u.test(text)); }
   }
   for (const id of ['TQ10','TC01']) {
     const q=CAU_HOI_V3.find(q=>q.id===id)!;

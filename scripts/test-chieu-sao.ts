@@ -381,6 +381,10 @@ console.log('\n6. Không đọc tinhChat để luận');
     'lib/tuvi/constants.ts',
     'lib/tuvi/ansao.ts',
     'lib/tuvi/chieu-sao.ts',
+    // CEL-200 C-C (nhánh van-han-3b): chưa nối vào luận, chỉ test gọi. Nối vào luận thì PHẢI
+    // chuyển sang chieuSao rồi bỏ hai dòng này (task CELES theo dõi).
+    'lib/tuvi/xet-cung.ts',
+    'lib/tuvi/ho-so-cung.ts',
     'components/laso/PalaceCell.tsx',
     'components/laso/DanhSachCung.tsx',
     'components/laso/TuViChart.tsx',

@@ -70,8 +70,8 @@ async function main() {
   const root = baseArg >= 0 ? process.argv[baseArg + 1] : process.cwd();
   const fixture = resolve('scripts/mau-lop-han-3b-off.json');
   const snap = await snapshot(root);
-  if (process.argv.includes('--ghi-mau')) { writeFileSync(fixture, JSON.stringify({ base: '25ad334', sha256: snap }, null, 2) + '\n'); return; }
-  assert.deepEqual(snap, JSON.parse(readFileSync(fixture, 'utf8')).sha256, 'Đường tắt lệch byte so base25ad334');
+  if (process.argv.includes('--ghi-mau')) { writeFileSync(fixture, JSON.stringify({ base: 'main cfa52ef (khac main: truong lop + go 2 to hop vong Thai Tue goc CEL-085)', sha256: snap }, null, 2) + '\n'); return; }
+  assert.deepEqual(snap, JSON.parse(readFileSync(fixture, 'utf8')).sha256, 'Đường tắt lệch byte so mau (main cfa52ef + truong lop)');
   const bc = chonBoiCanh({ ...vao, lopHanMoi: true });
   const bang = bangHoaChoLoi(laSo, bc.duKien, [2026]);
   assert.equal(bang.hoa.length, 12);
