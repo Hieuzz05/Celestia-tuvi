@@ -5,6 +5,7 @@ Trong lúc làm chỉ cần `node scripts/kiem-nhanh.mjs --chay`; danh sách nà
 
 ```
 node scripts/kiem-dau-ai.mjs          # dấu AI ở giao diện (Hallmark sloplint, tầng floor) so với nền scripts/hallmark/nen.json; sửa xong dấu cũ thì --cap-nhat — offline
+node scripts/kiem-ban-sao-luat.mjs     # bản luật cho Codex (.agents/skills, .codex/agents) khớp bản .claude; sửa .claude rồi --chep — offline
 npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng (T-03: vân tay gồm tiểu hạn, nguyệt hạn, lưu tinh) — offline
 npx tsx scripts/test-nguyet-han.ts    # X2: đáp án đếm tay độc lập theo hai nguồn; tháng âm, chi giờ, Tý muộn — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline

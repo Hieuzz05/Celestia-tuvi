@@ -30,7 +30,7 @@ chéo. Dạng đầy đủ nằm ở đầu `backlog.py`. Ví dụ:
   "logic_them": [{"Mã": "CEL-186", "Luồng": "Planner", "#": "4", "Bước": "...", "Logic cụ thể": "...",
                   "Luật bất biến / bẫy đã trả giá": "...", "Tệp": "lib/rag/planner.ts"}],
   "nhat_ky": {"Commit": "(nhánh viec/cel-186-planner-time)", "ID liên quan": "CEL-186",
-              "Thay đổi gì": "...", "Vì sao": "...", "Ai làm": "Claude (máy 1)"},
+              "Thay đổi gì": "...", "Vì sao": "...", "Ai làm": "<Claude|Codex|Gemini> (máy N)"},
   "commit": "(nhánh viec/cel-186-planner-time)"
 }
 ```

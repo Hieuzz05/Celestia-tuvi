@@ -1,5 +1,6 @@
 /**
- * Hằng số Tử Vi - hệ Nam phái.
+ * Hằng số Tử Vi theo cách an sao đang chạy (bảng phổ biến ở sách Việt).
+ * Không có phái chuẩn (AGENTS.md); đổi bảng nào là việc [CODE] lớn vì web và app dùng chung engine.
  * Quy ước index cung: 0 = Tý, 1 = Sửu, 2 = Dần ... 11 = Hợi.
  */
 
@@ -120,8 +121,8 @@ export const CAN_CUNG_DAN = [2, 4, 6, 8, 0]; // Giáp/Kỷ→Bính, Ất/Canh→
 export const VI_TRI_LOC_TON = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
 
 /**
- * Thiên Khôi / Thiên Việt theo can năm — bảng NAM PHÁI.
- * Nam phái gộp Canh và Tân chung một hàng (Khôi Ngọ, Việt Dần), khác với bảng
+ * Thiên Khôi / Thiên Việt theo can năm — bảng sách Việt đang dùng.
+ * Bảng này gộp Canh và Tân chung một hàng (Khôi Ngọ, Việt Dần), khác với bảng
  * Trung Hoa vốn gộp Giáp–Mậu–Canh. Dùng nhầm bảng là hai sao này lệch hẳn cung.
  * Giáp/Mậu: Sửu–Mùi · Ất/Kỷ: Tý–Thân · Bính/Đinh: Hợi–Dậu
  * Canh/Tân: Ngọ–Dần · Nhâm/Quý: Mão–Tỵ

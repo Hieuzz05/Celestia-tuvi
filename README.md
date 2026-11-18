@@ -1,6 +1,6 @@
 # Celestia Tử Vi
 
-Web app Tử Vi AI — lập lá số theo Nam phái, luận giải hiện đại bằng nhiều model AI có cơ chế
+Web app Tử Vi AI — lập lá số và luận giải hiện đại bằng nhiều model AI có cơ chế
 fallback, kèm lịch âm dương, hồ sơ người dùng và trang quản trị.
 
 ## Bắt đầu
@@ -23,13 +23,13 @@ npx tsx scripts/kiem-moi-truong.ts
 
 ## Làm trên nhiều máy
 
-Dự án đang được phát triển bởi hai AI trên hai máy khác nhau.
+Dự án được phát triển bởi nhiều công cụ AI (Claude, Codex, Gemini) trên nhiều máy. Việc và quyết định theo dõi trên Vibe Board.
 
 - [PHOI-HOP.md](./PHOI-HOP.md) — dành cho chủ dự án: dựng máy thứ hai từ đầu, cách
   làm việc hằng ngày, xử lý sự cố.
 - [AI-PHOI-HOP.md](./AI-PHOI-HOP.md) — dành cho AI: luật nhánh, chia vùng, cổng
   kiểm tra trước khi đẩy.
-- [TRANG-THAI.md](./TRANG-THAI.md) — bảng bàn giao giữa hai máy.
+- [TRANG-THAI.md](./TRANG-THAI.md) — bảng bàn giao giữa các máy.
 - [supabase/DA-CHAY.md](./supabase/DA-CHAY.md) — tệp SQL nào đã chạy.
 - [NGHIEM-THU-RAG.md](./NGHIEM-THU-RAG.md) — tiêu chí nghiệm thu kho tri thức và mức đã đo.
 - [NOI-DUNG-TUNG-MAN.md](./NOI-DUNG-TUNG-MAN.md) — từng màn: đâu do AI viết, kỳ làm mới, đâu là chữ cố định.
