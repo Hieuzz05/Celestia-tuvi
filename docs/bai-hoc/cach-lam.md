@@ -22,7 +22,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   kiểm". Ngày 16/10 sáu khẳng định sai về Celes phải rút qua ba lượt.
   **Dẫn sách thì đọc nguyên văn từng dòng trước khi trình**, và dòng đó phải nói ĐÚNG tổ hợp (không
   phải một bộ sao rộng hơn có chứa nó). Lặp 17/10 (luật Hổ trình nhầm "2 nguồn"); máy canh: trích
-  nguyên văn trong `scripts/test-luat-to-hop.ts`.
+  nguyên văn trong `scripts/test-luat-to-hop.ts` (đang ở nhánh `viec/van-han-3b`, vào main khi gộp
+  CELES-46; chưa gộp thì máy canh này chưa chạy).
   **Câu phủ định ("sách không có", "chỉ một sách") phải qua `chuyen-gia-tu-vi` trước khi trình**, và
   grep cả biến thể Hán Việt. Lặp 17/10: "Tuần hậu vận không có trong 15 cuốn" sai, Ảo bí 4819 có.
 

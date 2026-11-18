@@ -1,4 +1,4 @@
-# Cổng tự động cho mọi lần đẩy nhánh và mọi PR vào main.
+# Cổng tự động cho mọi lần đẩy nhánh (kể cả main).
 # Chỉ chạy các bài kiểm OFFLINE: không cần khoá, không gọi model, không chạm
 # database — nên không cần secret nào và không tốn tiền. Các bài chạm DB thật
 # hoặc model thật (test-hoi-thoai, eval-chat-quyet-dinh, test-rag-toan-tuyen)
@@ -9,8 +9,8 @@ on:
   push:
     branches: ['**']
     paths-ignore: ['TRANG-THAI.md', '**/*.xlsx']
-  pull_request:
-    branches: [main]
+# Không chạy thêm theo pull_request: mọi nhánh đã được kiểm khi đẩy, và dự án gộp main không qua PR.
+# Bật cả hai thì nhánh có PR mở chạy trùng hai lần (CELES-83).
 
 concurrency:
   group: kiem-tra-${{ github.ref }}
@@ -38,6 +38,8 @@ jobs:
         run: node scripts/dem-loi-lint.mjs
       - name: Không thêm dấu AI ở giao diện (Hallmark, tầng floor)
         run: node scripts/kiem-dau-ai.mjs
+      - name: Bản luật cho Codex khớp bản .claude (skill, agent)
+        run: node scripts/kiem-ban-sao-luat.mjs
 
       - name: Engine an sao
         run: npx tsx scripts/test-ansao-chuan.ts

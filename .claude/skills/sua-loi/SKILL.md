@@ -1,6 +1,6 @@
 ---
 name: sua-loi
-description: Luồng C — sửa một lỗi của Celes. Tìm nguyên nhân gốc trước, sửa, kiểm, ghi bài học. Dùng khi chủ dự án gắn dấu [SỬA LỖI], gõ /sua-loi <mô tả>, hoặc báo một hành vi sai, CI đỏ hay lỗi trên production. Không tự push.
+description: Luồng C — sửa một lỗi của Celes. Tìm nguyên nhân gốc trước, sửa, kiểm, ghi bài học. Dùng khi chủ dự án gắn dấu [SỬA LỖI], gõ /sua-loi <mô tả>, hoặc báo một hành vi sai, CI đỏ hay lỗi trên production. Đẩy nhánh viec/* sau commit, không tự gộp main.
 ---
 
 # /sua-loi <lỗi>
@@ -43,4 +43,8 @@ Một lỗi đã lọt ra là đã có giá. Gọi `/bai-hoc` và trả lời: v
 không bắt được? Câu trả lời đó thường là máy canh còn thiếu.
 
 ## 7. Bàn giao
-`/kiem-truoc-push`. 🛑 Push khi được bảo.
+`/kiem-truoc-push`, rồi đẩy nhánh `git push -u origin viec/<ten>` (không `--force`) và
+`T update <mã> --status review --commit <sha>`. 🛑 Không gộp main: nghiệm thu và gộp là chủ dự án.
+
+Sửa lỗi cần chủ dự án chọn hướng (đổi hành vi người dùng thấy, tốn tiền, mất dữ liệu) thì hỏi theo khuôn
+ở bước 3 của `.claude/skills/lam-tinh-nang/SKILL.md`.
