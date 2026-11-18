@@ -30,7 +30,6 @@ Các việc dưới đây dừng từ 11/10 (việc gộp: CELES-14 trên Vibe B
 | Claude (máy 1) | Bộ E2E Playwright (CEL-076) — làm lần lượt, từng nhánh, chưa gộp | `viec/e2e` | e2e/ mới, package.json | 11/10 |
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
-| Claude (máy 1) | Vận hạn lớp hạn (CEL-200), bước 3a' theo bản 7: dựng hồ sơ cung `lib/tuvi/ho-so-cung.ts`, bảng luật quan hệ `lib/tuvi/luat-quan-he.ts`, thứ tự xét `lib/tuvi/xet-cung.ts` (tệp MỚI, chưa ai import, không đổi hành vi); gỡ luật ép hai mặt ở `nghieng-ve.ts` + `quy-tac-luan-giai.ts`. **Vùng Chung `lib/tuvi/` (app type-check cả tệp mới).** Phương án: D:\Celestia\PHUONG-AN-3a-ban7-ma.md | `viec/van-han-lop-han` (worktree tuvi-ai-van-han) | lib/tuvi/ (tệp mới), lib/rag/nghieng-ve.ts, lib/rag/quy-tac-luan-giai.ts, scripts/test-ho-so-cung.ts, scripts/test-luat-quan-he.ts | 18/10 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -44,6 +43,7 @@ Các việc dưới đây dừng từ 11/10 (việc gộp: CELES-14 trên Vibe B
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN** vận hạn lớp hạn (`viec/van-han-3b`, CEL-200 / CELES-46): lớp hạn bật mặc định, sách tứ hoá làm nguồn cho câu vận hạn, Celes phân biệt lưu tứ hoá / tứ hoá đại vận / gốc. 19/11 (CELES-90): bỏ chặn cứng theo tên trong cách cục; sao lưu và tứ hoá hạn xét chiều theo bộ sao cung đang đứng, không gán sẵn tốt/xấu. Việc tiếp: CELES-91 | 3daa6dc | 19/11 |
 | **ĐÃ GỘP MAIN** chữa "AI quên bối cảnh" (`viec/ai-boi-canh-trien-khai`, 9 commit): hook mở phiên báo nhánh chậm main + in việc dở trên Vibe Board (CELES-4); bản luật cho Codex chép từ `.claude` + CI canh lệch (CELES-64); khuôn câu xin quyết trong skill (CELES-65); luật đẩy: AI đẩy `viec/*`, chủ dự án gộp main; CI bỏ chạy trùng theo PR, rút AGENTS.md (CELES-83). Dọn worktree/nhánh (CELES-23) còn chờ chủ dự án quyết theo bảng phân loại | `3739cf7` | 18/11 |
 | **ĐÃ GỘP MAIN** đợt 1 kho tri thức (`viec/tich-hop-dot-1`, 53 commit): K1 chặn mục mạnh chưa duyệt + bỏ mục bị lật, K2 tách khoá đệm giọng văn + gỡ nút "Tạo bản mới", K3 Focused, X1 chặn lượt thử vượt trần token, X2 nguyệt hạn Cách 1 (phienBan 2026.10.2 → đệm bài lá số sinh lại dần, tốn tiền model), X3 cổng thu hồi (cờ `CELES_CONG_THU_HOI` chỉ bật Preview) + đọc nền, đường B sau cờ (mặc định tắt), G1–G3 bộ đo. CI + build xanh | `9c8d4b5` | 31/10 |
 | **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
