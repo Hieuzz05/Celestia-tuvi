@@ -14,8 +14,13 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // App di động có bộ quy tắc riêng (React Native, không có DOM). Để ESLint
     // của web quét sang đó chỉ sinh ra lỗi giả và làm mất tác dụng của mốc
-    // "đang có sẵn 9 lỗi" dùng để phát hiện lỗi mới.
+    // lỗi có sẵn (`MOC` trong scripts/dem-loi-lint.mjs) dùng để phát hiện lỗi mới.
     "apps/",
+    // Worktree con và thư mục tạm nằm ngay trong thư mục chính của máy làm việc:
+    // mỗi worktree là một bản sao cả kho, quét vào là lint chạy gấp mấy lần và
+    // đếm trùng lỗi. CI không có các thư mục này.
+    "wt-*/",
+    "tmp-*/",
   ]),
 ]);
 

@@ -4,6 +4,7 @@ import { docNhieuTheoTienTo, docNoiDung, docNoiDungMoiNhat, luuNoiDung } from '@
 import { laKhach, xinLuotLaSoMoi } from '@/lib/auth/gioi-han-khach';
 import { phienBanKho } from '@/lib/rag/tai-lieu-meta';
 import { docThuVien } from '@/lib/rag/thu-vien/kho';
+import { docTapThuHoi } from '@/lib/rag/thu-hoi/kho';
 import { xuLyLuanGiaiV3, type BodyV3, type MoiTruongV3 } from '@/lib/rag/v3/xu-ly';
 import { canQuanTri } from '@/lib/rag/cong-quan-tri';
 import { ghiNhatKyQuanTri } from '@/lib/rag/nhat-ky';
@@ -46,6 +47,8 @@ export async function POST(req: Request) {
     xinLuotLaSoMoi: (chartHash) => xinLuotLaSoMoi(req, chartHash),
     phienBanKho,
     docThuVien,
+    // X3 (CELES-27): mục thư viện đã thu hồi — cờ CELES_CONG_THU_HOI tắt thì tập rỗng, 0 truy vấn
+    docThuHoi: docTapThuHoi,
     // Viết lại cưỡng bức (body.vietLai) — kiểm quyền ở máy chủ, nút ẩn ở giao diện không phải phân quyền
     quanTri: async () => {
       const cong = await canQuanTri();

@@ -22,7 +22,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   kiểm". Ngày 16/10 sáu khẳng định sai về Celes phải rút qua ba lượt.
   **Dẫn sách thì đọc nguyên văn từng dòng trước khi trình**, và dòng đó phải nói ĐÚNG tổ hợp (không
   phải một bộ sao rộng hơn có chứa nó). Lặp 17/10 (luật Hổ trình nhầm "2 nguồn"); máy canh: trích
-  nguyên văn trong `scripts/test-luat-to-hop.ts`.
+  nguyên văn trong `scripts/test-luat-to-hop.ts` (đang ở nhánh `viec/van-han-3b`, vào main khi gộp
+  CELES-46; chưa gộp thì máy canh này chưa chạy).
   **Câu phủ định ("sách không có", "chỉ một sách") phải qua `chuyen-gia-tu-vi` trước khi trình**, và
   grep cả biến thể Hán Việt. Lặp 17/10: "Tuần hậu vận không có trong 15 cuốn" sai, Ảo bí 4819 có.
 
@@ -47,6 +48,8 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
   reviewer hay tên tệp làm chủ ngữ. Ngày 18/10, 3/5 mục xin quyết bị trả lại "chưa hiểu".
 - **Tệp trình chủ dự án đọc phải nằm ở chỗ dễ tìm**: máy 1 dùng `D:\Celestia\`, rồi in đường dẫn ra.
   Không đưa đường dẫn AppData hay scratchpad. Ngày 02/10 chủ dự án đã không tìm được tệp phương án.
+  **Các câu xin quyết (Q1, Q2…) thì chép NGUYÊN ra khung chat**, mỗi câu kèm lựa chọn và đề xuất;
+  tệp chỉ để giữ bản đầy đủ có dẫn chứng. Ngày 06/11 (CELES-62) chỉ trỏ tới tệp, chủ dự án phải nhắc.
 - **Thiếu dấu loại việc (`[CODE]`…) thì hỏi một câu ngắn**, đừng tự đoán rồi đi sai luồng.
 - **Ví dụ chủ dự án nêu (danh sách sao, bộ cách) là ví dụ, không phải luật**: kiểm bằng sách xem đủ,
   đúng, điều kiện gì rồi mới dùng. **Điều tử vi đã có quy tắc thì không hỏi chủ dự án quyết** (vd sao

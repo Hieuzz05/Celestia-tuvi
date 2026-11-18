@@ -20,7 +20,6 @@ const TRAN_BO_NHO = 5_000;
 const ROUTE_TON_MODEL = [
   '/api/hoi-dap',
   '/api/luan-giai',
-  '/api/ban-doc-sau',
   '/api/luan-han',
   '/api/diem-noi-bat',
   '/api/moc',

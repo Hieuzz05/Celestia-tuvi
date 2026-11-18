@@ -41,7 +41,7 @@ async function main() {
       `Cấu trúc: ${kq.coCauTruc.baDieu.length} điều nhớ · ${kq.coCauTruc.diemManh.length} điểm mạnh · ${kq.coCauTruc.choDeKet.length} chỗ kẹt · ghép lại: ${kq.coCauTruc.ghepLai ? 'có' : 'KHÔNG'} · mang theo: ${kq.coCauTruc.mangTheo.length}`
     );
     const coLucNguoc = [kq.coCauTruc.cauTruc, ...kq.coCauTruc.diemManh, ...kq.coCauTruc.choDeKet].filter((y) => y.luongNguoc).length;
-    console.log(`Ý có lực ngược: ${coLucNguoc}`);
+    console.log(`Ý có điểm vướng: ${coLucNguoc}`);
   }
   console.log(`Câu có tên sao: ${cauCoSao}/${cau.length} (${Math.round((cauCoSao / cau.length) * 100)}%)`);
   console.log(`Kiểm duyệt: ${kq.kiemDuyet.dat ? 'ĐẠT' : 'KHÔNG'} · bỏ ${kq.kiemDuyet.soYBiBo} ý`);

@@ -370,7 +370,7 @@ từng ý bằng luật.
 mở trang: chậm, tốn tiền, và mất đúng tính chất "trong ngày không thay đổi".
 
 **Thứ luật giữ, model không được đụng vào.** Nhịp hành động (Tiến / Giữ / Rà soát / Thu hẹp) đếm
-được từ tương quan cát/hung nên do engine quyết, chỉ đưa xuống cho model như một ràng buộc — để
+được từ tương quan chiều sao (`chieuSao`) nên do engine quyết, chỉ đưa xuống cho model như một ràng buộc — để
 model tự chọn là mở đường cho hai lần đọc ra hai kết luận trái nhau trên cùng một lá số. Phần "Muốn
 biết vì sao không?" cũng vậy: nó phải truy ngược được về cung và sao.
 
@@ -396,7 +396,7 @@ Bài luận giải dài, Hỏi Celes và Kết nối giờ đi chung một đư�
 thành chữ. Đường đi đó **làm bài đúng hơn**, nhưng **độ sâu và giọng văn vẫn do model quyết định**.
 Cùng một dữ kiện, một prompt, đo ngày 18/09/2026:
 
-| Model | Số từ | Câu có tên sao | Ý có lực ngược | Đọc ra sao |
+| Model | Số từ | Câu có tên sao | Ý có điểm vướng | Đọc ra sao |
 |---|---|---|---|---|
 | `openai / gpt-5.4-mini` | 1420 | **2%** | 3 | Nói cấu trúc ấy tạo ra gì trong đời, hầu như không kê sao. Hết 20 giây. **Đang dùng.** |
 | `gemini-3.6-flash` | — | — | — | Văn tiếng Việt tốt — nhưng free tier chỉ cho **20 bài mỗi ngày** (`GenerateRequestsPerDay… = 20`), cạn là 429 |
@@ -670,7 +670,7 @@ Vài điểm đáng biết:
 
 **Đường Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`).** Cùng truy hồi và gói bằng chứng,
 khác ở cách trả lời: câu đầu trả lời thẳng (2–4 câu ở NORMAL, trần 120 âm tiết; prompt dặn khoảng 55–120 "chữ", tức âm tiết), chiều kết luận do
-mã chốt từ lá số. "Khi nào" (D) đi qua model và chỉ đọc ở mức năm, không nêu tháng / mùa / quý. Luật chữ chỉ được định tuyến, không được tự kết thúc lượt: lượt do mã viết trọn (không gọi model) chỉ còn dữ kiện (mốc hỏi trước ngày sinh — không tính lượt; tháng có nhuận cần hỏi lại; tháng nhuận đã chọn, vì Celes chưa tách riêng được vận tháng nhuận), câu HỎI LẠI khi hỏi vận riêng của người khác (F2: lá số đang mở là của ai — không tính lượt, chip đầu trả lời câu gốc trong một chạm), và đúng một ngoại lệ tạm AGE-02 (người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu — không tính lượt). Danh sách này do `scripts/test-loi-chi-ma.ts` (CI) canh. Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
+mã chốt từ lá số. "Khi nào" (D) đi qua model và chỉ đọc ở mức năm, không nêu tháng / mùa / quý. Người dùng hỏi riêng một tháng thì khối thời gian có tháng: chiều vẫn nói rõ nhưng theo độ tin, validator chặn "chắc chắn" (`THANG_CHAC_CAO`, K3). Luật chữ chỉ được định tuyến, không được tự kết thúc lượt: lượt do mã viết trọn (không gọi model) chỉ còn dữ kiện (mốc hỏi trước ngày sinh — không tính lượt; tháng có nhuận cần hỏi lại; tháng nhuận đã chọn, vì Celes chưa tách riêng được vận tháng nhuận), câu HỎI LẠI khi hỏi vận riêng của người khác (F2: lá số đang mở là của ai — không tính lượt, chip đầu trả lời câu gốc trong một chạm), và đúng một ngoại lệ tạm AGE-02 (người có lá số dưới 15 tuổi âm hỏi việc làm / hôn nhân / người yêu — không tính lượt). Danh sách này do `scripts/test-loi-chi-ma.ts` (CI) canh. Hết câu có căn cứ, hoặc hỏi MỘT tháng mà bản cuối
 không còn câu nào dựa vào nguyệt hạn, thì thử lại một lần, vẫn hỏng thì trả 502 và hoàn lượt. Câu do mã viết theo
 ngôn ngữ người dùng (VI/EN); thân bài model vẫn tiếng Việt. Mã ở `lib/rag/focused/`; luật và quyết định ở
 `docs/chien-luoc/CEL-186-ve-B-phuong-an.md`; bộ bất biến có test ở `docs/chien-luoc/CEL-186-INVARIANTS.md`.
@@ -713,6 +713,7 @@ Trang **Hồ sơ** có nút *"Chuyển hồ sơ đang lưu ở trình duyệt n�
 | `ADMIN_EMAILS` | Nên có khi public | Giới hạn quyền vào `/admin` |
 | `CELES_FOCUSED_CHAT` | Không | `1` = chat đi đường Focused (CEL-186 vé B). Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ đặt cho Preview của nhánh khi chủ dự án cho phép |
 | `CELES_LOP_HAN` | Không | `1` = chat STANDARD và Focused nhận lớp hạn: sao lưu, lưu tứ hoá, tứ hoá đại vận (CEL-200). Focused kiểm đúng quan hệ hoá–sao–cung–lớp–thời điểm, quét chữ nội bộ và giữ meta đúng chế độ. Phép cân C1/C3 chờ 3a' máy 1; máy 2 không sửa engine. Phần mã v3 câu thời điểm cũng nhận cờ, đặt lớp hạn trước nền và thêm hoá đại vận; không tự tăng thế hệ đệm. Thiếu / khác `1` = đường cũ. Đọc mỗi lượt. Chỉ bật production khi chat, bài luận và Hành trình đều đã đổi |
+| `CELES_CONG_THU_HOI` | Không | `1` = máy chủ đọc bảng `thu_hoi_muc_thu_vien` để viết lại câu V3 dính mục thư viện đã thu hồi (X3, CELES-27). Chạy `supabase/va-thu-hoi-muc.sql` trước. Thiếu / khác `1` = tắt, 0 truy vấn. Bật Preview trước, đo độ trễ đường đệm trúng rồi mới bật Production |
 | `AI_GHIM_MODEL`, `AI_TRAN_USD`, `AI_GIA_VAO_USD`, `AI_GIA_RA_USD` | Không — chỉ script eval | Ghim một model cho MỌI lời gọi (không lùi) và trần tiền cứng; vượt trần thì dừng trước khi gọi. KHÔNG đặt trên Vercel |
 
 ---
@@ -1008,7 +1009,7 @@ liệu của mình còn nguyên và nên làm gì tiếp.
 người dùng mới nhìn thấy đầu tiên; gọi model mất 15-45 giây và có thể hỏng khi hết quota, nên
 không được đặt ở chặn đầu. AI vẫn dùng cho bài dài theo chủ đề và phần hỏi đáp.
 
-Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_VI` trong `lib/tuvi/quick-read-noi-dung.ts`.
+Muốn sửa lời văn cho 14 chính tinh thì sửa bảng `NET_VI` / `NET_EN` trong `lib/tuvi/quick-read-noi-dung.ts`.
 
 ### Ghi sự kiện phễu
 
@@ -1024,8 +1025,8 @@ không phải đi rải lại khắp app.
 **Celestia** là thương hiệu — tên sản phẩm, tên miền, logo. **Celes** là người dùng trò chuyện
 cùng. Đừng dùng lẫn: người dùng không "hỏi Celestia", họ "hỏi Celes".
 
-Nhân cách Celes định nghĩa ở một chỗ duy nhất — hằng `CHUAN_NGON_NGU_CELES` trong
-`lib/rag/chuan-ngon-ngu.ts` — và được chèn vào đầu cả prompt hội thoại lẫn prompt bài dài. Sửa giọng
+Giọng Celes định nghĩa ở một chỗ duy nhất — hằng `CHUAN_NGON_NGU_CELES` trong
+`lib/rag/chuan-ngon-ngu.ts` — và được chèn vào cả prompt hội thoại lẫn prompt bài dài. Sửa giọng
 văn thì sửa đúng chỗ đó, không rải ra từng prompt.
 
 Mỗi câu trả lời đi theo năm nhịp: **Phản chiếu → Góc nhìn chính → Vì sao → Điều cần lưu ý →

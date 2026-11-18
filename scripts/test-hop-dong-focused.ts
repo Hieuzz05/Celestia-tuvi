@@ -38,12 +38,24 @@ const PHAN_LOAI_GIA: Record<string, { chuDe: string; yDinh: string }> = {
   'Will I find a job this October?': { chuDe: 'su-nghiep', yDinh: 'co-khong' },
 };
 
-/** Model giả theo hợp đồng đầu ra HIỆN TẠI: một câu dẫn mã F### đầu tiên có trong prompt. */
+/**
+ * Model giả theo hợp đồng đầu ra HIỆN TẠI: một câu dẫn mã F### đầu tiên có trong prompt, và
+ * khai `direction` đúng hướng prompt đã chốt (như model thật phải làm). Trước CELES-72 hàm này
+ * cứng 'thuan'; hướng engine đổi theo lá số là test đỏ oan vì NGUOC_HUONG, không vì hợp đồng.
+ */
 function traLoiGia(prompt: string): string {
   const ma = prompt.match(/\bF\d{3}\b/)?.[0] ?? 'F001';
+  // Prompt có khối HƯỚNG ĐÃ CHỐT mà không khớp câu chốt hướng thì câu đó đã đổi chữ:
+  // báo đỏ, đừng lặng lẽ rơi về 'thuan' (danh-gia-tac-dong CELES-72).
+  const khop = prompt.match(/claims\[0\] lượt này phải là \\?"(thuan|ngang|vuong)/);
+  if (!khop && prompt.includes('HƯỚNG ĐÃ CHỐT')) {
+    loi++;
+    console.error('  ✗ prompt có HƯỚNG ĐÃ CHỐT mà không thấy câu chốt hướng "claims[0] lượt này phải là" — sửa regex của traLoiGia');
+  }
+  const huong = khop?.[1] ?? 'thuan';
   return JSON.stringify({
     answer: 'Năm nay mọi việc đi khá đều. Có một điểm tựa giúp mọi việc đi đều.',
-    claims: [{ claim: 'Mọi việc đi khá đều', evidenceIds: [ma], direction: 'thuan' }],
+    claims: [{ claim: 'Mọi việc đi khá đều', evidenceIds: [ma], direction: huong }],
     suggestedQuestions: ['Sang năm thì sao?'],
   });
 }

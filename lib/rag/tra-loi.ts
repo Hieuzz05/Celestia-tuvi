@@ -24,6 +24,7 @@ import { boCauPham, doiTenCung, suaCauTiengLong, tachManh } from './sua-chua';
 import { laCauNoiTiep } from './tiep-noi';
 import { kiemDuyet, locYHong, PHIEN_BAN_VALIDATOR, type KetQuaKiemDuyet } from './kiem-duyet';
 import { PHIEN_BAN_NGON_NGU, soatNgonNgu, type KetQuaNgonNgu } from './ngon-ngu';
+import { boMaMay } from './bo-ma-may';
 import { PHIEN_BAN_UU_TIEN } from './uu-tien-nguon';
 import { ghiLanTruyHoi } from './nhat-ky';
 import { keThuaVanHan } from './van-han-qua-luot';
@@ -266,10 +267,10 @@ export function dungVan(t: TraLoiCoCauTruc, nc: NguCanhVan = {}): string {
      * ai tự chấm mình thấp cả.
      */
     const doan: string[] = [haGiong(y.noiDung.trim(), y.mucChacChan)];
-    // Lực ngược đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
+    // Điểm vướng đi liền sau ý chứ không gom xuống cuối bài: nó là phần làm cho ý
     // đó đáng tin, tách ra thì người đọc mất mối nối.
     if (y.luongNguoc) doan.push(y.luongNguoc.trim());
-    // Cùng lý do với lực ngược: lời khuyên dạng điều kiện thuộc về CHÍNH ý này,
+    // Cùng lý do với điểm vướng: lời khuyên dạng điều kiện thuộc về CHÍNH ý này,
     // gom nó xuống cuối bài là tách nó khỏi cái cớ sinh ra nó.
     if (y.neuThi) doan.push(y.neuThi.trim());
 
@@ -573,14 +574,16 @@ export async function traLoiCoCanCu(vao: DauVaoTraLoi): Promise<KetQuaTraLoi> {
   if (coLopHan) ketQuaKiem.phienBan = PHIEN_BAN_VALIDATOR_LOP_HAN;
   const { traLoi: daLocY, soYBiBo } = locYHong(daCham, ketQuaKiem);
   const daGom = gomLoiKhuyen(daLocY, keHoach.yDinh);
-  const daLoc = {
+  // Bóc mã máy (E###/F###/W1–3) khỏi mọi chữ người dùng thấy — CELES-81. Sau kiểm
+  // duyệt (mã đã đối chiếu xong), trước dungVan; xem bo-ma-may.ts.
+  const daLoc = boMaMay({
     ...daGom,
     goiYTiep: chipSangNam(daGom.goiYTiep ?? [], {
       keHoach,
       namHieuLuc,
       mucAnToan,
     }),
-  };
+  });
 
   const loiDi = loiDiTiep({
     chuDe: keHoach.chuDe,

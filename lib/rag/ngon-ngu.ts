@@ -3,6 +3,7 @@ import { BAC_CHAC_CHAN, mucNguYCuaCum } from './hinh-dang-tra-loi';
 import type { MucChacChan } from './uu-tien-nguon';
 import { demChuTruuTuong } from './chu-truu-tuong';
 import { boDau, tenBiaChan } from './thuc-the';
+import { MA_MAY_TRONG_VAN } from './bo-ma-may';
 
 /**
  * Cổng ngôn ngữ — bắt những cách viết mà framework cấm.
@@ -18,6 +19,7 @@ import { boDau, tenBiaChan } from './thuc-the';
  * giải thích được.
  */
 
+/** Nằm trong băm khoá đệm (`PHIEN_BAN_CHU`): chỉ tăng khi đổi luật mức CHẶN — thêm / sửa cảnh báo thì đừng tăng, kẻo xả đệm 6 bề mặt vô cớ. */
 export const PHIEN_BAN_NGON_NGU = '2026.09.7';
 
 export type MucDoNgonNgu = 'chan' | 'canh-bao';
@@ -539,6 +541,20 @@ export function soatNgonNgu(
       mucDo: 'chan',
       moTa: 'Nhắc tới tài liệu, hệ phái hoặc độ liên quan — những thứ chỉ được nằm ở trace quản trị.',
       viDu: roRi.join(', '),
+    });
+  }
+
+  // Mã máy E###/F###/W1–3 lộ ra văn (CELES-81). Đường chat thường đã bóc ở
+  // bo-ma-may.ts; đây là lưới thứ hai để nhật ký báo nếu còn sót. Mức CẢNH BÁO,
+  // không chặn: bảng lĩnh vực, bề mặt ngắn, mốc Hành trình bỏ cả đoạn khi `dat`
+  // sai — đổi sang chặn là đổi hành vi ba bề mặt đó, ngoài phạm vi CELES-81.
+  const maMay = van.match(new RegExp(MA_MAY_TRONG_VAN.source, 'gu'));
+  if (maMay?.length) {
+    loi.push({
+      ma: 'lo-ma-may',
+      mucDo: 'canh-bao',
+      moTa: 'Mã căn cứ (E###/F###) hoặc nhãn cửa sổ (W1–W3) lộ ra chữ người dùng đọc.',
+      viDu: [...new Set(maMay)].join(', '),
     });
   }
 

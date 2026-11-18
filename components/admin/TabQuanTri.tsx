@@ -44,7 +44,7 @@ export function TabQuanTri() {
             key={m.href}
             href={m.href}
             aria-current={dangO ? 'page' : undefined}
-            className="rounded-[var(--radius-pill)] px-[14px] py-[7px] text-[14px] transition-colors"
+            className="rounded-[var(--radius-full)] px-[14px] py-[7px] text-[14px] transition-colors"
             style={{
               background: dangO ? 'var(--fg)' : 'transparent',
               color: dangO ? 'var(--bg)' : 'var(--fg-muted)',

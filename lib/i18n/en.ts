@@ -416,6 +416,7 @@ export const en: TuDien = {
   luanChuDe: {
     dangDoc: "I'm reading {chuDe}… this takes about 15–45 seconds.",
     chonChuDe: "Pick a topic above and I'll read it with you.",
+    luuY: 'Celes writes from your chart, for reflection only. It is not a substitute for professional medical, financial or legal advice.',
   },
 
   luanSau: {
@@ -557,7 +558,7 @@ export const en: TuDien = {
     },
     canCuMo: 'Want to know why?',
     canCuCachNoi: 'How Celes connected them',
-    canCuLuongNguoc: 'What pulls the other way',
+    canCuLuongNguoc: 'What weakens this',
     canCuMucChac: 'How firm this is',
     chacManh: 'fairly clear: several independent sources agree',
     chacVua: 'a tendency: two sources agree',

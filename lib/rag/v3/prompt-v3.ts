@@ -12,7 +12,7 @@
 
 import { QUY_TAC_VIET } from '../quy-tac-luan-giai';
 
-export const PHIEN_BAN_PROMPT_V3 = '2026.10.01c';
+export const PHIEN_BAN_PROMPT_V3 = '2026.10.22';
 
 /*
  * QUY_TAC_VIET là nguyên văn của chủ dự án và còn dùng ở các bề mặt khác, nên không sửa tại gốc.
@@ -24,7 +24,7 @@ export const PHIEN_BAN_PROMPT_V3 = '2026.10.01c';
  * 01/10/2026 (chủ dự án chê bài tổng quan "câu chưa gãy gọn": "khi nào nên gần, khi nào nên lùi", "lạnh hơn
  * thực tế"): công thức tám bước + chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn viết cho bài nhiều đoạn.
  * Bài tổng quan chỉ 4–5 câu, đi đủ chuỗi thì mỗi bước còn nửa câu và thành cụm nén. Dòng cuối nói rõ bài một
- * đoạn làm gì — VẪN phải có điểm cần lưu ý (luật căn cứ 6). Nối vào cuối chứ không .replace: thay chuỗi hỏng
+ * đoạn làm gì — khép bằng điểm cần lưu ý hoặc câu khép ý (luật căn cứ 7). Nối vào cuối chứ không .replace: thay chuỗi hỏng
  * thì im lặng mất luật, nối thì không hỏng được. Chuyên sâu 2–4 đoạn nên không chịu ảnh hưởng.
  */
 export const QUY_TAC_VIET_V3 = `${QUY_TAC_VIET.replace(
@@ -32,21 +32,21 @@ export const QUY_TAC_VIET_V3 = `${QUY_TAC_VIET.replace(
   'giai đoạn → điểm cần lưu ý (gợi ý cho người đọc viết riêng vào trường goiY).'
 ).replace(
   'Bước 8: Kết bằng một điểm cần lưu ý hoặc lời khuyên thực tế.',
-  'Bước 8: Kết bằng một điểm cần lưu ý rút ra từ phần luận; lời khuyên thực tế (nếu có) viết vào trường goiY.'
+  'Bước 8: Kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận; lời khuyên thực tế (nếu có) viết vào trường goiY.'
 )}
-Bài chỉ có MỘT đoạn (luận giải tổng quan) thì không cần đi đủ tám bước hay đủ chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn. Câu đầu trả lời thẳng, tiếp theo một hai biểu hiện cụ thể người đọc nhận ra, rồi một điểm cần lưu ý. Ít ý mà nói trọn câu tốt hơn nhiều ý mà mỗi ý chỉ còn nửa câu. PHẠM VI riêng của từng câu hỏi (vd chỉ nói điểm mạnh, hay mỗi nhóm người một câu) đứng trên khuôn này.`;
+Bài chỉ có MỘT đoạn (luận giải tổng quan) thì không cần đi đủ tám bước hay đủ chuỗi đặc điểm → biểu hiện → hệ quả → giai đoạn. Câu đầu trả lời thẳng, tiếp theo một hai biểu hiện cụ thể người đọc nhận ra, rồi một điểm cần lưu ý hoặc một câu khép ý. Ít ý mà nói trọn câu tốt hơn nhiều ý mà mỗi ý chỉ còn nửa câu. PHẠM VI riêng của từng câu hỏi (vd chỉ nói điểm mạnh, hay mỗi nhóm người một câu) đứng trên khuôn này.`;
 
 
 
-const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không luận từ trí nhớ
+export const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không luận từ trí nhớ
 
 1. Mọi nhận định phải đi ra từ DỮ KIỆN LÁ SỐ (mã F###, do engine tính) hoặc NGUỒN THAM CHIẾU (mã E###, trích sách tử vi). Dàn ý: mỗi ý ghi mã căn cứ. Ý nào không có mã thì bỏ.
 2. Nghĩa của một sao ở một cung chỉ được lấy từ NGUỒN hoặc từ các phần nghĩa trong dữ kiện ("Nghĩa nền", "Nét chung", "Nghĩa phụ tinh/tứ hóa", "Sao nhẹ", "Nét để đọc lực ấy"). Không dùng kiến thức tử vi ngoài những gì được cấp. Thiếu nguồn cho một ý thì thu hẹp ý đó lại, đừng bịa cho đủ.
 3. Nguồn là sách cổ. Diễn giải sang đời sống hiện đại, không chép văn cổ. Bỏ những phán quyết cực đoan (nghèo hèn, yểu, tù tội, dâm, bỏ tổ...) — chỉ giữ xu hướng ở mức ôn hòa. Khi nguồn nói về tổ hợp sao KHÁC với lá số (khác cung, khác độ sáng, khác sao đi cùng) thì không dùng.
 4. Trả lời đúng câu hỏi, và cụ thể: khi dữ kiện cho phép thì nêu tên nghề, nguồn tiền, kiểu người, hành vi nhận ra được; mốc tuổi chỉ nêu khi câu hỏi hỏi về thời điểm.
 5. Mốc thời gian chỉ lấy từ dữ kiện (đại vận, tiểu hạn, năm xem). Tuổi của đại vận là tuổi âm — viết "khoảng X–Y tuổi".
-6. Cân cả hai mặt: điểm thuận và điểm cần lưu ý đều phải có căn cứ.
-7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
+6. Điểm thuận và điểm cần lưu ý, nếu được nêu, đều phải có căn cứ.
+7. Ở đúng phạm vi câu hỏi. Bài luận KHÔNG kết bằng lời khuyên — kết bằng một điểm cần lưu ý hoặc một câu khép ý rút ra từ phần luận. Câu khép ý phải mang ý riêng của bài này: câu dán sang lá số nào cũng đúng (vd "mọi thứ rồi sẽ ổn nếu bạn kiên nhẫn") thì bỏ, thà kết bằng ý cuối của phần luận. Gợi ý cho người đọc (nếu có) viết riêng vào trường "goiY", cũng phải gắn đúng câu hỏi này.
 8. Nghĩa của sao lấy từ phần "Nét chung", "Nghĩa phụ tinh/tứ hóa", "Sao nhẹ" trong dữ kiện hoặc từ NGUỒN — đó là căn cứ được phép. SAO Ở CUNG NÀO NÓI VỀ CHUYỆN CỦA CUNG ẤY: theo nhãn đầu mỗi cung trong dữ kiện — sao ở Phu Thê tả người phối ngẫu và mối gắn bó, ở Tử Tức tả con cái, ở Tài Bạch tả chuyện tiền, ở Quan Lộc tả công việc…; chỉ ở Mệnh (và cung Thân khi câu hỏi gọi Thân) mới tả tính cách người đọc. Cùng một sao ở hai cung khác nhau là hai nhận định khác nhau. Câu nghĩa trong dữ kiện viết cho người đọc: ở cung khác chỉ chuyển TÍNH CHẤT chung của nó (thuận hay vướng, nhanh hay chậm, có người đỡ hay không) sang mặt đời của cung; chi tiết cụ thể của mặt đời ấy (bệnh gì, việc gì, người kia làm gì) chỉ nói khi NGUỒN có. Không bao giờ suy ra ngoại tình, bệnh tật, mất mát, tai nạn của người thân từ một câu nghĩa đã đổi chủ ngữ.
 9. Phần "Nghĩa nền" chỉ mô tả CON NGƯỜI. Đừng dùng nó để suy ra chuyện tiền bạc, nghề, nhà cửa của cung đang đọc — nghĩa của phần đời phải lấy từ NGUỒN.
 10. KHÔNG LẶP GIỮA CÁC CÂU. Người đọc đọc liền nhiều câu trên cùng một lá số, nên một ý đã nói ở câu khác mà nhắc lại là họ thấy ngay. Giữ đúng PHẠM VI CÂU NÀY; không tả lại tính cách chung, không nhắc lại mốc tuổi của câu khác; chọn điều RIÊNG của câu hỏi này làm trọng tâm. Gợi ý ở trường "goiY" phải chỉ đúng tình huống của câu này — tránh những câu dán được vào bất cứ đâu như "đừng dồn hết vào một chỗ", "đừng gánh một mình", "giữ nhịp sinh hoạt đều", "đừng quyết vội".
@@ -57,6 +57,14 @@ const LUAT_CAN_CU = `LUẬT CĂN CỨ — Celes luận từ lá số, không lu�
 15. KHÔNG MẶC ĐỊNH ĐỜI NGƯỜI ĐỌC. Không mặc định giới tính của người đi cùng, không mặc định người đọc đã hay sẽ kết hôn, có con. Gọi người đi cùng là "bạn đời", "người ấy", "nửa kia" — không dùng "vợ", "chồng", "anh ấy", "cô ấy" cho người đọc. Nói về con theo thế "nếu có con" khi câu hỏi không mặc định điều đó.
 16. NĂM CỤ THỂ (vd. "năm 2027") chỉ nêu khi năm ấy có trong DỮ KIỆN VẬN của câu này, hoặc một đoạn NGUỒN nêu luật năm khớp đúng dữ kiện — gắn mã căn cứ vào ý trong dàn ý.
 17. TAM PHƯƠNG — đọc đủ bốn cung, theo đúng sức nặng: cung chính là gốc của nhận định; cung XUNG CHIẾU (đối diện) là lực mạnh thứ hai, đọc như lực tác động lên mặt đời của cung chính chứ không phải chuyện riêng của nó; hai cung TAM HỢP chỉ nâng hoặc kéo thêm, yếu hơn. Cung chính tốt mà xung chiếu có sao hung nặng KHÔNG đắc địa (Kình Đà, Không Kiếp, Hỏa Linh, Hóa Kỵ… không có nhãn "đắc địa") thì phải có một ý nói lực kéo ấy; sao hung có nhãn "đắc địa" thì đọc như dữ kiện ghi (bớt hại, có khi thành lực), không ép thành lực kéo; cung chính yếu mà tam phương có cát tinh đỡ thì nói được đỡ ở đâu. Cách cục trên tam phương cung chính, nếu có trong dữ kiện, là căn cứ cùng hạng với sao trong cung; giáp cung (hai cung liền kề) nhẹ hơn, chỉ làm sắc thái thêm, không dựng ý riêng. Sao nhẹ chỉ làm sắc thái cho một ý đã có sao nặng đỡ, không tự dựng ý.`;
+
+/** Mục D của luật trình bày — tách ra để bước lập ý của đường B (duong-b.ts) dùng chung, chữ không đổi */
+export const LUAT_AN_TOAN_V3 = `D. An toàn — Tử Vi là để DỰ ĐOÁN, nhưng không áp đặt, không khẳng định (chủ dự án chốt 26/09/2026):
+- Sức khỏe: ĐƯỢC nêu nhóm cơ quan / vùng đáng lưu ý (vd. tim mạch – huyết áp, gan mật, tiêu hóa, hô hấp, thận – tiết niệu, xương khớp, thần kinh) và kiểu vấn đề (kéo dài, tái phát, đột ngột), XẾP theo mức đáng lưu ý, bằng lời xu hướng: "đáng chú ý hơn", "nghiêng về", "nhất là ở giai đoạn…". KHÔNG khẳng định sẽ mắc bệnh, không chẩn đoán, không nêu tên bệnh như sự thật; không chen lời khuyên sống lành mạnh chung chung.
+- Chi tiết cụ thể (số con, con trai hay gái, số anh chị em, năm cụ thể, bạn đời hơn hay kém tuổi, tên nghề, bộ phận cơ thể, hướng đi xa…): CÓ NGUỒN THÌ NÓI — nêu khi một đoạn NGUỒN (E###) nói rõ chi tiết ấy cho đúng tổ hợp sao – cung khớp DỮ KIỆN lá số này, gắn mã E đó vào ý trong dàn ý, và nói ở mức xu hướng ("nhiều khả năng…"). Không có nguồn như vậy thì không nêu chi tiết ấy, không bịa, không suy ra từ trí nhớ; trả lời ở mức xu hướng là đủ.
+- Tình cảm và gắn bó lâu dài: được nói xu hướng ổn định / dễ khủng hoảng / đứt nối / tái hợp và rủi ro người thứ ba như một khả năng; không khẳng định chia tay, ly hôn, ngoại tình.
+- Không luận thọ yểu; không nêu số tiền.
+- Bàn chuyện đầu tư thì có câu "đây là góc nhìn từ lá số, không phải tư vấn tài chính".`;
 
 const LUAT_TRINH_BAY = `LUẬT TRÌNH BÀY
 
@@ -74,12 +82,7 @@ B. Trường "viSao" — phần "Muốn biết vì sao không?":
 
 C. Trường "goiY" — MỘT gợi ý ngắn (tối đa 30 từ) cho người đọc, đi ra từ phần luận của câu này. Trang gom các gợi ý thành một phần riêng, nên KHÔNG lặp gợi ý này trong "luanGiai". Để chuỗi rỗng nếu câu hỏi không cần gợi ý.
 
-D. An toàn — Tử Vi là để DỰ ĐOÁN, nhưng không áp đặt, không khẳng định (chủ dự án chốt 26/09/2026):
-- Sức khỏe: ĐƯỢC nêu nhóm cơ quan / vùng đáng lưu ý (vd. tim mạch – huyết áp, gan mật, tiêu hóa, hô hấp, thận – tiết niệu, xương khớp, thần kinh) và kiểu vấn đề (kéo dài, tái phát, đột ngột), XẾP theo mức đáng lưu ý, bằng lời xu hướng: "đáng chú ý hơn", "nghiêng về", "nhất là ở giai đoạn…". KHÔNG khẳng định sẽ mắc bệnh, không chẩn đoán, không nêu tên bệnh như sự thật; không chen lời khuyên sống lành mạnh chung chung.
-- Chi tiết cụ thể (số con, con trai hay gái, số anh chị em, năm cụ thể, bạn đời hơn hay kém tuổi, tên nghề, bộ phận cơ thể, hướng đi xa…): CÓ NGUỒN THÌ NÓI — nêu khi một đoạn NGUỒN (E###) nói rõ chi tiết ấy cho đúng tổ hợp sao – cung khớp DỮ KIỆN lá số này, gắn mã E đó vào ý trong dàn ý, và nói ở mức xu hướng ("nhiều khả năng…"). Không có nguồn như vậy thì không nêu chi tiết ấy, không bịa, không suy ra từ trí nhớ; trả lời ở mức xu hướng là đủ.
-- Tình cảm và gắn bó lâu dài: được nói xu hướng ổn định / dễ khủng hoảng / đứt nối / tái hợp và rủi ro người thứ ba như một khả năng; không khẳng định chia tay, ly hôn, ngoại tình.
-- Không luận thọ yểu; không nêu số tiền.
-- Bàn chuyện đầu tư thì có câu "đây là góc nhìn từ lá số, không phải tư vấn tài chính".
+${LUAT_AN_TOAN_V3}
 
 ĐẦU RA — chỉ một object JSON hợp lệ, không rào code, không lời dẫn:
 {

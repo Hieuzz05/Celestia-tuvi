@@ -1,0 +1,209 @@
+{
+ "ghiChu": "16 câu đo nhánh từ khoá (CELES-78). md5Cu = md5 danh sách chunk_id (xếp diem giảm, chunk_id tăng, nối bằng dấu phẩy) của HÀM CŨ, lấy trên DB thật 15/11/2026 trước khi áp va-rag-tu-khoa-hai-tang.sql. Kho đổi (nạp/xuất bản bài) là dấu đổi theo, khi đó so bằng pg_temp như trong tệp SQL.",
+ "ca": [
+  {
+   "ma": "W-K01",
+   "cumTu": [
+    "Cự Nhật",
+    "Xương Khúc",
+    "Khốc Hư",
+    "Tang Tuế Điếu",
+    "Thiên Mã gặp Tuế Phá",
+    "Thái Dương",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cự Nhật Xương Khúc Khốc Hư Tang Tuế Điếu Thiên Mã gặp Phá nhập miếu cung tiền bạc",
+   "md5Cu": "5f59cd111cd1b1b7784518921907d433"
+  },
+  {
+   "ma": "W-K02",
+   "cumTu": [
+    "Cự Nhật",
+    "Vô chính diệu",
+    "Nhật Nguyệt hãm",
+    "Khôi Việt",
+    "Kình Đà",
+    "Đào Hồng",
+    "Tuần án ngữ",
+    "Thái Dương",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cự Nhật Vô chính diệu Nguyệt hãm Khôi Việt Kình Đà Đào Hồng Tuần án ngữ địa cung chuyện kiếm tiền",
+   "md5Cu": "054d82f0925c47efec31f028561de32f"
+  },
+  {
+   "ma": "W-K03",
+   "cumTu": [
+    "Cơ Nguyệt Đồng Lương",
+    "Cự Nhật",
+    "Vô chính diệu",
+    "Nhật Nguyệt hãm",
+    "Xương Khúc",
+    "Tả Hữu",
+    "Kình Đà",
+    "Thiên Lương",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cơ Nguyệt Đồng Cự Nhật Vô chính diệu hãm Xương Khúc Tả Hữu Kình Đà nhập miếu cung lộc",
+   "md5Cu": "9257f45220fb601be41b53a8681a0faa"
+  },
+  {
+   "ma": "W-K04",
+   "cumTu": [
+    "Cự Nhật",
+    "Vô chính diệu",
+    "Nhật Nguyệt hãm",
+    "Khôi Việt",
+    "Kình Đà",
+    "Đào Hồng",
+    "Tuần án ngữ",
+    "Thiên Lương",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cự Nhật Vô chính diệu Nguyệt hãm Khôi Việt Kình Đà Đào Hồng Tuần án ngữ địa cung phải vất vả vì tiền",
+   "md5Cu": "856d7730388bdae78b4f5c786ab5db15"
+  },
+  {
+   "ma": "W-K05",
+   "cumTu": [
+    "Cự Nhật",
+    "Vô chính diệu",
+    "Khôi Việt",
+    "Kình Đà",
+    "Đào Hồng",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cự Nhật Khôi Việt Kình Đà Đào Hồng Cung luận tiền bạc",
+   "md5Cu": "6941c87730a99e3999fdc7c80abb6fbc"
+  },
+  {
+   "ma": "W-K06",
+   "cumTu": [
+    "Sát Phá Tham",
+    "Nhật Nguyệt"
+   ],
+   "cauTuLe": "Sát Phá Tham Nhật Nguyệt giáp Tài lá số",
+   "md5Cu": "d5b7ab15b2207b3a05bcccb66b9080fe"
+  },
+  {
+   "ma": "W-K07",
+   "cumTu": [
+    "Tử Phủ Vũ Tướng Liêm",
+    "Xương Khúc",
+    "Tả Hữu",
+    "Kình Đà",
+    "Vũ Khúc",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Tử Phủ Tướng Liêm Xương Tả Hữu Kình Đà cung phải chắc giàu",
+   "md5Cu": "c005f23cef00f1346be875b68d78fbd4"
+  },
+  {
+   "ma": "W-K08",
+   "cumTu": [
+    "Sát Phá Tham",
+    "Xương Khúc",
+    "Khốc Hư",
+    "Long Phượng",
+    "Vũ Khúc Phá Quân",
+    "Tài Bạch",
+    "Vũ Khúc",
+    "Phá Quân"
+   ],
+   "cauTuLe": "Sát Tham Xương Khốc Hư Long Phượng đồng cung tiền bạc",
+   "md5Cu": "d50036e94a8c2b9276b2bd92c546a0f3"
+  },
+  {
+   "ma": "W-K09",
+   "cumTu": [
+    "Tử Phủ Vũ Tướng Liêm",
+    "Song Lộc",
+    "Tả Hữu",
+    "Tử Vi",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Phủ Vũ Tướng Liêm Song Lộc Tả Hữu cung chính",
+   "md5Cu": "142d9e57bcb63e1451d09995283e72ff"
+  },
+  {
+   "ma": "W-K10",
+   "cumTu": [
+    "Sát Phá Tham",
+    "Không Kiếp",
+    "Long Phượng",
+    "Triệt án ngữ",
+    "Tử Vi Phá Quân",
+    "Tài Bạch",
+    "Tử Vi",
+    "Phá Quân"
+   ],
+   "cauTuLe": "Sát Tham Không Kiếp Long Phượng Triệt án ngữ cung tiền bạc",
+   "md5Cu": "cab3926317f63c53ebfdbfdadc3a92df"
+  },
+  {
+   "ma": "M-K01",
+   "cumTu": [
+    "Thiên Đồng"
+   ],
+   "cauTuLe": "gọi hóa Phúc",
+   "md5Cu": "857ffc2b7c24f18a77933674ce5d279c"
+  },
+  {
+   "ma": "M-K02",
+   "cumTu": [
+    "Sát Phá Tham",
+    "Khôi Việt",
+    "Kình Đà",
+    "Đào Hồng",
+    "Tử Vi",
+    "Tả Phụ Hữu Bật",
+    "Tả Hữu",
+    "Tả Phù",
+    "Hữu Bật"
+   ],
+   "cauTuLe": "Sát Phá Tham Khôi Việt Kình Đà Đào Hồng Mệnh cung Phụ",
+   "md5Cu": "3873d9d0ee6da71d831315a50d07acf2"
+  },
+  {
+   "ma": "M-K03",
+   "cumTu": [],
+   "cauTuLe": "Lá số miếu vượng chắc thành công đối chiếu",
+   "md5Cu": "70298504ffb001320e2176c6311b605b"
+  },
+  {
+   "ma": "M-K04",
+   "cumTu": [
+    "Sát Phá Tham",
+    "Song Lộc",
+    "Long Phượng",
+    "Thiên Mã gặp Tuế Phá",
+    "Tham Lang"
+   ],
+   "cauTuLe": "Sát Phá Song Lộc Long Phượng Thiên Mã gặp Tuế Mệnh cung phải 30 tuổi mới phát",
+   "md5Cu": "4184fcdc493733f9b34869bd07323b6f"
+  },
+  {
+   "ma": "CHUNG-TAI",
+   "cumTu": [
+    "Cự Nhật",
+    "Vô chính diệu",
+    "Nhật Nguyệt hãm",
+    "Khôi Việt",
+    "Kình Đà",
+    "Đào Hồng",
+    "Tuần án ngữ",
+    "Tài Bạch"
+   ],
+   "cauTuLe": "Cự Nhật Vô chính diệu Nguyệt hãm Khôi Việt Kình Đà Đào Hồng Tuần án ngữ Cung chuyện tiền bạc",
+   "md5Cu": "250ee5a8dcc3a6f8c74c56acc6e86567"
+  },
+  {
+   "ma": "HIEM",
+   "cumTu": [
+    "Thiên Mã gặp Tuế Phá"
+   ],
+   "cauTuLe": "Thiên Mã Tuế Phá Tài Bạch tiền bạc",
+   "md5Cu": "dcef79bff6da29a9be978f935eb6a996"
+  }
+ ]
+}

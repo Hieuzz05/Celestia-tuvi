@@ -24,7 +24,7 @@ import type { NgonNguDoc } from './quick-read-noi-dung';
  * "Vì sao Celes nói vậy".
  *
  * Bốn biến thể cho mỗi phần, chọn theo dạng tín hiệu trội của cung:
- *   xung  hai lực kéo ngược nhau — chỗ người ta thấy mình mâu thuẫn
+ *   xung  có cặp sao khắc nhau trong cung — chỗ người ta thấy mình mâu thuẫn
  *   manh  tín hiệu mạnh và cùng hướng
  *   vua   có tín hiệu nhưng không nổi
  *   mo    lá số gần như không nói gì ở phần này

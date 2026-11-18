@@ -19,7 +19,6 @@ Bạn KHÔNG sửa tệp, KHÔNG commit, KHÔNG mở hay in `.env*`.
 - **Ngân sách = 0** là luật của dự án: mọi dịch vụ mới phải nằm trong free tier.
 - Engine an sao `lib/tuvi/` **dùng chung** cho cả web và app di động
   (`apps/celes-app/` đọc thẳng qua bí danh `@tuvi/*`). Sửa engine là cả hai cùng đổi.
-- Nam phái là chuẩn an sao — không được tự đổi.
 - Giao diện người dùng **không được nhắc**: Nam phái / Bắc phái, "an sao", tên
   model AI, tên nhà cung cấp, Copy JSON, trang Quản trị.
 - Một luận điểm giữ chân người dùng (retention) mà không có lý do thu hút lần

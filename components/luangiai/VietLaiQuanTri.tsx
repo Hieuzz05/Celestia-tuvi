@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 /**
  * VIẾT LẠI (QUẢN TRỊ) — 30/09/2026, chủ dự án: "tự test gen lại khi có thay đổi cách luận".
  *
- * "Tạo bản mới" chỉ viết lại khi KHO tri thức đổi, nên sửa prompt / khung xong thì bài cũ
- * vẫn nằm trong đệm. Nút này gửi `vietLai: true` — route bỏ qua đệm của phần đang xem, viết
+ * Sửa giọng (prompt / khung) không kéo bài cũ (10.19 C, K2 22/10/2026) — bài đã đệm giữ
+ * nguyên; chỉ sửa logic (dấu `lg`) mới viết lại khi mở. Nút này gửi `vietLai: true` — route bỏ qua đệm của phần đang xem, viết
  * lại bằng cách luận hiện tại và ghi đè. Chỉ quản trị viên thấy nút; route kiểm lại quyền
  * (ẩn nút không phải phân quyền). Người dùng thường không bao giờ thấy khối này.
  */

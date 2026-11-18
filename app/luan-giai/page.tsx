@@ -298,8 +298,7 @@ function TrangLuanGiai() {
                 </div>
                 <MarkdownLuanGiai noiDung={ketQua.noiDung} />
                 <p className="mt-[14px] text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-                  Nội dung do AI tạo ra, mang tính tham khảo — không thay thế tư vấn chuyên môn về y
-                  tế, tài chính hay pháp lý.
+                  {t.luanChuDe.luuY}
                 </p>
               </article>
             )}

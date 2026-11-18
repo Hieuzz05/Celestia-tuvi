@@ -9,7 +9,8 @@ import {
 } from './ansao';
 import { CHI, CHINH_TINH, type Sao } from './constants';
 import { nhanPhuongPhap, PHUONG_PHAP } from './phuong-phap';
-import { KHUON, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
+import { KHUON, netSaoTheoChieu, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
+import { chieuSao, chieuSaoLuu, chieuTuanTriet } from './chieu-sao';
 
 /**
  * Luận hạn chi tiết — tầng "Xem chi tiết" của Hành trình (spec v4 mục 5-6).
@@ -25,7 +26,7 @@ import { KHUON, type KhuonChu, type NgonNguDoc } from './quick-read-noi-dung';
  *
  * "Nên tận dụng" và "Nên lưu ý" không phải lời chung chung: mỗi dòng đều đến từ
  * một sao cụ thể đang đóng ở một cung cụ thể trong các lớp trên. Nhịp hành động
- * đọc từ tương quan số lượng cát/hung sau khi đã trừ đi ảnh hưởng Tuần/Triệt.
+ * đọc từ tương quan chiều sao (chieuSao: thuận / cản), kể cả chiều của Tuần/Triệt.
  *
  * Phiên bản bộ quy tắc ghi kèm ở `phuongPhap` để kết quả tái lập được.
  */
@@ -106,27 +107,26 @@ function boChuNgu(cau: string) {
   return cau.replace(/^(?:bạn|you)\s+/i, '');
 }
 
-/** Độ sáng đủ để sao thể hiện được nét của nó */
-const SANG_RO = new Set(['M', 'V', 'D', 'L']);
-
 /**
  * Gom các yếu tố thuận / cản của một cung trong một lớp.
  *
- * Một sao cát nhưng hãm địa thì không tính là thuận — đó là chỗ nhiều bản luận
- * tự động hay sai: đếm tên sao mà bỏ qua độ sáng.
+ * Chiều của từng sao do `chieuSao` quyết theo độ sáng và bộ sao đi cùng — KHÔNG
+ * theo nhãn cát / hung cố định của tên sao (CELES-72, 11/11/2026). Bản cũ đẩy
+ * mọi sát tinh vào nhóm cản kể cả khi miếu vượng, và đẩy Tuần Triệt vào nhóm cản
+ * kể cả khi chúng giải sao hãm.
  */
-function yeuToCuaCung(cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; can: YeuTo[] } {
+function yeuToCuaCung(laSo: LaSo, cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; can: YeuTo[] } {
   const thuan: YeuTo[] = [];
   const can: YeuTo[] = [];
   const ten = tenCung(cung, k);
   const chuDe = k.chuDeCung[cung.tenCung] ?? ten;
 
   cung.sao.forEach((s, i) => {
-    const trongYeu = laChinhTinh(s) || s.loai === 'tu-hoa';
-    if (!trongYeu && s.tinhChat === 'trung') return;
+    const chieu = chieuSao(laSo, cung, s).chieu;
+    // 'trung' (sao vòng) và 'hai-mat' không nghiêng hẳn về bên nào — không kê
+    if (chieu === 'trung' || chieu === 'hai-mat') return;
 
     const sang = s.doSang ? k.doSang[s.doSang] : undefined;
-    const manh = !s.doSang || SANG_RO.has(s.doSang);
 
     /*
      * Dòng này là thứ người đọc thấy, nên nó phải nói nét sao TẠO RA gì.
@@ -139,7 +139,7 @@ function yeuToCuaCung(cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; c
      * Sao nào chưa có nét viết sẵn — chủ yếu là lưu tinh theo năm — thì vẫn ghi
      * dạng gọn, thà nói ít còn hơn bịa một nét không có trong kho.
      */
-    const net = laChinhTinh(s) ? k.netSao[s.ten]?.manh : k.netPhuTinh[s.ten];
+    const net = laChinhTinh(s) ? k.netSao[s.ten]?.manh : netSaoTheoChieu(k, s.ten, chieu);
     const dungCau = (laThuan: boolean) => {
       if (!net) {
         return sang
@@ -159,23 +159,23 @@ function yeuToCuaCung(cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; c
     };
     const yt = (laThuan: boolean): YeuTo => ({ sao: s.ten, cung: ten, lop, cau: dungCau(laThuan) });
 
-    if (s.tinhChat === 'cat' && manh) thuan.push(yt(true));
-    else if (s.tinhChat === 'hung' || (s.tinhChat === 'cat' && !manh)) can.push(yt(false));
-    else if (laChinhTinh(s) && manh) thuan.push(yt(true));
-    else if (laChinhTinh(s) && !manh) can.push(yt(false));
+    if (chieu === 'thuan') thuan.push(yt(true));
+    else can.push(yt(false));
   });
 
-  // Tuần/Triệt không phải sao xấu, nhưng làm nét của cung khó hiện ra đúng lúc —
-  // xếp vào nhóm cần lưu ý chứ không phải nhóm cản.
-  if (cung.coTuan || cung.coTriet) {
+  // Tuần/Triệt đảo nghĩa theo độ sáng (HS:4252, KL:1163): giải sao hãm → thuận;
+  // bẻ sao sáng → lưu ý; cung có cả hai loại → làm dịu cả hai, không kê.
+  const tt = chieuTuanTriet(cung);
+  if (tt && tt.chieu !== 'hai-mat') {
     const nhan = [cung.coTuan ? 'Tuần' : null, cung.coTriet ? 'Triệt' : null]
       .filter(Boolean)
       .join(' + ');
-    can.push({
+    const laGiai = tt.chieu === 'thuan';
+    (laGiai ? thuan : can).push({
       sao: nhan,
       cung: ten,
       lop,
-      cau: dien(k.luanHan.tuanTrietCau, { ten: nhan, cung: ten, chuDe }),
+      cau: dien(laGiai ? k.luanHan.tuanTrietGiaiCau : k.luanHan.tuanTrietCau, { ten: nhan, cung: ten, chuDe }),
     });
   }
 
@@ -184,10 +184,10 @@ function yeuToCuaCung(cung: Cung, lop: string, k: KhuonChu): { thuan: YeuTo[]; c
 
 /** Lưu tinh của năm đang xem, đổ về từng cung */
 function luuTinhTheoCung(namXem: number) {
-  const theoCung = new Map<number, { ten: string; tinhChat?: Sao['tinhChat'] }[]>();
+  const theoCung = new Map<number, { ten: string }[]>();
   for (const s of luuTinhTheoNam(namXem)) {
     if (!theoCung.has(s.chiIndex)) theoCung.set(s.chiIndex, []);
-    theoCung.get(s.chiIndex)!.push({ ten: s.ten, tinhChat: s.tinhChat });
+    theoCung.get(s.chiIndex)!.push({ ten: s.ten });
   }
   return theoCung;
 }
@@ -239,10 +239,10 @@ export function luanHan(
 
   // --- Gom yếu tố từ từng lớp ---
   const gom = [
-    yeuToCuaCung(cungMenh, k.luanHan.nenLop, k),
-    yeuToCuaCung(cungDai, lopDangXet[0], k),
-    yeuToCuaCung(cungNam, lopDangXet[1], k),
-    ...(cap === 'thang' ? [yeuToCuaCung(cungThang, lopDangXet[2], k)] : []),
+    yeuToCuaCung(laSo, cungMenh, k.luanHan.nenLop, k),
+    yeuToCuaCung(laSo, cungDai, lopDangXet[0], k),
+    yeuToCuaCung(laSo, cungNam, lopDangXet[1], k),
+    ...(cap === 'thang' ? [yeuToCuaCung(laSo, cungThang, lopDangXet[2], k)] : []),
   ];
 
   // Lưu tinh của năm đang xem, chỉ lấy những sao rơi đúng vào cung trọng tâm
@@ -256,8 +256,11 @@ export function luanHan(
       lop: lopDangXet[1],
       cau: `${s.ten} ${k.luanHan.taiO} ${tenCung(trongTam, k)}`,
     };
-    if (s.tinhChat === 'cat') thuanLuu.push(yt);
-    else if (s.tinhChat === 'hung') canLuu.push(yt);
+    // Lưu tinh không có bảng độ sáng; chiều cố định theo bảng riêng có chú thích
+    // nguồn ở chieu-sao.ts (ngoại lệ có chủ đích của luật "không mặc định")
+    const c = chieuSaoLuu(s.ten);
+    if (c === 'thuan') thuanLuu.push(yt);
+    else if (c === 'can') canLuu.push(yt);
   }
 
   // Lấy xen kẽ giữa các lớp chứ không đổ hết lớp đầu: ba dòng cùng đến từ cung
@@ -312,7 +315,7 @@ export function luanHan(
     // Mọi lĩnh vực đều đọc được từ cung của chính nó. Việc quãng đang xét có
     // chạm vào cung đó hay không là một thông tin THÊM, không phải lý do để bỏ
     // trống: nói "không có gì nổi bật" cho năm trên sáu phần là vô dụng.
-    const { thuan, can } = yeuToCuaCung(cung, lopDangXet[0], k);
+    const { thuan, can } = yeuToCuaCung(laSo, cung, lopDangXet[0], k);
     const trangThai =
       thuan.length > can.length
         ? k.luanHan.trangThaiThuan

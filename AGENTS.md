@@ -12,10 +12,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Web tử vi cá nhân hoá. Deploy: https://celestia-tuvi.vercel.app · Repo: Hieuzz05/Celestia-tuvi
 
-> **Dự án này do HAI AI trên HAI máy cùng phát triển.** Đọc **`AI-PHOI-HOP.md`**
-> trước tiên: nhánh nào được đẩy, vùng nào của ai, xử lý xung đột ra sao, và luật
-> viết SQL khi hai máy dùng chung một database. Bỏ qua tệp đó là sớm muộn ghi đè
-> mất việc của máy kia.
+> **Dự án này do nhiều công cụ AI (Claude, Codex, Gemini) trên nhiều máy cùng phát triển.**
+> Đọc **`AI-PHOI-HOP.md`** trước tiên: nhánh nào được đẩy, vùng nào của ai, xử lý xung đột ra
+> sao, và luật viết SQL khi nhiều máy dùng chung một database. Bỏ qua tệp đó là sớm muộn ghi đè
+> mất việc của máy kia. Quyết định đã có thì tra trên Vibe Board (`T find`), quyết mới thì ghi
+> bằng `T answer` / `T decide`; quyết định mới nhất thắng.
 
 Hướng dẫn vận hành đầy đủ (deploy, biến môi trường, Supabase, bật Google SSO, design system,
 cấu trúc trang) nằm ở **`HUONG-DAN.md`** — đọc tệp đó trước khi sửa gì lớn.
@@ -38,12 +39,18 @@ Chủ dự án theo dõi việc đã / đang / sẽ làm của mọi dự án tr
    (mục tiêu, bối cảnh, làm gì, xong khi…), viết cho chủ dự án đọc. Mã dự án: `celes`. Repo ở chỗ khác
    `D:/SAPP BA/tuvi-ai` thì chạy `node D:/VibeDashboard/task.mjs project --id celes --repo "<đường dẫn>"` một lần.
 
-## Ba quyết định không được tự đổi
+## Hai quyết định không được tự đổi
 
-1. **Nam phái làm chuẩn** cho an sao. Khi luận vận hạn, kết hợp sao lưu với tứ hoá theo hạn; cả hai cùng là căn cứ của lớp hạn.
-2. **Ngân sách = 0.** Mọi dịch vụ mới phải nằm trong free tier.
-3. **Celestia là thương hiệu, Celes là người dùng trò chuyện cùng.** Người dùng "hỏi Celes",
+1. **Ngân sách = 0.** Mọi dịch vụ mới phải nằm trong free tier.
+2. **Celestia là thương hiệu, Celes là người dùng trò chuyện cùng.** Người dùng "hỏi Celes",
    không "hỏi AI", không "hỏi Celestia".
+
+> **Không có phái chuẩn.** Luật cũ "Nam phái làm chuẩn, Bắc phái chỉ đối chiếu" đã BỎ (chủ dự án,
+> xác nhận lại 26/10/2026). Luận được dùng kỹ thuật của mọi phái (Tứ Hoá phái, phi hoá, lưu tứ hoá…).
+> Kho tri thức không lọc theo hệ phái; mọi nguồn dùng được cho mọi phần, kể cả vận hạn
+> (`docs/chien-luoc/kho-tri-thuc-to-be-2026-10.md`).
+> Cách an sao đang chạy trong `lib/tuvi/` vẫn giữ; đổi nó là việc `[CODE]` lớn vì app dùng chung engine.
+> Đừng viện luật cũ để chặn một phương án.
 
 ## Ngôn ngữ ở mặt trước
 
@@ -62,6 +69,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Dòng thời gian Hành trình | `lib/tuvi/hanh-trinh.ts` |
 | Luận hạn chi tiết (tầng hai của Hành trình) | `lib/tuvi/luan-han.ts` |
 | Bảng luận giải 8 lĩnh vực | `lib/tuvi/luan-giai-sau.ts` |
+| Chiều tốt/xấu của sao trong bộ (không sao nào mặc định tốt xấu) | `lib/tuvi/chieu-sao.ts` — máy canh `scripts/test-chieu-sao.ts` |
 | Bộ quy tắc tính + phiên bản | `lib/tuvi/phuong-phap.ts` |
 | Lá số đang xem / lá số của tôi / bản nháp | `lib/store/boi-canh.tsx` |
 | Hạn mức, bậc quyền, cổng ủng hộ | `lib/support/` + `supabase/schema-support.sql` |
@@ -71,6 +79,7 @@ họ còn nguyên và nên làm gì tiếp.
 | Giọng và cấu trúc câu trả lời của Celes | `CHUAN_NGON_NGU_CELES` trong `lib/rag/chuan-ngon-ngu.ts` |
 | Nhịp và kiểu của MỘT lượt chat | `lib/rag/hop-dong-tra-loi.ts` — hàm thuần, chỉ đổi độ dài và lối nói, KHÔNG chạm kết luận |
 | Chat Focused (CEL-186 vé B, sau cờ `CELES_FOCUSED_CHAT=1`) | `lib/rag/focused/` — điểm vào `tra-loi-focused.ts`, nối ở đầu `traLoiCoCanCu`. Cờ tắt = đường STANDARD nguyên vẹn. Phương án + quyết định: `docs/chien-luoc/CEL-186-ve-B-phuong-an.md` |
+| Cổng thu hồi mục thư viện (X3, CELES-27, sau cờ `CELES_CONG_THU_HOI=1`) | `lib/rag/thu-hoi/` — `cong.ts` (luật lọc câu / tóm lại / bức tranh, hàm thuần), `kho.ts` (đọc bảng `thu_hoi_muc_thu_vien`, lỗi đọc thì mở cổng). Dấu mục: `lib/rag/thu-vien/dau.ts`. Lệnh vận hành: `scripts/thu-hoi-muc.ts` (mặc định chạy khô). Luật + cách thử: `docs/bay/ai-rag.md` mục X3 |
 | Token màu / kiểu chữ / bo góc | `app/globals.css` |
 | Component dùng chung | `components/ui/` |
 | An sao | `lib/tuvi/ansao.ts` + `lib/tuvi/constants.ts` |
@@ -90,7 +99,7 @@ Các bẫy đã gặp nằm ở `docs/bay/`, tách theo vùng để không nạp
 ## Luồng làm việc — LUẬT, không phải gợi ý
 
 Dự án này có 10 subagent trong `.claude/agents/`. Luồng dưới đây là bắt buộc với
-mọi AI làm trên repo, cả hai máy.
+mọi AI làm trên repo, mọi máy.
 
 ### Mở phiên: chủ dự án đánh dấu loại việc
 
@@ -115,7 +124,7 @@ buộc với việc LỚN: đổi kiến trúc, đổi hợp đồng trả lời
 trước, thêm dịch vụ, tính năng mới cần ID, chạm vùng Chung, hoặc đóng một tính năng lớn. Việc nhỏ
 bỏ ba reviewer đó; `researcher` và `qa` vẫn giữ. Không chắc thì coi là Lớn và nói rõ đã chọn cỡ nào.
 
-### Bài học — làm sai một lần, cả hai máy cùng nhớ
+### Bài học — làm sai một lần, mọi máy cùng nhớ
 
 Có cái giá thật (mất thời gian, lỗi lọt, chủ dự án phải sửa lưng, hoặc cách mới đo được là tốt
 hơn) thì gọi `/bai-hoc`: ghi `docs/bai-hoc/NHAT-KY.md`, nâng luật lên `docs/bai-hoc/cach-lam.md`
@@ -149,7 +158,7 @@ git status → tạo nhánh viec/<tên> → researcher → trình phương án
   → chủ dự án duyệt → viết code (phiên chính, KHÔNG giao subagent)
   → celes-domain + qa + bien-tap-vi ← gọi trong MỘT lượt, chạy song song
   → soat-tai-lieu → cập nhật PRODUCT-BACKLOG.xlsx → commit
-  → chủ dự án nghiệm thu → push khi được bảo
+  → AI đẩy nhánh viec/* ngay sau commit → chủ dự án nghiệm thu và gộp main
 ```
 
 Thêm `soat-chi-phi` khi thay đổi chạm dịch vụ ngoài, model AI, cron, hay thư
@@ -172,7 +181,7 @@ phải qua chuyên gia kiểm lại bằng sách, không áp nguyên làm luật
 
 ```
 researcher (tìm nguyên nhân gốc) → sửa → qa (+ celes-domain nếu chạm luận giải)
-  → commit → nghiệm thu → push
+  → commit → đẩy nhánh viec/* → nghiệm thu → chủ dự án gộp main
 ```
 
 Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
@@ -182,7 +191,7 @@ Bỏ `phan-bien`: lỗi thì không có phương án để phản biện.
 1. **Viết code.** Subagent viết xong thì phiên chính không nắm được nó viết gì,
    lần sửa sau mâu thuẫn với chính mình.
 2. **Ra quyết định sản phẩm.** Subagent chuẩn bị dữ liệu, chủ dự án quyết.
-3. **Nghiệm thu và push.** Luôn là người.
+3. **Nghiệm thu và gộp main.** Luôn là người. (Đẩy nhánh `viec/*` thì AI tự làm, duyệt 07/11/2026.)
 
 ### Nhiều phiên song song
 
@@ -250,15 +259,17 @@ hình dựng hoặc tái hiện CI đỏ. Trước khi báo "push được": `/k
 npx tsc --noEmit          # phải sạch
 npm run build             # phải qua
 node scripts/dem-loi-lint.mjs  # lint, chặn nếu vượt mốc (đang 5 lỗi set-state-in-effect)
-# ...còn 36 bài (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID...):
+# ...còn các bài khác (engine, planner, bộ vàng, chuẩn ngôn ngữ, an toàn, dấu ấn, linh vật, đệm, máy canh ID...):
 # xem docs/quy-trinh/danh-sach-kiem-tra.md. CI chạy các bài OFFLINE trong đó.
 ```
 
 Nếu lint vượt mốc, đó là lỗi bạn vừa thêm vào — sửa, đừng bỏ qua. Sửa bớt được lỗi cũ thì HẠ
 `MOC` trong `scripts/dem-loi-lint.mjs`, đừng bao giờ nâng.
 
-**CI (`.github/workflows/kiem-tra.yml`) chạy tự động các bài OFFLINE ở trên (tsc, lint, engine,
-planner, bộ vàng, chuẩn ngôn ngữ, cách cục, lớp thời gian dữ kiện, bảng lớp hạn, luật tổ hợp lớp hạn, 12 cung, độ phủ dữ kiện, an toàn chat, hợp đồng trả lời, sửa câu, hạn lưu nhật ký, dấu ấn, linh vật nghiêm theo lượt, chỗ đặt linh vật, dữ kiện phần đang hỏi, đường Focused, lối dừng bằng mã, hiểu câu qua lượt, fallback giữ nguyên, đệm AI tách theo môi trường, quyền riêng tư vết, harness P0, nghiệm lý, phản hồi, độ phủ tầng viết, hàm so ID CEL, build; máy canh trùng ID CEL chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx) trên mọi lần đẩy nhánh.** Nhánh đỏ CI
+**CI (`.github/workflows/kiem-tra.yml`) chạy tự động mọi bài OFFLINE trong
+`docs/quy-trinh/danh-sach-kiem-tra.md` (kể cả build) trên mọi lần đẩy nhánh; máy canh trùng ID CEL
+chạy riêng ở `kiem-id-cel.yml`, kể cả lần đẩy chỉ đổi xlsx.** Thêm bài mới thì ghi vào danh sách đó
+và vào workflow, không liệt kê lại ở đây. Nhánh đỏ CI
 thì chưa được xin gộp. Các bài chạm DB thật / model thật vẫn chạy tay.
 
 **Và một việc nữa, không phải lệnh chạy được:** nếu commit này đổi một tính năng, đổi một luồng
@@ -287,13 +298,8 @@ RỖNG khỏi setState (trả về dữ liệu hoặc `{ loi }`), rồi đặt s
 
 ## Việc còn dang dở
 
-Xem mục "Trạng thái tính năng" trong `HUONG-DAN.md`. Hai việc lớn nhất còn lại: lớp NGÀY của Hành
-trình (cần đối chiếu quy tắc an ngày hạn) và cổng Gate 2 cho gói Plus. Mệnh bàn mobile (`app/ban-do.tsx`
-trong `apps/celes-app`): lưới 4×4 MỘT phiên bản, từ 28/09/2026 hiện đủ nội dung như mệnh bàn web
-(tứ hoá, đủ phụ tinh + vòng sao hai cột cát/hung, hạn, tam phương, bảng giữa, năm xem), vừa bề
-ngang màn hình, không cuộn ngang — xem luật 3 trong `apps/celes-app/README.md`. Hai tài liệu định hướng gốc:
-`D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf` và
-`D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (bản sau thay thế bản trước).
-
-Đang chờ người dùng quyết: (1) gói và giá cho bản trả phí, (2) làm PWA hay dựng app
-React Native riêng.
+Xem Vibe Board (`T list`, mã dự án `celes`); trạng thái tính năng ở mục "Trạng thái tính năng"
+trong `HUONG-DAN.md`. Đã chốt: bản di động là app riêng `apps/celes-app`, không làm PWA (chủ dự án
+xác nhận lại 11/11/2026, CELES-9). Hai tài liệu định hướng gốc:
+`D:\Celestia\Celestia_Brand_Product_UX_Master_Spec.pdf` (thay bản
+`D:\Celestia\Celestia_Product_UX_Commercialization_Report.pdf`).

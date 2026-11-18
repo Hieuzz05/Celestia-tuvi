@@ -267,10 +267,10 @@ export function kiemBai(vao: {
   const khongMa = bai.danY.filter((y) => !y.canCu.length).length;
   if (khongMa) loi.push({ ma: 'y-khong-ma', moTa: `${khongMa} ý trong dàn ý không có mã căn cứ.`, chan: false });
 
-  // Độ phủ: cung chính / xung chiếu có sao hung nặng mà dàn ý không trích tới — đo, chưa chặn
+  // Độ phủ: cung chính / xung chiếu có sao đang cản (theo bộ sao đi cùng) mà dàn ý không trích tới — đo, chưa chặn
   const daTrich = new Set(bai.danY.flatMap((y) => y.canCu));
   const bo = (vao.maCanNhac ?? []).filter((m) => !daTrich.has(m));
-  if (bo.length) loi.push({ ma: 'bo-luc-hung', moTa: `Dàn ý chưa xét cung có sao hung nặng (${bo.join(', ')}) — cần một ý về lực kéo ấy.`, chan: false });
+  if (bo.length) loi.push({ ma: 'bo-luc-hung', moTa: `Dàn ý chưa xét cung có sao đang cản theo bộ sao đi cùng (${bo.join(', ')}) — cần một ý về điều ấy.`, chan: false });
 
   return loi;
 }

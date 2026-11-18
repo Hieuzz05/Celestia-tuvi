@@ -1,0 +1,39 @@
+{
+  "phienBan": "2026-10-22.G2.PRE-RUN",
+  "thoiDiemChotNguongTruocKhiChay": "2026-10-21T18:33:00.000Z",
+  "canCuThietKe": [
+    "D:\\Celestia\\KIEN-TRUC-kho-tri-thuc-Celes-AS-IS-TO-BE-v4-2026-10-21.docx (muc 8.4 & 10.21)",
+    "d:\\SAPP BA\\tuvi-ai-quyet-dinh-kho\\docs\\chien-luoc\\kho-tri-thuc-to-be-2026-10.md (muc 10.11 & 10.21)",
+    "D:\\Celestia\\KE-HOACH-PHIEN-CODE-kho-tri-thuc-2026-10-21.md (muc 4 G2 & muc 9 Luu y 3)",
+    "D:\\Celestia\\REVIEW-ke-hoach-code-kho-tri-thuc-2026-10-22.md (muc 6.2)"
+  ],
+  "nguyenTacBatBuoc": {
+    "khongNoiNguongSauKhiChay": true,
+    "cheNhanHoanToanTruocKhiDuaVaoModel": true,
+    "khongDungMucChuaDuyetLamDapAnChuDuAn": true,
+    "suDungCongNganSachX1": true
+  },
+  "nguongDanhGia": {
+    "phan1_khopDapAnChuDuAn": {
+      "soMucDuyetThatToiThieuCanCo": 50,
+      "tyLeKhopToiThieu": 0.9,
+      "quyTacKhiThieuDuLieuDuyetThat": "Neu soMucDaDuyetThat + soMucBiBacThat trong DB < 50 (hien tai G1 do duoc = 0), bat buoc ket luan Phan 1 = 'CHUA_DU_DU_LIEU_CHU_DU_AN'. Chi bao cao ty le dong thuan tren 70 muc ung vien nhu so do tham khao, khong duoc ket luan model dat quyen tu duyet thay nguoi."
+    },
+    "phan2_batMucSaiCoY": {
+      "tongSoMucSaiCoY": 30,
+      "soMucBatDuocToiThieu_donModel": 28,
+      "tyLeBatToiThieu_donModel": 0.9333,
+      "soMucLoiCungBoSotToiDa_toHopHaiModel": 2,
+      "phanBo4LoaiLoiSaiCoY": {
+        "dao-chieu-cat-hung": 8,
+        "dao-do-sang-sao": 8,
+        "sai-cung-ap-dung": 7,
+        "cat-cut-dieu-kien-sao": 7
+      }
+    },
+    "geminiLamGiamKhaoG3": {
+      "dieuKienTinCayTrenTrucNghiaMuc": "Bat duoc >= 28/30 muc sai co y da che nhan (trong do bat duoc >= 7/8 muc dao-chieu-cat-hung va >= 6/7 muc cat-cut-dieu-kien-sao).",
+      "gioiHanBatBuocTheoReview6_3": "Ngay ca khi Gemini dat nguong tren bo 100 muc thu vien (G2), ket qua nay chi chung minh kha nang soat muc thu vien co cau truc, KHONG tu dong thay the giam khao con nguoi cho toan bo truc 'Dung nghia' cua bai luan tu do o G3."
+    }
+  }
+}

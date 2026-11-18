@@ -13,10 +13,12 @@ import { NHAN_TIN_CAY } from '../uu-tien-nguon';
 import { nhacTuHoa } from '../nguon-tu-hoa';
 import { docMetaTaiLieu } from '../tai-lieu-meta';
 import { dungKhoiThuVien } from '../thu-vien/cho-prompt';
+import { dauMuc } from '../thu-vien/dau';
 import { saoCuaMuc, type MucThuVien } from '../thu-vien/kieu';
 import { apCauSua, chonCauLoi, nhacSuaCucBo, suaCucBoDuoc } from './sua-cuc-bo';
 import { heThongV3 } from './mau-giong';
 import { docCauHinhV3 } from './cau-hinh';
+import { docDanY, kiemDanY, khoiDienDat, saoChoDienDat, SYSTEM_LAP_Y, type YLuan } from './duong-b';
 
 /**
  * LUỒNG LUẬN GIẢI v3 — Tổng quan + Chuyên sâu, mỗi câu hỏi một lượt gọi.
@@ -42,6 +44,8 @@ export interface ThuNghiemV3 {
   system?: string;
   themVao?: (laSo: LaSo, q: CauHoiV3) => string;
   heSoDoDai?: number;
+  /** Đường B (duong-b.ts, CELES-38): lập ý có mức chắc rồi mới diễn đạt — chỉ cho bộ so mù A/B */
+  duongB?: boolean;
 }
 
 export interface KetQuaCauV3 {
@@ -67,8 +71,21 @@ export interface KetQuaCauV3 {
   ms: number;
   msTruyHoi: number;
   dat: boolean;
-  /** Thư viện: mục đã đưa vào prompt (T###) và mọi mục khớp — để đo lát cắt (mục 11.2) */
-  thuVien?: { daChon: { ma: string; id: string; cung: string; sao: string[] }[]; khopHet: { id: string; sao: string[] }[]; nguocChieu: [string, string][] };
+  /**
+   * Thư viện: mục đã đưa vào prompt (T###) và mọi mục khớp — để đo lát cắt (mục 11.2). `dot` + `dau`
+   * là căn cứ của bài: id mục là số thứ tự, trích lại một đợt có thể cấp id cũ cho câu khác.
+   */
+  thuVien?: {
+    daChon: { ma: string; id: string; dot: string; dau: string; cung: string; sao: string[] }[];
+    khopHet: { id: string; sao: string[] }[];
+    nguocChieu: [string, string][];
+    boChuaDuyet: string[];
+    boBiLat: string[];
+    /** Id mục khớp nhưng bị cổng thu hồi (X3) giữ lại ngoài prompt */
+    boThuHoi?: string[];
+  };
+  /** Chỉ có khi chạy đường B: ý giữ / bỏ ở bước lập ý; `lui` khi phải lùi về đường A */
+  duongB?: { lui?: string; yGiu: YLuan[]; yBo: { y: string; lyDo: string }[] };
 }
 
 function docBai(text: string): BaiV3 | null {
@@ -266,14 +283,21 @@ export interface ChuanBiCau {
   cungChinhCau?: string;
 }
 
+/** Dấu nội dung của một mục thư viện — chuyển sang thu-vien/dau.ts (X3), giữ lối gọi cũ */
+export { dauMuc };
+
 /** Dữ kiện + thư viện + truy hồi của một câu — phần không gọi model viết */
-export async function chuanBiCau(vao: { laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[] }): Promise<ChuanBiCau> {
+export async function chuanBiCau(vao: {
+  laSo: LaSo; q: CauHoiV3; namXem: number; nho: BoNhoTruyHoi; thuVien?: MucThuVien[];
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — matcher giữ chúng ngoài prompt */
+  thuHoi?: ReadonlySet<string>;
+}): Promise<ChuanBiCau> {
   const { q } = vao;
   const coLopHan = lopHanBat() && hoiThoiDiem(q);
   const duKien = dungDuKien(vao.laSo, q, vao.namXem, 1, coLopHan);
   const cungChuDe = q.loai === 'chuyen-sau' ? (q.cungChinh ?? CHU_DE_V3.find((c) => c.id === q.chuDe)?.cungChinh) : undefined;
   const tv = vao.thuVien?.length
-    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu() })
+    ? dungKhoiThuVien({ laSo: vao.laSo, duKien, thuVien: vao.thuVien, cungChinh: cungChuDe, meta: await docMetaTaiLieu(), thuHoi: vao.thuHoi })
     : null;
   const tRag = Date.now();
   const nguon = await truyHoiChoCau({
@@ -375,6 +399,8 @@ export async function luanMotCau(vao: {
   daNoi?: MucDaNoi[];
   /** Thư viện tri thức (KIEN-TRUC-LUAN-GIAI.md mục 8) — chỉ truyền cho câu thuộc lát cắt đã bật */
   thuVien?: MucThuVien[];
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — chỉ dùng khi chưa có `chuanBi` */
+  thuHoi?: ReadonlySet<string>;
   /** Dữ kiện + nguồn đã chuẩn bị sẵn (luanNhieuCau chia nguồn giữa các câu trước khi viết) */
   chuanBi?: ChuanBiCau;
   /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
@@ -384,7 +410,7 @@ export async function luanMotCau(vao: {
   const { q } = vao;
   const coLopHan = lopHanBat() && hoiThoiDiem(q);
   const { duKien, tv, nguon, msTruyHoi, cungChinhCau } = vao.chuanBi ?? (await chuanBiCau(vao));
-  const phep = saoDuocPhep(duKien);
+  let phep = saoDuocPhep(duKien);
   const nen = cungNen(q);
   const cauHinh = await docCauHinhV3();
   const doDai = cauHinh.doDai[q.loai];
@@ -508,19 +534,44 @@ ${phamViChuyenSau(q)}`
   let soLanGoi = 0;
   let model = '';
   const token = { vao: 0, ra: 0, dem: 0 };
-  const goi = async (u: string) => {
+  const goiTho = async (u: string, sys = system, cacheKey = `v3:${q.id}`) => {
     soLanGoi += 1;
     const trongHan = Math.max(16_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
-    const kq = await goiVoiFallback({ system, user: u, maxTokens: 6000, cacheKey: `v3:${q.id}` }, undefined, trongHan);
+    const kq = await goiVoiFallback({ system: sys, user: u, maxTokens: 6000, cacheKey }, undefined, trongHan);
     model = `${kq.provider}/${kq.model}`;
     token.vao += kq.tokensIn ?? 0;
     token.ra += kq.tokensOut ?? 0;
     token.dem += kq.tokensDem ?? 0;
-    return docBai(kq.text);
+    return kq.text;
   };
+  const goi = async (u: string) => docBai(await goiTho(u));
 
-  let bai = await goi(user);
-  if (!bai) bai = await goi(user); // JSON gãy: thử lại nguyên lượt một lần
+  /*
+   * ĐƯỜNG B (chỉ bộ so mù): lập ý trước, máy lọc, rồi model chỉ diễn đạt ý đã giữ. Không ý nào sống
+   * sót hoặc bước lập ý hỏng thì lùi về đường A để cặp so vẫn có bài.
+   */
+  let userViet = user;
+  let duongB: KetQuaCauV3['duongB'];
+  if (vao.thuNghiem?.duongB) {
+    let ds: YLuan[] | null = null;
+    try {
+      ds = docDanY(await goiTho(user, SYSTEM_LAP_Y, `v3b1:${q.id}`));
+    } catch {
+      ds = null;
+    }
+    const maChinh = new Set(duKien.filter((d) => d.vaiTro === 'cung chính' || d.vaiTro.endsWith('(chính)') || d.vaiTro === 'cách cục').map((d) => d.id));
+    const loc = ds ? kiemDanY(ds, { maDuKien, maNguon, saoDuocPhep: phep, maHoTro: hoTro, maChinh }) : null;
+    if (loc?.giu.length) {
+      userViet = `${user}\n\n${khoiDienDat(loc.giu)}`;
+      phep = saoChoDienDat(loc.giu, duKien);
+      duongB = { yGiu: loc.giu, yBo: loc.bo };
+    } else {
+      duongB = { lui: ds ? 'b-khong-y' : 'b-lap-y-hong', yGiu: [], yBo: loc?.bo ?? [] };
+    }
+  }
+
+  let bai = await goi(userViet);
+  if (!bai) bai = await goi(userViet); // JSON gãy: thử lại nguyên lượt một lần
   if (!bai) {
     return {
       id: q.id, loai: q.loai, cauHoi: q.cauHoi, luanGiai: '', viSao: '', goiY: '', doRo: 'Gợi ý', danY: [], duKien, nguon,
@@ -528,6 +579,8 @@ ${phamViChuyenSau(q)}`
       loiBanDau: [], soLanGoi, token, model, ms: Date.now() - t0, msTruyHoi, dat: false,
     };
   }
+  // Đường B: dàn ý là các ý đã qua lọc, không phải bản model chép lại
+  if (duongB && !duongB.lui) bai.danY = duongB.yGiu.map((y) => ({ y: y.y, canCu: y.canCu }));
   bai = donTatDinh(bai);
   const loiBanDau = kiem(bai);
 
@@ -548,7 +601,7 @@ ${phamViChuyenSau(q)}`
     try {
       const trongHan = Math.max(12_000, Math.min(vao.nganSachMs ?? 55_000, (vao.hanChot ?? Infinity) - Date.now()));
       const kq = await goiVoiFallback(
-        { system, user: `${user}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
+        { system, user: `${userViet}\n\n${nhacSuaCucBo(cauLoi, loi)}`, maxTokens: 900, cacheKey: `v3:${q.id}` },
         undefined,
         trongHan
       );
@@ -571,7 +624,7 @@ ${phamViChuyenSau(q)}`
   }
   if (loi.some((l) => l.chan) && (vao.hanChot ?? Infinity) - Date.now() > 20_000) {
     const sua = await goi(
-      `${user}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
+      `${userViet}\n\nBÀI VỪA VIẾT (JSON):\n${JSON.stringify(bai)}\n\nLỖI CẦN SỬA — sửa ĐÚNG những lỗi này, giữ nguyên các ý và căn cứ, trả lại đủ JSON:\n${loi
         .filter((l) => l.chan)
         .map((l) => `- ${l.moTa}`)
         .join('\n')}`
@@ -609,12 +662,16 @@ ${phamViChuyenSau(q)}`
     ...(tv
       ? {
           thuVien: {
-            daChon: tv.daChon.map((t) => ({ ma: t.ma, id: t.khop.muc.id, cung: t.khop.cung, sao: saoCuaMuc(t.khop.muc) })),
+            daChon: tv.daChon.map((t) => ({ ma: t.ma, id: t.khop.muc.id, dot: t.khop.muc.dotTrich, dau: dauMuc(t.khop.muc), cung: t.khop.cung, sao: saoCuaMuc(t.khop.muc) })),
             khopHet: tv.khopHet.map((k) => ({ id: k.muc.id, sao: saoCuaMuc(k.muc) })),
             nguocChieu: tv.nguocChieu,
+            boChuaDuyet: tv.boChuaDuyet,
+            boBiLat: tv.boBiLat,
+            ...(tv.boThuHoi.length ? { boThuHoi: tv.boThuHoi } : {}),
           },
         }
       : {}),
+    ...(duongB ? { duongB } : {}),
     dat: !loi.some((l) => l.chan),
   };
 }
@@ -631,6 +688,8 @@ export async function luanNhieuCau(vao: {
   khiXong?: (k: KetQuaCauV3) => void;
   /** Thư viện tri thức + các câu được dùng nó (lát cắt đã bật) */
   thuVien?: { muc: MucThuVien[]; cau: Set<string> };
+  /** Dấu các mục thư viện đã bị thu hồi (X3) — vắng hoặc rỗng thì y hệt trước */
+  thuHoi?: ReadonlySet<string>;
   /** Khối bối cảnh người đọc (boi-canh-doc.ts) — rỗng khi không có */
   boiCanh?: string;
 }): Promise<KetQuaCauV3[]> {
@@ -640,7 +699,7 @@ export async function luanNhieuCau(vao: {
   const thuVienCua = (q: CauHoiV3) => (vao.thuVien?.cau.has(q.id) ? vao.thuVien.muc : undefined);
   // Chuẩn bị cả nhóm trước (không gọi model viết) để chia nguồn tất định; hỏng ở câu nào thì câu đó tự truy hồi lại
   const chuanBi: (ChuanBiCau | undefined)[] = await Promise.all(
-    ds.map((q) => chuanBiCau({ laSo: vao.laSo, q, namXem: vao.namXem, nho, thuVien: thuVienCua(q) }).catch(() => undefined))
+    ds.map((q) => chuanBiCau({ laSo: vao.laSo, q, namXem: vao.namXem, nho, thuVien: thuVienCua(q), thuHoi: vao.thuHoi }).catch(() => undefined))
   );
   const du = ds.map((q, j) => ({ q, cb: chuanBi[j] })).filter((x): x is { q: CauHoiV3; cb: ChuanBiCau } => Boolean(x.cb));
   if (du.length > 1) chiaNguon(du);
@@ -651,7 +710,7 @@ export async function luanNhieuCau(vao: {
       try {
         ra[j] = await luanMotCau({
           laSo: vao.laSo, q: ds[j], namXem: vao.namXem, nho, hanChot: vao.hanChot, thuNghiem: vao.thuNghiem, daNoi: vao.daNoi,
-          thuVien: thuVienCua(ds[j]), chuanBi: chuanBi[j], boiCanh: vao.boiCanh,
+          thuVien: thuVienCua(ds[j]), thuHoi: vao.thuHoi, chuanBi: chuanBi[j], boiCanh: vao.boiCanh,
         });
       } catch (e) {
         ra[j] = {

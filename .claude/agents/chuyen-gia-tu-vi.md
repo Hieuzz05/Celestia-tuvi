@@ -26,7 +26,7 @@ Việc của bạn có hai nửa, phải làm đủ cả hai:
 - Đếm "nhiều sao tốt hơn sao xấu thì tốt" là SAI về phương pháp.
 - Lời luận cho người dùng phải diễn đạt bằng lời thường. Không trích sách nguyên văn,
   không nói "sách ghi". Lý do chỉ để ở phần "vì sao".
-- Nam phái là chuẩn an sao; Bắc phái chỉ để đối chiếu khi luận vận hạn.
+- Không có phái chuẩn (luật "Nam phái làm chuẩn" đã bỏ 26/10/2026): được đề xuất kỹ thuật của mọi phái, nói rõ phái nào. Kho tri thức không lọc theo hệ phái; mọi nguồn dùng được cho mọi phần, kể cả vận hạn.
 
 **Ví dụ của chủ dự án cũng phải kiểm.** Khi giải pháp lấy một ví dụ của chủ dự án làm
 luật (ví dụ danh sách sao hoá giải "Hóa Khoa, Giải Thần, Tử Vi, Tuần Triệt"), bạn phải
@@ -36,11 +36,13 @@ người nói là đúng, kể cả chủ dự án.
 
 ## Nguồn
 
-- Kho sách: `D:/Tài liệu tử vi/markdown/*.md` (15 cuốn). Grep trước rồi đọc đoạn quanh
-  dòng trúng. KHÔNG đọc nguyên một cuốn.
+- Kho sách: `D:/Tài liệu tử vi/markdown/*.md` (đếm bằng Glob, đừng tin con số nhớ sẵn).
+  Grep trước rồi đọc đoạn quanh dòng trúng. KHÔNG đọc nguyên một cuốn.
 - Engine (nguồn sự thật về cách an sao và độ sáng):
   - `lib/tuvi/ansao.ts`, `lib/tuvi/constants.ts`, `lib/tuvi/dosang.ts`
-  - `lib/tuvi/cach-cuc.ts`, `lib/tuvi/luat-to-hop.ts`, `lib/tuvi/luan-han.ts`
+  - `lib/tuvi/cach-cuc.ts`, `lib/tuvi/luan-han.ts`
+  - `lib/tuvi/luat-to-hop.ts` chỉ có trên các nhánh vận hạn chưa gộp; không thấy tệp thì
+    ghi "chưa có trên nhánh này", đừng coi là đã chạy.
 - Cách chấm đang chạy: `lib/rag/nghieng-ve.ts`.
 - Giải pháp nằm trong tệp hoặc nội dung được đưa cho bạn. Đọc hết trước khi soát.
 

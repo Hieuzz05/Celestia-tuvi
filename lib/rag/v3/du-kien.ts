@@ -8,9 +8,11 @@ import {
   type LaSo,
 } from '@/lib/tuvi/ansao';
 import { nhanDangCachCuc } from '@/lib/tuvi/cach-cuc';
-import { CHINH_TINH as DS_CHINH_TINH } from '@/lib/tuvi/constants';
 import { canCuaNam, luuTuHoaTheoNam, tuHoaDaiVan, type HoaHan } from '@/lib/tuvi/tu-hoa-han';
-import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
+import { chieuSao, chieuTuanTriet, xetVoChinhDieu, type Chieu } from '@/lib/tuvi/chieu-sao';
+import type { Sao } from '@/lib/tuvi/constants';
+import { CHINH_TINH as DS_CHINH_TINH, TU_HOA } from '@/lib/tuvi/constants';
+import { KHUON, netSaoTheoChieu } from '@/lib/tuvi/quick-read-noi-dung';
 import { nhanDangThucThe } from '../thuc-the';
 import { CHU_DE_V3, type CauHoiV3, type ChuDeV3 } from './khung';
 import { dongTrangThaiDuyen } from './trang-thai-duyen';
@@ -26,7 +28,7 @@ import { dongTrangThaiDuyen } from './trang-thai-duyen';
  * Mỗi dữ kiện mang mã F### để model trích khi dựng dàn ý; validator đối chiếu.
  */
 
-export const PHIEN_BAN_DU_KIEN_V3 = '2026.10.1';
+export const PHIEN_BAN_DU_KIEN_V3 = '2026.11.1';
 
 export interface DuKienV3 {
   id: string;
@@ -85,6 +87,14 @@ export interface GopDiem {
   loai: 'chinh' | 'vcd' | 'cat' | 'hung' | 'tuan';
   sao?: string;
   doSang?: string;
+  /**
+   * Nhóm GỐC của sao theo sách (bảng độ nặng CAT / HUNG). Khác `loai` (chiều ở cung này):
+   * Kình đắc đi đúng bộ có loai 'cat' mà nhom 'hung'. Giao diện cần cả hai để không
+   * hiện nghĩa xấu của sao ở cột "giúp" (CELES-72).
+   */
+  nhom?: 'cat' | 'hung';
+  /** Chỉ cho loai 'tuan': Tuần Triệt đang giải sao hãm, bẻ sao sáng, hay lẫn cả hai */
+  ly?: 'giai' | 'be' | 'lan';
 }
 
 /** Tên ba nhóm khi nói với người đọc — prompt và Bản đồ mạnh–yếu dùng chung, để hai bên gọi cùng một tên */
@@ -94,52 +104,71 @@ export const TEN_MUC: Record<DiemCung['muc'], string> = {
   'Cần gắng': 'Cần chăm chút',
 };
 
-function chiTietBanCung(c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } {
+/*
+ * CHIỀU THEO NGỮ CẢNH (CELES-72, 11/11/2026). Bản trước lấy dấu cộng / trừ theo TÊN sao
+ * (Kình Đà luôn trừ, Thiên Mã luôn cộng, Hóa Kỵ luôn trừ 1.5). Chủ dự án: "không được xét mặc
+ * định một sao là tốt hay xấu". Giờ bảng CAT / HUNG chỉ còn là ĐỘ NẶNG của sao; dấu do
+ * `chieuSao` quyết, đã xét độ sáng, bộ sao đi cùng, sao chế, Tuần Triệt.
+ */
+const DAU_CHIEU: Record<Chieu, number> = { thuan: 1, 'hai-mat': 0, yeu: -0.5, can: -1, trung: 0 };
+
+function chiTietBanCung(laSo: LaSo, c: Cung, xung?: Cung): { diem: number; gop: GopDiem[] } {
   const gop: GopDiem[] = [];
   const chinh = c.sao.filter((s) => s.loai === 'chinh-tinh');
-  for (const s of chinh)
+  for (const s of chinh) {
+    const chieu = chieuSao(laSo, c, s).chieu;
+    const nang = Math.max(Math.abs(DIEM_SANG[s.doSang ?? 'B'] ?? 0), 1);
     gop.push({
       ten: `${s.ten}${s.doSang ? ` (${DO_SANG[s.doSang] ?? s.doSang})` : ''}`,
-      diem: DIEM_SANG[s.doSang ?? 'B'] ?? 0,
+      diem: DAU_CHIEU[chieu] * nang,
       loai: 'chinh',
       sao: s.ten,
       doSang: s.doSang ?? undefined,
     });
+  }
   if (!chinh.length && xung) {
-    const muon = xung.sao.filter((s) => s.loai === 'chinh-tinh');
+    const vcd = xetVoChinhDieu(laSo, c);
+    const muon = vcd?.muon ?? [];
     gop.push({
       ten: `Vô chính diệu, mượn ${muon.map((s) => s.ten).join(', ') || 'cung đối'}`,
-      diem: 0.5 * muon.reduce((a, s) => a + (DIEM_SANG[s.doSang ?? 'B'] ?? 0), 0) - 0.5,
+      diem: DAU_CHIEU[vcd?.chieu ?? 'hai-mat'],
       loai: 'vcd',
       sao: muon.map((s) => s.ten).join(', ') || undefined,
     });
   }
   for (const s of c.sao) {
-    // Văn tinh hãm không còn là cát tinh
-    if ((s.ten === 'Văn Xương' || s.ten === 'Văn Khúc') && s.doSang === 'H') continue;
-    if (CAT[s.ten]) gop.push({ ten: s.ten, diem: CAT[s.ten], loai: 'cat', sao: s.ten });
-    /*
-     * Hung tinh ĐẮC ĐỊA chỉ trừ một nửa (25/09/2026). Bản trước trừ như nhau bất
-     * kể vị trí: Kình Dương ở tứ mộ hay Hóa Kỵ ở Thìn Tuất Sửu Mùi — sách xếp là
-     * bớt hung, có khi thành dụng — vẫn kéo cung xuống ngang lúc hãm địa.
-     */
-    if (HUNG[s.ten]) {
-      const dac = s.doSang === 'D';
-      gop.push({ ten: `${s.ten}${dac ? ' (đắc)' : ''}`, diem: -(dac ? HUNG[s.ten] / 2 : HUNG[s.ten]), loai: 'hung', sao: s.ten, doSang: s.doSang ?? undefined });
-    }
+    const nang = CAT[s.ten] ?? HUNG[s.ten];
+    if (nang === undefined) continue;
+    const diem = DAU_CHIEU[chieuSao(laSo, c, s).chieu] * nang;
+    if (diem === 0) continue;
+    gop.push({
+      ten: `${s.ten}${diem > 0 && HUNG[s.ten] !== undefined ? ' (đắc)' : ''}`,
+      diem,
+      loai: diem > 0 ? 'cat' : 'hung',
+      sao: s.ten,
+      doSang: s.doSang ?? undefined,
+      nhom: CAT[s.ten] !== undefined ? 'cat' : 'hung',
+    });
   }
-  let d = gop.reduce((a, g) => a + g.diem, 0);
-  // Tuần / Triệt làm giảm cả cát lẫn hung
-  if (c.coTuan || c.coTriet) {
-    d *= 0.6;
+  const d = gop.reduce((a, g) => a + g.diem, 0);
+  // Tuần / Triệt: tác động đã nằm trong chiều từng sao (giải sao hãm, bẻ sao sáng)
+  const tt = chieuTuanTriet(c);
+  if (tt) {
     const ten = c.coTuan && c.coTriet ? 'Tuần và Triệt' : c.coTuan ? 'Tuần' : 'Triệt';
-    gop.push({ ten: `${ten} — làm dịu cả tốt lẫn xấu`, diem: 0, loai: 'tuan', sao: ten });
+    const ly = tt.ly === 'giai' || tt.ly === 'tat-ach' ? 'giai' : tt.ly === 'be' ? 'be' : 'lan';
+    const loi =
+      ly === 'giai'
+        ? 'giải bớt phần xấu của sao hãm'
+        : ly === 'be'
+          ? 'bẻ bớt phần tốt của sao sáng'
+          : 'làm dịu cả tốt lẫn xấu';
+    gop.push({ ten: `${ten} — ${loi}`, diem: 0, loai: 'tuan', sao: ten, ly });
   }
   return { diem: d, gop };
 }
 
-function diemBanCung(c: Cung, xung?: Cung): number {
-  return chiTietBanCung(c, xung).diem;
+function diemBanCung(laSo: LaSo, c: Cung, xung?: Cung): number {
+  return chiTietBanCung(laSo, c, xung).diem;
 }
 
 export interface DiemCung {
@@ -175,11 +204,11 @@ export function chiTietDiemTungCung(laSo: LaSo): ChiTietDiemCung[] {
     const [t1, t2] = [theoChi(tamHop[0]), theoChi(tamHop[1])];
     return {
       ...ds.find((v) => v.cung === c.tenCung)!,
-      trongCung: chiTietBanCung(c, x).gop,
+      trongCung: chiTietBanCung(laSo, c, x).gop,
       soiVao: [
-        { cung: x.tenCung, linhVuc: LINH_VUC_CUNG[x.tenCung] ?? x.tenCung, diem: lam(0.5 * diemBanCung(x, c)) },
-        { cung: t1.tenCung, linhVuc: LINH_VUC_CUNG[t1.tenCung] ?? t1.tenCung, diem: lam(0.3 * diemBanCung(t1)) },
-        { cung: t2.tenCung, linhVuc: LINH_VUC_CUNG[t2.tenCung] ?? t2.tenCung, diem: lam(0.3 * diemBanCung(t2)) },
+        { cung: x.tenCung, linhVuc: LINH_VUC_CUNG[x.tenCung] ?? x.tenCung, diem: lam(0.5 * diemBanCung(laSo, x, c)) },
+        { cung: t1.tenCung, linhVuc: LINH_VUC_CUNG[t1.tenCung] ?? t1.tenCung, diem: lam(0.3 * diemBanCung(laSo, t1)) },
+        { cung: t2.tenCung, linhVuc: LINH_VUC_CUNG[t2.tenCung] ?? t2.tenCung, diem: lam(0.3 * diemBanCung(laSo, t2)) },
       ],
     };
   });
@@ -191,10 +220,10 @@ export function diemTungCung(laSo: LaSo): DiemCung[] {
     const { xungChieu, tamHop } = tamPhuongTuChinh(c.chiIndex);
     const x = theoChi(xungChieu);
     const d =
-      diemBanCung(c, x) +
-      0.5 * diemBanCung(x, c) +
-      0.3 * diemBanCung(theoChi(tamHop[0])) +
-      0.3 * diemBanCung(theoChi(tamHop[1]));
+      diemBanCung(laSo, c, x) +
+      0.5 * diemBanCung(laSo, x, c) +
+      0.3 * diemBanCung(laSo, theoChi(tamHop[0])) +
+      0.3 * diemBanCung(laSo, theoChi(tamHop[1]));
     return { cung: c.tenCung, linhVuc: LINH_VUC_CUNG[c.tenCung] ?? c.tenCung, diem: Math.round(d * 10) / 10 };
   });
   const xep = [...ds].sort((a, b) => b.diem - a.diem);
@@ -301,11 +330,21 @@ export function maCanNhac(dk: DuKienV3[]): string[] {
     .map((d) => d.id);
 }
 
-/** Độ sáng của PHỤ tinh đổi chiều nghĩa — KHUON chỉ có nét lúc bình thường */
-function dauSangPhu(s: { ten: string; doSang?: string | null }): string {
-  if (HUNG[s.ten] !== undefined && ['M', 'V', 'D'].includes(s.doSang ?? '')) return ' (đắc địa: bớt hại, có khi thành lực)';
-  if ((s.ten === 'Thiên Khốc' || s.ten === 'Thiên Hư') && ['M', 'V', 'D'].includes(s.doSang ?? '')) return ' (đắc địa: trước vất vả sau thành, buồn lo hoá động lực)';
-  if (CAT[s.ten] !== undefined && s.doSang === 'H') return ' (hãm: nét tốt yếu đi nhiều)';
+/**
+ * Chiều của PHỤ tinh / tứ hoá tại cung — KHUON chỉ có nét lúc bình thường, nên
+ * đánh dấu khi ngữ cảnh đổi chiều (CELES-72). Sao gốc xấu mà không ra 'can' thì
+ * có dấu ngoặc ngay sau tên; maCanNhac dựa vào đó để chỉ đòi ý vướng ở sao 'can'.
+ */
+function dauSangPhu(laSo: LaSo, c: Cung, s: Sao): string {
+  const chieu = chieuSao(laSo, c, s).chieu;
+  const dacKhocHu = (s.ten === 'Thiên Khốc' || s.ten === 'Thiên Hư') && ['M', 'V', 'D'].includes(s.doSang ?? '');
+  if (dacKhocHu && chieu !== 'can') return ' (đắc địa: trước vất vả sau thành, buồn lo hoá động lực)';
+  if (HUNG[s.ten] !== undefined && chieu !== 'can') {
+    return chieu === 'thuan' ? ' (ở đây thành lực)' : ' (ở đây bớt hại, có khi thành lực)';
+  }
+  if (CAT[s.ten] !== undefined && chieu === 'can') return ' (ở đây bị các sao đi cùng lấn: nét tốt yếu đi nhiều)';
+  if (CAT[s.ten] !== undefined && chieu === 'yeu') return ' (hãm: nét tốt yếu đi nhiều)';
+  if (CAT[s.ten] !== undefined && chieu === 'hai-mat') return ' (ở đây chỉ được một phần)';
   return '';
 }
 const dauHam = (s: { doSang?: string | null }) => (s.doSang === 'H' ? ' (HÃM: nét dưới yếu đi hoặc lệch — nói mặt kém, không tả như khi sáng)' : '');
@@ -326,7 +365,6 @@ const CAP_GIAP: [string, string, 'cát' | 'hung'][] = [
   ['Hóa Lộc', 'Hóa Quyền', 'cát'],
   ['Hóa Khoa', 'Hóa Quyền', 'cát'],
   ['Lộc Tồn', 'Hóa Lộc', 'cát'],
-  ['Kình Dương', 'Đà La', 'hung'],
   ['Địa Không', 'Địa Kiếp', 'hung'],
   ['Hỏa Tinh', 'Linh Tinh', 'hung'],
 ];
@@ -338,7 +376,8 @@ function giapCung(laSo: LaSo, c: Cung): { noiDung: string; sao: string[] } | nul
   const thay = CAP_GIAP.filter(([a, b]) => (co(truoc, a) && co(sau, b)) || (co(truoc, b) && co(sau, a)))
     // Nhật Nguyệt giáp chỉ là cách tốt khi cả hai sao sáng
     .filter(([a]) => a !== 'Thái Dương' || (sang('Thái Dương') && sang('Thái Âm')));
-  if (!thay.length) return null;
+  const duongDaGiapKy = co(c, 'Lộc Tồn') && co(c, 'Hóa Kỵ');
+  if (!thay.length && !duongDaGiapKy) return null;
   const mat = LINH_VUC_CUNG[c.tenCung] ?? c.tenCung;
   const cat = thay.filter((t) => t[2] === 'cát').map(([a, b]) => `${a}–${b}`);
   const hung = thay.filter((t) => t[2] === 'hung').map(([a, b]) => `${a}–${b}`);
@@ -347,13 +386,18 @@ function giapCung(laSo: LaSo, c: Cung): { noiDung: string; sao: string[] } | nul
       `Giáp cung: ${c.tenCung} nằm giữa hai cung liền kề (${truoc.tenCung}, ${sau.tenCung}), đọc theo mặt đời ${mat} — lực nhẹ hơn sao trong cung và tam phương: ` +
       [
         cat.length ? `giáp cát ${cat.join(', ')} — được nâng đỡ từ hai phía` : '',
-        // Kình Đà luôn giáp Lộc Tồn (Kình = Lộc Tồn + 1, Đà = Lộc Tồn − 1): cái bị kẹp là phần lộc
-        hung.length ? `giáp hung ${hung.join(', ')} — bị kẹp, áp lực dồn từ hai phía${hung.includes('Kình Dương–Đà La') && co(c, 'Lộc Tồn') ? '; Kình Đà kẹp Lộc Tồn: có lộc mà khó giữ trọn' : ''}` : '',
+        /*
+         * Bỏ câu "bị kẹp" mặc định (CELES-72): giáp nhẹ hơn toạ thủ và tam phương (HS:730), nặng nhẹ
+         * tuỳ sao trong cung có chế được không. Kình Đà LUÔN giáp Lộc Tồn nên không nêu như một nét
+         * riêng của lá số; chỉ nói "Dương Đà giáp Kỵ" khi Lộc Tồn đồng cung Hóa Kỵ (KL:870).
+         */
+        hung.length ? `giáp ${hung.join(', ')} — hai bên có sát tinh, nặng hay nhẹ tuỳ sao trong cung có chế được không` : '',
+        duongDaGiapKy ? 'Dương Đà giáp Kỵ: Lộc Tồn gặp Hóa Kỵ lại bị Kình Đà kẹp hai bên, lộc dễ thành gánh' : '',
       ]
         .filter(Boolean)
         .join('; ') +
       '.',
-    sao: thay.flatMap(([a, b]) => [a, b]),
+    sao: [...thay.flatMap(([a, b]) => [a, b]), ...(duongDaGiapKy ? ['Kình Dương', 'Đà La'] : [])],
   };
 }
 
@@ -419,28 +463,54 @@ function moTaCung(
     .map((s) => (KHUON.vi.netSao[s.ten] ? `${s.ten}${dauHam(s)}: ${KHUON.vi.netSao[s.ten].manh}` : ''))
     .filter(Boolean);
   const nghiaPhu = (ds: typeof phu) =>
-    ds.map((s) => (KHUON.vi.netPhuTinh[s.ten] ? `${s.ten}${dauSangPhu(s)}: ${KHUON.vi.netPhuTinh[s.ten]}` : '')).filter(Boolean);
+    ds
+      .map((s) => {
+        // Nét theo chiều sao đang đứng: Kình Dương có Thất Sát chỉ huy không mang nét "va chạm" (CELES-72)
+        // Vòng Thái Tuế giữ nét netPhuTinh như trước (dữ kiện v3 không dùng nét "thế đứng")
+        const net = !KHUON.vi.netPhuTinh[s.ten]
+          ? undefined
+          : KHUON.vi.netThaiTueGoc[s.ten]
+            ? KHUON.vi.netPhuTinh[s.ten]
+            : netSaoTheoChieu(KHUON.vi, s.ten, chieuSao(laSo, c, s).chieu);
+        return net ? `${s.ten}${dauSangPhu(laSo, c, s)}: ${net}` : '';
+      })
+      .filter(Boolean);
   // Tam hợp: chỉ tứ hóa và sao nặng nhất (trọng số ≥ 1) có nghĩa — cung ấy là lực đỡ/kéo, không phải chủ thể
   const netPhu = nghiaPhu(cheDo === 'tam-hop' ? [...hoa, ...phu.filter((s) => (CAT[s.ten] ?? HUNG[s.ten] ?? 0) >= 1)] : [...hoa, ...phu]);
   const netNhe = cheDo === 'chinh' ? nghiaPhu(nhe) : [];
   const netTs = cheDo === 'chinh' && c.trangSinh && KHUON.vi.netTrangSinh[c.trangSinh] ? `${c.trangSinh}: ${KHUON.vi.netTrangSinh[c.trangSinh]}` : '';
   const nhan = nhanChuNgu(c, docLaThan);
+  /*
+   * Tuần Triệt đảo nghĩa theo độ sáng (CELES-66/72): giải sao hãm, bẻ sao sáng
+   * (HS:4252, KL:1163, AB:4817). Mốc ghi "giai đoạn đầu đời / về sau" (AB:4819),
+   * không ghi một con số tuổi cố định.
+   */
+  const ttc = chieuTuanTriet(c);
+  const tacDungTT = !ttc
+    ? ''
+    : ttc.ly === 'giai'
+      ? 'giải bớt phần xấu của các sao đang ở thế khó ở đây'
+      : ttc.ly === 'tat-ach'
+        ? 'ở cung Tật Ách thì là điều tốt, bệnh tật được giải'
+        : ttc.ly === 'be'
+          ? 'bẻ bớt phần tốt của các sao đang thuận ở đây'
+          : 'làm dịu cả tốt lẫn xấu';
   const tuanTriet = [
-    c.coTriet ? `Triệt: chặn, làm gãy${coMoc ? ' — rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập' : ''}` : '',
-    c.coTuan ? `Tuần: làm chậm, che bớt${coMoc ? ' — nhẹ hơn Triệt nhưng dai, theo suốt đời' : ''}` : '',
+    c.coTriet ? `Triệt: ${tacDungTT}${coMoc ? ' — rõ nhất ở quãng đầu đời, nhạt dần khi đã tự lập' : ''}` : '',
+    c.coTuan ? `Tuần: ${tacDungTT}${coMoc ? ' — nhẹ hơn Triệt nhưng dai, theo suốt đời' : ''}` : '',
   ].filter(Boolean);
   /*
    * Lượt 3 TQ12 (01/10/2026): Thiên Di có Triệt + Địa Không hãm, model vẫn chỉ kể
    * Thiên Khôi "gặp người chỉ đường" — luật chung "có Triệt thì nói chỗ vướng" ở phạm
    * vi câu hỏi không đủ. Câu ngang hàng liệt kê đích danh chỗ vướng ngay trong dữ kiện.
    */
+  // Chỗ vướng = sao ra chiều 'can' TRONG NGỮ CẢNH cung này, không theo tên (CELES-72)
+  const laCan = (s: Sao) => chieuSao(laSo, c, s).chieu === 'can';
   const vuong = [
-    ...chinh.filter((s) => s.doSang === 'H').map((s) => `${s.ten} hãm`),
-    ...hoa.filter((s) => s.ten === 'Hóa Kỵ' && !['M', 'V', 'D'].includes(s.doSang ?? '')).map((s) => s.ten),
-    // hung tinh đắc / miếu / vượng chỉ kéo nửa (như diemTungCung) — không bắt nói thành chỗ vướng
-    ...phu.filter((s) => HUNG[s.ten] !== undefined && !['M', 'V', 'D'].includes(s.doSang ?? '')).map(tenSao),
-    ...(c.coTriet ? ['Triệt'] : []),
-    ...(c.coTuan ? ['Tuần'] : []),
+    ...chinh.filter(laCan).map((s) => `${s.ten}${s.doSang === 'H' ? ' hãm' : ''}`),
+    ...hoa.filter(laCan).map((s) => s.ten),
+    ...phu.filter(laCan).map(tenSao),
+    ...(ttc?.chieu === 'can' ? [[c.coTriet ? 'Triệt' : '', c.coTuan ? 'Tuần' : ''].filter(Boolean).join(', ')] : []),
   ];
   /*
    * GỌN (25/09/2026) → TAM PHƯƠNG CÓ NGHĨA (01/10/2026). Bản 25/09 bỏ hẳn nghĩa ở cung

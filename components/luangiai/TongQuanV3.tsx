@@ -39,16 +39,15 @@ export const THE_DAU: { id: string; nhan: string; tieuDe: string }[] = [
  */
 export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhach?: boolean) => void) {
   /*
-   * "Tạo bản mới" (26/09/2026): mỗi lần bấm tăng `lanMoi`, khoá đổi nên hai lượt
-   * tải chạy lại với taoMoi — route chỉ viết lại câu viết với kho tri thức cũ.
+   * Bộ đếm lượt tải: "Viết lại (quản trị)" tăng nó để khoá đổi và hai lượt tải chạy lại. Nút "Tạo bản
+   * mới" từng dùng chung bộ đếm này đã gỡ (K2, 22/10/2026 — 10.19 C: logic đổi thì route tự viết lại).
    */
-  const [lanMoi, setLanMoi] = useState(0);
-  // Lượt tải nào là "Viết lại (quản trị)" — route bỏ qua đệm, không chỉ câu viết với kho cũ
+  const [lanTai, setLanTai] = useState(0);
+  // Lượt tải nào là "Viết lại (quản trị)" — route bỏ qua đệm
   const [lanVietLai, setLanVietLai] = useState(-1);
   const khoa = laSo
-    ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}|${lanMoi}`
+    ? `${laSo.ngay}-${laSo.thang}-${laSo.nam}-${laSo.gio}-${laSo.gioiTinh}|${laSo.namXem}|${lanTai}`
     : null;
-  const [banMoi, setBanMoi] = useState<string | null>(null);
   /*
    * HAI LƯỢT NỐI TIẾP, không chồng câu (25/09/2026): ba câu của ba thẻ đầu, rồi
    * tám câu còn lại. Một lượt 11 câu thì ba thẻ đầu phải chờ câu chậm nhất trong
@@ -78,12 +77,11 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
       fetch('/api/luan-giai-v3', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi, taoMoi: lanMoi > 0, vietLai: lanVietLai === lanMoi }),
+        body: JSON.stringify({ ...laSo, nhom: 'tong-quan', chi, vietLai: lanVietLai === lanTai }),
       })
         .then((r) => (r.ok || r.status === 429 ? r.json() : null))
         .then((d) => {
           if (d?.gioiHanKhach) gioiHan = true;
-          if (d?.banMoi && !huy) setBanMoi(khoa);
           return Array.isArray(d?.cau) ? (d.cau as CauV3[]) : null;
         })
         .catch(() => null);
@@ -101,7 +99,7 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
     });
     Promise.all([pDau, pSau]).then(([a, b]) => {
       if (huy) return;
-      const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet);
+      const hongHet = (x: CauV3[] | null) => !x || x.every((c) => c.chuaViet && !c.tamAn);
       if (hongHet(a) && hongHet(b)) hong.current?.(gioiHan);
     });
     return () => {
@@ -121,13 +119,10 @@ export function useTongQuanV3(laSo: ThongTinLaSoV3 | null, onHong?: (gioiHanKhac
     /** Danh sách tổng quan còn đang chờ */
     dangDocDanhSach: dangDocSau,
     cau: cauDau || cauSau ? [...(cauDau ?? []), ...(cauSau ?? [])] : null,
-    /** Có câu viết với kho tri thức cũ — người đã đăng nhập được "Tạo bản mới" */
-    banMoi: Boolean(khoa) && banMoi === khoa && !dangDocDau && !dangDocSau,
-    taoBanMoi: () => setLanMoi((n) => n + 1),
     /** Chỉ quản trị viên — route kiểm quyền */
     vietLaiQuanTri: () => {
-      setLanVietLai(lanMoi + 1);
-      setLanMoi(lanMoi + 1);
+      setLanVietLai(lanTai + 1);
+      setLanTai(lanTai + 1);
     },
   };
 }
@@ -177,7 +172,9 @@ function TheDau({
         </div>
       ) : cau.chuaViet ? (
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.
+          {cau.tamAn
+            ? 'Celes chưa có lời cho phần này. Bạn xem các phần còn lại.'
+            : 'Celes chưa viết được phần này. Mở lại trang sau ít phút để thử lại.'}
         </p>
       ) : (
         <>

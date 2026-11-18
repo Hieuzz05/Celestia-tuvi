@@ -118,15 +118,14 @@ export async function POST(req: Request) {
       cauHoi: cauHoi || undefined,
     });
 
-    return NextResponse.json({ soSanh, ketNoi: kq, model: `${kq.provider}/${kq.model}` });
+    return NextResponse.json({ soSanh, ketNoi: kq });
   } catch (e) {
     // Bảng so sánh do engine tính nên luôn trả về được, kể cả khi model hỏng —
     // người dùng vẫn nhận được phần dữ kiện thay vì một trang trắng.
-    if (e instanceof KhongCoModelError) {
-      return NextResponse.json({ soSanh, yDinh, loiAi: e.message });
-    }
+    // Chi tiết lỗi (tên model, quota) chỉ ghi nhật ký máy chủ (rà soát 11/11, Q4).
+    console.error('[hop-tuoi]', e instanceof KhongCoModelError ? 'chua-cau-hinh' : '', e);
     return NextResponse.json(
-      { soSanh, yDinh, loiAi: e instanceof Error ? e.message : 'Lỗi khi gọi AI' },
+      { soSanh, yDinh, loiAi: 'Celes chưa viết được phần đọc kết nối. Bảng so sánh vẫn đầy đủ, bạn thử lại sau ít phút.' },
       { status: 200 }
     );
   }

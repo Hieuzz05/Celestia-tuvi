@@ -357,6 +357,14 @@ export interface KhuonChu {
   netSao: Record<string, NetSao>;
   /** Nét của phụ tinh trọng yếu — thứ làm hai lá số cùng chính tinh đọc ra khác nhau */
   netPhuTinh: Record<string, string>;
+  /**
+   * Nét CẢ ĐỜI của vòng Thái Tuế GỐC (an theo năm sinh). `netPhuTinh` của mười hai
+   * sao này viết bằng giọng năm ("năm nay…") vì nó là nghĩa của lưu Thái Tuế; đọc
+   * sao gốc thì dùng bảng này, qua `netSaoGoc` (CELES-72, C4).
+   */
+  netThaiTueGoc: Record<string, string>;
+  /** Nét thay khi bộ sao đảo chiều của sao (CELES-72); đọc qua `netSaoTheoChieu` */
+  netTheoChieu: { thuan: Record<string, string>; can: Record<string, string>; trung: Record<string, string> };
   /** Vòng Tràng Sinh: nhịp sinh khí của một cung */
   netTrangSinh: Record<string, string>;
   chuDeCung: Record<string, string>;
@@ -454,7 +462,10 @@ export interface KhuonChu {
     netCanChinh: readonly string[];
     chamVao: readonly string[];
     khongChamVao: readonly string[];
+    /** Tuần / Triệt bẻ bớt phần tốt của sao sáng — nhóm lưu ý */
     tuanTrietCau: string;
+    /** Tuần / Triệt giải bớt phần xấu của sao hãm — nhóm thuận (HS:4252, KL:1163) */
+    tuanTrietGiaiCau: string;
     linhVucCo: readonly string[];
     linhVucTrong: string;
     trangThaiThuan: string;
@@ -473,11 +484,27 @@ export interface KhuonChu {
     doanSangKim: readonly string[];
     doanTuHoa: string;
     doanTuHoaRo: string;
+    /** Tuần / Triệt ở cung có cả sao tốt lẫn sao xấu: làm dịu cả hai */
     doanTuanTriet: string;
+    doanTuanTrietGiai: string;
+    doanTuanTrietBe: string;
     doanTamPhuong: string;
     doanTrong: string;
     doanPhuTinh: readonly string[];
-    doanDoiCung: readonly string[];
+    /**
+     * Cung đối chiếu sang — theo CHIỀU của sao ở đó, không mặc định là "lực ngược"
+     * (chủ dự án 11/11/2026: "ko có chuyện sao ở cung xung chiếu là lực cản").
+     */
+    doanDoiCung: {
+      thuan: readonly string[];
+      can: readonly string[];
+      haiMat: readonly string[];
+      /** Sao bên ấy tốt mà đang hãm, không gặp sát: đỡ ít đi, không phải cản */
+      yeu: readonly string[];
+      ky: string;
+      /** Kỵ xung mà sao gốc của Kỵ sáng hay bình (TT2:667): có trở ngại mà vẫn làm được */
+      kyNhe: string;
+    };
     doanDoiCungTrong: string;
     doanTrangSinh: readonly string[];
     doanGiaiDoanCham: readonly string[];
@@ -736,6 +763,120 @@ const PHU_TINH_EN: Record<string, string> = {
   'LN Văn Tinh': 'this year study, exams, or writing show clearer results than anything else',
 };
 
+/**
+ * Vòng Thái Tuế GỐC — bốn thế đứng theo bốn bộ tam hợp của vòng (CELES-72, C4).
+ * Bảng `netPhuTinh` của các sao này viết giọng năm cho lưu Thái Tuế; sao gốc an theo
+ * năm sinh thì mang nghĩa cả đời: người ở thế nào trước việc đời.
+ */
+export const VONG_THAI_TUE = [
+  'Thái Tuế', 'Thiếu Dương', 'Tang Môn', 'Thiếu Âm', 'Quan Phù', 'Tử Phù',
+  'Tuế Phá', 'Long Đức', 'Bạch Hổ', 'Phúc Đức', 'Điếu Khách', 'Trực Phù',
+] as const;
+
+function theoThe(the: [string, string, string, string]): Record<string, string> {
+  // Bộ tam hợp của vòng: vị trí i, i+4, i+8 cùng một thế
+  return Object.fromEntries(VONG_THAI_TUE.map((ten, i) => [ten, the[i % 4]]));
+}
+
+const THAI_TUE_GOC_VI = theoThe([
+  'quen đứng ra nói thẳng và nhận phần việc có tên mình, nên dễ được tin mà cũng dễ va chạm',
+  'hay được hưởng cái có sẵn và có người che chở, ít khi phải tự giành',
+  'hay làm nhiều hơn phần được ghi nhận: có tài mà chưa chắc được dùng đúng chỗ',
+  'hay nhường phần mình, giúp người mà ít khi đòi lại',
+]);
+
+const THAI_TUE_GOC_EN = theoThe([
+  'tend to step forward, speak plainly and take on work with your name on it, so you are trusted and also clash more',
+  'tend to inherit what is already there and to have someone covering you, rarely having to fight for it',
+  'tend to do more than you get credit for: the ability is there, but it is not always used in the right place',
+  'tend to give up your share, helping others and seldom asking for anything back',
+]);
+
+/** Nét của một sao GỐC trên lá số — vòng Thái Tuế lấy nét cả đời, không lấy giọng năm */
+export function netSaoGoc(k: KhuonChu, ten: string): string | undefined {
+  return k.netThaiTueGoc[ten] ?? k.netPhuTinh[ten];
+}
+
+/*
+ * Nét theo CHIỀU (CELES-72, 12/11/2026). Nét trong PHU_TINH_* viết cho trạng thái
+ * thường gặp của sao. Khi bộ đi cùng đảo chiều (sát tinh đắc có sao chỉ huy, Kỵ gặp
+ * Nhật Nguyệt ở Sửu Mùi… ra 'thuan'; Lộc, Khoa, Xương Khúc gặp Kỵ hay Không Kiếp ra
+ * 'can'), nét cũ đứng trong khuôn "được đỡ" / "dễ vướng" thành câu tự mâu thuẫn.
+ * Hai bảng dưới thay nét cho đúng chiều; sao không có trong bảng thì giữ nét gốc.
+ */
+const NET_THUAN_VI: Record<string, string> = {
+  'Kình Dương': 'quyết liệt và dám đứng ra nhận việc khó, sức mạnh ấy ở đây được dùng đúng chỗ',
+  'Đà La': 'kiên trì, làm chậm mà chắc, việc đã nhận thì theo tới cùng',
+  'Hỏa Tinh': 'bứt tốc rất nhanh khi cần, và sức nóng ấy được dẫn vào việc',
+  'Linh Tinh': 'nhạy và bền trong im lặng, thường nhận ra chuyện trước người khác',
+  'Địa Không': 'nghĩ khác người, dám bỏ lối cũ để tìm lối mới',
+  'Địa Kiếp': 'dám làm lớn và chịu được biến động, cái mới hay đến từ chỗ người khác ngại',
+  'Hóa Kỵ': 'phần này được để tâm kỹ, chỗ người khác bỏ qua thì bạn giữ lại và làm cho tới',
+  'Cô Thần': 'quen tự lo liệu, giữ của và giữ việc chắc tay, ít phải nhờ ai',
+  'Quả Tú': 'kín đáo và biết giữ, thứ đã có ở phần này ít khi để hao',
+  'Thiên Không': 'ít bị vướng chuyện ốm đau, có gì cũng qua nhanh',
+  'Kiếp Sát': 'gan dạ, dám nhận việc khó và việc nguy mà người khác né',
+  'Phá Toái': 'dám phá lối cũ để làm lại, sức bật ở phần này mạnh hơn người thường',
+};
+/*
+ * Nét khi sao đứng HAI MẶT hoặc chưa đủ bộ để nói tốt xấu (chuyên gia 12/11/2026): sáu phụ
+ * tinh không có độ sáng mà nét gốc chỉ viết mặt xấu. Nêu tính chất, không phán.
+ */
+const NET_TRUNG_VI: Record<string, string> = {
+  'Cô Thần': 'thích tự xoay xở một mình, có lúc là chỗ mạnh, có lúc thành xa người',
+  'Quả Tú': 'giữ khoảng cách như một thói quen, kín đáo nhưng người khác cần thời gian mới gần được',
+  'Thiên Không': 'lên nhanh mà xuống cũng nhanh, xoay xở giỏi nhưng khó giữ lâu thứ đã nắm',
+  'Kiếp Sát': 'nóng và dám liều, có lúc là gan dạ, có lúc thành hấp tấp',
+  'Phá Toái': 'hay muốn phá ra làm lại, việc đổi mới ở phần này có được có mất',
+  'Lưu Hà': 'ăn nói sắc, giỏi lý lẽ, nhưng nên cẩn thận chuyện sông nước và đi xa',
+};
+const NET_CAN_VI: Record<string, string> = {
+  'Lộc Tồn': 'phần mình giữ ở đây dễ hao, giữ chặt quá lại thành bó tay',
+  'Hóa Lộc': 'cơ hội ở phần này có đến nhưng khó giữ lâu',
+  'Hóa Quyền': 'muốn nắm quyền quyết ở phần này mà chưa đủ thế, dễ thành gồng',
+  'Hóa Khoa': 'làm được mà ít người thấy, tiếng tốt ở phần này khó đến đúng lúc',
+  'Văn Xương': 'giấy tờ, chữ nghĩa ở phần này dễ sơ suất, cần đọc kỹ trước khi ký',
+  'Văn Khúc': 'lời nói hay mà dễ lệch ý, nói ra rồi mới thấy không như mình định',
+};
+const NET_THUAN_EN: Record<string, string> = {
+  'Kình Dương': 'are decisive and willing to take on hard work, and that force is used in the right place here',
+  'Đà La': 'are persistent, slow but sure, and see through what you take on',
+  'Hỏa Tinh': 'speed up fast when needed, and that heat goes into the work',
+  'Linh Tinh': 'are quietly sharp and steady, often noticing things before others do',
+  'Địa Không': 'think differently and are willing to drop the old way for a new one',
+  'Địa Kiếp': 'dare to go big and can handle upheaval; new things often come from where others hesitate',
+  'Hóa Kỵ': 'this area gets close attention: what others skip, you keep and follow through',
+  'Cô Thần': 'look after things yourself and keep a firm hold on money and work, rarely needing to ask',
+  'Quả Tú': 'are discreet and careful, so what you have here rarely wears away',
+  'Thiên Không': 'rarely get caught up in illness, and what comes passes quickly',
+  'Kiếp Sát': 'are brave and take on the hard, risky work others avoid',
+  'Phá Toái': 'are willing to tear down the old way and rebuild, with more bounce than most',
+};
+const NET_TRUNG_EN: Record<string, string> = {
+  'Cô Thần': 'like handling things alone, which is sometimes a strength and sometimes keeps people away',
+  'Quả Tú': 'keep some distance out of habit; discreet, but people need time to get close',
+  'Thiên Không': 'rise fast and fall fast: good at getting around problems, less good at keeping what you gained',
+  'Kiếp Sát': 'are hot-blooded and willing to gamble, sometimes brave, sometimes rash',
+  'Phá Toái': 'often want to break things open and start over; change here brings both gains and losses',
+  'Lưu Hà': 'speak sharply and argue well, but should take care around water and long trips',
+};
+const NET_CAN_EN: Record<string, string> = {
+  'Lộc Tồn': 'what you hold here wears away easily, and holding too tight ties your hands',
+  'Hóa Lộc': 'chances in this area do come but are hard to keep for long',
+  'Hóa Quyền': 'you want the final say here without enough footing, so it easily turns into strain',
+  'Hóa Khoa': 'you get things done but few people see it; credit here rarely comes on time',
+  'Văn Xương': 'paperwork and wording here are easy to slip on, so read carefully before signing',
+  'Văn Khúc': 'words come out well but drift from what you meant',
+};
+
+/** Nét của một sao gốc theo CHIỀU nó đang đứng (thuan / can / yeu / hai-mat / trung) */
+export function netSaoTheoChieu(k: KhuonChu, ten: string, chieu: string): string | undefined {
+  if (chieu === 'thuan' && k.netTheoChieu.thuan[ten]) return k.netTheoChieu.thuan[ten];
+  if ((chieu === 'can' || chieu === 'yeu') && k.netTheoChieu.can[ten]) return k.netTheoChieu.can[ten];
+  if ((chieu === 'hai-mat' || chieu === 'trung') && k.netTheoChieu.trung[ten]) return k.netTheoChieu.trung[ten];
+  return netSaoGoc(k, ten);
+}
+
 /** Vòng Tràng Sinh — nhịp sinh khí của cung, đọc như giai đoạn của một chu kỳ */
 const TRANG_SINH_VI: Record<string, string> = {
   'Trường Sinh': 'đang ở đầu một chu kỳ: chưa có gì rõ hình, nhưng đây là lúc gieo thì dễ mọc',
@@ -771,6 +912,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
   vi: {
     netSao: NET_VI,
     netPhuTinh: PHU_TINH_VI,
+    netThaiTueGoc: THAI_TUE_GOC_VI,
+    netTheoChieu: { thuan: NET_THUAN_VI, can: NET_CAN_VI, trung: NET_TRUNG_VI },
     netTrangSinh: TRANG_SINH_VI,
     chuDeCung: CHU_DE_VI,
     doSang: DO_SANG_VI,
@@ -916,7 +1059,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         ' Cung đó nằm ngoài tầm quãng đang xét, nên phần này ít biến động hơn.',
         ' Quãng đang xét không đi qua cung đó, nên đây chưa phải chỗ cần dồn sức.',
       ],
-      tuanTrietCau: '{ten} đóng tại {cung} — {chuDe} thường chậm hiện ra đúng lúc cần',
+      tuanTrietCau: '{ten} đóng tại {cung} bẻ bớt phần tốt của sao sáng ở đó — {chuDe} thường chậm hiện ra đúng lúc cần',
+      tuanTrietGiaiCau: '{ten} đóng tại {cung} giải bớt phần khó của sao hãm ở đó — {chuDe} nhẹ hơn mức các sao ấy báo',
       linhVucCo: [
         'Phần {nhan} đọc từ {cung}: {trangThai}.{them}',
         '{nhan} nhìn từ {cung} thì {trangThai}.{them}',
@@ -1021,9 +1165,13 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'Có {sao} rơi vào đây, nên cùng một bộ sao vẫn cho ra trải nghiệm khác: phần này thường đậm hơn, hoặc lệch đi so với mức bình thường.',
       doanTuHoaRo: 'Có {sao} rơi vào đây: {net}.',
       doanTuanTriet:
-        'Có {ten} đóng ở đây, nên phần này hay đến muộn: nhiều người phải qua một quãng chệch nhịp rồi mới thấy rõ mình thế nào ở chỗ này.',
+        'Có {ten} đóng ở đây, làm dịu cả mặt tốt lẫn mặt khó, nên phần này thường hiện ra chậm và nhẹ hơn.',
+      doanTuanTrietGiai:
+        'Có {ten} đóng ở đây và giải bớt phần khó, nên chuyện ở phần này nhẹ hơn mức các sao báo.',
+      doanTuanTrietBe:
+        'Có {ten} đóng ở đây, bẻ bớt phần tốt của các sao đang thuận, nên phần này hay đến muộn: nhiều người phải qua một quãng chệch nhịp rồi mới thấy rõ mình thế nào ở chỗ này.',
       doanTamPhuong:
-        'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và đối diện là {xung} — chỗ hay kéo bạn về hướng ngược lại.',
+        'Phần này không đứng một mình: nó nhận ảnh hưởng từ {hoTro}, và {xung} ở phía đối diện chiếu sang.',
       doanTrong:
         'Vì mượn nét từ cung đối diện nên bạn thường linh hoạt ở phần này, nhưng cũng dễ thấy mình thay đổi tuỳ hoàn cảnh và tuỳ người.',
       doanPhuTinh: [
@@ -1032,14 +1180,27 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'Thực tế hơn: bạn {net}.',
         'Đi liền với nó, bạn {net}.',
       ],
-      doanDoiCung: [
-        'Kéo ngược lại là {cung} với {sao}: phần đó đòi gần như thứ trái hẳn, nên chuyện ở đây không bao giờ là chọn một bên mà là chỉnh liều lượng.',
-        'Lực ngược nằm ở {cung}, nơi {sao} đóng — ép nó im thì được yên một quãng, rồi nó quay lại to hơn.',
-        'Ở phía đối diện, {cung} có {sao} kéo theo hướng khác. Lực đó không mất đi; nó chỉ chờ lúc bạn mệt nhất để lên tiếng.',
-        'Cân lại phần trên là {cung} với {sao}: đây là chỗ điểm mạnh ở trên dễ quay ra làm khó chính bạn.',
-        'Soi từ {cung}, nơi {sao} đóng, thì cùng một nét ấy đọc ra nghĩa gần như ngược lại.',
-        'Thứ đứng đối diện là {cung} với {sao}, và hai bên không hoà nhau được: bên nào mạnh lên thì bên kia lùi, rồi đổi phiên.',
-      ],
+      doanDoiCung: {
+        thuan: [
+          '{cung} chiếu sang với {sao} và đỡ cho phần này: chỗ còn thiếu ở đây thường được bù từ phía ấy.',
+          'Từ {cung}, {sao} chiếu sang cùng một chiều, nên phần này có thêm chỗ dựa.',
+          'Nhìn sang {cung} thấy {sao} chiếu về đây khá thuận, nên phần này có thêm người hoặc hoàn cảnh tiếp sức.',
+        ],
+        can: [
+          '{cung} chiếu sang với {sao} đang ở thế khó, nên phần này hay gánh thêm chuyện từ phía ấy, dù sao chiếu nhẹ hơn sao đóng tại chỗ.',
+          'Từ {cung}, {sao} chiếu sang không thuận, nên chuyện ở phần này hay bị chuyện bên {cung} làm chậm lại.',
+        ],
+        haiMat: [
+          '{cung} chiếu sang với {sao}, có phần đỡ mà cũng có phần làm khó, tuỳ lúc nào bên đó mạnh hơn.',
+          'Từ {cung}, {sao} chiếu sang cho cả hai mặt: được thêm chỗ dựa, nhưng cũng phải chia sức cho chuyện bên đó.',
+        ],
+        yeu: [
+          '{cung} chiếu sang với {sao}, nhưng sao ấy đang yếu, nên phần này được đỡ ít hơn mức thường.',
+          'Từ {cung}, {sao} chiếu sang mà chưa đủ sức, nên chỗ dựa từ phía ấy có nhưng mỏng.',
+        ],
+        ky: 'Hóa Kỵ đóng ở {cung} và chiếu thẳng sang đây, nên phần này hay vướng vì chuyện bên {cung}.',
+        kyNhe: 'Hóa Kỵ đóng ở {cung} và chiếu thẳng sang đây, nên chuyện bên {cung} hay làm phần này chậm lại, nhưng vẫn làm được.',
+      },
       doanDoiCungTrong:
         'Đối diện là {cung} và cũng không có sao chính nào đóng, nên phần này ít bị kéo về một hướng cố định — bạn tự do hơn, nhưng cũng ít điểm tựa hơn.',
       doanTrangSinh: [
@@ -1110,6 +1271,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
   en: {
     netSao: NET_EN,
     netPhuTinh: PHU_TINH_EN,
+    netThaiTueGoc: THAI_TUE_GOC_EN,
+    netTheoChieu: { thuan: NET_THUAN_EN, can: NET_CAN_EN, trung: NET_TRUNG_EN },
     netTrangSinh: TRANG_SINH_EN,
     chuDeCung: CHU_DE_EN,
     doSang: DO_SANG_EN,
@@ -1255,7 +1418,8 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         ' That house sits outside the stretch under view, so this side moves less.',
         ' The stretch under view does not pass through that house, so this is not where to spend effort yet.',
       ],
-      tuanTrietCau: '{ten} sits on {cung} — {chuDe} is usually slow to show up when needed',
+      tuanTrietCau: '{ten} sits on {cung} and blunts the good of the bright stars there — {chuDe} is usually slow to show up when needed',
+      tuanTrietGiaiCau: '{ten} sits on {cung} and eases the hard side of the weak stars there — {chuDe} is lighter than those stars suggest',
       linhVucCo: [
         '{nhan} is read from {cung}: {trangThai}.{them}',
         'Seen from {cung}, {nhan} shows that {trangThai}.{them}',
@@ -1345,9 +1509,13 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         '{sao} falls here, so the same set of stars plays out differently: this area tends to be pushed harder, or twisted out of its usual shape.',
       doanTuHoaRo: '{sao} falls here: {net}.',
       doanTuanTriet:
-        'There is {ten} sitting here, so this area tends to arrive late: many people go through a stretch of being out of step before they see how they actually are here.',
+        'There is {ten} sitting here, softening both the good and the hard side, so this area usually shows up later and milder.',
+      doanTuanTrietGiai:
+        'There is {ten} sitting here and it eases the hard side, so this area weighs less than the stars suggest.',
+      doanTuanTrietBe:
+        'There is {ten} sitting here, blunting the good of the favourable stars, so this area tends to arrive late: many people go through a stretch of being out of step before they see how they actually are here.',
       doanTamPhuong:
-        'This part does not stand alone: it draws from {hoTro}, and facing it is {xung} — the place that tends to pull you the other way.',
+        'This part does not stand alone: it draws from {hoTro}, and {xung} shines on it from the opposite side.',
       doanTrong:
         'Because it borrows from the house opposite, you are usually adaptable here, but also more changeable depending on the situation and the person.',
       doanPhuTinh: [
@@ -1356,12 +1524,27 @@ export const KHUON: Record<NgonNguDoc, KhuonChu> = {
         'More concretely, you {net}.',
         'Right beside it, you {net}.',
       ],
-      doanDoiCung: [
-        'Pulling the other way is {cung} with {sao}: that side wants close to the opposite, so this is never about picking a side but about setting the dose.',
-        'The counterweight sits in {cung}, where {sao} is — force it quiet and you get a calm stretch, then it comes back louder.',
-        'Opposite, {cung} holds {sao} and pulls elsewhere. That pull does not go away; it waits for the day you are most tired.',
-        'Balancing the above is {cung} with {sao}: this is where that strength turns around and makes things hard for you.',
-      ],
+      doanDoiCung: {
+        thuan: [
+          '{cung} shines across with {sao} and supports this area: what is missing here is often made up from that side.',
+          'From {cung}, {sao} shines across in the same direction, so this area has more to lean on.',
+          'Across in {cung}, {sao} favours this side, so this area gets help from people or circumstances.',
+        ],
+        can: [
+          '{cung} shines across with {sao} in a weak position, so this area often carries extra weight from that side, though a star shining across weighs less than one sitting here.',
+          'From {cung}, {sao} shines across unfavourably, so things here are often slowed by what is going on in {cung}.',
+        ],
+        haiMat: [
+          '{cung} shines across with {sao}, partly supporting and partly complicating this area, depending on which side is stronger at the time.',
+          'From {cung}, {sao} shines across both ways: more to lean on, but also some of your strength goes to things over there.',
+        ],
+        yeu: [
+          '{cung} shines across with {sao}, but that star is weak, so this area gets less support than usual.',
+          'From {cung}, {sao} shines across without much strength, so the support from that side is there but thin.',
+        ],
+        ky: 'Hóa Kỵ sits in {cung} and shines straight across, so this area often snags because of things in {cung}.',
+        kyNhe: 'Hóa Kỵ sits in {cung} and shines straight across, so things in {cung} often slow this area down, though it still gets done.',
+      },
       doanDoiCungTrong:
         'Facing it is {cung}, and no major star sits there either, so this area is pulled less firmly in any one direction — freer, but with less to lean on.',
       doanTrangSinh: [

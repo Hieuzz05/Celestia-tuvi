@@ -69,6 +69,11 @@ $fn$;
 --
 -- Điểm này chỉ dùng để XẾP HẠNG trong nhánh từ khoá; ứng dụng trộn hai nhánh
 -- bằng RRF theo thứ hạng, không cộng điểm với nhánh vector.
+--
+-- ĐÃ BỊ THAY (15/11/2026, CELES-78) bởi va-rag-tu-khoa-hai-tang.sql: thân hàm dưới
+-- đây tính lại to_tsvector trên mỗi đoạn, hay quá trần 8 giây. ĐỪNG chạy lại khối
+-- này — nó ghi đè bản nhanh. Giữ lại làm lịch sử; bản hoàn tác nằm ở
+-- va-rag-tu-khoa-hai-tang-HOAN-TAC.sql.
 create or replace function public.tim_kien_thuc_tu_khoa_cum(
   cau_tu_le text,
   cum_tu text[],

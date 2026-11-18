@@ -15,7 +15,7 @@ Dạng tệp JSON (mọi khoá đều tuỳ chọn, trừ nhat_ky):
                   "Luật bất biến / bẫy đã trả giá": "...", "Tệp": "..."}],
   "logic_sua":  [{"Mã": "CEL-186", "#": "1", "cot": {"Logic cụ thể": "..."}}],
   "nhat_ky": {"Commit": "abc1234", "ID liên quan": "CEL-186", "Thay đổi gì": "...", "Vì sao": "...",
-              "Ai làm": "Claude (máy 1)"},
+              "Ai làm": "<Claude|Codex|Gemini> (máy N)"},
   "commit": "abc1234"          # điền cột Commit của mọi dòng Backlog vừa sửa/thêm
 }
 Cột "Cập nhật" của Backlog và "Ngày" của Nhật ký tự điền ngày hôm nay (dd/mm/yyyy).

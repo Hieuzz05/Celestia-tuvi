@@ -4,6 +4,7 @@ import { LOAI_NGUON_AN, type MetaTaiLieu } from '../tai-lieu-meta';
 import type { DuKienV3 } from '../v3/du-kien';
 import { khopThuVien, type MucKhop } from './khop';
 import { saoCuaMuc, type MucThuVien } from './kieu';
+import { dauMuc } from './dau';
 
 /**
  * Chọn mục thư viện đã khớp và dựng khối T### cho prompt v3 (KIEN-TRUC-LUAN-GIAI.md mục 8).
@@ -45,7 +46,25 @@ export interface KetQuaThuVienCau {
   khopHet: MucKhop[];
   /** Cặp mục add cùng khớp mà ngược chiều cát/hung — hàng duyệt ưu tiên cao */
   nguocChieu: [string, string][];
+  /** Id mục khớp nhưng không đưa vào vì nặng mà chưa duyệt — để đo bỏ bao nhiêu */
+  boChuaDuyet: string[];
+  /** Id mục khớp nhưng không đưa vào vì đã bị một mục đã duyệt lật */
+  boBiLat: string[];
+  /** Id mục khớp nhưng không đưa vào vì đã bị thu hồi (X3) */
+  boThuHoi: string[];
 }
+
+/**
+ * Mục nặng (`manh`) chưa duyệt KHÔNG vào prompt (quyết định 10.15, 22/10/2026): nhãn nặng do máy
+ * trích mà sai thì bài phán sai nặng nhất. Đặt `CELES_THU_VIEN_MANH_CHUA_DUYET=1` để cho vào lại.
+ */
+export const choManhChuaDuyet = () => process.env.CELES_THU_VIEN_MANH_CHUA_DUYET === '1';
+
+/**
+ * Quan hệ lật ĐÃ XÁC MINH = mục lật đã được duyệt. Nhãn override do máy tự gán thì không đủ để bỏ
+ * mục kia (lưu ý 1 của chủ dự án, 22/10/2026) — cả hai cùng vào, không dặn theo bên nào.
+ */
+const latDaXacMinh = (m: MucThuVien) => m.cheDo === 'override' && m.duyet === 'da-duyet';
 
 export function dungKhoiThuVien(vao: {
   laSo: LaSo;
@@ -53,6 +72,8 @@ export function dungKhoiThuVien(vao: {
   thuVien: MucThuVien[];
   cungChinh?: string;
   meta: Map<string, MetaTaiLieu>;
+  /** Dấu (`dauMuc`) các mục đã bị thu hồi (X3, lib/rag/thu-hoi) — vắng hoặc rỗng thì y hệt trước */
+  thuHoi?: ReadonlySet<string>;
 }): KetQuaThuVienCau {
   const cungDoc = [
     ...new Set([
@@ -61,7 +82,34 @@ export function dungKhoiThuVien(vao: {
     ]),
   ];
   const khopHet = khopThuVien(vao.laSo, vao.thuVien, cungDoc);
-  if (!khopHet.length) return { khoi: '', daChon: [], khopHet, nguocChieu: [] };
+  /*
+   * Lọc SAU khopThuVien chứ không trong khop.ts: khopHet vẫn đủ để đo "ghép bỏ qua thư viện" và sổ lỗ
+   * hổng không báo thiếu giả. Thứ tự: bỏ nặng chưa duyệt TRƯỚC, rồi mới xét lật — mục lật đã bị bỏ thì
+   * không được kéo mục đích đi theo. Cả hai bước xét trước trần, để mục bị bỏ không chiếm chỗ.
+   */
+  const choManh = choManhChuaDuyet();
+  const boChuaDuyetK = new Set(khopHet.filter((k) => !choManh && k.muc.nhan.muc === 'manh' && k.muc.duyet !== 'da-duyet'));
+  const conLai = khopHet.filter((k) => !boChuaDuyetK.has(k));
+  const khoaKhop = (k: MucKhop) => `${k.cung}|${k.muc.id}`;
+  // Mục lật đã xác minh luôn có chỗ (xếp đầu, không bị trần bộ sao cắt) — bỏ mục đích mà mục lật không vào là mất cả hai
+  const lat = conLai.filter((k) => latDaXacMinh(k.muc)).slice(0, TRAN_MUC);
+  const laLat = new Set(lat);
+  // Lật chỉ trong cùng cung gốc: mục ở cung A không bác được mục ở cung B
+  const biLat = new Set(lat.flatMap((l) => (l.muc.dich ?? []).map((d) => `${l.cung}|${d}`)));
+  const boBiLatK = new Set(conLai.filter((k) => !laLat.has(k) && biLat.has(khoaKhop(k))));
+  /*
+   * Thu hồi (X3, quyết định 5a): mục bị thu hồi VẪN được tính ở `biLat` phía trên — thu hồi một mục lật
+   * không đưa mục nó đã gỡ trở lại khi chưa ai duyệt — nhưng chính nó không vào prompt, kể cả khi nó là
+   * mục lật (bị gỡ khỏi `lat` dùng để xếp, nên cũng không chiếm trần).
+   */
+  const thuHoi = vao.thuHoi;
+  const boThuHoiK = new Set(thuHoi?.size ? conLai.filter((k) => thuHoi.has(dauMuc(k.muc))) : []);
+  const latXep = boThuHoiK.size ? lat.filter((k) => !boThuHoiK.has(k)) : lat;
+  const ungVien = conLai.filter((k) => !boBiLatK.has(k) && !boThuHoiK.has(k));
+  const boChuaDuyet = [...new Set([...boChuaDuyetK].map((k) => k.muc.id))];
+  const boBiLat = [...new Set([...boBiLatK].map((k) => k.muc.id))];
+  const boThuHoi = [...new Set([...boThuHoiK].map((k) => k.muc.id))];
+  if (!ungVien.length) return { khoi: '', daChon: [], khopHet, nguocChieu: [], boChuaDuyet, boBiLat, boThuHoi };
 
   const tinCay = (m: MucThuVien) => {
     const ds = m.canCu.map((c) => vao.meta.get(c.documentId)).filter((x): x is MetaTaiLieu => Boolean(x));
@@ -95,7 +143,8 @@ export function dungKhoiThuVien(vao: {
     (BAC[tinCay(k.muc).mucTinCay] ?? 0) * 4 +
     (MUC[k.muc.nhan.muc] ?? 0) * 2 +
     new Set(k.muc.canCu.map((c) => c.documentId)).size;
-  const xep = [...khopHet].sort((a, b) => diem(b) - diem(a));
+  const theoDiem = (a: MucKhop, b: MucKhop) => diem(b) - diem(a);
+  const xep = [...latXep.sort(theoDiem), ...ungVien.filter((k) => !laLat.has(k)).sort(theoDiem)];
 
   // Gom: mỗi tổ hợp kéo theo ngay sau nó các mục đơn cấu thành nó (cùng cung)
   const thuTu: MucKhop[] = [];
@@ -104,7 +153,7 @@ export function dungKhoiThuVien(vao: {
   const demBo = new Map<string, number>();
   const them = (k: MucKhop) => {
     const bo = [...saoCuaMuc(k.muc)].sort().join('+');
-    if (da.has(k.muc.id) || thuTu.length >= TRAN_MUC || (demBo.get(bo) ?? 0) >= 3) return;
+    if (da.has(k.muc.id) || thuTu.length >= TRAN_MUC || (!laLat.has(k) && (demBo.get(bo) ?? 0) >= 3)) return;
     da.add(k.muc.id);
     demBo.set(bo, (demBo.get(bo) ?? 0) + 1);
     thuTu.push(k);
@@ -126,8 +175,12 @@ export function dungKhoiThuVien(vao: {
   const chuThich = new Map<string, string[]>();
   for (const k of thuTu) {
     if (k.muc.cheDo === 'add') continue;
-    const loi = k.muc.cheDo === 'override' ? 'bị lật bởi' : k.muc.cheDo === 'neutralize' ? 'được hoá giải bởi' : 'được điều chỉnh bởi';
-    for (const d of k.muc.dich ?? []) if (ma.has(d)) chuThich.set(d, [...(chuThich.get(d) ?? []), `${loi} ${ma.get(k.muc.id)}`]);
+    // Override đã xác minh thì mục đích cùng cung đã bị bỏ ở trên; khác cung thì không bác được
+    if (latDaXacMinh(k.muc)) continue;
+    // Override máy tự gán, chưa duyệt: chỉ báo hai câu nói khác nhau, KHÔNG dặn theo bên nào (lưu ý 1)
+    const ghi = (m: string) =>
+      k.muc.cheDo === 'override' ? `có mục nói khác: ${m}, chưa xác minh` : `${k.muc.cheDo === 'neutralize' ? 'được hoá giải bởi' : 'được điều chỉnh bởi'} ${m}`;
+    for (const d of k.muc.dich ?? []) if (ma.has(d)) chuThich.set(d, [...(chuThich.get(d) ?? []), ghi(ma.get(k.muc.id)!)]);
   }
   // Ngược chiều: hai mục add cùng cung, chung ít nhất một sao, một cát một hung
   const nguocChieu: [string, string][] = [];
@@ -160,10 +213,9 @@ export function dungKhoiThuVien(vao: {
 
   const khoi = `TRI THỨC THƯ VIỆN (mã T###) — quy tắc đã trích từ sách và kiểm căn cứ, khớp đúng các sao – cung của lá số này. Dùng TRƯỚC nguồn tham chiếu; ý dựa vào mục nào thì ghi mã T### của mục đó trong dàn ý.
 - Mục tổ hợp (nhiều sao) mô tả hiệu ứng CHUNG; các mục một sao đứng ngay sau nó chỉ là nền.
-- Mục ghi "bị lật bởi T…" / "được hoá giải bởi T…" thì theo mục kia.
-- Hai mục "ngược chiều" thì cân cả hai, không bỏ một bên.
+- Mục ghi "được hoá giải bởi T…" / "được điều chỉnh bởi T…" thì theo mục kia.
 - Ý nào ghép nghĩa hai sao trở lên mà KHÔNG mục nào ở đây nói về chính tổ hợp ấy: ghi "ghep": true và "sao": [tên các sao] vào ý đó.
 ${dong.join('\n')}`;
 
-  return { khoi, daChon, khopHet, nguocChieu };
+  return { khoi, daChon, khopHet, nguocChieu, boChuaDuyet, boBiLat, boThuHoi };
 }

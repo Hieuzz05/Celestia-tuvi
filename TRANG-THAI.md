@@ -16,7 +16,13 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Codex (máy 2, worktree `D:/SAPP BA/tuvi-ai-van-han-3b`) | CEL-200: 3b đã commit 17a9ab3, Commit 4 phần mã đã kiểm xanh; chờ chủ dự án nghiệm thu. Cờ tắt giữ nguyên. Đăng ký local, chưa push theo lệnh chủ dự án | `viec/van-han-3b` từ `25ad334` | lib/rag/focused/, boi-canh-la-so.ts, tra-loi.ts, validator/sửa câu/prompt, v3 (đã triển khai phần mã), AGENTS.md Q2; KHÔNG nghieng-ve.ts/lib/tuvi/DB/đệm | 17/10 |
+
+## Tạm dừng — chờ chủ dự án quyết gộp hay bỏ
+
+Các việc dưới đây dừng từ 11/10 (việc gộp: CELES-14 trên Vibe Board; vận hạn lớp hạn: CELES-3, CELES-12). Nhánh còn đó nhưng chưa gộp main. Danh sách đầy đủ kèm số commit: `D:\Celestia\PHAN-LOAI-WORKTREE-NHANH-2026-11-15.md` (CELES-23).
+
+| Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
+|---|---|---|---|---|
 | Claude (máy 1) | Bộ đo chất lượng luận offline (CEL-197) — làm lần lượt, từng nhánh, chưa gộp | `viec/do-chat-luong-luan` | scripts/ mới, .github/workflows/kiem-tra.yml | 11/10 |
 | Claude (máy 1) | Dịch EN các trang sâu (CEL-058/081) — làm lần lượt, từng nhánh, chưa gộp | `viec/en-trang-sau` | lib/i18n/*, app/luan-giai, hoi-dap, hop-tuoi, ho-so, tai-khoan, gioi-thieu | 11/10 |
 | Claude (máy 1) | Xuất PDF bằng bản in (CEL-074) — làm lần lượt, từng nhánh, chưa gộp | `viec/xuat-pdf` | app/globals.css (@media print), nút in ở la-so / luan-giai | 11/10 |
@@ -25,8 +31,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 | Claude (máy 1) | Hạ 5 lỗi lint cũ — làm lần lượt, từng nhánh, chưa gộp | `viec/ha-lint` | 5 trang có set-state-in-effect, scripts/dem-loi-lint.mjs | 11/10 |
 | Claude (máy 1) | Dọn tài liệu lệch (CEL-084/205/206) — làm lần lượt, từng nhánh, chưa gộp | `viec/don-tai-lieu` | HUONG-DAN.md, kiem-tra.yml comment | 11/10 |
 | Claude (máy 1) | Vận hạn lớp hạn (CEL-200), bước 3a' theo bản 7: dựng hồ sơ cung `lib/tuvi/ho-so-cung.ts`, bảng luật quan hệ `lib/tuvi/luat-quan-he.ts`, thứ tự xét `lib/tuvi/xet-cung.ts` (tệp MỚI, chưa ai import, không đổi hành vi); gỡ luật ép hai mặt ở `nghieng-ve.ts` + `quy-tac-luan-giai.ts`. **Vùng Chung `lib/tuvi/` (app type-check cả tệp mới).** Phương án: D:\Celestia\PHUONG-AN-3a-ban7-ma.md | `viec/van-han-lop-han` (worktree tuvi-ai-van-han) | lib/tuvi/ (tệp mới), lib/rag/nghieng-ve.ts, lib/rag/quy-tac-luan-giai.ts, scripts/test-ho-so-cung.ts, scripts/test-luat-quan-he.ts | 18/10 |
-| Claude (máy 1) | Kho tri thức tối thiểu K1 (CELES-26, vòng 1 của kế hoạch 9 phiên): chặn mục nặng chưa duyệt, bỏ mục bị lật (quan hệ đã xác minh), bỏ dòng "cân cả hai" khối thư viện, lưu căn cứ cho câu trả lời V3. Không đổi khoá đệm. Codex làm X1, Gemini làm G1 song song | `viec/kho-toi-thieu` (worktree tuvi-ai-kho-toi-thieu) | lib/rag/thu-vien/khop.ts, lib/rag/thu-vien/cho-prompt.ts, lib/rag/v3/xu-ly.ts, scripts/test-* mới | 22/10 |
-| Claude (máy 1) | Khoá đệm giọng văn K2 (CELES-31 + CELES-11): tách phần giọng văn khỏi khoá đệm 7 bề mặt, chốt khoá V3 theo phiên bản logic, gỡ nút "Tạo bản mới", rồi sửa luật chung số 4 "Cân cả hai mặt". Nhánh chồng lên K1 (K1 đã commit, chờ nghiệm thu) | `viec/khoa-dem-giong` (worktree tuvi-ai-khoa-dem-giong) | lib/rag/phien-ban-chu.ts, lib/rag/chuan-ngon-ngu.ts, lib/rag/quy-tac-luan-giai.ts, lib/rag/v3/xu-ly.ts, app/la-so/page.tsx, app/luan-giai/sau/page.tsx, components/luangiai/TongQuanV3.tsx | 22/10 |
 
 ## Đang vướng — đừng đụng vào
 
@@ -40,6 +44,8 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN** chữa "AI quên bối cảnh" (`viec/ai-boi-canh-trien-khai`, 9 commit): hook mở phiên báo nhánh chậm main + in việc dở trên Vibe Board (CELES-4); bản luật cho Codex chép từ `.claude` + CI canh lệch (CELES-64); khuôn câu xin quyết trong skill (CELES-65); luật đẩy: AI đẩy `viec/*`, chủ dự án gộp main; CI bỏ chạy trùng theo PR, rút AGENTS.md (CELES-83). Dọn worktree/nhánh (CELES-23) còn chờ chủ dự án quyết theo bảng phân loại | `3739cf7` | 18/11 |
+| **ĐÃ GỘP MAIN** đợt 1 kho tri thức (`viec/tich-hop-dot-1`, 53 commit): K1 chặn mục mạnh chưa duyệt + bỏ mục bị lật, K2 tách khoá đệm giọng văn + gỡ nút "Tạo bản mới", K3 Focused, X1 chặn lượt thử vượt trần token, X2 nguyệt hạn Cách 1 (phienBan 2026.10.2 → đệm bài lá số sinh lại dần, tốn tiền model), X3 cổng thu hồi (cờ `CELES_CONG_THU_HOI` chỉ bật Preview) + đọc nền, đường B sau cờ (mặc định tắt), G1–G3 bộ đo. CI + build xanh | `9c8d4b5` | 31/10 |
 | **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/sua-do-sang-cach-cuc`: bảng độ sáng theo Tử Vi hàm số (Tử Vi, Thiên Cơ, Thiên Phủ, Thiên Lương, Hỏa, Linh) + Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn. phienBan 2026.10.1, PHIEN_BAN_CACH_CUC 2026.10.2, THE_HE_DEM 9 (đệm luận viết lại dần). **Vùng Chung `lib/tuvi/`: web + app cùng đổi.** | `2983612` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** (Focused trên Production vẫn TẮT, cờ `CELES_FOCUSED_CHAT` không bật): CEL-186 vé B — chat Focused + Answer Contract v2 (eval I5 23/30 flow, CI xanh), sửa log `retrieval_runs.y_dinh` (chủ đề sang `bo_loc.chuDe`). Việc nối tiếp: CEL-191 (spec `D:\Celestia\CEL-191-spec.md`, rẽ nhánh từ main mới), CEL-192 (DISCOVERY, chờ chủ dự án chọn hướng) | `8af2173` + merge `551ee54` | 05/10/2026 |

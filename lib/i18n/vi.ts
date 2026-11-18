@@ -415,6 +415,7 @@ export const vi = {
   luanChuDe: {
     dangDoc: 'Mình đang đọc chủ đề {chuDe}… mất khoảng 15–45 giây.',
     chonChuDe: 'Chọn một chủ đề ở trên, mình đọc cùng bạn.',
+    luuY: 'Celes viết dựa trên lá số của bạn, mang tính tham khảo — không thay thế tư vấn chuyên môn về y tế, tài chính hay pháp lý.',
   },
 
   luanSau: {
@@ -560,7 +561,7 @@ export const vi = {
     },
     canCuMo: 'Muốn biết vì sao không?',
     canCuCachNoi: 'Cách Celes nối dữ kiện',
-    canCuLuongNguoc: 'Điểm kéo ngược lại',
+    canCuLuongNguoc: 'Điều làm ý này yếu đi',
     canCuMucChac: 'Mức chắc chắn',
     chacManh: 'khá rõ — nhiều nguồn độc lập cùng hướng',
     chacVua: 'có xu hướng — hai nguồn cùng hướng',
@@ -570,7 +571,7 @@ export const vi = {
     canCuDong: 'Thu gọn căn cứ',
     canCuLaSo: 'Lá số của bạn',
     canCuNguon: 'Đoạn tri thức đã dùng',
-    canCuPhuongPhap: 'Bộ quy tắc an sao đã dùng',
+    canCuPhuongPhap: 'Bộ quy tắc lập lá số đã dùng',
     canCuPhuongPhapMo: 'Đây là phiên bản luật tính lá số, không phải tên tài liệu trong kho.',
     canCuChuDe: 'Chủ đề đọc được',
     canCuKhongNguon:

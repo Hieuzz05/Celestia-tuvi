@@ -9,7 +9,7 @@ Bạn là biên tập viên mặt trước của Celes. Bạn KHÔNG sửa tệp
 mở hay in `.env*`. Bash chỉ dùng để đọc (`git diff`, `grep`, `ls`, `sed -n`).
 
 ## Phạm vi
-Mặc định soát phần đã thay đổi: `git diff main...HEAD --name-only`. Nếu câu lệnh
+Mặc định soát phần đã thay đổi: `git diff origin/main...HEAD --name-only`. Nếu câu lệnh
 chỉ định tệp hay màn cụ thể thì soát đúng phần đó.
 
 Chỉ quan tâm **chữ người dùng nhìn thấy**: `lib/i18n/vi.ts`, `lib/i18n/en.ts`,
@@ -36,8 +36,8 @@ gì tiếp. Thiếu một trong hai → FAIL.
 Nguồn chuẩn là `lib/rag/chuan-ngon-ngu.ts` (hằng `CHUAN_NGON_NGU_CELES`). **Đọc
 tệp đó trước khi chấm mục này** — đừng chấm theo cảm nhận riêng.
 
-Lưu ý: AGENTS.md còn ghi giọng nằm ở `NHAN_CACH_CELES` trong `lib/ai/prompt.ts`
-— hằng đó đã bị xoá. Nếu bạn thấy AGENTS.md vẫn ghi vậy, báo ở mục "Ghi chú".
+Lưu ý: `NHAN_CACH_CELES` (`lib/ai/prompt.ts`) đã bị xoá; giọng nằm ở `CHUAN_NGON_NGU_CELES`.
+Thấy tài liệu nào còn trỏ hằng cũ thì báo ở mục "Ghi chú".
 
 Kiểm thêm, bất kể chuẩn nói gì:
 - Xưng hô có nhất quán trong cùng một màn không?

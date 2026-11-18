@@ -33,7 +33,8 @@ export const PHUONG_PHAP: PhuongPhap = {
   id: 'celestia-nam-phai',
   // 2026.09.2: sửa độ sáng Khốc/Hư, Hóa Kỵ đắc tứ mộ, thêm Lưu Tang Môn/Bạch Hổ
   // 2026.10.1: độ sáng Tử Vi, Cơ, Phủ, Lương, Hỏa, Linh theo Tử Vi hàm số
-  phienBan: '2026.10.1',
+  // 2026.10.2: nguyệt hạn Cách 1 — tháng 1 từ cung tiểu hạn đếm nghịch tới tháng sinh, thuận tới giờ sinh (X2)
+  phienBan: '2026.10.2',
   bienThe: {
     tyDauCuoi: 'ty-som',
     thangNhuan: 'theo-thang-chinh',

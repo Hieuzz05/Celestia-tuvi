@@ -10,9 +10,10 @@ import {
   type LaSo,
 } from '@/lib/tuvi/ansao';
 import { CHINH_TINH, type Sao } from '@/lib/tuvi/constants';
-import { KHUON } from '@/lib/tuvi/quick-read-noi-dung';
 import { khopLuatToHop } from '@/lib/tuvi/luat-to-hop';
 import { lopHan as bangLopHan, type HoaHan, type TenHoa } from '@/lib/tuvi/tu-hoa-han';
+import { chieuSao, chieuSaoLuu, chieuTuanTriet, phiaCuaChieu } from '@/lib/tuvi/chieu-sao';
+import { KHUON, netSaoTheoChieu } from '@/lib/tuvi/quick-read-noi-dung';
 import type { ChuDe, LopHan } from './planner';
 
 /**
@@ -73,6 +74,7 @@ import type { ChuDe, LopHan } from './planner';
  * "Tháng 5 bạn sẽ gặp người ấy" là lời hứa, không ai kiểm được.
  */
 
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
 export const PHIEN_BAN_NGHIENG = '2026.09.2';
 /** Phép cân theo lớp hạn (CEL-200) — chỉ chạy khi cờ `CELES_LOP_HAN` bật; ghi vết riêng */
 export const PHIEN_BAN_NGHIENG_LOP_HAN = '2026.10.2';
@@ -201,9 +203,6 @@ function laChinhTinh(s: Sao) {
   return (CHINH_TINH as readonly string[]).includes(s.ten);
 }
 
-/** Độ sáng đủ để sao thể hiện được nét của nó */
-const SANG_RO = new Set(['M', 'V', 'D', 'L']);
-
 /**
  * TRỌNG SỐ THEO LỚP — và vì sao lớp năm nặng hơn nền.
  *
@@ -229,6 +228,7 @@ const TRONG_LOP: Record<LopDauMoc, number> = {
  * cho bịa. Thà nêu ba dữ kiện có nghĩa còn hơn sáu cái tên trống.
  */
 function dauMocCuaCung(
+  laSo: LaSo,
   cung: Cung,
   lop: LopDauMoc,
   ngonNgu: 'vi' | 'en',
@@ -239,39 +239,30 @@ function dauMocCuaCung(
 
   for (const s of cung.sao) {
     const chinh = laChinhTinh(s);
-    const manh = !s.doSang || SANG_RO.has(s.doSang);
+    /*
+     * Hướng theo NGỮ CẢNH, không theo nhãn cát / hung cố định (CELES-72,
+     * chủ dự án 11/11/2026): một sao chỉ đứng về phía đỡ hay cản sau khi xét
+     * độ sáng và các sao đi cùng. Hai mặt, yếu, trung không đứng phía nào.
+     */
+    const ket = chieuSao(laSo, cung, s);
+    const phia = phiaCuaChieu(ket.chieu);
+    if (!phia) continue;
     /*
      * Focused (CEL-186 vé B, 4.2): chính tinh hãm đứng ở phía cản, nên nghĩa đi
-     * kèm phải là nét "cần" (điều còn thiếu), không phải nét lúc sáng. Đường cũ
-     * giữ nguyên để không đổi bài của các bề mặt khác.
+     * kèm phải là nét "cần" (điều còn thiếu), không phải nét lúc sáng.
      */
-    const canHam = focused && chinh && !manh ? k.netSao[s.ten]?.can : undefined;
+    const canHam = focused && chinh && phia === 'can' ? k.netSao[s.ten]?.can : undefined;
     const net = canHam
       ? `${ngonNgu === 'vi' ? 'cần' : 'needs'} ${canHam}`
       : chinh
         ? k.netSao[s.ten]?.manh
-        : k.netPhuTinh[s.ten];
+        : netSaoTheoChieu(k, s.ten, ket.chieu);
     if (!net) continue;
-
-    /*
-     * Cát mà hãm địa thì không tính là đỡ.
-     *
-     * Đây là chỗ nhiều bản luận tự động sai nhất: đếm tên sao mà bỏ qua độ
-     * sáng, nên một cung đầy sao tốt hãm địa vẫn ra kết luận thuận.
-     */
-    let huong: 'do' | 'can';
-    if (s.tinhChat === 'hung') huong = 'can';
-    else if (s.tinhChat === 'cat') huong = manh ? 'do' : 'can';
-    else if (chinh) huong = manh ? 'do' : 'can';
-    else huong = 'do';
-
-    // Hóa Kỵ là ngoại lệ trong nhóm Tứ Hóa: ba cái kia mở ra, nó thì vướng lại.
-    if (s.ten === 'Hóa Kỵ') huong = 'can';
 
     ra.push({
       ten: s.ten,
       lop,
-      huong,
+      huong: phia,
       // Tứ Hóa nặng hơn: nó là thứ làm một lá số khác hẳn lá số bên cạnh dù
       // cùng bộ sao. Chính tinh nặng thứ nhì vì nó định hình cả cung.
       trong: TRONG_LOP[lop] * (s.loai === 'tu-hoa' ? 1.5 : chinh ? 1.2 : 1),
@@ -279,19 +270,26 @@ function dauMocCuaCung(
     });
   }
 
-  if (cung.coTuan || cung.coTriet) {
+  // Tuần Triệt: giải sao hãm thì đỡ, bẻ sao sáng thì cản, lẫn cả hai thì không nghiêng
+  const tt = chieuTuanTriet(cung);
+  const phiaTT = tt ? phiaCuaChieu(tt.chieu) : null;
+  if (phiaTT) {
     const ten = [cung.coTuan ? 'Tuần' : null, cung.coTriet ? 'Triệt' : null]
       .filter(Boolean)
       .join(' và ');
     ra.push({
       ten,
       lop,
-      huong: 'can',
+      huong: phiaTT,
       trong: TRONG_LOP[lop],
       y:
-        ngonNgu === 'vi'
-          ? 'phần này khó hiện ra đúng lúc: thứ có thật ở đây thường tới chậm hơn hoặc lệch hơn bạn tính'
-          : 'this area struggles to land on time: what is really here tends to arrive late or sideways',
+        phiaTT === 'do'
+          ? ngonNgu === 'vi'
+            ? 'phần khó của các sao ở đây được giải bớt, nên chuyện ở phần này nhẹ hơn mức các sao ấy báo'
+            : 'the hard side of the stars here is eased, so this area is lighter than those stars suggest'
+          : ngonNgu === 'vi'
+            ? 'phần tốt của các sao sáng ở đây bị bẻ bớt, nên thứ có thật ở phần này thường tới chậm hơn bạn tính'
+            : 'the good of the bright stars here is blunted, so what is really here tends to arrive later than you expect',
     });
   }
 
@@ -375,12 +373,12 @@ export function tinhNghiengVe(vao: {
     const chamNam = lienQuan(iNam);
     const chamThang = cap === 'thang' ? lienQuan(iThang) : false;
 
-    const dauMoc: DauMoc[] = [...dauMocCuaCung(cung, 'nen', ngonNgu, fo)];
+    const dauMoc: DauMoc[] = [...dauMocCuaCung(vao.laSo, cung, 'nen', ngonNgu, fo)];
 
     // Đại vận: chỉ lấy khi quãng ấy thật sự đi qua phần đang hỏi. Cung đại vận
     // nằm ở góc khác hẳn thì sao của nó không nói gì về chuyện này.
     if (cungDai && chamDaiVan && cungDai.chiIndex !== cung.chiIndex) {
-      dauMoc.push(...dauMocCuaCung(cungDai, 'dai-van', ngonNgu, fo));
+      dauMoc.push(...dauMocCuaCung(vao.laSo, cungDai, 'dai-van', ngonNgu, fo));
     }
 
     /*
@@ -400,7 +398,7 @@ export function tinhNghiengVe(vao: {
        */
       const cungNam = vao.laSo.cungs[iNam];
       if (chamNam && cungNam.chiIndex !== cung.chiIndex) {
-        dauMoc.push(...dauMocCuaCung(cungNam, 'nam', ngonNgu, fo));
+        dauMoc.push(...dauMocCuaCung(vao.laSo, cungNam, 'nam', ngonNgu, fo));
       }
 
       const netLuu = ngonNgu === 'vi' ? NET_LUU_VI : NET_LUU_EN;
@@ -408,23 +406,24 @@ export function tinhNghiengVe(vao: {
         if (s.chiIndex !== cung.chiIndex) continue;
         // Focused: Lưu Thái Tuế không thuận không cản, nên không được đứng ở
         // phía nào. Nó vẫn có mặt trong gói F### (khối 'luu-tinh') làm mốc năm.
-        if (fo && s.tinhChat === 'trung') continue;
+        const chieuLuu = chieuSaoLuu(s.ten);
+        if (fo && chieuLuu === 'trung') continue;
         const y = netLuu[s.ten];
         if (!y) continue;
         dauMoc.push({
           ten: s.ten,
           lop: 'nam',
-          huong: s.tinhChat === 'hung' ? 'can' : 'do',
+          huong: chieuLuu === 'can' ? 'can' : 'do',
           // Lưu Thái Tuế không nghiêng bên nào — nó chỉ làm chuyện nổi lên. Trọng
           // số thấp để nó có mặt làm mốc thời gian mà không tự lái kết luận.
-          trong: s.tinhChat === 'trung' ? 1 : TRONG_LOP.nam,
+          trong: chieuLuu === 'trung' ? 1 : TRONG_LOP.nam,
           y,
         });
       }
       if (cap === 'thang' && chamThang) {
         const cungThang = vao.laSo.cungs[iThang];
         if (cungThang.chiIndex !== cung.chiIndex) {
-          dauMoc.push(...dauMocCuaCung(cungThang, 'thang', ngonNgu, fo));
+          dauMoc.push(...dauMocCuaCung(vao.laSo, cungThang, 'thang', ngonNgu, fo));
         }
       }
     }
@@ -622,7 +621,7 @@ function tinhTheoLopHan(vao: Parameters<typeof tinhNghiengVe>[0]): NghiengVe | n
     }
 
     // Nền: sao gốc ở phần đang hỏi — dẫn chứng, KHÔNG vào tổng.
-    const nen = dauMocCuaCung(cung, 'nen', ngonNgu, fo)
+    const nen = dauMocCuaCung(vao.laSo, cung, 'nen', ngonNgu, fo)
       .sort((a, b) => b.trong - a.trong)
       .slice(0, 3);
     if (dauMoc.length === 0 && nen.length === 0) return null;
@@ -804,7 +803,7 @@ CÁCH VIẾT — ĐÚNG THỨ TỰ NÀY, KHÔNG ĐẢO:
    sao ở cùng một cung; cách cục là tổ hợp hiếm, nên nó mới là thứ làm bài đọc
    này khác bài của người bên cạnh.
 
-4. Rồi mới đi tiếp như thường: lực ngược, đánh đổi, cách tự kiểm chứng.
+4. Rồi mới đi tiếp như thường: điều trong bộ sao làm hướng ấy yếu đi (nếu có), đánh đổi, cách tự kiểm chứng.
 
 CẤM — ĐÂY LÀ TIẾNG LÓNG NỘI BỘ CỦA HỆ THỐNG, KHÔNG PHẢI TIẾNG VIỆT:
 "đẩy tới", "đang đỡ", "yếu tố đỡ", "yếu tố cản", "lực đỡ", "nghiêng về phía

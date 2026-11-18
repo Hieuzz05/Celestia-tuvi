@@ -1,0 +1,1210 @@
+{
+  "phienBan": "2026-10-22.G2.GEMINI-BLIND",
+  "thoiDiemCham": "2026-10-21T18:45:43.775Z",
+  "ghiChu": "Phiếu chấm mù trên tập M001..M100 (đã xoá nhãn và làm sạch câu y) trước khi mở khoá giải.",
+  "soMuc": 100,
+  "phieuTatDinhKiemMuc": [
+    {
+      "maMu": "M001",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Điền Trạch"
+    },
+    {
+      "maMu": "M002",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M003",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M004",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M005",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M006",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M007",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M008",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M009",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M010",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M011",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M012",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M013",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M014",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M015",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M016",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M017",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M018",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M019",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M020",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M021",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M022",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "kiemMuc bắt lỗi: bỏ độ sáng"
+    },
+    {
+      "maMu": "M023",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M024",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M025",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tài Bạch"
+    },
+    {
+      "maMu": "M026",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tật Ách"
+    },
+    {
+      "maMu": "M027",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M028",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M029",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tật Ách"
+    },
+    {
+      "maMu": "M030",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M031",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M032",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M033",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M034",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M035",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M036",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M037",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "kiemMuc bắt lỗi: bỏ độ sáng"
+    },
+    {
+      "maMu": "M038",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tài Bạch"
+    },
+    {
+      "maMu": "M039",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M040",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M041",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M042",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M043",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Điền Trạch"
+    },
+    {
+      "maMu": "M044",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M045",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: quá hai chính tinh đồng cung"
+    },
+    {
+      "maMu": "M046",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M047",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M048",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M049",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M050",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M051",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M052",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tật Ách"
+    },
+    {
+      "maMu": "M053",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M054",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: bỏ độ sáng; không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M055",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Nô Bộc"
+    },
+    {
+      "maMu": "M056",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M057",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M058",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M059",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M060",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M061",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Điền Trạch"
+    },
+    {
+      "maMu": "M062",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M063",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M064",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M065",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M066",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M067",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Mệnh"
+    },
+    {
+      "maMu": "M068",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M069",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M070",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Điền Trạch"
+    },
+    {
+      "maMu": "M071",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M072",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M073",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M074",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M075",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M076",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M077",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M078",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "kiemMuc bắt lỗi: bỏ độ sáng"
+    },
+    {
+      "maMu": "M079",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M080",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M081",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M082",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M083",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M084",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M085",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Điền Trạch"
+    },
+    {
+      "maMu": "M086",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Tài Bạch"
+    },
+    {
+      "maMu": "M087",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M088",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M089",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M090",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M091",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M092",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M093",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M094",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M095",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M096",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Phu Thê"
+    },
+    {
+      "maMu": "M097",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    },
+    {
+      "maMu": "M098",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc cung Phụ Mẫu"
+    },
+    {
+      "maMu": "M099",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "kiemMuc bắt lỗi: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M100",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Qua toàn bộ kiểm tra tất định kiemMuc (tên sao, cung, độ sáng, câu trích nguyên văn)."
+    }
+  ],
+  "phieuGeminiDocLap": [
+    {
+      "maMu": "M001",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M002",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M003",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M004",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Phá Quân ghi độ sáng [H] mâu thuẫn với câu trích đại cát không hề nói sao này hãm địa."
+    },
+    {
+      "maMu": "M005",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M006",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M007",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M008",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M009",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Cự Môn trong dieuKien ghi độ sáng [M,V] nhưng câu trích ghi hãm địa."
+    },
+    {
+      "maMu": "M010",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M011",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Thái Âm trong dieuKien ghi độ sáng [M,V] nhưng câu trích ghi hãm địa."
+    },
+    {
+      "maMu": "M012",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M013",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa cát/tốt đẹp nhưng câu y và nhãn lại kết luận hung/phá bại."
+    },
+    {
+      "maMu": "M014",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M015",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M016",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M017",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Thiên Đồng trong dieuKien ghi độ sáng [M,V] nhưng câu trích ghi hãm địa."
+    },
+    {
+      "maMu": "M018",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M019",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Tử Vi trong dieuKien ghi độ sáng [H] (hãm) nhưng câu trích ghi miếu/vượng/đắc."
+    },
+    {
+      "maMu": "M020",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M021",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M022",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M023",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa hung/bất lợi nhưng câu y và nhãn lại kết luận đại cát/thuận lợi."
+    },
+    {
+      "maMu": "M024",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M025",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Tài Bạch (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M026",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Tật Ách (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M027",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M028",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M029",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Tật Ách (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M030",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M031",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M032",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M033",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Thiên Đồng trong dieuKien ghi [D] nhưng ngữ cảnh đoạn nguồn chỉ nói tới hãm địa."
+    },
+    {
+      "maMu": "M034",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M035",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M036",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Liêm Trinh trong dieuKien ghi độ sáng [M] nhưng câu trích gốc ghi đắc địa [D]."
+    },
+    {
+      "maMu": "M037",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa cát/tốt đẹp nhưng câu y và nhãn lại kết luận hung/phá bại."
+    },
+    {
+      "maMu": "M038",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Tài Bạch (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M039",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M040",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M041",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa hung/bất lợi nhưng câu y và nhãn lại kết luận đại cát/thuận lợi."
+    },
+    {
+      "maMu": "M042",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M043",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M044",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa hung/bất lợi nhưng câu y và nhãn lại kết luận đại cát/thuận lợi."
+    },
+    {
+      "maMu": "M045",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: quá hai chính tinh đồng cung"
+    },
+    {
+      "maMu": "M046",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M047",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M048",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M049",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M050",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M051",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Thiên Lương trong dieuKien ghi [D] nhưng ngữ cảnh đoạn nguồn chỉ nói tới hãm địa."
+    },
+    {
+      "maMu": "M052",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Tật Ách (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M053",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M054",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M055",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Nô Bộc (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M056",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M057",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M058",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M059",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M060",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M061",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M062",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M063",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M064",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa cát/tốt đẹp nhưng câu y và nhãn lại kết luận hung/phá bại."
+    },
+    {
+      "maMu": "M065",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M066",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M067",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M068",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M069",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M070",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M071",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M072",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M073",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M074",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M075",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M076",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M077",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M078",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M079",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M080",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M081",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M082",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M083",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Cự Môn trong dieuKien ghi độ sáng [M,V] nhưng câu trích gốc ghi đắc địa [D]."
+    },
+    {
+      "maMu": "M084",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M085",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M086",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M087",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M088",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M089",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Tử Vi trong dieuKien ghi [M,V] nhưng ngữ cảnh đoạn nguồn chỉ nói tới hãm địa."
+    },
+    {
+      "maMu": "M090",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M091",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M092",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-chieu-cat-hung",
+      "lyDo": "Câu trích gốc mang nghĩa hung/bất lợi nhưng câu y và nhãn lại kết luận đại cát/thuận lợi."
+    },
+    {
+      "maMu": "M093",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M094",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Hỏa Tinh trong dieuKien ghi [M,V] nhưng ngữ cảnh đoạn nguồn chỉ nói tới hãm địa."
+    },
+    {
+      "maMu": "M095",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M096",
+      "ketLuan": "hop-le",
+      "loaiLoi": "khong-loi",
+      "lyDo": "Khớp điều kiện sao, cung, độ sáng và chiều nghĩa với câu trích gốc."
+    },
+    {
+      "maMu": "M097",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Cự Môn trong dieuKien ghi [D] nhưng ngữ cảnh đoạn nguồn chỉ nói tới hãm địa."
+    },
+    {
+      "maMu": "M098",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-cung-ap-dung",
+      "lyDo": "Đoạn nguồn và đề mục không nói về cung Phụ Mẫu (lệch cung áp dụng)."
+    },
+    {
+      "maMu": "M099",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-dieu-kien-sao",
+      "lyDo": "Sai điều kiện sao so với đoạn nguồn: không thấy nhắc Thiên Hình"
+    },
+    {
+      "maMu": "M100",
+      "ketLuan": "bat-loi",
+      "loaiLoi": "sai-do-sang-sao",
+      "lyDo": "Sao Thái Dương ghi độ sáng [H] mâu thuẫn với câu trích đại cát không hề nói sao này hãm địa."
+    }
+  ]
+}

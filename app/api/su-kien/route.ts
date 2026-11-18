@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { TEN_SU_KIEN } from '@/lib/su-kien-ten';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { ghiLuotGoi } from '@/lib/gioi-han-toc-do';
 
 /**
  * Nhận sự kiện phễu từ trình duyệt (lib/analytics.ts) → bảng `su_kien`.
@@ -13,6 +14,11 @@ import { taoSupabaseAdmin } from '@/lib/supabase/admin';
 const CHO_PHEP = new Set<string>(TEN_SU_KIEN);
 
 export async function POST(req: Request) {
+  // Đường này nằm ngoài proxy (matcher bỏ qua cho nhẹ), nên tự giới hạn tốc độ theo IP
+  // bằng một bộ đếm riêng (rà soát 11/11, A7). Vượt thì lặng lẽ bỏ, vẫn 204.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'khong-ro';
+  if (ghiLuotGoi(`su-kien:${ip}`) > 0) return new NextResponse(null, { status: 204 });
+
   let body: { ten?: unknown; thuocTinh?: unknown; khach?: unknown; trang?: unknown };
   try {
     body = JSON.parse(await req.text());

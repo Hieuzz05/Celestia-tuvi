@@ -3,28 +3,40 @@
 Đọc tệp này trước khi chạm vào bất cứ thứ gì. Sau đó đọc `AGENTS.md` để biết luật
 kỹ thuật của dự án.
 
-Celestia đang được phát triển bởi **hai AI trên hai máy khác nhau**, không nói
-chuyện được với nhau, không thấy màn hình của nhau. Mọi luật dưới đây tồn tại vì
-một lý do duy nhất: bạn không biết bên kia đang làm gì, nên phải hành xử sao cho
-việc đó không quan trọng.
+Celestia được làm bởi **nhiều công cụ AI (Claude, Codex, Gemini) trên nhiều máy**,
+không nói chuyện được với nhau, không thấy màn hình của nhau, và không đọc được hội
+thoại của phiên trước. Mọi luật dưới đây tồn tại vì một lý do duy nhất: bạn không
+biết bên kia đang làm gì, nên phải hành xử sao cho việc đó không quan trọng.
+
+Trí nhớ chung giữa các phiên là **Vibe Board** (mã dự án `celes`, luật ở
+`D:/VibeDashboard/RULE.md`) và các tệp trong kho. Chữ "máy kia", "bên kia" dưới đây
+nghĩa là mọi phiên khác: máy khác, công cụ khác, hoặc chính công cụ này ở thư mục khác.
 
 ---
 
-## 1. Bốn việc bắt buộc trước khi gõ dòng mã đầu tiên
+## 1. Việc bắt buộc trước khi gõ dòng mã đầu tiên
+
+Các bước làm được nằm ở `.claude/skills/lam-tinh-nang/mo-phien.md` (Codex đọc bản chép
+ở `.agents/skills/`). Tóm tắt:
 
 ```bash
-git checkout main && git pull          # 1. lấy bản mới nhất
-cat TRANG-THAI.md                      # 2. xem bên kia đang làm gì
-npx tsx scripts/kiem-moi-truong.ts     # 3. xem máy này có đủ điều kiện chạy không
-git checkout -b viec/<mo-ta-ngan>      # 4. sang nhánh riêng
+T list ; T find <2–3 từ khoá>          # 0. task cũ và quyết định đã có trên Vibe Board
+git fetch origin                       #    rồi đếm: git rev-list --count HEAD..origin/main
+git status --short ; git worktree list # 1. thư mục này có phiên khác đang dùng không
+git show origin/main:TRANG-THAI.md     # 2. bên kia đang làm gì
+npx tsx scripts/kiem-moi-truong.ts     # 3. máy này đủ điều kiện chạy không
+git worktree add "D:/SAPP BA/tuvi-ai-<ten>" -b viec/<ten> origin/main   # 4. nhánh riêng
 ```
 
-Bỏ bước 1 thì bạn sửa trên bản cũ và sinh ra xung đột không cần thiết. Bỏ bước 2
-thì bạn làm trùng việc bên kia đang làm dở. Bỏ bước 4 thì bạn phát hành thẳng ra
-người dùng thật mà không ai duyệt.
+Bỏ bước 0 thì bạn làm lại việc đã xong hoặc đi ngược quyết định đã ghi. Nhánh của
+mình mà chậm main thì `git merge origin/main` rồi đọc lại phần luật vừa đổi: ngày
+19/10 một phiên làm theo luật cũ vì thư mục đứng ở nhánh chậm main. Claude có hook
+`.claude/hooks/mo-phien.mjs` tự báo việc này; Codex và Gemini làm tay. Bỏ bước 2 thì
+bạn làm trùng việc bên kia đang làm dở. Bỏ bước 4 thì bạn phát hành thẳng ra người
+dùng thật mà không ai duyệt. Không `git checkout` trong thư mục có phiên khác (sự cố 27/09).
 
 Sau đó ghi một dòng vào `TRANG-THAI.md` mục "Đang làm", commit riêng, đẩy thẳng
-lên `main`. Đó là cách duy nhất máy kia biết bạn đang động vào đâu.
+lên `main`, và `T start` task trên Vibe Board. Đó là cách máy kia biết bạn đang động vào đâu.
 
 ---
 
@@ -117,11 +129,12 @@ vay. Doc den khoi thu hai la doan duoc khoi thu ba noi gi o dong nao.
 Xong việc thì:
 
 1. Cập nhật `PRODUCT-BACKLOG.xlsx` **trong cùng commit đó** — xem mục 5b ngay dưới.
-2. **Khi chủ dự án bảo push** thì `git push -u origin viec/<ten>` — Vercel tự dựng bản xem thử.
-   Không tự đẩy: nghiệm thu và push luôn là người (AGENTS.md).
+2. **Đẩy nhánh ngay sau commit**: `git push -u origin viec/<ten>` (chủ dự án duyệt 07/11/2026).
+   Nhánh chỉ nằm trên một máy thì máy kia không thấy, và mất khi dọn worktree. Vercel tự dựng
+   bản xem thử. AI chỉ đẩy nhánh `viec/*` của chính mình, không bao giờ `--force`.
 3. Chuyển dòng trong `TRANG-THAI.md` từ "Đang làm" xuống "Vừa xong", kèm mã commit.
-4. Báo cho chủ dự án link bản xem thử. **Không tự gộp vào `main`.** Việc gộp là
-   quyết định của con người.
+4. Báo cho chủ dự án link bản xem thử, `T update <mã> --status review --commit <sha>`.
+   **Không tự gộp vào `main`.** Gộp main và nghiệm thu là quyết định của con người.
 
 ### 5b. Cập nhật bản theo dõi tính năng
 
@@ -192,8 +205,20 @@ Luật viết SQL mới:
 5. Trước khi chạy tệp SQL trên database thật, báo vào `TRANG-THAI.md` mục "Đang
    vướng"; chạy xong thì xoá dòng đó.
 
-Bạn **không tự chạy được SQL** — không có công cụ nào cho phép. Viết tệp `.sql`,
-ghi sổ, rồi hướng dẫn chủ dự án dán vào Supabase SQL Editor.
+**AI được tự chạy SQL** qua công cụ Supabase (chủ dự án quyết 15/11/2026, thay luật cũ
+"AI không tự chạy SQL, hướng dẫn chủ dự án dán vào SQL Editor"). Điều kiện, không bỏ điều nào:
+
+- Vẫn theo đủ luật 1–5 ở trên và luật "không SQL phá huỷ" ở mục 2. Tệp `.sql` nằm trong kho
+  TRƯỚC, chạy đúng nội dung tệp đó — không gõ SQL ghi dữ liệu thẳng vào công cụ rồi mới chép ra tệp.
+- Thay thân một hàm có sẵn (`create or replace function`) chỉ khi giữ nguyên chữ ký và cột
+  trả về, và phải kèm tệp `<tên>-HOAN-TAC.sql` chứa thân cũ lấy bằng `pg_get_functiondef` NGAY
+  trước khi chạy. Kiểm bản mới trên cùng đầu vào trước (bản nháp trong `pg_temp` so với hàm cũ),
+  rồi đo lại sau khi chạy. Mẫu: `supabase/va-rag-tu-khoa-hai-tang.sql` (CELES-78).
+- Chạy xong ghi `supabase/DA-CHAY.md`: "rồi (ngày, AI chạy qua công cụ Supabase, mã việc)".
+- Câu đọc (`select`, dò cấu trúc, `pg_stat_statements`) chạy tự do; KHÔNG in hay ghi khoá,
+  mật khẩu, dữ liệu cá nhân người dùng ra câu trả lời, log hay Git.
+- Không có công cụ Supabase trong phiên (máy kia, Codex) thì làm như cũ: viết tệp, ghi sổ,
+  hướng dẫn chủ dự án dán vào Supabase SQL Editor.
 
 ---
 
@@ -286,6 +311,8 @@ Hai luật rút ra sau một lần suýt rebase nhầm lịch sử đã đẩy (
 |---|---|
 | `AGENTS.md` | Luật kỹ thuật của dự án. Đọc ngay sau tệp này |
 | `TRANG-THAI.md` | Bên kia đang làm gì. Đọc trước mỗi phiên |
+| Vibe Board (`T list`, `T find`, `T show`) | Task, câu hỏi đang chờ, quyết định đã có của mọi phiên. Quyết định mới nhất thắng; cái gắn `bi-thay` thì bỏ |
+| `.agents/skills/`, `.codex/agents/` | Bản luật cho Codex, chép từ `.claude/`. Sửa bản `.claude` rồi chạy `node scripts/kiem-ban-sao-luat.mjs --chep`; CI đỏ khi hai bản lệch |
 | `supabase/DA-CHAY.md` | SQL nào đã chạy |
 | `HUONG-DAN.md` | Vận hành: nạp tài liệu, cấu hình model, hạn mức |
 | `PHOI-HOP.md` | Bản dành cho chủ dự án. Đọc để biết họ được hướng dẫn thế nào |

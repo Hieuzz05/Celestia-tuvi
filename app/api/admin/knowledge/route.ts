@@ -113,7 +113,8 @@ export async function POST(req: Request) {
  *
  * Có tác dụng ngay với lượt luận giải kế tiếp (tối đa ~1 phút, xem
  * lib/rag/tai-lieu-meta.ts), không phải nạp lại hay sinh lại vector. Đổi xong thì
- * phiên bản kho đổi, người đọc đã đăng nhập thấy nút "Tạo bản mới".
+ * phiên bản kho đổi (dấu ghi lên câu V3; bài đã đệm không tự viết lại — nút
+ * "Tạo bản mới" đã gỡ ở K2, 22/10/2026).
  */
 export async function PATCH(req: Request) {
   const cong = await canQuanTri();

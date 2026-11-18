@@ -26,6 +26,10 @@ for (const b of ['ai_requests', 'retrieval_runs'] as const) {
   const l = lenh.find((x) => x.bang === b);
   kiem(`${b}: hạn ${HAN_LUU_NHAT_KY_NGAY} ngày`, !!l && ngayTruoc(l.truoc) === 90);
 }
+for (const b of ['su_kien', 'su_co_ai'] as const) {
+  const l = lenh.find((x) => x.bang === b);
+  kiem(`${b}: hạn ${HAN_LUU_NHAT_KY_NGAY} ngày, theo cột luc`, !!l && ngayTruoc(l.truoc) === 90 && l.cotThoiGian === 'luc');
+}
 kiem('không dọn usage_events / ai_usage_logs (sổ hạn mức, số tổng hợp)', lenh.every((l) => (l.bang as string) !== 'usage_events' && (l.bang as string) !== 'ai_usage_logs'));
 
 console.log(loi ? `\nĐỎ — ${loi} ca hỏng` : '\nXANH');

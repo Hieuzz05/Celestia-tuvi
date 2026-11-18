@@ -61,6 +61,14 @@ export interface CauHinhTruyHoi {
    * vận hạn hoặc câu nhắc thẳng tứ hoá mới bật, để luận lá gốc không bị sách phi hoá lấn.
    */
   nguonTuHoa: boolean;
+  /**
+   * Trần thời gian (ms) cho nhánh từ khoá. Quá trần thì bỏ nhánh này, chỉ dùng
+   * vector — người dùng không phải chờ. Đo 15/11/2026 (CELES-78): hàm hai tầng
+   * mất ~0,2 giây phía DB, nhưng lúc dồn nhiều truy vấn có lần lên vài giây; bản
+   * cũ hay kéo tới trần 8 giây của DB rồi mới báo lỗi, chat chậm theo.
+   * Huỷ ở đây chỉ dừng phía app; câu SQL vẫn chạy nốt trên DB (tối đa 8 giây).
+   */
+  tranTuKhoaMs: number;
 }
 
 export const CAU_HINH_MAC_DINH: CauHinhTruyHoi = {
@@ -71,6 +79,7 @@ export const CAU_HINH_MAC_DINH: CauHinhTruyHoi = {
   nguongVector: 0,
   locThucThe: false,
   nguonTuHoa: false,
+  tranTuKhoaMs: 1500,
 };
 
 /** Bỏ sách tứ hoá thì lấy dư ứng viên bù vào: chúng chiếm khoảng một phần ba số đoạn trong kho */
@@ -143,7 +152,7 @@ function veUngVien(d: DongSql): DoanUngVien {
 /**
  * Nhánh từ khoá: tìm nguyên cụm cho tên riêng, từ lẻ cho phần còn lại.
  *
- * Hàm SQL mới (`tim_kien_thuc_tu_khoa_cum`, trong supabase/va-rag-chat-luong.sql)
+ * Hàm SQL mới (`tim_kien_thuc_tu_khoa_cum`, bản đang chạy: supabase/va-rag-tu-khoa-hai-tang.sql)
  * có thể chưa chạy trên database đang dùng — hai máy dùng chung một Supabase và
  * SQL do người chạy tay. Thiếu hàm thì lùi về hàm cũ, để bản mã này lên trước
  * SQL cũng không làm chết nhánh từ khoá.
@@ -153,28 +162,52 @@ async function timTheoTuKhoa(
   keHoach: KeHoachChoTruyHoi,
   cauHinh: CauHinhTruyHoi,
   locThucThe: string[] | null
-) {
+): Promise<KetQuaTuKhoa> {
   const cauGoc = keHoach.truyVanTuKhoa || keHoach.truyVan;
   const tenThucThe = keHoach.thucThe.map((t) => t.ten);
   const { cum, tuLe } = tachTuKhoa(cauGoc, [...(keHoach.cumTuKhoa ?? []), ...tenThucThe], tenThucThe);
 
-  const moi = await supabase.rpc('tim_kien_thuc_tu_khoa_cum', {
-    cau_tu_le: tuLe,
-    cum_tu: cum,
-    so_luong: cauHinh.soUngVienTuKhoa,
-    loc_he_phai: cauHinh.hePhai ?? null,
-    loc_thuc_the: locThucThe,
-  });
-  const thieuHam =
-    moi.error && (moi.error.code === 'PGRST202' || /could not find the function/i.test(moi.error.message));
-  if (!thieuHam) return moi;
+  const huy = new AbortController();
+  const hen = setTimeout(() => huy.abort(), cauHinh.tranTuKhoaMs);
+  const ket = (r: { data: unknown; error: { message: string } | null }): KetQuaTuKhoa =>
+    huy.signal.aborted
+      ? { data: null, error: { message: `quá trần ${cauHinh.tranTuKhoaMs}ms, chỉ dùng nhánh vector` } }
+      : { data: (r.data as DongSql[] | null) ?? null, error: r.error };
+  try {
+    const moi = await supabase
+      .rpc('tim_kien_thuc_tu_khoa_cum', {
+        cau_tu_le: tuLe,
+        cum_tu: cum,
+        so_luong: cauHinh.soUngVienTuKhoa,
+        loc_he_phai: cauHinh.hePhai ?? null,
+        loc_thuc_the: locThucThe,
+      })
+      .abortSignal(huy.signal);
+    const thieuHam =
+      moi.error && (moi.error.code === 'PGRST202' || /could not find the function/i.test(moi.error.message));
+    if (!thieuHam) return ket(moi);
 
-  return supabase.rpc('tim_kien_thuc_tu_khoa', {
-    cau_truy_van: cauGoc,
-    so_luong: cauHinh.soUngVienTuKhoa,
-    loc_he_phai: cauHinh.hePhai ?? null,
-    loc_thuc_the: locThucThe,
-  });
+    return ket(
+      await supabase
+        .rpc('tim_kien_thuc_tu_khoa', {
+          cau_truy_van: cauGoc,
+          so_luong: cauHinh.soUngVienTuKhoa,
+          loc_he_phai: cauHinh.hePhai ?? null,
+          loc_thuc_the: locThucThe,
+        })
+        .abortSignal(huy.signal)
+    );
+  } catch (e) {
+    // abortSignal thường trả lỗi trong { error }, nhưng phòng bản thư viện ném ra
+    return ket({ data: null, error: { message: e instanceof Error ? e.message : String(e) } });
+  } finally {
+    clearTimeout(hen);
+  }
+}
+
+interface KetQuaTuKhoa {
+  data: DongSql[] | null;
+  error: { message: string } | null;
 }
 
 export async function truyHoi(

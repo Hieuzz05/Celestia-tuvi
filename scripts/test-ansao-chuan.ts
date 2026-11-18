@@ -17,7 +17,7 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { lapLaSo, type LaSo, type ThongTinSinh } from '../lib/tuvi/ansao';
+import { cungNguyetHan, cungTieuHan, lapLaSo, luuTinhTheoNam, type LaSo, type ThongTinSinh } from '../lib/tuvi/ansao';
 import { solarToLunar, lunarToSolar } from '../lib/tuvi/lunar';
 import { laNgayDuongCoThat } from '../lib/tuvi/kiem-ngay';
 import { PHUONG_PHAP } from '../lib/tuvi/phuong-phap';
@@ -279,7 +279,17 @@ function vanTay(ls: LaSo): string {
       c.sao.map((s) => `${s.ten}${s.doSang ? '/' + s.doSang : ''}`).sort().join(','),
     ].join(':')
   );
-  return [dau, ...cung].join('\n');
+  /*
+   * Lớp vận hạn (T-03, 22/10/2026): tiểu hạn, nguyệt hạn, lưu tinh cũng vào vân tay. CELES-37 rồi X2 đều đổi
+   * quy tắc vận hạn mà mẫu không bắt được, vì vân tay chỉ có cung và sao gốc — quên tăng phienBan là lọt.
+   */
+  const tuoi = [1, 5, 10, 26, 39]; // lệch chu kỳ 12 để mỗi tuổi rơi một cung tiểu hạn khác
+  const van = [
+    `th:${tuoi.map((x) => cungTieuHan(ls, x)).join(',')}`,
+    `nh:${tuoi.map((x) => Array.from({ length: 12 }, (_, i) => cungNguyetHan(ls, x, i + 1)).join('.')).join(',')}`,
+    `lt:${luuTinhTheoNam(t.amLich.nam + 36).map((s) => `${s.ten}@${s.chiIndex}`).join(',')}`,
+  ].join('|');
+  return [dau, ...cung, van].join('\n');
 }
 
 const MAU: ThongTinSinh[] = [

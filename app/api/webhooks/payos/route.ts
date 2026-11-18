@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { chuKyWebhookHopLe, nhanDangCauHinh, payosDaCauHinh } from '@/lib/payments/payos';
 import { CAU_HINH_UNG_HO } from '@/lib/support/config';
 import { taoSupabaseAdmin } from '@/lib/supabase/admin';
+import { canQuanTri } from '@/lib/rag/cong-quan-tri';
 
 /**
  * Webhook payOS — nguồn sự thật DUY NHẤT để mở quyền.
@@ -33,6 +34,12 @@ interface Payload {
  * Dùng để trả lời câu "khoá đã vào chưa, có dính dấu cách thừa không".
  */
 export async function GET() {
+  // Chỉ quản trị mới xem được dấu nhận dạng cấu hình (rà soát 11/11, A6). Người khác
+  // vẫn nhận 200 trơn để không lỡ chặn một lời gọi thử của payOS.
+  const cong = await canQuanTri();
+  if (!cong.duocPhep) {
+    return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
+  }
   return NextResponse.json(
     { payosDaCauHinh, ...nhanDangCauHinh() },
     { headers: { 'Cache-Control': 'no-store' } }
@@ -86,7 +93,10 @@ export async function POST(req: Request) {
         provider_payload: body.data,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', don.id);
+      .eq('id', don.id)
+      // Đơn đã cấp quyền thì không lùi trạng thái: payOS gửi lại webhook là chuyện thường,
+      // và hàm cấp quyền gặp đơn đã cấp sẽ trả về sớm, không tự sửa lại trạng thái.
+      .neq('status', 'entitlement_granted');
     return NextResponse.json({ ok: true });
   }
 
@@ -100,7 +110,10 @@ export async function POST(req: Request) {
         provider_payload: body.data,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', don.id);
+      .eq('id', don.id)
+      // Đơn đã cấp quyền thì không lùi trạng thái: payOS gửi lại webhook là chuyện thường,
+      // và hàm cấp quyền gặp đơn đã cấp sẽ trả về sớm, không tự sửa lại trạng thái.
+      .neq('status', 'entitlement_granted');
     return NextResponse.json({ ok: true });
   }
 
@@ -113,7 +126,10 @@ export async function POST(req: Request) {
       provider_payload: body.data,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', don.id);
+    .eq('id', don.id)
+    // Đơn đã cấp quyền thì không lùi trạng thái: payOS gửi lại webhook là chuyện thường,
+    // và hàm cấp quyền gặp đơn đã cấp sẽ trả về sớm, không tự sửa lại trạng thái.
+    .neq('status', 'entitlement_granted');
 
   // Toàn bộ việc cộng quyền nằm trong một hàm chạy nguyên khối ở Postgres, và
   // `unique(payment_id)` bên trong làm cho gọi lại lần hai không cộng thêm gì.

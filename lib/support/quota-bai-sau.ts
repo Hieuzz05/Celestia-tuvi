@@ -110,14 +110,17 @@ export async function datChoBaiSau(requestId: string): Promise<KetQuaDatChoBaiSa
   const soDu = quyen?.supporter_long_report_balance ?? 0;
 
   if (conSupporter && soDu > 0) {
-    const { error } = await db
+    const { data: daTru, error } = await db
       .from('user_entitlements')
       .update({ supporter_long_report_balance: soDu - 1 })
       .eq('user_id', user.id)
       // Chỉ trừ khi số dư vẫn đúng như vừa đọc: hai yêu cầu song song thì chỉ
       // một cái khớp, cái kia rơi xuống nhánh miễn phí thay vì trừ hai lần
-      .eq('supporter_long_report_balance', soDu);
-    if (!error) {
+      .eq('supporter_long_report_balance', soDu)
+      // Không khớp dòng nào thì Supabase KHÔNG báo lỗi, chỉ trả mảng rỗng: phải đọc lại
+      // dòng đã sửa mới biết yêu cầu này có thật sự trừ được số dư hay không
+      .select('user_id');
+    if (!error && daTru && daTru.length > 0) {
       await ghiDatCho(db, user.id, requestId, 'supporter');
       return { duocPhep: true, nguon: 'supporter', soDuConLai: soDu - 1 };
     }

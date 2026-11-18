@@ -1,7 +1,22 @@
 # Mở phiên — bước chung của /lam-tinh-nang, /sua-loi, /chien-luoc
 
 Nguồn luật: `AI-PHOI-HOP.md` §1–§3. Đây là bản làm được từng bước của các mục đó.
-Riêng `/chien-luoc` chỉ làm bước 2 và 6, vì phiên chiến lược không chạm mã.
+Riêng `/chien-luoc` chỉ làm bước 0, 2 và 6, vì phiên chiến lược không chạm mã.
+
+0. **Đọc bảng và luật mới nhất, TRƯỚC mọi bước khác** (CELES-4, sau sự cố 19/10: phiên đọc luật cũ
+   vì thư mục đứng ở nhánh chậm main).
+   ```bash
+   T() { node "D:/VibeDashboard/task.mjs" "$@"; }   # máy không có ổ D: ~/VibeDashboard
+   T list ; T find <2–3 từ khoá của yêu cầu>         # task cũ, kể cả đã xong, và quyết định đã có
+   git fetch origin
+   git rev-list --count HEAD..origin/main            # > 0 là nhánh chậm main
+   ```
+   Nhánh `viec/*` của mình mà chậm main: `git merge origin/main` ngay (không rebase nhánh đã đẩy),
+   rồi đọc lại phần luật vừa đổi (`git diff HEAD@{1} -- AGENTS.md docs/bai-hoc/ .claude/`). Thư mục
+   đứng ở nhánh không phải của mình thì đừng gộp vào đó; sang bước 4 dựng worktree từ `origin/main`.
+   Claude có hook `.claude/hooks/mo-phien.mjs` tự báo nhánh chậm main và in `next` / câu hỏi đang
+   mở của task gắn nhánh này; Codex và Gemini không có hook nên phải làm tay bước này.
+   `T find` ra quyết định gắn `bi-thay` thì đừng làm theo; hai quyết định ngược nhau thì cái mới hơn thắng.
 
 1. **Thư mục này có phải của mình không.**
    ```bash

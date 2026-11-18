@@ -113,10 +113,8 @@ export function PalaceDrawer({
               <span
                 key={s.ten}
                 className="text-[13px]"
-                style={{
-                  color:
-                    s.tinhChat === 'hung' ? 'var(--chart-hung)' : 'var(--fg-body)',
-                }}
+                // Màu trung tính: sao tốt hay vướng tuỳ độ sáng và sao đi cùng (CELES-72)
+                style={{ color: 'var(--fg-body)' }}
               >
                 {s.ten}
                 {s.doSang && (
@@ -157,8 +155,8 @@ export function PalaceDrawer({
                 : `tại ${tenCung(cungNguyetHanIndex)}`}
             </span>
             {(cung.coTuan || cung.coTriet) && (
-              <span style={{ color: 'var(--chart-hung)' }}>
-                Bị án: {[cung.coTuan && 'Tuần', cung.coTriet && 'Triệt'].filter(Boolean).join(' + ')}
+              <span style={{ color: 'var(--fg-muted)' }}>
+                Có {[cung.coTuan && 'Tuần', cung.coTriet && 'Triệt'].filter(Boolean).join(' và ')}
               </span>
             )}
           </div>
@@ -170,13 +168,6 @@ export function PalaceDrawer({
             <span>Xung chiếu: {tenCung(xungChieu)}</span>
           </div>
         </Muc>
-
-        <button className="btn-primary mt-auto w-full" disabled title="Sẽ có ở giai đoạn luận giải AI">
-          Luận giải cung này
-        </button>
-        <p className="text-[11px]" style={{ color: 'var(--fg-muted)' }}>
-          Luận giải AI sẽ được bổ sung ở giai đoạn tiếp theo.
-        </p>
       </aside>
     </div>
   );

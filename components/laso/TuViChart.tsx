@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
 import {
   cungDaiVan,
   cungNguyetHan,
@@ -200,6 +199,8 @@ export function TuViChart({
   const xuatPng = useCallback(async () => {
     if (!chartRef.current) return;
     const nen = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    // Tải thư viện chỉ khi bấm lưu ảnh, không bắt mọi người tải sẵn (rà soát 11/11, H1).
+    const { toPng } = await import('html-to-image');
     const dataUrl = await toPng(chartRef.current, {
       backgroundColor: nen || '#ffffff',
       pixelRatio: 2 / Math.max(zoomThucTe, 0.1),

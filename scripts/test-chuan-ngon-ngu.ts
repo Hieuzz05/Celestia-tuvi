@@ -19,6 +19,7 @@ import { CAU_RA_LENH, CHUAN_NGON_NGU_CELES, KHOI_CHUAN, dungChuanNgonNgu } from 
 import { CHU_TRUU_TUONG, demChuTruuTuong } from '../lib/rag/chu-truu-tuong';
 import { boDau, TU_DIEN_THUC_THE } from '../lib/rag/thuc-the';
 import { soatNgonNgu } from '../lib/rag/ngon-ngu';
+import { SYSTEM_V3_KHUNG } from '../lib/rag/v3/prompt-v3';
 
 const MAU: [number, number, number, number, 'nam' | 'nu'][] = [
   [12, 5, 1990, 10, 'nam'],
@@ -382,6 +383,19 @@ console.log('\n== BỘ QUY TẮC LUẬN GIẢI CHUNG (24/09/2026) ==\n');
     chuMau.every((c) => !CHU_TRUU_TUONG.some(([x]) => x === c)),
     chuMau.filter((c) => CHU_TRUU_TUONG.some(([x]) => x === c))
   );
+}
+
+{
+  /*
+   * CELES-11 (22/10/2026): luật chung số 4 / luật V3 số 6 thôi ép "cân cả hai mặt". Bài được khép bằng
+   * điểm cần lưu ý HOẶC câu khép ý; có nêu mặt nào thì mặt ấy phải có căn cứ. Đổi luật mà còn sót một
+   * dòng ép "phải có lưu ý" thì model vẫn nghe dòng còn sót — nên kiểm cả khung V3 lẫn chuẩn chung.
+   */
+  const khung = SYSTEM_V3_KHUNG.join('\n');
+  const epLuuY = [/Cân cả hai mặt/i, /Kết bằng một điểm cần lưu ý(?! hoặc)/, /rồi một điểm cần lưu ý(?! hoặc)/];
+  kiem('Khung V3 không còn dòng buộc phải có điểm cần lưu ý', epLuuY.every((r) => !r.test(khung)), epLuuY.filter((r) => r.test(khung)).map(String));
+  kiem('Chuẩn chung không còn "Cân cả hai mặt"', !/Cân cả hai mặt/i.test(CHUAN_NGON_NGU_CELES));
+  kiem('Luật căn cứ hai mặt vẫn còn (có nêu thì phải có căn cứ)', /nếu được nêu, đều phải có căn cứ/.test(khung) && /nếu được nêu, đều phải có căn cứ/.test(CHUAN_NGON_NGU_CELES));
 }
 
 console.log(sai === 0 ? '\nTẤT CẢ ĐỀU ĐÚNG\n' : `\n${sai} KIỂM TRA SAI\n`);

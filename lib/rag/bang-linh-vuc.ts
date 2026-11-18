@@ -72,6 +72,7 @@ import { chonMauVang, khoiMauVang } from './mau-vang';
  * đệm, nên đổi nó là cách duy nhất để bản mới tới được người đã sinh bài. Không
  * đổi thì người dùng cũ đọc bản cũ vĩnh viễn và không ai biết.
  */
+// CELES-72 (12/11/2026): logic đổi nhưng chủ dự án quyết KHÔNG sinh lại bài đã đệm, nên giữ số cũ.
 export const PHIEN_BAN_BANG_LINH_VUC = '2026.09.7';
 
 /**
@@ -386,7 +387,7 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code, không lời dẫn:
       "giuLai": "1-2 câu KHÉP phần này: thứ đáng mang theo sau khi đọc xong. Không tóm tắt, không lời khuyên, không mở bằng hãy/nên/cần",
       "doan": [
         "Đoạn 1 — 3-5 câu văn CHẢY, theo nhịp ba bước: nêu tên cấu trúc, dịch ngay ra con người, rồi hạ xuống một hành vi cụ thể. Không dùng dấu sao hay bất kỳ ký hiệu Markdown nào.",
-        "Đoạn 2 — 3-5 câu: cấu trúc thứ hai, hoặc lực kéo ngược lại. Phải nói rõ nó bổ trợ cho ý nào ở đoạn trên.",
+        "Đoạn 2 — 3-5 câu: cấu trúc thứ hai (bộ sao đi cùng, một cách cục, hoặc sao làm nét trên đổi chiều nếu lá số thật sự có). Phải nói rõ nó bổ trợ hay làm đổi ý nào ở đoạn trên.",
         "Đoạn 3 — 2-4 câu: chỗ dễ mắc và điều kiện để nét trên bền. Bỏ hẳn đoạn này nếu phần đời này lá số nói mỏng."
       ],
       "maDuKien": ["F002"],
@@ -599,7 +600,7 @@ ${thanCu}`,
      * phần đời tệ hơn nhiều so với một phần chỉ có hai đoạn ngắn.
      *
      * Đây là chỗ luật hình thức nhường cho nội dung: "ít nhất hai đoạn" sinh ra
-     * để ép bài có lực kéo ngược, không sinh ra để vứt bài.
+     * để bài có chỗ cho cấu trúc thứ hai, không sinh ra để vứt bài.
      */
     if (doan.length === 1) {
       const cau = doan[0].split(/(?<=[.!?])\s+/).filter((c) => c.trim());
@@ -612,8 +613,9 @@ ${thanCu}`,
     /*
      * Ít nhất hai đoạn, và tối thiểu ấy là một luật nội dung chứ không phải một
      * ngưỡng kỹ thuật: một khối chỉ có kết luận và một đoạn thì không đủ chỗ
-     * cho cả nét mạnh lẫn lực kéo ngược, và một bài chỉ khen là bài không dùng
-     * được dù đọc dễ chịu — luật counterweight §5.3.
+     * cho cả nét chính lẫn bộ sao đi cùng làm nét ấy rõ hơn hay đổi chiều.
+     * Không còn ép "luôn có lực ngược" (CELES-72, 11/11/2026): đoạn hai nói điều
+     * lá số thật sự có, không dựng một mặt trái cho đủ khuôn.
      */
     if (doan.length < 2) {
       biLoai.push(

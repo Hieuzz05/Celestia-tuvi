@@ -41,6 +41,52 @@ export interface DongSuDung {
   tokensRa: number;
 }
 
+export type DongSuDungNgay = DongSuDung;
+
+/** Cho lượt thử: lỗi đọc KHÔNG được biến thành "chưa dùng gì". Không gọi trong production thường. */
+export async function docSuDungHomNayBatBuoc(): Promise<DongSuDungNgay[]> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) throw new Error('Chưa có sổ dùng để kiểm ngân sách thử.');
+  const rows: DongSuDungNgay[] = [];
+  const ngay = new Date().toISOString().slice(0, 10);
+  for (let tu = 0; ; tu += 1000) {
+    const { data, error } = await supabase.from('ai_usage_logs')
+      .select('provider, model, so_request, so_loi, tokens_vao, tokens_ra')
+      .eq('ngay', ngay).order('provider').order('model').range(tu, tu + 999);
+    if (error || !Array.isArray(data)) throw new Error('Không đọc được sổ dùng hôm nay.');
+    for (const r of data) {
+      if (typeof r.provider !== 'string' || typeof r.model !== 'string' ||
+          ![r.so_request, r.so_loi, r.tokens_vao, r.tokens_ra].every((n) => Number.isSafeInteger(n) && n >= 0)) {
+        throw new Error('Sổ dùng có số liệu không hợp lệ.');
+      }
+      rows.push({ provider: r.provider, model: r.model, soRequest: r.so_request, soLoi: r.so_loi, tokensVao: r.tokens_vao, tokensRa: r.tokens_ra });
+    }
+    if (data.length < 1000) return rows;
+  }
+}
+
+/** Cho trial: phải biết ghi thành công trước khi xóa dấu chưa quyết toán. */
+export async function ghiNhanSuDungBatBuoc(
+  provider: string, model: string, tokensVao: number, tokensRa: number, laLoi: boolean,
+  them: { dem?: number; nghi?: number } = {},
+): Promise<void> {
+  const supabase = taoSupabaseAdmin();
+  if (!supabase) throw new Error('Không ghi được sổ dùng thử.');
+  if (hamV2 !== false) {
+    const { error } = await supabase.rpc('ghi_nhan_su_dung_v2', {
+      p_provider: provider, p_model: model, p_tokens_vao: tokensVao, p_tokens_ra: tokensRa,
+      p_loi: laLoi, p_tokens_dem: them.dem ?? 0, p_tokens_nghi: them.nghi ?? 0,
+    });
+    if (!error) { hamV2 = true; return; }
+    if (error.code === 'PGRST202' || /could not find the function/i.test(error.message)) hamV2 = false;
+    else throw new Error('Không ghi được sổ dùng thử.');
+  }
+  const { error } = await supabase.rpc('ghi_nhan_su_dung', {
+    p_provider: provider, p_model: model, p_tokens_vao: tokensVao, p_tokens_ra: tokensRa, p_loi: laLoi,
+  });
+  if (error) throw new Error('Không ghi được sổ dùng thử.');
+}
+
 /**
  * Ghi nhận một lượt gọi. Cố tình nuốt lỗi: thống kê hỏng thì cũng không được
  * làm chết luồng luận giải của người dùng.

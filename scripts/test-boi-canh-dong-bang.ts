@@ -14,6 +14,13 @@
  *    `focused` tắt/bật phải ra y hệt ảnh chụp `du-lieu/boi-canh-dong-bang.json`. Các commit sau
  *    thêm tham số tuỳ chọn vào `chonBoiCanh`; ảnh chụp này là thứ chứng minh đường cũ không đổi.
  *    Ảnh chụp sinh MỘT lần trên mã gốc rồi đóng băng — test không tự tính lại nó.
+ *    Ngoại lệ X2 (22/10/2026, chủ dự án duyệt sau QA): cập nhật chọn lọc 60 ca,
+ *    chỉ noiDung/cung của dữ kiện nguyệt hạn; 132 ca khác giữ nguyên. Không dùng --sinh.
+ *    Ngoại lệ CELES-72 (12/11/2026, chủ dự án quyết 11/11 "không sao nào mặc định tốt xấu"):
+ *    cập nhật chọn lọc 716 trường noiDung (cách cục chỉ nói mặt khó khi có sao trong bộ hãm,
+ *    vô chính diệu xét cung chiếu, Tuần/Triệt tuỳ độ sáng), rồi thêm 196 trường theo luật chuyên
+ *    gia 12/11 (Tuần Triệt không làm Kỵ nhẹ đi, Nhật Nguyệt Sửu Mùi xét sát tinh trước, Kỵ xung
+ *    theo độ sáng sao gốc, Thiên Hình gặp Tuần Triệt). Mã, loại, cung, sao giữ nguyên.
  * 2. Cờ Focused tắt: `traLoiCoCanCu` trả kết quả KHÔNG có khoá `meta` / `vetFocused`.
  *    Offline: không Supabase, model giả bằng cách chặn `fetch` — không gọi mạng thật.
  */

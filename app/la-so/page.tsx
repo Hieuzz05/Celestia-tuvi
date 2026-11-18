@@ -612,17 +612,6 @@ function TrangLaSo() {
 
           {dungV3 && laSo && !canBangCu && <TongQuanV3 cau={tongQuan.cau} dangDoc={tongQuan.dangDocDanhSach} cham={chamBai} />}
 
-          {dungV3 && laSo && !canBangCu && duocVao && tongQuan.banMoi && (
-            <div className="card flex flex-col gap-[8px]">
-              <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-                Kho tri thức của Celes vừa được cập nhật sau khi phần tổng quan này được viết. Bạn có thể để Celes viết lại theo kho mới — mỗi lần kho cập nhật chỉ viết lại một lần.
-              </p>
-              <button type="button" onClick={tongQuan.taoBanMoi} className="btn-outline btn-sm self-start">
-                Tạo bản mới
-              </button>
-            </div>
-          )}
-
           {dungV3 && laSo && !canBangCu && duocVao && !tongQuan.dangDoc && !tongQuan.dangDocDanhSach && (
             <VietLaiQuanTri phan="phần tổng quan" onVietLai={tongQuan.vietLaiQuanTri} />
           )}

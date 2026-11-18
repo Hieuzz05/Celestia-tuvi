@@ -70,7 +70,7 @@ async function main() {
   for (const y of c.yChinh) {
     console.log(`  [${y.mucChacChan ?? '—'}] ${y.tieuDe || '(không tiêu đề)'}`);
     console.log(`     neuThi: ${y.neuThi ?? '(KHÔNG CÓ)'}`);
-    console.log(`     lực ngược: ${y.luongNguoc ?? '(KHÔNG CÓ)'}`);
+    console.log(`     điểm vướng: ${y.luongNguoc ?? '(KHÔNG CÓ)'}`);
   }
 
   if (kq.kiemDuyet?.loi.length) {

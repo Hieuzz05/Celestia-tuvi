@@ -22,7 +22,7 @@ chạm vào một trong ba thứ: **đổi một tính năng**, **đổi một l
 Không cần khi: chỉ sửa chính tả, chỉ thêm test, chỉ sửa công cụ phát triển
 (`.claude/**`, `scripts/tam-*`), chỉ sửa tài liệu.
 
-Xem phạm vi thay đổi bằng `git diff main...HEAD --name-only` (hoặc `--cached` nếu
+Xem phạm vi thay đổi bằng `git diff origin/main...HEAD --name-only` (hoặc `--cached` nếu
 đã stage).
 
 Nếu **cần** mà backlog không nằm trong danh sách tệp thay đổi → **FAIL**, đây là

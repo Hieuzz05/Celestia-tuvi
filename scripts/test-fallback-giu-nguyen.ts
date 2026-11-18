@@ -12,8 +12,8 @@
  * `usage`, `su-co`; `types` là bản thật). Chạy cùng một bộ tình huống trên cả
  * hai, ghi vết mọi lời gọi ra ngoài, rồi so từng byte. Offline, không DB, không model.
  *
- * Một khác biệt có chủ đích, kiểm riêng ở mục 3: khi script đặt AI_NHAN, lượt
- * model HỎNG cũng ghi nhãn "<model>@test" (bản cũ chỉ gắn cho lượt thành công).
+ * X1 đổi có chủ đích đường AI_NHAN/AI_NGAN_SACH_TOKEN/AI_MUC_DICH; các tình
+ * huống đó được kiểm tại provider thật + HTTP/DB giả ở test-ngan-sach-thu.ts.
  *
  * Cố ý đổi hành vi của fallback.ts? Cập nhật bản đóng băng trong cùng commit và
  * ghi lý do — bài này đỏ là đúng việc của nó.
@@ -71,6 +71,7 @@ export async function ghiSuCo(x: unknown) { (globalThis as any).__fb.vet.push(['
 const thuMuc = mkdtempSync(join(tmpdir(), 'test-fallback-'));
 for (const [ten, ma] of Object.entries(GIA)) writeFileSync(join(thuMuc, ten), ma);
 copyFileSync(join(__dirname, '..', 'lib', 'ai', 'types.ts'), join(thuMuc, 'types.ts'));
+copyFileSync(join(__dirname, '..', 'lib', 'ai', 'ngan-sach-thu.ts'), join(thuMuc, 'ngan-sach-thu.ts'));
 copyFileSync(join(__dirname, '..', 'lib', 'ai', 'fallback.ts'), join(thuMuc, 'fallback-moi.ts'));
 writeFileSync(join(thuMuc, 'fallback-goc.ts'), readFileSync(join(__dirname, 'dong-bang', 'fallback-truoc-cel186.ts.txt')));
 
@@ -106,12 +107,11 @@ const TINH_HUONG: TinhHuong[] = [
   { ten: 'danh sách rỗng', danhSach: [] },
   { ten: 'ngân sách thời gian 0 sau một lượt hỏng', danhSach: BA, ketQua: { 'gemini|g1': 'lui' }, nganSachMs: 0 },
   { ten: 'có maxTokens', danhSach: BA, maxTokens: 300 },
-  { ten: 'AI_NHAN=test, lượt thành công', danhSach: BA, env: { AI_NHAN: 'test' } },
   // Biến của vé B đặt RỖNG phải như không đặt.
   { ten: 'biến eval rỗng', danhSach: BA, ketQua: { 'gemini|g1': 'lui' }, env: { AI_GHIM_MODEL: '', AI_TRAN_USD: '', AI_GIA_VAO_USD: '', AI_GIA_RA_USD: '' } },
 ];
 
-const BIEN = ['AI_KHONG_LUI', 'AI_NHAN', 'AI_NGAN_SACH_TOKEN', 'AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'];
+const BIEN = ['AI_KHONG_LUI', 'AI_NHAN', 'AI_NGAN_SACH_TOKEN', 'AI_MUC_DICH', 'AI_GHIM_MODEL', 'AI_TRAN_USD', 'AI_GIA_VAO_USD', 'AI_GIA_RA_USD'];
 
 async function chay(md: MoDun, th: TinhHuong) {
   const cu = Object.fromEntries(BIEN.map((k) => [k, process.env[k]]));
@@ -159,13 +159,6 @@ async function main() {
   kiem(coVet('gemini cạn hạn mức ngày', 'lượt miễn phí hôm nay') && !coVet('gemini cạn hạn mức ngày', '"goiModel","gemini"'), 'hạn mức ngày không bỏ qua gemini');
   kiem(coVet('danh sách rỗng', 'KhongCoModelError'), 'danh sách rỗng không ném KhongCoModelError');
   kiem(coVet('ngân sách thời gian 0 sau một lượt hỏng', 'không đủ để thử'), 'ngân sách thời gian không dừng chuỗi');
-  kiem(coVet('AI_NHAN=test, lượt thành công', '"g1@test"'), 'AI_NHAN không gắn nhãn');
-
-  // 3. Đổi CÓ CHỦ ĐÍCH, chỉ khi script đặt AI_NHAN (Production không đặt): lượt
-  // HỎNG cũng mang nhãn "@test", để ai_usage_logs tách trọn chi phí eval.
-  const nhanHong = await chay(moi, { ten: 'nhãn lượt hỏng', danhSach: BA, ketQua: { 'gemini|g1': 'lui' }, env: { AI_NHAN: 'test' } });
-  kiem(nhanHong.includes('["ghiNhanSuDung","gemini","g1@test",0,0,true]'), `lượt hỏng thiếu nhãn @test: ${nhanHong}`);
-
   // 4. Có đặt biến eval: ghim đúng một model, không lùi; trần tiền ném TRƯỚC khi gọi.
   const ghim = await chay(moi, { ten: 'ghim', danhSach: BA, uuTien: 'gemini|g1', ketQua: { 'groq|q1': 'lui' }, env: { AI_GHIM_MODEL: 'groq|q1' } });
   kiem(!ghim.includes('"goiModel","gemini"') && !ghim.includes('"goiModel","openai"') && ghim.includes('"goiModel","groq","q1"'), `ghim vẫn gọi model khác: ${ghim}`);

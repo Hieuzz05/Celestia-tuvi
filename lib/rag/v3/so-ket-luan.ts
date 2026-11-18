@@ -1,6 +1,7 @@
 import { docNhieuTheoTienTo } from '@/lib/rag/noi-dung-ai';
 import { THE_HE_DEM, type CauTraRaV3 } from './xu-ly';
 import { PHIEN_BAN_V3 } from '.';
+import { dinhThuHoi, tongHopDinh, type CoCanCu } from '@/lib/rag/thu-hoi/cong';
 
 /**
  * SỔ KẾT LUẬN CHUNG (30/09/2026) — những gì bài luận giải đã kết luận về chính lá số này,
@@ -15,6 +16,9 @@ import { PHIEN_BAN_V3 } from '.';
  *
  * Thứ tự ưu tiên: "Tóm lại" của từng chủ đề (đã là kết luận), rồi ý chính phần tổng quan.
  * Lỗi nào cũng nuốt: thiếu sổ chỉ là kém nhất quán hơn, không phải lý do để chat hỏng.
+ *
+ * X3 (CELES-27): tóm lại / câu tổng quan dính mục thư viện đã thu hồi thì KHÔNG vào sổ — Hỏi Celes
+ * không được nhắc lại kết luận dựa trên tri thức đã gỡ. Không truyền `thuHoi` thì tự đọc (server).
  */
 
 const TOI_DA = 6;
@@ -26,9 +30,14 @@ function cauDau(s: string): string {
   return (m ? m[0] : t.slice(0, 260)).trim();
 }
 
-export async function soKetLuanV3(chartHash: string | undefined, namXem: number): Promise<string[]> {
+export async function soKetLuanV3(
+  chartHash: string | undefined,
+  namXem: number,
+  thuHoi?: ReadonlySet<string>
+): Promise<string[]> {
   if (!chartHash) return [];
   try {
+    const tap = thuHoi ?? (await (await import('@/lib/rag/thu-hoi/kho')).docTapThuHoi());
     const tienTo = `nam:${namXem}|nhom:`;
     const ds = await docNhieuTheoTienTo<{ tomLai?: string } | CauTraRaV3[]>(
       { chartHash, beMat: 'luan-giai-v3', ngonNgu: 'vi' },
@@ -36,12 +45,21 @@ export async function soKetLuanV3(chartHash: string | undefined, namXem: number)
       `|th:${THE_HE_DEM}`
     );
     const cuoiTom = `|th:${THE_HE_DEM}|tom-lai|k:${PHIEN_BAN_V3.khung}`;
+    const cuoiNhom = `|th:${THE_HE_DEM}`;
+    const cauCuaNhom = (tho: string): CoCanCu[] => {
+      const r = ds.find((x) => x.khoaKy === `${tienTo}${tho}${cuoiNhom}` && Array.isArray(x.noiDung));
+      return (r?.noiDung as CauTraRaV3[] | undefined) ?? [];
+    };
     const tomLai = ds
       .filter((r) => r.khoaKy.endsWith(cuoiTom) && !Array.isArray(r.noiDung) && typeof r.noiDung?.tomLai === 'string')
+      .filter((r) => {
+        const tho = r.khoaKy.slice(tienTo.length, r.khoaKy.length - cuoiTom.length);
+        return !tongHopDinh(r.noiDung as { dauTV?: unknown }, () => cauCuaNhom(tho), tap);
+      })
       .map((r) => cauDau((r.noiDung as { tomLai: string }).tomLai));
     const tq = ds.find((r) => r.khoaKy === `${tienTo}tong-quan|th:${THE_HE_DEM}` && Array.isArray(r.noiDung));
     const yTongQuan = ((tq?.noiDung as CauTraRaV3[] | undefined) ?? [])
-      .filter((c) => !c.chuaViet)
+      .filter((c) => !c.chuaViet && !dinhThuHoi(c, tap))
       .map((c) => c.yChinh?.[0] ?? (c.luanGiai ? cauDau(c.luanGiai) : ''));
     return [...tomLai, ...yTongQuan].filter((x) => x.length > 20).slice(0, TOI_DA);
   } catch {

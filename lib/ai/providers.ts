@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { AiRetryableError, type ChatRequest, type ChatResult, type ProviderId } from './types';
+import { duocGoiCoPhi, goiTrongNganSachThu, laLuotThu } from './ngan-sach-thu';
 
 const TIMEOUT_MS = 55_000;
 
@@ -245,6 +246,14 @@ export function goiModel(
   apiKey: string,
   req: ChatRequest
 ): Promise<ChatResult> {
+  // Ngoại lệ có phí: chỉ lời gọi fallback.ts đã giữ chỗ tiền cho đúng model ghim
+  if (laLuotThu() && !duocGoiCoPhi(provider, model)) {
+    return goiTrongNganSachThu(provider, model, req, () => goiModelTrucTiep(provider, model, apiKey, req));
+  }
+  return goiModelTrucTiep(provider, model, apiKey, req);
+}
+
+function goiModelTrucTiep(provider: ProviderId, model: string, apiKey: string, req: ChatRequest): Promise<ChatResult> {
   switch (provider) {
     case 'gemini':
       return chatGemini(model, apiKey, req);

@@ -133,7 +133,16 @@ Mẫu một mục:
 - Lần: 1
 - Nâng: `docs/bai-hoc/cach-lam.md` mục "Kiểm và báo". Lần 2 → máy canh trích nguyên văn trong
   `scripts/test-luat-to-hop.ts` (nhánh `viec/van-han-lop-han`, 10beac8).
-- Lần: 3
+- Lần: 4
+- Lặp 31/10 (lần 4): soát câu bị bộ kiểm lớp hạn chặn (CELES-46), AI dựng lại lá 24/8/2000 bằng script
+  gõ tay giờ 9 thay vì giờ Tuất (20) đang dùng trong `LA_SO_DO` của `scripts/do-lop-han-that.ts`, rồi báo
+  chủ dự án "Liêm Trinh ở Tật Ách" để kết luận câu "Hóa Kỵ vào Liêm Trinh" sai. Thật ra Liêm Trinh ở
+  Mệnh (Tuất); câu bị chặn vì trộn lưu Kỵ 2026 với Kỵ gốc. Gốc: thông số lá số gõ lại theo trí nhớ thay vì
+  lấy từ nguồn của bộ đo, và không đối chiếu với lá số chủ dự án nhìn thấy. Giá: chủ dự án phải bắt lỗi,
+  một lượt trả lời sai, sửa lại backlog. Luật: dựng lại lá số để soát thì import đúng thông số từ nguồn
+  bộ đo (`LA_SO_DO`), không gõ tay; nêu vị trí sao thì in kèm ngày giờ đã dùng. Máy canh đề xuất (chờ
+  chủ dự án duyệt): cờ `--in-la-so <ten>` trong `do-lop-han-that.ts` in vị trí sao từ chính `LA_SO_DO`,
+  để AI soát bằng lệnh đó thay cho script tự viết.
 - Lặp 17/10 (lần 3, hai chuyện): (a) giải pháp việc A ghi "câu Triệt tiền vận, Tuần hậu vận không có
   trong 15 cuốn"; chủ dự án phản đối, chuyen-gia-tu-vi tìm ra Ảo bí 4819 nói nguyên văn — grep của AI
   chỉ dùng vài biến thể chữ ("hậu vận", "sau 30") nên sót câu Hán Việt "hậu khán Tuần". (b) nói đường
@@ -243,6 +252,14 @@ Mẫu một mục:
 - Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
 - Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
 
+## 22/10/2026 · Timeout chưa phải lượt không tiêu tài nguyên · ai-rag
+- Thẻ: timeout, usage, doi soat, ngan sach, restart
+- Chuyện gì: QC X1 bắt nhánh lỗi provider ghi token dự kiến rồi xóa dấu cho cả mất mạng/timeout; bộ kiểm ban đầu chỉ có 429 nên chưa bắt được.
+- Gốc: gộp phản hồi từ chối rõ với kết quả chưa biết vào cùng nhánh xử lý, coi ước lượng như usage đã quyết toán.
+- Giá: một vòng sửa và bổ sung ca kiểm trước commit; chưa gọi model thật hoặc ảnh hưởng người dùng.
+- Luật: timeout/mất mạng/server chưa biết kết quả phải giữ dấu đối soát, dừng fallback và chặn cả sau restart; chỉ từ chối rõ mới được tiếp tục theo hợp đồng.
+- Nâng: docs/bay/ai-rag.md; ca AbortError/HTTP 500 và restart trong scripts/test-ngan-sach-thu.ts đã PASS, đăng ký CI cùng X1. Ghi trên nhánh X1 vì phiên này không được push main.
+- Lần: 1
 ## 22/10/2026 · Đổi quy tắc vận hạn mà mẫu đóng băng không bắt · engine
 - Thẻ: phienBan, van tay, mau dong bang, van han, nguyet han
 - Chuyện gì: X2 (nguyệt hạn Cách 1) đổi cung tháng của mọi lá số, nhưng `test-ansao-chuan` vẫn xanh
@@ -255,3 +272,37 @@ Mẫu một mục:
 - Nâng: máy canh T-03 (079c8d0, nhánh `viec/tich-hop-dot-1`) — vân tay thêm tiểu hạn, nguyệt hạn,
   lưu tinh; thử đột biến công thức nguyệt hạn thì CI đỏ. `docs/bay/engine.md` thêm một dòng trỏ tới.
 - Lần: 2 (lần 1: CELES-37, chưa ghi sổ)
+
+## 06/11/2026 · Câu xin quyết chỉ nằm trong tệp, không ra chat · quy-trinh
+- Thẻ: xin quyet, khung chat, cau hoi chu du an, tep D:\Celestia, trinh bay
+- Chuyện gì: CELES-62 viết Q1–Q5 trong `D:\Celestia\GIAI-PHAP-AI-MAT-BOI-CANH-2026-11-06.md`, câu trả lời
+  trong chat chỉ trỏ tới tệp. Chủ dự án dặn: "lần sau gửi các Q ra đây luôn để tôi check".
+- Gốc: luật cũ chỉ nói tệp phải ở chỗ dễ tìm và in đường dẫn, nên AI coi in đường dẫn là đủ. Chủ dự án
+  lại muốn quyết ngay trong chat, không phải mở tệp.
+- Giá: chủ dự án phải nhắc, thêm một lượt để chép lại Q1–Q5 ra chat.
+- Luật: câu xin quyết chép nguyên ra chat (lựa chọn + đề xuất); tệp chỉ là bản đầy đủ có dẫn chứng.
+- Nâng: `docs/bai-hoc/cach-lam.md`, mục Giao tiếp, gộp vào luật "Tệp trình chủ dự án đọc".
+## 26/10/2026 · Viện luật "Nam phái làm chuẩn" đã bỏ để chặn phương án tứ hoá · cach-lam
+- Thẻ: luat cu, AGENTS.md, tu hoa, phai, quyet dinh
+- Chuyện gì: khi phân tích vì sao chat không dùng sách Tứ Hoá Phái, AI đề xuất phải mở phiên
+  [CHIẾN LƯỢC] vì thêm lưu tứ hoá "đụng luật Nam phái làm chuẩn". Chủ dự án đã bỏ luật đó từ lâu
+  nhưng nó vẫn nằm ở AGENTS.md (quyết định số 1) và ba tệp subagent.
+- Gốc: quyết định đổi bằng lời, không ai gỡ chữ khỏi các tệp nạp mọi phiên; AI tin tệp.
+- Giá: một vòng trình sai (đẩy việc sang phiên chiến lược không cần), chủ dự án phải sửa lưng.
+- Luật: chủ dự án bỏ một luật thì grep mọi tệp nạp vào phiên (AGENTS.md, .claude/agents, .claude/skills,
+  docs/bay, docs/bai-hoc) và gỡ trong cùng lượt.
+- Nâng: AGENTS.md (gỡ luật + ghi chú "không có phái chuẩn"), celes-domain, chuyen-gia-tu-vi, phan-bien,
+  chien-luoc, danh-gia-tac-dong, soat-chi-phi.
+- Lần: 1
+## 12/11/2026 · Gắn nghĩa cố định cho sao, và đề xuất "Kỵ gặp Tuần Triệt nhẹ đi" sai sách · bay/engine
+- Thẻ: chieu-sao, tinhChat, Hoa Ky, Tuan Triet, anh chup, model gia
+- Chuyện gì: (1) code đếm tốt/xấu theo nhãn cát/hung cố định nên Kình Dương đắc địa bị luận xấu, cung
+  xung chiếu mặc định là lực cản; chủ dự án sửa lưng 11/11. (2) Khi chuyển sang `chieuSao`, AI đề xuất
+  áp luật chung "sao xấu gặp Tuần Triệt bớt xấu" cho Hóa Kỵ; `chuyen-gia-tu-vi` bác bằng TVƯD, Ảo bí,
+  NLTT. (3) Đổi nghĩa engine làm ảnh chụp `boi-canh-dong-bang.json` và model giả trong test lệch theo.
+- Gốc: nghĩa tốt/xấu nằm ở nhãn tĩnh thay vì xét bộ; luật chung bị áp như luật tuyệt đối.
+- Giá: một vòng rà toàn bộ (CELES-72), hai lượt sửa engine, cập nhật chọn lọc 716 + 196 trường ảnh chụp.
+- Luật: luận tốt/xấu chỉ qua `lib/tuvi/chieu-sao.ts`; luật chung về Tuần Triệt không áp cho Kỵ; đổi nghĩa
+  engine thì cập nhật ảnh chụp CHỌN LỌC (chỉ `noiDung`, kiểm mọi trường khác y nguyên), không `--sinh`.
+- Nâng: `docs/bay/engine.md`. Máy canh: `scripts/test-chieu-sao.ts` (grep cấm `tinhChat` ngoài danh sách).
+- Lần: 1

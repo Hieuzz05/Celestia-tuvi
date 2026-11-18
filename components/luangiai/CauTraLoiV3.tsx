@@ -14,6 +14,8 @@ export interface CauV3 {
   viSao: string;
   doRo: 'Rõ' | 'Khá rõ' | 'Gợi ý';
   chuaViet: boolean;
+  /** Câu tạm ẩn vì phần tri thức nó dựa vào vừa được gỡ, chưa viết lại được (X3) — không phải lỗi */
+  tamAn?: boolean;
   /** Gợi ý tách khỏi bài luận — gom ở GoiYCeles, không hiện trong câu trả lời */
   goiY?: string;
 }
@@ -51,7 +53,9 @@ export function CauTraLoiV3({ cau, so }: { cau: CauV3; so?: number }) {
       <article className="flex flex-col gap-[8px]">
         {tieuDe}
         <p className="body-sm" style={{ color: 'var(--fg-muted)' }}>
-          Celes chưa viết được câu này. Mở lại trang sau ít phút để thử lại.
+          {cau.tamAn
+            ? 'Celes chưa có lời cho câu này. Bạn xem các phần còn lại.'
+            : 'Celes chưa viết được câu này. Mở lại trang sau ít phút để thử lại.'}
         </p>
       </article>
     );

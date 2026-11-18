@@ -1,4 +1,4 @@
-# Cổng tự động cho mọi lần đẩy nhánh và mọi PR vào main.
+# Cổng tự động cho mọi lần đẩy nhánh (kể cả main).
 # Chỉ chạy các bài kiểm OFFLINE: không cần khoá, không gọi model, không chạm
 # database — nên không cần secret nào và không tốn tiền. Các bài chạm DB thật
 # hoặc model thật (test-hoi-thoai, eval-chat-quyet-dinh, test-rag-toan-tuyen)
@@ -9,8 +9,8 @@ on:
   push:
     branches: ['**']
     paths-ignore: ['TRANG-THAI.md', '**/*.xlsx']
-  pull_request:
-    branches: [main]
+# Không chạy thêm theo pull_request: mọi nhánh đã được kiểm khi đẩy, và dự án gộp main không qua PR.
+# Bật cả hai thì nhánh có PR mở chạy trùng hai lần (CELES-83).
 
 concurrency:
   group: kiem-tra-${{ github.ref }}
@@ -38,9 +38,13 @@ jobs:
         run: node scripts/dem-loi-lint.mjs
       - name: Không thêm dấu AI ở giao diện (Hallmark, tầng floor)
         run: node scripts/kiem-dau-ai.mjs
+      - name: Bản luật cho Codex khớp bản .claude (skill, agent)
+        run: node scripts/kiem-ban-sao-luat.mjs
 
       - name: Engine an sao
         run: npx tsx scripts/test-ansao-chuan.ts
+      - name: Nguyệt hạn — đếm tay độc lập và biên tháng âm/chi giờ (offline)
+        run: npx tsx scripts/test-nguyet-han.ts
       - name: Planner RAG
         run: npx tsx scripts/test-rag-planner.ts
       - name: Bộ vàng planner
@@ -65,6 +69,8 @@ jobs:
         run: npx tsx scripts/test-an-noi-bo-v3.ts
       - name: Chat cân theo lớp hạn (cờ tắt = y nguyên, cờ bật = chiều từ lớp hạn)
         run: npx tsx scripts/test-lop-han-chat.ts
+      - name: Chiều sao theo bộ (không sao nào mặc định tốt xấu)
+        run: npx tsx scripts/test-chieu-sao.ts
       - name: Bài luận 12 cung
         run: npx tsx scripts/test-12-cung.ts
       - name: Bối cảnh người đọc + cấu hình luận giải
@@ -103,12 +109,26 @@ jobs:
         run: npx tsx scripts/test-hieu-cau-truong.ts
       - name: CEL-196 nghiệm lý — chỉ mục celes, đang dùng, phiên bản đã duyệt mới vào chat
         run: npx tsx scripts/test-nghiem-ly.ts
+      - name: K1 kho tối thiểu — chặn mục nặng chưa duyệt, bỏ mục bị lật đã xác minh, căn cứ không ra trình duyệt
+        run: npx tsx scripts/test-thu-vien-prompt.ts
+      - name: K2 dấu logic V3 — câu lệch dấu viết lại khi mở, khách hết lượt vẫn được bài cũ, dấu không ra trình duyệt
+        run: npx tsx scripts/test-dau-logic-v3.ts
+      - name: X3 cổng thu hồi — câu dính mục đã thu hồi viết lại khi mở, câu chờ không lộ bài, đọc lỗi thì mở cổng, script mặc định chạy khô
+        run: npx tsx scripts/test-cong-thu-hoi.ts
+      - name: T-02 không còn nút Tạo bản mới — người thường không xả đệm
+        run: npx tsx scripts/test-khong-nut-tao-moi.ts
+      - name: K3 tháng nói theo độ tin — hỏi một tháng thì không nói chắc, mức nặng giữ nguyên
+        run: npx tsx scripts/test-thang-chac-thap.ts
+      - name: CELES-38 đường B V3 — lọc ý tất định, chỉ hạ mức chắc, sản phẩm không bật đường B
+        run: npx tsx scripts/test-duong-b-v3.ts
       - name: CEL-195 phản hồi 👍👎 — nhãn đóng, chỉ lượt của chính mình, Cần duyệt chỉ dữ liệu an toàn
         run: npx tsx scripts/test-phan-hoi.ts
       - name: P0 §14 độ phủ tầng viết — hàm đếm claim/F/điểm bắt buộc
         run: npx tsx scripts/test-do-phu-viet.ts
       - name: Lối dừng bằng mã — chỉ dữ kiện, hỏi lại không tính lượt, một ngoại lệ tạm
         run: npx tsx scripts/test-loi-chi-ma.ts
+      - name: Bóc mã máy E###/F###/W1–3 khỏi lời chat thường (CELES-81)
+        run: npx tsx scripts/test-bo-ma-may.ts
       - name: Đóng băng chonBoiCanh + cờ tắt không có meta (CEL-186 A0)
         run: npx tsx scripts/test-boi-canh-dong-bang.ts
       - name: Behavior Contract offline — người / ý / thời gian 30 flow (CEL-186 v2)
@@ -121,8 +141,18 @@ jobs:
         run: npx tsx scripts/test-hieu-cau.ts
       - name: fallback.ts giữ nguyên khi không đặt biến eval (vùng Chung)
         run: npx tsx scripts/test-fallback-giu-nguyen.ts
+      - name: X1 — trần token thử, cấm paid fallback, đối soát qua restart (offline)
+        run: npx tsx scripts/test-ngan-sach-thu.ts
       - name: Đệm AI tách theo môi trường (prod / Preview / local, cấu hình chỉ prod ghi)
         run: npx tsx scripts/test-moi-truong-dem.ts
+      - name: Sửa cục bộ bài V3 — chọn câu lỗi, ghép câu sửa đúng chỗ (offline)
+        run: npx tsx scripts/test-sua-cuc-bo.ts
+      - name: Thư viện tri thức — bộ khớp và bộ kiểm mục trên lá số engine (offline)
+        run: npx tsx scripts/test-thu-vien.ts
+      - name: Tương phản màu theo WCAG
+        run: npx tsx scripts/test-mau.ts
+      - name: Chọn mẫu vàng theo bề mặt / loại (offline)
+        run: npx tsx scripts/test-mau-vang.ts
 
       - name: Máy canh ID CEL — hàm so ID (chạy thật ở kiem-id-cel.yml)
         run: npx tsx scripts/test-kiem-id-cel.ts

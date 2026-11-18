@@ -5,7 +5,9 @@ Trong lúc làm chỉ cần `node scripts/kiem-nhanh.mjs --chay`; danh sách nà
 
 ```
 node scripts/kiem-dau-ai.mjs          # dấu AI ở giao diện (Hallmark sloplint, tầng floor) so với nền scripts/hallmark/nen.json; sửa xong dấu cũ thì --cap-nhat — offline
-npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng — offline
+node scripts/kiem-ban-sao-luat.mjs     # bản luật cho Codex (.agents/skills, .codex/agents) khớp bản .claude; sửa .claude rồi --chep — offline
+npx tsx scripts/test-ansao-chuan.ts   # engine an sao: công thức sách + lịch + 60 mẫu đóng băng (T-03: vân tay gồm tiểu hạn, nguyệt hạn, lưu tinh) — offline
+npx tsx scripts/test-nguyet-han.ts    # X2: đáp án đếm tay độc lập theo hai nguồn; tháng âm, chi giờ, Tý muộn — offline
 npx tsx scripts/test-rag-planner.ts   # từ điển thực thể, planner (cả trục thời gian + chip sang năm), validator — offline
 npx tsx scripts/eval-planner.ts       # bộ vàng 100 câu (tính 03/10/2026, CEL-186 vé A, có tháng mục tiêu, chặn năm sinh; có mục "đúng trục thời gian"), ĐANG 100% — không được tụt
 npx tsx scripts/test-chuan-ngon-ngu.ts  # chuẩn ngôn ngữ trên bài đọc sâu — offline
@@ -18,6 +20,7 @@ npx tsx scripts/test-luat-quan-he.ts  # luật quan hệ sao + Tuần Triệt (C
 npx tsx scripts/test-xet-cung.ts  # xét cung (CEL-200, 3a' bản 7 bước C-C): chạy bảng luật quan hệ trên lá số thật theo thứ tự Phúc → Mệnh → Thân → cung hỏi; ca chuyên gia (Thiên Lương hãm gặp Tuần/Triệt, Nhật Nguyệt Sửu Mùi gặp Kỵ thành / hỏng cách, Lộc Tồn không bị báo giáp hung, Phá Quân ở Thân dụng Không Kiếp, Thiên Phủ gặp 1–4 sát); mỗi ca phải gặp trong mẫu quét — offline
 npx tsx scripts/test-an-noi-bo-v3.ts  # luận giải v3: pb / model chỉ ở đệm, không ra trình duyệt — gọi xuLyLuanGiaiV3 với môi trường giả, đường "đủ câu trong đệm" (lỗi lọt 18/10/2026) — offline
 npx tsx scripts/test-lop-han-chat.ts  # chat cân theo lớp hạn (CEL-200, cờ CELES_LOP_HAN): cờ tắt = y nguyên từng byte; cờ bật: sao gốc chỉ ở mục nền, lưu hoá đúng sao, luôn hai mặt, sao lưu trong luật không cộng lại; in bảng phân bố hướng — offline
+npx tsx scripts/test-chieu-sao.ts     # chiều sao theo bộ sao đi cùng (CELES-72): không sao nào mặc định tốt xấu, cung đối không mặc định cản, cấm đọc tinhChat để luận, cấm câu khuôn "luôn có lực ngược" — offline
 npx tsx scripts/test-12-cung.ts       # bài luận 12 cung: bao phủ, ngân sách mở đầu — offline
 npx tsx scripts/test-phu-du-kien.ts   # độ phủ dữ kiện: mọi sao cung chính có nghĩa theo cung, xung chiếu có nghĩa — offline
 npx tsx scripts/test-boi-canh-doc.ts  # bối cảnh người đọc + cấu hình độ dài: khoá đệm, luật không đổi kết luận — offline
@@ -35,17 +38,32 @@ npx tsx scripts/test-lop-han-env.ts  # CEL-200 env thật 0/thiếu/1/0 (thiếu
 npx tsx scripts/test-nguon-tu-hoa.ts  # sách tứ hoá chỉ vào câu vận hạn / câu nhắc tứ hoá (31/10/2026): nhận sách theo tiêu đề, nhận câu nhắc tứ hoá, quyền theo kế hoạch planner thật, hai tập Tứ Hóa Phái một nhóm nguồn — offline
 npx tsx scripts/test-lop-han-3b.ts   # CEL-200 máy 2: snapshot base độc lập, quan hệ hoá/cửa sổ, chữ cấm, vòng viết lại và meta đổi chế độ — offline
 npx tsx scripts/test-focused.ts        # đường Focused: cờ tắt giữ STANDARD, guard, câu mã, hết câu có căn cứ → thử lại → 502 — offline
+npx tsx scripts/test-hieu-cau-truong.ts # CEL-191 hiểu câu theo trường trên đường Focused: bảng timeIntent, cổng gọi model, luật thắng khi đã chắc — offline
 npx tsx scripts/test-loi-chi-ma.ts      # lối trả lượt bằng mã: chỉ dữ kiện / hỏi lại (không tính lượt) / đúng 1 ngoại lệ tạm AGE-02 — offline
+npx tsx scripts/test-bo-ma-may.ts       # bóc mã E###/F###/W1–3 khỏi lời chat thường: hai câu thật 15/11, ngoặc, câu sạch giữ nguyên — offline
+npx tsx scripts/test-boi-canh-dong-bang.ts # CEL-186 A0: `chonBoiCanh` phải ra y ảnh chụp đã đóng băng; KHÔNG chạy `--sinh` — offline
+npx tsx scripts/test-hop-dong-focused.ts # CEL-186 v2: 30 flow người / ý / thời gian trên vết có cấu trúc, model là hàm giả — offline
 npx tsx scripts/test-hieu-cau.ts        # hiểu câu qua lượt: meta ký HMAC + ràng buộc, F### dựng lại đúng y, hỏi lại "lá số của ai", giải thích lượt trước — offline
 npx tsx scripts/test-fallback-giu-nguyen.ts # fallback.ts (vùng Chung): không đặt biến eval thì chọn model y như bản trước CEL-186 — offline
+npx tsx scripts/test-ngan-sach-thu.ts # X1: trần token/ngày, cấm trả phí, ghi lỗi và restart vẫn chặn; T-04 ngoại lệ có phí hẹp (đủ biến + ghim + trần) — HTTP/DB giả
 npx tsx scripts/test-moi-truong-dem.ts  # đệm AI tách theo môi trường: production giữ khoá cũ, Preview/local có tiền tố, cấu hình chỉ production ghi — offline
 npx tsx scripts/test-kiem-id-cel.ts     # hàm so ID CEL giữa nhánh / main / nhánh khác — offline
 npx tsx scripts/kiem-id-cel.ts          # máy canh trùng ID CEL (cần git fetch); CI chạy riêng ở kiem-id-cel.yml trên MỌI lần đẩy
 npx tsx scripts/test-priv-01.ts        # PRIV-01: vết Production không giữ câu hỏi, văn trả lời, băm lá số không muối — offline
 npx tsx scripts/test-p0-chan-doan.ts   # harness P0: chẩn đoán tầng hỏng sớm nhất, cờ không chặn chẩn đoán, nhãn judge/người — offline
 npx tsx scripts/test-nghiem-ly.ts      # nghiệm lý của chủ dự án (QĐ-13) + khối T###: T phải kèm F, vòng T↔T giải tất định, cờ tắt giữ nguyên — offline
+npx tsx scripts/test-thu-vien-prompt.ts  # K1 khối thư viện V3: mục nặng chưa duyệt bị chặn (cờ CELES_THU_VIEN_MANH_CHUA_DUYET=1 mở lại), mục bị lật đã duyệt bị bỏ, căn cứ câu V3 không ra trình duyệt — offline
+npx tsx scripts/test-dau-logic-v3.ts    # K2 dấu logic `lg` câu V3: lệch dấu = thiếu, viết lại khi mở; bản cũ hiện tạm; khách hết lượt không bị 429; T-05 đường lùi không trả nguyệt hạn logic cũ — offline
+npx tsx scripts/test-cong-thu-hoi.ts    # X3 cổng thu hồi (CELES-27): câu / tóm lại / bức tranh / sổ kết luận dính mục thư viện đã thu hồi; câu chờ; kho.ts (cờ, chưa có bảng, lỗi tạm, phạm vi); SQL chỉ thêm; script từ chối khi thiếu phạm vi — offline
+npx tsx scripts/test-khong-nut-tao-moi.ts # T-02 giao diện không còn "Tạo bản mới"; vietLai người thường 403, taoMoi cũ bị bỏ qua — offline
+npx tsx scripts/test-duong-b-v3.ts      # CELES-38 đường B (so mù): bỏ ý mã lạ / sao ngoài lá số, chỉ hạ mức chắc, sản phẩm không bật — offline
+npx tsx scripts/test-thang-chac-thap.ts # K3 Focused hỏi một tháng: mô tả hướng "rõ" nói theo độ tin, validator chặn THANG_CHAC_CAO (trừ phủ định) — offline
 npx tsx scripts/test-phan-hoi.ts       # 👍👎: chỉ nhãn đóng, chỉ lượt của chính mình, màn Cần duyệt chỉ cột an toàn — offline
 npx tsx scripts/test-do-phu-viet.ts    # độ phủ tầng viết (đo, chưa đổi Writer) — offline
+npx tsx scripts/test-sua-cuc-bo.ts     # sửa cục bộ bài V3: chọn câu dính lỗi, ghép câu đã sửa về đúng chỗ — offline
+npx tsx scripts/test-thu-vien.ts       # thư viện tri thức: bộ khớp + bộ kiểm mục trên lá số engine — offline
+npx tsx scripts/test-mau.ts            # tương phản màu theo WCAG trên token app/globals.css — offline
+npx tsx scripts/test-mau-vang.ts       # chọn mẫu vàng theo bề mặt / loại / số lượng — offline
 npx tsx scripts/test-hoi-thoai.ts     # trí nhớ hội thoại: chạm DB thật, KHÔNG gọi model
 npx tsx scripts/eval-chat-quyet-dinh.ts # model thật; chạy khi đổi prompt / schema đầu ra / cách cục
 npx tsx scripts/eval-focused.ts        # model thật: 30+ ca Focused + Barnum 6×6; BẮT BUỘC AI_GHIM_MODEL + AI_TRAN_USD (≤ $2) + giá — xem đầu tệp

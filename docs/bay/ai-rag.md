@@ -41,7 +41,7 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   thế độ liên quan — một nguồn "cốt lõi" lạc đề vẫn là lạc đề.
 - **Nhiều đoạn cùng một tài liệu chỉ là MỘT tiếng nói.** `mucChacChan` đếm số tài liệu khác nhau,
   không đếm số đoạn. Đếm nhầm thì nhận định nào cũng trông "mạnh".
-- **Mỗi ý phải có lực ngược nếu có.** Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
+- **Mỗi ý có điểm vướng khi bộ sao thật sự làm ý yếu đi** (sao hãm, cặp khắc, Tuần Triệt…; không có thì để trống `luongNguoc`, 11/11/2026; tên trường giữ nguyên vì bài đã lưu và đệm dùng khoá đó, còn chữ gọi là "điểm vướng" từ 12/11). Chỉ nhặt sao củng cố câu chuyện là cherry-pick, và bài đọc
   nào cũng mạch lạc một cách đáng ngờ.
 - **Nút thắt khi nạp tài liệu là HẠN MỨC, không phải tốc độ.** Free tier của
   `gemini-embedding-001` có HAI trần, và mỗi phần tử trong lô `batchEmbedContents` tính là một
@@ -182,3 +182,17 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   lưu niên cho cả câu không mốc ("tính tôi thế nào"). Máy canh: `scripts/test-nguon-tu-hoa.ts`.
 - **Lớp vận hạn BẬT mặc định từ 31/10/2026**; `CELES_LOP_HAN=0` là công tắc tắt. Bài kiểm đường cũ
   xoá mọi `CELES_*` rồi phải tự đặt `CELES_LOP_HAN='0'`, không thì nó đang kiểm đường bật.
+- **Timeout/mất mạng không chứng minh model chưa tiêu tài nguyên.** X1 giữ dấu đối soát và dừng
+  chuỗi khi chưa biết usage thực; kiểm cả restart ở scripts/test-ngan-sach-thu.ts (22/10/2026).
+
+**Cổng thu hồi tri thức (X3, CELES-27, 22/10/2026).** Phương án: `D:\Celestia\PHUONG-AN-X3-ban2-2026-10-22.md`.
+
+- **Đoạn SÁCH thu hồi bằng `knowledge_chunks.trang_thai='loai_tru'` — ăn NGAY trên production** (database
+  dùng chung). Không bao giờ bật `loai_tru` để thử. Thử trên Preview chỉ qua bảng `thu_hoi_muc_thu_vien`
+  với phạm vi `preview:…` (`scripts/thu-hoi-muc.ts --preview-url`, script lấy phạm vi từ server).
+- **Hai loại dấu, không trộn.** Câu xét bằng dấu HIỆN TẠI (`canCu.thuVien`); `thayThuHoi` chỉ để nhận ra
+  tóm lại / bức tranh CŨ ghép từ bản trước. Xét câu bằng dấu lịch sử là câu vừa viết lại sạch bị viết lại
+  ở mọi lần mở (S-A).
+- **Câu chờ dựng từ danh sách trường cho phép**, không chép câu gốc rồi gỡ: câu gốc còn `ghep`, `kho`.
+- **Lỗi đọc bảng thì mở cổng (hiện bài)**, log `mo-cong-do-loi`. Câu viết trước K1 không có `canCu` →
+  cổng không thấy; script in số hàng đó ("điểm mù").

@@ -70,8 +70,8 @@ export async function docMetaTaiLieu(): Promise<Map<string, MetaTaiLieu>> {
 
 /**
  * Dấu vân tay của KHO đang xuất bản: đổi khi thêm / xuất bản / lưu trữ tài liệu,
- * hay đổi mức tin cậy, loại nguồn. Nút "Tạo bản mới" chỉ mở khi bài của người
- * đọc được viết với một dấu khác dấu hiện tại. Không đọc được kho thì null.
+ * hay đổi mức tin cậy, loại nguồn. Ghi lên từng câu V3 để biết câu viết với kho
+ * nào (nút "Tạo bản mới" đọc dấu này đã gỡ ở K2). Không đọc được kho thì null.
  */
 export async function phienBanKho(): Promise<string | null> {
   return (await lay())?.phienBanKho ?? null;

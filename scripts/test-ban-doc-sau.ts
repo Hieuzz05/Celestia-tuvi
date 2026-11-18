@@ -9,7 +9,7 @@
  *
  * Đo đúng những tiêu chí nghiệm thu spec mục 10 đặt cho tầng Bản đọc sâu:
  * mục 11 (đủ 12 phần), 12 (ngân sách từ), 14 (12/12 khối gương), 15 (12/12
- * phần có tham chiếu ngoài chặng), 17 (tiêu chí sâu phải có lực ngược),
+ * phần có tham chiếu ngoài chặng), 17 (tiêu chí sâu phải có điểm vướng),
  * 20 (sổ bao phủ), 25–27 (ràng buộc an toàn).
  */
 
@@ -273,13 +273,11 @@ async function do_() {
   const tieuChiCoChu = muc.flatMap((m) => m.tieuChi).filter((t) => !t.thieuCanCu);
   const soImLang = muc.flatMap((m) => m.tieuChi).filter((t) => t.thieuCanCu).length;
 
-  // Spec mục 10.17: tiêu chí sâu phải có lực ngược
+  // Spec mục 10.17 cũ bắt ≥70% tiêu chí có điểm vướng. Bỏ ngưỡng (CELES-72,
+  // 11/11/2026): không có thì để rỗng, đừng dựng. Giờ chỉ đo để theo dõi.
   const tiLucNguoc =
     tieuChiCoChu.filter((t) => t.luongNguoc).length / Math.max(tieuChiCoChu.length, 1);
-  kiem(
-    `≥70% tiêu chí có lực ngược (đo ${(tiLucNguoc * 100).toFixed(0)}%)`,
-    tiLucNguoc >= 0.7
-  );
+  console.log(`  (đo) tiêu chí có điều làm ý yếu đi: ${(tiLucNguoc * 100).toFixed(0)}%`);
 
   const gate = soatBanDocSau(bai);
   kiem(
@@ -433,13 +431,13 @@ async function do_() {
   const cauCaBai = vanCacPhan.split(/(?<=[.!?;])\s+/).filter((c) => c.trim().length > 10);
   const tyLeNgan = cauCaBai.filter(ngan).length / cauCaBai.length;
   /*
-   * CÂU LỰC NGƯỢC KHÔNG MỞ ĐẦU BẰNG TÊN SAO.
+   * CÂU NÓI ĐIỂM VƯỚNG KHÔNG MỞ ĐẦU BẰNG TÊN SAO.
    *
-   * Bài cũ có 76 câu lực ngược, phần lớn mở bằng một cái tên. Từng câu một thì
+   * Bài cũ có 76 câu nói điểm vướng, phần lớn mở bằng một cái tên. Từng câu một thì
    * không sai gì; xếp cạnh nhau thì chúng thành một cột đều đặn, và cú vặn ý
    * biến thành một mục trong danh sách.
    *
-   * Chỉ đo CHỮ MỞ ĐẦU, không đo cả câu: nêu tên trong thân câu lực ngược là
+   * Chỉ đo CHỮ MỞ ĐẦU, không đo cả câu: nêu tên trong thân câu nói điểm vướng là
    * chuyện bình thường và đúng.
    */
   const luongNguoc = tatCaTieuChi.map((t) => t.luongNguoc ?? '').filter((x) => x.trim());
@@ -451,7 +449,7 @@ async function do_() {
   });
   const tyLeMoTen = moBangTen.length / Math.max(1, luongNguoc.length);
   kiem(
-    'Dưới 20% câu lực ngược mở đầu bằng tên sao',
+    'Dưới 20% câu nói điểm vướng mở đầu bằng tên sao',
     tyLeMoTen < 0.2,
     `${Math.round(tyLeMoTen * 100)}% (${moBangTen.length}/${luongNguoc.length})`
   );

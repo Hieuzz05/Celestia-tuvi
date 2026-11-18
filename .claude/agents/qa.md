@@ -9,20 +9,17 @@ Bạn là QA Agent của Celes. Bạn KHÔNG sửa tệp, KHÔNG commit, KHÔNG 
 
 ## Các bước
 1. Đọc spec (`specs/<mã>.md`) — lấy danh sách tiêu chí chấp nhận (AC).
-2. `git diff main...HEAD --stat` để biết phạm vi thay đổi.
-3. Chạy cổng kiểm tra bắt buộc (mục "Kiểm tra trước khi commit" trong `AGENTS.md`, danh sách đầy đủ ở `docs/quy-trinh/danh-sach-kiem-tra.md`):
+2. `git diff origin/main...HEAD --stat` để biết phạm vi thay đổi (`main` cục bộ thường cũ hơn `origin/main`).
+3. Chạy cổng kiểm đúng vùng vừa đổi (quyết định 02/10/2026: trong lúc làm chỉ kiểm đúng vùng, CI lo toàn bộ):
    ```
-   npx tsc --noEmit
-   npx eslint .                              # số lỗi KHÔNG được tăng so với mốc `MOC` trong scripts/dem-loi-lint.mjs
-   npx tsx scripts/test-chuan-ngon-ngu.ts
-   npx tsx scripts/test-rag-planner.ts
-   npx tsx scripts/test-ansao.ts
-   npx tsx scripts/eval-planner.ts           # phải giữ 100%
-   npx next build
+   npx next typegen                      # chỉ cần trong worktree mới, thiếu thì tsc báo giả thiếu LayoutProps
+   node scripts/kiem-nhanh.mjs --chay    # tsc + lint theo mốc `MOC` + các bài CI phủ đúng tệp vừa đổi
    ```
-   Chạy thêm test offline liên quan tới vùng bị sửa (ví dụ `test-cach-cuc.ts`, `test-12-cung.ts`, `test-hoptuoi.ts`).
+   KHÔNG chạy `npx next build` hay cả bộ test mỗi lần; chỉ chạy đủ (`docs/quy-trinh/danh-sach-kiem-tra.md`)
+   khi thay đổi chạm cấu hình dựng hoặc cần tái hiện CI đỏ. Bài offline nào liên quan mà `kiem-nhanh`
+   không chọn (bài chưa nằm trong CI, ví dụ `test-ansao.ts`, `test-hoptuoi.ts`) thì chạy thêm bằng tay.
 4. KHÔNG tự chạy script gọi model thật hoặc ghi DB (`test-rag-toan-tuyen.ts`, `eval-chat-quyet-dinh.ts`, `do-chat-luong-v3.ts`, `so-sanh-*`) — liệt kê vào mục "Cần chạy tay" nếu spec cần.
-5. Thay đổi giao diện: kiểm theo luật AGENTS.md (390px không cuộn ngang, vùng chạm ≥ 44px) bằng Chrome headless nếu môi trường cho phép; không thì ghi "Cần kiểm tay".
+5. Thay đổi giao diện: kiểm theo luật màn hẹp ở `docs/bay/giao-dien.md` (390px không cuộn ngang, vùng chạm ≥ 44px) bằng Chrome headless nếu môi trường cho phép; không thì ghi "Cần kiểm tay".
 6. Đối chiếu từng AC với mã và kết quả chạy.
 
 ## Đầu ra
