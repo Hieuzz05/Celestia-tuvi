@@ -16,7 +16,6 @@ chạy nên không cần nhánh, và để trên nhánh riêng thì máy kia kh�
 
 | Ai | Việc | Nhánh | Chạm vào tệp nào | Bắt đầu |
 |---|---|---|---|---|
-| Claude (máy 1) | Chữa "AI quên bối cảnh" (CELES-23/4/64/65): dọn worktree, hook mở phiên, đồng bộ luật Claude/Codex/Gemini, khuôn câu xin quyết | `viec/ai-boi-canh-trien-khai` | TRANG-THAI.md, AI-PHOI-HOP.md, AGENTS.md, .claude/, .agents/, .codex/, scripts/ | 15/11 |
 
 ## Tạm dừng — chờ chủ dự án quyết gộp hay bỏ
 
@@ -45,6 +44,7 @@ Các việc dưới đây dừng từ 11/10 (việc gộp: CELES-14 trên Vibe B
 
 | Việc | Commit | Ngày |
 |---|---|---|
+| **ĐÃ GỘP MAIN** chữa "AI quên bối cảnh" (`viec/ai-boi-canh-trien-khai`, 9 commit): hook mở phiên báo nhánh chậm main + in việc dở trên Vibe Board (CELES-4); bản luật cho Codex chép từ `.claude` + CI canh lệch (CELES-64); khuôn câu xin quyết trong skill (CELES-65); luật đẩy: AI đẩy `viec/*`, chủ dự án gộp main; CI bỏ chạy trùng theo PR, rút AGENTS.md (CELES-83). Dọn worktree/nhánh (CELES-23) còn chờ chủ dự án quyết theo bảng phân loại | `3739cf7` | 18/11 |
 | **ĐÃ GỘP MAIN** đợt 1 kho tri thức (`viec/tich-hop-dot-1`, 53 commit): K1 chặn mục mạnh chưa duyệt + bỏ mục bị lật, K2 tách khoá đệm giọng văn + gỡ nút "Tạo bản mới", K3 Focused, X1 chặn lượt thử vượt trần token, X2 nguyệt hạn Cách 1 (phienBan 2026.10.2 → đệm bài lá số sinh lại dần, tốn tiền model), X3 cổng thu hồi (cờ `CELES_CONG_THU_HOI` chỉ bật Preview) + đọc nền, đường B sau cờ (mặc định tắt), G1–G3 bộ đo. CI + build xanh | `9c8d4b5` | 31/10 |
 | **ĐÃ GỘP MAIN** agent `chuyen-gia-tu-vi` (`.claude/agents/`): chuyên gia tử vi soát chuyên môn giải pháp trước khi trình, gọi cùng lượt `phan-bien` khi chạm chuyên môn (AGENTS.md luồng A/B). Sách ngược nhau thì agent phải đề xuất hoà giải. Máy 2: phiên mới mới thấy agent. | `8f73e7d` `7df47b1` + merge | 17/10/2026 |
 | **ĐÃ GỘP MAIN** `viec/sua-do-sang-cach-cuc`: bảng độ sáng theo Tử Vi hàm số (Tử Vi, Thiên Cơ, Thiên Phủ, Thiên Lương, Hỏa, Linh) + Nhật Nguyệt tịnh minh, Mã đầu đới kiếm, gỡ Hình Tù giáp Ấn. phienBan 2026.10.1, PHIEN_BAN_CACH_CUC 2026.10.2, THE_HE_DEM 9 (đệm luận viết lại dần). **Vùng Chung `lib/tuvi/`: web + app cùng đổi.** | `2983612` + merge | 17/10/2026 |
