@@ -160,13 +160,19 @@ async function main() {
   console.log('== 3. Bài dài loại ý nhắc cách cục không có trong dữ kiện ==');
   const dkTaHuu = [{ id: 'F001', loai: 'cach-cuc' as const, lop: 'ban-menh' as const, noiDung: 'Cách cục Tả Hữu tại Mệnh.', tenCachCuc: 'Tả Hữu' }];
   kiem(
-    JSON.stringify(cachCucNgoaiDuKien('Năm nay Tang Tuế Điếu báo nhiều chuyện phải đối đáp.', dkTaHuu)) ===
-      JSON.stringify(['Tang Tuế Điếu']),
-    'nhắc Tang Tuế Điếu khi dữ kiện không có → phải bị bắt'
+    JSON.stringify(cachCucNgoaiDuKien('Bạn có cách Nhật Nguyệt tịnh minh nên đường sáng sủa.', dkTaHuu)) ===
+      JSON.stringify(['Nhật Nguyệt tịnh minh']),
+    'nhắc cách cục engine có thể phát mà dữ kiện không có → phải bị bắt'
   );
   kiem(
-    cachCucNgoaiDuKien('thien ma gap tue pha nen de bi cat ngang', dkTaHuu).includes('Thiên Mã gặp Tuế Phá'),
+    cachCucNgoaiDuKien('nhat nguyet tinh minh nen de sang sua', dkTaHuu).includes('Nhật Nguyệt tịnh minh'),
     'bắt cả khi viết không dấu'
+  );
+  // Tang Tuế Điếu đọc theo vòng LƯU là cách đọc năm hợp lệ: không chặn theo tên
+  // (CELES-90). Gốc lỗi cũ (engine dựng từ vòng Thái Tuế gốc) canh ở mục 1.
+  kiem(
+    cachCucNgoaiDuKien('Năm nay lưu Tang Môn, lưu Thái Tuế, lưu Điếu Khách hội ở cung Quan.', dkTaHuu).length === 0,
+    'không chặn Tang Tuế Điếu theo tên'
   );
   kiem(cachCucNgoaiDuKien('Bộ Tả Hữu cho thấy bạn có người phụ tá.', dkTaHuu).length === 0, 'cách cục có trong dữ kiện → không bắt');
   kiem(cachCucNgoaiDuKien('Năm nay bạn nên giữ nhịp làm việc đều.', dkTaHuu).length === 0, 'câu không nhắc cách cục → không bắt');

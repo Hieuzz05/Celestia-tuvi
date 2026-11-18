@@ -22,6 +22,7 @@ import { chonBoiCanh, saoChinhTheoCung, tenCachCucCho } from '../lib/rag/boi-can
 import { lapKeHoach, type ChuDe, type LopHan } from '../lib/rag/planner';
 import { lopHan as bangLopHan } from '../lib/tuvi/tu-hoa-han';
 import { khopLuatToHop } from '../lib/tuvi/luat-to-hop';
+import { chieuTuHoaHan, phiaCuaChieu } from '../lib/tuvi/chieu-sao';
 
 for (const k of Object.keys(process.env)) {
   if (/SUPABASE|_API_KEY$/.test(k)) delete process.env[k];
@@ -101,7 +102,9 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
         // Không mục nào của hai danh sách là sao gốc / lớp nền
         if (n.dauMoc.some((d) => d.lop === 'nen' || tenGoc.has(d.ten))) nenLot++;
         // Không ép hai mặt (C3/Q2): danh sách chọn là các mốc nặng nhất, xếp giảm dần
-        if (n.dauMoc.some((d, i) => i > 0 && d.trong > n.dauMoc[i - 1].trong)) saiThuTu++;
+        // (mốc hai mặt xếp với nửa trọng lượng: dẫn chứng, không chiếm chỗ căn cứ chính — CELES-90)
+        const tl = (d: { trong: number; haiMat?: true }) => d.trong * (d.haiMat ? 0.5 : 1);
+        if (n.dauMoc.some((d, i) => i > 0 && tl(d) > tl(n.dauMoc[i - 1]))) saiThuTu++;
         // Lưu hoá phải đúng sao như bảng sự thật lớp hạn
         for (const d of n.dauMoc) {
           const m = d.ten.match(/^Lưu (Hóa \S+) \((.+)\)$/);
@@ -124,22 +127,27 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
   kiem(soLuat > 0, 'quét không gặp ca nào có luật tổ hợp lên danh sách — bài kiểm trùng vô nghĩa');
   kiem(trungLuat === 0, `${trungLuat} sao lưu vừa trong luật tổ hợp vừa đứng lẻ (cộng hai lần)`);
 
-  // Sao gốc ở cung hạn không cộng lẻ: đổi hết sao gốc của cung tiểu hạn không làm đổi tổng
-  // (trừ khi cung đó là cung đang hỏi — nền đã không vào tổng)
+  /*
+   * Sao gốc ở cung hạn không cộng lẻ, nhưng ĐƯỢC đổi chiều của sao lưu / tứ hoá hạn đứng
+   * cùng (chủ dự án 19/11/2026, CELES-90: sao lưu xét theo bộ sao nó gặp, TVTH:1101).
+   * Canh: bỏ phụ tinh gốc thì mọi mốc vẫn là sao hạn (không mốc nào mang tên sao gốc),
+   * và có ít nhất một lá đổi tổng — chứng tỏ bộ sao gốc đang được xét thật.
+   */
   let doiTong = 0;
+  let mocGoc = 0;
   const GIU = ['Kình Dương', 'Đà La', 'Lộc Tồn', 'Văn Xương', 'Văn Khúc', 'Tả Phù', 'Hữu Bật'];
   for (const laSo of LA.slice(0, 15)) {
     const n = tinhNghiengVe({ laSo, chuDe: 'su-nghiep', lopHan: NAM_THANG, namXem: 2026, thangXem: 10, lopHanMoi: true });
     if (!n) continue;
     const ban: LaSo = JSON.parse(JSON.stringify(laSo));
-    for (const c of ban.cungs) {
-      // Bỏ phụ tinh gốc; giữ sao luật tổ hợp dựa vào (Kình, Đà, Lộc Tồn) và sao nhận tứ hoá
-      c.sao = c.sao.filter((s) => GIU.includes(s.ten) || s.loai === 'chinh-tinh');
-    }
+    for (const c of ban.cungs) c.sao = c.sao.filter((s) => GIU.includes(s.ten) || s.loai === 'chinh-tinh');
     const n2 = tinhNghiengVe({ laSo: ban, chuDe: 'su-nghiep', lopHan: NAM_THANG, namXem: 2026, thangXem: 10, lopHanMoi: true });
+    const tenGoc = new Set(laSo.cungs.flatMap((c) => c.sao.map((s) => s.ten)));
+    for (const x of [n, n2]) if (x?.dauMoc.some((d) => tenGoc.has(d.ten))) mocGoc++;
     if (!n2 || n2.canNang.do !== n.canNang.do || n2.canNang.can !== n.canNang.can) doiTong++;
   }
-  kiem(doiTong === 0, `${doiTong} lá đổi tổng khi bỏ phụ tinh gốc — sao gốc vẫn đang vào chiều`);
+  kiem(mocGoc === 0, `${mocGoc} lá có sao gốc đứng lẻ thành mốc lớp hạn`);
+  kiem(doiTong > 0, 'bỏ phụ tinh gốc không đổi gì — sao lưu / tứ hoá hạn chưa xét bộ sao nó gặp');
 
   // Ca đối chiếu: 2026 can Bính → Liêm Trinh hoá Kỵ; phải có mặt ở phía cản cho sự nghiệp
   const lh = bangLopHan(DOI_CHIEU, 2026);
@@ -147,9 +155,13 @@ console.log('== B. Cờ bật: chiều chỉ từ lớp hạn ==');
   const n = tinhNghiengVe({ laSo: DOI_CHIEU, chuDe: 'su-nghiep', lopHan: NAM_THANG, namXem: 2026, thangXem: 10, lopHanMoi: true });
   const qlChi = DOI_CHIEU.cungs.find((c) => c.tenCung === 'Quan Lộc')!.chiIndex;
   console.log(`   lá đối chiếu 2026: Lưu Hóa Kỵ vào ${ky.sao} (${ky.tenCung}), Quan Lộc chi ${qlChi}; hướng ${n?.huong}`);
+  // Lưu Kỵ 2026 vào Liêm Trinh ở Mệnh (Tuất) cùng Thanh Long: Kỵ gặp Thanh Long thành thuận
+  // (chieu-sao.ts, 'ky-thanh-long'). Không mặc định Kỵ là cản (CELES-90): phải có mặt, đúng
+  // phía mà bộ sao cho ra.
+  const phiaKy = phiaCuaChieu(chieuTuHoaHan(DOI_CHIEU, ky.hoa, ky.sao, ky.chiIndex).chieu);
   kiem(
-    !!n?.dauMoc.some((d) => d.ten === `Lưu Hóa Kỵ (${ky.sao})` && d.huong === 'can'),
-    'lá đối chiếu sự nghiệp 2026: Lưu Hóa Kỵ chiếu tam phương không có mặt ở phía cản'
+    !!n?.dauMoc.some((d) => d.ten === `Lưu Hóa Kỵ (${ky.sao})` && d.huong === phiaKy),
+    'lá đối chiếu sự nghiệp 2026: Lưu Hóa Kỵ chiếu tam phương không có mặt, hoặc sai phía bộ sao cho ra'
   );
   const khoi = khoiNghiengVe(n);
   kiem(/NỀN SẴN TRÊN LÁ SỐ GỐC/.test(khoi) && /CÓ CĂN CỨ THÌ NÊU/.test(khoi), 'khối prompt lớp hạn thiếu mục nền hoặc luật có căn cứ thì nêu');
@@ -199,7 +211,8 @@ console.log('== C. Phân bố hướng: đường cũ vs lớp hạn (60 lá × 
     const n = tinhNghiengVe({ laSo, chuDe, lopHan: NAM_THANG, namXem, thangXem: 10, lopHanMoi: true });
     if (!n || n.dauMoc.length < 6) continue;
     for (const phia of ['do', 'can'] as const) {
-      if (n.canNang[phia] > 0 && !n.dauMoc.some((x) => x.huong === phia)) khongChen++;
+      // Mốc hai mặt có mặt cả hai phía tự nhiên (CELES-90), không phải mốc bị chèn
+      if (n.canNang[phia] > 0 && !n.dauMoc.some((x) => x.huong === phia && !x.haiMat)) khongChen++;
     }
   }
   console.log(`   ca một phía nặng hẳn, phía kia không bị chèn: ${khongChen}`);

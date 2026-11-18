@@ -25,6 +25,8 @@ import {
   chieuSao,
   chieuSaoLuu,
   chieuTuanTriet,
+  chieuTuHoaHan,
+  phiaCuaChieu,
   SAT_TINH,
   xetVoChinhDieu,
   type Chieu,
@@ -279,10 +281,29 @@ console.log('\n3b. Phụ tinh không có độ sáng: xét theo cung và bộ, k
   kiem('Hồng Loan gặp Hóa Kỵ → hai mặt', chieuCua(laSoGia({ [TY_]: { sao: [['Hồng Loan'], ['Hóa Kỵ']] } }), TY_, 'Hồng Loan') === 'hai-mat');
 }
 
-console.log('\n4. Sao lưu: ngoại lệ có chủ đích, giữ bảng riêng');
-kiem('Lưu Kình Dương → cản', chieuSaoLuu('Lưu Kình Dương') === 'can');
-kiem('Lưu Lộc Tồn → thuận', chieuSaoLuu('Lưu Lộc Tồn') === 'thuan');
-kiem('Sao lưu lạ → trung', chieuSaoLuu('Lưu Gì Đó') === 'trung');
+console.log('\n4. Sao lưu và tứ hoá hạn: xét như sao gốc theo cung, không bảng gán sẵn (CELES-90)');
+{
+  // Kình Dương đắc địa ở Thìn Tuất Sửu Mùi, hãm ở Tý Ngọ Mão Dậu (bảng đắc hãm) — TVTH:1105
+  const tron = laSoGia({});
+  const kinhHam = chieuSaoLuu(tron, 'Lưu Kình Dương', 0).chieu; // Tý
+  const kinhDac = chieuSaoLuu(tron, 'Lưu Kình Dương', 4).chieu; // Thìn
+  kiem('Lưu Kình ở chỗ hãm và chỗ đắc không cùng một chiều', kinhHam !== kinhDac, { kinhHam, kinhDac });
+  kiem('Lưu Kình hãm → cản', kinhHam === 'can', kinhHam);
+  kiem('Lưu Thái Tuế không đứng phía nào', phiaCuaChieu(chieuSaoLuu(tron, 'Lưu Thái Tuế', 3).chieu) === null);
+  const locKiep = laSoGia({ 5: { sao: [['Địa Kiếp']] } });
+  kiem('Lưu Lộc Tồn gặp Địa Kiếp → không thuận', chieuSaoLuu(locKiep, 'Lưu Lộc Tồn', 5).chieu !== 'thuan');
+  const maDa = laSoGia({ 2: { sao: [['Đà La', 'H']], triet: true } });
+  kiem('Lưu Thiên Mã gặp Đà La + Triệt → không thuận', chieuSaoLuu(maDa, 'Lưu Thiên Mã', 2).chieu !== 'thuan');
+  // Tứ hoá hạn tuỳ sao được hoá sáng / hãm (TT2:667)
+  const kyHam = laSoGia({ 6: { sao: [['Cự Môn', 'H']] } });
+  const kySang = laSoGia({ 6: { sao: [['Cự Môn', 'V']] } });
+  kiem('Kỵ hạn trên sao hãm → cản', chieuTuHoaHan(kyHam, 'Hóa Kỵ', 'Cự Môn', 6).chieu === 'can');
+  kiem('Kỵ hạn trên sao sáng → không mặc định cản', chieuTuHoaHan(kySang, 'Hóa Kỵ', 'Cự Môn', 6).chieu !== 'can');
+  const locKk = laSoGia({ 8: { sao: [['Thái Âm', 'M'], ['Địa Không']] } });
+  kiem('Lộc hạn gặp Không Kiếp → cản', chieuTuHoaHan(locKk, 'Hóa Lộc', 'Thái Âm', 8).chieu === 'can');
+  const locSang = laSoGia({ 8: { sao: [['Thái Âm', 'M']] } });
+  kiem('Lộc hạn trên sao sáng, không sao phá → thuận', chieuTuHoaHan(locSang, 'Hóa Lộc', 'Thái Âm', 8).chieu === 'thuan');
+}
 
 // ---------------------------------------------------------------------------
 // Mẫu rộng lá số thật

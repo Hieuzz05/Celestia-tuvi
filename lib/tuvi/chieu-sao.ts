@@ -23,6 +23,7 @@
 import type { Cung, LaSo } from './ansao';
 import { tamPhuongTuChinh } from './ansao';
 import { CHINH_TINH, TU_HOA, type Sao } from './constants';
+import { doSangCuaSao } from './dosang';
 
 export type Chieu = 'thuan' | 'hai-mat' | 'yeu' | 'can' | 'trung';
 
@@ -123,24 +124,31 @@ const LA_VONG = new Set(['Thiên La', 'Địa Võng']);
 const TU_SINH = new Set([2, 5, 8, 11]);
 
 /**
- * Sao lưu theo năm: đợt này giữ tính chất gốc (chuyên gia, mục 12).
- * NGOẠI LỆ CÓ CHỦ ĐÍCH: sao lưu chỉ là dấu của một năm, chưa xét độ sáng hay
- * bộ đi cùng. Đổi thì sửa ở đây và ca kiểm trong test-chieu-sao.ts.
+ * Sao lưu theo năm: xét như sao gốc cùng tên đặt vào cung nó đứng — độ sáng theo
+ * bảng đắc hãm, bộ đi cùng là các sao gốc ở đó. Không bảng gán sẵn theo tên.
+ * Nguồn: "Các sao này vẫn bị chi phối bởi những quy tắc về hội tụ, về vị trí…"
+ * (TVTH:1101), "Vị trí đắc hay hãm địa của sao Lưu giống như vị trí sao cố định"
+ * (TVTH:1105), "Sao Lưu vẫn bị ảnh hưởng của Tuần Triệt" (TVTH:1106).
+ * Chủ dự án quyết 19/11/2026 (CELES-90): không sao nào mặc định thuận / cản.
  */
-const CHIEU_SAO_LUU: Record<string, Chieu> = {
-  'Lưu Thái Tuế': 'trung',
-  'Lưu Lộc Tồn': 'thuan',
-  'Lưu Thiên Mã': 'thuan',
-  'Lưu Kình Dương': 'can',
-  'Lưu Đà La': 'can',
-  'Lưu Thiên Khốc': 'can',
-  'Lưu Thiên Hư': 'can',
-  'Lưu Tang Môn': 'can',
-  'Lưu Bạch Hổ': 'can',
-};
+export function chieuSaoLuu(laSo: LaSo, ten: string, chiIndex: number): KetQuaChieu {
+  const tenGoc = ten.replace(/^Lưu /, '');
+  const mau = laSo.cungs.flatMap((c) => c.sao).find((x) => x.ten === tenGoc);
+  const s: Sao = { ten: tenGoc, loai: mau?.loai ?? 'phu-tinh', doSang: doSangCuaSao(tenGoc, chiIndex) };
+  const cung = laSo.cungs[chiIndex];
+  return chieuSao(laSo, { ...cung, sao: [...cung.sao, s] }, s);
+}
 
-export function chieuSaoLuu(ten: string): Chieu {
-  return CHIEU_SAO_LUU[ten] ?? 'trung';
+/**
+ * Tứ hoá theo hạn (lưu niên / đại vận): cùng lối với tứ hoá gốc — tuỳ sao được hoá
+ * sáng hay hãm, gặp Lộc / Không Kiếp / Tuần Triệt / Khoa… (TT2:656-667), không gán
+ * sẵn "Kỵ là cản, còn lại là đỡ". `tenSao` là sao nhận hoá trong hạn đó.
+ */
+export function chieuTuHoaHan(laSo: LaSo, hoa: string, tenSao: string, chiIndex: number): KetQuaChieu {
+  const cung = laSo.cungs[chiIndex];
+  const s: Sao = { ten: hoa, loai: 'tu-hoa' };
+  const goc = cung.sao.find((x) => x.ten === tenSao);
+  return chieuTuHoa(laSo, { ...cung, sao: [...cung.sao, s] }, s, goc);
 }
 
 // ---------------------------------------------------------------------------
@@ -365,9 +373,13 @@ function chieuThienMa(laSo: LaSo, cung: Cung): KetQuaChieu {
   return { chieu: 'hai-mat', ly: ['ma-mot-minh'] };
 }
 
-function chieuTuHoa(laSo: LaSo, cung: Cung, s: Sao): KetQuaChieu {
+function chieuTuHoa(
+  laSo: LaSo,
+  cung: Cung,
+  s: Sao,
+  goc: Sao | undefined = saoGocCuaHoa(laSo, cung, s.ten)
+): KetQuaChieu {
   const ts = tenTrong(cung);
-  const goc = saoGocCuaHoa(laSo, cung, s.ten);
   const gocHam = goc?.doSang === 'H';
   const tuanTriet = cung.coTuan || cung.coTriet;
   const khongKiep = ts.has('Địa Không') || ts.has('Địa Kiếp');

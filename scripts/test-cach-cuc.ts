@@ -28,7 +28,7 @@
  */
 
 import { lapLaSo, type Cung, type GioiTinh, type LaSo } from '../lib/tuvi/ansao';
-import { nhanDangCachCuc, TEN_CACH_CUC, TEN_CHI_DE_CHAN } from '../lib/tuvi/cach-cuc';
+import { nhanDangCachCuc, TEN_CACH_CUC } from '../lib/tuvi/cach-cuc';
 
 let sai = 0;
 function kiem(ten: string, ok: boolean, chiTiet?: unknown) {
@@ -150,7 +150,7 @@ kiem(
  * Đối chiếu theo TÊN với TEN_CACH_CUC. Bản trước lọc `dem` tìm mục bằng 0,
  * nhưng `dem` chỉ chứa mã đã phát ít nhất một lần, nên bài này không thể đỏ.
  */
-const chet = TEN_CACH_CUC.filter((t) => !tenDaPhat.has(t) && !TEN_CHI_DE_CHAN.includes(t));
+const chet = TEN_CACH_CUC.filter((t) => !tenDaPhat.has(t));
 kiem('Không luật nào phát 0 lần trong mẫu', chet.length === 0, chet);
 
 kiem('Cách đã phát đều thoả điều kiện sách (HS 814-815)', saiSach.length === 0, saiSach.slice(0, 5));

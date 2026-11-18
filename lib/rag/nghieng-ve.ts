@@ -12,7 +12,7 @@ import {
 import { CHINH_TINH, type Sao } from '@/lib/tuvi/constants';
 import { khopLuatToHop } from '@/lib/tuvi/luat-to-hop';
 import { lopHan as bangLopHan, type HoaHan, type TenHoa } from '@/lib/tuvi/tu-hoa-han';
-import { chieuSao, chieuSaoLuu, chieuTuanTriet, phiaCuaChieu } from '@/lib/tuvi/chieu-sao';
+import { chieuSao, chieuSaoLuu, chieuTuanTriet, chieuTuHoaHan, phiaCuaChieu, type Chieu, type KetQuaChieu, type LyDo } from '@/lib/tuvi/chieu-sao';
 import { KHUON, netSaoTheoChieu } from '@/lib/tuvi/quick-read-noi-dung';
 import type { ChuDe, LopHan } from './planner';
 
@@ -100,6 +100,11 @@ export interface DauMoc {
   trong: number;
   /** Nét đời sống của dữ kiện này, lấy từ kho chữ chung, không viết lại ở đây */
   y: string;
+  /**
+   * Sao lưu / tứ hoá hạn hai mặt: có mặt ở cả hai phía làm dẫn chứng, KHÔNG cộng vào
+   * tổng — sao hai mặt không tự lái kết luận về phía nào, cũng không kéo về "cân" (CELES-90).
+   */
+  haiMat?: true;
 }
 
 export interface NghiengVe {
@@ -406,19 +411,14 @@ export function tinhNghiengVe(vao: {
         if (s.chiIndex !== cung.chiIndex) continue;
         // Focused: Lưu Thái Tuế không thuận không cản, nên không được đứng ở
         // phía nào. Nó vẫn có mặt trong gói F### (khối 'luu-tinh') làm mốc năm.
-        const chieuLuu = chieuSaoLuu(s.ten);
-        if (fo && chieuLuu === 'trung') continue;
+        // Chiều của sao lưu xét theo độ sáng và bộ sao ở cung nó đứng, như sao
+        // gốc (CELES-90). Hai mặt thì đứng cả hai phía; trung (Lưu Thái Tuế…) thì
+        // không đứng phía nào: không đẩy kết luận về một bên.
         const y = netLuu[s.ten];
         if (!y) continue;
-        dauMoc.push({
-          ten: s.ten,
-          lop: 'nam',
-          huong: chieuLuu === 'can' ? 'can' : 'do',
-          // Lưu Thái Tuế không nghiêng bên nào — nó chỉ làm chuyện nổi lên. Trọng
-          // số thấp để nó có mặt làm mốc thời gian mà không tự lái kết luận.
-          trong: chieuLuu === 'trung' ? 1 : TRONG_LOP.nam,
-          y,
-        });
+        for (const p of phiaVaNet(s.ten, y, chieuSaoLuu(vao.laSo, s.ten, s.chiIndex), ngonNgu)) {
+          dauMoc.push({ ten: s.ten, lop: 'nam', huong: p.huong, trong: TRONG_LOP.nam, y: p.y, ...(p.haiMat ? { haiMat: true as const } : {}) });
+        }
       }
       if (cap === 'thang' && chamThang) {
         const cungThang = vao.laSo.cungs[iThang];
@@ -430,12 +430,13 @@ export function tinhNghiengVe(vao: {
 
     if (dauMoc.length === 0) return null;
 
-    const do_ = dauMoc.filter((d) => d.huong === 'do').reduce((t, d) => t + d.trong, 0);
-    const can = dauMoc.filter((d) => d.huong === 'can').reduce((t, d) => t + d.trong, 0);
+    const do_ = dauMoc.filter((d) => d.huong === 'do' && !d.haiMat).reduce((t, d) => t + d.trong, 0);
+    const can = dauMoc.filter((d) => d.huong === 'can' && !d.haiMat).reduce((t, d) => t + d.trong, 0);
 
     // Xếp nặng trước: model đọc từ trên xuống và bám vào thứ gặp đầu tiên, nên
     // thứ tự ở đây quyết định bài nêu tên dữ kiện nào.
-    dauMoc.sort((a, b) => b.trong - a.trong);
+    // Mốc hai mặt xếp sau mốc cùng trọng lượng có phía rõ: nó là dẫn chứng, không chiếm chỗ căn cứ chính
+    dauMoc.sort((a, b) => b.trong * (b.haiMat ? 0.5 : 1) - a.trong * (a.haiMat ? 0.5 : 1));
     const huong = huongTu(do_, can);
     let chon = dauMoc.slice(0, 6);
     /*
@@ -497,10 +498,97 @@ const TRONG_HAN = {
 } as const;
 
 /**
- * Nét đời sống của tứ hoá theo hạn. Kỵ là cản; Lộc, Quyền, Khoa là thuận.
+ * Nét đời sống của tứ hoá theo hạn, viết theo chiều quen; chiều thật do chieuTuHoaHan quyết.
  * Viết trung tính theo chủ đề — cùng một câu đứng được cho sự nghiệp, tình cảm,
  * sức khỏe, tiền bạc. Mốc thời gian ghép ở `themHoa` theo nguồn (năm / đại vận).
  */
+/**
+ * Câu nét của sao lưu / tứ hoá hạn viết theo chiều quen gặp nhất của sao đó. Khi bộ sao
+ * ở cung làm chiều đổi (Lộc gặp Không Kiếp, Kình đắc địa, Kỵ gặp Thanh Long…), nối thêm
+ * một vế cho câu khớp với chiều thật, để lời không mặc định tính chất theo tên (CELES-90).
+ */
+const PHIA_QUEN: Record<string, 'do' | 'can'> = {
+  'Hóa Lộc': 'do', 'Hóa Quyền': 'do', 'Hóa Khoa': 'do', 'Hóa Kỵ': 'can',
+  'Lưu Lộc Tồn': 'do', 'Lưu Thiên Mã': 'do',
+  'Lưu Kình Dương': 'can', 'Lưu Đà La': 'can', 'Lưu Thiên Khốc': 'can',
+  'Lưu Thiên Hư': 'can', 'Lưu Tang Môn': 'can', 'Lưu Bạch Hổ': 'can',
+};
+/**
+ * Vì sao chiều thật khác chiều quen, nói bằng đúng mã lý do chieuSao trả về (tên sao, thế đứng),
+ * không khẳng định chung chung "gặp sao hợp". Mã không có câu riêng thì chỉ nói chiều do các sao
+ * cùng cung quyết, không bịa tên sao (celes-domain 19/11).
+ */
+const CAU_LY: Partial<Record<LyDo, { vi: string; en: string }>> = {
+  'sang': { vi: 'sao được hoá đứng chỗ sáng', en: 'the transformed star stands bright here' },
+  'ham': { vi: 'sao này đứng chỗ hãm', en: 'this star stands weak here' },
+  'binh': { vi: 'sao này chỉ ở mức bình hoà', en: 'this star is only middling here' },
+  'ham-gap-sat': { vi: 'sao đứng chỗ hãm lại gặp sát tinh', en: 'the star stands weak and meets harsh stars' },
+  'sat-dac': { vi: 'sao đắc địa và đi đúng bộ', en: 'the star is well placed and in its proper set' },
+  'sat-ham': { vi: 'sao đứng chỗ hãm', en: 'the star stands weak here' },
+  'sat-bi-che': { vi: 'có sao chế bớt sức sao này đi cùng', en: 'a star alongside restrains it' },
+  'da-la-tu-sinh': { vi: 'Đà La đứng ở Dần, Thân, Tỵ, Hợi', en: 'Đà La stands in Dần, Thân, Tỵ or Hợi' },
+  'tuan-triet-giai': { vi: 'Tuần hoặc Triệt ở cung này giải bớt phần khó', en: 'Tuần or Triệt here eases the difficulty' },
+  'tuan-triet-be': { vi: 'Tuần hoặc Triệt ở cung này bẻ bớt phần tốt', en: 'Tuần or Triệt here cuts back the benefit' },
+  'ma-thuan': { vi: 'Thiên Mã gặp Lộc, Tử Phủ hoặc Nhật Nguyệt sáng', en: 'Thiên Mã meets Lộc, Tử Phủ or a bright Sun/Moon' },
+  'ma-nghich': { vi: 'Thiên Mã gặp Đà La, Thiên Hình, Không hoặc Triệt', en: 'Thiên Mã meets Đà La, Thiên Hình, Không or Triệt' },
+  'ma-tuan': { vi: 'Thiên Mã gặp Tuần', en: 'Thiên Mã meets Tuần' },
+  'ma-hoi': { vi: 'Thiên Mã đứng ở Hợi', en: 'Thiên Mã stands in Hợi' },
+  'ma-hoa-linh': { vi: 'Thiên Mã gặp Hỏa Tinh, Linh Tinh', en: 'Thiên Mã meets Hỏa Tinh or Linh Tinh' },
+  'ma-mot-minh': { vi: 'Thiên Mã đứng một mình, không có Lộc đi cùng', en: 'Thiên Mã stands alone, without Lộc' },
+  'hoa-goc-sang': { vi: 'sao được hoá đứng chỗ sáng', en: 'the transformed star stands bright' },
+  'hoa-goc-ham': { vi: 'sao được hoá đứng chỗ hãm', en: 'the transformed star stands weak' },
+  'ky-goc-sang': { vi: 'sao mang Kỵ đứng chỗ sáng', en: 'the star carrying Kỵ stands bright' },
+  'ky-goc-ham': { vi: 'sao mang Kỵ đứng chỗ hãm', en: 'the star carrying Kỵ stands weak' },
+  'ky-thanh-long': { vi: 'Hóa Kỵ gặp Thanh Long', en: 'Hóa Kỵ meets Thanh Long' },
+  'ky-khoa-quyen': { vi: 'Hóa Kỵ có Khoa, Quyền đi cùng', en: 'Hóa Kỵ has Khoa and Quyền alongside' },
+  'loc-ky': { vi: 'Lộc và Kỵ cùng đứng một chỗ', en: 'Lộc and Kỵ sit together' },
+  'loc-gap-khong-kiep': { vi: 'Lộc gặp Địa Không, Địa Kiếp', en: 'Lộc meets Địa Không or Địa Kiếp' },
+  'loc-tuan-triet': { vi: 'sao này gặp Tuần hoặc Triệt', en: 'this star meets Tuần or Triệt' },
+  'gap-sat': { vi: 'sao này gặp sát tinh đi cùng', en: 'this star meets harsh stars alongside' },
+};
+function cauLy(ly: LyDo[], ngonNgu: 'vi' | 'en'): string {
+  const c = ly.map((l) => CAU_LY[l]?.[ngonNgu]).filter(Boolean);
+  const thieu = ly.some((l) => !CAU_LY[l]);
+  if (!c.length) return ngonNgu === 'vi' ? 'các sao cùng cung kéo chiều khác đi' : 'the stars sharing this palace shift it';
+  const them = thieu ? (ngonNgu === 'vi' ? ' cùng các sao đi cùng' : ', along with the stars beside it') : '';
+  return c.join(', ') + them;
+}
+const KET_PHIA: Record<'vi' | 'en', Record<'do' | 'can', string>> = {
+  vi: { do: 'nên phần này lại giúp được nhiều hơn làm vướng', can: 'nên phần được dễ hao, khó giữ trọn' },
+  en: { do: 'so this part helps more than it snags', can: 'so the gain erodes easily and is hard to keep whole' },
+};
+function netKhopChieu(ten: string, net: string, phia: 'do' | 'can', ly: LyDo[], ngonNgu: 'vi' | 'en'): string {
+  const quen = PHIA_QUEN[ten];
+  if (!quen || quen === phia) return net;
+  return ngonNgu === 'vi'
+    ? `${net}, nhưng năm nay ${cauLy(ly, ngonNgu)}, ${KET_PHIA.vi[phia]}`
+    : `${net}, but this year ${cauLy(ly, ngonNgu)}, ${KET_PHIA.en[phia]}`;
+}
+/**
+ * Các phía một sao lưu / tứ hoá hạn đứng, kèm câu nét. Thuận / cản: một phía. Hai mặt:
+ * cả hai phía, như luật tổ hợp hai mặt — sao vẫn có mặt trong bài, không tự lái kết luận.
+ * Yếu / trung: không phía nào. Sao không có trong PHIA_QUEN (sao lưu mới thêm) thì hai mặt
+ * không chọn được mặt chính: cả hai phía dùng cùng câu lý do, không mặc định "tốt".
+ */
+function phiaVaNet(
+  ten: string,
+  net: string,
+  kq: KetQuaChieu,
+  ngonNgu: 'vi' | 'en'
+): { huong: 'do' | 'can'; y: string; haiMat?: true }[] {
+  if (kq.chieu === 'hai-mat') {
+    const ly = cauLy(kq.ly, ngonNgu);
+    const vs = ngonNgu === 'vi' ? `${net}; có hai mặt vì ${ly}` : `${net}; two-sided because ${ly}`;
+    const quen = PHIA_QUEN[ten];
+    return [
+      { huong: 'do', y: quen === 'do' ? net : vs, haiMat: true },
+      { huong: 'can', y: quen === 'can' ? net : vs, haiMat: true },
+    ];
+  }
+  const phia = phiaCuaChieu(kq.chieu);
+  return phia ? [{ huong: phia, y: netKhopChieu(ten, net, phia, kq.ly, ngonNgu) }] : [];
+}
+
 const NET_HOA_HAN: Record<'vi' | 'en', Record<TenHoa, string>> = {
   vi: {
     'Hóa Lộc': 'phần này có thêm cửa được hưởng, việc dễ suôn và dễ sinh lợi hơn',
@@ -591,33 +679,34 @@ function tinhTheoLopHan(vao: Parameters<typeof tinhNghiengVe>[0]): NghiengVe | n
         h.nguon === 'nam'
           ? ngonNgu === 'vi' ? `năm ${vao.namXem}` : `in ${vao.namXem}`
           : ngonNgu === 'vi' ? 'quãng đại vận này' : 'over this decade';
-      dauMoc.push({
-        ten,
-        lop,
-        huong: h.hoa === 'Hóa Kỵ' ? 'can' : 'do',
-        trong: trong * hs,
-        y: `${khi}, ${NET_HOA_HAN[ngonNgu][h.hoa]} (${noiO(h.chiIndex)})`,
-      });
+      // Chiều của tứ hoá hạn tuỳ sao được hoá sáng / hãm và gặp sao nào (TT2:656-667),
+      // không mặc định "Kỵ là cản" (CELES-90). Hai mặt thì đứng cả hai phía.
+      const chieuHoa = chieuTuHoaHan(vao.laSo, h.hoa, h.sao, h.chiIndex);
+      for (const p of phiaVaNet(h.hoa, NET_HOA_HAN[ngonNgu][h.hoa], chieuHoa, ngonNgu)) {
+        dauMoc.push({ ten, lop, huong: p.huong, trong: trong * hs, y: `${khi}, ${p.y} (${noiO(h.chiIndex)})`, ...(p.haiMat ? { haiMat: true as const } : {}) });
+      }
     };
     if (cap !== 'giai-doan') for (const h of lh.luuTuHoa) themHoa(h, 'nam', TRONG_HAN.luu);
     if (vao.lopHan.includes('dai-van')) for (const h of lh.tuHoaDaiVan) themHoa(h, 'dai-van', TRONG_HAN.daiVan);
 
-    // 3. Sao lưu đơn lẻ. Lưu Thái Tuế không thuận không cản: không đứng phía nào.
+    // 3. Sao lưu đơn lẻ, chiều xét theo cung nó đứng (hai mặt: cả hai phía; trung: không phía nào).
     if (cap !== 'giai-doan') {
       const netLuu = ngonNgu === 'vi' ? NET_LUU_VI : NET_LUU_EN;
       for (const s of lh.luuTinh) {
-        const chieuL = chieuSaoLuu(s.ten);
-        if (chieuL === 'trung' || daDung.has(s.ten)) continue;
+        if (daDung.has(s.ten)) continue;
         const hs = heSo(s.chiIndex);
         const y = netLuu[s.ten];
         if (!hs || !y) continue;
-        dauMoc.push({
-          ten: s.ten,
-          lop: 'nam',
-          huong: chieuL === 'can' ? 'can' : 'do',
-          trong: TRONG_HAN.luu * hs,
-          y: hs === 1 ? y : `${y} (${noiO(s.chiIndex)})`,
-        });
+        for (const p of phiaVaNet(s.ten, y, chieuSaoLuu(vao.laSo, s.ten, s.chiIndex), ngonNgu)) {
+          dauMoc.push({
+            ten: s.ten,
+            lop: 'nam',
+            huong: p.huong,
+            trong: TRONG_HAN.luu * hs,
+            y: hs === 1 ? p.y : `${p.y} (${noiO(s.chiIndex)})`,
+            ...(p.haiMat ? { haiMat: true as const } : {}),
+          });
+        }
       }
     }
 
@@ -627,9 +716,10 @@ function tinhTheoLopHan(vao: Parameters<typeof tinhNghiengVe>[0]): NghiengVe | n
       .slice(0, 3);
     if (dauMoc.length === 0 && nen.length === 0) return null;
 
-    const do_ = dauMoc.filter((d) => d.huong === 'do').reduce((t, d) => t + d.trong, 0);
-    const can = dauMoc.filter((d) => d.huong === 'can').reduce((t, d) => t + d.trong, 0);
-    dauMoc.sort((a, b) => b.trong - a.trong);
+    const do_ = dauMoc.filter((d) => d.huong === 'do' && !d.haiMat).reduce((t, d) => t + d.trong, 0);
+    const can = dauMoc.filter((d) => d.huong === 'can' && !d.haiMat).reduce((t, d) => t + d.trong, 0);
+    // Mốc hai mặt xếp sau mốc cùng trọng lượng có phía rõ: nó là dẫn chứng, không chiếm chỗ căn cứ chính
+    dauMoc.sort((a, b) => b.trong * (b.haiMat ? 0.5 : 1) - a.trong * (a.haiMat ? 0.5 : 1));
     const huong = huongTu(do_, can);
 
     /*

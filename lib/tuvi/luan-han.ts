@@ -256,9 +256,9 @@ export function luanHan(
       lop: lopDangXet[1],
       cau: `${s.ten} ${k.luanHan.taiO} ${tenCung(trongTam, k)}`,
     };
-    // Lưu tinh không có bảng độ sáng; chiều cố định theo bảng riêng có chú thích
-    // nguồn ở chieu-sao.ts (ngoại lệ có chủ đích của luật "không mặc định")
-    const c = chieuSaoLuu(s.ten);
+    // Lưu tinh xét như sao gốc cùng tên: độ sáng theo bảng đắc hãm và bộ sao ở
+    // cung nó đứng (TVTH:1101-1106, CELES-90). Không gán sẵn thuận / cản theo tên.
+    const c = chieuSaoLuu(laSo, s.ten, trongTam.chiIndex).chieu;
     if (c === 'thuan') thuanLuu.push(yt);
     else if (c === 'can') canLuu.push(yt);
   }

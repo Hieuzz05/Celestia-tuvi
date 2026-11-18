@@ -1039,12 +1039,24 @@ for (const ca of CA_DOI_TUONG) {
       ['Tiền bạc năm nay của tôi ra sao?', 'Phá Toái', 'Cự Môn khiến chuyện tiền bạc cần nói rõ từ đầu, còn Phá Toái làm khâu cuối dễ phát sinh lỗi hoặc khoản phải sửa.'],
       ['Sức khỏe của tôi năm nay thế nào?', 'Thiên Y', 'Điểm còn mở là khả năng tự chăm sóc vẫn có, nên khi nhận ra dấu hiệu bất ổn, bạn thường tìm được cách hỗ trợ phù hợp; Thiên Y giữ lại phần này.'],
     ];
+    const keHoachCua = (cauHoi: string) =>
+      themLopChoThang(lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach);
+    const nghiengCua = (cauHoi: string) => {
+      const kh = keHoachCua(cauHoi);
+      return tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true });
+    };
+    /*
+     * Từ CELES-90 (19/11/2026) sao lưu không mặc định thuận / cản: phần tiền 2026 của lá này
+     * có thể không còn mốc nào rõ phía, khối nghiêng trả null. Ca này canh ĐƯỜNG RÒ TÊN, không
+     * canh hướng, nên mượn khung khối nghiêng của câu khác cùng lá rồi cài đầu mốc bằng tay.
+     */
+    const khung = ca.map(([c]) => nghiengCua(c)).find(Boolean);
+    kiem(!!khung, '(5) không câu nào của lá mẫu có khối nghiêng — không dựng được ca hồi quy');
     for (const [cauHoi, ten, cau] of ca) {
-      const kh = themLopChoThang(lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach);
+      const kh = keHoachCua(cauHoi);
       const pl = phanKhuon({ cauHoi, keHoach: kh, doiTuong: null });
       const { duKien: dk } = chonBoiCanh({ laSo, keHoach: kh, namXem: 2026, thangXem: 8, focused: true });
-      const n0 = tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true });
-      kiem(!!n0, `(5) không có khối nghiêng cho "${cauHoi}"`);
+      const n0 = nghiengCua(cauHoi) ?? khung;
       if (!n0) continue;
       const n: NghiengVe = n0.dauMoc.some((d) => d.ten === ten)
         ? n0
