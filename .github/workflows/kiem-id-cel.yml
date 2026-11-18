@@ -9,8 +9,7 @@ name: Kiem ID CEL
 on:
   push:
     branches: ['**']
-  pull_request:
-    branches: [main]
+# Không chạy thêm theo pull_request: lần đẩy nhánh đã kiểm (CELES-83).
 
 concurrency:
   group: kiem-id-cel-${{ github.ref }}
