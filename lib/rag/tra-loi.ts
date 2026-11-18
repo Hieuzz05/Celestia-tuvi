@@ -190,8 +190,8 @@ export function dauAnChoLuot(vao: {
 /**
  * Cờ server CELES_LOP_HAN (CEL-200): câu vận hạn cân theo lớp hạn. Đọc ở đây rồi
  * truyền xuống bằng tham số — engine và các hàm dựng dữ kiện không đọc env.
- * Tắt (mặc định) = đường cũ nguyên vẹn. Chỉ bật trên production khi chat, bài
- * luận v3 và Hành trình đều đã đổi (quyết định lượt 4, 16/10/2026).
+ * BẬT mặc định từ 31/10/2026 (chủ dự án "bỏ chặn lưu tứ hoá", thay điều kiện chờ
+ * Hành trình của quyết định 16/10). CELES_LOP_HAN=0 = đường cũ nguyên vẹn.
  */
 export { lopHanBat } from './co-lop-han';
 
