@@ -307,3 +307,24 @@ Mẫu một mục:
   engine thì cập nhật ảnh chụp CHỌN LỌC (chỉ `noiDung`, kiểm mọi trường khác y nguyên), không `--sinh`.
 - Nâng: `docs/bay/engine.md`. Máy canh: `scripts/test-chieu-sao.ts` (grep cấm `tinhChat` ngoài danh sách).
 - Lần: 1
+
+## 21/11/2026 · Chặn cứng câu trả lời vì một chữ cấm · ai-rag
+- Thẻ: 502 chu cam, van rong, chan cung, tang B, test khoa hanh vi sai
+- Chuyện gì: sau CELES-92 (đã lên production) người dùng vẫn thấy "Celes chưa trả lời được lúc này". Log
+  production 20/11 17:45 UTC: lần viết lại chỉ còn lỗi CHU_LOP_HAN (một chữ "nền"/"nhịp") → 502. Chủ dự án
+  sửa lưng 21/11: "từ ngữ sai thì chặn, báo lỗi rất nguy hiểm, làm người dùng tưởng app lỗi … nguyên tắc phải
+  luôn có câu trả lời".
+- Gốc: lỗi chữ được xếp tầng B ("viết lại") nhưng hết lượt viết lại thì đi chung lối với lỗi dữ kiện (502).
+  Bộ lọc chỉ có lối "chặn", không có lối "sửa rồi trả". Thêm nữa, lời dặn model không liệt kê chữ cấm mà
+  còn tự dùng "nền", dữ liệu engine có sẵn chữ cấm, và bộ soát quét cả phần ẩn. Test `test-lop-han-3b` lại
+  khẳng định "lỗi chữ lặp → văn rỗng", tức test KHOÁ đúng hành vi sai, nên CI xanh suốt.
+- Giá: hai lần chủ dự án báo lỗi trên production (20/11, 21/11), một lần push production chưa trị dứt
+  (CELES-92), chủ dự án phải sửa lưng nguyên tắc. Lần 1 cùng gốc: 31/10 đường chat cũ 23/24 lượt rỗng vì
+  "nhịp" (sửa bằng `boCauPham`, nhưng không thành luật chung nên đường Focused lặp lại).
+- Luật: lỗi từ ngữ không bao giờ làm mất câu trả lời: viết lại, rồi sửa riêng câu (có chốt giữ nghĩa) hoặc
+  làm mềm bằng mã, rồi vẫn trả bài và ghi log. Chỉ sai dữ kiện mới được báo lỗi. Test khẳng định "lỗi chữ →
+  văn rỗng" là test sai, phải sửa.
+- Nâng: `docs/bay/ai-rag.md` (nhánh viec/celes-95-khong-chan-vi-chu, d73dca3). Máy canh đã có cho đường
+  Focused: khối CELES-95 trong `scripts/test-focused.ts` (đột biến: gỡ lối trả bài thì đỏ). Đường cũ chưa có
+  máy canh: task CELES-96.
+- Lần: 2
