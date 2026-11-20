@@ -22,6 +22,9 @@ import { lapLaSo, type GioiTinh } from '@/lib/tuvi/ansao';
 import { namAmHienTai, thangAmHienTai } from '@/lib/tuvi/bay-gio';
 import { laNgayDuongCoThat } from '@/lib/tuvi/kiem-ngay';
 
+/** Phần vết Focused được ghi ra log (chỉ mã lỗi / cụm chữ cố định, không có câu chữ người dùng) */
+type VetLog = { lanGoi: number; thuLai: string | null; loi: { ma: string }[]; chuBat?: string[]; traKemLoiChu?: string[]; suaCau?: { ms: number; nhan: boolean; conChu: boolean }; lamMem?: boolean };
+
 export const maxDuration = 60;
 
 const LOI_CHUNG_HOI_DAP =
@@ -282,13 +285,20 @@ export async function POST(req: Request) {
     if (!kq.van) {
       // CELES-92 (20/11): đường này từng hỏng khoảng nửa số lượt suốt hai ngày mà log trống. Chỉ ghi MÃ lỗi
       // của bộ kiểm, không ghi câu hỏi hay nội dung trả lời (quyền riêng tư vết).
-      const vet = (kq as { vetFocused?: { lanGoi: number; thuLai: string | null; loi: { ma: string }[] } }).vetFocused;
-      console.warn('[hoi-dap] 502 chua tra loi duoc', JSON.stringify({ duong: vet ? 'focused' : 'standard', lanGoi: vet?.lanGoi, thuLai: vet?.thuLai, loi: vet?.loi.map((l) => l.ma) }));
+      const vet = (kq as { vetFocused?: VetLog }).vetFocused;
+      console.warn('[hoi-dap] 502 chua tra loi duoc', JSON.stringify({ duong: vet ? 'focused' : 'standard', lanGoi: vet?.lanGoi, thuLai: vet?.thuLai, loi: vet?.loi.map((l) => l.ma), chu: vet?.chuBat }));
       await hoanCauHoi(cho.nguon, requestId);
       return NextResponse.json(
         { loi: 'Celes chưa trả lời được câu này. Bạn hỏi lại giúp.', chuaTraLoiDuoc: true },
         { status: 502 }
       );
+    }
+
+    // CELES-95: bài vẫn trả dù còn lỗi từ ngữ — ghi để đo tỉ lệ lọt. Chỉ mã lỗi và cụm chữ của danh sách
+    // cấm cố định, không ghi câu hỏi hay nội dung trả lời.
+    const vetTra = (kq as { vetFocused?: VetLog }).vetFocused;
+    if (vetTra?.traKemLoiChu) {
+      console.warn('[hoi-dap] tra kem loi chu', JSON.stringify({ lanGoi: vetTra.lanGoi, thuLai: vetTra.thuLai, conLai: vetTra.traKemLoiChu, chu: vetTra.chuBat, suaCau: vetTra.suaCau, lamMem: vetTra.lamMem }));
     }
 
     // Lá số không có gì để đọc (Focused: trước ngày sinh, chưa hợp tuổi, lệch giới tính) — không tính lượt.

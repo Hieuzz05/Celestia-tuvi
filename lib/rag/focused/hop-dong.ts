@@ -64,8 +64,10 @@ export type MaLoiCung =
   | 'PHAN_QUYET';
 
 /**
- * Tầng của mã lỗi (CEL-191 §7). A = sai sự thật / hợp đồng, B = vi phạm chính sách: cả hai viết lại
- * một lần, vẫn sai thì 502. C = chất lượng: chỉ ghi điểm vào vết, KHÔNG viết lại, KHÔNG chặn.
+ * Tầng của mã lỗi (CEL-191 §7). A = sai sự thật / hợp đồng: viết lại một lần, vẫn sai thì 502.
+ * B = vi phạm chính sách câu chữ: viết lại một lần, vẫn sai thì sửa riêng câu còn chữ cấm rồi VẪN TRẢ
+ * bài, ghi vết — lỗi từ ngữ không bao giờ làm mất câu trả lời (chủ dự án quyết 21/11/2026, CELES-95).
+ * C = chất lượng: chỉ ghi điểm vào vết, KHÔNG viết lại, KHÔNG chặn.
  */
 export type TangLoi = 'A' | 'B' | 'C';
 export const TANG_CUA: Record<MaLoiCung, TangLoi> = {

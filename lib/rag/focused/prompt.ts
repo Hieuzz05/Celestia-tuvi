@@ -1,5 +1,5 @@
 import { quetTen } from './quet-ten';
-import { chuNguonLopHan } from '../kiem-lop-han';
+import { CHU_CAM_LOP_HAN, chuNguonLopHan } from '../kiem-lop-han';
 /**
  * PROMPT — đường Focused (CEL-186 vé B, mục 5).
  *
@@ -269,9 +269,9 @@ Thuận lợi:\n${ben('do')}
 Điều cản trở:\n${ben('can')}
 CUNG GỐC ĐẶT TRONG VẬN:\n${nen}${hien.cachCuc.length ? `\nCách cục đọc được ở phần này: ${hien.cachCuc.join(', ')}.` : ''}
 HƯỚNG ĐÃ CHỐT: ${(hoiThang && MO_TA_HUONG_THANG[n.huong]) || MO_TA_HUONG[n.huong]}. ${cuaSo ? `Claim của cửa sổ ${cuaSo} dùng timeRefs ["${cuaSo}"] và direction "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}"; không gán hướng phần này cho kết luận cả tháng.` : `"direction" của claims[0] là "${NHAN_CHIEU[nhomCuaHuong(n.huong)]}".`}
-Chỉ diễn đạt kết quả và căn cứ ở trên. Không tự cân lại nền, không suy thêm mức hoá giải, không bắt buộc nêu hai mặt hay bịa phía không có dữ kiện.
-Khi nhắc tứ hoá: nêu đúng hoá, sao nhận hoá, cung và lớp/năm như mục F được dẫn; khi có nhiều cửa sổ, nói rõ thời điểm trong answer và dùng timeRefs trong claim.
-Không dùng chữ thiết kế hay ẩn dụ xe/đường trong lời trả lời.`;
+Chỉ diễn đạt kết quả và căn cứ ở trên. Không tự cân lại cung gốc, không suy thêm mức hoá giải, không bắt buộc nêu hai mặt hay bịa phía không có dữ kiện.
+Khi nhắc tứ hoá: nêu đúng hoá, sao nhận hoá, cung và lớp/năm như mục F được dẫn; khi có nhiều cửa sổ, nói rõ thời điểm trong answer và dùng timeRefs trong claim. Mỗi hoá viết liền với đúng một sao nhận nó theo dữ kiện, dạng "Hóa <hoá> <lớp> vào <sao nhận hoá>" hoặc "<sao nhận hoá> có Hóa <hoá> <lớp>".
+Không dùng chữ thiết kế hay ẩn dụ trong answer. KHÔNG viết các chữ sau, kể cả khi dữ kiện ở trên có chúng — thay bằng việc cụ thể ngoài đời: ${CHU_CAM_LOP_HAN.map((c) => `"${c}"`).join(', ')}.`;
   }
   const coTen = new Set(hien.dauMoc);
   // Giữ thứ tự gốc (theo trọng số) — đầu mốc không tên đứng đúng chỗ của nó.

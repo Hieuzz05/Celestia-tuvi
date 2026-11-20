@@ -16,6 +16,15 @@ const CAM = new RegExp(`(?<![\\p{L}\\p{M}])(?:${cumCam.map(thoat).join('|')})(?!
  * "phần chỗ ở và nền tảng" (sua-chua.ts), nên câu nhà cửa nào cũng dính. Đo 31/10.
  */
 const AN_DU_LOP_HAN = new RegExp(AN_DU_CAM.source.replace('nền|', 'nền(?!\\s+tảng)|'), AN_DU_CAM.flags);
+/**
+ * Danh sách chữ cấm IN RA CHO MODEL — dựng từ đúng hai mẫu mà máy soát dùng (CAM, AN_DU_LOP_HAN), để
+ * lời dặn và bộ lọc không bao giờ lệch nhau (CELES-95, 21/11: lời dặn Focused không liệt kê gì, model
+ * dùng "nhịp" rồi bị chặn). Thêm chữ vào `cumCam` / `AN_DU_CAM` là lời dặn tự có theo.
+ */
+export const CHU_CAM_LOP_HAN: readonly string[] = [
+  ...cumCam,
+  ...(AN_DU_CAM.source.match(/\(\?:([^)]*)\)/)?.[1].split('|') ?? []).map((c) => (c === 'nền' ? 'nền (trừ "nền tảng")' : c)),
+];
 export function loiChuLopHan(van: string): string | null {
   return van.match(CAM)?.[0] ?? van.match(AN_DU_LOP_HAN)?.[0] ?? null;
 }

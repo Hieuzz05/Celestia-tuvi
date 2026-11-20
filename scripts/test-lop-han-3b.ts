@@ -12,7 +12,7 @@ import { chonBoiCanh, saoChinhTheoCung } from '../lib/rag/boi-canh-la-so';
 import { tinhNghiengVe } from '../lib/rag/nghieng-ve';
 import { khoiNghiengFocused, dungPromptFocused, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
 import { kyMeta, kiemLuotTruoc, bamTraLoi, dungLaiBoiCanh, type MetaChuaKy } from '../lib/rag/focused/hieu-cau';
-import { kiemCung, type NguCanhKiem } from '../lib/rag/focused/kiem';
+import { chonChip, kiemCung, type NguCanhKiem } from '../lib/rag/focused/kiem';
 import { phanKhuon, boiCanhThoiGian } from '../lib/rag/focused/phan-loai';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { cuaSoAmCuaThangDuong } from '../lib/rag/focused/thang-am';
@@ -195,21 +195,27 @@ async function main() {
   const draft = { answer: cau + '.', claims: [{ claim: cau, evidenceIds: [h.ma] }], suggestedQuestions: [] };
   assert.ok(!kiemCung(draft, ctx).some((x) => ['LUU_HOA','HOA_SAI_QUAN_HE'].includes(x.ma)));
   assert.ok(kiemCung({ ...draft, answer: cau + '. Có tín hiệu tốt.' }, ctx).some((x) => x.ma === 'CHU_LOP_HAN'));
-  assert.ok(kiemCung({ ...draft, suggestedQuestions: ['Tín hiệu tình cảm ra sao?'] }, ctx).some((x) => x.ma === 'CHU_LOP_HAN'));
+  // CELES-95 (21/11): chữ cấm chỉ soát answer — câu gợi ý có chữ cấm bị chonChip LOẠI, không bắt viết lại cả bài;
+  // claims ẩn khỏi mặt trước nên không soát.
+  assert.ok(!kiemCung({ ...draft, suggestedQuestions: ['Tín hiệu tình cảm ra sao?'] }, ctx).some((x) => x.ma === 'CHU_LOP_HAN'));
+  assert.ok(!chonChip(['Tín hiệu tình cảm ra sao?'], ctx).includes('Tín hiệu tình cảm ra sao?'));
+  assert.ok(!kiemCung({ ...draft, claims: [{ claim: cau + ', giữ nhịp', evidenceIds: [h.ma] }] }, ctx).some((x) => x.ma === 'CHU_LOP_HAN'));
   const { bangHoa: _, ...offCtx } = ctx;
   assert.ok(kiemCung(draft, offCtx).some((x) => x.ma === 'LUU_HOA'));
-  // Vòng viết lại thật, model tiêm hàm giả: lỗi lần đầu được sửa, lỗi lặp trả rỗng.
+  // Vòng viết lại thật, model tiêm hàm giả: lỗi lần đầu được sửa. Lỗi chữ LẶP thì KHÔNG trả rỗng nữa
+  // (chủ dự án quyết 21/11/2026, CELES-95): lượt thứ ba sửa riêng câu phạm, bài vẫn tới người dùng.
   for (const hetLoi of [true, false]) {
     let soGoi = 0;
     const kq = await chayFocused({ prompt, ctx, goi: async () => {
       soGoi++;
-      const d = soGoi === 2 && hetLoi ? draft : { ...draft, answer: cau + '. Có tín hiệu tốt.' };
+      const d = soGoi === 3
+        ? { cau: [{ id: 'C1', moi: 'Có điều kiện tốt.' }] }
+        : soGoi === 2 && hetLoi ? draft : { ...draft, answer: cau + '. Có tín hiệu tốt.' };
       return { text: JSON.stringify(d), provider: 'groq', model: 'gia', tokensIn: 1, tokensOut: 1, daThuHong: [] };
     }});
-    assert.equal(soGoi, 2);
-    assert.equal(!!kq.van, hetLoi);
-    if (kq.van) assert.equal(loiChuLopHan(kq.van), null);
-    else assert.equal(kq.banNhap, null);
+    assert.equal(soGoi, hetLoi ? 2 : 3);
+    assert.ok(kq.van && kq.banNhap, 'Lỗi chữ lặp không được làm mất câu trả lời');
+    assert.equal(loiChuLopHan(kq.van), null);
   }
   process.env.CELES_META_KHOA = 'khoa-gia-cel200';
   const van = 'Câu trả lời trước.';

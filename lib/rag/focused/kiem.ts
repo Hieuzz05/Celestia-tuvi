@@ -138,11 +138,13 @@ const CHAC_CHAN_GIA = re('(?<!(?:không|chưa) )chắc chắn (?:[\\p{L}\\p{M}]+
  * vế câu (sau dấu , ; : hay "mà", "nhưng" gần nhất) — tái hiện 502 của eval mù I: mọi lượt trượt đều đúng dạng này.
  */
 const PHU_DINH_VE = re('(?:không|chưa|chẳng) (?:có )?(?:phải|hẳn|(?:đồng )?nghĩa|đủ|thể|căn cứ)');
+/** Vế câu ngay trước một cụm (sau dấu , ; : hay "mà", "nhưng" gần nhất). */
+const veTruoc = (truoc: string) => truoc.split(/[,;:]| mà | nhưng /u).pop() ?? '';
+const thaChacChanGia = (truoc: string) => PHU_DINH_VE.test(veTruoc(truoc));
 function chacChanGia(s: string): RegExpExecArray | null {
   CHAC_CHAN_GIA.lastIndex = 0;
   for (let m = CHAC_CHAN_GIA.exec(s); m; m = CHAC_CHAN_GIA.exec(s)) {
-    const ve = s.slice(0, m.index).split(/[,;:]| mà | nhưng /u).pop() ?? '';
-    if (!PHU_DINH_VE.test(ve)) return m;
+    if (!thaChacChanGia(s.slice(0, m.index))) return m;
   }
   return null;
 }
@@ -158,15 +160,49 @@ const CHAC_THANG = re('chắc chắn|chắc luôn|chắc như đinh|trăm phần
 const THA_CUNG_VE = re('không|chưa|chẳng|khó|đâu|hãy|cần|nếu');
 /** "Khó mà chắc chắn": phủ định đứng ngay trước "mà" — `mà` cắt vế nên xét riêng. */
 const PHU_DINH_SAT = /(?:không|chưa|chẳng|khó)\s+(?:mà\s+)?$/iu;
+const thaChacThang = (truoc: string) => THA_CUNG_VE.test(veTruoc(truoc)) || PHU_DINH_SAT.test(truoc);
 export function chacThang(s: string): RegExpExecArray | null {
   CHAC_THANG.lastIndex = 0;
   for (let m = CHAC_THANG.exec(s); m; m = CHAC_THANG.exec(s)) {
-    const ve = s.slice(0, m.index).split(/[,;:]| mà | nhưng /u).pop() ?? '';
-    if (!THA_CUNG_VE.test(ve) && !PHU_DINH_SAT.test(s.slice(0, m.index))) return m;
+    if (!thaChacThang(s.slice(0, m.index))) return m;
   }
   return null;
 }
 export const PHAN_TRAM = /100\s*%/u;
+
+/** Cụm khẳng định → cụm theo độ tin. Giữ chiều và mức nặng nhẹ, chỉ hạ độ chắc. */
+function cumMem(goc: string): string {
+  const t = goc.toLowerCase();
+  let moi: string;
+  if (t.startsWith('chắc chắn')) moi = 'nhiều khả năng' + goc.slice('chắc chắn'.length);
+  else if (t === 'nhất định sẽ') moi = 'nhiều khả năng sẽ';
+  else if (t === 'trăm phần trăm') moi = 'rất có thể';
+  else if (t === 'sẽ xảy ra') moi = 'dễ xảy ra';
+  else moi = 'có khả năng'; // "chắc luôn", "chắc như đinh"
+  return goc[0] !== t[0] ? moi[0].toUpperCase() + moi.slice(1) : moi;
+}
+function thayKhiKhangDinh(van: string, mau: RegExp, tha: (truoc: string) => boolean): string {
+  let ra = '';
+  let cuoi = 0;
+  mau.lastIndex = 0;
+  for (let m = mau.exec(van); m; m = mau.exec(van)) {
+    const truoc = van.slice(0, m.index).split(/[.!?\n]/u).pop() ?? '';
+    if (tha(truoc)) continue;
+    ra += van.slice(cuoi, m.index) + cumMem(m[0]);
+    cuoi = m.index + m[0].length;
+  }
+  return ra + van.slice(cuoi);
+}
+/**
+ * CELES-95: làm mềm TẤT ĐỊNH các lỗi độ chắc tầng B còn sót sau viết lại (CHAC_CHAN_GIA, THANG_CHAC_CAO,
+ * PHAN_TRAM), thay vì trả nguyên văn nói chắc. Chỉ thay đúng cụm mà bộ kiểm báo — cùng luật tha
+ * (phủ định cùng vế, "hãy / cần / nếu"), nên câu rào đón không bị đụng. Không gọi model.
+ */
+export function lamMemDoChac(van: string, hoiThang: boolean): string {
+  let ra = thayKhiKhangDinh(van, CHAC_CHAN_GIA, thaChacChanGia);
+  if (hoiThang) ra = thayKhiKhangDinh(ra, CHAC_THANG, thaChacThang);
+  return ra.replace(/\s*100\s*%/gu, '');
+}
 
 /** Lời khuyên chung — EVAL. "nên" đứng một mình thường là liên từ, nên chỉ bắt khi có chủ ngữ hoặc đứng đầu câu. */
 export const KHUYEN = re(
@@ -345,8 +381,10 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
   if (ctx.bangHoa) {
     // Báo ĐỦ mọi cụm / mọi câu phạm, kèm nguyên văn câu (CELES-92, 20/11): chỉ báo cái đầu tiên thì lượt
     // viết lại sửa một chỗ rồi trượt ở chỗ sau, cả lượt chat hỏng.
-    const chu = cacChuLopHan([ban.answer, ...ban.claims.map((c) => c.claim), ...ban.suggestedQuestions].join('\n'));
-    if (chu.length) bao({ ma: 'CHU_LOP_HAN', chiTiet: `Viết đời thường, bỏ cụm ${chu.map((c) => `"${c}"`).join(', ')} ở mọi chỗ (cả claims và câu gợi ý); giữ nguyên kết luận và căn cứ.` });
+    // Chỉ soát phần người dùng ĐỌC (answer). claims ẩn khỏi mặt trước; câu gợi ý có chữ cấm đã bị
+    // chonChip loại. CELES-95 (21/11): một chữ "nhịp" trong claims ẩn cũng đủ bắt viết lại cả bài.
+    const chu = cacChuLopHan(ban.answer);
+    if (chu.length) bao({ ma: 'CHU_LOP_HAN', chiTiet: `Viết đời thường, bỏ cụm ${chu.map((c) => `"${c}"`).join(', ')} trong answer; giữ nguyên kết luận và căn cứ.` });
     const hoa = [
       ...cacLoiHoaLopHan(ban.answer, ctx.bangHoa),
       ...ban.claims.flatMap((c) => cacLoiHoaLopHan(c.claim, ctx.bangHoa!, c.evidenceIds, c.timeRefs)),

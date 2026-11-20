@@ -50,6 +50,7 @@ import {
   loiDiTheoNgonNgu,
 } from '../lib/rag/focused/ngon-ngu';
 import { datMienTruTamLy } from '../lib/rag/an-toan';
+import { CHU_CAM_LOP_HAN, cacChuLopHan } from '../lib/rag/kiem-lop-han';
 import { loiDiTiep } from '../lib/rag/hinh-dang-tra-loi';
 import { goiCoPhucDuc, khoaTen, quetTen, tapTenTuGoi, tenNgoaiTap, tenCungTrongCau } from '../lib/rag/focused/quet-ten';
 import type { ThangDangHoi } from '../lib/rag/focused/phan-loai';
@@ -67,11 +68,11 @@ function thangAmTest(namAm: number, thangAm: number, nhuan = false): ThangDangHo
   const cuaSo = cuaSoCuaThangAm(namAm, thangAm, nhuan, HOM_NAY_TEST);
   return { muc: { loai: 'thang-am', namAm, thangAm, nhuan }, trangThai: cuaSo[0]?.trangThai ?? 'da-qua', cuaSo };
 }
-import { kiemBaTang, kiemCung, chonChip, soAmTiet, tinhMocHopLe, MOC_NHO_HON_NAM, type NguCanhKiem } from '../lib/rag/focused/kiem';
+import { kiemBaTang, kiemCung, chonChip, lamMemDoChac, soAmTiet, tinhMocHopLe, MOC_NHO_HON_NAM, type NguCanhKiem } from '../lib/rag/focused/kiem';
 import { CLAIM_TOI_DA, docBanNhap, type BanNhap } from '../lib/rag/focused/hop-dong';
 import { tenModelThay, tenNgoaiModelThay, tenTrongChu } from './oracle-ten-prompt';
 import { dungPromptFocused, khoiNghiengFocused, khoiMoc, lopCoTrongGoi, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
-import { chayFocused } from '../lib/rag/focused/chay';
+import { chayFocused, giuNghia } from '../lib/rag/focused/chay';
 import { dungGoiBangChung } from '../lib/rag/bang-chung';
 import { type KetQuaFocused, focusedBat, themLopChoThang, traLoiFocused, tuoiTrongGoi } from '../lib/rag/focused/tra-loi-focused';
 import { phienBanHienTai, traLoiCoCanCu } from '../lib/rag/tra-loi';
@@ -1568,6 +1569,103 @@ async function kiemNoi() {
       const users: string[] = [];
       const kq = await chayFocused({ prompt: promptGia, ctx: ctxGia, batDau: Date.now() - 40_000, goi: traGia([banMaLa], users) as never });
       kiem(users.length === 1 && kq.van === '', `hết giờ vẫn viết lại: ${users.length}`);
+    }
+
+    /*
+     * CELES-95 (chủ dự án quyết 21/11/2026): lỗi TỪ NGỮ không bao giờ làm mất câu trả lời. Production
+     * 20/11 trả "Celes chưa trả lời được" vì một chữ "nền"/"nhịp" còn sót sau lượt viết lại. Bản cuối chỉ
+     * còn lỗi tầng B → sửa riêng câu phạm (nếu còn giờ) → vẫn trả bài. Lỗi tầng A vẫn 502 (ca 10 ở trên).
+     */
+    {
+      const ctxHan: NguCanhKiem = { ...ctxGia, bangHoa: { hoa: [], nam: [2026], cuaSo: {} } };
+      const sua = (moi: string) => ({ cau: [{ id: 'C1', moi }] });
+      // (a) hai lần đều vướng chữ cấm → lượt sửa câu (lần gọi 3) ra câu sạch → trả câu sạch.
+      {
+        const users: string[] = [];
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banSach, banSach, sua('Năm nay công việc khá ổn, có người đỡ.')], users) as never });
+        kiem(users.length === 3 && kq.van === 'Năm nay công việc khá ổn, có người đỡ.', `CELES-95 (a) lỗi chữ không ra câu đã sửa: ${users.length} lần / "${kq.van}"`);
+        kiem(kq.vet.suaCau?.conChu === false && (kq.vet.chuBat ?? ['x']).length === 0 && kq.vet.loi.length === 0, `CELES-95 (a) vết sai: ${JSON.stringify({ s: kq.vet.suaCau, c: kq.vet.chuBat, l: kq.vet.loi.map((l) => l.ma) })}`);
+        kiem(users[2].includes('C1.') && kq.chip.includes('Còn tiền bạc thì sao?'), 'CELES-95 (a) lượt sửa không nhận câu phạm / mất câu gợi ý');
+      }
+      // (b) lượt sửa hỏng (không trả câu) → VẪN trả bài gốc, vết ghi cụm chữ còn lại.
+      {
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banSach, banSach, { cau: [] }], []) as never });
+        kiem(kq.van === banSach.answer && !!kq.banNhap, `CELES-95 (b) sửa hỏng mà ra văn rỗng: "${kq.van}"`);
+        kiem((kq.vet.traKemLoiChu ?? []).includes('CHU_LOP_HAN') && (kq.vet.chuBat ?? []).length > 0, `CELES-95 (b) vết thiếu: ${JSON.stringify({ t: kq.vet.traKemLoiChu, c: kq.vet.chuBat })}`);
+      }
+      // (c) lượt sửa sinh lỗi dữ kiện (tên sao ngoài dữ kiện) → bỏ bản sửa, giữ bản trước.
+      {
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banSach, banSach, sua('Năm nay công việc khá ổn nhờ Thiên Lương đỡ.')], []) as never });
+        kiem(kq.van === banSach.answer, `CELES-95 (c) nhận bản sửa có tên ngoài dữ kiện: "${kq.van}"`);
+      }
+      // (d) lần một chỉ lỗi chữ, lần hai sai dữ kiện → dùng bản lần một (đã sửa câu), không 502.
+      {
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banSach, banMaLa, sua('Năm nay công việc khá ổn, có người đỡ.')], []) as never });
+        kiem(kq.van === 'Năm nay công việc khá ổn, có người đỡ.', `CELES-95 (d) lần hai sai dữ kiện làm mất bản lần một: "${kq.van}"`);
+      }
+      // (e) còn quá ít giờ: không viết lại, không sửa câu, vẫn trả bài.
+      {
+        const users: string[] = [];
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, batDau: Date.now() - 45_000, goi: traGia([banSach], users) as never });
+        kiem(users.length === 1 && kq.van === banSach.answer && !kq.vet.suaCau, `CELES-95 (e) hết giờ: ${users.length} lần / "${kq.van}"`);
+      }
+      // (f) chữ cấm chỉ nằm trong claims ẩn → không bắt viết lại.
+      {
+        const users: string[] = [];
+        const banClaim = { ...banSach, answer: 'Năm nay công việc khá ổn, có người đỡ.', claims: [{ claim: 'giữ nhịp', evidenceIds: ['F001'], direction: 'thuan' }] };
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banClaim], users) as never });
+        kiem(users.length === 1 && kq.van === banClaim.answer, `CELES-95 (f) chữ trong claims ẩn vẫn bắt viết lại: ${users.length}`);
+      }
+      // (g) lời dặn model in ĐỦ danh sách cấm từ cùng nguồn với bộ lọc, và chính lời dặn không tự dùng chữ cấm.
+      {
+        let soKhoi = 0;
+        for (const cauHoi of ['Năm nay công việc của tôi thế nào?', 'Năm nay tài chính của tôi ra sao?', 'Năm nay tình cảm của tôi thế nào?', 'Sức khỏe của tôi năm nay thế nào?']) {
+          const kh = themLopChoThang(lapKeHoachFocused({ cauHoi, lichSu: [], saoTheoCung: saoChinhTheoCung(laSo), namXem: 2026, thangXem: 8 }).keHoach);
+          const n = tinhNghiengVe({ laSo, chuDe: kh.chuDe, lopHan: kh.lopHan, namXem: 2026, thangXem: 8, focused: true, lopHanMoi: true });
+          if (!n?.lopHan) continue;
+          const { duKien: dk2 } = chonBoiCanh({ laSo, keHoach: kh, namXem: 2026, thangXem: 8, focused: true });
+          const khoi = khoiNghiengFocused(n, { duKien: dk2 }, phanKhuon({ cauHoi, keHoach: kh, doiTuong: null }).khuon);
+          if (!khoi) continue;
+          soKhoi += 1;
+          const thieu = CHU_CAM_LOP_HAN.filter((c) => !khoi.includes(`"${c}"`));
+          kiem(!thieu.length, `CELES-95 (g) lời dặn thiếu chữ cấm: ${thieu.join(', ')}`);
+          const loiDan = khoi.slice(khoi.indexOf('Chỉ diễn đạt kết quả'), khoi.indexOf('KHÔNG viết các chữ sau'));
+          kiem(cacChuLopHan(loiDan).length === 0, `CELES-95 (g) lời dặn tự dùng chữ cấm: ${cacChuLopHan(loiDan).join(', ')}`);
+        }
+        kiem(soKhoi > 0, 'CELES-95 (g) lá mẫu không dựng được khối lớp hạn nào — ca không canh gì');
+      }
+      // (h) bản sửa gạt mất chữ rào ("nếu") → đổi nghĩa → giữ bản cũ (celes-domain 21/11).
+      {
+        const banRao = { ...banSach, answer: 'Năm nay công việc khá ổn nếu có nền đỡ.' };
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxHan, goi: traGia([banRao, banRao, sua('Năm nay công việc khá ổn, có người đỡ.')], []) as never });
+        kiem(kq.van === banRao.answer && kq.vet.suaCau?.nhan === false, `CELES-95 (h) nhận bản sửa mất điều kiện: "${kq.van}"`);
+      }
+      // (i) chốt giữ nghĩa: không mất / thêm tứ hoá, không thêm tên sao, không bớt chữ rào.
+      kiem(giuNghia('Có nền đỡ.', 'Có người đỡ.'), 'CELES-95 (i) chốt giữ nghĩa chặn nhầm bản sửa vô hại');
+      kiem(!giuNghia('Thái Âm có Hóa Kỵ, giữ nền.', 'Thái Âm vẫn ổn.'), 'CELES-95 (i) bản sửa bỏ Hóa Kỵ vẫn được nhận');
+      kiem(!giuNghia('Thái Âm có Hoá Kỵ, giữ nền.', 'Thái Âm có Hóa Lộc.'), 'CELES-95 (i) bản sửa đổi Kỵ thành Lộc vẫn được nhận');
+      kiem(!giuNghia('Có nền đỡ.', 'Có Thiên Lương đỡ.'), 'CELES-95 (i) bản sửa thêm tên sao vẫn được nhận');
+      kiem(!giuNghia('Ổn, trừ khi giữ nhịp kém.', 'Ổn.'), 'CELES-95 (i) bản sửa bỏ câu rào vẫn được nhận');
+      // (j) làm mềm tất định cụm nói quá chắc: chỉ đúng cụm bộ kiểm báo, rào đón không đụng.
+      const memCa: [string, boolean, string][] = [
+        ['Chắc chắn bạn sẽ đổi việc.', false, 'Nhiều khả năng bạn sẽ đổi việc.'],
+        ['Năm nay nhất định sẽ có thay đổi.', false, 'Năm nay nhiều khả năng sẽ có thay đổi.'],
+        ['Chuyện đó sẽ xảy ra trong năm.', false, 'Chuyện đó dễ xảy ra trong năm.'],
+        ['Không có nghĩa là chắc chắn sẽ mất tiền.', false, 'Không có nghĩa là chắc chắn sẽ mất tiền.'],
+        ['Khả năng đúng 100% là không có.', false, 'Khả năng đúng là không có.'],
+        ['Tháng này chắc chắn có tin vui.', true, 'Tháng này nhiều khả năng có tin vui.'],
+        ['Hãy chắc chắn bạn nghỉ đủ.', true, 'Hãy chắc chắn bạn nghỉ đủ.'],
+        ['Tháng này chắc chắn có tin vui.', false, 'Tháng này chắc chắn có tin vui.'],
+      ];
+      for (const [vao, thang, ra] of memCa) kiem(lamMemDoChac(vao, thang) === ra, `CELES-95 (j) làm mềm "${vao}" → "${lamMemDoChac(vao, thang)}", cần "${ra}"`);
+      // (k) hai lần đều nói quá chắc → không 502, không gọi model thêm, trả bản đã làm mềm.
+      {
+        const users: string[] = [];
+        const banChac = { ...banSach, answer: 'Năm nay công việc chắc chắn sẽ khá ổn.' };
+        const kq = await chayFocused({ prompt: promptGia, ctx: ctxGia, goi: traGia([banChac, banChac], users) as never });
+        kiem(users.length === 2 && kq.van === 'Năm nay công việc nhiều khả năng sẽ khá ổn.' && kq.vet.lamMem === true, `CELES-95 (k) nói chắc không được làm mềm: ${users.length} lần / "${kq.van}"`);
+        kiem(kq.vet.loi.length === 0, `CELES-95 (k) còn lỗi sau làm mềm: ${kq.vet.loi.map((l) => l.ma).join(',')}`);
+      }
     }
 
     // Vết Preview (CEL-186 v2, commit A — spec 5.4).

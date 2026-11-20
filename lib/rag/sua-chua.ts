@@ -349,6 +349,8 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
  * vế lạc quan trơ trọi, sai hơn không trả lời — lớp gọi chặn cả lượt (celes-domain 31/10).
  */
 const CAU_RAO = /(?<![\p{L}\p{M}])(?:tuy|nhưng|trừ khi|nếu|chưa|khó|không nên|đừng|cẩn thận|dè chừng|rủi ro|kỵ)(?![\p{L}\p{M}])/iu;
+/** Số chữ rào trong văn — bản sửa câu mà ít chữ rào hơn là đã gạt mất một điều kiện / cảnh báo (CELES-95). */
+export const demChuRao = (van: string) => van.match(new RegExp(CAU_RAO.source, 'giu'))?.length ?? 0;
 
 export function boCauPham(van: string, pham: (cau: string) => boolean): string | null {
   const manh = tachManh(van);
@@ -367,7 +369,9 @@ export function boCauPham(van: string, pham: (cau: string) => boolean): string |
 export async function suaCauTiengLong(
   van: string,
   tenDuKien: string[],
-  phamThem?: (cau: string) => boolean
+  phamThem?: (cau: string) => boolean,
+  /** Focused (CELES-95) truyền hàm gọi của lượt (test tiêm được) và thời gian còn lại của lượt. */
+  tuyChon?: { goi?: typeof goiVoiFallback; nganSachMs?: number }
 ): Promise<string> {
   const manh = tachManh(van);
   const pham = manh
@@ -407,9 +411,10 @@ TRẢ VỀ DUY NHẤT MỘT OBJECT JSON, không rào code:
 
   const sua = new Map<number, string>();
   try {
-    const kq = await goiVoiFallback(
+    const kq = await (tuyChon?.goi ?? goiVoiFallback)(
       { system, user: danhSach, maxTokens: 900, temperature: 0.3 },
-      undefined
+      undefined,
+      tuyChon?.nganSachMs
     );
     const tho = docObjectJson(kq.text);
     const mang = Array.isArray((tho as { cau?: unknown } | null)?.cau)
