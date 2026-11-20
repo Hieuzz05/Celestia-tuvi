@@ -19,6 +19,17 @@ const AN_DU_LOP_HAN = new RegExp(AN_DU_CAM.source.replace('nền|', 'nền(?!\\s
 export function loiChuLopHan(van: string): string | null {
   return van.match(CAM)?.[0] ?? van.match(AN_DU_LOP_HAN)?.[0] ?? null;
 }
+/**
+ * MỌI cụm cấm trong văn, không trùng. CELES-92 (20/11): báo mỗi cụm đầu tiên thì lượt viết lại bỏ
+ * "nhịp" xong vẫn dính "nền", lượt hai trượt và cả lượt chat hỏng.
+ */
+export function cacChuLopHan(van: string): string[] {
+  const ra = new Map<string, string>();
+  for (const re of [CAM, AN_DU_LOP_HAN]) {
+    for (const m of van.matchAll(new RegExp(re.source, re.flags + 'g'))) if (!ra.has(m[0].toLowerCase())) ra.set(m[0].toLowerCase(), m[0]);
+  }
+  return [...ra.values()];
+}
 
 /** Q-nguon: thu hẹp kết luận, không tự thuật tình trạng kho. Đường tắt giữ nguyên. */
 export function chuNguonLopHan(s: string, bat = false): string {
@@ -67,9 +78,18 @@ function docHoa(cau: string) {
     // Chọn hướng có quan hệ được viết rõ; không đoán sao từ tên hoá.
     // Cho phép tên lớp chen giữa ("Hóa Quyền đại vận vào Thái Âm"): đo 31/10 bắt nhầm câu đúng dữ kiện.
     // Tên lớp vẫn nằm trong `ve` nên phần nhận lớp bên dưới không đổi.
-    const sauRo = /^\s*(?:(?:của\s+)?(?:đại vận|lưu niên|năm\s+(?:nay|\d{4})|(?:lá số\s+)?gốc|năm sinh)\s*,?\s+)?(?:(?:vào|trên|của|tại|ở|gắn với|ứng với|on|to|in|of)\s+)?(?:sao\s+)?/u.exec(sau)?.[0].length ?? 0;
+    // Sau tên lớp cho chen khoảng tuổi ("của đại vận 25–34 tuổi vào Thái Dương", "đại vận (25-34 tuổi)"):
+    // CELES-92, 20/11 production trả lỗi cho câu đúng dữ kiện vì không thấy sao sau khoảng tuổi.
+    // Động từ "nhập / đi vào" là cách nói chuẩn của tử vi ("Hóa Kỵ nhập Văn Xương"): đo 20/11, kiểu bị
+    // chặn nhầm nhiều nhất (12 câu hỏi thật, 6 lượt hỏng).
+    // Trạng từ trước động từ ("Hóa Kỵ gốc cũng vào Thái Âm") cũng là cách nói đúng (CELES-92).
+    const sauRo = /^\s*(?:(?:của\s+)?(?:đại vận|lưu niên|năm sinh|năm(?:\s+(?:nay|sau|\d{4}))?|(?:lá số\s+)?gốc)(?:\s*\(?\s*(?:từ\s+)?(?:tuổi\s+)?\d{1,3}\s*(?:[–—-]|đến)\s*\d{1,3}(?:\s*tuổi)?\s*\)?)?\s*,?\s+)?(?:(?:cũng|vẫn|lại|đều|còn|đang)\s+)?(?:(?:nhập vào|nhập|đi vào|rơi vào|vào|trên|của|tại|ở|gắn với|ứng với|on|to|in|of)\s+)?(?:sao\s+)?/u.exec(sau)?.[0].length ?? 0;
     const tenSau = saoSau[0] && chuan(sau).slice(sauRo).startsWith(khoaTen(saoSau[0].ten)) ? saoSau[0].ten : null;
-    const sao = tenSau ?? (saoTruoc.length === 1 ? saoTruoc[0].ten : null);
+    // Sao đứng SÁT trước và "có / mang / nhận / kèm" hoá ("Thái Âm có Hóa Khoa"): sao nhận hoá được viết rõ
+    // dù câu còn sao khác phía trước. "gặp / cùng / đi cùng" không tính: đó là sao hội, không phải sao nhận hoá.
+    // quetTen trả mỗi tên một lần (theo lần xuất hiện đầu), nên dò từng sao chứ không lấy phần tử cuối.
+    const tenTruocSat = saoTruoc.find((t) => new RegExp(`${thoat(khoaTen(t.ten))}\\s*,?\\s*(?:(?:cũng|vẫn|lại|đều|còn)\\s+)?(?:có|mang|nhận|kèm|được)\\s+(?:thêm\\s+)?(?:cả\\s+)?$`, 'u').test(chuan(truoc)))?.ten ?? null;
+    const sao = tenSau ?? tenTruocSat ?? (saoTruoc.length === 1 ? saoTruoc[0].ten : null);
     const ve = truoc + ' ' + sau;
     const lopViet: HoaHan['nguon'] | undefined = m[0].startsWith('lưu') ? 'nam'
       : /đại vận|major period|decade/u.test(ve) ? 'dai-van'
@@ -81,7 +101,7 @@ function docHoa(cau: string) {
     const namTrongVe = [...ve.matchAll(/(?<!\d)(?:19|20)\d{2}(?!\d)/gu)].map((x) => +x[0]);
     // Tên lớp đứng SÁT hoá ("lưu Hóa Kỵ đại vận"), khác chữ "đại vận" nói về sao khác cùng câu
     const lopSat = sau.slice(0, sauRo) + ' ' + (/(?:đại vận|lưu niên|gốc)\s*,?\s*$/u.exec(truoc)?.[0] ?? '');
-    return { m, tu, den, sau, ve, lopSat, saoSau, tenSau, sao, nguon, lopViet, cung, namTrongVe };
+    return { m, tu, den, sau, ve, lopSat, saoSau, saoTruoc, tenSau, sao, nguon, lopViet, cung, namTrongVe };
   });
 }
 
@@ -125,27 +145,63 @@ export function ghiLopHoa(van: string, bang: BangHoaLoi): string {
 
 /** Kiểm từng vế có hoá; mơ hồ thì viết lại, không ghép chéo hai cặp đúng riêng lẻ. */
 export function loiHoaLopHan(van: string, bang: BangHoaLoi, canCu?: readonly string[], timeRefs?: readonly string[]): string | null {
-  const chu = chuan(van);
-  for (const cau of chu.split(/[.!?;\n]+/u)) {
-    const ds = docHoa(cau);
-    if (ds.length && /(?:theo|của|thuộc)\s+(?:can\s+)?(?:tháng|ngày)/u.test(cau)) return 'Không có bảng tứ hoá theo can tháng/ngày trong dữ kiện.';
-    if (ds.length && /(?:của|theo|thuộc|tứ hóa)\s*(?:tứ hóa\s*)?(?:tiểu hạn|nguyệt hạn)/u.test(cau)) return 'Không có bảng tứ hoá riêng của tiểu hạn/nguyệt hạn; chỉ dùng hoá gốc, năm hoặc đại vận.';
-    for (const h of ds) {
-      const { m, lopSat, sao, nguon, cung, namTrongVe } = h;
-      if (ganNhieuSao(h, bang)) return 'Một hoá đang gắn nhiều sao hoặc dùng quan hệ không định danh lại; viết rõ từng cặp đúng dữ kiện.';
-      if (!sao) return `Nêu ${m[0]} phải gắn đúng sao như dữ kiện, không suy tên sao từ hoá.`;
-      if (m[0].startsWith('lưu') && /đại vận/u.test(lopSat)) return 'Phân biệt lưu tứ hoá của năm với tứ hoá đại vận.';
-      const maW = timeRefs?.filter((w) => w !== 'nam') ?? [];
-      const mau = bang.hoa.filter((h) => chuan(h.hoa) === m[0].replace(/^lưu\s+/u, '') && khoaTen(h.sao) === khoaTen(sao)
-        && (!nguon || h.nguon === nguon) && (!cung.length || cung.every((c) => c === h.tenCung))
-        && (!canCu || canCu.includes(h.ma)) && (!maW.length || maW.every((w) => h.cuaSo.includes(w)))
-        && (!namTrongVe.length || namTrongVe.every((n) => n === h.nam)));
-      if (!nguon && new Set(mau.map((h) => h.nguon)).size > 1) return 'Quan hệ có ở nhiều lớp: nêu rõ hoá gốc, lưu hoá hay hoá đại vận đúng căn cứ.';
-      if (!mau.length) return `${m[0]} và ${sao} phải đúng cung, lớp và thời điểm trong căn cứ đang dẫn.`;
-      // Câu không chỉ năm trong tháng qua Tết phải đúng ở mọi năm đang đọc.
-      if (!namTrongVe.length && !maW.length && bang.nam.some((n) => !mau.some((h) => h.nam === n))) {
-        return `${m[0]} và ${sao} cần chỉ rõ thời điểm; không dùng quan hệ của một năm cho cả hai năm.`;
-      }
+  return cacLoiHoaLopHan(van, bang, canCu, timeRefs)[0]?.loi ?? null;
+}
+
+/**
+ * MỌI câu phạm (mỗi câu một lỗi đầu tiên), kèm nguyên văn câu để lượt viết lại biết sửa chỗ nào.
+ * CELES-92 (20/11): chỉ báo lỗi đầu tiên, không kèm câu, nên lượt viết lại sửa một câu rồi trượt ở câu
+ * sau; production hỏng khoảng nửa số lượt hỏi về năm.
+ */
+export function cacLoiHoaLopHan(van: string, bang: BangHoaLoi, canCu?: readonly string[], timeRefs?: readonly string[]): { loi: string; cau: string }[] {
+  const goc = van.normalize('NFC');
+  const chu = chuan(goc); // cùng độ dài với `goc`
+  const ra: { loi: string; cau: string }[] = [];
+  // Hoá đã gắn đúng MỘT sao ở câu trước: câu sau nhắc lại hoá mà không nêu sao nào thì hiểu là hoá ấy
+  // ("…Hóa Khoa đại vận vào Thái Âm. Hóa Khoa cũng làm việc giấy tờ dễ hơn."). Câu có sao khác thì không
+  // kế thừa, tránh gắn nhầm. null = cùng tên hoá đã gắn hai sao khác nhau, không kế thừa được.
+  const daGan = new Map<string, { sao: string; nguon?: HoaHan['nguon'] } | null>();
+  for (const k of chu.matchAll(/[^.!?;\n]+/gu)) {
+    const loi = loiMotCau(k[0], bang, daGan, canCu, timeRefs);
+    if (loi) ra.push({ loi, cau: goc.slice(k.index!, k.index! + k[0].length).trim() });
+  }
+  return ra;
+}
+
+function loiMotCau(
+  cau: string,
+  bang: BangHoaLoi,
+  daGan: Map<string, { sao: string; nguon?: HoaHan['nguon'] } | null>,
+  canCu?: readonly string[],
+  timeRefs?: readonly string[],
+): string | null {
+  const ds = docHoa(cau);
+  if (ds.length && /(?:theo|của|thuộc)\s+(?:can\s+)?(?:tháng|ngày)/u.test(cau)) return 'Không có bảng tứ hoá theo can tháng/ngày trong dữ kiện.';
+  if (ds.length && /(?:của|theo|thuộc|tứ hóa)\s*(?:tứ hóa\s*)?(?:tiểu hạn|nguyệt hạn)/u.test(cau)) return 'Không có bảng tứ hoá riêng của tiểu hạn/nguyệt hạn; chỉ dùng hoá gốc, năm hoặc đại vận.';
+  const khongSaoKhac = ds.every((h) => !h.saoSau.length && !h.saoTruoc.length);
+  for (const h of ds) {
+    const { m, lopSat, cung, namTrongVe } = h;
+    const khoa = m[0].replace(/^lưu\s+/u, '');
+    const keThua = !h.sao && khongSaoKhac ? daGan.get(khoa) : undefined;
+    const sao = h.sao ?? keThua?.sao ?? null;
+    const nguon = h.nguon ?? keThua?.nguon;
+    if (ganNhieuSao(h, bang)) return 'Một hoá đang gắn nhiều sao hoặc dùng quan hệ không định danh lại; viết rõ từng cặp đúng dữ kiện.';
+    if (!sao) return `Nêu ${m[0]} phải gắn đúng sao như dữ kiện, không suy tên sao từ hoá.`;
+    if (m[0].startsWith('lưu') && /đại vận/u.test(lopSat)) return 'Phân biệt lưu tứ hoá của năm với tứ hoá đại vận.';
+    const maW = timeRefs?.filter((w) => w !== 'nam') ?? [];
+    const mau = bang.hoa.filter((h) => chuan(h.hoa) === m[0].replace(/^lưu\s+/u, '') && khoaTen(h.sao) === khoaTen(sao)
+      && (!nguon || h.nguon === nguon) && (!cung.length || cung.every((c) => c === h.tenCung))
+      && (!canCu || canCu.includes(h.ma)) && (!maW.length || maW.every((w) => h.cuaSo.includes(w)))
+      && (!namTrongVe.length || namTrongVe.every((n) => n === h.nam)));
+    if (!nguon && new Set(mau.map((h) => h.nguon)).size > 1) return 'Quan hệ có ở nhiều lớp: nêu rõ hoá gốc, lưu hoá hay hoá đại vận đúng căn cứ.';
+    if (!mau.length) return `${m[0]} và ${sao} phải đúng cung, lớp và thời điểm trong căn cứ đang dẫn.`;
+    // Câu không chỉ năm trong tháng qua Tết phải đúng ở mọi năm đang đọc.
+    if (!namTrongVe.length && !maW.length && bang.nam.some((n) => !mau.some((h) => h.nam === n))) {
+      return `${m[0]} và ${sao} cần chỉ rõ thời điểm; không dùng quan hệ của một năm cho cả hai năm.`;
+    }
+    if (h.sao) {
+      const cu = daGan.get(khoa);
+      daGan.set(khoa, cu === undefined || (cu && khoaTen(cu.sao) === khoaTen(sao) && cu.nguon === nguon) ? { sao, nguon } : null);
     }
   }
   return null;

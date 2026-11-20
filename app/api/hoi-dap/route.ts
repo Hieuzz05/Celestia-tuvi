@@ -280,6 +280,10 @@ export async function POST(req: Request) {
     }
 
     if (!kq.van) {
+      // CELES-92 (20/11): đường này từng hỏng khoảng nửa số lượt suốt hai ngày mà log trống. Chỉ ghi MÃ lỗi
+      // của bộ kiểm, không ghi câu hỏi hay nội dung trả lời (quyền riêng tư vết).
+      const vet = (kq as { vetFocused?: { lanGoi: number; thuLai: string | null; loi: { ma: string }[] } }).vetFocused;
+      console.warn('[hoi-dap] 502 chua tra loi duoc', JSON.stringify({ duong: vet ? 'focused' : 'standard', lanGoi: vet?.lanGoi, thuLai: vet?.thuLai, loi: vet?.loi.map((l) => l.ma) }));
       await hoanCauHoi(cho.nguon, requestId);
       return NextResponse.json(
         { loi: 'Celes chưa trả lời được câu này. Bạn hỏi lại giúp.', chuaTraLoiDuoc: true },

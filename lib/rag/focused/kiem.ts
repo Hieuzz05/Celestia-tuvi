@@ -1,4 +1,4 @@
-import { loiHoaLopHan, loiChuLopHan, type BangHoaLoi } from '../kiem-lop-han';
+import { cacChuLopHan, cacLoiHoaLopHan, loiChuLopHan, type BangHoaLoi } from '../kiem-lop-han';
 /**
  * GUARD — đường Focused (CEL-186 vé B, mục 6).
  *
@@ -343,10 +343,21 @@ export function kiemBaTang(ban: BanNhap | null, ctx: NguCanhKiem): KetQuaKiem {
   }
 
   if (ctx.bangHoa) {
-    const chu = loiChuLopHan([ban.answer, ...ban.claims.map((c) => c.claim), ...ban.suggestedQuestions].join('\n'));
-    if (chu) bao({ ma: 'CHU_LOP_HAN', chiTiet: `Viết đời thường, bỏ cụm "${chu}"; giữ nguyên kết luận và căn cứ.` });
-    const hoa = loiHoaLopHan(ban.answer, ctx.bangHoa) ?? ban.claims.map((c) => loiHoaLopHan(c.claim, ctx.bangHoa!, c.evidenceIds, c.timeRefs)).find(Boolean);
-    if (hoa) bao({ ma: 'HOA_SAI_QUAN_HE', chiTiet: hoa });
+    // Báo ĐỦ mọi cụm / mọi câu phạm, kèm nguyên văn câu (CELES-92, 20/11): chỉ báo cái đầu tiên thì lượt
+    // viết lại sửa một chỗ rồi trượt ở chỗ sau, cả lượt chat hỏng.
+    const chu = cacChuLopHan([ban.answer, ...ban.claims.map((c) => c.claim), ...ban.suggestedQuestions].join('\n'));
+    if (chu.length) bao({ ma: 'CHU_LOP_HAN', chiTiet: `Viết đời thường, bỏ cụm ${chu.map((c) => `"${c}"`).join(', ')} ở mọi chỗ (cả claims và câu gợi ý); giữ nguyên kết luận và căn cứ.` });
+    const hoa = [
+      ...cacLoiHoaLopHan(ban.answer, ctx.bangHoa),
+      ...ban.claims.flatMap((c) => cacLoiHoaLopHan(c.claim, ctx.bangHoa!, c.evidenceIds, c.timeRefs)),
+    ];
+    if (hoa.length) {
+      const ds = [...new Map(hoa.map((h) => [h.cau, h])).values()].slice(0, 6);
+      bao({
+        ma: 'HOA_SAI_QUAN_HE',
+        chiTiet: `${ds[0].loi} Mỗi hoá viết liền với đúng một sao nhận nó, theo mẫu "Hóa X đại vận vào <tên sao>", ${ctx.bangHoa.nam.map((n) => `"Hóa X của năm ${n} vào <tên sao>"`).join(', ')}, "Hóa X gốc vào <tên sao>" hoặc "<tên sao> có Hóa X đại vận" (ghi rõ lớp); không để hoá đứng trong một dãy sao. Sửa ĐỦ các câu sau:\n${ds.map((h) => `  · "${h.cau.slice(0, 220)}" → ${h.loi}`).join('\n')}`,
+      });
+    }
   }
 
   // Mốc

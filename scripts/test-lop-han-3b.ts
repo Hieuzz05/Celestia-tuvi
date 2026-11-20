@@ -7,7 +7,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { lapLaSo } from '../lib/tuvi/ansao';
 import { lapKeHoach } from '../lib/rag/planner';
-import { bangHoaChoLoi, ghiLopHoa, loiChuLopHan, loiHoaLopHan, chuNguonLopHan } from '../lib/rag/kiem-lop-han';
+import { bangHoaChoLoi, cacChuLopHan, cacLoiHoaLopHan, ghiLopHoa, loiChuLopHan, loiHoaLopHan, chuNguonLopHan } from '../lib/rag/kiem-lop-han';
 import { chonBoiCanh, saoChinhTheoCung } from '../lib/rag/boi-canh-la-so';
 import { tinhNghiengVe } from '../lib/rag/nghieng-ve';
 import { khoiNghiengFocused, dungPromptFocused, tenDuocGoiTrongLuot } from '../lib/rag/focused/prompt';
@@ -119,6 +119,33 @@ async function main() {
     assert.equal(loiHoaLopHan('Cự Môn ở công việc cùng Hóa Kỵ đại vận vào Thiên Cơ.', b85), null);
     assert.ok(loiHoaLopHan('Hóa Quyền đại vận vào Thiên Cơ cho thấy bạn có thêm tiếng nói.', b85));
     assert.ok(loiHoaLopHan('Lưu Hóa Kỵ năm 2026 vào Thái Âm.', b85));
+    // Khoảng tuổi sau tên lớp (CELES-92, 20/11: production báo lỗi giả cho câu đúng dữ kiện)
+    assert.equal(loiHoaLopHan('Cự Môn và Thái Dương cùng ở đây, thêm Hóa Quyền của đại vận 35–44 tuổi vào Thái Âm nên bạn có tiếng nói.', b85), null);
+    assert.equal(loiHoaLopHan('Hóa Quyền đại vận (35-44 tuổi) vào Thái Âm cho thấy bạn có thêm tiếng nói.', b85), null);
+    assert.ok(loiHoaLopHan('Cự Môn và Thái Dương cùng ở đây, thêm Hóa Quyền của đại vận 35–44 tuổi vào Thiên Cơ.', b85));
+    // Động từ "nhập / đi vào" (CELES-92): đúng sao thì qua, sai sao vẫn chặn
+    assert.equal(loiHoaLopHan('Vì Hóa Quyền của đại vận nhập Thái Âm, bạn có thêm tiếng nói.', b85), null);
+    assert.equal(loiHoaLopHan('Cự Môn và Thái Dương cùng ở đây, Hóa Quyền đại vận đi vào Thái Âm nên bạn có tiếng nói.', b85), null);
+    assert.ok(loiHoaLopHan('Vì Hóa Quyền của đại vận nhập Thiên Cơ, bạn có thêm tiếng nói.', b85));
+    // Trạng từ chen trước động từ; sao đứng sát trước "có Hóa X" (CELES-92)
+  assert.equal(loiHoaLopHan('Hóa Quyền đại vận cũng vào Thái Âm, nên bạn có tiếng nói.', b85), null);
+  assert.equal(loiHoaLopHan('Cự Môn đi cùng Thái Dương, còn Thái Âm có Hóa Quyền đại vận, nên bạn có tiếng nói.', b85), null);
+  assert.ok(loiHoaLopHan('Cự Môn đi cùng Thái Dương, còn Thiên Cơ có Hóa Quyền đại vận.', b85));
+  assert.ok(loiHoaLopHan('Thái Dương, Thái Âm gặp Hóa Quyền đại vận.', b85)); // "gặp" là hội, không phải nhận hoá
+  // Sao lặp tên trong câu ("Thái Dương và Thiên Lương…, trong đó Thái Dương có Hóa X") và "của năm vào" không số năm (CELES-92)
+  assert.equal(loiHoaLopHan('Thái Âm và Cự Môn ở đây, trong đó Thái Âm có Hóa Quyền đại vận, nên bạn có tiếng nói.', b85), null);
+  assert.equal(loiHoaLopHan('Riêng năm 2026, Hóa Quyền của năm vào Thiên Cơ nên bạn hay tính lại hướng đi.', b85), null);
+  assert.ok(loiHoaLopHan('Riêng năm 2026, Hóa Quyền của năm vào Thái Âm.', b85));
+  // Nhắc lại hoá đã gắn sao ở câu trước, câu sau không có sao nào: kế thừa. Có sao khác thì không.
+  assert.equal(loiHoaLopHan('Hóa Quyền đại vận vào Thái Âm. Hóa Quyền cũng giúp bạn giữ tiếng nói.', b85), null);
+  assert.ok(loiHoaLopHan('Hóa Quyền cũng giúp bạn giữ tiếng nói.', b85));
+  assert.ok(loiHoaLopHan('Hóa Quyền đại vận vào Thái Âm. Cự Môn gặp Hóa Quyền nên dễ đổi ý.', b85));
+  // Báo ĐỦ mọi câu phạm và mọi cụm cấm, không chỉ cái đầu (CELES-92: viết lại sửa một chỗ rồi trượt chỗ sau)
+  assert.equal(cacLoiHoaLopHan('Hóa Quyền làm bạn mạnh. Hóa Quyền đại vận vào Thái Âm. Thái Dương, Thiên Lương và Hóa Quyền.', b85).length, 2);
+  assert.deepEqual(cacChuLopHan('Nhịp năm nay chậm, nền vẫn vững, nhịp sau nhanh hơn. Nền tảng gia đình ổn.'), ['Nhịp', 'nền']);
+  // Hoá đứng cuối dãy sao hoặc nói trống thì vẫn chặn: không biết hoá gắn sao nào
+    assert.ok(loiHoaLopHan('Cách bạn phản ứng có Thái Dương, Thiên Lương và Hóa Quyền.', b85));
+    assert.ok(loiHoaLopHan('Riêng năm 2026, Hóa Quyền đại vận này làm nổi bật vai trò của bạn.', b85));
     // Hóa chỉ khớp một lớp thì tự ghi lớp; khớp nhiều lớp hoặc đã ghi lớp thì để nguyên
     const ghi = (c: string, mong: string) => { const r = ghiLopHoa(c, b85); assert.equal(r, mong); assert.equal(ghiLopHoa(r, b85), r); assert.equal(loiHoaLopHan(r, b85), null); };
     ghi('Bạn có Hóa Quyền vào Thái Âm.', 'Bạn có Hóa Quyền đại vận vào Thái Âm.');
