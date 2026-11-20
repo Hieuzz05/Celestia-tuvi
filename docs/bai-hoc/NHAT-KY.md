@@ -121,7 +121,8 @@ Mẫu một mục:
 - Giá: một vòng sửa reviewer và kiểm lại; chưa phát hành, không có lượt model trả phí.
 - Luật: kiểm quan hệ phải giữ hoá–sao–cung–lớp–thời điểm và phạm vi câu/vế; vế mơ hồ cần viết lại. Ca âm phải gồm hai sao, hai hoá, nguồn/cung sau liên từ, nhiều cửa sổ và chip.
 - Nâng: docs/bay/ai-rag.md; scripts/test-lop-han-3b.ts đã có regression và được nối CI. Không push sổ lên main vì chủ dự án cấm push trong phiên này.
-- Lần: 1
+- Lần: 2
+- Lặp 20/11 (CELES-92): chiều ngược lại. Bộ kiểm CHẶN NHẦM câu đúng của model thật ("Hóa Quyền của đại vận 35–44 tuổi vào Thái Âm", "Hóa Kỵ nhập Văn Xương", "Thái Âm có Hóa Khoa") và chỉ báo lỗi đầu, nên Focused trả 502 "Celes chưa trả lời được" ~6/12 lượt vận hạn trên production ~2 ngày; đường 502 không ghi log nên không ai thấy. Gốc giống lần 1: ca test là câu AI tự nghĩ ra, không phải câu model thật sinh; ca dương ("phải qua") còn mỏng hơn ca âm. Sửa ở 0253da3 (nhánh viec/sua-hoa-tuoi-dai-van), sau sửa 1/12. Đề xuất máy canh (chờ chủ dự án duyệt): (a) bộ câu thật đúng dữ kiện lấy từ lượt model thật, đóng băng làm ca "phải qua" trong test-lop-han-3b (CI đỏ khi bộ kiểm chặn nhầm); (b) log 502 có mã lỗi (đã thêm ở 0253da3) để đếm tỉ lệ 502 sau mỗi lần deploy.
 
 ## 17/10/2026 · Baseline lấy nhầm khung hiện tại có thể tự xác nhận · ai-rag
 - Thẻ: baseline, snapshot, khung, co env, B4
