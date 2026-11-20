@@ -20,6 +20,12 @@ Tách từ `AGENTS.md` (27/09/2026) để không nạp vào mọi lượt. Đọ
   Câu "kho trống thì vẫn chạy bằng kiến thức sẵn có của model" là sai kiến trúc, đừng viết lại.
 - **Validator bỏ ý hỏng, nhưng không bao giờ trả về bài rỗng.** Nếu mọi ý đều hỏng thì giữ nguyên
   bài và ghi `dat: false` — xem ghi chú trong `locYHong` để biết vì sao.
+- **Lỗi TỪ NGỮ (chữ cấm, nói quá chắc, chọn hộ, phần trăm) không bao giờ làm mất câu trả lời** (chủ
+  dự án quyết 21/11/2026). Bộ lọc phải có lối ra: viết lại → sửa riêng câu (có chốt giữ nghĩa) /
+  làm mềm bằng mã → vẫn trả bài, ghi log mã lỗi. Chỉ sai dữ kiện mới được báo lỗi. Đã trả giá hai lần
+  trên hai đường: 31/10 đường cũ 23/24 lượt rỗng vì "nhịp"; 20/11 đường Focused báo "Celes chưa trả
+  lời được" vì một chữ "nền". Test nào khẳng định "lỗi chữ lặp → văn rỗng" là test KHOÁ hành vi sai,
+  sửa test chứ đừng giữ. Máy canh: khối CELES-95 trong `scripts/test-focused.ts`.
 - **Chuẩn ngôn ngữ chỉ có MỘT bản: `lib/rag/chuan-ngon-ngu.ts`.** Cả prompt chat lẫn prompt bài
   dài đều nhúng nó. Chép sang màn khác là hai màn cùng sản phẩm nói bằng hai giọng, và người dùng
   cảm nhận được ngay cả khi không gọi tên được vấn đề.
