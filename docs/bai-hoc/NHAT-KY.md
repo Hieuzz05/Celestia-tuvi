@@ -251,7 +251,21 @@ Mẫu một mục:
   bất kể có căn cứ hay không. Chỉ được viết "có căn cứ thì nêu, không có thì thôi". Khi chủ dự án chốt
   một nguyên tắc về prompt, grep mọi prompt đang chạy để tìm câu trái nguyên tắc đó.
 - Nâng: `docs/bay/ai-rag.md` (trong commit gỡ ép hai mặt của CEL-200, nhánh `viec/van-han-lop-han`).
-- Lần: 2 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
+  21/11: thêm luật "Văn Celes dở thì không đề xuất thêm luật/khuôn" vào `docs/bai-hoc/cach-lam.md`;
+  máy canh (trần độ dài lời dặn chat) chờ chủ dự án duyệt trong CELES-99.
+- Lần: 3 (chủ dự án nói đã trao đổi các lần trước; mục C3 bản 4)
+- Lặp 21/11 (CELES-99, bài chat "Năm 2027" viết gượng): hai lần trong một ngày. Bản 1 đề xuất thêm
+  luật và khuôn bốn đoạn cho câu hỏi cả năm; chủ dự án bác ("quá nhiều rule chỉ khiến model trả lời kém
+  đi"). Bản 2 vẫn có bước "máy chọn 2–3 điều chính, mỗi điều kèm dòng đỡ" và bước dịch nhãn thuật ngữ;
+  chủ dự án bác lần nữa ("lại quay về vòng lặp cũ: ép model nói 2-3 câu, rồi lại phải kèm 1 cái gì đó").
+  Gốc lần này: AI không đọc lại lịch sử đo của CELES-34 trước khi đề xuất. Lịch sử đó đã cho thấy khuôn
+  chia ô làm model đi đúng từng ô bằng chữ trống (07/11), và model chép chữ trong luật (08/11). Thêm
+  nữa, chính lời dặn đang chạy BẮT dịch thuật ngữ (`chuan-ngon-ngu.ts:187-189`), AI lại đề xuất dịch thêm.
+  Giá: hai bản phương án bị bác, chủ dự án phải giải thích lại ba lần.
+  Luật bổ sung: văn Celes dở thì trước khi đề xuất, đọc lịch sử đo (`T find` + báo cáo trong
+  `D:\Celestia\`) và rà lời dặn đang chạy tìm câu GÂY ra lỗi để gỡ; không đề xuất thêm luật, khuôn, câu
+  mẫu hay "nói N điều". Máy canh đề xuất (chờ chủ dự án duyệt, nằm trong CELES-99 bản 3 mục 4.4): bài
+  kiểm trần độ dài lời dặn chat, thêm luật thì phải bớt chỗ khác hoặc nâng trần có lý do.
 
 ## 22/10/2026 · Timeout chưa phải lượt không tiêu tài nguyên · ai-rag
 - Thẻ: timeout, usage, doi soat, ngan sach, restart

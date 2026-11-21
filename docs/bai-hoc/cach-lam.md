@@ -42,6 +42,11 @@ Thêm, sửa, rút luật: dùng `/bai-hoc`.
 - **Ẩn dụ và nhãn nội bộ không bao giờ thành lời Celes.** "Xe/đường", "nền", "lực cản", "vững/yếu" là
   chữ để thiết kế. Câu mẫu và chữ hướng dẫn model phải là lời thường: tên sao, tên cung, chuyện đời cụ thể.
   Lặp 18/10 (chủ dự án đã nhắc nhiều lần); máy canh: validator lời chat lớp hạn (CEL-200 3b, việc e).
+- **Văn Celes dở thì KHÔNG đề xuất thêm luật, khuôn, câu mẫu, "nói N điều kèm X" hay dịch thuật ngữ.**
+  Trước khi đề xuất: đọc lịch sử đo (`T find`, báo cáo trong `D:\Celestia\`), rà lời dặn đang chạy tìm
+  câu GÂY lỗi để gỡ, hoặc đổi đòn bẩy khác (model, mức suy nghĩ); đo trên đúng bề mặt bị chê (chat khác
+  bài dài). Tên sao, tên cung, thuật ngữ ("Thân cư"…) giữ nguyên, không viết lại. Lặp 18/10, 21/11
+  (CELES-99 bị bác hai bản); máy canh đề xuất: bài kiểm trần độ dài lời dặn chat (CELES-99 mục 4.4).
 
 - **Mỗi mục xin chủ dự án quyết phải tự đứng được**: chức năng gì, người dùng gặp ở đâu, hiện chạy
   thế nào, đổi gì (kèm ví dụ), mỗi lựa chọn dẫn tới đâu, AI đề xuất gì. Không lấy mã bước, tên
